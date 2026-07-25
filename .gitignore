@@ -7,6 +7,15 @@
 # Kilo CLI 本地配置
 .kilo/
 
+# DevEco Studio 配置和计划
+.deveco/
+
+# CodeArts Doer 配置
+.codeartsdoer/
+
+# 临时调试脚本
+tmp_check_db.csx
+
 # Playwright CLI 运行时日志与快照
 .playwright-cli/
 
