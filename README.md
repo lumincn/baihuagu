@@ -57,29 +57,70 @@ cd services/WebUI.Family && dotnet run
 | WebUI.Family | 5177 | Blazor Server 管理后台 |
 ## Windows (PowerShell) 运行
 
-仓库根目录提供了一个 Windows 版本的轻量 CLI：bh.ps1。推荐使用 PowerShell Core (pwsh) 或现代的 powershell.exe。
+### 推荐使用 PowerShell 7 (pwsh)
+
+强烈建议安装 **PowerShell 7**，它默认使用 UTF-8 编码，中文显示正常，不会出现乱码问题。
+
+| 版本 | 命令 | 默认编码 | 中文支持 |
+|------|------|----------|----------|
+| PowerShell 7 | `pwsh` | UTF-8 | ✅ 正常 |
+| PowerShell 5 | `powershell` | GBK | ⚠️ 需要特殊处理 |
+
+**安装 PowerShell 7：**
+
+```powershell
+# 使用 winget 安装（推荐）
+winget install --id Microsoft.PowerShell --source winget
+
+# 或下载安装包：https://github.com/PowerShell/PowerShell/releases
+```
+
+**验证安装：**
+
+```powershell
+pwsh --version
+# PowerShell 7.6.4
+```
+
+### 使用方法
 
 示例（在仓库根目录执行）：
 
 ```powershell
+# 使用 PowerShell 7（推荐）
+pwsh -ExecutionPolicy Bypass -File .\bh.ps1 dashboard
+
+# 或直接运行（PowerShell 7 已添加到 PATH）
+.\bh.ps1 dashboard
+
 # 启动所有服务（后台）
-& .\bh.ps1 start
+.\bh.ps1 start
 
 # 停止所有服务
-& .\bh.ps1 stop
+.\bh.ps1 stop
 
 # 查看运行状态
-& .\bh.ps1 status
+.\bh.ps1 status
 
 # 打开管理面板（浏览器）
-& .\bh.ps1 dashboard
+.\bh.ps1 dashboard
 
 # 查看实时日志（例如 taskrunner）
-& .\bh.ps1 logs taskrunner
+.\bh.ps1 logs taskrunner
+
+# 开发模式（监听文件变动自动重编译）
+.\bh.ps1 dev
+
+# 启动全部服务（含 OpenObserve 监控）
+.\bh.ps1 all
 ```
 
-注意：
+### 注意事项
+
 - 该脚本使用 `dotnet run` 启动服务，需在 PATH 中有 .NET SDK。
 - 日志与 PID 文件位于系统临时目录（%TEMP%），文件名格式为 `bh-<service>.log` / `bh-<service>.pid`。
 - 如果受限执行策略阻止运行，请使用：
-  powershell -ExecutionPolicy Bypass -File .\bh.ps1 start
+  ```powershell
+  pwsh -ExecutionPolicy Bypass -File .\bh.ps1 start
+  ```
+- 如果出现中文乱码，请确保使用 PowerShell 7 (`pwsh`)，脚本已内置 `chcp 65001` 自动处理编码。
