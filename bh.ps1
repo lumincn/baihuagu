@@ -363,7 +363,32 @@ function Wait-For-Service([string]$name, [int]$timeoutSec = 20, [bool]$wasJustSt
 	return $false
 }
 
+function Invoke-BuildIfNeeded {
+	$needsRebuild = Test-NeedsRebuild
+	if ($needsRebuild) {
+		$curr = Get-CurrentGitCommit
+		$saved = Get-SavedGitCommit
+		Write-Host "[i] 检测到代码更新" -ForegroundColor Yellow
+		if ($saved) {
+			Write-Host "    上次: $($saved.Substring(0,8))"
+			Write-Host "    当前: $($curr.Substring(0,8))"
+		}
+		Write-Host "[...] dotnet build..." -ForegroundColor Cyan
+		$buildResult = dotnet build (Join-Path $HG_ROOT 'services\BaiHua.slnx') -c Release 2>&1
+		$buildExit = $LASTEXITCODE
+		if ($buildExit -ne 0) {
+			Write-Host "[X] 编译失败!" -ForegroundColor Red
+			$buildResult | Select-Object -Last 10 | ForEach-Object { Write-Host "    $_" }
+			return $false
+		}
+		Write-Host "[v] 编译成功" -ForegroundColor Green
+		Save-GitCommit
+	}
+	return $true
+}
+
 function Cmd-Start {
+	if (-not (Invoke-BuildIfNeeded)) { return }
 	foreach ($k in $ServiceOrder){
 		Start-ServiceProc $k $Services[$k]
 		Write-Host "  $k : " -NoNewline
@@ -378,6 +403,7 @@ function Cmd-Start {
 			Wait-For-Service $k 30 -wasJustStarted $true | Out-Null
 		}
 	}
+	if (-not (Test-NeedsRebuild)) { Save-GitCommit }
 }
 
 function Cmd-Stop {
@@ -568,6 +594,7 @@ switch ($Command.ToLower()){
 		Cmd-Stop
 		Write-Host "Waiting for ports to release..."
 		Start-Sleep -Seconds 1
+		if (-not (Invoke-BuildIfNeeded)) { break }
 		Cmd-Start
 		break
 	}

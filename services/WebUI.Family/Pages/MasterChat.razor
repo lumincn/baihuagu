@@ -6,6 +6,7 @@
 @using Microsoft.JSInterop
 @using TaskRunner.Contracts.Master
 @inject WebUI.Services.IApiService ApiService
+@inject GlobalStateService GlobalStateService
 @inject IJSRuntime JSRuntime
 @implements IDisposable
 
@@ -118,6 +119,20 @@
     </div>
 </div>
 
+@if (showAiConfigWarning)
+{
+    <div class="modal-overlay" @onclick="DismissAiWarning">
+        <div class="modal-content" @onclick:stopPropagation>
+            <h4>AI 未配置</h4>
+            <p style="color: rgba(255,255,255,0.7); margin: 1rem 0;">虚拟师父需要 AI 服务支持，请先配置 API Key 和模型。</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" @onclick="DismissAiWarning">稍后再说</button>
+                <button class="btn btn-primary" @onclick="GoToAiSettings">前往配置</button>
+            </div>
+        </div>
+    </div>
+}
+
 @if (showCreateModal)
 {
     <div class="modal-overlay" @onclick="HideCreateModal">
@@ -125,17 +140,20 @@
             <h4>拜师学艺</h4>
             <div class="form-group">
                 <label>行业</label>
-                <select class="form-select" @bind="createIndustry">
-                    <option value="">请选择行业</option>
-                    <option value="中医">中医</option>
-                    <option value="医学">医学</option>
-                    <option value="计算机">计算机/IT</option>
-                    <option value="会计">会计/财务</option>
-                    <option value="教资">教资/教育</option>
-                    <option value="法律">法律</option>
-                    <option value="建筑">建筑</option>
-                    <option value="通用">通用</option>
-                </select>
+                <input type="text" class="form-control" @bind="createIndustry" list="industry-list" placeholder="输入或选择行业" />
+                <datalist id="industry-list">
+                    <option value="中医" />
+                    <option value="医学" />
+                    <option value="计算机" />
+                    <option value="IT" />
+                    <option value="会计" />
+                    <option value="财务" />
+                    <option value="教资" />
+                    <option value="教育" />
+                    <option value="法律" />
+                    <option value="建筑" />
+                    <option value="通用" />
+                </datalist>
             </div>
             <div class="form-group">
                 <label>学习目标</label>
@@ -454,6 +472,7 @@
     private CancellationTokenSource? _chatCts;
 
     private bool showCreateModal = false;
+    private bool showAiConfigWarning = false;
     private string createIndustry = "";
     private string createGoal = "";
 
@@ -519,8 +538,31 @@
         catch { }
     }
 
-    private void ShowCreateModal() => showCreateModal = true;
+    private AIStatusSummary? aiStatus;
+
+    private void ShowCreateModal()
+    {
+        aiStatus = GlobalStateService.GetAIStatus();
+        if (aiStatus is not { IsConfigured: true })
+        {
+            showAiConfigWarning = true;
+            return;
+        }
+        showAiConfigWarning = false;
+        showCreateModal = true;
+    }
     private void HideCreateModal() => showCreateModal = false;
+
+    private void GoToAiSettings()
+    {
+        showAiConfigWarning = false;
+        NavigationManager.NavigateTo("settings");
+    }
+
+    private void DismissAiWarning()
+    {
+        showAiConfigWarning = false;
+    }
 
     private async Task CreateMasterAsync()
     {
