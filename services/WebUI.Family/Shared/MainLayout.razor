@@ -1,6 +1,7 @@
 @inherits LayoutComponentBase
 @using WebUI.Services
 @using Microsoft.JSInterop
+@using TaskRunner.Contracts.Core
 @inject AuthService AuthService
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
@@ -59,7 +60,7 @@
                 }
                 else
                 {
-                    <span class="top-row-subtitle">百花 - 家庭知识港湾</span>
+                    <span class="top-row-subtitle">百花@(_serverDisplayName != null ? $"（{_serverDisplayName}）" : "") - 家庭知识港湾</span>
                     <img src="logo.png" alt="百花" class="top-logo" />
                 }
 
@@ -429,6 +430,7 @@
     private bool _apiConnectionError = false;
     private string _apiErrorMessage = "";
     private bool _showSystemMenu = false;
+    private string? _serverDisplayName = null;
 
     private void ToggleSystemMenu() => _showSystemMenu = !_showSystemMenu;
 
@@ -446,6 +448,9 @@
 
         // 异步检查 onboarding 状态
         _ = CheckOnboardingAsync();
+
+        // 异步获取服务器显示名
+        _ = LoadServerDisplayNameAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -498,6 +503,29 @@
                 _apiErrorMessage = $"AI 服务连接失败 ({ex.Message})";
                 _ = InvokeAsync(StateHasChanged);
             }
+        }
+    }
+
+    private async Task LoadServerDisplayNameAsync()
+    {
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var client = HttpClientFactory.CreateClient("TaskRunnerApi");
+            var response = await client.GetAsync("api/server-address", cts.Token);
+            if (response.IsSuccessStatusCode)
+            {
+                var settings = await response.Content.ReadFromJsonAsync<ServerAddressResponse>(cts.Token);
+                if (!string.IsNullOrWhiteSpace(settings?.DisplayName))
+                {
+                    _serverDisplayName = settings.DisplayName;
+                    await InvokeAsync(StateHasChanged);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogDebug(ex, "[MainLayout] Failed to load server display name: {Message}", ex.Message);
         }
     }
 

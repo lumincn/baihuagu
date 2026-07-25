@@ -26,13 +26,13 @@ namespace TaskRunner.Controllers
             var settings = _serverAddressService.GetSettings();
             var (url, hostName) = _serverAddressService.GetQrCodeAddresses();
 
-            return Ok(new
+            return Ok(new ServerAddressResponse
             {
-                domain = settings.Domain,
-                url = settings.Url,
-                actualUrl = url,
-                hostName = hostName,
-                displayName = settings.DisplayName
+                Domain = settings.Domain,
+                Url = settings.Url,
+                ActualUrl = url,
+                HostName = hostName,
+                DisplayName = settings.DisplayName
             });
         }
 
@@ -45,14 +45,13 @@ namespace TaskRunner.Controllers
 
                 var (url, hostName) = _serverAddressService.GetQrCodeAddresses();
 
-                return Ok(new
+                return Ok(new ServerAddressResponse
                 {
-                    success = true,
-                    domain = settings.Domain,
-                    url = settings.Url,
-                    actualUrl = url,
-                    hostName = hostName,
-                    displayName = settings.DisplayName
+                    Domain = settings.Domain,
+                    Url = settings.Url,
+                    ActualUrl = url,
+                    HostName = hostName,
+                    DisplayName = settings.DisplayName
                 });
             }
             catch (Exception ex)
