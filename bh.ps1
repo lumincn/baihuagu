@@ -1,4 +1,4 @@
-﻿<#
+﻿﻿<#
 百花谷 Family 版 - Windows (PowerShell) 轻量 CLI
 用法: .\bh.ps1 [command]
   bh.ps1                 打开 dashboard（自动检测代码更新，有新提交时重编译重启）

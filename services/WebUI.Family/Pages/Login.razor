@@ -8,7 +8,7 @@
 <div class="login-page">
     <div class="login-card">
         <div class="login-header">
-            <span class="logo-icon">🩺</span>
+            <img src="logo.png" alt="百花" class="logo-icon" />
             <h1>百花</h1>
             <p class="subtitle">需要授权访问</p>
         </div>
@@ -72,9 +72,11 @@
     }
 
     .logo-icon {
-        font-size: 3rem;
+        height: 3rem;
+        width: auto;
         display: block;
-        margin-bottom: 0.5rem;
+        margin: 0 auto 0.5rem;
+        filter: sepia(100%) hue-rotate(170deg) saturate(300%) brightness(35%);
     }
 
     .login-header h1 {
