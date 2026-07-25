@@ -30,6 +30,12 @@ public class FamilyDbContext : DbContext
     public DbSet<ServerAddressSetting> ServerAddressSettings => Set<ServerAddressSetting>();
     public DbSet<ChatMemoryEntry> ChatMemoryEntries => Set<ChatMemoryEntry>();
 
+    public DbSet<Master> Masters => Set<Master>();
+    public DbSet<MasterConversation> MasterConversations => Set<MasterConversation>();
+    public DbSet<StageSummary> StageSummaries => Set<StageSummary>();
+    public DbSet<ApprenticeProfile> ApprenticeProfiles => Set<ApprenticeProfile>();
+    public DbSet<ExamCheckpoint> ExamCheckpoints => Set<ExamCheckpoint>();
+
     public string DatabasePath
     {
         get
@@ -267,6 +273,73 @@ public class FamilyDbContext : DbContext
             entity.Property(e => e.AssistantSummary).IsRequired();
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
         });
+
+        modelBuilder.Entity<Master>(entity =>
+        {
+            entity.ToTable("Masters");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.MasterId).IsUnique();
+
+            entity.Property(e => e.MasterId).HasMaxLength(64).IsRequired();
+            entity.Property(e => e.MasterName).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Goal).IsRequired();
+            entity.Property(e => e.Industry).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.CurrentStage).HasMaxLength(20).IsRequired().HasDefaultValue("入道");
+            entity.Property(e => e.GraduatedStagesJson).IsRequired().HasDefaultValue("[]");
+            entity.Property(e => e.Status).HasMaxLength(20).IsRequired().HasDefaultValue("active");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("datetime('now')");
+        });
+
+        modelBuilder.Entity<MasterConversation>(entity =>
+        {
+            entity.ToTable("MasterConversations");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.MasterId);
+            entity.HasIndex(e => new { e.MasterId, e.CreatedAt });
+
+            entity.Property(e => e.MasterId).HasMaxLength(64).IsRequired();
+            entity.Property(e => e.Role).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.Content).IsRequired();
+            entity.Property(e => e.Stage).HasMaxLength(20);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
+        });
+
+        modelBuilder.Entity<StageSummary>(entity =>
+        {
+            entity.ToTable("StageSummaries");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.MasterId, e.StageName }).IsUnique();
+
+            entity.Property(e => e.MasterId).HasMaxLength(64).IsRequired();
+            entity.Property(e => e.StageName).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.Summary).IsRequired();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
+        });
+
+        modelBuilder.Entity<ApprenticeProfile>(entity =>
+        {
+            entity.ToTable("ApprenticeProfiles");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.MasterId).IsUnique();
+
+            entity.Property(e => e.MasterId).HasMaxLength(64).IsRequired();
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("datetime('now')");
+        });
+
+        modelBuilder.Entity<ExamCheckpoint>(entity =>
+        {
+            entity.ToTable("ExamCheckpoints");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.MasterId);
+            entity.HasIndex(e => new { e.MasterId, e.StageName });
+
+            entity.Property(e => e.MasterId).HasMaxLength(64).IsRequired();
+            entity.Property(e => e.StageName).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.WeakPointsJson).IsRequired().HasDefaultValue("[]");
+            entity.Property(e => e.Advice).IsRequired().HasDefaultValue("");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
+        });
     }
 
     public override int SaveChanges()
@@ -300,6 +373,10 @@ public class FamilyDbContext : DbContext
                 device.UpdatedAt = DateTime.Now;
             else if (entry.Entity is ServerAddressSetting setting)
                 setting.UpdatedAt = DateTime.Now;
+            else if (entry.Entity is Master master)
+                master.UpdatedAt = DateTime.Now;
+            else if (entry.Entity is ApprenticeProfile profile)
+                profile.UpdatedAt = DateTime.Now;
         }
     }
 }

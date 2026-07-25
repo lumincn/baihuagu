@@ -13,6 +13,7 @@ using TaskRunner.Contracts.LocalModels;
 using TaskRunner.Contracts.Metrics;
 using TaskRunner.Contracts.OpenClaw;
 using TaskRunner.Contracts.Scene;
+using TaskRunner.Contracts.Master;
 
 namespace WebUI.Services
 {
@@ -183,6 +184,15 @@ namespace WebUI.Services
 
         // 场景管理
         Task SetSceneAsync(TaskRunner.Contracts.Scene.AppScene scene, CancellationToken cancellationToken = default);
+
+        // 虚拟师父
+        Task<CreateMasterResponse> CreateMasterAsync(string goal, string industry, CancellationToken cancellationToken = default);
+        IAsyncEnumerable<ChatStreamEvent> StreamMasterChatAsync(string masterId, string message, string stage, List<(bool IsUser, string Content)>? history = null, CancellationToken cancellationToken = default);
+        Task<StageCompleteResponse> MasterStageCompleteAsync(string masterId, string stageName, CancellationToken cancellationToken = default);
+        Task<ApprenticeProfileResponse> GetMasterProfileAsync(string masterId, CancellationToken cancellationToken = default);
+        Task<AssessResponse> MasterAssessAsync(string masterId, string type = "capability", CancellationToken cancellationToken = default);
+        Task<List<MasterListItem>> GetMastersAsync(CancellationToken cancellationToken = default);
+        Task<bool> DeleteMasterAsync(string masterId, CancellationToken cancellationToken = default);
     }
 
     public class ApiService : IApiService
@@ -2856,6 +2866,126 @@ namespace WebUI.Services
             var payload = new { scene = (int)scene };
             var response = await _httpClient.PostAsJsonAsync("/api/scene", payload, cancellationToken);
             response.EnsureSuccessStatusCode();
+        }
+
+        #endregion
+
+        #region 虚拟师父
+
+        public async Task<CreateMasterResponse> CreateMasterAsync(string goal, string industry, CancellationToken cancellationToken = default)
+        {
+            var payload = new { goal, industry };
+            var response = await _httpClient.PostAsJsonAsync("/api/master/create", payload, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<CreateMasterResponse>(cancellationToken)
+                   ?? new CreateMasterResponse { Success = false, Message = "创建失败" };
+        }
+
+        public async IAsyncEnumerable<ChatStreamEvent> StreamMasterChatAsync(
+            string masterId,
+            string message,
+            string stage,
+            List<(bool IsUser, string Content)>? history = null,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            var payload = new Dictionary<string, object?>
+            {
+                ["masterId"] = masterId,
+                ["message"] = message,
+                ["stage"] = stage
+            };
+            if (history != null && history.Count > 0)
+                payload["history"] = history.Select(h => new { role = h.IsUser ? "user" : "assistant", content = h.Content }).ToList();
+
+            var json = JsonSerializer.Serialize(payload);
+            var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+
+            using var response = await _httpClient.SendAsync(
+                new HttpRequestMessage(HttpMethod.Post, "/api/master/chat/stream") { Content = httpContent },
+                HttpCompletionOption.ResponseHeadersRead,
+                cancellationToken);
+
+            response.EnsureSuccessStatusCode();
+
+            var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            using var reader = new StreamReader(stream, Encoding.UTF8);
+
+            string? currentEvent = null;
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var line = await reader.ReadLineAsync(cancellationToken);
+                if (line == null) break;
+
+                if (line.StartsWith("event: "))
+                {
+                    currentEvent = line.Substring(7).Trim();
+                }
+                else if (line.StartsWith("data: "))
+                {
+                    var data = line.Substring(6);
+                    if (currentEvent == "delta")
+                    {
+                        var text = TryExtractContent(data);
+                        if (!string.IsNullOrEmpty(text))
+                        {
+                            yield return new ChatStreamEvent { Type = "delta", Content = text };
+                        }
+                    }
+                    else if (currentEvent == "done")
+                    {
+                        yield return new ChatStreamEvent { Type = "done" };
+                        yield break;
+                    }
+                    else if (currentEvent == "error")
+                    {
+                        throw new InvalidOperationException($"师父对话错误: {data}");
+                    }
+                }
+                else if (string.IsNullOrEmpty(line))
+                {
+                    currentEvent = null;
+                }
+            }
+        }
+
+        public async Task<StageCompleteResponse> MasterStageCompleteAsync(string masterId, string stageName, CancellationToken cancellationToken = default)
+        {
+            var payload = new { stageName };
+            var response = await _httpClient.PostAsJsonAsync($"/api/master/{masterId}/stage-complete", payload, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<StageCompleteResponse>(cancellationToken)
+                   ?? new StageCompleteResponse { Success = false, Message = "操作失败" };
+        }
+
+        public async Task<ApprenticeProfileResponse> GetMasterProfileAsync(string masterId, CancellationToken cancellationToken = default)
+        {
+            var response = await _httpClient.GetAsync($"/api/master/{masterId}/profile", cancellationToken);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<ApprenticeProfileResponse>(cancellationToken)
+                   ?? new ApprenticeProfileResponse { Success = false, Message = "获取失败" };
+        }
+
+        public async Task<AssessResponse> MasterAssessAsync(string masterId, string type = "capability", CancellationToken cancellationToken = default)
+        {
+            var payload = new { type };
+            var response = await _httpClient.PostAsJsonAsync($"/api/master/{masterId}/assess", payload, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<AssessResponse>(cancellationToken)
+                   ?? new AssessResponse { Success = false, Message = "评估失败" };
+        }
+
+        public async Task<List<MasterListItem>> GetMastersAsync(CancellationToken cancellationToken = default)
+        {
+            var response = await _httpClient.GetAsync("/api/master", cancellationToken);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<List<MasterListItem>>(cancellationToken)
+                   ?? new List<MasterListItem>();
+        }
+
+        public async Task<bool> DeleteMasterAsync(string masterId, CancellationToken cancellationToken = default)
+        {
+            var response = await _httpClient.DeleteAsync($"/api/master/{masterId}", cancellationToken);
+            return response.IsSuccessStatusCode;
         }
 
         #endregion

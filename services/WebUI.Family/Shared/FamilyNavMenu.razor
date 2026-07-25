@@ -90,6 +90,10 @@
             <span class="nav-icon bi bi-chat-dots"></span>
             <span>AI 对话</span>
         </NavLink>
+        <NavLink href="master-chat">
+            <span class="nav-icon bi bi-mortarboard"></span>
+            <span>虚拟师父</span>
+        </NavLink>
     </div>
 
     @if (_isProfessional)
@@ -192,7 +196,7 @@
         var inferred = relativePath switch
         {
             string p when p.StartsWith("tasks") || p.StartsWith("openclaw") || p.StartsWith("achievements") || p.StartsWith("leaderboard") || p.StartsWith("dashboard") || p.StartsWith("daily-card") => 1,
-            string p when p.StartsWith("messages") || p.StartsWith("generate") || p.StartsWith("local-models") || p.StartsWith("model-benchmark") || p.StartsWith("ai-metrics") || p.StartsWith("hardware-benchmark") || p.StartsWith("settings") || p.StartsWith("prompt-templates") => 2,
+            string p when p.StartsWith("messages") || p.StartsWith("master-chat") || p.StartsWith("master-stage") || p.StartsWith("generate") || p.StartsWith("local-models") || p.StartsWith("model-benchmark") || p.StartsWith("ai-metrics") || p.StartsWith("hardware-benchmark") || p.StartsWith("settings") || p.StartsWith("prompt-templates") => 2,
             _ => 0
         };
         if (inferred != _activeScene)

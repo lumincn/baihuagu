@@ -1,0 +1,686 @@
+@page "/master-chat"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.Web
+@using WebUI.Services
+@using Markdig
+@using Microsoft.JSInterop
+@using TaskRunner.Contracts.Master
+@inject WebUI.Services.IApiService ApiService
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+<PageTitle>虚拟师父</PageTitle>
+
+<div class="master-layout">
+    <div class="master-sidebar">
+        <div class="sidebar-header">
+            <h3>师父</h3>
+            <button class="btn btn-sm btn-primary" @onclick="ShowCreateModal">+ 拜师</button>
+        </div>
+        <div class="master-list">
+            @foreach (var m in masters)
+            {
+                <div class="master-card @(selectedMasterId == m.MasterId ? "active" : "")" @onclick="() => SelectMaster(m)">
+                    <div class="master-card-name">@m.MasterName</div>
+                    <div class="master-card-goal">@Truncate(m.Goal, 30)</div>
+                    <div class="master-card-stage">
+                        <span class="stage-badge stage-@m.CurrentStageOrder">@m.CurrentStage</span>
+                        <span class="stage-progress">@m.GraduatedStages.Count/5</span>
+                    </div>
+                </div>
+            }
+            @if (masters.Count == 0)
+            {
+                <div class="empty-hint">还没有师父，点击「拜师」创建</div>
+            }
+        </div>
+    </div>
+
+    <div class="master-main">
+        @if (selectedMaster == null)
+        {
+            <div class="master-empty">
+                <div class="empty-icon">🏛️</div>
+                <div class="empty-text">选择一位师父开始学习之旅</div>
+            </div>
+        }
+        else
+        {
+            <div class="master-header">
+                <div class="master-info">
+                    <span class="master-name">@selectedMaster.MasterName</span>
+                    <span class="stage-badge stage-@selectedMaster.CurrentStageOrder">@selectedMaster.CurrentStage</span>
+                </div>
+                <div class="master-actions">
+                    <button class="btn btn-sm btn-outline-secondary" @onclick="GoToStage">阶段进度</button>
+                    <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteMasterAsync(selectedMaster.MasterId)">删除</button>
+                </div>
+            </div>
+
+            <div class="stage-tip">
+                @GetStageTip(selectedMaster.CurrentStage)
+            </div>
+
+            <div class="chat-messages">
+                @foreach (var msg in chatMessages)
+                {
+                    <div class="message @(msg.IsUser ? "user" : "master")">
+                        <div class="message-avatar">
+                            @(msg.IsUser ? "👤" : selectedMaster.MasterName[..1])
+                        </div>
+                        <div class="message-content">
+                            <div class="message-text">
+                                @if (msg.IsUser)
+                                {
+                                    @msg.Content
+                                }
+                                else
+                                {
+                                    @((MarkupString)RenderMarkdown(msg.Content))
+                                }
+                            </div>
+                            <div class="message-time">@msg.Time.ToString("HH:mm")</div>
+                        </div>
+                    </div>
+                }
+
+                @if (isThinking)
+                {
+                    <div class="message master">
+                        <div class="message-avatar">@selectedMaster.MasterName[..1]</div>
+                        <div class="message-content">
+                            <div class="typing-indicator">
+                                <span></span><span></span><span></span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="chat-input">
+                <textarea @bind="inputMessage"
+                          @bind:event="oninput"
+                          @onkeydown="HandleKeyDown"
+                          placeholder="向师父请教...&#10;Shift+Enter 换行，Enter 发送"
+                          class="form-control chat-textarea"
+                          rows="1"
+                          disabled="@isThinking"></textarea>
+                @if (isThinking)
+                {
+                    <button @onclick="StopChat" class="btn btn-danger">⏹ 停止</button>
+                }
+                else
+                {
+                    <button @onclick="SendMessage" class="btn btn-primary" disabled="@(!CanSend)">发送</button>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@if (showCreateModal)
+{
+    <div class="modal-overlay" @onclick="HideCreateModal">
+        <div class="modal-content" @onclick:stopPropagation>
+            <h4>拜师学艺</h4>
+            <div class="form-group">
+                <label>行业</label>
+                <select class="form-select" @bind="createIndustry">
+                    <option value="">请选择行业</option>
+                    <option value="中医">中医</option>
+                    <option value="医学">医学</option>
+                    <option value="计算机">计算机/IT</option>
+                    <option value="会计">会计/财务</option>
+                    <option value="教资">教资/教育</option>
+                    <option value="法律">法律</option>
+                    <option value="建筑">建筑</option>
+                    <option value="通用">通用</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>学习目标</label>
+                <input type="text" class="form-control" @bind="createGoal" placeholder="例如：通过执业医师资格考试" />
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" @onclick="HideCreateModal">取消</button>
+                <button class="btn btn-primary" @onclick="CreateMasterAsync" disabled="@isCreating">
+                    @(isCreating ? "正在拜师..." : "确认拜师")
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .master-layout {
+        display: flex;
+        gap: 1rem;
+        height: calc(100vh - 120px);
+    }
+    .master-sidebar {
+        width: 240px;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid rgba(255,255,255,0.1);
+        padding-right: 1rem;
+    }
+    .sidebar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+    .sidebar-header h3 {
+        margin: 0;
+        font-size: 1rem;
+    }
+    .master-list {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .master-card {
+        padding: 0.75rem;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .master-card:hover {
+        background: rgba(255,255,255,0.08);
+        border-color: rgba(255,255,255,0.2);
+    }
+    .master-card.active {
+        background: rgba(46,139,175,0.2);
+        border-color: rgba(46,139,175,0.5);
+    }
+    .master-card-name {
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 0.25rem;
+    }
+    .master-card-goal {
+        font-size: 0.8rem;
+        color: rgba(255,255,255,0.6);
+        margin-bottom: 0.4rem;
+    }
+    .master-card-stage {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .stage-badge {
+        display: inline-block;
+        padding: 0.15rem 0.5rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    .stage-1 { background: #e8f5e9; color: #2e7d32; }
+    .stage-2 { background: #e3f2fd; color: #1565c0; }
+    .stage-3 { background: #fff3e0; color: #e65100; }
+    .stage-4 { background: #fce4ec; color: #c62828; }
+    .stage-5 { background: #f3e5f5; color: #6a1b9a; }
+    .stage-progress {
+        font-size: 0.75rem;
+        color: rgba(255,255,255,0.5);
+    }
+    .empty-hint {
+        text-align: center;
+        color: rgba(255,255,255,0.4);
+        font-size: 0.85rem;
+        padding: 2rem 0;
+    }
+    .master-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+    .master-empty {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255,255,255,0.4);
+    }
+    .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    .empty-text {
+        font-size: 1rem;
+    }
+    .master-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        margin-bottom: 0.5rem;
+    }
+    .master-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .master-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    .master-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    .stage-tip {
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+        background: rgba(46,139,175,0.1);
+        border: 1px solid rgba(46,139,175,0.2);
+        font-size: 0.85rem;
+        color: rgba(220,235,245,0.9);
+        margin-bottom: 0.75rem;
+    }
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0.5rem 0;
+    }
+    .message {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+    .message.user {
+        flex-direction: row-reverse;
+    }
+    .message-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+    .message.user .message-avatar {
+        background: #2e8baf;
+        color: #fff;
+    }
+    .message.master .message-avatar {
+        background: rgba(255,255,255,0.1);
+        color: rgba(255,255,255,0.8);
+        font-weight: 600;
+    }
+    .message-content {
+        max-width: 75%;
+    }
+    .message-text {
+        padding: 0.5rem 0.75rem;
+        border-radius: 8px;
+        line-height: 1.5;
+        font-size: 0.9rem;
+    }
+    .message.user .message-text {
+        background: #2e8baf;
+        color: #fff;
+    }
+    .message.master .message-text {
+        background: rgba(255,255,255,0.08);
+        color: rgba(255,255,255,0.9);
+    }
+    .message-time {
+        font-size: 0.7rem;
+        color: rgba(255,255,255,0.3);
+        margin-top: 0.2rem;
+    }
+    .message.user .message-time {
+        text-align: right;
+    }
+    .typing-indicator {
+        display: flex;
+        gap: 4px;
+        padding: 0.5rem;
+    }
+    .typing-indicator span {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.4);
+        animation: typing 1.4s infinite;
+    }
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+    @@keyframes typing {
+        0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+        30% { transform: translateY(-6px); opacity: 1; }
+    }
+    .chat-input {
+        display: flex;
+        gap: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .chat-input textarea {
+        flex: 1;
+        resize: none;
+        min-height: 2.5rem;
+        max-height: 8rem;
+        overflow-y: auto;
+        line-height: 1.4;
+        padding: 0.5rem 0.75rem;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.15);
+        color: #fff;
+    }
+    .chat-input textarea:focus {
+        outline: none;
+        border-color: #2e8baf;
+    }
+    .chat-input textarea::placeholder {
+        color: rgba(255,255,255,0.4);
+    }
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+    .modal-content {
+        background: #1e2a3a;
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 12px;
+        padding: 1.5rem;
+        width: 400px;
+        max-width: 90vw;
+    }
+    .modal-content h4 {
+        margin: 0 0 1rem;
+    }
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    .form-group label {
+        display: block;
+        font-size: 0.85rem;
+        margin-bottom: 0.3rem;
+        color: rgba(255,255,255,0.7);
+    }
+    .form-group select, .form-group input {
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.15);
+        color: #fff;
+    }
+    .form-group select:focus, .form-group input:focus {
+        outline: none;
+        border-color: #2e8baf;
+    }
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+    .message-text :deep(h1), .message-text :deep(h2), .message-text :deep(h3) {
+        margin: 0.5rem 0 0.3rem;
+        font-weight: 600;
+    }
+    .message-text :deep(p) { margin: 0.3rem 0; line-height: 1.6; }
+    .message-text :deep(ul), .message-text :deep(ol) { margin: 0.3rem 0; padding-left: 1.5rem; }
+    .message-text :deep(code) { background: rgba(255,255,255,0.1); padding: 0.1rem 0.3rem; border-radius: 3px; font-size: 0.9em; }
+    .message-text :deep(pre) { background: rgba(0,0,0,0.3); padding: 0.5rem; border-radius: 4px; overflow-x: auto; }
+    .message-text :deep(pre code) { background: transparent; padding: 0; }
+    .message-text :deep(blockquote) { border-left: 3px solid #2e8baf; padding: 0.3rem 0.5rem; margin: 0.3rem 0; background: rgba(255,255,255,0.05); }
+    .message-text :deep(strong) { color: #fff; }
+</style>
+
+@code {
+    private List<MasterListItem> masters = new();
+    private string selectedMasterId = "";
+    private MasterListItem? selectedMaster;
+    private List<ChatMsg> chatMessages = new();
+    private string inputMessage = "";
+    private bool isThinking = false;
+    private bool isCreating = false;
+    private CancellationTokenSource? _chatCts;
+
+    private bool showCreateModal = false;
+    private string createIndustry = "";
+    private string createGoal = "";
+
+    private bool CanSend => !isThinking && !string.IsNullOrWhiteSpace(inputMessage) && selectedMaster != null;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadMastersAsync();
+        }
+    }
+
+    private async Task LoadMastersAsync()
+    {
+        try
+        {
+            masters = await ApiService.GetMastersAsync();
+            if (!string.IsNullOrEmpty(selectedMasterId))
+            {
+                selectedMaster = masters.FirstOrDefault(m => m.MasterId == selectedMasterId);
+            }
+            StateHasChanged();
+        }
+        catch { }
+    }
+
+    private async Task SelectMaster(MasterListItem m)
+    {
+        selectedMasterId = m.MasterId;
+        selectedMaster = m;
+        chatMessages.Clear();
+        await LoadChatHistoryAsync(m.MasterId);
+        StateHasChanged();
+    }
+
+    private async Task LoadChatHistoryAsync(string masterId)
+    {
+        try
+        {
+            var json = await JSRuntime.InvokeAsync<string?>("localStorage.getItem", $"master_chat_{masterId}");
+            if (!string.IsNullOrWhiteSpace(json))
+            {
+                var history = System.Text.Json.JsonSerializer.Deserialize<List<ChatMsg>>(json);
+                if (history != null && history.Count > 0)
+                {
+                    chatMessages = history;
+                    StateHasChanged();
+                }
+            }
+        }
+        catch { }
+    }
+
+    private async Task SaveChatHistoryAsync()
+    {
+        if (selectedMaster == null) return;
+        try
+        {
+            var json = System.Text.Json.JsonSerializer.Serialize(chatMessages);
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", $"master_chat_{selectedMaster.MasterId}", json);
+        }
+        catch { }
+    }
+
+    private void ShowCreateModal() => showCreateModal = true;
+    private void HideCreateModal() => showCreateModal = false;
+
+    private async Task CreateMasterAsync()
+    {
+        if (string.IsNullOrWhiteSpace(createGoal) || string.IsNullOrWhiteSpace(createIndustry))
+            return;
+
+        isCreating = true;
+        StateHasChanged();
+
+        try
+        {
+            var result = await ApiService.CreateMasterAsync(createGoal, createIndustry);
+            if (result.Success)
+            {
+                showCreateModal = false;
+                createIndustry = "";
+                createGoal = "";
+                await LoadMastersAsync();
+
+                var newMaster = masters.FirstOrDefault(m => m.MasterId == result.MasterId);
+                if (newMaster != null)
+                {
+                    await SelectMaster(newMaster);
+                    chatMessages.Add(new ChatMsg { IsUser = false, Content = result.Message, Time = DateTime.Now });
+                    StateHasChanged();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            chatMessages.Add(new ChatMsg { IsUser = false, Content = $"拜师失败：{ex.Message}", Time = DateTime.Now });
+            StateHasChanged();
+        }
+        finally
+        {
+            isCreating = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task SendMessage()
+    {
+        if (string.IsNullOrWhiteSpace(inputMessage) || selectedMaster == null)
+            return;
+
+        chatMessages.Add(new ChatMsg { IsUser = true, Content = inputMessage, Time = DateTime.Now });
+        var userMessage = inputMessage;
+        inputMessage = "";
+        isThinking = true;
+
+        var aiMessage = new ChatMsg { IsUser = false, Content = "", Time = DateTime.Now };
+        chatMessages.Add(aiMessage);
+        StateHasChanged();
+
+        _chatCts = new CancellationTokenSource();
+        try
+        {
+            var history = chatMessages.Take(chatMessages.Count - 1)
+                .Select(m => (m.IsUser, m.Content))
+                .ToList();
+
+            await foreach (var evt in ApiService.StreamMasterChatAsync(
+                selectedMaster.MasterId, userMessage, selectedMaster.CurrentStage, history, _chatCts.Token))
+            {
+                if (_chatCts.IsCancellationRequested) break;
+                if (evt.Type == "delta" && !string.IsNullOrEmpty(evt.Content))
+                {
+                    aiMessage.Content += evt.Content;
+                    StateHasChanged();
+                    await Task.Yield();
+                }
+            }
+
+            if (_chatCts.IsCancellationRequested)
+            {
+                aiMessage.Content = string.IsNullOrEmpty(aiMessage.Content) ? "（已停止）" : aiMessage.Content + "\n\n（已停止）";
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            aiMessage.Content = string.IsNullOrEmpty(aiMessage.Content) ? "（已停止）" : aiMessage.Content + "\n\n（已停止）";
+        }
+        catch (Exception ex)
+        {
+            aiMessage.Content = $"请求失败：{ex.Message}";
+        }
+        finally
+        {
+            isThinking = false;
+            _chatCts?.Dispose();
+            _chatCts = null;
+            StateHasChanged();
+            await SaveChatHistoryAsync();
+        }
+    }
+
+    private void StopChat()
+    {
+        try { _chatCts?.Cancel(); } catch { }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !e.ShiftKey)
+        {
+            await SendMessage();
+        }
+    }
+
+    private async Task DeleteMasterAsync(string masterId)
+    {
+        await ApiService.DeleteMasterAsync(masterId);
+        if (selectedMasterId == masterId)
+        {
+            selectedMasterId = "";
+            selectedMaster = null;
+            chatMessages.Clear();
+        }
+        await LoadMastersAsync();
+    }
+
+    private void GoToStage()
+    {
+        if (selectedMaster != null)
+        {
+            NavigationManager.NavigateTo($"master-stage?masterId={selectedMaster.MasterId}");
+        }
+    }
+
+    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+
+    private string RenderMarkdown(string? content)
+    {
+        if (string.IsNullOrWhiteSpace(content)) return "";
+        var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().DisableHtml().Build();
+        return Markdown.ToHtml(content, pipeline);
+    }
+
+    private static string Truncate(string s, int max) =>
+        s.Length <= max ? s : s[..max] + "...";
+
+    private static string GetStageTip(string stage) => stage switch
+    {
+        "入道" => "引导阶段：师父会通过提问了解你的基础和目标，帮助你明确学习方向。",
+        "筑基" => "基础阶段：师父会严格要求你掌握基础知识，每日布置功课并检查完成情况。",
+        "精进" => "精进阶段：师父会对细节有近乎偏执的追求，任何微小错误都要指出并纠正。",
+        "磨砺" => "磨砺阶段：师父会模拟真实考试环境，出题考察你的综合能力。",
+        "出师" => "出师阶段：师父会分享实战经验和考试技巧，帮助你做好最后的冲刺准备。",
+        _ => ""
+    };
+
+    public class ChatMsg
+    {
+        public bool IsUser { get; set; }
+        public string Content { get; set; } = "";
+        public DateTime Time { get; set; }
+    }
+
+    public void Dispose()
+    {
+        try { _chatCts?.Cancel(); _chatCts?.Dispose(); } catch { }
+    }
+}
