@@ -66,7 +66,7 @@ C:\Users\lumin\DevecostudioProjects\
 - `services/TaskRunner.Data/`：共享 EF Core 数据层
 - `libs/BaihuaSdk/`：跨平台移动端 SDK（net9.0;net10.0，零 MAUI 依赖，主要 target net10.0）
 - `libs/MobileContract/`：移动端契约（DTO、接口定义）
-- `clients/MobileApp.Maui/`：MAUI Blazor Hybrid 移动客户端
+- `clients/MobileApp.Maui/`：花圃（BaiHua.Nursery）— 移动端技术实验与验证工具（非正式发布 App，详见下方说明）
 - `bh`：极简 CLI 工具（Linux/Mac）
 - `docs/`：协议与架构文档
 - `scripts/`：开发、发布、部署脚本
@@ -149,9 +149,18 @@ export BaiHua_TEST_VAULT_ID=<vault-id>
 dotnet test tests/BaihuaSdk.Tests/BaihuaSdk.Tests.csproj --filter Integration
 ```
 
-## MobileApp.Maui（百花移动客户端）
+## 花圃 / BaiHua.Nursery（移动端技术实验工具）
 
 **位置**: `clients/MobileApp.Maui/` — .NET MAUI Blazor Hybrid App。
+
+> **⚠️ 定位说明**：花圃（BaiHua.Nursery）是百花服务对移动端支持的**技术验证工具**，用于验证 BaihuaSdk 协议、配对流程、同步功能等在真实移动设备上的表现。它**不是正式发布的 App**，不具备产品级功能完整性。花记的正式移动端是鸿蒙端（ArkUI）和安卓端（Jetpack Compose），它们功能远超花圃。
+>
+> 花圃的职责边界：
+> - ✅ 验证百花服务端 API 对移动端的兼容性
+> - ✅ 验证 BaihuaSdk 的配对/同步/签名协议
+> - ✅ 作为 .NET MAUI 技术实验平台
+> - ❌ 不承担正式移动客户端角色
+> - ❌ 不与鸿蒙/安卓端功能对齐
 
 - **Android**: `dotnet build -f net9.0-android -c Release` → APK 在 `bin/Release/net9.0-android/com.lumin.BaiHua-Signed.apk`
 - **iOS**: 需要 macOS + Xcode（GitHub Actions CI 已配置 `.github/workflows/ci.yml`）
@@ -164,7 +173,7 @@ dotnet build -f net9.0-android -c Release
 adb install clients/MobileApp.Maui/bin/Release/net9.0-android/com.lumin.BaiHua-Signed.apk
 ```
 
-### Honor/部分 Android 设备 .NET 10 兼容性
+### 花圃 Honor/部分 Android 设备 .NET 10 兼容性
 
 **已知问题**: 2026-06 期间，Honor 真机（`ADNQUT5813009383`）安装 .NET 10 Preview APK 后启动崩溃：
 ```
@@ -190,7 +199,7 @@ for fragment NavigationRootManager_ElementBasedFragment
 
 **后续若需升级 .NET 10**: 需先在 Honor/相关设备上重新验证 MAUI 10 Fragment 兼容性，确认无崩溃后再将 `TargetFrameworks` 改回 `net10.0-android`。
 
-### Debug TLS 证书宽松
+### 花圃 Debug TLS 证书宽松
 
 Debug 构建跳过 TLS 证书验证（方便本地自签名证书开发），Release 构建严格校验证书。见 `MauiProgram.cs` 中的 `#if DEBUG` 条件判断。
 
@@ -223,7 +232,7 @@ dotnet test tests/BaihuaSdk.Tests/BaihuaSdk.Tests.csproj --filter Integration
 
 测试完整流程：配对 → 获取知识库列表 → 获取 manifest → 同步文件
 
-### MobileApp.Maui 测试
+### 花圃测试
 
 **DI 回归测试**（确保所有服务可正确构造）：
 
@@ -241,5 +250,5 @@ dotnet test tests/TaskRunner.Family.Tests/TaskRunner.Family.Tests.csproj
 
 ## 已知限制
 
-- **华为/荣耀手机**: .NET 10 Preview 存在 `NavigationRootManager_ElementBasedFragment` 崩溃。当前 Android 目标框架已回退至 .NET 9 LTS 规避该问题，待 MAUI 10 兼容性验证通过后再考虑升级。详见上方「MobileApp.Maui → Honor 兼容性」。
+- **华为/荣耀手机**: .NET 10 Preview 存在 `NavigationRootManager_ElementBasedFragment` 崩溃。当前 Android 目标框架已回退至 .NET 9 LTS 规避该问题，待 MAUI 10 兼容性验证通过后再考虑升级。详见上方「花圃 → Honor 兼容性」。
 - **Android 模拟器**: 需要 KVM 硬件加速（`sudo modprobe kvm_intel`，BIOS 中启用 VT-x）。
