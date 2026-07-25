@@ -1,5 +1,5 @@
-﻿<#
-百花谷 Family 版 - Windows (PowerShell) 轻量 CLI
+<#
+百花 Family 版 - Windows (PowerShell) 轻量 CLI
 用法: .\bh.ps1 [command]
   bh.ps1                 打开 dashboard（自动检测代码更新，有新提交时重编译重启）
   bh.ps1 setup           首次配置（交互）
@@ -35,7 +35,7 @@ Set-StrictMode -Version Latest
 
 function Get-Help {
 	Write-Host ""
-	Write-Host "百花谷 Family 版 - Windows (PowerShell) 轻量 CLI" -ForegroundColor Cyan
+	Write-Host "百花 Family 版 - Windows (PowerShell) 轻量 CLI" -ForegroundColor Cyan
 	Write-Host "================================================="
 	Write-Host ""
 	Write-Host "用法: .\bh.ps1 [command]"

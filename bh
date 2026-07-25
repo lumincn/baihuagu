@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# 百花谷 Family 版 - 本地管理 CLI (Linux/Mac)
+# 百花 Family 版 - 本地管理 CLI (Linux/Mac)
 # 用法: ./bh [command]
 #   bh                   默认打开 dashboard（管理面板）
 #   bh setup             - 首次配置（设置 API Key、知识库路径）
@@ -55,7 +55,7 @@ _detect_all_modes() {
 show_help() {
     cat << 'EOF'
 
-百花谷 Family 版 - 您的私人知识库
+百花 Family 版 - 您的私人知识库
 ==============================
 
 少即是多。知识进脑子，不是存电脑。
@@ -173,7 +173,7 @@ cmd_setup() {
     cat << 'EOF'
 
 ╔══════════════════════════════════════╗
-║     百花谷 - 首次配置向导          ║
+║     百花 - 首次配置向导          ║
 ╚══════════════════════════════════════╝
 
 本向导将帮助您完成基本配置。
@@ -276,7 +276,7 @@ EOF
 }
 
 cmd_start() {
-    echo "正在启动百花谷服务..."
+    echo "正在启动百花服务..."
 
     # 检查 Docker 容器是否已在运行（避免裸机与 Docker 共存）
     if docker ps --format '{{.Names}}' 2>/dev/null | grep -qE "yj-family-(webui|taskrunner|taskrunner-ai|taskrunner-vault|nginx)"; then
@@ -526,7 +526,7 @@ cmd_stop() {
 
 cmd_restart() {
     echo "═══════════════════════════════════════"
-    echo "  正在重启百花谷服务"
+    echo "  正在重启百花服务"
     echo "═══════════════════════════════════════"
     echo ""
     local mode

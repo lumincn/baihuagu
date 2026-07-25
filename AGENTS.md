@@ -1,5 +1,45 @@
 # 开发说明（家庭版 Family）
 
+## 环境信息
+
+### PowerShell 版本
+
+| 命令 | 版本 | 默认编码 |
+|------|------|----------|
+| `pwsh` | 7.6.4 | UTF-8（无需 BOM） |
+| `powershell` | 5.1 | GBK（需要 UTF-8 BOM） |
+
+**推荐使用 `pwsh`（PowerShell 7）**，默认支持 UTF-8，无需处理 BOM 问题。
+
+### BOM 处理方式
+
+- **PowerShell 7 (`pwsh`)**: 默认 UTF-8，脚本文件不需要 BOM。中文显示正常。
+- **PowerShell 5 (`powershell`)**: 默认 GBK 编码，脚本文件需要 **UTF-8 with BOM** 才能正确显示中文。
+- **脚本头部**: 建议添加 `chcp 65001` 确保控制台使用 UTF-8：
+  ```powershell
+  chcp 65001 > $null
+  [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+  ```
+
+### 项目目录结构
+
+```
+C:\Users\lumin\src\
+├── baihuagu/          # 百花 - 家庭版（本项目）
+├── mdyj-cloud/        # 花阁 - 云端版
+└── kotlin/            # 百花 Android 客户端
+
+C:\Users\lumin\DevecostudioProjects\
+└── arkts/             # 百花鸿蒙客户端
+```
+
+### 命令行工具
+
+| 项目 | Linux/Mac | Windows |
+|------|-----------|---------|
+| 百花 | `./bh` | `.\bh.ps1` |
+| 花阁 | `./hg` | `.\hg.ps1` |
+
 > 当前架构已从单体后台拆分为 3 个独立后端服务：
 > - **TaskRunner.Family** (8788) — 家庭/亲子功能（任务、成就、OpenClaw、设备配对）
 > - **TaskRunner.AI** (8791) — AI 模型、聊天、配置管理
