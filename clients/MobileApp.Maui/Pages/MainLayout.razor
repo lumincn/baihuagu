@@ -1,16 +1,31 @@
 @inherits LayoutComponentBase
 
 <div class="app-shell">
-    <nav class="top-bar">
-        <span class="brand">百花</span>
-        <div class="nav-links">
-            <NavLink href="/" Match="NavLinkMatch.All">首页</NavLink>
-            <NavLink href="/pairing">配对</NavLink>
-            <NavLink href="/sync">同步</NavLink>
-            <NavLink href="/settings">设置</NavLink>
-        </div>
-    </nav>
-    <main class="content">
+    <main class="tab-content">
         @Body
     </main>
+    <nav class="bottom-tabs">
+        <a href="/" class="tab-item @((CurrentRoute == "/") ? "active" : "")">
+            <span class="tab-icon">🏠</span>
+            <span class="tab-label">首页</span>
+        </a>
+        <a href="/knowledge" class="tab-item @((CurrentRoute == "/knowledge") ? "active" : "")">
+            <span class="tab-icon">📚</span>
+            <span class="tab-label">获取知识</span>
+        </a>
+        <a href="/profile" class="tab-item @((CurrentRoute == "/profile") ? "active" : "")">
+            <span class="tab-icon">👤</span>
+            <span class="tab-label">我的</span>
+        </a>
+    </nav>
 </div>
+
+@code {
+    private string CurrentRoute => Navigation.ToBaseRelativePath(Navigation.Uri).Split('?')[0] switch
+    {
+        "" => "/",
+        var r => "/" + r
+    };
+
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+}

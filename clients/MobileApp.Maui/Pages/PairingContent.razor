@@ -1,0 +1,148 @@
+@inject BaihuaSdk.Services.PairingServiceImpl PairingService
+@inject MobileContract.Services.IDeviceRegistrationService DeviceRegistration
+@inject BaihuaSdk.Storage.IServerConfigStore ServerStore
+@inject BaihuaSdk.Signing.IRequestSigner Signer
+@inject BaihuaSdk.Storage.ISecureStore SecureStore
+@inject MobileApp.Maui.Services.IQrScanner QrScanner
+@inject BaihuaSdk.Push.PushWebSocketService PushService
+
+<div class="pair-methods">
+    <div class="method-card">
+        <h3>扫码连接</h3>
+        <p>扫描百花管理后台的二维码</p>
+        <button class="btn primary" @onclick="ScanQrCode" disabled="@_isLoading">
+            @(_isLoading ? "打开相机..." : "扫描二维码")
+        </button>
+        <p class="or-divider">或手动粘贴</p>
+        <textarea @bind="_qrInput" placeholder="粘贴二维码内容..." rows="3"></textarea>
+        <button class="btn" @onclick="ParseAndPair" disabled="@_isLoading">
+            @(_isLoading ? "解析中..." : "解析并配对")
+        </button>
+        @if (!string.IsNullOrEmpty(_qrError))
+        {
+            <p class="error">@_qrError</p>
+        }
+    </div>
+
+    <div class="method-card">
+        <h3>手动输入</h3>
+        <p>直接输入百花服务器地址</p>
+        <input @bind="_manualUrl" placeholder="例如: http://192.168.1.100:8788" />
+        <button class="btn primary" @onclick="ManualRegister" disabled="@_isLoading">
+            @(_isLoading ? "注册中..." : "注册设备")
+        </button>
+        @if (!string.IsNullOrEmpty(_manualError))
+        {
+            <p class="error">@_manualError</p>
+        }
+    </div>
+</div>
+
+@if (_result != null)
+{
+    <div class="result @(_result.Success ? "success" : "error")">
+        <p>注册结果: @(_result.Success ? "成功" : "失败")</p>
+        @if (!_result.Success && !string.IsNullOrEmpty(_result.ErrorMessage))
+        {
+            <p>错误: @_result.ErrorMessage</p>
+        }
+        @if (_result.Authorized)
+        {
+            <p>设备已授权! SharedSecret 已保存。</p>
+        }
+        @if (!string.IsNullOrEmpty(_result.DeviceName))
+        {
+            <p>服务器: @_result.DeviceName</p>
+        }
+    </div>
+}
+
+@code {
+    private string _qrInput = "";
+    private string _manualUrl = "";
+    private string? _qrError;
+    private string? _manualError;
+    private bool _isLoading;
+    private MobileContract.Pairing.RegisterDeviceResult? _result;
+
+    private async Task ScanQrCode()
+    {
+        _qrError = null;
+        _isLoading = true;
+        StateHasChanged();
+        try
+        {
+            var scanned = await QrScanner.ScanAsync();
+            if (string.IsNullOrEmpty(scanned))
+            {
+                _qrError = "未识别到二维码";
+                return;
+            }
+
+            _qrInput = scanned;
+            await ParseAndPair();
+        }
+        catch (Exception ex)
+        {
+            _qrError = $"扫码失败: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ParseAndPair()
+    {
+        _qrError = null;
+        _isLoading = true;
+        StateHasChanged();
+        try
+        {
+            var content = BaihuaSdk.Services.PairingServiceImpl.ParseQrCode(_qrInput);
+            if (content == null) { _qrError = "无法解析二维码内容"; StateHasChanged(); return; }
+
+            var addrs = BaihuaSdk.Services.PairingServiceImpl.GetServerAddresses(content);
+            _result = await DeviceRegistration.RegisterDeviceAsync(addrs.HttpUrl);
+            await SaveResult(addrs.ServerId, addrs.HostName, addrs.HttpUrl);
+        }
+        catch (Exception ex) { _qrError = ex.Message; }
+        finally { _isLoading = false; StateHasChanged(); }
+    }
+
+    private async Task ManualRegister()
+    {
+        _manualError = null;
+        _isLoading = true;
+        StateHasChanged();
+        try
+        {
+            var url = BaihuaSdk.Transport.HttpTransport.NormalizeBaseUrl(_manualUrl);
+            _result = await DeviceRegistration.RegisterDeviceAsync(url);
+            var serverId = $"manual-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+            await SaveResult(serverId, new Uri(url).Host, url);
+        }
+        catch (Exception ex) { _manualError = ex.Message; }
+        finally { _isLoading = false; StateHasChanged(); }
+    }
+
+    private async Task SaveResult(string serverId, string serverName, string httpUrl)
+    {
+        if (_result == null || !_result.Success) return;
+
+        if (_result.Authorized && !string.IsNullOrEmpty(_result.SharedSecret))
+        {
+            Signer.SetServerSecret(httpUrl, _result.SharedSecret);
+            await SecureStore.SetAsync($"secret_{httpUrl}", _result.SharedSecret);
+        }
+
+        await ServerStore.AddOrUpdateServerAsync(new BaihuaSdk.Models.ServerConfig
+        {
+            Id = serverId, Name = serverName,
+            HttpUrl = httpUrl, IsOnline = true, LastUsedAt = DateTimeOffset.UtcNow
+        });
+
+        await PushService.ConnectAsync(httpUrl, DeviceInfoHelper.GetDeviceName());
+    }
+}

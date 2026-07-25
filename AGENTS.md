@@ -68,6 +68,7 @@ C:\Users\lumin\DevecostudioProjects\
 - `libs/BaihuaSdk/`：跨平台移动端 SDK（net9.0;net10.0，零 MAUI 依赖，主要 target net10.0）
 - `libs/MobileContract/`：移动端契约（DTO、接口定义）
 - `clients/MobileApp.Maui/`：花圃（BaiHua.Nursery）— 移动端技术实验与验证工具（非正式发布 App，详见下方说明）
+- `clients/MobileApp.Clients.slnx`：花圃解决方案（包含 BaihuaSdk + MobileContract + MobileApp.Maui）
 - `bh`：极简 CLI 工具（Linux/Mac）
 - `docs/`：协议与架构文档
 - `scripts/`：开发、发布、部署脚本
@@ -150,18 +151,43 @@ export BaiHua_TEST_VAULT_ID=<vault-id>
 dotnet test tests/BaihuaSdk.Tests/BaihuaSdk.Tests.csproj --filter Integration
 ```
 
-## 花圃 / BaiHua.Nursery（移动端技术实验工具）
+## 花圃 / BaiHua.Nursery（移动端技术实验与验证工具）
 
 **位置**: `clients/MobileApp.Maui/` — .NET MAUI Blazor Hybrid App。
+**解决方案**: `clients/MobileApp.Clients.slnx`（包含 BaihuaSdk + MobileContract + MobileApp.Maui）
 
-> **⚠️ 定位说明**：花圃（BaiHua.Nursery）是百花服务对移动端支持的**技术验证工具**，用于验证 BaihuaSdk 协议、配对流程、同步功能等在真实移动设备上的表现。它**不是正式发布的 App**，不具备产品级功能完整性。花记的正式移动端是鸿蒙端（ArkUI）和安卓端（Jetpack Compose），它们功能远超花圃。
+> **定位说明**：花圃（BaiHua.Nursery）是百花服务对移动端支持的**技术验证工具**，用于验证 BaihuaSdk 协议、配对流程、同步功能等在真实移动设备上的表现。它**不是正式发布的 App**，不具备产品级功能完整性。花记的正式移动端是鸿蒙端（ArkUI）和安卓端（Jetpack Compose），它们功能远超花圃。
 >
 > 花圃的职责边界：
 > - ✅ 验证百花服务端 API 对移动端的兼容性
 > - ✅ 验证 BaihuaSdk 的配对/同步/签名协议
 > - ✅ 作为 .NET MAUI 技术实验平台
+> - ✅ 对鸿蒙/安卓端花记的功能创意起到互相启发的作用
 > - ❌ 不承担正式移动客户端角色
-> - ❌ 不与鸿蒙/安卓端功能对齐
+> - ❌ 不与鸿蒙/安卓端功能完全对齐
+>
+> **与花记的关系**：花圃参考鸿蒙/安卓花记的 UI/UX 设计（底部 Tab 导航、暗色模式、品牌色等），但功能范围远小于花记。花圃可作为新功能的快速验证平台，验证通过后再移植到鸿蒙/安卓端。
+
+**UI 设计参考**（对齐鸿蒙/安卓花记）：
+- 底部 3 Tab 导航：首页 / 获取知识 / 我的
+- 品牌色：红色 `#FF2442`（与鸿蒙花记一致）
+- 完整暗色模式支持（CSS 变量 + `data-theme` 属性）
+- 语义化颜色系统（19 个 CSS 变量，亮/暗双主题）
+
+**页面结构**：
+| 页面 | 路由 | 说明 |
+|------|------|------|
+| 首页 | `/` | 快捷入口、已配对服务器、搜索入口 |
+| 获取知识 | `/knowledge` | 百花同步 + 配对（子 Tab 切换） |
+| 我的 | `/profile` | 设备信息、数据概览、功能菜单 |
+| 搜索 | `/search` | 全文搜索已同步知识库 |
+| 配对 | `/pairing` | 扫码/手动配对服务器 |
+| 同步 | `/sync` | 知识库获取（独立页面入口） |
+| 已获取 | `/vaults` | 文件浏览器、Markdown 预览 |
+| 设置 | `/settings` | 暗色模式切换、数据管理、关于 |
+
+**组件拆分**：
+- `SyncContent.razor` / `PairingContent.razor`：可复用内容组件，供 KnowledgePage 和独立页面共用
 
 - **Android**: `dotnet build -f net9.0-android -c Release` → APK 在 `bin/Release/net9.0-android/com.lumin.BaiHua-Signed.apk`
 - **iOS**: 需要 macOS + Xcode（GitHub Actions CI 已配置 `.github/workflows/ci.yml`）
@@ -204,7 +230,6 @@ for fragment NavigationRootManager_ElementBasedFragment
 
 Debug 构建跳过 TLS 证书验证（方便本地自签名证书开发），Release 构建严格校验证书。见 `MauiProgram.cs` 中的 `#if DEBUG` 条件判断。
 
-页面：首页（服务器列表）、配对（扫码/手动注册）、同步（知识库拉取+文件下载）、已同步（文件浏览器）。
 
 ## 测试
 
