@@ -54,6 +54,7 @@ C:\Users\lumin\DevecostudioProjects\
   - 若未监听，应在释放端口/处理文件锁后 **`dotnet watch run`** 拉起对应服务
 - **WebUI 与 TaskRunner 之间的共享数据类型和 API 接口定义必须放在 `TaskRunner.Contracts`**，两边禁止各自重复定义。新增或修改 API 契约时，先更新 Contracts，再让两边引用同一版本。
 - **共享业务服务（如 `VaultSettingsService`、`VaultNoteIndexer`）放在 `Core.Shared`**，`TaskRunner.Family` 与 `TaskRunner.Vault` 均通过引用 `Core.Shared` 使用，避免 HTTP 调用开销。
+- **`git push` 失败时**，先启动代理再重试：`pwsh -File "C:\Users\lumin\myhysteria\start.ps1"`，等待几秒后设置 `$env:HTTPS_PROXY="socks5://127.0.0.1:1080"` 再 `git push`。
 
 ## 目录
 
