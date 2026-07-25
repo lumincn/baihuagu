@@ -1,0 +1,94 @@
+<div class="modal-overlay" @onclick="OnCancel">
+    <div class="modal-content disclaimer-modal" @onclick:stopPropagation>
+        <h4>⚠️ 免责声明</h4>
+
+        <div class="disclaimer-body">
+            <p><strong>虚拟师父是学习辅助工具，不能替代专业咨询。</strong></p>
+
+            <ul>
+                <li>虚拟师父仅用于<strong>学习考证知识</strong>，不提供真实的医疗诊断、处方或法律建议。</li>
+                <li>如有真实健康或法律问题，请咨询<strong>持证专业人士</strong>。</li>
+                <li>AI 生成的内容可能存在错误，请以官方教材和权威资料为准。</li>
+            </ul>
+
+            @if (IsMedicalOrLegal)
+            {
+                <div class="age-confirm">
+                    <label>
+                        <input type="checkbox" @bind="confirmedAdult" />
+                        我已年满 18 周岁，理解本工具不提供真实诊疗或法律建议
+                    </label>
+                </div>
+            }
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn btn-secondary" @onclick="OnCancel">不同意</button>
+            <button class="btn btn-primary" @onclick="OnConfirm" disabled="@(!CanConfirm)">
+                我已阅读并同意
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .disclaimer-modal {
+        max-width: 480px;
+    }
+    .disclaimer-body {
+        margin: 1rem 0;
+        color: rgba(255,255,255,0.8);
+        line-height: 1.7;
+    }
+    .disclaimer-body ul {
+        padding-left: 1.5rem;
+        margin: 0.75rem 0;
+    }
+    .disclaimer-body li {
+        margin-bottom: 0.5rem;
+    }
+    .disclaimer-body strong {
+        color: #fff;
+    }
+    .age-confirm {
+        margin-top: 1rem;
+        padding: 0.75rem;
+        border-radius: 6px;
+        background: rgba(255,200,100,0.1);
+        border: 1px solid rgba(255,200,100,0.3);
+    }
+    .age-confirm label {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+    .age-confirm input[type="checkbox"] {
+        margin-top: 0.2rem;
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+    }
+</style>
+
+@code {
+    [Parameter] public bool IsMedicalOrLegal { get; set; }
+    [Parameter] public EventCallback OnConfirmCallback { get; set; }
+    [Parameter] public EventCallback OnCancelCallback { get; set; }
+
+    private bool confirmedAdult = false;
+
+    private bool CanConfirm => !IsMedicalOrLegal || confirmedAdult;
+
+    private void OnConfirm()
+    {
+        if (!CanConfirm) return;
+        OnConfirmCallback.InvokeAsync();
+    }
+
+    private void OnCancel()
+    {
+        OnCancelCallback.InvokeAsync();
+    }
+}

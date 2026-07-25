@@ -46,6 +46,7 @@
 
   <ItemGroup>
     <EmbeddedResource Remove="**/*.resx" />
+    <EmbeddedResource Include="Data/ExamOutlines/*.json" />
   </ItemGroup>
 
 </Project>

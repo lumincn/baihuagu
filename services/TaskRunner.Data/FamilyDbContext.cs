@@ -36,6 +36,9 @@ public class FamilyDbContext : DbContext
     public DbSet<ApprenticeProfile> ApprenticeProfiles => Set<ApprenticeProfile>();
     public DbSet<ExamCheckpoint> ExamCheckpoints => Set<ExamCheckpoint>();
 
+    public DbSet<VaultFocusState> VaultFocusStates => Set<VaultFocusState>();
+    public DbSet<VaultFreeState> VaultFreeStates => Set<VaultFreeState>();
+
     public string DatabasePath
     {
         get
@@ -339,6 +342,31 @@ public class FamilyDbContext : DbContext
             entity.Property(e => e.WeakPointsJson).IsRequired().HasDefaultValue("[]");
             entity.Property(e => e.Advice).IsRequired().HasDefaultValue("");
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
+        });
+
+        modelBuilder.Entity<VaultFocusState>(entity =>
+        {
+            entity.ToTable("VaultFocusStates");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.MasterId);
+            entity.HasIndex(e => new { e.MasterId, e.VaultId }).IsUnique();
+
+            entity.Property(e => e.MasterId).HasMaxLength(64).IsRequired();
+            entity.Property(e => e.VaultId).IsRequired();
+            entity.Property(e => e.State).HasMaxLength(20).IsRequired().HasDefaultValue("focused");
+            entity.Property(e => e.StageName).HasMaxLength(20);
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("datetime('now')");
+        });
+
+        modelBuilder.Entity<VaultFreeState>(entity =>
+        {
+            entity.ToTable("VaultFreeStates");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.VaultId).IsUnique();
+
+            entity.Property(e => e.VaultId).IsRequired();
+            entity.Property(e => e.State).HasMaxLength(20).IsRequired().HasDefaultValue("discovered");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("datetime('now')");
         });
     }
 

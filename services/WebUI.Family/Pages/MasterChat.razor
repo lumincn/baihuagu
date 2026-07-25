@@ -119,6 +119,14 @@
     </div>
 </div>
 
+@if (showDisclaimer)
+{
+    <MasterDisclaimerDialog
+        IsMedicalOrLegal="@IsMedicalOrLegalIndustry(createIndustry)"
+        OnConfirmCallback="OnDisclaimerConfirmed"
+        OnCancelCallback="OnDisclaimerCancelled" />
+}
+
 @if (showAiConfigWarning)
 {
     <div class="modal-overlay" @onclick="DismissAiWarning">
@@ -473,6 +481,7 @@
 
     private bool showCreateModal = false;
     private bool showAiConfigWarning = false;
+    private bool showDisclaimer = false;
     private string createIndustry = "";
     private string createGoal = "";
 
@@ -549,9 +558,27 @@
             return;
         }
         showAiConfigWarning = false;
-        showCreateModal = true;
+        showDisclaimer = true;
     }
     private void HideCreateModal() => showCreateModal = false;
+
+    private void OnDisclaimerConfirmed()
+    {
+        showDisclaimer = false;
+        showCreateModal = true;
+    }
+
+    private void OnDisclaimerCancelled()
+    {
+        showDisclaimer = false;
+    }
+
+    private static bool IsMedicalOrLegalIndustry(string industry)
+    {
+        if (string.IsNullOrEmpty(industry)) return false;
+        var lower = industry.ToLowerInvariant();
+        return lower.Contains("医") || lower.Contains("药") || lower.Contains("法") || lower.Contains("律");
+    }
 
     private void GoToAiSettings()
     {

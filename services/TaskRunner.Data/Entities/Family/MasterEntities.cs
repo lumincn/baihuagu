@@ -120,3 +120,42 @@ public class ExamCheckpoint
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 }
+
+public class VaultFocusState
+{
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int Id { get; set; }
+
+    [Required]
+    [MaxLength(64)]
+    public string MasterId { get; set; } = "";
+
+    [Required]
+    public string VaultId { get; set; } = "";
+
+    [Required]
+    [MaxLength(20)]
+    public string State { get; set; } = "focused";
+
+    [MaxLength(20)]
+    public string? StageName { get; set; }
+
+    public DateTime UpdatedAt { get; set; } = DateTime.Now;
+}
+
+public class VaultFreeState
+{
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int Id { get; set; }
+
+    [Required]
+    public string VaultId { get; set; } = "";
+
+    [Required]
+    [MaxLength(20)]
+    public string State { get; set; } = "discovered";
+
+    public DateTime UpdatedAt { get; set; } = DateTime.Now;
+}

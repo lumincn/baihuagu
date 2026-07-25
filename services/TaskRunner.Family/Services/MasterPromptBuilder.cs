@@ -1,6 +1,8 @@
 using Microsoft.Extensions.AI;
 using TaskRunner.Contracts.Ai;
 using TaskRunner.Contracts.Master;
+using System.Reflection;
+using System.Text.Json;
 
 namespace TaskRunner.Services;
 
@@ -147,5 +149,110 @@ public class MasterPromptBuilder
         ];
     }
 
+    public ExamOutline? MatchExamOutline(string goal, string industry)
+    {
+        var outlines = LoadAllOutlines();
+        if (outlines.Count == 0) return null;
+
+        var text = $"{goal} {industry}".ToLowerInvariant();
+
+        foreach (var outline in outlines)
+        {
+            if (outline.Keywords == null) continue;
+            foreach (var kw in outline.Keywords)
+            {
+                if (!string.IsNullOrEmpty(kw) && text.Contains(kw.ToLowerInvariant()))
+                    return outline;
+            }
+        }
+
+        return null;
+    }
+
+    public List<StageInfo> GetStagesForOutline(ExamOutline? outline)
+    {
+        if (outline?.Stages == null || outline.Stages.Count == 0)
+            return GetDefaultStages();
+
+        return outline.Stages.Select((s, i) => new StageInfo
+        {
+            Name = s.Name,
+            DisplayName = s.Name,
+            Description = s.Description ?? "",
+            Order = i + 1
+        }).ToList();
+    }
+
+    public string? GetOutlineContext(ExamOutline? outline, string currentStage)
+    {
+        if (outline == null) return null;
+
+        var stageInfo = outline.Stages?.FirstOrDefault(s => s.Name == currentStage);
+        if (stageInfo == null) return null;
+
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine($"# 考试大纲：{outline.Name}");
+
+        if (stageInfo.KeyPoints != null && stageInfo.KeyPoints.Count > 0)
+        {
+            sb.AppendLine($"## 当前阶段考点");
+            foreach (var kp in stageInfo.KeyPoints)
+                sb.AppendLine($"- {kp}");
+        }
+
+        if (!string.IsNullOrEmpty(stageInfo.TransitionCriteria))
+            sb.AppendLine($"## 阶段转换标准：{stageInfo.TransitionCriteria}");
+
+        if (stageInfo.Milestones != null && stageInfo.Milestones.Count > 0)
+        {
+            sb.AppendLine($"## 里程碑");
+            foreach (var m in stageInfo.Milestones)
+                sb.AppendLine($"- {m}");
+        }
+
+        return sb.ToString();
+    }
+
+    private static List<ExamOutline> LoadAllOutlines()
+    {
+        var result = new List<ExamOutline>();
+        var assembly = Assembly.GetExecutingAssembly();
+        var prefix = "TaskRunner.Data.ExamOutlines.";
+
+        foreach (var name in assembly.GetManifestResourceNames())
+        {
+            if (!name.StartsWith(prefix) || !name.EndsWith(".json")) continue;
+            try
+            {
+                using var stream = assembly.GetManifestResourceStream(name);
+                if (stream == null) continue;
+                using var reader = new StreamReader(stream);
+                var json = reader.ReadToEnd();
+                var outline = JsonSerializer.Deserialize<ExamOutline>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                if (outline != null) result.Add(outline);
+            }
+            catch { }
+        }
+
+        return result;
+    }
+
     private record StagePersona(string RoleName, string Style, string Prompt);
+}
+
+public class ExamOutline
+{
+    public string Id { get; set; } = "";
+    public string Name { get; set; } = "";
+    public List<string>? Keywords { get; set; }
+    public List<ExamStageOutline>? Stages { get; set; }
+}
+
+public class ExamStageOutline
+{
+    public string Name { get; set; } = "";
+    public string? Description { get; set; }
+    public List<string>? KeyPoints { get; set; }
+    public List<string>? Milestones { get; set; }
+    public string? TransitionCriteria { get; set; }
 }

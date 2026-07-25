@@ -46,12 +46,14 @@ public partial class MasterController : ControllerBase
         {
             var masterId = Guid.NewGuid().ToString("N");
             var masterName = _promptBuilder.ResolveMasterName(request.Industry);
-            var stages = MasterPromptBuilder.GetDefaultStages();
+            var outline = _promptBuilder.MatchExamOutline(request.Goal, request.Industry);
+            var stages = _promptBuilder.GetStagesForOutline(outline);
 
             var (provider, model) = ResolveProviderAndModel(null, null);
 
+            var outlineContext = _promptBuilder.GetOutlineContext(outline, "入道");
             var systemPrompt = _promptBuilder.BuildSystemPrompt(
-                request.Goal, request.Industry, masterName, "入道", null, null);
+                request.Goal, request.Industry, masterName, "入道", null, outlineContext);
 
             var messages = new List<ChatMessage>
             {
@@ -151,6 +153,13 @@ public partial class MasterController : ControllerBase
                 .FirstOrDefaultAsync();
             var stageSummary = stageSummaryEntity?.Summary;
 
+            var outline = _promptBuilder.MatchExamOutline(master.Goal, master.Industry);
+            var outlineContext = _promptBuilder.GetOutlineContext(outline, currentStage);
+            var combinedSummary = new List<string>();
+            if (!string.IsNullOrEmpty(stageSummary)) combinedSummary.Add(stageSummary);
+            if (!string.IsNullOrEmpty(outlineContext)) combinedSummary.Add(outlineContext);
+            var finalSummary = combinedSummary.Count > 0 ? string.Join("\n\n", combinedSummary) : null;
+
             var (provider, model) = ResolveProviderAndModel(null, null);
 
             await SendSse("meta", System.Text.Json.JsonSerializer.Serialize(new { provider = provider.Name, model, masterId = request.MasterId, stage = currentStage }));
@@ -169,7 +178,7 @@ public partial class MasterController : ControllerBase
                 masterName: master.MasterName,
                 currentStage: currentStage,
                 coreProfile: coreProfile,
-                stageSummary: stageSummary,
+                stageSummary: finalSummary,
                 recentHistory: request.History,
                 userMessage: request.Message);
 
@@ -271,6 +280,27 @@ public partial class MasterController : ControllerBase
             });
 
             await db.SaveChangesAsync();
+
+            if (!string.IsNullOrEmpty(nextStageName))
+            {
+                var focusedVaults = await db.VaultFocusStates
+                    .Where(v => v.MasterId == id && v.State == "focused")
+                    .ToListAsync();
+                foreach (var v in focusedVaults)
+                {
+                    v.State = "archived";
+                    v.UpdatedAt = DateTime.Now;
+                }
+                var discoveredVaults = await db.VaultFocusStates
+                    .Where(v => v.MasterId == id && v.State == "discovered" && v.StageName == nextStageName)
+                    .ToListAsync();
+                foreach (var v in discoveredVaults)
+                {
+                    v.State = "focused";
+                    v.UpdatedAt = DateTime.Now;
+                }
+                await db.SaveChangesAsync();
+            }
 
             _logger.LogInformation("师父 {MasterId} 阶段 {Stage} 完成，下一阶段：{Next}", id, request.StageName, nextStageName);
 
@@ -447,6 +477,157 @@ public partial class MasterController : ControllerBase
 
         return Ok(new { Success = true });
     }
+
+    [HttpPost("{id}/compress")]
+    public async Task<ActionResult> Compress(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+            return BadRequest();
+
+        try
+        {
+            await using var db = await _dbFactory.CreateDbContextAsync();
+            var master = await db.Masters.FirstOrDefaultAsync(m => m.MasterId == id);
+            if (master == null)
+                return NotFound(new { Success = false, Message = "师父不存在" });
+
+            var graduated = System.Text.Json.JsonSerializer.Deserialize<List<string>>(master.GraduatedStagesJson) ?? new();
+            var cutoff = DateTime.Now.AddDays(-7);
+
+            var compressedCount = 0;
+            foreach (var stage in graduated)
+            {
+                var existingSummary = await db.StageSummaries
+                    .FirstOrDefaultAsync(s => s.MasterId == id && s.StageName == stage);
+                if (existingSummary != null) continue;
+
+                var conversations = await db.MasterConversations
+                    .Where(c => c.MasterId == id && c.Stage == stage && c.CreatedAt < cutoff)
+                    .OrderBy(c => c.CreatedAt)
+                    .ToListAsync();
+
+                if (conversations.Count == 0) continue;
+
+                var (provider, model) = ResolveProviderAndModel(null, null);
+                var convText = string.Join("\n", conversations.Select(c => $"{c.Role}: {c.Content}"));
+                var summaryPrompt = $"请为以下对话生成简洁摘要（200字以内），提取关键知识点和学习要点：\n\n{TruncateText(convText, 3000)}";
+                var messages = new List<ChatMessage>
+                {
+                    new(ChatRole.System, "你是一位学习记录整理专家，请简洁客观地总结对话内容。"),
+                    new(ChatRole.User, summaryPrompt)
+                };
+                var options = AiClientService.BuildChatOptions(temperature: 0.3f, maxOutputTokens: 500);
+                var response = await _aiClientService.GetChatResponseWithAutoStartAsync(
+                    provider, model, messages, options, HttpContext.RequestAborted, operation: "master-compress");
+
+                var summary = response.Text ?? "";
+
+                db.StageSummaries.Add(new StageSummary
+                {
+                    MasterId = id,
+                    StageName = stage,
+                    Summary = summary
+                });
+
+                db.MasterConversations.RemoveRange(conversations);
+                compressedCount++;
+            }
+
+            await db.SaveChangesAsync();
+            _logger.LogInformation("师父 {MasterId} 压缩完成，处理 {Count} 个阶段", id, compressedCount);
+            return Ok(new { Success = true, CompressedStages = compressedCount });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "数据压缩失败");
+            return StatusCode(500, new { Success = false, Message = $"压缩失败：{ex.Message}" });
+        }
+    }
+
+    [HttpPost("{id}/evict")]
+    public async Task<ActionResult> Evict(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+            return BadRequest();
+
+        try
+        {
+            await using var db = await _dbFactory.CreateDbContextAsync();
+            var master = await db.Masters.FirstOrDefaultAsync(m => m.MasterId == id);
+            if (master == null)
+                return NotFound(new { Success = false, Message = "师父不存在" });
+
+            var graduated = System.Text.Json.JsonSerializer.Deserialize<List<string>>(master.GraduatedStagesJson) ?? new();
+            var cutoff = DateTime.Now.AddDays(-30);
+
+            var evictedCount = 0;
+            var profile = await db.ApprenticeProfiles.FirstOrDefaultAsync(p => p.MasterId == id);
+            if (profile == null)
+            {
+                profile = new ApprenticeProfile { MasterId = id };
+                db.ApprenticeProfiles.Add(profile);
+            }
+
+            foreach (var stage in graduated)
+            {
+                var summary = await db.StageSummaries
+                    .FirstOrDefaultAsync(s => s.MasterId == id && s.StageName == stage);
+                if (summary == null) continue;
+                if (summary.CreatedAt > cutoff) continue;
+
+                var (provider, model) = ResolveProviderAndModel(null, null);
+                var profilePrompt = $"根据以下阶段学习摘要，提取学徒的核心能力画像（基础、学习风格、优势、薄弱点），以JSON格式返回：{{\"foundation\": \"...\", \"learningStyle\": \"...\", \"strengths\": \"...\", \"weaknesses\": \"...\"}}\n\n阶段：{stage}\n摘要：{summary.Summary}";
+                var messages = new List<ChatMessage>
+                {
+                    new(ChatRole.System, "你是一位学习评估专家，请客观提取学徒能力画像。"),
+                    new(ChatRole.User, profilePrompt)
+                };
+                var options = AiClientService.BuildChatOptions(temperature: 0.3f, maxOutputTokens: 500);
+                var response = await _aiClientService.GetChatResponseWithAutoStartAsync(
+                    provider, model, messages, options, HttpContext.RequestAborted, operation: "master-evict");
+
+                var result = response.Text ?? "";
+                try
+                {
+                    var jsonStart = result.IndexOf('{');
+                    var jsonEnd = result.LastIndexOf('}');
+                    if (jsonStart >= 0 && jsonEnd > jsonStart)
+                    {
+                        var json = result.Substring(jsonStart, jsonEnd - jsonStart + 1);
+                        var doc = System.Text.Json.JsonDocument.Parse(json);
+                        if (doc.RootElement.TryGetProperty("foundation", out var f) && !string.IsNullOrEmpty(f.GetString()))
+                            profile.Foundation = (profile.Foundation ?? "") + $"[{stage}] {f.GetString()}; ";
+                        if (doc.RootElement.TryGetProperty("learningStyle", out var ls) && !string.IsNullOrEmpty(ls.GetString()))
+                            profile.LearningStyle = ls.GetString();
+                        if (doc.RootElement.TryGetProperty("strengths", out var s) && !string.IsNullOrEmpty(s.GetString()))
+                            profile.Strengths = (profile.Strengths ?? "") + $"[{stage}] {s.GetString()}; ";
+                        if (doc.RootElement.TryGetProperty("weaknesses", out var w) && !string.IsNullOrEmpty(w.GetString()))
+                            profile.Weaknesses = (profile.Weaknesses ?? "") + $"[{stage}] {w.GetString()}; ";
+                    }
+                }
+                catch { }
+
+                db.StageSummaries.Remove(summary);
+                var remainingConvs = await db.MasterConversations
+                    .Where(c => c.MasterId == id && c.Stage == stage)
+                    .ToListAsync();
+                db.MasterConversations.RemoveRange(remainingConvs);
+                evictedCount++;
+            }
+
+            await db.SaveChangesAsync();
+            _logger.LogInformation("师父 {MasterId} 淘汰完成，处理 {Count} 个阶段", id, evictedCount);
+            return Ok(new { Success = true, EvictedStages = evictedCount });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "数据淘汰失败");
+            return StatusCode(500, new { Success = false, Message = $"淘汰失败：{ex.Message}" });
+        }
+    }
+
+    private static string TruncateText(string text, int maxLength) =>
+        text.Length <= maxLength ? text : text[..maxLength] + "...";
 
     private (AiProviderConfig Provider, string Model) ResolveProviderAndModel(string? providerId, string? model)
     {
