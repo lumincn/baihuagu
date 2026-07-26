@@ -89,6 +89,13 @@ $HealthUrls = @{
 	webui      = 'http://127.0.0.1:5177/login'
 }
 
+$ServicePorts = @{
+	ai         = 8791
+	vault      = 8790
+	taskrunner = 8788
+	webui      = 5177
+}
+
 function Get-LogPath($name){ Join-Path $TEMP_DIR "bh-$name.log" }
 function Get-PidPath($name){ Join-Path $TEMP_DIR "bh-$name.pid" }
 function Get-CommitPath{ Join-Path $TEMP_DIR "bh-git-commit.txt" }
@@ -150,6 +157,16 @@ function Start-ServiceProc($name, $projRelPath){
 		}
 	}
 
+	$port = $ServicePorts[$name]
+	if ($port) {
+		$portProc = netstat -ano 2>$null | Select-String ":${port}\s" | Select-String "LISTENING"
+		if ($portProc) {
+			Write-Host "[WARN] Port :${port} already in use, attempting to free..." -ForegroundColor Yellow
+			Stop-ServiceByPort $name
+			Start-Sleep -Seconds 1
+		}
+	}
+
 	Write-Host "Starting $name -> $projPath"
 	$args = @('run', '--project', "$projPath", '--no-launch-profile')
 
@@ -180,7 +197,6 @@ function Stop-ServiceProc($name){
 	if ($existingPid -and (Get-Process -Id $existingPid -ErrorAction SilentlyContinue)) {
 		try {
 			Stop-Process -Id $existingPid -Force -ErrorAction Stop
-			# 等待进程完全退出（最多 10 秒）
 			$sw = [System.Diagnostics.Stopwatch]::StartNew()
 			while ((Get-Process -Id $existingPid -ErrorAction SilentlyContinue) -and $sw.Elapsed.TotalSeconds -lt 10) {
 				Start-Sleep -Milliseconds 200
@@ -192,7 +208,8 @@ function Stop-ServiceProc($name){
 				Write-Host "Stopped ${name} (PID $existingPid)"
 			}
 		} catch {
-			Write-Host "ERROR: failed to stop ${name}: ${_}"
+			Write-Host "ERROR: failed to stop ${name} by PID: ${_}" -ForegroundColor Red
+			Stop-ServiceByPort $name
 		}
 	} else {
 		Remove-Item $pidFile -ErrorAction SilentlyContinue
@@ -200,31 +217,92 @@ function Stop-ServiceProc($name){
 	}
 }
 
+function Stop-ServiceByPort($name){
+	$port = $ServicePorts[$name]
+	if (-not $port) { return }
+	$connections = netstat -ano 2>$null | Select-String ":${port}\s" | Select-String "LISTENING"
+	foreach ($conn in $connections) {
+		$parts = $conn.ToString().Trim() -split '\s+'
+		$pid = $parts[-1]
+		if ($pid -match '^\d+$' -and $pid -ne '0') {
+			try {
+				$proc = Get-Process -Id $pid -ErrorAction Stop
+				if ($proc.ProcessName -eq 'svchost') {
+					Write-Host "  Port :${port} held by svchost (PID $pid), skipping" -ForegroundColor Yellow
+					continue
+				}
+				Write-Host "  Killing process on port :${port} (PID $pid, $($proc.ProcessName))" -ForegroundColor Yellow
+				Stop-Process -Id $pid -Force -ErrorAction Stop
+				Start-Sleep -Milliseconds 500
+			} catch {
+				Write-Host "  Failed to kill PID $pid on port :${port}: ${_}" -ForegroundColor Red
+			}
+		}
+	}
+	Remove-Item (Get-PidPath $name) -ErrorAction SilentlyContinue
+}
+
+function Get-RealServicePid($name){
+	$port = $ServicePorts[$name]
+	if (-not $port) { return $null }
+	$connections = netstat -ano 2>$null | Select-String ":${port}\s" | Select-String "LISTENING"
+	foreach ($conn in $connections) {
+		$parts = $conn.ToString().Trim() -split '\s+'
+		$pid = $parts[-1]
+		if ($pid -match '^\d+$' -and $pid -ne '0') {
+			try {
+				$proc = Get-Process -Id $pid -ErrorAction Stop
+				if ($proc.ProcessName -ne 'svchost') { return $pid }
+			} catch {}
+		}
+	}
+	return $null
+}
+
+function Test-ServiceRunning($name){
+	$pidFile = Get-PidPath $name
+	if (Test-Path $pidFile) {
+		$existingPid = Get-Content $pidFile -ErrorAction SilentlyContinue
+		if ($existingPid -and (Get-Process -Id $existingPid -ErrorAction SilentlyContinue)) {
+			$proc = Get-Process -Id $existingPid -ErrorAction SilentlyContinue
+			if ($proc.ProcessName -eq 'svchost') {
+				Remove-Item $pidFile -ErrorAction SilentlyContinue
+				Write-Host "  $name : stale PID (svchost), cleaning" -ForegroundColor Yellow
+			} else {
+				return $true
+			}
+		} else {
+			Remove-Item $pidFile -ErrorAction SilentlyContinue
+		}
+	}
+	$realPid = Get-RealServicePid $name
+	if ($realPid) {
+		Set-Content -Path $pidFile -Value $realPid -Force
+		return $true
+	}
+	return $false
+}
+
 function Show-Status(){
 	foreach ($k in $ServiceOrder){
-		$pidFile = Get-PidPath $k
 		$status = "$k : stopped" 
 		$color = [ConsoleColor]::DarkYellow
-		if (Test-Path $pidFile){
+		if (Test-ServiceRunning $k){
+			$pidFile = Get-PidPath $k
 			$existingPid = Get-Content $pidFile -ErrorAction SilentlyContinue
-			if ($existingPid -and (Get-Process -Id $existingPid -ErrorAction SilentlyContinue)){
-				$healthUrl = $HealthUrls[$k]
-				$healthy = $false
-				if ($healthUrl) {
-					try {
-						$resp = Invoke-WebRequest -Uri $healthUrl -UseBasicParsing -TimeoutSec 2 -ErrorAction Stop
-						$healthy = $resp.StatusCode -ge 200 -and $resp.StatusCode -lt 400
-					} catch { $healthy = $false }
-				}
-				if ($healthy) {
-					$status = "$k : running (PID $existingPid) ✓ healthy"
-					$color = [ConsoleColor]::Green
-				} else {
-					$status = "$k : running (PID $existingPid) ⚠ not ready"
-					$color = [ConsoleColor]::Yellow
-				}
+			$healthUrl = $HealthUrls[$k]
+			$healthy = $false
+			if ($healthUrl) {
+				try {
+					$resp = Invoke-WebRequest -Uri $healthUrl -UseBasicParsing -TimeoutSec 2 -ErrorAction Stop
+					$healthy = $resp.StatusCode -ge 200 -and $resp.StatusCode -lt 400
+				} catch { $healthy = $false }
+			}
+			if ($healthy) {
+				$status = "$k : running (PID $existingPid) ✓ healthy"
+				$color = [ConsoleColor]::Green
 			} else {
-				$status = "$k : pidfile exists but process not found"
+				$status = "$k : running (PID $existingPid) ⚠ not ready"
 				$color = [ConsoleColor]::Yellow
 			}
 		}
@@ -268,22 +346,13 @@ function Open-Dashboard {
 }
 
 function Ensure-ServiceRunning($name){
-	$pidFile = Get-PidPath $name
-	$isRunning = $false
-	if (Test-Path $pidFile){
-		$existingPid = Get-Content $pidFile -ErrorAction SilentlyContinue
-		if ($existingPid -and (Get-Process -Id $existingPid -ErrorAction SilentlyContinue)){
-			$isRunning = $true
-		}
-	}
-	if (-not $isRunning){
-		Write-Host "Service $name not running, starting..."
-		Start-ServiceProc $name $Services[$name]
-		return $false
-	} else {
+	if (Test-ServiceRunning $name) {
 		Write-Host "Service $name already running"
 		return $true
 	}
+	Write-Host "Service $name not running, starting..."
+	Start-ServiceProc $name $Services[$name]
+	return $false
 }
 
 function Test-TcpPort([string]$hostname, [int]$port, [int]$timeoutMs = 2000){
@@ -331,17 +400,23 @@ function Wait-For-Service([string]$name, [int]$timeoutSec = 20, [bool]$wasJustSt
 	$crashCheckDone = $false
 	while ($sw.Elapsed.TotalSeconds -lt $timeoutSec){
 		if (-not $crashCheckDone) {
-			$pidFile = Get-PidPath $name
-			if (Test-Path $pidFile){
-				$srvPid = Get-Content $pidFile -ErrorAction SilentlyContinue
-				if ($srvPid -and -not (Get-Process -Id $srvPid -ErrorAction SilentlyContinue)){
-					Write-Host "  $name : ✗ process crashed" -ForegroundColor Red
-					$errLog = "$(Get-LogPath $name).err"
-					if (Test-Path $errLog) {
-						Write-Host "  Last 5 lines of error log:" -ForegroundColor Yellow
-						Get-Content $errLog -Tail 5 -Encoding UTF8 | ForEach-Object { Write-Host "    $_" }
+			$realPid = Get-RealServicePid $name
+			if ($realPid) {
+				$pidFile = Get-PidPath $name
+				Set-Content -Path $pidFile -Value $realPid -Force
+			} else {
+				$pidFile = Get-PidPath $name
+				if (Test-Path $pidFile) {
+					$srvPid = Get-Content $pidFile -ErrorAction SilentlyContinue
+					if ($srvPid -and -not (Get-Process -Id $srvPid -ErrorAction SilentlyContinue)) {
+						Write-Host "  $name : ✗ process crashed" -ForegroundColor Red
+						$errLog = "$(Get-LogPath $name).err"
+						if (Test-Path $errLog) {
+							Write-Host "  Last 5 lines of error log:" -ForegroundColor Yellow
+							Get-Content $errLog -Tail 5 -Encoding UTF8 | ForEach-Object { Write-Host "    $_" }
+						}
+						return $false
 					}
-					return $false
 				}
 			}
 			$crashCheckDone = $true
@@ -515,13 +590,7 @@ function Cmd-All {
 	}
 
 	foreach ($name in $ServiceOrder) {
-		$pidFile = Get-PidPath $name
-		if (Test-Path $pidFile) {
-			$srvPid = Get-Content $pidFile -ErrorAction SilentlyContinue
-			if ($srvPid -and -not (Get-Process -Id $srvPid -ErrorAction SilentlyContinue)) {
-				Remove-Item $pidFile -ErrorAction SilentlyContinue
-			}
-		}
+		Test-ServiceRunning $name | Out-Null
 	}
 
 	Write-Host ""
@@ -639,15 +708,9 @@ switch ($Command.ToLower()){
 			Save-GitCommit
 		}
 
-		# 清理僵尸进程
+		# 清理僵尸进程 & 修正 PID
 		foreach ($name in $ServiceOrder) {
-			$pidFile = Get-PidPath $name
-			if (Test-Path $pidFile) {
-				$srvPid = Get-Content $pidFile -ErrorAction SilentlyContinue
-				if ($srvPid -and -not (Get-Process -Id $srvPid -ErrorAction SilentlyContinue)) {
-					Remove-Item $pidFile -ErrorAction SilentlyContinue
-				}
-			}
+			Test-ServiceRunning $name | Out-Null
 		}
 
 		# 按顺序启动并等待每个后端服务就绪
