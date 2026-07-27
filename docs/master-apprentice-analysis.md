@@ -1,6 +1,6 @@
 # 拜师系统（Master-Apprentice）跨平台对比分析
 
-> 生成日期：2026-07-27（第十轮 review 更新 — 花记优化落地）
+> 生成日期：2026-07-27（第十一轮 review 更新 — 花记安全+体验增强）
 > 分析范围：鸿蒙版 (ArkTS)、安卓版 (Kotlin/Compose)、WebUI (Blazor)、花圃 (MAUI)
 
 ---
@@ -51,10 +51,12 @@
 | 阶段祝福语 | ✅ (STAGE_BLESSINGS) | ✅ (StageBlessings.generate) 🆕 | ✅ (后端生成) | ✅ (后端返回) |
 | 关键纠正展示 | ✅ | ✅ | ✅ 🆕 | ✅ 🆕 |
 | 本地缓存 | ❌ | ❌ | ✅ (localStorage 聊天) | ✅ (SecureStore 全量) |
-| API Key 预检 | ✅ (调/models验证) | ✅ (5状态枚举+调/models验证) | ✅ (GlobalStateService) | ✅ (调'api/ai/providers) |
-| AI 未配置警告 | ✅ (简单横幅) | ✅ (5状态枚举+顶栏图标) | ✅ (弹窗) | ✅ (横幅) |
+| 内容安全过滤 | ✅ (UNSAFE_KEYWORDS+警告) 🆕 | ✅ (ContentSafetyFilter+警告) 🆕 | ✅ (MasterPromptBuilder) | ✅ (服务端) |
+| Prompt 输入消毒 | ❌ | ✅ (sanitize限长+去特殊字符) 🆕 | ✅ | ✅ |
+| API Key 预检 | ✅ (5状态枚举+调/models验证) 🆕 | ✅ (5状态枚举+调/models验证) | ✅ (GlobalStateService) | ✅ (调/api/ai/providers) |
+| AI 未配置警告 | ✅ (5状态横幅:未配置/无效/验证中) 🆕 | ✅ (5状态枚举+顶栏图标) | ✅ (弹窗) | ✅ (横幅) |
 | 对话历史同步 | ❌ (仅本地) | ❌ (仅本地) | ❌ (仅localStorage) | ✅ (双向同步) |
-| 知识库关联 UI | ✅ (选择器弹窗) | ✅ (选择器弹窗) | ✅ (多选切换) 🆕 | ✅ (最完整, 多选) |
+| 知识库关联 UI | ✅ (多选切换) 🆕 | ✅ (多选切换) 🆕 | ✅ (多选切换) | ✅ (最完整, 多选) |
 | 数据淘汰定时任务 | ✅ (本地自动) | ✅ (本地自动) | ⚠️ (手动触发) | ⚠️ (依赖后端) |
 
 ### 2.2 阶段定义
@@ -100,7 +102,12 @@
 
 ## 三、各平台优缺点分析
 
-### 3.1 鸿蒙版 (ArkTS) — 第十轮 review
+### 3.1 鸿蒙版 (ArkTS) — 第十一轮 review
+
+**本轮优化亮点** 🆕
+- ✅ **AI 预检 5 状态枚举** — `AiCheckState = 'idle' | 'checking' | 'valid' | 'invalid' | 'notConfigured'`，区分未配置(橙色)/无效(红色)/验证中(Loading)/有效四种横幅
+- ✅ **内容安全过滤** — `UNSAFE_KEYWORDS` 常量 + `applySafetyFilter()` 方法，命中关键词追加安全警告
+- ✅ **知识库多选关联** — `focusedVaultIds: string[]` 替代单选，支持同时关联多个知识库
 
 **优点**
 - ✅ 纯本地存储，离线可用，无网络依赖
@@ -117,15 +124,15 @@
 - ✅ **阶段祝福语**（STAGE_BLESSINGS 常量，每阶段3条随机模板，四端唯一）
 - ✅ **阶段完成小结 UI 最完整**（祝福语+摘要+关键纠正，四端唯一）
 - ✅ **关键纠正展示**（⚠️ 橙色高亮）
-- ✅ AI 未配置警告横幅
+- ✅ **AI 预检 5 状态**（调 `/models` 验证，区分未配置/无效/验证中/有效，四色横幅）
+- ✅ **内容安全过滤**（UNSAFE_KEYWORDS + applySafetyFilter，命中追加警告）
+- ✅ **知识库多选关联**（focusedVaultIds 数组，支持同时关联多个知识库）
 - ✅ 代码结构清晰，类型安全
 
 **缺点**
 - ❌ 直接调用 AI API，无服务端中转，Key 暴露风险
 - ❌ 数据仅本地存储，设备丢失无法恢复
-- ❌ API Key 预检仅检查非空，未实际验证有效性 → ✅ **已增强**：调用 `/models` 端点实际验证（第九轮）
 - ❌ 无对话历史同步
-- ❌ 无知识库多选关联
 
 **文件位置**
 - 服务实现：`MasterService.ets`
@@ -134,7 +141,13 @@
 
 ---
 
-### 3.2 安卓版 (Kotlin/Compose) — 第十轮 review
+### 3.2 安卓版 (Kotlin/Compose) — 第十一轮 review
+
+**本轮优化亮点** 🆕
+- ✅ **内容安全过滤** — 新增 `ContentSafetyFilter` object，`scan()` 方法扫描回复命中关键词后追加警告
+- ✅ **Prompt 输入消毒** — `MasterPrompts.sanitize()` 限长+去特殊字符，防止 Prompt 注入
+- ✅ **知识库多选关联** — `VaultFocusStore` 升级为 `Set<String>` 多选，旧单选 API 标记 `@Deprecated`
+- ✅ **行业白名单** — `MasterPrompts.VALID_INDUSTRIES` 限制行业输入范围
 
 **本轮优化亮点** 🆕
 - ✅ **阶段祝福语** — 新增 `StageBlessings` object，5阶段×3模板随机生成，与鸿蒙端模板一致
@@ -164,13 +177,12 @@
 **缺点**
 - ❌ 直连 AI API，Key 暴露风险
 - ❌ 数据仅本地存储
-- ❌ 无阶段祝福语 → ✅ **已实现**：StageBlessings object（第十轮）
 - ❌ 无对话历史同步
 - ❌ 与鸿蒙版存在代码重复，维护成本高
 
 **文件位置**
-- 服务实现：`MasterService.kt`（含 MasterPrompts、StageDefs、MasterNames 内嵌 object）
-- 数据存储：`VaultFocusStore.kt`（SharedPreferences）、`NoteDatabase.kt`
+- 服务实现：`MasterService.kt`（含 MasterPrompts、StageDefs、MasterNames、StageBlessings、ContentSafetyFilter 内嵌 object）
+- 数据存储：`VaultFocusStore.kt`（SharedPreferences, 多选 Set）、`NoteDatabase.kt`
 - 页面：`MasterListPage.kt`、`MasterChatPage.kt`、`MasterStagePage.kt`、`MasterProfilePage.kt`
 - 组件：`MasterDisclaimerDialog.kt`
 
@@ -271,8 +283,10 @@
 | 停止生成 | ✅ 全平台覆盖 | — | — |
 | 本地缓存 | 花圃（全量SecureStore） | WebUI（localStorage聊天） | 鸿蒙、安卓（仅SQLite） |
 | 离线可用 | 鸿蒙、安卓（纯本地） | 花圃（缓存优先） | WebUI（必须在线） |
-| AI 预检 | 安卓（5状态枚举+顶栏图标） | WebUI、花圃（API验证）、鸿蒙（调/models验证） 🆕 | — |
-| 免责声明 | 鸿蒙（130行,含18+确认）、安卓（95行,含18+确认） | WebUI（组件化）、花圃（含18+确认+声明复选） 🆕 | — |
+| AI 预检 | ✅ 全平台5状态覆盖 | — | — |
+| 免责声明 | ✅ 全平台覆盖（含18+确认+声明复选） | — | — |
+| 知识库关联 UI | ✅ 全平台多选覆盖 | — | — |
+| 内容安全过滤 | ✅ 全平台覆盖 | — | — |
 | 阶段完成小结 UI | ✅ 全平台覆盖（鸿蒙/安卓/花圃含弹窗+祝福+纠正，WebUI 含弹窗+祝福+纠正） |
 | 阶段祝福语 | ✅ **全平台覆盖**（鸿蒙/安卓本地模板，WebUI/花圃后端生成） |
 | 关键纠正展示 | ✅ 全平台覆盖 | — | — |
@@ -283,6 +297,7 @@
 
 #### 🔴 鸿蒙版
 1. **对话历史同步** — 增加与服务端的对话同步能力
+2. **Prompt 输入消毒** — 参考安卓端 sanitize() 防止 Prompt 注入
 
 #### 🔴 安卓版
 1. **对话历史同步** — 增加与服务端的对话同步能力
@@ -327,14 +342,14 @@ BaihuaSdk (移动端 SDK)
 ├─────────────────┼──────────────┼──────────────┼──────────────┼──────────────┤
 │ 流式对话        │ ✅+fb        │ ✅+fb+注入   │ ✅+fb        │ ✅+fb        │
 │ 数据驱逐        │ ✅ 自动      │ ✅ 自动      │ ⚠️ 手动      │ ⚠️ 依赖后端  │
-│ 知识库联动      │ ✅ 完整      │ ✅ 完整      │ ✅ 完整+UI   │ ✅ 完整      │
+│ 知识库联动      │ ✅ 完整+多选 │ ✅ 完整+多选 │ ✅ 完整+UI   │ ✅ 完整      │
 │ Markdown        │ ✅           │ ✅           │ ✅           │ ✅           │
 │ 画像编辑        │ ✅           │ ✅           │ ✅           │ ✅           │
 │ 快速提问        │ ✅           │ ✅           │ ✅           │ ✅           │
 │ 停止生成        │ ✅           │ ✅           │ ✅           │ ✅           │
 │ 阶段小结UI      │ ✅ 祝福+纠正 │ ✅ 纠正      │ ✅ 祝福+纠正 │ ✅ 祝福+纠正 │
 │ 祝福语          │ ✅ 本地模板   │ ✅ 本地模板   │ ✅ 后端生成  │ ✅ 后端返回  │
-│ AI预检          │ ✅ 调API     │ ✅ 5状态     │ ✅           │ ✅           │
+│ AI预检          │ ✅ 5状态     │ ✅ 5状态     │ ✅           │ ✅           │
 │ 对话同步        │ ❌           │ ❌           │ ❌           │ ✅ 双向      │
 │ 本地缓存        │ ❌           │ ❌           │ 聊天         │ 全量         │
 │ 离线可用        │ ✅           │ ✅           │ ❌           │ 部分         │
@@ -428,6 +443,7 @@ BaihuaSdk (移动端 SDK)
 | **第八轮** | 阶段祝福语 ✅<br>阶段完成小结UI(祝福+纠正) ✅<br>AI未配置警告 ✅ | AI预检5状态 ✅<br>阶段完成小结UI(纠正) ✅<br>知识库关联UI ✅ | — | 知识库关联UI(多选) ✅<br>阶段完成弹窗 ✅ |
 | **第九轮** | API Key预检增强(调/models) ✅ | — | 阶段完成弹窗(祝福+纠正) ✅<br>知识库关联UI(多选) ✅ | 关键纠正展示 ✅<br>免责声明增强(18+确认) ✅ |
 | **第十轮** | — | 阶段祝福语(StageBlessings) ✅<br>阶段完成弹窗增强(祝福+纠正) ✅<br>关键纠正AI生成+解析 ✅<br>免责声明增强(声明复选) ✅ | — | — |
+| **第十一轮** | AI预检5状态枚举+四色横幅 ✅<br>内容安全过滤(UNSAFE_KEYWORDS) ✅<br>知识库多选关联 ✅ | 内容安全过滤(ContentSafetyFilter) ✅<br>Prompt输入消毒(sanitize) ✅<br>知识库多选(VaultFocusStore Set) ✅<br>行业白名单(VALID_INDUSTRIES) ✅ | — | — |
 
 ### 已基本解决的问题 ✅
 
@@ -446,9 +462,10 @@ BaihuaSdk (移动端 SDK)
 | 阶段完成小结 UI | ✅ 全平台覆盖（鸿蒙/安卓/花圃含弹窗，WebUI 含弹窗+祝福+纠正） |
 | 阶段祝福语 | ✅ **全平台覆盖**（鸿蒙/安卓本地模板，WebUI/花圃后端生成） |
 | 关键纠正展示 | ✅ **全平台覆盖** |
-| API Key 预检 | ✅ **全平台覆盖**（鸿蒙调/models验证，安卓5状态枚举，WebUI/花圃API验证） |
+| API Key 预检 | ✅ **全平台覆盖**（鸿蒙/安卓5状态枚举+调/models验证，WebUI/花圃API验证） |
 | 免责声明 | ✅ **四端全覆盖**（含18+确认+声明复选） |
-| 知识库关联 UI | ✅ **全平台覆盖**（花圃/WebUI多选，鸿蒙/安卓单选弹窗） |
+| 知识库关联 UI | ✅ **全平台覆盖**（四端均支持多选切换） |
+| 内容安全过滤 | ✅ **全平台覆盖**（鸿蒙UNSAFE_KEYWORDS，安卓ContentSafetyFilter，WebUI/花圃服务端） |
 
 ### 仍需优化（按优先级）
 
