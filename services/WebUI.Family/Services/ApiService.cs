@@ -193,6 +193,11 @@ namespace WebUI.Services
         Task<AssessResponse> MasterAssessAsync(string masterId, string type = "capability", CancellationToken cancellationToken = default);
         Task<List<MasterListItem>> GetMastersAsync(CancellationToken cancellationToken = default);
         Task<bool> DeleteMasterAsync(string masterId, CancellationToken cancellationToken = default);
+        Task<MasterEvictResponse> EvictMasterAsync(string masterId, CancellationToken cancellationToken = default);
+        Task<ApprenticeProfileResponse> UpdateMasterProfileAsync(string masterId, UpdateProfileRequest request, CancellationToken cancellationToken = default);
+        Task<VaultFocusListResponse> GetVaultFocusAsync(string masterId, CancellationToken cancellationToken = default);
+        Task<VaultFocusUpdateResponse> UpdateVaultFocusAsync(string masterId, VaultFocusUpdateRequest request, CancellationToken cancellationToken = default);
+        Task<VaultFocusUpdateResponse> RemoveVaultFocusAsync(string masterId, string vaultId, CancellationToken cancellationToken = default);
     }
 
     public class ApiService : IApiService
@@ -2986,6 +2991,90 @@ namespace WebUI.Services
         {
             var response = await _httpClient.DeleteAsync($"/api/master/{masterId}", cancellationToken);
             return response.IsSuccessStatusCode;
+        }
+
+        public async Task<MasterEvictResponse> EvictMasterAsync(string masterId, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsync($"/api/master/{masterId}/evict", null, cancellationToken);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadFromJsonAsync<MasterEvictResponse>(cancellationToken)
+                    ?? new MasterEvictResponse { Success = false, Message = "清理失败" };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "清理师父数据失败，MasterId: {MasterId}", masterId);
+                return new MasterEvictResponse { Success = false, Message = $"清理失败：{ex.Message}" };
+            }
+        }
+
+        public async Task<ApprenticeProfileResponse> UpdateMasterProfileAsync(string masterId, UpdateProfileRequest request, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var json = JsonSerializer.Serialize(request);
+                var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await _httpClient.PutAsync($"/api/master/{masterId}/profile", httpContent, cancellationToken);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadFromJsonAsync<ApprenticeProfileResponse>(cancellationToken)
+                    ?? new ApprenticeProfileResponse { Success = false, Message = "更新失败" };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新师父画像失败，MasterId: {MasterId}", masterId);
+                return new ApprenticeProfileResponse { Success = false, Message = $"更新失败：{ex.Message}" };
+            }
+        }
+
+        public async Task<VaultFocusListResponse> GetVaultFocusAsync(string masterId, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"/api/master/{masterId}/vault-focus", cancellationToken);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadFromJsonAsync<VaultFocusListResponse>(cancellationToken)
+                    ?? new VaultFocusListResponse { Success = false, Message = "获取失败" };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取知识库关联失败，MasterId: {MasterId}", masterId);
+                return new VaultFocusListResponse { Success = false, Message = $"获取失败：{ex.Message}" };
+            }
+        }
+
+        public async Task<VaultFocusUpdateResponse> UpdateVaultFocusAsync(string masterId, VaultFocusUpdateRequest request, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var json = JsonSerializer.Serialize(request);
+                var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await _httpClient.PostAsync($"/api/master/{masterId}/vault-focus", httpContent, cancellationToken);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadFromJsonAsync<VaultFocusUpdateResponse>(cancellationToken)
+                    ?? new VaultFocusUpdateResponse { Success = false, Message = "操作失败" };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新知识库关联失败，MasterId: {MasterId}", masterId);
+                return new VaultFocusUpdateResponse { Success = false, Message = $"操作失败：{ex.Message}" };
+            }
+        }
+
+        public async Task<VaultFocusUpdateResponse> RemoveVaultFocusAsync(string masterId, string vaultId, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var response = await _httpClient.DeleteAsync($"/api/master/{masterId}/vault-focus/{vaultId}", cancellationToken);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadFromJsonAsync<VaultFocusUpdateResponse>(cancellationToken)
+                    ?? new VaultFocusUpdateResponse { Success = false, Message = "操作失败" };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "取消知识库关联失败，MasterId: {MasterId}", masterId);
+                return new VaultFocusUpdateResponse { Success = false, Message = $"操作失败：{ex.Message}" };
+            }
         }
 
         #endregion

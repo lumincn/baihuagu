@@ -53,7 +53,9 @@
                     <span class="stage-badge stage-@selectedMaster.CurrentStageOrder">@selectedMaster.CurrentStage</span>
                 </div>
                 <div class="master-actions">
+                    <button class="btn btn-sm btn-outline-secondary" @onclick="GoToProfile" title="画像">👤</button>
                     <button class="btn btn-sm btn-outline-secondary" @onclick="GoToStage">阶段进度</button>
+                    <button class="btn btn-sm btn-outline-info" @onclick="RunEvictAsync" title="清理旧数据">🧹</button>
                     <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteMasterAsync(selectedMaster.MasterId)">删除</button>
                 </div>
             </div>
@@ -63,6 +65,17 @@
             </div>
 
             <div class="chat-messages">
+                @if (chatMessages.Count == 0 && !isThinking)
+                {
+                    <div class="quick-questions">
+                        <div class="quick-hint">不知道该问什么？试试这些：</div>
+                        @foreach (var q in GetQuickQuestions())
+                        {
+                            <button class="quick-q-btn" @onclick="() => SetQuickQuestion(q)">@q</button>
+                        }
+                    </div>
+                }
+
                 @foreach (var msg in chatMessages)
                 {
                     <div class="message @(msg.IsUser ? "user" : "master")">
@@ -467,6 +480,34 @@
     .message-text :deep(pre code) { background: transparent; padding: 0; }
     .message-text :deep(blockquote) { border-left: 3px solid #2e8baf; padding: 0.3rem 0.5rem; margin: 0.3rem 0; background: rgba(255,255,255,0.05); }
     .message-text :deep(strong) { color: #fff; }
+    .quick-questions {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 2rem 1rem;
+    }
+    .quick-hint {
+        font-size: 0.9rem;
+        color: rgba(255,255,255,0.5);
+        margin-bottom: 0.5rem;
+    }
+    .quick-q-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        background: rgba(46,139,175,0.15);
+        border: 1px solid rgba(46,139,175,0.3);
+        color: rgba(220,235,245,0.9);
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        max-width: 80%;
+        text-align: center;
+    }
+    .quick-q-btn:hover {
+        background: rgba(46,139,175,0.25);
+        border-color: rgba(46,139,175,0.5);
+    }
 </style>
 
 @code {
@@ -716,6 +757,61 @@
         if (selectedMaster != null)
         {
             NavigationManager.NavigateTo($"master-stage?masterId={selectedMaster.MasterId}");
+        }
+    }
+
+    private void GoToProfile()
+    {
+        if (selectedMaster != null)
+        {
+            NavigationManager.NavigateTo($"master-profile?masterId={selectedMaster.MasterId}");
+        }
+    }
+
+    private List<string> GetQuickQuestions()
+    {
+        if (selectedMaster == null) return new();
+        return selectedMaster.CurrentStage switch
+        {
+            "入道" => new() { "我应该如何开始学习？", "请帮我制定一个学习计划", "这个考试的重点是什么？" },
+            "筑基" => new() { "如何打好基础？", "有哪些核心知识点必须掌握？", "请布置一些基础练习题" },
+            "精进" => new() { "如何突破薄弱环节？", "请详细讲解这个知识点", "有哪些常见的考试陷阱？" },
+            "磨砺" => new() { "请出一套模拟题", "考试时有哪些答题技巧？", "如何提高答题速度？" },
+            "出师" => new() { "如何做最后的冲刺？", "有哪些报考注意事项？", "请给我一些考前建议" },
+            _ => new() { "请帮我开始学习", "这个考试需要准备什么？", "请给我一些学习建议" }
+        };
+    }
+
+    private void SetQuickQuestion(string question)
+    {
+        inputMessage = question;
+    }
+
+    private async Task RunEvictAsync()
+    {
+        if (selectedMaster == null) return;
+        try
+        {
+            if (!await JSRuntime.InvokeAsync<bool>("confirm", "确定要清理旧数据吗？这将压缩7天前的对话并淘汰30天前的摘要。"))
+                return;
+
+            var result = await ApiService.EvictMasterAsync(selectedMaster.MasterId);
+            if (result.Success)
+            {
+                chatMessages.Add(new ChatMsg { IsUser = false, Content = $"✅ 数据清理完成：压缩 {result.CompressedStages} 个阶段，淘汰 {result.EvictedStages} 个阶段", Time = DateTime.Now });
+                StateHasChanged();
+                await SaveChatHistoryAsync();
+            }
+            else
+            {
+                chatMessages.Add(new ChatMsg { IsUser = false, Content = $"❌ {result.Message}", Time = DateTime.Now });
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            chatMessages.Add(new ChatMsg { IsUser = false, Content = $"清理失败：{ex.Message}", Time = DateTime.Now });
+            StateHasChanged();
         }
     }
 

@@ -15,6 +15,8 @@ public interface IMasterService
     Task<ApprenticeProfileResponse> UpdateProfileAsync(string masterId, UpdateProfileRequest request);
     IAsyncEnumerable<string> StreamChatAsync(string masterId, string message, string stage, List<ChatHistoryItem>? history = null, CancellationToken ct = default);
     Task<List<ChatHistoryItem>> GetConversationHistoryAsync(string masterId, int limit = 20);
+    Task<bool> GetDisclaimerAcceptedAsync(string masterId);
+    Task SetDisclaimerAcceptedAsync(string masterId);
     List<string> GetIndustries();
     string ResolveMasterName(string industry);
     bool IsMedicalOrLegalIndustry(string industry);
@@ -69,6 +71,16 @@ public class MasterService : IMasterService
         if (string.IsNullOrEmpty(industry)) return false;
         var lower = industry.ToLowerInvariant();
         return lower.Contains("医") || lower.Contains("药") || lower.Contains("法") || lower.Contains("律");
+    }
+
+    public async Task<bool> GetDisclaimerAcceptedAsync(string masterId)
+    {
+        return await _cacheService.GetDisclaimerAcceptedAsync(masterId);
+    }
+
+    public async Task SetDisclaimerAcceptedAsync(string masterId)
+    {
+        await _cacheService.SetDisclaimerAcceptedAsync(masterId, true);
     }
 
     private async Task<HttpTransport> CreateTransportAsync()

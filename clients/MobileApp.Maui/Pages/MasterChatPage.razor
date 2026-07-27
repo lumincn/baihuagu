@@ -6,7 +6,32 @@
 <PageTitle>@_profile?.MasterId - 拜师聊天</PageTitle>
 
 <div class="chat-page">
-    @if (_isLoading && _profile == null)
+    @if (_showDisclaimer)
+    {
+        <div class="disclaimer-overlay">
+            <div class="disclaimer-dialog">
+                <div class="disclaimer-icon">⚠️</div>
+                <div class="disclaimer-title">学习辅助声明</div>
+                <div class="disclaimer-text">
+                    <p>本应用提供的 AI 师父仅用于学习辅助，<strong>不能</strong>提供：</p>
+                    <ul>
+                        <li>真实的医疗诊断或处方</li>
+                        <li>真实的法律建议或代理</li>
+                        <li>其他需要专业资质的服务</li>
+                    </ul>
+                    <p>如有真实需求，请咨询持证专业人士。</p>
+                    @if (_isMedicalOrLegal)
+                    {
+                        <p class="disclaimer-warning">⚠️ 您选择的行业涉及医疗/法律，请确认您已年满 18 周岁。</p>
+                    }
+                </div>
+                <div class="disclaimer-actions">
+                    <button class="btn btn-primary" @onclick="@AcceptDisclaimerAsync">我已了解，继续使用</button>
+                </div>
+            </div>
+        </div>
+    }
+    else if (_isLoading && _profile == null)
     {
         <div class="loading-state">
             <div class="spinner"></div>
@@ -188,6 +213,16 @@
     .input-hint { padding: 0 1rem 0.5rem; font-size: 0.75rem; color: var(--text-tertiary); text-align: center; }
     @@keyframes blink { 50% { opacity: 0; } }
     @@keyframes typing { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-6px); opacity: 1; } }
+    .disclaimer-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1rem; }
+    .disclaimer-dialog { background: var(--card-bg); border-radius: 16px; padding: 1.5rem; max-width: 340px; width: 100%; border: 1px solid var(--border); }
+    .disclaimer-icon { font-size: 48px; text-align: center; margin-bottom: 0.75rem; }
+    .disclaimer-title { font-size: 1.2rem; font-weight: 600; text-align: center; margin-bottom: 1rem; }
+    .disclaimer-text { font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary); }
+    .disclaimer-text ul { padding-left: 1.2rem; margin: 0.5rem 0; }
+    .disclaimer-text li { margin-bottom: 0.25rem; }
+    .disclaimer-warning { color: #ff9800; font-weight: 500; margin-top: 0.75rem; padding: 0.5rem; background: rgba(255,152,0,0.1); border-radius: 8px; }
+    .disclaimer-actions { margin-top: 1.25rem; }
+    .disclaimer-actions .btn { width: 100%; }
 </style>
 
 @code {
@@ -205,6 +240,10 @@
     private CancellationTokenSource? _cts;
     private ElementReference _chatContainer;
 
+    private bool _showDisclaimer;
+    private bool _disclaimerAccepted;
+    private bool _isMedicalOrLegal;
+
     private bool CanSend => !_isSending && !string.IsNullOrWhiteSpace(_inputMessage);
     private string GetAvatar() => !string.IsNullOrEmpty(_profile?.MasterId) ? _profile.MasterId[..1].ToString() : "师";
     private string _stageTip = "";
@@ -212,7 +251,37 @@
     protected override async Task OnInitializedAsync()
     {
         if (!string.IsNullOrEmpty(MasterId))
+        {
             await ReloadProfileAsync();
+            if (_profile != null)
+            {
+                _isMedicalOrLegal = IsMedicalOrLegalIndustry(_profile.Industry);
+                var accepted = await MasterService.GetDisclaimerAcceptedAsync(MasterId);
+                if (!accepted)
+                {
+                    _showDisclaimer = true;
+                    StateHasChanged();
+                }
+            }
+        }
+    }
+
+    private async Task AcceptDisclaimerAsync()
+    {
+        _disclaimerAccepted = true;
+        _showDisclaimer = false;
+        if (!string.IsNullOrEmpty(MasterId))
+        {
+            await MasterService.SetDisclaimerAcceptedAsync(MasterId);
+        }
+        StateHasChanged();
+    }
+
+    private static bool IsMedicalOrLegalIndustry(string? industry)
+    {
+        if (string.IsNullOrEmpty(industry)) return false;
+        var lower = industry.ToLowerInvariant();
+        return lower.Contains("医") || lower.Contains("药") || lower.Contains("法") || lower.Contains("律");
     }
 
     private void GoBack()

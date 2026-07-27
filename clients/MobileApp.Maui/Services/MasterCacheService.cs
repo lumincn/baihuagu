@@ -14,6 +14,8 @@ public interface IMasterCacheService
     Task<List<MasterListItem>> GetCachedMastersAsync();
     Task CacheMastersAsync(List<MasterListItem> masters);
     Task ClearAllCacheAsync();
+    Task<bool> GetDisclaimerAcceptedAsync(string masterId);
+    Task SetDisclaimerAcceptedAsync(string masterId, bool accepted);
 }
 
 public class MasterCacheService : IMasterCacheService
@@ -22,6 +24,7 @@ public class MasterCacheService : IMasterCacheService
     private const string ConversationPrefix = "master_conv_";
     private const string ProfilePrefix = "master_profile_";
     private const string MastersKey = "master_list";
+    private const string DisclaimerPrefix = "master_disclaimer_";
     private const int MaxMessagesPerConversation = 200;
 
     public MasterCacheService(ISecureStore secureStore)
@@ -127,5 +130,18 @@ public class MasterCacheService : IMasterCacheService
     public async Task ClearAllCacheAsync()
     {
         await _secureStore.RemoveAsync(MastersKey);
+    }
+
+    public async Task<bool> GetDisclaimerAcceptedAsync(string masterId)
+    {
+        var key = DisclaimerPrefix + masterId;
+        var val = await _secureStore.GetAsync(key);
+        return val == "1";
+    }
+
+    public async Task SetDisclaimerAcceptedAsync(string masterId, bool accepted)
+    {
+        var key = DisclaimerPrefix + masterId;
+        await _secureStore.SetAsync(key, accepted ? "1" : "0");
     }
 }

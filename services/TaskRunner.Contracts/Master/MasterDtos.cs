@@ -87,3 +87,48 @@ public class MasterListItem
     public List<string> GraduatedStages { get; set; } = new();
     public DateTime CreatedAt { get; set; }
 }
+
+public class UpdateProfileRequest
+{
+    public string? Foundation { get; set; }
+    public string? LearningStyle { get; set; }
+    public string? Strengths { get; set; }
+    public string? Weaknesses { get; set; }
+}
+
+public class VaultFocusItem
+{
+    public string VaultId { get; set; } = "";
+    public string VaultName { get; set; } = "";
+    public string State { get; set; } = "";
+    public string? StageName { get; set; }
+    public DateTime UpdatedAt { get; set; }
+}
+
+public class VaultFocusListResponse
+{
+    public bool Success { get; set; }
+    public string Message { get; set; } = "";
+    public List<VaultFocusItem> Items { get; set; } = new();
+}
+
+public class VaultFocusUpdateRequest
+{
+    public string VaultId { get; set; } = "";
+    public string State { get; set; } = "focused";
+    public string? StageName { get; set; }
+}
+
+public class VaultFocusUpdateResponse
+{
+    public bool Success { get; set; }
+    public string Message { get; set; } = "";
+}
+
+public class MasterEvictResponse
+{
+    public bool Success { get; set; }
+    public string Message { get; set; } = "";
+    public int CompressedStages { get; set; }
+    public int EvictedStages { get; set; }
+}

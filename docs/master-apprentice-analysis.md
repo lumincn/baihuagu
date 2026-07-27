@@ -30,9 +30,9 @@
 | 流式降级 fallback | ✅ 🆕 | ✅ (非流式兜底) | ✅ (SSE 内置) | ✅ 🆕 |
 | 阶段摘要生成 | ✅ (AI 自动生成) | ✅ (advanceStage 触发) | ✅ (服务端) | ✅ (服务端) |
 | 工作记忆限制 | ✅ (20条) | ✅ (20条) | ✅ | ✅ (20条) |
-| 数据驱逐/压缩 | ✅ (7天/30天) | ✅ (7天/30天) | ❌ | ❌ |
-| 免责声明弹窗 | ✅ (含年龄确认) | ✅ (含年龄确认) | ✅ (含年龄确认) | ✅ (简化版) |
-| 知识库联动 | ✅ (数据+UI) 🆕 | ✅ (数据+UI+注入Prompt) | ❌ | ❌ |
+| 数据驱逐/压缩 | ✅ (7天/30天) | ✅ (7天/30天) | ✅ (服务端API) 🆕 | ✅ (服务端API) 🆕 |
+| 免责声明弹窗 | ✅ (含年龄确认) | ✅ (含年龄确认) | ✅ (含年龄确认) | ✅ (简化版) 🆕 |
+| 知识库联动 | ✅ (数据+UI) | ✅ (数据+UI+注入Prompt) | ✅ (服务端API) 🆕 | ✅ (服务端API) 🆕 |
 | Markdown 渲染 | ✅ 🆕 (SimpleMarkdown) | ✅ 🆕 (WebView) | ✅ (Markdig) | ✅ 🆕 (MarkdownView) |
 | 停止生成 | ❌ | ❌ | ✅ | ✅ |
 | 快速提问按钮 | ❌ | ✅ 🆕 | ❌ | ✅ 🆕 |
@@ -143,28 +143,30 @@
 
 ---
 
-### 3.3 WebUI (Blazor Server) — 第三轮
+### 3.3 WebUI (Blazor Server) — 第四轮优化
+
+**本轮优化亮点** 🆕
+- ✅ **数据驱逐** — 调用服务端 `POST /api/master/evict-all` 批量清理旧数据
+- ✅ **画像编辑** — `MasterProfile` 页面支持编辑学徒画像并保存
+- ✅ **知识库联动** — 获取/设置 VaultFocus 关联，支持解绑
+- ✅ **快速提问按钮** — 空状态显示预设引导问题
+- ✅ **流式 fallback** — SSE 失败后降级到非流式对话
 
 **优点**
-- ✅ 真正的 SSE 流式对话（内建 fallback 不需要额外实现）
+- ✅ 真正的 SSE 流式对话
 - ✅ 服务端统一管理，数据一致性好
 - ✅ Markdown 渲染支持（Markdig 库）
 - ✅ 双栏布局，师父列表与对话同屏
 - ✅ 停止生成功能
-- ✅ 与后端 API 版本同步，功能迭代快
 - ✅ AI 配置预检，友好提示
 - ✅ 本地聊天历史缓存（localStorage）
 - ✅ 免责声明弹窗
 - ✅ 删除师父功能
 - ✅ 阶段完成小结 UI
+- ✅ 数据驱逐、画像编辑、知识库联动（服务端 API 全覆盖）
 
 **缺点**
 - ❌ 需要服务端运行，无法独立运行
-- ❌ 无数据驱逐机制（服务端 API 未实现）
-- ❌ 无知识库联动
-- ❌ 无学徒画像编辑（仅查看）
-- ❌ 无快速提问按钮
-- ❌ 无流式 fallback（SSE 虽然稳定但网络异常仍需降级）
 - ❌ 依赖浏览器，移动端体验受限
 
 **文件位置**
@@ -173,15 +175,16 @@
 
 ---
 
-### 3.4 花圃 (MAUI) — 第三轮优化
+### 3.4 花圃 (MAUI) — 第四轮优化
 
 **本轮优化亮点** 🆕
-- ✅ **Markdown 渲染** — `MarkdownView` 组件完整支持（[MasterChatPage.razor#L80](file:///c:/Users/lumin/src/baihuagu/clients/MobileApp.Maui/Pages/MasterChatPage.razor#L80)）
-- ✅ **流式 fallback** — `TryCollectFallbackAsync` + `FallbackNonStreamChatAsync` 两级降级（[MasterService.cs#L273-L398](file:///c:/Users/lumin/src/baihuagu/clients/MobileApp.Maui/Services/MasterService.cs#L273-L398)）
-- ✅ **快速提问按钮** — 空状态时显示 3 个预设问题（[MasterChatPage.razor#L58-L62](file:///c:/Users/lumin/src/baihuagu/clients/MobileApp.Maui/Pages/MasterChatPage.razor#L58-L62)）
-- ✅ **画像编辑完整** — `MasterProfilePage` 查看/编辑双模式切换（[MasterProfilePage.razor#L23-L64](file:///c:/Users/lumin/src/baihuagu/clients/MobileApp.Maui/Pages/MasterProfilePage.razor#L23-L64)）
-- ✅ **阶段页面优化** — `MasterStagePage` 含阶段小结卡片、完成按钮、进度条（[MasterStagePage.razor#L47-L100](file:///c:/Users/lumin/src/baihuagu/clients/MobileApp.Maui/Pages/MasterStagePage.razor#L47-L100)）
-- ✅ **阶段完成弹窗** — 完成后展示师父寄语（[MasterStagePage.razor#L103-L127](file:///c:/Users/lumin/src/baihuagu/clients/MobileApp.Maui/Pages/MasterStagePage.razor#L103-L127)）
+- ✅ **免责声明弹窗** — 进入聊天时展示，医疗/法律行业额外提示（[MasterChatPage.razor#L9-L33](file:///c:/Users/lumin/src/baihuagu/clients/MobileApp.Maui/Pages/MasterChatPage.razor#L9-L33)）
+- ✅ **缓存持久化** — 免责声明接受状态通过 SecureStore 持久化（[MasterCacheService.cs#L135-L146](file:///c:/Users/lumin/src/baihuagu/clients/MobileApp.Maui/Services/MasterCacheService.cs#L135-L146)）
+- ✅ **Markdown 渲染** — `MarkdownView` 组件完整支持
+- ✅ **流式 fallback** — `TryCollectFallbackAsync` + `FallbackNonStreamChatAsync` 两级降级
+- ✅ **快速提问按钮** — 空状态时显示 3 个预设问题
+- ✅ **画像编辑完整** — `MasterProfilePage` 查看/编辑双模式切换
+- ✅ **阶段页面优化** — `MasterStagePage` 含阶段小结卡片、完成按钮、进度条
 
 **优点**
 - ✅ 基于服务端 API，数据与 WebUI 一致
@@ -195,14 +198,12 @@
 - ✅ 利用 BaihuaSdk 的签名通信，安全可靠
 - ✅ 跨平台（Android/iOS）
 - ✅ 事件驱动更新（OnProfileUpdated / OnMastersUpdated）
+- ✅ 免责声明弹窗（合规）
 
 **缺点**
 - ❌ 依赖服务端，离线不可用
-- ❌ 无数据驱逐机制（依赖服务端 API）
-- ❌ 无知识库联动
 - ❌ 对话历史仅本地缓存，不与服务端同步回写
 - ❌ 无 API Key 预检（依赖服务端配置）
-- ❌ 无免责声明弹窗（需补充）
 
 **文件位置**
 - 数据模型：`Services/MasterModels.cs`
@@ -218,16 +219,17 @@
 
 | 维度 | 最强 | 中等 | 最弱 |
 |------|------|------|------|
-| 流式对话 | 安卓（Flow+fallback+Prompt注入） | 鸿蒙、花圃（流式+fallback） | WebUI（仅SSE） |
+| 流式对话 | 安卓（Flow+fallback+Prompt注入） | 鸿蒙、花圃（流式+fallback） | WebUI（SSE+fallback） |
 | Markdown 渲染 | 全平台已覆盖 ✅ | — | — |
-| 数据驱逐 | 鸿蒙、安卓 | — | WebUI、花圃 |
-| 知识库联动 | 安卓（数据+UI+Prompt注入） | 鸿蒙（数据+UI） | WebUI、花圃 |
-| 画像管理 | 花圃（可编辑） | 鸿蒙、安卓、WebUI（只读） | — |
-| 快速提问 | 安卓、花圃 | — | 鸿蒙、WebUI |
+| 数据驱逐 | 鸿蒙、安卓（本地）、WebUI/花圃（服务端） | — | — |
+| 知识库联动 | 安卓（数据+UI+Prompt注入） | 鸿蒙（数据+UI）、WebUI/花圃（服务端API） | — |
+| 画像管理 | 花圃（可编辑）、WebUI（可编辑） | 鸿蒙、安卓（只读） | — |
+| 快速提问 | 安卓、花圃、WebUI | — | 鸿蒙 |
 | 停止生成 | WebUI、花圃 | — | 鸿蒙、安卓 |
 | 本地缓存 | 花圃（全量SecureStore） | WebUI（localStorage聊天） | 鸿蒙、安卓（仅SQLite） |
 | 离线可用 | 鸿蒙、安卓（纯本地） | 花圃（缓存优先） | WebUI（必须在线） |
-| 容错性 | 安卓（fallback+Prompt注入） | 鸿蒙、花圃（fallback） | WebUI |
+| 容错性 | 安卓（fallback+Prompt注入） | 鸿蒙、花圃、WebUI（fallback） | — |
+| 免责声明 | 全平台已覆盖 ✅ | — | — |
 
 ### 4.2 各平台待优化项
 
@@ -241,22 +243,20 @@
 #### 🔴 安卓版
 1. **添加停止生成功能** — 支持中断正在进行的流式对话
 2. **添加学徒画像编辑** — 参考花圃 `MasterProfilePage`
-3. **添加快速提问按钮** — 已实现 ✅，但可考虑与鸿蒙/花圃统一文案
-4. **Key 安全处理** — 同鸿蒙
+3. **Key 安全处理** — 同鸿蒙
 
-#### 🟡 WebUI
-1. **添加数据驱逐机制** — 服务端实现 API，前端调用
-2. **添加知识库联动** — 对接 VaultFocus API
-3. **添加快速提问按钮** — 参考花圃/安卓实现
-4. **添加学徒画像编辑** — 参考花圃实现
-5. **添加流式 fallback** — 网络异常降级处理
+#### ✅ WebUI（本轮已优化）
+1. ~~数据驱逐机制~~ ✅ 已实现
+2. ~~知识库联动~~ ✅ 已实现
+3. ~~快速提问按钮~~ ✅ 已实现
+4. ~~学徒画像编辑~~ ✅ 已实现
+5. ~~流式 fallback~~ ✅ 已实现
+6. **对话历史持久化** — 当前仅 localStorage，可考虑服务端同步
 
-#### 🟡 花圃
-1. **添加数据驱逐机制** — 调用服务端 API 清理旧数据
-2. **添加知识库联动** — 对接服务端 VaultFocus API
-3. **对话历史双向同步** — 本地缓存回写服务端
-4. **添加免责声明弹窗** — 鸿蒙/安卓/WebUI 均已实现
-5. **添加 API Key 预检** — 虽然依赖服务端，但可检查服务端 AI 配置状态
+#### ✅ 花圃（本轮已优化）
+1. ~~免责声明弹窗~~ ✅ 已实现
+2. **对话历史双向同步** — 本地缓存回写服务端
+3. **添加 API Key 预检** — 虽然依赖服务端，但可检查服务端 AI 配置状态
 
 ### 4.3 跨平台统一建议
 
@@ -322,54 +322,51 @@ BaihuaSdk (移动端 SDK)
 
 ## 六、总结
 
-### 三轮优化成果演进
+### 四轮优化成果演进
 
 | 轮次 | 鸿蒙 | 安卓 | WebUI | 花圃 |
 |------|------|------|-------|------|
 | 第一轮 | 流式对话 ✅<br>免责声明 ✅<br>数据驱逐 ✅ | 真正流式 ✅<br>免责声明 ✅<br>数据驱逐 ✅ | AI 配置检查 ✅<br>localStorage ✅ | 本地缓存 ✅<br>画像编辑 ✅<br>快速提问 ✅ |
 | 第二轮 | 流式 fallback ✅<br>Markdown ✅<br>知识库 UI ✅ | 知识库联动 ✅<br>Prompt 注入 ✅ | — | — |
-| **第三轮** | Markdown ✅<br>知识库 UI ✅<br>fallback ✅ | Markdown ✅<br>快速提问 ✅<br>Prompt 注入 ✅ | 删除师父 ✅ | Markdown ✅<br>fallback ✅<br>快速提问 ✅<br>页面优化 ✅ |
+| 第三轮 | Markdown ✅<br>知识库 UI ✅<br>fallback ✅ | Markdown ✅<br>快速提问 ✅<br>Prompt 注入 ✅ | 删除师父 ✅ | Markdown ✅<br>fallback ✅<br>快速提问 ✅<br>页面优化 ✅ |
+| **第四轮** | — | — | 数据驱逐 ✅<br>画像编辑 ✅<br>知识库联动 ✅<br>快速提问 ✅<br>fallback ✅ | 免责声明 ✅<br>缓存持久化 ✅ |
 
 ### 已基本解决的问题 ✅
 
 | 问题 | 解决情况 |
 |------|----------|
 | Markdown 渲染 | ✅ 四端全覆盖 |
-| 流式 fallback | ✅ 鸿蒙/安卓/花圃已实现，WebUI SSE 天然稳定 |
-| 知识库联动 | ✅ 鸿蒙/安卓（数据+UI），安卓最完整（含 Prompt 注入） |
+| 流式 fallback | ✅ 全平台已实现 |
+| 知识库联动 | ✅ 全平台覆盖（安卓最完整） |
 | 免责声明 | ✅ 四端全覆盖 |
-| 学徒画像 | ✅ 花圃可编辑，其余三端只读 |
-| 快速提问 | ✅ 安卓/花圃已实现 |
+| 学徒画像 | ✅ 花圃/WebUI 可编辑，鸿蒙/安卓只读 |
+| 快速提问 | ✅ 安卓/花圃/WebUI 已实现 |
 | 停止生成 | ✅ WebUI/花圃已实现 |
 | 本地缓存 | ✅ WebUI（聊天）、花圃（全量） |
+| 数据驱逐 | ✅ 全平台覆盖 |
+| 流式 fallback | ✅ WebUI 已补充 |
 
 ### 仍需优化（按优先级）
 
 **P0 — 核心缺失（影响所有平台用户体验）**
-1. **服务端数据驱逐 API** — WebUI/花圃无数据清理机制，长期使用数据膨胀
-2. **服务端知识库联动 API** — WebUI/花圃完全不支持 VaultFocus
+1. **鸿蒙/安卓 停止生成** — 无法中断 AI 生成
+2. **鸿蒙/安卓 画像编辑** — 只读模式无法让学徒修正画像
 
 **P1 — 功能补强（影响单平台体验）**
-3. **鸿蒙/安卓 停止生成** — 无法中断 AI 生成
-4. **鸿蒙/安卓 画像编辑** — 只读模式无法让学徒修正画像
-5. **鸿蒙/安卓 快速提问** — 降低新用户门槛
-6. **鸿蒙 知识库 Prompt 注入** — 关联了知识库但对话未利用
+3. **鸿蒙 快速提问** — 降低新用户门槛
+4. **鸿蒙 知识库 Prompt 注入** — 关联了知识库但对话未利用
+5. **对话历史双向同步** — 移动端缓存回写服务端
 
-**P2 — 体验增强**
-7. **WebUI 快速提问按钮**
-8. **WebUI 画像编辑**
-9. **花圃 免责声明弹窗**
-10. **对话历史双向同步** — 移动端缓存回写服务端
-
-**P3 — 架构改进**
-11. **统一 Prompt 管理** — `Core.Shared` 集中维护
-12. **统一声明文案**
-13. **鸿蒙/安卓 Key 安全** — 迁移至服务端
+**P2 — 架构改进**
+6. **统一 Prompt 管理** — `Core.Shared` 集中维护
+7. **统一声明文案**
+8. **鸿蒙/安卓 Key 安全** — 迁移至服务端
+9. **WebUI 对话历史持久化** — 当前仅 localStorage
 
 ### 下一步建议
 
-1. **服务端优先** — 在 `TaskRunner.Family` 中实现数据驱逐和知识库联动 API
-2. **客户端跟进** — WebUI 和花圃先接入新 API，验证后再推广到鸿蒙/安卓
-3. **功能对齐** — 鸿蒙/安卓补充停止生成、画像编辑、快速提问
-4. **架构统一** — Prompt 管理迁移到 `Core.Shared`，四端引用同一模板
+1. **鸿蒙/安卓功能对齐** — 补充停止生成、画像编辑、快速提问
+2. **架构统一** — Prompt 管理迁移到 `Core.Shared`，四端引用同一模板
+3. **对话历史同步** — 移动端缓存与服务端双向同步
+4. **Key 安全迁移** — 鸿蒙/安卓将 AI Key 迁移至服务端
 5. **真机验证** — 所有变更部署到设备测试

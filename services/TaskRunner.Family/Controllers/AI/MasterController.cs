@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using TaskRunner.Contracts.Ai;
 using TaskRunner.Contracts.Master;
+using TaskRunner.Contracts.Vaults;
 using TaskRunner.Data;
 using TaskRunner.Data.Entities;
 using TaskRunner.Models;
@@ -18,6 +19,8 @@ public partial class MasterController : ControllerBase
     private readonly AiSettingsService _aiSettings;
     private readonly MasterPromptBuilder _promptBuilder;
     private readonly IDbContextFactory<FamilyDbContext> _dbFactory;
+    private readonly VaultSettingsService _vaultSettings;
+    private readonly VaultNoteIndexer _vaultNoteIndexer;
     private readonly ILogger<MasterController> _logger;
 
     public MasterController(
@@ -25,12 +28,16 @@ public partial class MasterController : ControllerBase
         AiSettingsService aiSettings,
         MasterPromptBuilder promptBuilder,
         IDbContextFactory<FamilyDbContext> dbFactory,
+        VaultSettingsService vaultSettings,
+        VaultNoteIndexer vaultNoteIndexer,
         ILogger<MasterController> logger)
     {
         _aiClientService = aiClientService;
         _aiSettings = aiSettings;
         _promptBuilder = promptBuilder;
         _dbFactory = dbFactory;
+        _vaultSettings = vaultSettings;
+        _vaultNoteIndexer = vaultNoteIndexer;
         _logger = logger;
     }
 
@@ -181,6 +188,18 @@ public partial class MasterController : ControllerBase
                 stageSummary: finalSummary,
                 recentHistory: request.History,
                 userMessage: request.Message);
+
+            var vaultContext = await BuildVaultContextAsync(db, request.MasterId, request.Message);
+            if (!string.IsNullOrEmpty(vaultContext))
+            {
+                var lastUserIndex = messages.FindLastIndex(m => m.Role == ChatRole.User);
+                if (lastUserIndex >= 0)
+                {
+                    messages[lastUserIndex] = new ChatMessage(ChatRole.User,
+                        $"{vaultContext}\n\n---\n\n{request.Message}");
+                    await SendSse("vault", System.Text.Json.JsonSerializer.Serialize(new { enriched = true }));
+                }
+            }
 
             using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(_aiSettings.AiRequestTimeoutMinutes));
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(HttpContext.RequestAborted, timeoutCts.Token);
@@ -665,5 +684,350 @@ public partial class MasterController : ControllerBase
             "出师" => 5,
             _ => 0
         };
+    }
+
+    [HttpPut("{id}/profile")]
+    public async Task<ActionResult<ApprenticeProfileResponse>> UpdateProfile(string id, [FromBody] UpdateProfileRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+            return BadRequest(new ApprenticeProfileResponse { Success = false, Message = "师父ID不能为空" });
+
+        try
+        {
+            await using var db = await _dbFactory.CreateDbContextAsync();
+            var master = await db.Masters.FirstOrDefaultAsync(m => m.MasterId == id);
+            if (master == null)
+                return NotFound(new ApprenticeProfileResponse { Success = false, Message = "师父不存在" });
+
+            var profile = await db.ApprenticeProfiles.FirstOrDefaultAsync(p => p.MasterId == id);
+            if (profile == null)
+            {
+                profile = new ApprenticeProfile { MasterId = id };
+                db.ApprenticeProfiles.Add(profile);
+            }
+
+            if (request.Foundation != null) profile.Foundation = request.Foundation;
+            if (request.LearningStyle != null) profile.LearningStyle = request.LearningStyle;
+            if (request.Strengths != null) profile.Strengths = request.Strengths;
+            if (request.Weaknesses != null) profile.Weaknesses = request.Weaknesses;
+            profile.UpdatedAt = DateTime.Now;
+
+            await db.SaveChangesAsync();
+
+            var graduated = System.Text.Json.JsonSerializer.Deserialize<List<string>>(master.GraduatedStagesJson) ?? new();
+
+            return Ok(new ApprenticeProfileResponse
+            {
+                Success = true,
+                Message = "画像更新成功",
+                MasterId = id,
+                Goal = master.Goal,
+                Foundation = profile.Foundation,
+                LearningStyle = profile.LearningStyle,
+                Strengths = profile.Strengths,
+                Weaknesses = profile.Weaknesses,
+                GraduatedStages = graduated,
+                CurrentStage = master.CurrentStage,
+                UpdatedAt = profile.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss")
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "更新画像失败");
+            return StatusCode(500, new ApprenticeProfileResponse { Success = false, Message = $"更新失败：{ex.Message}" });
+        }
+    }
+
+    [HttpGet("{id}/vault-focus")]
+    public async Task<ActionResult<VaultFocusListResponse>> GetVaultFocus(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+            return BadRequest(new VaultFocusListResponse { Success = false, Message = "师父ID不能为空" });
+
+        await using var db = await _dbFactory.CreateDbContextAsync();
+        var master = await db.Masters.FirstOrDefaultAsync(m => m.MasterId == id);
+        if (master == null)
+            return NotFound(new VaultFocusListResponse { Success = false, Message = "师父不存在" });
+
+        var focusStates = await db.VaultFocusStates
+            .Where(v => v.MasterId == id && v.State == "focused")
+            .OrderByDescending(v => v.UpdatedAt)
+            .ToListAsync();
+
+        var vaults = _vaultSettings.GetVaults();
+        var vaultNameMap = vaults.ToDictionary(v => v.Id, v => v.Name);
+
+        var items = focusStates.Select(v => new VaultFocusItem
+        {
+            VaultId = v.VaultId,
+            VaultName = vaultNameMap.GetValueOrDefault(v.VaultId, "未知知识库"),
+            State = v.State,
+            StageName = v.StageName,
+            UpdatedAt = v.UpdatedAt
+        }).ToList();
+
+        return Ok(new VaultFocusListResponse
+        {
+            Success = true,
+            Message = "获取知识库关联成功",
+            Items = items
+        });
+    }
+
+    [HttpPost("{id}/vault-focus")]
+    public async Task<ActionResult<VaultFocusUpdateResponse>> UpdateVaultFocus(string id, [FromBody] VaultFocusUpdateRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+            return BadRequest(new VaultFocusUpdateResponse { Success = false, Message = "师父ID不能为空" });
+        if (string.IsNullOrWhiteSpace(request.VaultId))
+            return BadRequest(new VaultFocusUpdateResponse { Success = false, Message = "知识库ID不能为空" });
+
+        try
+        {
+            await using var db = await _dbFactory.CreateDbContextAsync();
+            var master = await db.Masters.FirstOrDefaultAsync(m => m.MasterId == id);
+            if (master == null)
+                return NotFound(new VaultFocusUpdateResponse { Success = false, Message = "师父不存在" });
+
+            var existing = await db.VaultFocusStates
+                .FirstOrDefaultAsync(v => v.MasterId == id && v.VaultId == request.VaultId);
+
+            if (existing == null)
+            {
+                db.VaultFocusStates.Add(new VaultFocusState
+                {
+                    MasterId = id,
+                    VaultId = request.VaultId,
+                    State = request.State,
+                    StageName = request.StageName,
+                    UpdatedAt = DateTime.Now
+                });
+            }
+            else
+            {
+                existing.State = request.State;
+                existing.StageName = request.StageName;
+                existing.UpdatedAt = DateTime.Now;
+            }
+
+            await db.SaveChangesAsync();
+
+            _logger.LogInformation("师父 {MasterId} 知识库关联更新：{VaultId} -> {State}", id, request.VaultId, request.State);
+
+            return Ok(new VaultFocusUpdateResponse
+            {
+                Success = true,
+                Message = request.State == "focused" ? "知识库已关联" : "知识库已取消关联"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "知识库关联更新失败");
+            return StatusCode(500, new VaultFocusUpdateResponse { Success = false, Message = $"操作失败：{ex.Message}" });
+        }
+    }
+
+    [HttpDelete("{id}/vault-focus/{vaultId}")]
+    public async Task<ActionResult<VaultFocusUpdateResponse>> RemoveVaultFocus(string id, string vaultId)
+    {
+        if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(vaultId))
+            return BadRequest(new VaultFocusUpdateResponse { Success = false, Message = "参数不能为空" });
+
+        try
+        {
+            await using var db = await _dbFactory.CreateDbContextAsync();
+            var existing = await db.VaultFocusStates
+                .FirstOrDefaultAsync(v => v.MasterId == id && v.VaultId == vaultId);
+
+            if (existing == null)
+                return NotFound(new VaultFocusUpdateResponse { Success = false, Message = "关联不存在" });
+
+            existing.State = "archived";
+            existing.UpdatedAt = DateTime.Now;
+            await db.SaveChangesAsync();
+
+            return Ok(new VaultFocusUpdateResponse { Success = true, Message = "已取消关联" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "取消知识库关联失败");
+            return StatusCode(500, new VaultFocusUpdateResponse { Success = false, Message = $"操作失败：{ex.Message}" });
+        }
+    }
+
+    [HttpPost("evict-all")]
+    public async Task<ActionResult<MasterEvictResponse>> EvictAll()
+    {
+        try
+        {
+            await using var db = await _dbFactory.CreateDbContextAsync();
+            var masters = await db.Masters.Where(m => m.Status == "active").ToListAsync();
+
+            int compressedCount = 0;
+            int evictedCount = 0;
+
+            foreach (var master in masters)
+            {
+                var graduated = System.Text.Json.JsonSerializer.Deserialize<List<string>>(master.GraduatedStagesJson) ?? new();
+                var compressCutoff = DateTime.Now.AddDays(-7);
+
+                foreach (var stage in graduated)
+                {
+                    var existingSummary = await db.StageSummaries
+                        .FirstOrDefaultAsync(s => s.MasterId == master.MasterId && s.StageName == stage);
+                    if (existingSummary != null) continue;
+
+                    var conversations = await db.MasterConversations
+                        .Where(c => c.MasterId == master.MasterId && c.Stage == stage && c.CreatedAt < compressCutoff)
+                        .OrderBy(c => c.CreatedAt)
+                        .ToListAsync();
+
+                    if (conversations.Count == 0) continue;
+
+                    try
+                    {
+                        var (provider, model) = ResolveProviderAndModel(null, null);
+                        var convText = string.Join("\n", conversations.Select(c => $"{c.Role}: {c.Content}"));
+                        var summaryPrompt = $"请为以下对话生成简洁摘要（200字以内），提取关键知识点和学习要点：\n\n{TruncateText(convText, 3000)}";
+                        var messages = new List<ChatMessage>
+                        {
+                            new(ChatRole.System, "你是一位学习记录整理专家，请简洁客观地总结对话内容。"),
+                            new(ChatRole.User, summaryPrompt)
+                        };
+                        var options = AiClientService.BuildChatOptions(temperature: 0.3f, maxOutputTokens: 500);
+                        var response = await _aiClientService.GetChatResponseWithAutoStartAsync(
+                            provider, model, messages, options, HttpContext.RequestAborted, operation: "master-bulk-compress");
+
+                        var summary = response.Text ?? "";
+
+                        db.StageSummaries.Add(new StageSummary
+                        {
+                            MasterId = master.MasterId,
+                            StageName = stage,
+                            Summary = summary
+                        });
+
+                        db.MasterConversations.RemoveRange(conversations);
+                        compressedCount++;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "批量压缩失败：师父 {MasterId} 阶段 {Stage}", master.MasterId, stage);
+                    }
+                }
+
+                var evictCutoff = DateTime.Now.AddDays(-30);
+                var profile = await db.ApprenticeProfiles.FirstOrDefaultAsync(p => p.MasterId == master.MasterId);
+                if (profile == null)
+                {
+                    profile = new ApprenticeProfile { MasterId = master.MasterId };
+                    db.ApprenticeProfiles.Add(profile);
+                }
+
+                foreach (var stage in graduated)
+                {
+                    var summary = await db.StageSummaries
+                        .FirstOrDefaultAsync(s => s.MasterId == master.MasterId && s.StageName == stage);
+                    if (summary == null || summary.CreatedAt > evictCutoff) continue;
+
+                    try
+                    {
+                        var (provider, model) = ResolveProviderAndModel(null, null);
+                        var profilePrompt = $"根据以下阶段学习摘要，提取学徒的核心能力画像（基础、学习风格、优势、薄弱点），以JSON格式返回：{{\"foundation\": \"...\", \"learningStyle\": \"...\", \"strengths\": \"...\", \"weaknesses\": \"...\"}}\n\n阶段：{stage}\n摘要：{summary.Summary}";
+                        var messages = new List<ChatMessage>
+                        {
+                            new(ChatRole.System, "你是一位学习评估专家，请客观提取学徒能力画像。"),
+                            new(ChatRole.User, profilePrompt)
+                        };
+                        var options = AiClientService.BuildChatOptions(temperature: 0.3f, maxOutputTokens: 500);
+                        var response = await _aiClientService.GetChatResponseWithAutoStartAsync(
+                            provider, model, messages, options, HttpContext.RequestAborted, operation: "master-bulk-evict");
+
+                        var result = response.Text ?? "";
+                        try
+                        {
+                            var jsonStart = result.IndexOf('{');
+                            var jsonEnd = result.LastIndexOf('}');
+                            if (jsonStart >= 0 && jsonEnd > jsonStart)
+                            {
+                                var json = result.Substring(jsonStart, jsonEnd - jsonStart + 1);
+                                var doc = System.Text.Json.JsonDocument.Parse(json);
+                                if (doc.RootElement.TryGetProperty("foundation", out var f) && !string.IsNullOrEmpty(f.GetString()))
+                                    profile.Foundation = (profile.Foundation ?? "") + $"[{stage}] {f.GetString()}; ";
+                                if (doc.RootElement.TryGetProperty("learningStyle", out var ls) && !string.IsNullOrEmpty(ls.GetString()))
+                                    profile.LearningStyle = ls.GetString();
+                                if (doc.RootElement.TryGetProperty("strengths", out var s) && !string.IsNullOrEmpty(s.GetString()))
+                                    profile.Strengths = (profile.Strengths ?? "") + $"[{stage}] {s.GetString()}; ";
+                                if (doc.RootElement.TryGetProperty("weaknesses", out var w) && !string.IsNullOrEmpty(w.GetString()))
+                                    profile.Weaknesses = (profile.Weaknesses ?? "") + $"[{stage}] {w.GetString()}; ";
+                            }
+                        }
+                        catch { }
+
+                        db.StageSummaries.Remove(summary);
+                        var remainingConvs = await db.MasterConversations
+                            .Where(c => c.MasterId == master.MasterId && c.Stage == stage)
+                            .ToListAsync();
+                        db.MasterConversations.RemoveRange(remainingConvs);
+                        evictedCount++;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "批量淘汰失败：师父 {MasterId} 阶段 {Stage}", master.MasterId, stage);
+                    }
+                }
+            }
+
+            await db.SaveChangesAsync();
+            _logger.LogInformation("批量数据驱逐完成：压缩 {Compressed} 阶段，淘汰 {Evicted} 阶段", compressedCount, evictedCount);
+
+            return Ok(new MasterEvictResponse
+            {
+                Success = true,
+                Message = $"数据驱逐完成：压缩 {compressedCount} 个阶段，淘汰 {evictedCount} 个阶段",
+                CompressedStages = compressedCount,
+                EvictedStages = evictedCount
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "批量数据驱逐失败");
+            return StatusCode(500, new MasterEvictResponse { Success = false, Message = $"驱逐失败：{ex.Message}" });
+        }
+    }
+
+    private async Task<string?> BuildVaultContextAsync(FamilyDbContext db, string masterId, string userMessage)
+    {
+        if (string.IsNullOrWhiteSpace(userMessage)) return null;
+
+        var focusedVaults = await db.VaultFocusStates
+            .Where(v => v.MasterId == masterId && v.State == "focused")
+            .ToListAsync();
+
+        if (focusedVaults.Count == 0) return null;
+
+        var vaultIds = focusedVaults.Select(v => v.VaultId).ToList();
+        var results = new List<string>();
+
+        foreach (var vaultId in vaultIds)
+        {
+            try
+            {
+                var searchResults = await _vaultNoteIndexer.SearchAsync(vaultId, userMessage);
+                if (searchResults.Count == 0) continue;
+
+                var context = string.Join("\n", searchResults.Take(3).Select(r =>
+                    $"📄 **{r.Title}**\n{r.Preview}"));
+                results.Add(context);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "知识库检索失败：{VaultId}", vaultId);
+            }
+        }
+
+        if (results.Count == 0) return null;
+
+        return $"以下是关联知识库中的相关内容，请结合这些内容回答：\n\n{string.Join("\n---\n", results)}";
     }
 }
