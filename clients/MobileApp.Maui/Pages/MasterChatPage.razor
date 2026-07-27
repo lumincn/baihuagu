@@ -23,10 +23,18 @@
                     @if (_isMedicalOrLegal)
                     {
                         <p class="disclaimer-warning">⚠️ 您选择的行业涉及医疗/法律，请确认您已年满 18 周岁。</p>
+                        <label class="disclaimer-checkbox">
+                            <input type="checkbox" @bind="_confirmedAge" />
+                            我已年满 18 周岁
+                        </label>
                     }
+                    <label class="disclaimer-checkbox">
+                        <input type="checkbox" @bind="_confirmedDisclaimer" />
+                        我已阅读并同意以上声明
+                    </label>
                 </div>
                 <div class="disclaimer-actions">
-                    <button class="btn btn-primary" @onclick="@AcceptDisclaimerAsync">我已了解，继续使用</button>
+                    <button class="btn btn-primary" @onclick="@AcceptDisclaimerAsync" disabled="@(!CanAcceptDisclaimer)">我已了解，继续使用</button>
                 </div>
             </div>
         </div>
@@ -232,6 +240,8 @@
     .disclaimer-text ul { padding-left: 1.2rem; margin: 0.5rem 0; }
     .disclaimer-text li { margin-bottom: 0.25rem; }
     .disclaimer-warning { color: #ff9800; font-weight: 500; margin-top: 0.75rem; padding: 0.5rem; background: rgba(255,152,0,0.1); border-radius: 8px; }
+    .disclaimer-checkbox { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer; }
+    .disclaimer-checkbox input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary-color); }
     .disclaimer-actions { margin-top: 1.25rem; }
     .disclaimer-actions .btn { width: 100%; }
     .ai-warning-banner { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(255,152,0,0.15); border-bottom: 1px solid rgba(255,152,0,0.3); }
@@ -258,9 +268,12 @@
     private bool _showDisclaimer;
     private bool _disclaimerAccepted;
     private bool _isMedicalOrLegal;
+    private bool _confirmedAge;
+    private bool _confirmedDisclaimer;
     private bool _aiConfigured = true;
     private bool _aiCheckDone;
 
+    private bool CanAcceptDisclaimer => _confirmedDisclaimer && (!_isMedicalOrLegal || _confirmedAge);
     private bool CanSend => !_isSending && !string.IsNullOrWhiteSpace(_inputMessage) && _aiConfigured;
     private string GetAvatar() => !string.IsNullOrEmpty(_profile?.MasterId) ? _profile.MasterId[..1].ToString() : "师";
     private string _stageTip = "";

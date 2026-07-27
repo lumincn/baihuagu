@@ -44,6 +44,8 @@ public class StageCompleteResponse
     public string Message { get; set; } = "";
     public string NextStage { get; set; } = "";
     public string Summary { get; set; } = "";
+    public string Blessing { get; set; } = "";
+    public string KeyCorrections { get; set; } = "";
 }
 
 public class ApprenticeProfileResponse

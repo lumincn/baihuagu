@@ -273,17 +273,47 @@ public partial class MasterController : ControllerBase
             var (provider, model) = ResolveProviderAndModel(null, null);
 
             var summaryPrompt = $"请为学徒在「{request.StageName}」阶段的学习生成一份简洁摘要（200字以内），包括：已掌握的知识点、仍需加强的方面、对下一阶段的建议。";
-            var messages = new List<ChatMessage>
+            var summaryMessages = new List<ChatMessage>
             {
                 new(ChatRole.System, "你是一位学习评估专家，请简洁客观地总结学习成果。"),
                 new(ChatRole.User, summaryPrompt)
             };
 
             var options = AiClientService.BuildChatOptions(temperature: 0.3f, maxOutputTokens: 500);
-            var response = await _aiClientService.GetChatResponseWithAutoStartAsync(
-                provider, model, messages, options, HttpContext.RequestAborted, operation: "master-stage-summary");
+            var summaryResponse = await _aiClientService.GetChatResponseWithAutoStartAsync(
+                provider, model, summaryMessages, options, HttpContext.RequestAborted, operation: "master-stage-summary");
 
-            var summary = response.Text ?? "";
+            var summary = summaryResponse.Text ?? "";
+
+            var stageRoleMap = new Dictionary<string, string>
+            {
+                ["入道"] = "引路人", ["筑基"] = "严师", ["精进"] = "匠人", ["磨砺"] = "考官", ["出师"] = "前辈"
+            };
+            var stageBlessings = new Dictionary<string, string[]>
+            {
+                ["入道"] = ["{name}微微一笑：你已迈出第一步，路虽远，行则将至。", "{name}点头道：基础已定，前路可期。", "{name}轻声道：入门虽易，守道方难，望你持之。"],
+                ["筑基"] = ["{name}欣慰道：根基已固，风雨不惧。", "{name}正色道：基础扎实，方可远行。", "{name}赞许道：功课不辍，根基日深。"],
+                ["精进"] = ["{name}含笑道：技艺渐精，已得匠心。", "{name}颔首道：细节之处见真功，你已入门径。", "{name}欣慰道：精益求精，方显匠人本色。"],
+                ["磨砺"] = ["{name}严肃道：百炼成钢，你已堪一战。", "{name}点头道：模拟虽苦，实战方从容。", "{name}正色道：考场如战场，你已备甲胄。"],
+                ["出师"] = ["{name}长揖道：吾徒已成，前路珍重。", "{name}含泪道：青出于蓝，不负所望。", "{name}微笑道：山高路远，愿你前程似锦。"],
+            };
+            var blessing = "";
+            if (stageBlessings.TryGetValue(request.StageName, out var templates))
+            {
+                var role = stageRoleMap.GetValueOrDefault(request.StageName, "师父");
+                var template = templates[Random.Shared.Next(templates.Length)];
+                blessing = template.Replace("{name}", master.MasterName).Replace("{stage}", request.StageName).Replace("{role}", role);
+            }
+
+            var correctionsPrompt = $"请指出学徒在「{request.StageName}」阶段学习中需要重点纠正的2-3个关键问题（100字以内），若无则回复'无'。";
+            var correctionsMessages = new List<ChatMessage>
+            {
+                new(ChatRole.System, "你是一位严格的学习督导，只指出最关键的纠正点。"),
+                new(ChatRole.User, correctionsPrompt)
+            };
+            var correctionsResponse = await _aiClientService.GetChatResponseWithAutoStartAsync(
+                provider, model, correctionsMessages, options, HttpContext.RequestAborted, operation: "master-stage-corrections");
+            var keyCorrections = correctionsResponse.Text ?? "";
 
             var graduated = System.Text.Json.JsonSerializer.Deserialize<List<string>>(master.GraduatedStagesJson) ?? new();
             if (!graduated.Contains(request.StageName))
@@ -328,7 +358,9 @@ public partial class MasterController : ControllerBase
                 Success = true,
                 Message = $"阶段「{request.StageName}」已完成",
                 NextStage = nextStageName,
-                Summary = summary
+                Summary = summary,
+                Blessing = blessing,
+                KeyCorrections = keyCorrections
             });
         }
         catch (Exception ex)

@@ -191,12 +191,27 @@
                     {
                         <p class="completed-stage-name">「@_completedStageName」</p>
                     }
+                    @if (!string.IsNullOrEmpty(_stageCompleteBlessing))
+                    {
+                        <div class="complete-blessing">
+                            <div class="blessing-text">@_stageCompleteBlessing</div>
+                        </div>
+                    }
                     @if (!string.IsNullOrEmpty(_stageCompleteSummary))
                     {
                         <div class="complete-summary">
-                            <div class="complete-summary-title">师父寄语：</div>
+                            <div class="complete-summary-title">📖 阶段小结</div>
                             <div class="complete-summary-content">
                                 <MarkdownView Content="@_stageCompleteSummary" />
+                            </div>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(_stageCompleteCorrections) && _stageCompleteCorrections != "无")
+                    {
+                        <div class="complete-corrections">
+                            <div class="corrections-title">⚠️ 关键纠正</div>
+                            <div class="corrections-content">
+                                <MarkdownView Content="@_stageCompleteCorrections" />
                             </div>
                         </div>
                     }
@@ -272,6 +287,11 @@
     .complete-summary { text-align: left; background: var(--card-bg); border-radius: 10px; padding: 12px 14px; margin-bottom: 1rem; }
     .complete-summary-title { font-size: 0.85rem; color: var(--text-tertiary); margin-bottom: 6px; }
     .complete-summary-content { font-size: 0.9rem; line-height: 1.6; color: var(--primary-text); }
+    .complete-blessing { text-align: left; padding: 10px 14px; margin-bottom: 1rem; border-radius: 10px; background: linear-gradient(135deg, rgba(255,215,0,0.08), rgba(76,175,80,0.06)); border: 1px solid rgba(76,175,80,0.2); }
+    .blessing-text { font-size: 0.95rem; line-height: 1.6; color: var(--primary-text); font-style: italic; }
+    .complete-corrections { text-align: left; padding: 10px 14px; margin-bottom: 1rem; border-radius: 10px; background: rgba(255,152,0,0.08); border: 1px solid rgba(255,152,0,0.2); }
+    .corrections-title { font-size: 0.85rem; color: #ff9800; margin-bottom: 6px; }
+    .corrections-content { font-size: 0.9rem; line-height: 1.6; color: rgba(255,200,100,0.9); }
     .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
     .modal-actions .btn { flex: 1; }
 
@@ -308,6 +328,8 @@
     private bool _showStageCompleteModal;
     private string _completedStageName = "";
     private string _stageCompleteSummary = "";
+    private string _stageCompleteBlessing = "";
+    private string _stageCompleteCorrections = "";
 
     private List<VaultFocusItem> _focusedVaults = new();
     private List<VaultListItem> _availableVaults = new();
@@ -366,6 +388,8 @@
             {
                 _completedStageName = stageName;
                 _stageCompleteSummary = result.Summary ?? "";
+                _stageCompleteBlessing = result.Blessing ?? "";
+                _stageCompleteCorrections = result.KeyCorrections ?? "";
                 _showStageCompleteModal = true;
                 await LoadProfileAsync();
             }
