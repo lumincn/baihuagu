@@ -51,6 +51,10 @@ public class HttpTransport
         Dictionary<string, string>? query = null, CancellationToken ct = default) =>
         SendJsonAsync<T>(HttpMethod.Post, path, query, body, ct);
 
+    public Task<ApiResponse<T>> PutJsonAsync<T>(string path, object? body,
+        Dictionary<string, string>? query = null, CancellationToken ct = default) =>
+        SendJsonAsync<T>(HttpMethod.Put, path, query, body, ct);
+
     // ---- core send logic ----
 
     private async Task<ApiResponse<string>> SendAsync(

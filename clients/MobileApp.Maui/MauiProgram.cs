@@ -94,12 +94,14 @@ public static class MauiProgram
         builder.Services.AddSingleton<IPushPollingService>(sp => sp.GetRequiredService<PushPollingServiceImpl>());
 
         // Master-apprentice service
+        builder.Services.AddSingleton<IMasterCacheService, MasterCacheService>();
         builder.Services.AddSingleton<IMasterService>(sp =>
         {
             var client = sp.GetRequiredService<HttpClient>();
             var signer = sp.GetRequiredService<IRequestSigner>();
             var serverStore = sp.GetRequiredService<IServerConfigStore>();
-            return new MasterService(serverStore, signer, client);
+            var cacheService = sp.GetRequiredService<IMasterCacheService>();
+            return new MasterService(serverStore, signer, client, cacheService);
         });
 
         return builder.Build();
