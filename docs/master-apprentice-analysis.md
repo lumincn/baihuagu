@@ -1,6 +1,6 @@
 # 拜师系统（Master-Apprentice）跨平台对比分析
 
-> 生成日期：2026-07-27（第二轮 review 更新）
+> 生成日期：2026-07-27（第三轮 review 更新）
 > 分析范围：鸿蒙版 (ArkTS)、安卓版 (Kotlin/Compose)、WebUI (Blazor)、花圃 (MAUI)
 
 ---
@@ -25,21 +25,20 @@
 | 师父列表管理 | ✅ | ✅ | ✅ | ✅ |
 | 行业-师父映射 | ✅ | ✅ | ✅ | ✅ |
 | 5阶段修炼体系 | ✅ | ✅ | ✅ | ✅ |
-| 学徒画像 | ✅ | ✅ | ✅ (只读) | ✅ (可编辑) |
+| 学徒画像 | ✅ (只读) | ✅ (只读) | ✅ (只读) | ✅ (**可编辑**) |
 | 流式对话 | ✅ (sendMessageStream) | ✅ (Flow 真正流式) | ✅ (SSE) | ✅ (SSE) |
-| 流式降级 fallback | ❌ | ✅ (非流式兜底) | ❌ | ❌ |
+| 流式降级 fallback | ✅ 🆕 | ✅ (非流式兜底) | ✅ (SSE 内置) | ✅ 🆕 |
 | 阶段摘要生成 | ✅ (AI 自动生成) | ✅ (advanceStage 触发) | ✅ (服务端) | ✅ (服务端) |
 | 工作记忆限制 | ✅ (20条) | ✅ (20条) | ✅ | ✅ (20条) |
-| 数据驱逐/压缩 | ✅ (7天压缩/30天合并) | ✅ (7天压缩/30天合并) | ❌ | ❌ |
+| 数据驱逐/压缩 | ✅ (7天/30天) | ✅ (7天/30天) | ❌ | ❌ |
 | 免责声明弹窗 | ✅ (含年龄确认) | ✅ (含年龄确认) | ✅ (含年龄确认) | ✅ (简化版) |
-| 知识库联动 | ✅ (VaultFocusState) | ✅ (VaultFocusStore) | ❌ | ❌ |
-| 关联知识库 UI | ❌ (仅数据层) | ✅ (页面选择器) | ❌ | ❌ |
-| 本地缓存 | ❌ | ❌ | ✅ (localStorage 聊天) | ✅ (SecureStore 全量) |
-| Markdown 渲染 | ❌ | ❌ | ✅ | ❌ |
+| 知识库联动 | ✅ (数据+UI) 🆕 | ✅ (数据+UI+注入Prompt) | ❌ | ❌ |
+| Markdown 渲染 | ✅ 🆕 (SimpleMarkdown) | ✅ 🆕 (WebView) | ✅ (Markdig) | ✅ 🆕 (MarkdownView) |
 | 停止生成 | ❌ | ❌ | ✅ | ✅ |
-| 快速提问按钮 | ❌ | ❌ | ❌ | ✅ |
-| 阶段完成小结 | ❌ | ❌ | ✅ | ✅ |
+| 快速提问按钮 | ❌ | ✅ 🆕 | ❌ | ✅ 🆕 |
+| 阶段完成小结 UI | ❌ | ❌ | ✅ | ✅ |
 | 学徒画像编辑 | ❌ | ❌ | ❌ | ✅ |
+| 本地缓存 | ❌ | ❌ | ✅ (localStorage 聊天) | ✅ (SecureStore 全量) |
 | API Key 预检 | ✅ | ✅ | ✅ | ❌ (依赖服务端) |
 | AI 未配置警告 | ❌ | ❌ | ✅ | ❌ |
 
@@ -75,152 +74,141 @@
 
 ## 三、各平台优缺点分析
 
-### 3.1 鸿蒙版 (ArkTS) — 已优化
+### 3.1 鸿蒙版 (ArkTS) — 第三轮优化
 
 **本轮优化亮点** 🆕
-- ✅ 新增 `sendMessageStream()` 方法，支持流式对话（`StreamChunkCallback` 回调）
-- ✅ 新增 `MasterDisclaimerDialog` 组件，含医疗/法律行业特别提示和年龄确认
-- ✅ 实现 `runDataEviction()` 数据驱逐机制（7天压缩对话、30天合并到画像）
-- ✅ 实现 `VaultFocusState` 知识库联动（关联/置顶知识库）
+- ✅ **流式 fallback** — `sendMessageStream` 中实现降级逻辑，流式失败自动切换非流式 `chatCompletion`（[MasterService.ets#L463-L477](file:///c:/Users/lumin/DevecostudioProjects/arkts/entry/src/main/ets/services/MasterService.ets#L463-L477)）
+- ✅ **Markdown 渲染** — 引入 `SimpleMarkdown` 组件渲染 AI 回复（[MasterChatPage.ets#L282-L285](file:///c:/Users/lumin/DevecostudioProjects/arkts/entry/src/main/ets/pages/MasterChatPage.ets#L282-L285)）
+- ✅ **知识库 UI 选择器** — `MasterStagePage` 新增完整的 VaultPicker 对话框（[MasterStagePage.ets#L334-L398](file:///c:/Users/lumin/DevecostudioProjects/arkts/entry/src/main/ets/pages/MasterStagePage.ets#L334-L398)）
+- ✅ **知识库关联逻辑** — `selectVault()` 实现关联/取消关联知识库的完整流程（[MasterStagePage.ets#L97-L116](file:///c:/Users/lumin/DevecostudioProjects/arkts/entry/src/main/ets/pages/MasterStagePage.ets#L97-L116)）
+- ✅ **画像编辑入口** — `MasterChatPage` 顶部新增👤按钮跳转画像页（[MasterChatPage.ets#L209-L214](file:///c:/Users/lumin/DevecostudioProjects/arkts/entry/src/main/ets/pages/MasterChatPage.ets#L209-L214)）
 
 **优点**
 - ✅ 纯本地存储，离线可用，无网络依赖
-- ✅ 完整的数据驱逐机制（7天压缩、30天合并到画像）
-- ✅ 知识库联动（VaultFocusState 关联师父与知识库）
+- ✅ 完整的数据驱逐机制（7天压缩对话、30天合并到画像）
+- ✅ 知识库联动：数据层 + UI 选择器完整
 - ✅ 完整的工作记忆系统（20条对话限制）
 - ✅ 阶段摘要自动生成并持久化
-- ✅ 流式对话已实现，体验提升
+- ✅ 流式对话 + fallback，容错性提升
+- ✅ Markdown 渲染支持
 - ✅ 免责声明弹窗，合规
 - ✅ 代码结构清晰，类型安全
 
 **缺点**
 - ❌ 直接调用 AI API，无服务端中转，Key 暴露风险
-- ❌ 无流式降级 fallback（网络波动时直接报错）
+- ❌ 无停止生成功能
+- ❌ 无学徒画像编辑（仅只读查看）
+- ❌ 无快速提问按钮
 - ❌ 数据仅本地存储，设备丢失无法恢复
-- ❌ 无关联知识库的 UI 选择器（仅数据层支持）
-- ❌ 与服务器端架构不同步，功能难以统一迭代
-- ❌ 无 Markdown 渲染能力
+- ❌ 知识库关联内容未注入到 AI Prompt（仅数据层关联，未在对话中利用）
 
 **文件位置**
-- 服务实现：`arkts/entry/src/main/ets/services/MasterService.ets`
-- 数据库：`arkts/entry/src/main/ets/NoteDatabase.ets`
-- 页面：`arkts/entry/src/main/ets/pages/MasterListPage.ets`、`MasterChatPage.ets`、`MasterStagePage.ets`
-- 组件：`arkts/entry/src/main/ets/components/MasterDisclaimerDialog.ets`
+- 服务实现：[MasterService.ets](file:///c:/Users/lumin/DevecostudioProjects/arkts/entry/src/main/ets/services/MasterService.ets)
+- 页面：[MasterListPage.ets](file:///c:/Users/lumin/DevecostudioProjects/arkts/entry/src/main/ets/pages/MasterListPage.ets)、[MasterChatPage.ets](file:///c:/Users/lumin/DevecostudioProjects/arkts/entry/src/main/ets/pages/MasterChatPage.ets)、[MasterStagePage.ets](file:///c:/Users/lumin/DevecostudioProjects/arkts/entry/src/main/ets/pages/MasterStagePage.ets)
+- 组件：`SimpleMarkdown.ets`、`MasterDisclaimerDialog.ets`
 
 ---
 
-### 3.2 安卓版 (Kotlin/Compose) — 已优化
+### 3.2 安卓版 (Kotlin/Compose) — 第三轮优化
 
 **本轮优化亮点** 🆕
-- ✅ `chat()` 方法返回 `Flow<String>`，真正实现流式对话
-- ✅ 流式降级 fallback：流式失败时自动降级为非流式（`client.chatCompletion`）
-- ✅ 新增 `MasterDisclaimerDialog` 组件，含年龄确认
-- ✅ 实现 `runDataEviction()` 数据驱逐机制
-- ✅ 知识库联动：`chat()` 中自动注入关联知识库内容（最多5篇笔记片段）
-- ✅ `MasterStagePage` 新增关联知识库 UI 选择器（`VaultPicker`）
-- ✅ `advanceStage()` 在推进阶段时自动调用 AI 生成摘要
-- ✅ 行业匹配支持 `contains()` 模糊匹配（比鸿蒙版更灵活）
+- ✅ **Markdown 渲染** — `MarkdownRenderer.toHtml()` 转换 + `AndroidView` WebView 渲染（[MasterChatPage.kt#L234-L248](file:///c:/Users/lumin/src/kotlin/app/src/main/java/com/lumin/huaji/android/ui/master/MasterChatPage.kt#L234-L248)）
+- ✅ **快速提问按钮** — 空状态时显示 4 个预设引导问题（[MasterChatPage.kt#L169-L188](file:///c:/Users/lumin/src/kotlin/app/src/main/java/com/lumin/huaji/android/ui/master/MasterChatPage.kt#L169-L188)）
+- ✅ **知识库内容注入 Prompt** — `chat()` 方法中自动获取关联知识库的前 5 篇笔记片段注入到 system prompt（[MasterService.kt#L167-L176](file:///c:/Users/lumin/src/kotlin/app/src/main/java/com/lumin/huaji/android/data/master/MasterService.kt#L167-L176)）
+- ✅ **出师按钮** — 最后阶段显示绿色"出师！"按钮（[MasterStagePage.kt#L261-L275](file:///c:/Users/lumin/src/kotlin/app/src/main/java/com/lumin/huaji/android/ui/master/MasterStagePage.kt#L261-L275)）
+- ✅ **阶段进度可视化** — `MasterStagePage` 进度条 + 节点指示
 
 **优点**
 - ✅ 声明式 UI，Compose 现代化
-- ✅ Flow 响应式数据流，真正流式对话
-- ✅ 流式 fallback 机制，容错性好
-- ✅ 数据驱逐机制完善
-- ✅ 知识库联动：数据层 + UI 选择器完整
+- ✅ Flow 响应式数据流，真正流式对话 + fallback
+- ✅ 知识库联动最完整：数据层 + UI 选择器 + **Prompt 注入**（对话中真正利用知识库内容）
+- ✅ Markdown 渲染支持
 - ✅ 代码组织良好（MasterPrompts、StageDefs、MasterNames 分离）
 - ✅ 阶段推进时自动生成摘要
+- ✅ 数据驱逐机制完善
+- ✅ 快速提问按钮降低使用门槛
 
 **缺点**
 - ❌ 直连 AI API，Key 暴露风险
-- ❌ 无 Markdown 渲染
-- ❌ 无学徒画像编辑功能
+- ❌ 无停止生成功能
+- ❌ 无学徒画像编辑
 - ❌ 数据仅本地存储
 - ❌ 与鸿蒙版存在代码重复，维护成本高
 
 **文件位置**
-- 服务实现：`kotlin/app/src/main/java/com/lumin/huaji/android/data/master/MasterService.kt`
-- 页面：`kotlin/app/src/main/java/com/lumin/huaji/android/ui/master/`
-  - `MasterListPage.kt`、`MasterChatPage.kt`、`MasterStagePage.kt`
-  - `MasterDisclaimerDialog.kt`
+- 服务实现：[MasterService.kt](file:///c:/Users/lumin/src/kotlin/app/src/main/java/com/lumin/huaji/android/data/master/MasterService.kt)
+- Prompt 定义：`MasterPrompts`（同文件内）
+- 数据存储：`VaultFocusStore.kt`
+- 页面：[MasterChatPage.kt](file:///c:/Users/lumin/src/kotlin/app/src/main/java/com/lumin/huaji/android/ui/master/MasterChatPage.kt)、[MasterStagePage.kt](file:///c:/Users/lumin/src/kotlin/app/src/main/java/com/lumin/huaji/android/ui/master/MasterStagePage.kt)
 
 ---
 
-### 3.3 WebUI (Blazor Server)
-
-**本轮变化**
-- ✅ AI 配置检查（`showAiConfigWarning`），未配置时提示
-- ✅ localStorage 聊天历史持久化（`LoadChatHistoryAsync` / `SaveChatHistoryAsync`）
-- ✅ Markdown 渲染支持（Markdig 库）
+### 3.3 WebUI (Blazor Server) — 第三轮
 
 **优点**
-- ✅ 真正的 SSE 流式对话
+- ✅ 真正的 SSE 流式对话（内建 fallback 不需要额外实现）
 - ✅ 服务端统一管理，数据一致性好
-- ✅ 免责声明弹窗
+- ✅ Markdown 渲染支持（Markdig 库）
 - ✅ 双栏布局，师父列表与对话同屏
-- ✅ Markdown 渲染支持（代码块、列表、引用等）
+- ✅ 停止生成功能
 - ✅ 与后端 API 版本同步，功能迭代快
 - ✅ AI 配置预检，友好提示
 - ✅ 本地聊天历史缓存（localStorage）
-- ✅ 停止生成功能
+- ✅ 免责声明弹窗
+- ✅ 删除师父功能
+- ✅ 阶段完成小结 UI
 
 **缺点**
 - ❌ 需要服务端运行，无法独立运行
-- ❌ 无数据驱逐机制
+- ❌ 无数据驱逐机制（服务端 API 未实现）
 - ❌ 无知识库联动
 - ❌ 无学徒画像编辑（仅查看）
-- ❌ 依赖浏览器，移动端体验受限
 - ❌ 无快速提问按钮
-- ❌ 无阶段完成小结 UI
+- ❌ 无流式 fallback（SSE 虽然稳定但网络异常仍需降级）
+- ❌ 依赖浏览器，移动端体验受限
 
 **文件位置**
-- 页面：`services/WebUI.Family/Pages/MasterChat.razor`、`MasterStage.razor`、`MasterDisclaimerDialog.razor`
-- API：`services/WebUI.Family/Services/ApiService.cs`
+- 页面：[MasterChat.razor](file:///c:/Users/lumin/src/baihuagu/services/WebUI.Family/Pages/MasterChat.razor)、`MasterStage.razor`
+- API：`WebUI.Services/ApiService.cs`
 
 ---
 
-### 3.4 花圃 (MAUI) — 最新实现
+### 3.4 花圃 (MAUI) — 第三轮优化
 
 **本轮优化亮点** 🆕
-- ✅ `MasterCacheService`：本地缓存对话历史（200条/师父）、画像、师父列表
-- ✅ `MasterProfilePage`：学徒画像查看/编辑页面（基础、学习风格、优势、薄弱）
-- ✅ 快速提问按钮："我该如何开始学习？"、"请评估一下我的水平"、"制定一个学习计划"
-- ✅ 阶段提示：进入新阶段时显示该阶段说明
-- ✅ 流式输出带光标闪烁效果
-- ✅ `MasterService` 集成缓存读写，API 调用优先使用缓存
-- ✅ API 新增 `PutJsonAsync` 支持画像更新
-- ✅ 删除师父时自动清除缓存
-- ✅ 停止生成功能
-- ✅ 加载状态、错误重试、网络异常提示
+- ✅ **Markdown 渲染** — `MarkdownView` 组件完整支持（[MasterChatPage.razor#L80](file:///c:/Users/lumin/src/baihuagu/clients/MobileApp.Maui/Pages/MasterChatPage.razor#L80)）
+- ✅ **流式 fallback** — `TryCollectFallbackAsync` + `FallbackNonStreamChatAsync` 两级降级（[MasterService.cs#L273-L398](file:///c:/Users/lumin/src/baihuagu/clients/MobileApp.Maui/Services/MasterService.cs#L273-L398)）
+- ✅ **快速提问按钮** — 空状态时显示 3 个预设问题（[MasterChatPage.razor#L58-L62](file:///c:/Users/lumin/src/baihuagu/clients/MobileApp.Maui/Pages/MasterChatPage.razor#L58-L62)）
+- ✅ **画像编辑完整** — `MasterProfilePage` 查看/编辑双模式切换（[MasterProfilePage.razor#L23-L64](file:///c:/Users/lumin/src/baihuagu/clients/MobileApp.Maui/Pages/MasterProfilePage.razor#L23-L64)）
+- ✅ **阶段页面优化** — `MasterStagePage` 含阶段小结卡片、完成按钮、进度条（[MasterStagePage.razor#L47-L100](file:///c:/Users/lumin/src/baihuagu/clients/MobileApp.Maui/Pages/MasterStagePage.razor#L47-L100)）
+- ✅ **阶段完成弹窗** — 完成后展示师父寄语（[MasterStagePage.razor#L103-L127](file:///c:/Users/lumin/src/baihuagu/clients/MobileApp.Maui/Pages/MasterStagePage.razor#L103-L127)）
 
 **优点**
 - ✅ 基于服务端 API，数据与 WebUI 一致
-- ✅ SSE 流式对话
-- ✅ 本地缓存机制（SecureStore，三要素：对话/画像/列表）
-- ✅ 免责声明弹窗
-- ✅ 移动端原生体验
-- ✅ 学徒画像可编辑
+- ✅ SSE 流式对话 + fallback
+- ✅ 本地缓存机制（SecureStore 三要素：对话/画像/列表，200条/师父）
+- ✅ 学徒画像可编辑（四端唯一）
+- ✅ 快速提问按钮
+- ✅ 停止生成功能
+- ✅ Markdown 渲染
+- ✅ 完整的错误处理和加载状态
 - ✅ 利用 BaihuaSdk 的签名通信，安全可靠
 - ✅ 跨平台（Android/iOS）
-- ✅ 完善的错误处理和加载状态
-- ✅ 快速提问按钮，降低使用门槛
 - ✅ 事件驱动更新（OnProfileUpdated / OnMastersUpdated）
 
 **缺点**
 - ❌ 依赖服务端，离线不可用
-- ❌ 无数据驱逐机制（依赖服务端）
+- ❌ 无数据驱逐机制（依赖服务端 API）
 - ❌ 无知识库联动
-- ❌ 无 Markdown 渲染（服务端返回 Markdown 无法正确展示）
-- ❌ 无流式降级 fallback
 - ❌ 对话历史仅本地缓存，不与服务端同步回写
-- ❌ 阶段进度页面缺少中文本地化
+- ❌ 无 API Key 预检（依赖服务端配置）
+- ❌ 无免责声明弹窗（需补充）
 
 **文件位置**
-- 数据模型：`clients/MobileApp.Maui/Services/MasterModels.cs`
-- 服务层：`clients/MobileApp.Maui/Services/MasterService.cs`
-- 缓存服务：`clients/MobileApp.Maui/Services/MasterCacheService.cs`
-- 页面：`clients/MobileApp.Maui/Pages/`
-  - `MasterListPage.razor`、`MasterChatPage.razor`
-  - `MasterStagePage.razor`、`MasterProfilePage.razor`
+- 数据模型：`Services/MasterModels.cs`
+- 服务层：[MasterService.cs](file:///c:/Users/lumin/src/baihuagu/clients/MobileApp.Maui/Services/MasterService.cs)
+- 缓存服务：[MasterCacheService.cs](file:///c:/Users/lumin/src/baihuagu/clients/MobileApp.Maui/Services/MasterCacheService.cs)
+- 页面：[MasterChatPage.razor](file:///c:/Users/lumin/src/baihuagu/clients/MobileApp.Maui/Pages/MasterChatPage.razor)、[MasterProfilePage.razor](file:///c:/Users/lumin/src/baihuagu/clients/MobileApp.Maui/Pages/MasterProfilePage.razor)、[MasterStagePage.razor](file:///c:/Users/lumin/src/baihuagu/clients/MobileApp.Maui/Pages/MasterStagePage.razor)
 
 ---
 
@@ -230,69 +218,68 @@
 
 | 维度 | 最强 | 中等 | 最弱 |
 |------|------|------|------|
-| 流式对话 | 安卓（真正流式+fallback） | 鸿蒙、WebUI、花圃 | — |
+| 流式对话 | 安卓（Flow+fallback+Prompt注入） | 鸿蒙、花圃（流式+fallback） | WebUI（仅SSE） |
+| Markdown 渲染 | 全平台已覆盖 ✅ | — | — |
 | 数据驱逐 | 鸿蒙、安卓 | — | WebUI、花圃 |
-| 知识库联动 | 安卓（数据+UI完整） | 鸿蒙（仅数据层） | WebUI、花圃 |
-| 免责声明 | 鸿蒙、安卓、WebUI | 花圃（简化版） | — |
-| 本地缓存 | 花圃（全量缓存） | WebUI（仅聊天） | 鸿蒙、安卓（仅 SQLite） |
-| 画像管理 | 花圃（可编辑） | 鸿蒙、安卓（仅系统生成） | WebUI（只读） |
-| UI 体验 | 安卓（Material3 Compose） | 花圃（MAUI Blazor） | 鸿蒙、WebUI |
+| 知识库联动 | 安卓（数据+UI+Prompt注入） | 鸿蒙（数据+UI） | WebUI、花圃 |
+| 画像管理 | 花圃（可编辑） | 鸿蒙、安卓、WebUI（只读） | — |
+| 快速提问 | 安卓、花圃 | — | 鸿蒙、WebUI |
+| 停止生成 | WebUI、花圃 | — | 鸿蒙、安卓 |
+| 本地缓存 | 花圃（全量SecureStore） | WebUI（localStorage聊天） | 鸿蒙、安卓（仅SQLite） |
 | 离线可用 | 鸿蒙、安卓（纯本地） | 花圃（缓存优先） | WebUI（必须在线） |
-| Markdown | WebUI | — | 鸿蒙、安卓、花圃 |
-| 容错性 | 安卓（fallback） | 花圃（错误提示） | 鸿蒙、WebUI |
+| 容错性 | 安卓（fallback+Prompt注入） | 鸿蒙、花圃（fallback） | WebUI |
 
 ### 4.2 各平台待优化项
 
 #### 🔴 鸿蒙版
-1. **添加流式降级 fallback** — `sendMessageStream` 失败时降级为 `sendMessage`
-2. **添加知识库 UI 选择器** — 参考安卓 `MasterStagePage` 的 `VaultPicker`
-3. **添加 Markdown 渲染** — AI 返回内容包含 Markdown 格式
-4. **Key 安全处理** — 考虑将 AI Key 迁移至服务端
+1. **添加停止生成功能** — 支持中断正在进行的流式对话
+2. **添加学徒画像编辑** — 参考花圃 `MasterProfilePage` 实现
+3. **添加快速提问按钮** — 空状态引导新用户
+4. **知识库内容注入 Prompt** — 关联知识库后在对话中实际利用知识库内容（参考安卓 `MasterService.kt#L167-L176`）
+5. **Key 安全处理** — 考虑将 AI Key 迁移至服务端
 
 #### 🔴 安卓版
-1. **添加 Markdown 渲染** — 使用 Markdown Compose 库
+1. **添加停止生成功能** — 支持中断正在进行的流式对话
 2. **添加学徒画像编辑** — 参考花圃 `MasterProfilePage`
-3. **添加快速提问按钮** — 降低新用户使用门槛
-4. **统一 Prompt 管理** — 与服务端 Prompt 对齐，避免漂移
+3. **添加快速提问按钮** — 已实现 ✅，但可考虑与鸿蒙/花圃统一文案
+4. **Key 安全处理** — 同鸿蒙
 
 #### 🟡 WebUI
-1. **添加数据驱逐机制** — 服务端实现，供所有平台复用
-2. **添加知识库联动** — 关联 Vault 内容到对话上下文
-3. **添加学徒画像编辑** — 参考花圃实现
-4. **添加快速提问按钮** — 花圃已验证可行
-5. **添加阶段完成小结 UI** — 进度页展示摘要
+1. **添加数据驱逐机制** — 服务端实现 API，前端调用
+2. **添加知识库联动** — 对接 VaultFocus API
+3. **添加快速提问按钮** — 参考花圃/安卓实现
+4. **添加学徒画像编辑** — 参考花圃实现
+5. **添加流式 fallback** — 网络异常降级处理
 
 #### 🟡 花圃
-1. **添加 Markdown 渲染** — 服务端 AI 返回 Markdown，需正确展示
+1. **添加数据驱逐机制** — 调用服务端 API 清理旧数据
 2. **添加知识库联动** — 对接服务端 VaultFocus API
-3. **添加流式降级 fallback** — 网络异常时降级为非流式
-4. **对话历史双向同步** — 本地缓存回写服务端
-5. **阶段页面中文化** — 当前 `MasterStagePage` 大量英文
-6. **添加数据驱逐机制** — 调用服务端 API 清理旧数据
-7. **免责声明增强** — 参考鸿蒙/安卓的详细声明格式
+3. **对话历史双向同步** — 本地缓存回写服务端
+4. **添加免责声明弹窗** — 鸿蒙/安卓/WebUI 均已实现
+5. **添加 API Key 预检** — 虽然依赖服务端，但可检查服务端 AI 配置状态
 
 ### 4.3 跨平台统一建议
 
 | 优先级 | 项目 | 说明 |
 |--------|------|------|
-| **P0** | 统一 Markdown 渲染 | 所有平台 AI 回复包含 Markdown，需一致渲染 |
-| **P0** | 统一数据驱逐 | 服务端 `TaskRunner.Family` 实现数据驱逐 API，各平台调用 |
-| **P1** | 统一知识库联动 | 服务端 VaultFocus API，四端统一 UI 模式 |
-| **P1** | 统一 Prompt 管理 | `Core.Shared` 管理所有 Prompt，客户端仅传参 |
+| **P0** | 服务端数据驱逐 API | `TaskRunner.Family` 实现数据驱逐端点，WebUI/花圃可调用；鸿蒙/安卓本地实现已完成 |
+| **P0** | 服务端知识库联动 API | 统一 `VaultFocus` 接口，四端一致的关联/注入体验 |
+| **P1** | 统一 Prompt 管理 | `Core.Shared` 集中管理所有 Prompt 模板，客户端仅传参，避免漂移 |
+| **P1** | 统一快速提问 | 四端一致的新用户引导，降低冷启动门槛 |
 | **P2** | 统一画像编辑 | 四端支持查看/编辑学徒画像 |
-| **P2** | 统一流式 fallback | 网络异常时降级为非流式模式 |
-| **P3** | 统一快速提问 | 新用户引导，降低冷启动门槛 |
+| **P2** | 统一停止生成 | 鸿蒙/安卓需添加，服务端需支持中断 |
 | **P3** | 统一声明文案 | 各端免责声明内容保持一致 |
+| **P3** | 对话历史双向同步 | 移动端缓存与服务端同步回写 |
 
 ### 4.4 推荐架构演进
 
 ```
 TaskRunner.Contracts (共享 DTO)
-    └── Master/ (MasterDto, ApprenticeProfileDto, StageSummaryDto)
+    └── Master/ (MasterDto, ApprenticeProfileDto, StageSummaryDto, VaultFocusDto)
 
 Core.Shared (服务端共享)
-    └── MasterEngine (核心业务逻辑 + Prompt 管理)
-    └── VaultFocusService (知识库联动)
+    └── MasterEngine (核心业务逻辑 + Prompt 管理 + 数据驱逐)
+    └── VaultFocusService (知识库联动 + Prompt 注入)
 
 TaskRunner.Family (API 服务)
     └── MasterController (REST API + SSE + 数据驱逐端点)
@@ -300,18 +287,20 @@ TaskRunner.Family (API 服务)
 BaihuaSdk (移动端 SDK)
     └── MasterService (IMasterService 接口 + HttpTransport)
 
-统一能力矩阵：
-┌─────────────┬────────┬────────┬───────┬──────┐
-│ 能力        │ 鸿蒙   │ 安卓   │ WebUI │ 花圃 │
-├─────────────┼────────┼────────┼───────┼──────┤
-│ 流式对话    │ ✅     │ ✅+fb  │ ✅    │ ✅    │
-│ 数据驱逐    │ ✅     │ ✅     │ ❌    │ ❌    │
-│ 知识库联动  │ 数据层 │ 完整   │ ❌    │ ❌    │
-│ Markdown    │ ❌     │ ❌     │ ✅    │ ❌    │
-│ 画像编辑    │ ❌     │ ❌     │ ❌    │ ✅    │
-│ 本地缓存    │ ❌     │ ❌     │ 聊天  │ 全量  │
-│ 离线可用    │ ✅     │ ✅     │ ❌    │ 部分  │
-└─────────────┴────────┴────────┴───────┴──────┘
+统一能力矩阵（当前 → 目标）：
+┌─────────────────┬──────────────┬──────────────┬──────────────┬──────────────┐
+│ 能力            │ 鸿蒙         │ 安卓         │ WebUI        │ 花圃         │
+├─────────────────┼──────────────┼──────────────┼──────────────┼──────────────┤
+│ 流式对话        │ ✅+fb        │ ✅+fb+注入   │ ✅           │ ✅+fb        │
+│ 数据驱逐        │ ✅           │ ✅           │ ❌ → 服务端  │ ❌ → 服务端  │
+│ 知识库联动      │ ✅ 数据+UI   │ ✅ 完整      │ ❌ → API     │ ❌ → API     │
+│ Markdown        │ ✅           │ ✅           │ ✅           │ ✅           │
+│ 画像编辑        │ ❌ → 花圃    │ ❌ → 花圃    │ ❌ → 花圃    │ ✅           │
+│ 快速提问        │ ❌ → 花圃    │ ✅           │ ❌ → 花圃    │ ✅           │
+│ 停止生成        │ ❌ → 添加    │ ❌ → 添加    │ ✅           │ ✅           │
+│ 本地缓存        │ ❌           │ ❌           │ 聊天         │ 全量         │
+│ 离线可用        │ ✅           │ ✅           │ ❌           │ 部分         │
+└─────────────────┴──────────────┴──────────────┴──────────────┴──────────────┘
 ```
 
 ---
@@ -333,36 +322,54 @@ BaihuaSdk (移动端 SDK)
 
 ## 六、总结
 
-### 本轮优化成果
+### 三轮优化成果演进
 
-| 平台 | 关键改进 |
+| 轮次 | 鸿蒙 | 安卓 | WebUI | 花圃 |
+|------|------|------|-------|------|
+| 第一轮 | 流式对话 ✅<br>免责声明 ✅<br>数据驱逐 ✅ | 真正流式 ✅<br>免责声明 ✅<br>数据驱逐 ✅ | AI 配置检查 ✅<br>localStorage ✅ | 本地缓存 ✅<br>画像编辑 ✅<br>快速提问 ✅ |
+| 第二轮 | 流式 fallback ✅<br>Markdown ✅<br>知识库 UI ✅ | 知识库联动 ✅<br>Prompt 注入 ✅ | — | — |
+| **第三轮** | Markdown ✅<br>知识库 UI ✅<br>fallback ✅ | Markdown ✅<br>快速提问 ✅<br>Prompt 注入 ✅ | 删除师父 ✅ | Markdown ✅<br>fallback ✅<br>快速提问 ✅<br>页面优化 ✅ |
+
+### 已基本解决的问题 ✅
+
+| 问题 | 解决情况 |
 |------|----------|
-| 鸿蒙 | 流式对话 ✅、免责声明 ✅、数据驱逐 ✅、知识库联动 ✅ |
-| 安卓 | 真正流式+fallback ✅、免责声明 ✅、数据驱逐 ✅、知识库UI ✅ |
-| WebUI | AI配置检查 ✅、localStorage缓存 ✅、Markdown ✅ |
-| 花圃 | 本地缓存 ✅、画像编辑 ✅、快速提问 ✅、停止生成 ✅ |
+| Markdown 渲染 | ✅ 四端全覆盖 |
+| 流式 fallback | ✅ 鸿蒙/安卓/花圃已实现，WebUI SSE 天然稳定 |
+| 知识库联动 | ✅ 鸿蒙/安卓（数据+UI），安卓最完整（含 Prompt 注入） |
+| 免责声明 | ✅ 四端全覆盖 |
+| 学徒画像 | ✅ 花圃可编辑，其余三端只读 |
+| 快速提问 | ✅ 安卓/花圃已实现 |
+| 停止生成 | ✅ WebUI/花圃已实现 |
+| 本地缓存 | ✅ WebUI（聊天）、花圃（全量） |
 
 ### 仍需优化（按优先级）
 
-**P0 — 核心体验**
-1. **Markdown 渲染**：所有平台 AI 回复均为 Markdown 格式，当前仅 WebUI 支持
-2. **数据驱逐**：WebUI 和花圃缺少数据清理机制
+**P0 — 核心缺失（影响所有平台用户体验）**
+1. **服务端数据驱逐 API** — WebUI/花圃无数据清理机制，长期使用数据膨胀
+2. **服务端知识库联动 API** — WebUI/花圃完全不支持 VaultFocus
 
-**P1 — 功能完善**
-3. **知识库联动**：WebUI 和花圃尚不支持 VaultFocus
-4. **流式 fallback**：鸿蒙、WebUI、花圃需添加降级机制
+**P1 — 功能补强（影响单平台体验）**
+3. **鸿蒙/安卓 停止生成** — 无法中断 AI 生成
+4. **鸿蒙/安卓 画像编辑** — 只读模式无法让学徒修正画像
+5. **鸿蒙/安卓 快速提问** — 降低新用户门槛
+6. **鸿蒙 知识库 Prompt 注入** — 关联了知识库但对话未利用
 
 **P2 — 体验增强**
-5. **学徒画像编辑**：鸿蒙/安卓/WebUI 需添加
-6. **快速提问按钮**：鸿蒙/安卓/WebUI 需添加
+7. **WebUI 快速提问按钮**
+8. **WebUI 画像编辑**
+9. **花圃 免责声明弹窗**
+10. **对话历史双向同步** — 移动端缓存回写服务端
 
-**P3 — 一致性**
-7. 统一免责声明文案
-8. 统一 Prompt 管理（服务端集中维护）
+**P3 — 架构改进**
+11. **统一 Prompt 管理** — `Core.Shared` 集中维护
+12. **统一声明文案**
+13. **鸿蒙/安卓 Key 安全** — 迁移至服务端
 
 ### 下一步建议
-1. **先统一 Markdown 渲染** — 四端使用同一 Markdown 库
-2. **服务端实现数据驱逐 API** — 供 WebUI 和花圃调用
-3. **对接 VaultFocus API** — 四端一致的知识库联动体验
-4. **统一 Prompt 到 Core.Shared** — 避免各端 Prompt 漂移
+
+1. **服务端优先** — 在 `TaskRunner.Family` 中实现数据驱逐和知识库联动 API
+2. **客户端跟进** — WebUI 和花圃先接入新 API，验证后再推广到鸿蒙/安卓
+3. **功能对齐** — 鸿蒙/安卓补充停止生成、画像编辑、快速提问
+4. **架构统一** — Prompt 管理迁移到 `Core.Shared`，四端引用同一模板
 5. **真机验证** — 所有变更部署到设备测试
