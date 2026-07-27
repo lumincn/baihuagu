@@ -18,6 +18,10 @@ public interface IMasterService
     Task<List<ChatHistoryItem>> GetConversationsFromServerAsync(string masterId, int limit = 100);
     Task<bool> SyncConversationsToServerAsync(string masterId, List<ChatHistoryItem> conversations);
     Task<bool> CheckAiConfiguredAsync();
+    Task<List<VaultFocusItem>> GetVaultFocusAsync(string masterId);
+    Task<List<VaultListItem>> GetAvailableVaultsAsync();
+    Task<bool> FocusVaultAsync(string masterId, string vaultId, string? stageName = null);
+    Task<bool> RemoveVaultFocusAsync(string masterId, string vaultId);
     Task<bool> GetDisclaimerAcceptedAsync(string masterId);
     Task SetDisclaimerAcceptedAsync(string masterId);
     List<string> GetIndustries();
@@ -267,6 +271,46 @@ public class MasterService : IMasterService
         {
             return false;
         }
+    }
+
+    public async Task<List<VaultFocusItem>> GetVaultFocusAsync(string masterId)
+    {
+        var transport = await CreateTransportAsync();
+        var response = await transport.GetJsonAsync<VaultFocusListResponse>($"/api/master/{masterId}/vault-focus");
+        if (!response.IsSuccess)
+            throw new InvalidOperationException(response.ErrorMessage ?? "获取知识库关联失败");
+
+        return response.Data?.Items ?? new();
+    }
+
+    public async Task<List<VaultListItem>> GetAvailableVaultsAsync()
+    {
+        var transport = await CreateTransportAsync();
+        var response = await transport.GetJsonAsync<VaultListResponse>("/api/vault-settings/vaults");
+        if (!response.IsSuccess)
+            throw new InvalidOperationException(response.ErrorMessage ?? "获取知识库列表失败");
+
+        return response.Data?.Vaults ?? new();
+    }
+
+    public async Task<bool> FocusVaultAsync(string masterId, string vaultId, string? stageName = null)
+    {
+        var transport = await CreateTransportAsync();
+        var request = new VaultFocusUpdateRequest
+        {
+            VaultId = vaultId,
+            State = "focused",
+            StageName = stageName
+        };
+        var response = await transport.PostJsonAsync<VaultFocusUpdateResponse>($"/api/master/{masterId}/vault-focus", request);
+        return response.IsSuccess && response.Data?.Success == true;
+    }
+
+    public async Task<bool> RemoveVaultFocusAsync(string masterId, string vaultId)
+    {
+        var transport = await CreateTransportAsync();
+        var response = await transport.DeleteJsonAsync<VaultFocusUpdateResponse>($"/api/master/{masterId}/vault-focus/{vaultId}");
+        return response.IsSuccess && response.Data?.Success == true;
     }
 
     public async IAsyncEnumerable<string> StreamChatAsync(

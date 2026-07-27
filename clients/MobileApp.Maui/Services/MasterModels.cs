@@ -121,3 +121,46 @@ public class StageItem
     public int ProgressPct { get; set; }
     public string Summary { get; set; } = "";
 }
+
+public class VaultFocusItem
+{
+    public string VaultId { get; set; } = "";
+    public string VaultName { get; set; } = "";
+    public string State { get; set; } = "";
+    public string? StageName { get; set; }
+    public DateTime UpdatedAt { get; set; }
+}
+
+public class VaultFocusListResponse
+{
+    public bool Success { get; set; }
+    public string Message { get; set; } = "";
+    public List<VaultFocusItem> Items { get; set; } = new();
+}
+
+public class VaultFocusUpdateRequest
+{
+    public string VaultId { get; set; } = "";
+    public string State { get; set; } = "focused";
+    public string? StageName { get; set; }
+}
+
+public class VaultFocusUpdateResponse
+{
+    public bool Success { get; set; }
+    public string Message { get; set; } = "";
+}
+
+public class VaultListItem
+{
+    public string Id { get; set; } = "";
+    public string Name { get; set; } = "";
+    public string Industry { get; set; } = "";
+    public string Path { get; set; } = "";
+    public DateTime CreatedAt { get; set; }
+}
+
+public class VaultListResponse
+{
+    public List<VaultListItem> Vaults { get; set; } = new();
+}
