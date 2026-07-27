@@ -1,0 +1,192 @@
+@page "/master-stage/{MasterId}"
+@inject IMasterService MasterService
+@inject NavigationManager Nav
+
+<PageTitle>Stage Progress</PageTitle>
+
+<div class="stage-page">
+    @if (_isLoading || _profile == null)
+    {
+        <div class="loading">Loading...</div>
+    }
+    else if (_profile == null || !_profile.Success)
+    {
+        <div class="error-state">
+            <div class="error-icon">Error</div>
+            <div class="error-msg">Failed to load</div>
+            <button class="btn" @onclick="@GoBack">Back</button>
+        </div>
+    }
+    else
+    {
+        <div class="stage-header">
+            <button class="btn-icon" @onclick="@GoToChat">&larr;</button>
+            <div class="header-info">
+                <span class="title">@_profile.MasterId - Progress</span>
+                <span class="subtitle">@_profile.Goal</span>
+            </div>
+        </div>
+
+        <div class="profile-card">
+            <div class="profile-item"><span class="label">Goal</span><span class="value">@_profile.Goal</span></div>
+            <div class="profile-item"><span class="label">Industry</span><span class="value">@_profile.Industry</span></div>
+            <div class="profile-item"><span class="label">Current</span><span class="value current">@_profile.CurrentStage</span></div>
+            @if (!string.IsNullOrEmpty(_profile.EstimatedTime))
+            {
+                <div class="profile-item"><span class="label">ETA</span><span class="value">@_profile.EstimatedTime</span></div>
+            }
+        </div>
+
+        <div class="stage-timeline">
+            @for (int i = 0; i < _profile.StageHistory.Count; i++)
+            {
+                var stage = _profile.StageHistory[i];
+                var isCurrent = stage.IsCurrent;
+                var isGraduated = stage.IsGraduated;
+                var isUpcoming = !isCurrent && !isGraduated;
+
+                <div class="stage-node @(isCurrent ? "current" : isGraduated ? "graduated" : "upcoming")">
+                    <div class="stage-indicator">
+                        @if (isGraduated) { <span class="indicator-icon">OK</span> }
+                        else if (isCurrent) { <span class="indicator-icon">></span> }
+                        else { <span class="indicator-icon upcoming">o</span> }
+                    </div>
+                    <div class="stage-content">
+                        <div class="stage-name">@stage.Name</div>
+                        <div class="stage-desc">@stage.Description</div>
+
+                        @if (isCurrent)
+                        {
+                            <div class="stage-progress-bar">
+                                <div class="progress-fill" style="width: @stage.ProgressPct%"></div>
+                            </div>
+                            <div class="progress-label">Progress: @stage.ProgressPct%</div>
+                        }
+
+                        @if (isGraduated && !string.IsNullOrEmpty(stage.Summary))
+                        {
+                            <details class="stage-summary">
+                                <summary>Stage Summary</summary>
+                                <div class="summary-text">@stage.Summary</div>
+                            </details>
+                        }
+
+                        @if (isCurrent)
+                        {
+                            <button class="btn btn-sm btn-complete" @onclick="@(() => CompleteStageAsync(stage.Name))">
+                                @(_isCompleting ? "Processing..." : "Complete Stage")
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .stage-page { min-height: 100vh; }
+    .loading, .error-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem; color: var(--text-secondary); }
+    .error-icon { font-size: 48px; margin-bottom: 1rem; }
+    .error-msg { margin-bottom: 1rem; }
+    .stage-header { display: flex; align-items: center; padding: 0.75rem 1rem; background: var(--card-bg); border-bottom: 1px solid var(--border); }
+    .btn-icon { background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0.5rem; margin-right: 0.5rem; color: var(--text-primary); }
+    .header-info .title { font-weight: 600; font-size: 1rem; display: block; }
+    .header-info .subtitle { font-size: 0.8rem; color: var(--text-tertiary); }
+    .profile-card { margin: 1rem; padding: 1rem; background: var(--card-bg); border-radius: 12px; display: grid; gap: 0.75rem; }
+    .profile-item { display: flex; justify-content: space-between; }
+    .profile-item .label { color: var(--text-tertiary); font-size: 0.85rem; }
+    .profile-item .value { font-weight: 500; }
+    .profile-item .value.current { color: var(--primary-color); font-weight: 600; }
+    .stage-timeline { padding: 1rem; display: flex; flex-direction: column; gap: 0; }
+    .stage-node { display: flex; gap: 0.75rem; position: relative; padding-bottom: 1.5rem; }
+    .stage-node:not(:last-child)::after {
+        content: ''; position: absolute; left: 18px; top: 36px; bottom: 0;
+        width: 2px; background: var(--border);
+    }
+    .stage-node.graduated:not(:last-child)::after { background: var(--primary-color); }
+    .stage-indicator { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 1; }
+    .stage-node.current .stage-indicator { background: var(--primary-color); }
+    .stage-node.graduated .stage-indicator { background: var(--success-color, #4caf50); }
+    .stage-node.upcoming .stage-indicator { background: var(--surface-alt); }
+    .indicator-icon { color: white; font-size: 0.85rem; font-weight: bold; }
+    .indicator-icon.upcoming { color: var(--text-tertiary); }
+    .stage-content { flex: 1; }
+    .stage-name { font-weight: 600; font-size: 1rem; margin-bottom: 0.25rem; }
+    .stage-node.upcoming .stage-name { color: var(--text-tertiary); }
+    .stage-desc { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+    .stage-progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin: 0.5rem 0; }
+    .progress-fill { height: 100%; background: var(--primary-color); border-radius: 3px; transition: width 0.3s; }
+    .progress-label { font-size: 0.8rem; color: var(--text-tertiary); }
+    .stage-summary { margin-top: 0.5rem; }
+    .stage-summary summary { cursor: pointer; font-size: 0.85rem; color: var(--primary-color); }
+    .summary-text { margin-top: 0.5rem; padding: 0.75rem; background: var(--surface-alt); border-radius: 8px; font-size: 0.85rem; line-height: 1.6; white-space: pre-wrap; }
+    .btn-complete { margin-top: 0.75rem; }
+</style>
+
+@code {
+    [Parameter] public string MasterId { get; set; } = "";
+
+    private ApprenticeProfileResponse? _profile;
+    private bool _isLoading = true;
+    private bool _isCompleting;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrEmpty(MasterId))
+            await LoadProfileAsync();
+    }
+
+    private void GoBack()
+    {
+        Nav.NavigateTo("/master-list");
+    }
+
+    private void GoToChat()
+    {
+        if (_profile != null)
+            Nav.NavigateTo($"/master-chat/{_profile.MasterId}");
+    }
+
+    private async Task LoadProfileAsync()
+    {
+        _isLoading = true;
+        try
+        {
+            _profile = await MasterService.GetProfileAsync(MasterId);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Load profile failed: {ex.Message}");
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CompleteStageAsync(string stageName)
+    {
+        if (_profile == null) return;
+
+        _isCompleting = true;
+        try
+        {
+            var result = await MasterService.CompleteStageAsync(MasterId, stageName);
+            if (result.Success)
+            {
+                await LoadProfileAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Stage complete failed: {ex.Message}");
+        }
+        finally
+        {
+            _isCompleting = false;
+            StateHasChanged();
+        }
+    }
+}

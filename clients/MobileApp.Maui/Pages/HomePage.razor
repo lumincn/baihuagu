@@ -35,6 +35,10 @@
             <span class="quick-icon">⚙️</span>
             <span class="quick-label">设置</span>
         </div>
+        <div class="quick-item" @onclick="GoMasterList">
+            <span class="quick-icon">🧙</span>
+            <span class="quick-label">拜师</span>
+        </div>
     </div>
 </div>
 
@@ -140,4 +144,5 @@
     private void GoVaults() { Nav.NavigateTo("/vaults"); }
     private void GoPairing() { Nav.NavigateTo("/pairing"); }
     private void GoSettings() { Nav.NavigateTo("/settings"); }
+    private void GoMasterList() { Nav.NavigateTo("/master-list"); }
 }

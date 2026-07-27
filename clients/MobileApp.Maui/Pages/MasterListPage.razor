@@ -1,0 +1,265 @@
+@page "/master-list"
+@inject IMasterService MasterService
+@inject NavigationManager Nav
+
+<PageTitle>My Masters</PageTitle>
+
+<div class="master-page">
+    @if (_isLoading)
+    {
+        <div class="loading">Loading...</div>
+    }
+    else if (_masters.Count == 0)
+    {
+        <div class="empty-state">
+            <div class="empty-icon">M</div>
+            <div class="empty-title">No masters yet</div>
+            <div class="empty-desc">Find a master to start learning</div>
+            <button class="btn btn-primary" @onclick="ShowCreateDialog">Find Master</button>
+        </div>
+    }
+    else
+    {
+        <div class="master-header">
+            <h1>My Masters</h1>
+            <button class="btn btn-primary" @onclick="ShowCreateDialog">+ Find Master</button>
+        </div>
+
+        <div class="master-list">
+            @foreach (var m in _masters)
+            {
+                <div class="master-card" @onclick="() => GoToChat(m.MasterId)">
+                    <div class="card-header">
+                        <span class="master-name">@m.MasterName</span>
+                        <span class="status-badge @m.Status">@GetStatusText(m.Status)</span>
+                    </div>
+                    <div class="card-goal">@m.Goal</div>
+                    <div class="card-meta">
+                        <span>@m.Industry</span>
+                        <span>|</span>
+                        <span>Stage @(m.CurrentStageOrder + 1): @m.CurrentStage</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: @(m.CurrentStageOrder * 20)%"></div>
+                    </div>
+                    <div class="card-actions" @onclick:stopPropagation>
+                        <button class="btn btn-sm" @onclick="() => GoToStage(m.MasterId)">Progress</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteMaster(m.MasterId)">Delete</button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@if (_showCreateDialog)
+{
+    <div class="modal-overlay" @onclick="() => _showCreateDialog = false">
+        <div class="modal-content" @onclick:stopPropagation>
+            <h3>Find Master</h3>
+            <div class="form-group">
+                <label>Learning Goal</label>
+                <input type="text" class="form-control" @bind="_createGoal" placeholder="e.g. Pass medical exam" />
+            </div>
+            <div class="form-group">
+                <label>Industry</label>
+                <div class="industry-chips">
+                    @foreach (var ind in MasterService.GetIndustries())
+                    {
+                        <span class="chip @(_createIndustry == ind ? "selected" : "")" @onclick="() => _createIndustry = ind">@ind</span>
+                    }
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Or type custom</label>
+                <input type="text" class="form-control" @bind="_customIndustry" placeholder="Other industry..." />
+            </div>
+            <div class="modal-actions">
+                <button class="btn" @onclick="() => _showCreateDialog = false">Cancel</button>
+                <button class="btn btn-primary" @onclick="TryCreateMaster" disabled="@(!CanCreate)">
+                    @(_isCreating ? "Creating..." : "Find Master")
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (_showDisclaimer)
+{
+    <div class="modal-overlay">
+        <div class="modal-content disclaimer" @onclick:stopPropagation>
+            <h3>Disclaimer</h3>
+            <p>The selected industry involves medical/legal areas. Please note:</p>
+            <ul>
+                <li>AI masters can only help with exam preparation</li>
+                <li>Cannot provide real medical diagnosis or legal advice</li>
+                <li>For real needs, please consult licensed professionals</li>
+            </ul>
+            <div class="modal-actions">
+                <button class="btn" @onclick="() => _showDisclaimer = false">Cancel</button>
+                <button class="btn btn-primary" @onclick="ConfirmCreate">I understand, continue</button>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .master-page { padding: 1rem; min-height: 100vh; }
+    .loading { text-align: center; padding: 3rem; color: var(--text-secondary); }
+    .empty-state { text-align: center; padding: 3rem; }
+    .empty-icon { font-size: 48px; margin-bottom: 1rem; }
+    .empty-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .empty-desc { color: var(--text-secondary); margin-bottom: 1.5rem; }
+    .master-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .master-header h1 { margin: 0; font-size: 1.3rem; }
+    .master-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .master-card { background: var(--card-bg); border-radius: 12px; padding: 1rem; cursor: pointer; transition: all 0.2s; }
+    .master-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .master-name { font-size: 1.1rem; font-weight: 600; }
+    .status-badge { font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; }
+    .status-badge.active { background: #e8f5e9; color: #2e7d32; }
+    .status-badge.paused { background: #fff3e0; color: #e65100; }
+    .status-badge.graduated { background: #e3f2fd; color: #1565c0; }
+    .card-goal { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+    .card-meta { font-size: 0.8rem; color: var(--text-tertiary); display: flex; gap: 0.5rem; }
+    .progress-bar { height: 4px; background: var(--border); border-radius: 2px; margin: 0.75rem 0; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--primary-color); border-radius: 2px; transition: width 0.3s; }
+    .card-actions { display: flex; gap: 0.5rem; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-content { background: var(--card-bg); border-radius: 12px; padding: 1.5rem; width: 90%; max-width: 400px; }
+    .modal-content h3 { margin: 0 0 1rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.3rem; }
+    .form-control { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: 8px; background: var(--input-bg); color: var(--text-primary); font-size: 0.9rem; }
+    .industry-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .chip { padding: 6px 12px; border-radius: 16px; background: var(--surface-alt); font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
+    .chip.selected { background: var(--primary-color); color: white; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; }
+    .disclaimer ul { padding-left: 1.2rem; margin: 0.5rem 0; }
+    .disclaimer li { margin-bottom: 0.3rem; font-size: 0.9rem; }
+</style>
+
+@code {
+    private List<MasterListItem> _masters = new();
+    private bool _isLoading = true;
+    private bool _showCreateDialog;
+    private bool _showDisclaimer;
+    private string _createGoal = "";
+    private string _createIndustry = "";
+    private string _customIndustry = "";
+    private string _pendingIndustry = "";
+    private bool _isCreating;
+
+    private string _effectiveIndustry => string.IsNullOrEmpty(_customIndustry) ? _createIndustry : _customIndustry;
+    private bool CanCreate => !string.IsNullOrWhiteSpace(_createGoal) && !string.IsNullOrWhiteSpace(_effectiveIndustry) && !_isCreating;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMastersAsync();
+    }
+
+    private async Task LoadMastersAsync()
+    {
+        _isLoading = true;
+        try
+        {
+            _masters = await MasterService.GetMastersAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Load masters failed: {ex.Message}");
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ShowCreateDialog()
+    {
+        _createGoal = "";
+        _createIndustry = "";
+        _customIndustry = "";
+        _showCreateDialog = true;
+    }
+
+    private void TryCreateMaster()
+    {
+        var industry = _effectiveIndustry;
+        if (MasterService.IsMedicalOrLegalIndustry(industry))
+        {
+            _pendingIndustry = industry;
+            _showDisclaimer = true;
+        }
+        else
+        {
+            CreateMaster();
+        }
+    }
+
+    private void ConfirmCreate()
+    {
+        _createIndustry = _pendingIndustry;
+        _showDisclaimer = false;
+        CreateMaster();
+    }
+
+    private async void CreateMaster()
+    {
+        _isCreating = true;
+        try
+        {
+            var industry = _effectiveIndustry;
+            var result = await MasterService.CreateMasterAsync(_createGoal, industry);
+            _showCreateDialog = false;
+            _createGoal = "";
+            _createIndustry = "";
+            _customIndustry = "";
+            await LoadMastersAsync();
+            if (!string.IsNullOrEmpty(result.MasterId))
+            {
+                GoToChat(result.MasterId);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Create master failed: {ex.Message}");
+        }
+        finally
+        {
+            _isCreating = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeleteMaster(string masterId)
+    {
+        if (!await ConfirmDeleteAsync())
+            return;
+
+        try
+        {
+            await MasterService.DeleteMasterAsync(masterId);
+            await LoadMastersAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Delete master failed: {ex.Message}");
+        }
+    }
+
+    private Task<bool> ConfirmDeleteAsync() => Task.FromResult(true);
+
+    private void GoToChat(string masterId) => Nav.NavigateTo($"/master-chat/{masterId}");
+    private void GoToStage(string masterId) => Nav.NavigateTo($"/master-stage/{masterId}");
+
+    private static string GetStatusText(string status) => status switch
+    {
+        "active" => "Active",
+        "paused" => "Paused",
+        "graduated" => "Graduated",
+        _ => status
+    };
+}
