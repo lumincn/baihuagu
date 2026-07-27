@@ -72,6 +72,17 @@
             </div>
         }
 
+        @if (_aiCheckDone && !_aiConfigured)
+        {
+            <div class="ai-warning-banner">
+                <div class="ai-warning-icon">⚠️</div>
+                <div class="ai-warning-content">
+                    <strong>AI 服务未配置</strong>
+                    <span>请在管理面板中配置 AI 模型和 API Key</span>
+                </div>
+            </div>
+        }
+
         <div class="chat-messages" @ref="_chatContainer">
             @if (_messages.Count == 0 && !_isSending)
             {
@@ -223,6 +234,10 @@
     .disclaimer-warning { color: #ff9800; font-weight: 500; margin-top: 0.75rem; padding: 0.5rem; background: rgba(255,152,0,0.1); border-radius: 8px; }
     .disclaimer-actions { margin-top: 1.25rem; }
     .disclaimer-actions .btn { width: 100%; }
+    .ai-warning-banner { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(255,152,0,0.15); border-bottom: 1px solid rgba(255,152,0,0.3); }
+    .ai-warning-icon { font-size: 1.5rem; }
+    .ai-warning-content strong { display: block; color: #ff9800; font-size: 0.9rem; margin-bottom: 0.15rem; }
+    .ai-warning-content span { font-size: 0.8rem; color: var(--text-secondary); }
 </style>
 
 @code {
@@ -243,8 +258,10 @@
     private bool _showDisclaimer;
     private bool _disclaimerAccepted;
     private bool _isMedicalOrLegal;
+    private bool _aiConfigured = true;
+    private bool _aiCheckDone;
 
-    private bool CanSend => !_isSending && !string.IsNullOrWhiteSpace(_inputMessage);
+    private bool CanSend => !_isSending && !string.IsNullOrWhiteSpace(_inputMessage) && _aiConfigured;
     private string GetAvatar() => !string.IsNullOrEmpty(_profile?.MasterId) ? _profile.MasterId[..1].ToString() : "师";
     private string _stageTip = "";
 
@@ -262,6 +279,17 @@
                     _showDisclaimer = true;
                     StateHasChanged();
                 }
+
+                try
+                {
+                    _aiConfigured = await MasterService.CheckAiConfiguredAsync();
+                }
+                catch
+                {
+                    _aiConfigured = true;
+                }
+                _aiCheckDone = true;
+                StateHasChanged();
             }
         }
     }
@@ -310,9 +338,19 @@
         {
             _profile = await MasterService.GetProfileAsync(MasterId, useCache: false);
             _stageTip = GetStageTip(_profile.CurrentStage);
-            if (_messages.Count == 0)
+
+            List<ChatHistoryItem> history = new();
+            try
             {
-                var history = await MasterService.GetConversationHistoryAsync(MasterId, limit: 30);
+                history = await MasterService.GetConversationsFromServerAsync(MasterId, limit: 50);
+            }
+            catch
+            {
+                history = await MasterService.GetConversationHistoryAsync(MasterId, limit: 50);
+            }
+
+            if (_messages.Count == 0 && history.Count > 0)
+            {
                 foreach (var h in history)
                 {
                     _messages.Add(new ChatMessage
@@ -320,7 +358,7 @@
                         Id = $"{h.Role}_{DateTime.Now:HH:mm:ss}",
                         IsUser = h.Role == "user",
                         Content = h.Content,
-                        Time = DateTime.Now
+                        Time = h.CreatedAt
                     });
                 }
             }
@@ -369,6 +407,13 @@
     {
         if (string.IsNullOrWhiteSpace(_inputMessage) || _profile == null)
             return;
+
+        if (!_aiConfigured)
+        {
+            _sendError = "AI 服务未配置，请先在管理面板中配置 AI 模型和 API Key";
+            StateHasChanged();
+            return;
+        }
 
         _sendError = "";
         var userText = _inputMessage.Trim();

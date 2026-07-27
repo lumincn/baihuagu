@@ -996,6 +996,95 @@ public partial class MasterController : ControllerBase
         }
     }
 
+    [HttpGet("{id}/conversations")]
+    public async Task<ActionResult<ConversationHistoryResponse>> GetConversations(string id, int limit = 100)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+            return BadRequest(new ConversationHistoryResponse { Success = false, Message = "师父ID不能为空" });
+
+        try
+        {
+            await using var db = await _dbFactory.CreateDbContextAsync();
+            var master = await db.Masters.FirstOrDefaultAsync(m => m.MasterId == id);
+            if (master == null)
+                return NotFound(new ConversationHistoryResponse { Success = false, Message = "师父不存在" });
+
+            var conversations = await db.MasterConversations
+                .Where(c => c.MasterId == id)
+                .OrderByDescending(c => c.CreatedAt)
+                .Take(limit)
+                .OrderBy(c => c.CreatedAt)
+                .Select(c => new ConversationHistoryItem
+                {
+                    Role = c.Role,
+                    Content = c.Content,
+                    Stage = c.Stage,
+                    CreatedAt = c.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(new ConversationHistoryResponse
+            {
+                Success = true,
+                Message = "获取对话历史成功",
+                Items = conversations
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "获取对话历史失败");
+            return StatusCode(500, new ConversationHistoryResponse { Success = false, Message = $"获取失败：{ex.Message}" });
+        }
+    }
+
+    [HttpPost("{id}/conversations/sync")]
+    public async Task<ActionResult<ConversationSyncResponse>> SyncConversations(string id, [FromBody] ConversationSyncRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+            return BadRequest(new ConversationSyncResponse { Success = false, Message = "师父ID不能为空" });
+
+        try
+        {
+            await using var db = await _dbFactory.CreateDbContextAsync();
+            var master = await db.Masters.FirstOrDefaultAsync(m => m.MasterId == id);
+            if (master == null)
+                return NotFound(new ConversationSyncResponse { Success = false, Message = "师父不存在" });
+
+            var existingCount = await db.MasterConversations
+                .CountAsync(c => c.MasterId == id);
+
+            var syncedCount = 0;
+            foreach (var item in request.Items)
+            {
+                db.MasterConversations.Add(new MasterConversation
+                {
+                    MasterId = id,
+                    Role = item.Role,
+                    Content = item.Content,
+                    Stage = item.Stage,
+                    CreatedAt = item.CreatedAt
+                });
+                syncedCount++;
+            }
+
+            await db.SaveChangesAsync();
+
+            _logger.LogInformation("师父 {MasterId} 对话同步：新增 {Synced} 条", id, syncedCount);
+
+            return Ok(new ConversationSyncResponse
+            {
+                Success = true,
+                Message = $"同步成功，新增 {syncedCount} 条对话",
+                SyncedCount = syncedCount
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "对话同步失败");
+            return StatusCode(500, new ConversationSyncResponse { Success = false, Message = $"同步失败：{ex.Message}" });
+        }
+    }
+
     private async Task<string?> BuildVaultContextAsync(FamilyDbContext db, string masterId, string userMessage)
     {
         if (string.IsNullOrWhiteSpace(userMessage)) return null;

@@ -15,6 +15,9 @@ public interface IMasterService
     Task<ApprenticeProfileResponse> UpdateProfileAsync(string masterId, UpdateProfileRequest request);
     IAsyncEnumerable<string> StreamChatAsync(string masterId, string message, string stage, List<ChatHistoryItem>? history = null, CancellationToken ct = default);
     Task<List<ChatHistoryItem>> GetConversationHistoryAsync(string masterId, int limit = 20);
+    Task<List<ChatHistoryItem>> GetConversationsFromServerAsync(string masterId, int limit = 100);
+    Task<bool> SyncConversationsToServerAsync(string masterId, List<ChatHistoryItem> conversations);
+    Task<bool> CheckAiConfiguredAsync();
     Task<bool> GetDisclaimerAcceptedAsync(string masterId);
     Task SetDisclaimerAcceptedAsync(string masterId);
     List<string> GetIndustries();
@@ -211,6 +214,59 @@ public class MasterService : IMasterService
                 Content = m.Content
             })
             .ToList();
+    }
+
+    public async Task<List<ChatHistoryItem>> GetConversationsFromServerAsync(string masterId, int limit = 100)
+    {
+        var transport = await CreateTransportAsync();
+        var response = await transport.GetJsonAsync<ConversationHistoryResponse>($"/api/master/{masterId}/conversations?limit={limit}");
+        if (!response.IsSuccess)
+            throw new InvalidOperationException(response.ErrorMessage ?? "获取对话历史失败");
+
+        var items = response.Data?.Items ?? new();
+        return items.Select(i => new ChatHistoryItem
+        {
+            Role = i.Role,
+            Content = i.Content
+        }).ToList();
+    }
+
+    public async Task<bool> SyncConversationsToServerAsync(string masterId, List<ChatHistoryItem> conversations)
+    {
+        if (conversations.Count == 0)
+            return true;
+
+        var transport = await CreateTransportAsync();
+        var request = new ConversationSyncRequest
+        {
+            Items = conversations.Select(c => new ChatHistoryItem
+            {
+                Role = c.Role,
+                Content = c.Content,
+                Stage = "",
+                CreatedAt = DateTime.Now
+            }).ToList()
+        };
+        var response = await transport.PostJsonAsync<ConversationSyncResponse>($"/api/master/{masterId}/conversations/sync", request);
+        return response.IsSuccess && response.Data?.Success == true;
+    }
+
+    public async Task<bool> CheckAiConfiguredAsync()
+    {
+        try
+        {
+            var transport = await CreateTransportAsync();
+            var response = await transport.GetJsonAsync<List<object>>("/api/ai/providers");
+            if (!response.IsSuccess)
+                return false;
+
+            var providers = response.Data as List<object>;
+            return providers != null && providers.Count > 0;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     public async IAsyncEnumerable<string> StreamChatAsync(

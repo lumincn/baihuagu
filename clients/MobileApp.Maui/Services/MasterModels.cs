@@ -48,6 +48,27 @@ public class ChatHistoryItem
 {
     public string Role { get; set; } = "";
     public string Content { get; set; } = "";
+    public string Stage { get; set; } = "";
+    public DateTime CreatedAt { get; set; }
+}
+
+public class ConversationHistoryResponse
+{
+    public bool Success { get; set; }
+    public string Message { get; set; } = "";
+    public List<ChatHistoryItem> Items { get; set; } = new();
+}
+
+public class ConversationSyncRequest
+{
+    public List<ChatHistoryItem> Items { get; set; } = new();
+}
+
+public class ConversationSyncResponse
+{
+    public bool Success { get; set; }
+    public string Message { get; set; } = "";
+    public int SyncedCount { get; set; }
 }
 
 public class StageCompleteRequest

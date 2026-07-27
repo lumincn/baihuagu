@@ -132,3 +132,30 @@ public class MasterEvictResponse
     public int CompressedStages { get; set; }
     public int EvictedStages { get; set; }
 }
+
+public class ConversationHistoryItem
+{
+    public string Role { get; set; } = "";
+    public string Content { get; set; } = "";
+    public string Stage { get; set; } = "";
+    public DateTime CreatedAt { get; set; }
+}
+
+public class ConversationHistoryResponse
+{
+    public bool Success { get; set; }
+    public string Message { get; set; } = "";
+    public List<ConversationHistoryItem> Items { get; set; } = new();
+}
+
+public class ConversationSyncRequest
+{
+    public List<ConversationHistoryItem> Items { get; set; } = new();
+}
+
+public class ConversationSyncResponse
+{
+    public bool Success { get; set; }
+    public string Message { get; set; } = "";
+    public int SyncedCount { get; set; }
+}
