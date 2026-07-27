@@ -70,7 +70,16 @@
                             @(msg.IsUser ? "我" : GetAvatar())
                         </div>
                         <div class="message-content">
-                            <div class="message-text">@msg.Content</div>
+                            @if (msg.IsUser)
+                            {
+                                <div class="message-text">@msg.Content</div>
+                            }
+                            else
+                            {
+                                <div class="message-text">
+                                    <MarkdownView Content="@msg.Content" />
+                                </div>
+                            }
                             <div class="message-time">@msg.Time.ToString("HH:mm")</div>
                         </div>
                     </div>

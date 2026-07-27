@@ -141,18 +141,32 @@
 
 @if (_showDisclaimer)
 {
-    <div class="modal-overlay">
-        <div class="modal-content disclaimer" @onclick:stopPropagation>
+    <div class="modal-overlay" @onclick="() => _showDisclaimer = false">
+        <div class="modal-content disclaimer-detail" @onclick:stopPropagation>
             <h3>⚠️ 免责声明</h3>
-            <p>您选择的行业涉及 <strong>医疗/法律</strong> 领域，请注意：</p>
-            <ul>
-                <li>AI 师父只能帮助您备考学习</li>
-                <li>不能提供真实的医疗诊断或法律咨询</li>
-                <li>实际需求请咨询持有资质的专业人士</li>
-            </ul>
+
+            <div class="disclaimer-body">
+                <p><strong>虚拟师父是学习辅助工具，不能替代专业咨询。</strong></p>
+
+                <ul>
+                    <li>虚拟师父仅用于<strong>学习考证知识</strong>，不提供真实的医疗诊断、处方或法律建议。</li>
+                    <li>如有真实健康或法律问题，请咨询<strong>持证专业人士</strong>。</li>
+                    <li>AI 生成的内容可能存在错误，请以官方教材和权威资料为准。</li>
+                </ul>
+
+                <div class="age-confirm">
+                    <label>
+                        <input type="checkbox" @bind="_confirmedAdult" />
+                        我已年满 18 周岁，理解本工具不提供真实诊疗或法律建议
+                    </label>
+                </div>
+            </div>
+
             <div class="modal-actions">
-                <button class="btn" @onclick="() => _showDisclaimer = false">取消</button>
-                <button class="btn btn-primary" @onclick="ConfirmCreate">我已了解，继续</button>
+                <button class="btn" @onclick="() => _showDisclaimer = false">不同意</button>
+                <button class="btn btn-primary" @onclick="ConfirmCreate" disabled="@(!CanConfirmDisclaimer)">
+                    我已阅读并同意
+                </button>
             </div>
         </div>
     </div>
@@ -228,8 +242,32 @@
     .master-preview { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; background: var(--surface-alt); border-radius: 10px; font-size: 0.9rem; }
     .master-preview-name { color: var(--primary-color); font-size: 1.1rem; }
     .modal-actions { display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1rem 1.5rem; border-top: 1px solid var(--border); }
-    .disclaimer ul { padding-left: 1.2rem; margin: 0.5rem 0; }
-    .disclaimer li { margin-bottom: 0.5rem; font-size: 0.9rem; }
+    .disclaimer-detail h3 { margin-bottom: 0.75rem; }
+    .disclaimer-body { margin: 0.5rem 0; color: var(--text-secondary); line-height: 1.7; }
+    .disclaimer-body ul { padding-left: 1.2rem; margin: 0.75rem 0; }
+    .disclaimer-body li { margin-bottom: 0.5rem; font-size: 0.9rem; }
+    .disclaimer-body strong { color: var(--primary-text); }
+    .age-confirm {
+        margin-top: 1rem;
+        padding: 0.75rem;
+        border-radius: 8px;
+        background: rgba(255,200,100,0.1);
+        border: 1px solid rgba(255,200,100,0.3);
+    }
+    .age-confirm label {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        cursor: pointer;
+        font-size: 0.9rem;
+        color: var(--text-primary);
+    }
+    .age-confirm input[type="checkbox"] {
+        margin-top: 0.2rem;
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+    }
     .toast { position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); padding: 0.75rem 1rem; border-radius: 8px; display: flex; align-items: center; gap: 0.75rem; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
     .toast.error { background: rgba(244,67,54,0.95); color: white; }
 </style>
@@ -247,9 +285,11 @@
     private string _customIndustry = "";
     private string _pendingIndustry = "";
     private bool _isCreating;
+    private bool _confirmedAdult;
 
     private string _effectiveIndustry => string.IsNullOrEmpty(_customIndustry) ? _createIndustry : _customIndustry;
     private bool CanCreate => !string.IsNullOrWhiteSpace(_createGoal) && !string.IsNullOrWhiteSpace(_effectiveIndustry) && !_isCreating;
+    private bool CanConfirmDisclaimer => _confirmedAdult;
 
     protected override async Task OnInitializedAsync()
     {

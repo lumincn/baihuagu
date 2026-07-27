@@ -224,14 +224,6 @@ public class MasterService : IMasterService
         };
 
         var jsonBody = JsonSerializer.Serialize(requestBody);
-        using var request = new HttpRequestMessage(HttpMethod.Post, url)
-        {
-            Content = new StringContent(jsonBody, System.Text.Encoding.UTF8, "application/json")
-        };
-
-        var signHeaders = _signer.SignRequest(HttpMethod.Post.Method, url, jsonBody, baseUrl);
-        foreach (var (k, v) in signHeaders)
-            request.Headers.TryAddWithoutValidation(k, v);
 
         var userMessage = new ChatMessage
         {
@@ -241,6 +233,73 @@ public class MasterService : IMasterService
             Time = DateTime.Now
         };
         await _cacheService.AppendMessageAsync(masterId, userMessage);
+
+        var result = await TryCollectStreamAsync(url, jsonBody, baseUrl, ct);
+
+        if (!result.Success)
+        {
+            result = await TryCollectFallbackAsync(url, jsonBody, baseUrl, ct);
+        }
+
+        if (!result.Success && result.Error != null)
+        {
+            throw result.Error;
+        }
+
+        foreach (var chunk in result.Chunks)
+        {
+            yield return chunk;
+        }
+    }
+
+    private async Task<(bool Success, List<string> Chunks, Exception? Error)> TryCollectStreamAsync(
+        string url, string jsonBody, string baseUrl, CancellationToken ct)
+    {
+        var chunks = new List<string>();
+        try
+        {
+            await foreach (var chunk in TryStreamChatInternalAsync(url, jsonBody, baseUrl, ct))
+            {
+                chunks.Add(chunk);
+            }
+            return (true, chunks, null);
+        }
+        catch (Exception ex)
+        {
+            return (false, chunks, ex);
+        }
+    }
+
+    private async Task<(bool Success, List<string> Chunks, Exception? Error)> TryCollectFallbackAsync(
+        string url, string jsonBody, string baseUrl, CancellationToken ct)
+    {
+        var chunks = new List<string>();
+        try
+        {
+            await foreach (var chunk in FallbackNonStreamChatAsync(url, jsonBody, baseUrl, ct))
+            {
+                chunks.Add(chunk);
+            }
+            return (true, chunks, null);
+        }
+        catch (Exception ex)
+        {
+            return (false, chunks, ex);
+        }
+    }
+
+    private async IAsyncEnumerable<string> TryStreamChatInternalAsync(
+        string url, string jsonBody, string baseUrl,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, url)
+        {
+            Content = new StringContent(jsonBody, System.Text.Encoding.UTF8, "application/json")
+        };
+
+        var signHeaders = _signer.SignRequest(HttpMethod.Post.Method, url, jsonBody, baseUrl);
+        foreach (var (k, v) in signHeaders)
+            request.Headers.TryAddWithoutValidation(k, v);
 
         using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
         response.EnsureSuccessStatusCode();
@@ -269,6 +328,7 @@ public class MasterService : IMasterService
 
         if (!string.IsNullOrEmpty(fullResponse))
         {
+            var masterId = ExtractMasterIdFromJson(jsonBody);
             var assistantMessage = new ChatMessage
             {
                 Id = $"master_{DateTime.Now:HH:mm:ss}",
@@ -278,6 +338,75 @@ public class MasterService : IMasterService
             };
             await _cacheService.AppendMessageAsync(masterId, assistantMessage);
         }
+    }
+
+    private async IAsyncEnumerable<string> FallbackNonStreamChatAsync(
+        string url, string jsonBody, string baseUrl,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, url)
+        {
+            Content = new StringContent(jsonBody, System.Text.Encoding.UTF8, "application/json")
+        };
+
+        var signHeaders = _signer.SignRequest(HttpMethod.Post.Method, url, jsonBody, baseUrl);
+        foreach (var (k, v) in signHeaders)
+            request.Headers.TryAddWithoutValidation(k, v);
+
+        using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead, ct);
+        response.EnsureSuccessStatusCode();
+
+        var fullContent = await response.Content.ReadAsStringAsync(ct);
+
+        var fullResponse = "";
+        using var reader = new StringReader(fullContent);
+        string? line;
+        while ((line = await reader.ReadLineAsync()) != null)
+        {
+            if (string.IsNullOrEmpty(line) || !line.StartsWith("data: "))
+                continue;
+
+            var data = line.Substring(6).Trim();
+            if (data == "")
+                continue;
+
+            var parsed = TryParseContent(data);
+            if (parsed != null)
+                fullResponse += parsed;
+        }
+
+        if (string.IsNullOrEmpty(fullResponse))
+        {
+            var directParsed = TryParseContent(fullContent.Trim());
+            if (directParsed != null)
+                fullResponse = directParsed;
+        }
+
+        if (!string.IsNullOrEmpty(fullResponse))
+        {
+            var masterId = ExtractMasterIdFromJson(jsonBody);
+            var assistantMessage = new ChatMessage
+            {
+                Id = $"master_{DateTime.Now:HH:mm:ss}",
+                IsUser = false,
+                Content = fullResponse,
+                Time = DateTime.Now
+            };
+            await _cacheService.AppendMessageAsync(masterId, assistantMessage);
+            yield return fullResponse;
+        }
+    }
+
+    private static string ExtractMasterIdFromJson(string jsonBody)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(jsonBody);
+            if (doc.RootElement.TryGetProperty("MasterId", out var id))
+                return id.GetString() ?? "";
+        }
+        catch { }
+        return "";
     }
 
     private static string? TryParseContent(string data)
