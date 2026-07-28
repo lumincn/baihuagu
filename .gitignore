@@ -214,3 +214,10 @@ tests/TaskRunner.Family.Tests/prompt-templates.json
 # Reasonix AI agent
 .reasonix/
 .baihua-dev/
+
+# Claude Code agent
+.claude/
+
+# Playwright test results (root tests)
+tests/test-results/
+tests/.last-run.json
