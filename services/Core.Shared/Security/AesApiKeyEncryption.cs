@@ -34,8 +34,29 @@ public static class AesApiKeyEncryption
     public static string KeyFilePath => TaskRunner.Contracts.BaihuaPaths.KeyFile;
 
     /// <summary>
-    /// 旧版机器指纹（用于兼容和迁移）
-    /// 组合机器特定信息，容器重建后可能变化
+    /// <summary>
+    /// 机器指纹（用于密钥文件丢失时的兜底）
+    ///
+    /// 优先读取 OS 级机器 ID（重装系统前永不变化）：
+    ///   Windows: HKLM\SOFTWARE\Microsoft\Cryptography\MachineGuid
+    ///   Linux:   /etc/machine-id
+    ///   macOS:   ioreg IOPlatformUUID
+    ///
+    /// 读不到时回退到 MachineName + ProcessorCount，保证至少同机同指纹。
+    /// </summary>
+    public static byte[] GetMachineFingerprint()
+    {
+        var stableId = ReadOsMachineId();
+        if (!string.IsNullOrEmpty(stableId))
+            return SHA256.HashData(Encoding.UTF8.GetBytes(stableId));
+
+        // 回退：机器名 + CPU 核数（只要不重命名主机/换 CPU，就稳定）
+        var fallback = $"{Environment.MachineName}|{Environment.ProcessorCount}";
+        return SHA256.HashData(Encoding.UTF8.GetBytes(fallback));
+    }
+
+    /// <summary>
+    /// 旧版机器指纹（仅用于迁移，保持与历史数据兼容）
     /// </summary>
     public static byte[] GetLegacyMachineFingerprint()
     {
@@ -46,9 +67,42 @@ public static class AesApiKeyEncryption
             Environment.OSVersion.ToString(),
             Environment.ProcessorCount.ToString()
         };
-
         var fingerprint = string.Join("|", components);
         return SHA256.HashData(Encoding.UTF8.GetBytes(fingerprint));
+    }
+
+    private static string? ReadOsMachineId()
+    {
+        try
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                var key = Microsoft.Win32.Registry.LocalMachine
+                    .OpenSubKey(@"SOFTWARE\Microsoft\Cryptography");
+                return key?.GetValue("MachineGuid")?.ToString();
+            }
+            if (OperatingSystem.IsLinux())
+            {
+                return File.Exists("/etc/machine-id")
+                    ? File.ReadAllText("/etc/machine-id").Trim()
+                    : null;
+            }
+            if (OperatingSystem.IsMacOS())
+            {
+                var result = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "ioreg",
+                    Arguments = "-rd1 -c IOPlatformExpertDevice",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false
+                });
+                var output = result?.StandardOutput.ReadToEnd() ?? "";
+                var match = System.Text.RegularExpressions.Regex.Match(output, "\"IOPlatformUUID\"\\s*=\\s*\"([^\"]+)\"");
+                return match.Success ? match.Groups[1].Value : null;
+            }
+        }
+        catch { /* 权限不足等，回退到备用方案 */ }
+        return null;
     }
 
     /// <summary>
@@ -84,8 +138,8 @@ public static class AesApiKeyEncryption
             return SHA256.HashData(Encoding.UTF8.GetBytes(envKey.Trim()));
         }
 
-        // 3. 回退到旧版机器指纹（兼容已有数据，启动时会自动迁移到固定密钥）
-        return GetLegacyMachineFingerprint();
+        // 3. 回退到机器指纹（密钥文件丢失时的兜底）
+        return GetMachineFingerprint();
     }
 
     /// <summary>
