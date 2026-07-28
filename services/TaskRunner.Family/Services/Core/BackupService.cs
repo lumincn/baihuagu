@@ -13,7 +13,7 @@ namespace TaskRunner.Services;
 ///
 /// 备份内容：
 /// - SQLite 数据库（5 张表导出为 JSON）
-/// - JSON 配置文件（webui.settings.json 等，知识库根路径改为环境变量 TASKRUNNER_VAULT_ROOT 配置）
+/// - JSON 配置文件（webui.settings.json 等，知识库根路径改为环境变量 BAIHUA_HOME/vaults 配置）
 /// - 知识库文件（notes/, cards/）
 /// - WebUI 配置（webui.settings.json, user_preferences.json）
 ///

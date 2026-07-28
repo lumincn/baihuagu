@@ -20,9 +20,10 @@ namespace TaskRunner.Services
             StartTime = DateTime.UtcNow;
             RestartCount = 0;
             RestartHistory = new List<DateTime>();
-            // 使用数据目录而非应用目录，避免非 root 用户无写权限
-            var dataDir = Environment.GetEnvironmentVariable("YJ_DATA_DIR") ?? AppDomain.CurrentDomain.BaseDirectory;
-            LogFilePath = Path.Combine(dataDir, "startup.log");
+            // 使用 BaihuaPaths.Logs 作为日志目录
+            var logDir = TaskRunner.Contracts.BaihuaPaths.Logs;
+            Directory.CreateDirectory(logDir);
+            LogFilePath = Path.Combine(logDir, "startup.log");
         }
         
         public static StartupMonitor Instance

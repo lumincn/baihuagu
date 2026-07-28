@@ -77,7 +77,7 @@ if (!skipMutex)
 // 无需额外调用 AddEnvironmentVariables()，CreateBuilder 已默认加载。
 
 // 百花统一数据根目录 BAIHUA_HOME 由 Core.Shared.BaihuaPaths 管理
-// 不再手动设置 YJ_DATA_DIR，详见 services/Core.Shared/BaihuaPaths.cs
+// 不再手动设置 YJ_DATA_DIR，详见 services/TaskRunner.Contracts/BaihuaPaths.cs
 
 // Family 版不自动生成分享密钥：未配置时回退到 Bearer Token / IP 白名单验证
 // 仅在显式配置了 MobileAuth:SharedSecret 时才启用 HMAC 签名

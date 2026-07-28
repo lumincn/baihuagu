@@ -103,8 +103,7 @@ public class DefaultPromptProvider
 
     private string ResolveTemplatePath()
     {
-        var env = Environment.GetEnvironmentVariable("YJ_DATA_DIR");
-        var baseDir = !string.IsNullOrEmpty(env) ? env : _dataDir;
+        var baseDir = TaskRunner.Contracts.BaihuaPaths.Db;
         var binDebug = Path.Combine("bin", "Debug");
         var binRelease = Path.Combine("bin", "Release");
         if (baseDir.Contains(binDebug) || baseDir.Contains(binRelease))

@@ -23,7 +23,7 @@ var urls = builder.Configuration["urls"]                                   // do
 builder.WebHost.UseUrls(urls);
 
 // 百花统一数据根目录 BAIHUA_HOME 由 Core.Shared.BaihuaPaths 管理
-// 不再手动设置 YJ_DATA_DIR，详见 services/Core.Shared/BaihuaPaths.cs
+// 不再手动设置 YJ_DATA_DIR，详见 services/TaskRunner.Contracts/BaihuaPaths.cs
 
 
 // 添加控制器与 JSON 序列化
