@@ -76,22 +76,8 @@ if (!skipMutex)
 // 环境变量优先级最高，适合覆盖部署时的配置值（密码、URL 等）。
 // 无需额外调用 AddEnvironmentVariables()，CreateBuilder 已默认加载。
 
-// 确保数据目录稳定（不在编译输出目录中，避免 dotnet run 时数据被清理）
-if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("YJ_DATA_DIR")))
-{
-    // Linux 环境下统一使用 /opt/yj-family/data，与 Docker 保持同一份数据
-    if (OperatingSystem.IsLinux())
-    {
-        var sharedDataDir = "/opt/yj-family/data";
-        Directory.CreateDirectory(sharedDataDir);
-        Environment.SetEnvironmentVariable("YJ_DATA_DIR", sharedDataDir);
-    }
-    else
-    {
-        Environment.SetEnvironmentVariable("YJ_DATA_DIR",
-            Path.Combine(builder.Environment.ContentRootPath, "data"));
-    }
-}
+// 百花统一数据根目录 BAIHUA_HOME 由 Core.Shared.BaihuaPaths 管理
+// 不再手动设置 YJ_DATA_DIR，详见 services/Core.Shared/BaihuaPaths.cs
 
 // Family 版不自动生成分享密钥：未配置时回退到 Bearer Token / IP 白名单验证
 // 仅在显式配置了 MobileAuth:SharedSecret 时才启用 HMAC 签名

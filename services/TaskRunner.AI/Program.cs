@@ -22,21 +22,9 @@ var urls = builder.Configuration["urls"]                                   // do
     ?? "http://0.0.0.0:8791";
 builder.WebHost.UseUrls(urls);
 
-// 确保数据目录稳定
-if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("YJ_DATA_DIR")))
-{
-    if (OperatingSystem.IsLinux())
-    {
-        var sharedDataDir = "/opt/yj-family/data";
-        Directory.CreateDirectory(sharedDataDir);
-        Environment.SetEnvironmentVariable("YJ_DATA_DIR", sharedDataDir);
-    }
-    else
-    {
-        Environment.SetEnvironmentVariable("YJ_DATA_DIR",
-            Path.Combine(builder.Environment.ContentRootPath, "data"));
-    }
-}
+// 百花统一数据根目录 BAIHUA_HOME 由 Core.Shared.BaihuaPaths 管理
+// 不再手动设置 YJ_DATA_DIR，详见 services/Core.Shared/BaihuaPaths.cs
+
 
 // 添加控制器与 JSON 序列化
 builder.Services.AddControllers()

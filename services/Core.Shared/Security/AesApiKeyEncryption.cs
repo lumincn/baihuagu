@@ -31,14 +31,7 @@ public static class AesApiKeyEncryption
     /// <summary>
     /// 密钥文件路径（挂载到宿主机，容器重建后仍然存在）
     /// </summary>
-    public static string KeyFilePath
-    {
-        get
-        {
-            var dataDir = Environment.GetEnvironmentVariable("YJ_DATA_DIR") ?? "/app/data";
-            return Path.Combine(dataDir, ".yj-key");
-        }
-    }
+    public static string KeyFilePath => TaskRunner.Contracts.BaihuaPaths.KeyFile;
 
     /// <summary>
     /// 旧版机器指纹（用于兼容和迁移）

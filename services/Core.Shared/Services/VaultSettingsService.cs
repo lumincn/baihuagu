@@ -27,18 +27,9 @@ public partial class VaultSettingsService
     {
         get
         {
-            var env = Environment.GetEnvironmentVariable("TASKRUNNER_VAULT_ROOT");
-            if (!string.IsNullOrWhiteSpace(env))
-                return env.TrimEnd('/', '\\');
-
-            var isDocker = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true" ||
-                           File.Exists("/.dockerenv");
-
-            if (isDocker)
-                return "/opt/yj-family/vaults";
-
-            var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            return Path.Combine(homeDir, ".yj-vaults");
+            var dir = TaskRunner.Contracts.BaihuaPaths.Vaults;
+            Directory.CreateDirectory(dir);
+            return dir;
         }
     }
 

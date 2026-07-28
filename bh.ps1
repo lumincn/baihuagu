@@ -172,12 +172,12 @@ function Start-ServiceProc($name, $projRelPath){
 
 	try {
 		$prevEnv = $env:ASPNETCORE_ENVIRONMENT
-		$prevDataDir = $env:YJ_DATA_DIR
+		$prevHome = $env:BAIHUA_HOME
 		$env:ASPNETCORE_ENVIRONMENT = 'Development'
-		$env:YJ_DATA_DIR = Join-Path $HG_ROOT 'data'
+		$env:BAIHUA_HOME = Join-Path $HG_ROOT '.baihua-dev'
 		$proc = Start-Process -FilePath 'dotnet' -ArgumentList $args -RedirectStandardOutput $log -RedirectStandardError $errLog -NoNewWindow -PassThru
 		if ($null -ne $prevEnv) { $env:ASPNETCORE_ENVIRONMENT = $prevEnv } else { Remove-Item Env:\ASPNETCORE_ENVIRONMENT -ErrorAction SilentlyContinue }
-		if ($null -ne $prevDataDir) { $env:YJ_DATA_DIR = $prevDataDir } else { Remove-Item Env:\YJ_DATA_DIR -ErrorAction SilentlyContinue }
+		if ($null -ne $prevHome) { $env:BAIHUA_HOME = $prevHome } else { Remove-Item Env:\BAIHUA_HOME -ErrorAction SilentlyContinue }
 		Start-Sleep -Milliseconds 200
 		$procId = $proc.Id
 		Set-Content -Path $pidFile -Value $procId

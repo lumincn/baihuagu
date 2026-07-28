@@ -46,29 +46,9 @@ public class AIDbContext : DbContext
 
     internal static string ResolveDataDir()
     {
-        var envDir = Environment.GetEnvironmentVariable("YJ_DATA_DIR");
-        if (!string.IsNullOrEmpty(envDir))
-            return envDir;
-
-        var baseDir = AppDomain.CurrentDomain.BaseDirectory;
-        var binDebug = Path.Combine("bin", "Debug");
-        var binRelease = Path.Combine("bin", "Release");
-        if (baseDir.Contains(binDebug) || baseDir.Contains(binRelease))
-        {
-            var index = baseDir.IndexOf(binDebug);
-            if (index < 0) index = baseDir.IndexOf(binRelease);
-            if (index > 0)
-            {
-                var projectDir = baseDir.Substring(0, index);
-                var servicesDir = Path.GetDirectoryName(projectDir.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
-                if (servicesDir != null && Path.GetFileName(servicesDir) == "services")
-                    return Path.Combine(servicesDir, "data");
-                return Path.Combine(projectDir, "data");
-            }
-            return Path.Combine(baseDir, "data");
-        }
-
-        return Path.Combine(baseDir, "data");
+        var dbDir = TaskRunner.Contracts.BaihuaPaths.Db;
+        Directory.CreateDirectory(dbDir);
+        return dbDir;
     }
 
     public static string GetDbPath()
