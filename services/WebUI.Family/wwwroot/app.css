@@ -1974,6 +1974,11 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
     .chip-remove { color: #708090; }
     .chip-remove:hover { color: #d4d8dd; background: #3d4558; }
 
+    /* ---- 搜索结果分类条 ---- */
+    .group-header { background: #2d3548; border-color: #3d4558; }
+    .group-header:hover { background: #363d52; }
+    .group-header h3 { color: #d4d8dd; }
+
     /* ---- FamilyHome 最近浏览/搜索 ---- */
     .note-card { background: #232a3b; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
     .note-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
@@ -1987,4 +1992,7 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
     .device-tag { background: #2d3548; color: #91a0b0; }
     .device-actions { border-color: #2d3548; }
     .device-pairing { background: #1e2433; border-color: #3d4558; }
+
+    /* ---- FamilyHome 卡片文字 ---- */
+    .card h3, .card-title { color: #d4d8dd; }
 }
