@@ -7,30 +7,26 @@
 <div class="container-fluid py-3">
     <h4 class="mb-3">🚨 错误日志</h4>
     <div class="mb-2 d-flex gap-2 align-items-center">
-        <button class="btn btn-sm btn-outline-secondary" @onclick="RefreshAsync">🔄 刷新</button>
-        <span class="small text-muted">最近 @logs.Count 条错误</span>
-        <span class="small @(hasNewError ? "text-danger fw-bold" : "text-muted")">@statusText</span>
+        <button class="btn btn-sm btn-outline-secondary" @onclick="Refresh">🔄 刷新</button>
+        <span class="small">@status</span>
     </div>
 
-    @if (isLoading)
+    @if (loading)
     {
         <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
     }
-    else if (logs.Count == 0)
+    else if (entries.Count == 0)
     {
         <div class="alert alert-info">暂无错误日志</div>
     }
     else
     {
         <div class="list-group" style="font-size: 0.85rem;">
-            @foreach (var log in logs)
+            @foreach (var e in entries)
             {
-                <div class="list-group-item" style="border-left: 4px solid @(log.IsError ? "#c94c4c" : "#f0ad4e");">
-                    <div class="d-flex justify-content-between">
-                        <small class="text-muted">@log.Time</small>
-                        <small class="badge bg-@(log.IsError ? "danger" : "warning")">@(log.IsError ? "ERROR" : "WARN")</small>
-                    </div>
-                    <div class="mt-1" style="white-space: pre-wrap; word-break: break-all; font-family: monospace; font-size: 0.8rem; max-height: 200px; overflow-y: auto;">@log.Message</div>
+                <div class="list-group-item py-1 px-2">
+                    <small class="text-muted">@e.Time</small>
+                    <code style="font-size:0.8rem;white-space:pre-wrap;word-break:break-all;">@e.Msg</code>
                 </div>
             }
         </div>
@@ -38,86 +34,50 @@
 </div>
 
 @code {
-    private List<LogEntry> logs = new();
-    private bool isLoading;
-    private string statusText = "";
-    private bool hasNewError;
+    private record Entry(string Time, string Msg);
+    private List<Entry> entries = new();
+    private bool loading = true;
+    private string status = "";
 
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadErrorsAsync();
-    }
+    protected override async Task OnInitializedAsync() => await Refresh();
 
-    private async Task RefreshAsync()
+    private async Task Refresh()
     {
-        await LoadErrorsAsync();
-    }
-
-    private async Task LoadErrorsAsync()
-    {
-        isLoading = true;
-        statusText = "加载中...";
-        hasNewError = false;
+        loading = true;
+        entries.Clear();
 
         try
         {
-            var taskrunner = await ReadFromLogFile("taskrunner", 100);
-            var webui = await ReadFromLogFile("webui", 100);
-            logs = taskrunner.Concat(webui)
-                .OrderByDescending(l => l.Time)
-                .Take(100)
-                .ToList();
-            hasNewError = logs.Any(l => l.IsError);
-            statusText = hasNewError ? "⚠ 发现异常" : "✅ 正常";
+            foreach (var svc in new[] { "taskrunner", "webui", "vault", "ai" })
+            {
+                var path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"bh-{svc}.log");
+                if (!System.IO.File.Exists(path)) continue;
+
+                var text = await System.IO.File.ReadAllTextAsync(path);
+                var lines = text.Split('\n');
+                foreach (var line in lines.Reverse())
+                {
+                    var t = line.Trim();
+                    if (t.Length == 0) continue;
+                    if (!t.Contains("ERR") && !t.Contains("Error") && !t.Contains("Exception") && !t.Contains("fail") && !t.Contains("WRN")) continue;
+
+                    var time = "";
+                    var m = System.Text.RegularExpressions.Regex.Match(t, @"\d{2}:\d{2}:\d{2}");
+                    if (m.Success) time = m.Value;
+
+                    entries.Add(new Entry(time, $"[{svc}] {t}"));
+                    if (entries.Count >= 200) break;
+                }
+                if (entries.Count >= 200) break;
+            }
+            status = $"{entries.Count} 条";
         }
         catch (Exception ex)
         {
-            logs.Add(new LogEntry { Time = DateTime.Now.ToString("HH:mm:ss"), Message = $"加载日志失败：{ex.Message}", IsError = true });
-            statusText = "❌ 加载失败";
+            entries.Add(new Entry("", $"读取失败: {ex.Message}"));
+            status = "❌";
         }
 
-        isLoading = false;
-    }
-
-    private static string ExtractTime(string line)
-    {
-        var m = System.Text.RegularExpressions.Regex.Match(line, @"\d{2}:\d{2}:\d{2}");
-        return m.Success ? m.Value : "";
-    }
-
-    private async Task<List<LogEntry>> ReadFromLogFile(string serviceName, int maxLines)
-    {
-        var entries = new List<LogEntry>();
-        try
-        {
-            var logPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"bh-{serviceName}.log");
-            if (!System.IO.File.Exists(logPath)) return entries;
-
-            var content = await System.IO.File.ReadAllTextAsync(logPath);
-            var allLines = content.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-            var errorLines = allLines
-                .Where(l => l.Contains("ERR") || l.Contains("Error") || l.Contains("Exception") || l.Contains("fail") || l.Contains("WRN"))
-                .Reverse()
-                .Take(maxLines);
-
-            foreach (var line in errorLines)
-            {
-                entries.Add(new LogEntry
-                {
-                    Time = ExtractTime(line),
-                    Message = $"[{serviceName}] {line}",
-                    IsError = line.Contains("ERR") || line.Contains("Error") || line.Contains("Exception")
-                });
-            }
-        }
-        catch { }
-        return entries;
-    }
-
-    private class LogEntry
-    {
-        public string Time { get; set; } = "";
-        public string Message { get; set; } = "";
-        public bool IsError { get; set; }
+        loading = false;
     }
 }

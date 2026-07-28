@@ -55,22 +55,34 @@ public class StartupOrchestratorHostedService : IHostedService
         {
             using var familyDb = _familyDbContextFactory.CreateDbContext();
             MigrateDatabase(familyDb, "Family");
+        }, () =>
+        {
+            using var familyDb = _familyDbContextFactory.CreateDbContext();
+            familyDb.Database.EnsureCreated();
         });
 
         TryMigrateDatabase("Vault", () =>
         {
             using var vaultDb = _vaultDbContextFactory.CreateDbContext();
             MigrateDatabase(vaultDb, "Vault");
+        }, () =>
+        {
+            using var vaultDb = _vaultDbContextFactory.CreateDbContext();
+            vaultDb.Database.EnsureCreated();
         });
 
         TryMigrateDatabase("AI", () =>
         {
             using var aiDb = _aiDbContextFactory.CreateDbContext();
             MigrateDatabase(aiDb, "AI");
+        }, () =>
+        {
+            using var aiDb = _aiDbContextFactory.CreateDbContext();
+            aiDb.Database.EnsureCreated();
         });
     }
 
-    private void TryMigrateDatabase(string domainName, Action migrateAction)
+    private void TryMigrateDatabase(string domainName, Action migrateAction, Action ensureCreatedFallback)
     {
         try
         {
@@ -78,7 +90,9 @@ public class StartupOrchestratorHostedService : IHostedService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "{Domain} 数据库迁移失败，已记录错误但继续启动应用", domainName);
+            _logger.LogWarning(ex, "{Domain} Migrate 失败，改用 EnsureCreated 补偿", domainName);
+            try { ensureCreatedFallback(); _logger.LogInformation("{Domain} EnsureCreated 完成"); }
+            catch (Exception ex2) { _logger.LogError(ex2, "{Domain} EnsureCreated 也失败"); }
         }
     }
 
