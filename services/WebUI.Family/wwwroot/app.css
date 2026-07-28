@@ -1956,6 +1956,24 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
     .search-empty { color: #91a0b0; }
     .ai-answer-box { background: #1e2433; border-color: #3d4558; color: #c0c8d0; }
 
+    /* ---- 搜索页补充 ---- */
+    .result-group { background: #232a3b; border-color: #2d3548; }
+    .group-items { background: #232a3b; }
+    .group-items .result-item { background: #1e2433; border-color: #3d4558; }
+    .group-items .result-item:hover { background: #2a3040; }
+    .result-header h3 { color: #d4d8dd; }
+    .result-item h3 { color: #d4d8dd; }
+    .result-item .preview { color: #91a0b0; }
+    .result-item .meta { color: #708090; }
+    .search-tips { background: #232a3b; border-color: #2d3548; }
+    .search-tips h3 { color: #d4d8dd; }
+    .search-tips ul, .search-tips li { color: #91a0b0; border-color: #2d3548; }
+    .search-chips { background: #232a3b; }
+    .search-chip { background: #2d3548; border-color: #3d4558; color: #91a0b0; }
+    .search-chip:hover { background: #363d52; color: #c0c8d0; }
+    .chip-remove { color: #708090; }
+    .chip-remove:hover { color: #d4d8dd; background: #3d4558; }
+
     /* ---- FamilyHome 最近浏览/搜索 ---- */
     .note-card { background: #232a3b; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
     .note-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
