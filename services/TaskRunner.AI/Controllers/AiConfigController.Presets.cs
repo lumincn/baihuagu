@@ -51,9 +51,9 @@ public partial class AiConfigController
                 BaseUrl = "https://dashscope.aliyuncs.com/compatible-mode/v1",
                 Models = new()
                 {
-                    new() { Name = "qwen3-plus", IsPaid = true, IsMain = true },
-                    new() { Name = "qwen3-max", IsPaid = true, IsMain = false },
-                    new() { Name = "qwen3-turbo", IsPaid = true, IsMain = false },
+                    new() { Name = "qwen3.7-plus", IsPaid = true, IsMain = true },
+                    new() { Name = "qwen3.7-max", IsPaid = true, IsMain = false },
+                    new() { Name = "qwen3.7-flash", IsPaid = true, IsMain = false },
                     new() { Name = "deepseek-v3", IsPaid = true, IsMain = false },
                     new() { Name = "deepseek-r1", IsPaid = true, IsMain = false }
                 }
