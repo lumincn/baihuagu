@@ -1905,6 +1905,17 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
         color: #c0c8d0;
     }
 
+    /* ---- Tasks 任务页 ---- */
+    .task-notes-list { background: #1e2433; border-color: #3d4558; }
+    .task-notes-list strong { color: #d4d8dd; }
+    .task-notes-list li, .task-notes-list p { color: #91a0b0; }
+    .btn-secondary { background-color: #3d4558; color: #c0c8d0; border-color: #4a5268; }
+    .btn-secondary:hover { background-color: #4a5268; color: #d4d8dd; }
+    .btn-danger { background-color: #7a2028; color: #e0a0a0; border-color: #8a3038; }
+    .btn-danger:hover { background-color: #8a3038; }
+    .btn-outline-danger { color: #e08080; border-color: rgba(220,53,69,0.3); }
+    .btn-outline-danger:hover { background-color: #7a2028; color: #e0a0a0; border-color: #c94c4c; }
+
     /* ---- HardwareBenchmark 补充 ---- */
     .machine-card.tier-cpu-only .tier-badge { background: rgba(160,174,182,0.15); color: #a0aeb6; }
     .machine-card.tier-low-end .tier-badge { background: rgba(212,165,116,0.15); color: #d4a574; }
