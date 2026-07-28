@@ -213,3 +213,4 @@ tests/TaskRunner.Family.Tests/prompt-templates.json
 
 # Reasonix AI agent
 .reasonix/
+.baihua-dev/
