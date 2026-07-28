@@ -678,6 +678,11 @@
                     StateHasChanged();
                 }
             }
+            else
+            {
+                chatMessages.Add(new ChatMsg { IsUser = false, Content = $"拜师失败：{result.Message ?? "未知错误"}", Time = DateTime.Now });
+                StateHasChanged();
+            }
         }
         catch (Exception ex)
         {
