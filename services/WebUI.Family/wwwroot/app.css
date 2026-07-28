@@ -1543,4 +1543,191 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
     .enhanced-select-option:hover {
         background: #363d52;
     }
+
+    /* ---- 各页面高频卡片/区块 ---- */
+    .model-card, .hw-card, .machine-card, .ai-provider-card,
+    .daily-card-page, .daily-card-front, .daily-card-back,
+    .log-block, .log-entry, .log-section, .log-area,
+    .leaderboard-row, .player-row, .benchmark-row,
+    .knowledge-section, .knowledge-block, .knowledge-area,
+    .vault-item, .vault-card, .note-card, .note-item,
+    .chat-message, .chat-bubble,
+    .settings-section, .settings-panel, .settings-block,
+    .metric-card, .stat-card, .info-card, .detail-card,
+    .result-item, .result-group, .group-items,
+    .section-body, .panel-body, .card-body:not(.bg-*),
+    .chart-container, .chart-area, .progress-section,
+    .family-card, .family-section, .family-panel {
+        background: #232a3b;
+        border-color: #2d3548;
+    }
+
+    /* ---- 标题文字 ---- */
+    h1, h2, h3, h4, h5, h6,
+    .section-title, .panel-title, .block-title, .page-title,
+    .model-name, .provider-name, .benchmark-title, .card-title,
+    .machine-name, .log-title, .metric-label, .stat-label,
+    strong, b, .fw-bold, .fw-semibold {
+        color: #d4d8dd;
+    }
+
+    /* ---- 描述/次要文字 ---- */
+    .text-secondary, .text-muted, .small-text,
+    .model-desc, .provider-desc, .benchmark-desc,
+    .card-desc, .item-desc, .log-desc, .stat-desc,
+    .card-meta, .item-meta, .log-meta,
+    .section-desc, .panel-desc, .block-desc,
+    .note-title, .task-type {
+        color: #91a0b0;
+    }
+
+    /* ---- 标签/徽章/芯片（保持语义色但降低亮度） ---- */
+    .tag, .chip, .badge-pill:not(.badge-light),
+    [class*="-chip"]:not(.btn), [class*="-badge"]:not(.badge-light) {
+        filter: brightness(0.85);
+    }
+
+    /* ---- 代码块 ---- */
+    .code-block, .code-area, .code-box, .code-section,
+    .markdown-body pre, .markdown-body code {
+        background: #1a1f2e;
+        border-color: #2d3548;
+        color: #b8c8d8;
+    }
+
+    /* ---- 加载/空状态 ---- */
+    .skeleton, .skeleton-text, .skeleton-block,
+    .loading-state, .empty-state, .placeholder {
+        background: #232a3b;
+        color: #708090;
+    }
+    .loading-state p, .empty-state p {
+        color: #91a0b0;
+    }
+
+    /* ---- 消息/AI 对话 ---- */
+    .message-user .message-text {
+        background: #2e8baf;
+        color: #fff;
+    }
+    .message-assistant .message-text,
+    .message-ai .message-text {
+        background: #2d3548;
+        color: #d4d8dd;
+    }
+    .message-time {
+        color: #708090;
+    }
+
+    /* ---- 内联代码 ---- */
+    code:not(pre code), kbd {
+        background: rgba(46,139,175,0.15);
+        color: #91c8e0;
+    }
+
+    /* ---- 提示框 ---- */
+    .alert:not(.alert-info):not(.alert-warning) {
+        background: #232a3b;
+        border-color: #3d4558;
+        color: #c0c8d0;
+    }
+    .alert-success {
+        background: rgba(46,139,175,0.12);
+        border-color: rgba(46,139,175,0.3);
+        color: #91c8d0;
+    }
+    .alert-danger {
+        background: rgba(200,60,60,0.1);
+        border-color: rgba(200,60,60,0.3);
+        color: #e0a0a0;
+    }
+
+    /* ---- 进度条 ---- */
+    .progress-track, .progress-bg {
+        background: #2d3548;
+    }
+    .progress-fill, .progress-bar-fill {
+        filter: brightness(0.9);
+    }
+
+    /* ---- Tab/导航 ---- */
+    .tab-group, .tab-bar, .tab-row,
+    .nav-tabs:not(.nav), .nav-pills:not(.nav) {
+        border-color: #2d3548;
+    }
+    .tab-item:not(.active), .tab-btn:not(.active) {
+        color: #708090;
+    }
+
+    /* ---- Settings 页面 ---- */
+    .ai-providers-list, .ai-edit-form, .config-note,
+    .api-key-status, .quota-status, .quota-info {
+        background: #232a3b;
+        border-color: #2d3548;
+    }
+
+    /* ---- DailyCard 页面 ---- */
+    .card-back, .card-front, .card-inner, .card-content, .card-deck, .card-face {
+        background: #232a3b;
+    }
+    .card-hint { color: #91a0b0; }
+    .achievement-overlay, .achievement-popup {
+        background: #232a3b;
+    }
+    .answer-buttons button {
+        border-color: #3d4558;
+        color: #c0c8d0;
+    }
+    .answer-buttons button:hover:not(.active) {
+        background: #363d52;
+    }
+
+    /* ---- LocalModels 页面 ---- */
+    .deploy-card, .deploy-section, .deploy-header, .deploy-step,
+    .deploy-progress, .deploy-logs,
+    .downloaded-section, .downloaded-table-header,
+    .details-sections, .model-item, .model-row {
+        background: #232a3b;
+        border-color: #2d3548;
+    }
+    .digest-text { color: #91a0b0; }
+
+    /* ---- HardwareBenchmark 页面 ---- */
+    .data-source-note, .machine-detail, .comparison-note {
+        color: #91a0b0;
+    }
+    .level-excellent { background: rgba(46,139,175,0.15); color: #91c8d0; }
+    .level-good { background: rgba(107,158,117,0.15); color: #91c090; }
+    .level-ok { background: rgba(200,160,60,0.1); color: #d0a040; }
+    .level-bad { background: rgba(200,80,60,0.1); color: #d08060; }
+
+    /* ---- ModelBenchmark 页面 ---- */
+    .benchmark-tabs, .result-summary, .summary-card,
+    .prompt-list, .prompt-item, .prompt-text {
+        background: #232a3b;
+        border-color: #2d3548;
+    }
+    .prompt-text { color: #c0c8d0; }
+    .kw-match { color: #91c090; }
+    .kw-miss { color: #d08060; }
+
+    /* ---- Achievements / Leaderboard ---- */
+    .learner-chip { background: #2d3548; border-color: #3d4558; }
+    .learner-chip.active { border-color: #2e8baf; }
+    .leaderboard-tab { color: #708090; }
+    .leaderboard-tab.active { color: #d4d8dd; }
+    .rank-gold { background: rgba(224,200,96,0.1); }
+    .rank-silver { background: rgba(192,192,192,0.08); }
+    .rank-bronze { background: rgba(205,127,50,0.08); }
+
+    /* ---- Dashboard ---- */
+    .metric-value, .stat-number { color: #d4d8dd; }
+    .metric-label, .stat-label { color: #91a0b0; }
+
+    /* ---- FamilyHome ---- */
+    .family-hero, .feature-card, .feature-item {
+        background: #232a3b;
+    }
+    .family-hero h1, .family-hero h2 { color: #d4d8dd; }
+    .family-hero p { color: #91a0b0; }
 }
