@@ -428,6 +428,7 @@
         try
         {
             isLoadingDevices = true;
+            var sw = System.Diagnostics.Stopwatch.StartNew();
 
             var pendingTask = HttpClient.GetFromJsonAsync<List<DevicePendingResponse>>("api/devices/pending");
             var authorizedTask = HttpClient.GetFromJsonAsync<List<DeviceAuthorizedResponse>>("api/devices/authorized");
@@ -436,6 +437,10 @@
 
             var pendingResult = pendingTask.Result;
             var authorizedResult = authorizedTask.Result;
+
+            Logger.LogInformation("[Devices] API 耗时: pending={Pending}ms authorized={Authorized}ms",
+                pendingTask.IsCompleted ? sw.ElapsedMilliseconds : -1,
+                authorizedTask.IsCompleted ? sw.ElapsedMilliseconds : -1);
 
             pendingDevices = (pendingResult ?? new()).Select(d => new PendingDeviceInfo
             {
@@ -457,6 +462,9 @@
                 SyncedVaultIds = d.SyncedVaultIds ?? new List<string>(),
                 SyncedVaultNames = d.SyncedVaultNames ?? new Dictionary<string, string>()
             }).ToList();
+
+            sw.Stop();
+            Logger.LogInformation("[Devices] 总耗时: {Total}ms", sw.ElapsedMilliseconds);
         }
         catch (Exception ex)
         {
@@ -573,7 +581,10 @@
     {
         try
         {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
             oneHopStatus = await HttpClient.GetFromJsonAsync<OneHopStatusResponse>("api/onehop/status");
+            sw.Stop();
+            Logger.LogInformation("[Devices] OneHop 状态耗时: {Ms}ms", sw.ElapsedMilliseconds);
         }
         catch (Exception ex)
         {
@@ -585,7 +596,10 @@
     {
         try
         {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
             var devices = await HttpClient.GetFromJsonAsync<List<OneHopDeviceResponse>>("api/onehop/devices");
+            sw.Stop();
+            Logger.LogInformation("[Devices] OneHop 设备列表耗时: {Ms}ms", sw.ElapsedMilliseconds);
             oneHopDevices = devices ?? new List<OneHopDeviceResponse>();
         }
         catch (Exception ex)
