@@ -159,7 +159,26 @@ namespace TaskRunner.Controllers
                                 ["vaultName"] = vaultName,
                                 ["trigger"] = "vault_generation"
                             });
-                            _taskManager.UpdateProgress(cardTaskId, 0, 1, $"知识库「{vaultName}」笔记生成完成，等待生成记忆卡片...");
+                            _taskManager.UpdateProgress(cardTaskId, 0, 100, $"开始为「{vaultName}」生成记忆卡片...");
+
+                            var notesPath = Path.Combine(vaultFilePath, "notes");
+                            if (Directory.Exists(notesPath))
+                            {
+                                _ = Task.Run(async () =>
+                                {
+                                    try
+                                    {
+                                        var result = await _cardGenerator.GenerateFromDirectory(notesPath, recursive: true, vaultId: vaultId);
+                                        await _taskManager.UpdateProgress(cardTaskId, 100, 100, result.Message);
+                                        await _taskManager.UpdateStatus(cardTaskId, RunnerTaskStatus.Success, data: new { totalCards = result.TotalCards, message = result.Message });
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogError(ex, "[VaultGen] 卡片生成失败: {TaskId}", cardTaskId);
+                                        await _taskManager.UpdateStatus(cardTaskId, RunnerTaskStatus.Failed, error: ex.Message);
+                                    }
+                                });
+                            }
                         }
 
                     }
