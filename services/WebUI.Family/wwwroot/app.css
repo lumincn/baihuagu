@@ -1702,13 +1702,34 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
     .digest-text { color: #91a0b0; }
 
     /* ---- HardwareBenchmark 页面 ---- */
-    .data-source-note, .machine-detail, .comparison-note {
-        color: #91a0b0;
-    }
+    .data-source-note, .machine-detail, .comparison-note { color: #91a0b0; }
     .level-excellent { background: rgba(46,139,175,0.15); color: #91c8d0; }
     .level-good { background: rgba(107,158,117,0.15); color: #91c090; }
     .level-ok { background: rgba(200,160,60,0.1); color: #d0a040; }
     .level-bad { background: rgba(200,80,60,0.1); color: #d08060; }
+    /* section/spec/table 卡片 */
+    .section { background: #232a3b; }
+    .section h2 { color: #d4d8dd; }
+    .section-desc { color: #91a0b0; }
+    .machine-card { background: #232a3b; border-color: #3d4558; }
+    .machine-card .card-header { border-color: #3d4558; }
+    .spec-item { background: #232a3b; border-color: #2d3548; }
+    .spec-grid { background: #1e2433; }
+    .comparison-table thead th { background: #232a3b; color: #91a0b0; border-color: #3d4558; }
+    .comparison-table tbody td { border-color: #3d4558; }
+    .comparison-table tbody tr:hover { background: #2a3040; }
+    .current-row { background: rgba(46,139,175,0.1); }
+    .comparison-table tbody tr.current-row { background: rgba(46,139,175,0.1); }
+    .recommendation-item, .recommendation-list { background: #232a3b; border-color: #2d3548; }
+    .rec-icon, .rec-title { color: #d4d8dd; }
+    .data-source-note { background: #232a3b; }
+    .data-source-note h5 { color: #d4d8dd; }
+    .data-source-note code { background: #1e2433; }
+    .tier-badge { background: #2d3548; color: #91a0b0; }
+    .platform-badge.nvidia { background: rgba(107,158,117,0.2); color: #91c090; }
+    .platform-badge.intel { background: rgba(91,120,165,0.2); color: #91a8c0; }
+    .platform-badge.amd { background: rgba(200,80,60,0.2); color: #d08060; }
+    .platform-badge.apple { background: rgba(160,160,160,0.2); color: #a0a0b0; }
 
     /* ---- ModelBenchmark 页面 ---- */
     .benchmark-tabs, .result-summary, .summary-card,
@@ -1729,9 +1750,26 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
     .rank-silver { background: rgba(192,192,192,0.08); }
     .rank-bronze { background: rgba(205,127,50,0.08); }
 
-    /* ---- Dashboard ---- */
+    /* ---- Dashboard (通用 metric/stat) ---- */
     .metric-value, .stat-number { color: #d4d8dd; }
     .metric-label, .stat-label { color: #91a0b0; }
+
+    /* ---- Dashboard 家长看板 ---- */
+    .dashboard-page { background: transparent; }
+    .dashboard-page .section h2 { color: #d4d8dd; }
+    .dashboard-page .member-card { background: #232a3b; }
+    .dashboard-page .m-value { color: #d4d8dd; }
+    .dashboard-page .m-label { color: #91a0b0; }
+    .dashboard-page .trend-chart { background: #1e2433; }
+    .dashboard-page .trend-label { color: #91a0b0; }
+    .dashboard-page .trend-value { color: #c0c8d0; }
+    .dist-item { background: #232a3b; border-color: #2d3548; }
+    .dist-label, .dist-value { color: #c0c8d0; }
+    .dist-bar { filter: brightness(0.85); }
+    .recent-ach { background: #232a3b; border-color: #2d3548; }
+    .ra-learner { color: #91a0b0; }
+    .ra-time { color: #708090; }
+    .dashboard-page .loading { color: #91a0b0; }
 
     /* ---- FamilyHome ---- */
     .family-hero, .feature-card, .feature-item {
@@ -1746,13 +1784,6 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
         border-color: #2d3548;
     }
     .achievement-desc, .achievement-date { color: #91a0b0; }
-
-    /* ---- Dashboard ---- */
-    .dashboard-page, .dist-item, .dist-bar {
-        background: #232a3b;
-        border-color: #2d3548;
-    }
-    .dist-label, .dist-value { color: #91a0b0; }
 
     /* ---- Leaderboard ---- */
     .leaderboard-page, .leaderboard-table, .rank-medal {
@@ -1787,7 +1818,6 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
         background: #232a3b;
         border-color: #2d3548;
     }
-    .ai-info-badge { color: #91a0b0; }
 
     /* ---- Login ---- */
     .login-page {
@@ -1872,29 +1902,51 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
     }
 
     /* ---- HardwareBenchmark 补充 ---- */
-    .current-row { background: rgba(46,139,175,0.1); }
-    .spec-item { background: #232a3b; border-color: #2d3548; }
-    .spec-grid { background: #1e2433; }
-    .recommendation-item, .recommendation-list { background: #232a3b; border-color: #2d3548; }
-    .rec-icon, .rec-title { color: #d4d8dd; }
+    .machine-card.tier-cpu-only .tier-badge { background: rgba(160,174,182,0.15); color: #a0aeb6; }
+    .machine-card.tier-low-end .tier-badge { background: rgba(212,165,116,0.15); color: #d4a574; }
+    .machine-card.tier-mid-range .tier-badge { background: rgba(90,184,196,0.15); color: #5ab8c4; }
+    .machine-card.tier-high-end .tier-badge { background: rgba(107,158,117,0.15); color: #6b9e75; }
+    .machine-card.tier-top-tier .tier-badge { background: rgba(90,122,181,0.15); color: #91a8d0; }
 
     /* ---- Messages/AI对话 ---- */
-    .message-user .message-text { background: #2e8baf; color: #fff; }
-    .message-ai .message-text, .message-assistant .message-text { background: #2d3548; color: #d4d8dd; }
+    .message.user .message-content { background: #2e8baf; color: #fff; }
+    .message.ai .message-content { background: #2d3548; color: #d4d8dd; }
+    .message.user .message-text { background: #2e8baf; color: #fff; }
+    .message.ai .message-text { background: #2d3548; color: #d4d8dd; }
+    .chat-container { border-color: #3d4558; }
+    .chat-input { background: #232a3b; border-color: #3d4558; }
+    .typing-indicator span { background: #5a6a72; }
     .message-time { color: #708090 !important; }
     .msg-action-btn { color: #91a0b0; background: #2d3548; border-color: #3d4558; }
     .msg-action-btn:hover { background: #363d52; color: #c0c8d0; }
-    .tool-call-badge { background: #2d3548; color: #91a0b0; }
+    .tool-call-badge { background: #2d3548; color: #91a0b0; border-color: #3d4558; }
     .selector-group { background: #1e2433; border-color: #3d4558; }
+    .selector-group label { color: #91a0b0; }
+    .selector-group select { background: #1e2433; border-color: #3d4558; color: #c0c8d0; }
     .model-selector-bar { background: #232a3b; border-color: #2d3548; }
     .local-model-item { background: #1e2433; border-color: #3d4558; }
     .local-model-item:hover { background: #2a3040; }
+    .local-model-item.active { background: #1a3038; color: #91c8d0; border-color: #2d4558; }
+    .local-model-item.active .local-model-type { background: #2e8baf; }
     .local-model-size, .local-model-type { color: #91a0b0; }
+    .ai-info-badge { background: linear-gradient(135deg, #1e3040 0%, #1a2a38 100%); color: #91c8d0; border-color: #2d4558; }
+    .ai-info-badge.ai-not-ready { background: linear-gradient(135deg, #302820 0%, #382a20 100%); color: #d0a070; border-color: #4a3a28; }
+    /* Markdown 渲染元素 */
+    .message-text h1, .message-text h2, .message-text h3, .message-text h4 { color: #d4d8dd; }
+    .message-text blockquote { background: #1e2433; color: #91a0b0; }
+    .message-text code { background: #232a3b; color: #91c8d0; }
+    .message-text th { background: #232a3b; }
+    .message-text td { border-color: #3d4558; }
+    .message-text strong { color: #d4d8dd; }
+    .message-text hr { border-color: #3d4558; }
+    .message-text a { color: #91c8d0; }
 
     /* ---- AiMetrics ---- */
-    .metric-panel, .metric-chart, .chart-container { background: #232a3b; border-color: #2d3548; }
+    .metrics-cards .metric-card { background: #232a3b; }
+    .metrics-section .trend-chart { background: #232a3b; }
     .metric-value, .metric-trend { color: #d4d8dd; }
     .metric-unit, .metric-period { color: #91a0b0; }
+    .metric-label { color: #91a0b0; }
 
     /* ---- Search 搜索页 ---- */
     .search-result-item { background: #232a3b; border-color: #2d3548; }
