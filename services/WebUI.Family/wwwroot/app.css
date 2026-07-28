@@ -1803,6 +1803,10 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
         background: #232a3b;
         border-color: #2d3548;
     }
+    .ai-model-selector { background: #1e2433; border-color: #3d4558; }
+    .model-option.selected { background: rgba(46,139,175,0.2); border-color: rgba(46,139,175,0.5); }
+    .tag-default { background: #2d3548; color: #91a0b0; }
+    .tag-paid { background: rgba(107,158,117,0.15); color: #91c090; }
     .new-vault-hint { color: #91a0b0; }
 
     /* ---- LogSettings ---- */
