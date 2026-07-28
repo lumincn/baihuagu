@@ -1730,4 +1730,66 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
     }
     .family-hero h1, .family-hero h2 { color: #d4d8dd; }
     .family-hero p { color: #91a0b0; }
+
+    /* ---- Achievements ---- */
+    .achievement-card, .achievement-grid {
+        background: #232a3b;
+        border-color: #2d3548;
+    }
+    .achievement-desc, .achievement-date { color: #91a0b0; }
+
+    /* ---- Dashboard ---- */
+    .dashboard-page, .dist-item, .dist-bar {
+        background: #232a3b;
+        border-color: #2d3548;
+    }
+    .dist-label, .dist-value { color: #91a0b0; }
+
+    /* ---- Leaderboard ---- */
+    .leaderboard-page, .leaderboard-table, .rank-medal {
+        background: #232a3b;
+        border-color: #2d3548;
+    }
+    .rank-num { color: #d4d8dd; }
+
+    /* ---- BrowseVault ---- */
+    .playlist-item, .playlist-active, .vault-note-card {
+        background: #232a3b;
+        border-color: #2d3548;
+    }
+
+    /* ---- KnowledgeGenerate ---- */
+    .generate-section, .model-option, .model-options {
+        background: #232a3b;
+        border-color: #2d3548;
+    }
+    .new-vault-hint { color: #91a0b0; }
+
+    /* ---- LogSettings ---- */
+    .deploy-hint, .hint-content, .port-table,
+    .save-message, .loading-spinner {
+        background: #232a3b;
+        border-color: #2d3548;
+    }
+
+    /* ---- Messages ---- */
+    .ai-info-bar, .ai-info-sep, .chat-controls,
+    .ai-not-ready {
+        background: #232a3b;
+        border-color: #2d3548;
+    }
+    .ai-info-badge { color: #91a0b0; }
+
+    /* ---- Login ---- */
+    .login-page {
+        background: linear-gradient(135deg, #1a2634 0%, #162030 100%);
+    }
+    .login-card {
+        background: #232a3b;
+    }
+    .login-header h1 { color: #d4d8dd; }
+    .login-footer p { color: #708090; }
+
+    /* ---- Tasks ---- */
+    .connection-status { background: #232a3b; color: #c0c8d0; }
 }
