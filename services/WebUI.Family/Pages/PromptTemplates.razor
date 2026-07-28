@@ -36,11 +36,11 @@ else
                     <div class="card-body">
                         <div class="mb-2">
                             <small class="text-muted fw-bold">对话系统提示词</small>
-                            <div class="border rounded p-2 mt-1" style="max-height:120px;overflow-y:auto;font-size:0.85em;white-space:pre-wrap;background:#f8f9fa;">@tmpl.ChatSystemPrompt</div>
+                            <div class="border rounded p-2 mt-1" style="max-height:120px;overflow-y:auto;font-size:0.85em;white-space:pre-wrap;">@tmpl.ChatSystemPrompt</div>
                         </div>
                         <div class="mb-2">
                             <small class="text-muted fw-bold">笔记拆分提示词</small>
-                            <div class="border rounded p-2 mt-1" style="max-height:80px;overflow-y:auto;font-size:0.85em;white-space:pre-wrap;background:#f8f9fa;">@tmpl.SplitSystemPrompt</div>
+                            <div class="border rounded p-2 mt-1" style="max-height:80px;overflow-y:auto;font-size:0.85em;white-space:pre-wrap;">@tmpl.SplitSystemPrompt</div>
                         </div>
                         @if (tmpl.DefaultCategories?.Any() == true)
                         {
