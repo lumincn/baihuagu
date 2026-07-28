@@ -62,11 +62,11 @@ public partial class AiConfigController
             {
                 Id = "deepseek",
                 Name = "DeepSeek (官方)",
-                BaseUrl = "https://api.deepseek.com/v1",
+                BaseUrl = "https://api.deepseek.com",
                 Models = new()
                 {
-                    new() { Name = "deepseek-chat", IsPaid = true, IsMain = true },
-                    new() { Name = "deepseek-reasoner", IsPaid = true, IsMain = false }
+                    new() { Name = "deepseek-v4-pro", IsPaid = true, IsMain = true },
+                    new() { Name = "deepseek-v4-flash", IsPaid = true, IsMain = false }
                 }
             },
             new()
