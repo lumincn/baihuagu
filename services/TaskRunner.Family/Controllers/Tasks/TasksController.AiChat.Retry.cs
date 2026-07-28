@@ -24,9 +24,9 @@ namespace TaskRunner.Controllers
             {
                 return BadRequest(new { error = "只能重试失败或超时的任务" });
             }
-            if (task.Type != "ai_query" && task.Type != "ai_vault_generation")
+            if (task.Type != "ai_query" && task.Type != "ai_vault_generation" && task.Type != "anki_generate")
             {
-                return BadRequest(new { error = "目前仅支持重试 AI 查询任务或知识库生成任务" });
+                return BadRequest(new { error = "目前仅支持重试 AI 查询、知识库生成或卡片生成任务" });
             }
 
             // 从原任务参数中提取信息
@@ -40,6 +40,11 @@ namespace TaskRunner.Controllers
             if (task.Type == "ai_vault_generation")
             {
                 return await HandleRetryVaultGenerationTaskAsync(task, retryRequest);
+            }
+
+            if (task.Type == "anki_generate")
+            {
+                return await HandleRetryAnkiGenerateTaskAsync(task);
             }
 
             if (string.IsNullOrWhiteSpace(query))
@@ -255,6 +260,46 @@ namespace TaskRunner.Controllers
             return result.Result != null
                 ? new ActionResult<AiTaskResponse>(result.Result)
                 : new ActionResult<AiTaskResponse>(new AiTaskResponse { Success = false, Message = "重试失败" });
+        }
+
+        private async Task<ActionResult<AiTaskResponse>> HandleRetryAnkiGenerateTaskAsync(Core.Shared.TaskInfo task)
+        {
+            var vaultId = task.Parameters?.GetValueOrDefault("vaultId") ?? "";
+            if (string.IsNullOrWhiteSpace(vaultId))
+                return BadRequest(new { error = "原任务缺少知识库 ID" });
+
+            var vault = _vaultSettings.GetVaults().FirstOrDefault(v => v.Id == vaultId);
+            if (vault == null)
+                return BadRequest(new { error = "知识库不存在" });
+
+            var notesPath = System.IO.Path.Combine(vault.Path, "notes");
+            if (!System.IO.Directory.Exists(notesPath))
+                return BadRequest(new { error = "笔记目录不存在" });
+
+            var cardTaskId = _taskManager.CreateTask("anki_generate", new Dictionary<string, string>
+            {
+                ["vaultId"] = vaultId,
+                ["vaultName"] = vault.Name,
+                ["trigger"] = "retry"
+            });
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await _taskManager.UpdateProgress(cardTaskId, 0, 100, $"开始为「{vault.Name}」生成记忆卡片...");
+                    var result = await _cardGenerator.GenerateFromDirectory(notesPath, recursive: true, vaultId: vaultId);
+                    await _taskManager.UpdateProgress(cardTaskId, 100, 100, result.Message);
+                    await _taskManager.UpdateStatus(cardTaskId, RunnerTaskStatus.Success, data: new { totalCards = result.TotalCards, message = result.Message });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "[Retry] 卡片生成失败: {TaskId}", cardTaskId);
+                    await _taskManager.UpdateStatus(cardTaskId, RunnerTaskStatus.Failed, error: ex.Message);
+                }
+            });
+
+            return Ok(new AiTaskResponse { Success = true, Message = "卡片生成任务已创建", TaskId = cardTaskId });
         }
     }
 }

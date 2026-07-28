@@ -100,7 +100,7 @@ else
                         </div>
                     }
                 }
-                @if (task.StatusText == "Timeout" || task.StatusText == "Failed")
+                @if (task.StatusText == "Timeout" || task.StatusText == "Failed" || task.StatusText == "Pending")
                 {
                     <div class="task-detail-info">
                         @if (task.Parameters != null)
