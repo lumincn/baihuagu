@@ -210,3 +210,6 @@ tests/TaskRunner.Family.Tests/prompt-templates.json
 
 # 临时测试和调试文件
 /tmp/
+
+# Reasonix AI agent
+.reasonix/
