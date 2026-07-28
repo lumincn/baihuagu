@@ -161,7 +161,7 @@ namespace TaskRunner.Controllers
                             });
                             _taskManager.UpdateProgress(cardTaskId, 0, 100, $"开始为「{vaultName}」生成记忆卡片...");
 
-                            var notesPath = Path.Combine(vaultFilePath, "notes");
+                            var notesPath = Path.Combine(vaultPath, "notes");
                             if (Directory.Exists(notesPath))
                             {
                                 _ = Task.Run(async () =>
