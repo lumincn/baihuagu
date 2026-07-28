@@ -1582,7 +1582,7 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
     }
 
     /* ---- 标签/徽章/芯片（保持语义色但降低亮度） ---- */
-    .tag, .chip, .badge-pill:not(.badge-light),
+    .tag, .chip, .badge, .badge-pill:not(.badge-light),
     [class*="-chip"]:not(.btn), [class*="-badge"]:not(.badge-light) {
         filter: brightness(0.85);
     }
@@ -1665,6 +1665,15 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
         background: #232a3b;
         border-color: #2d3548;
     }
+    .ai-provider-card { background: #232a3b; border-color: #2d3548; }
+    .provider-name { color: #d4d8dd; }
+    .provider-id { color: #91a0b0; background: #2d3548; }
+    .provider-url { color: #708090; }
+    .model-item { background: #1e2433; border-color: #3d4558; }
+    .model-name { color: #c0c8d0; }
+    .form-group label, .form-text { color: #91a0b0; }
+    .embedding-config-section, .local-model-settings { border-color: #2d3548 !important; }
+    .embedding-config-section p, .local-model-settings p { color: #91a0b0; }
 
     /* ---- DailyCard 页面 ---- */
     .card-back, .card-front, .card-inner, .card-content, .card-deck, .card-face {
