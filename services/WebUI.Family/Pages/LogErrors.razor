@@ -1,0 +1,142 @@
+@page "/log-errors"
+@rendermode InteractiveServer
+@using Microsoft.JSInterop
+@inject IHttpClientFactory HttpClientFactory
+@inject WebUI.Services.AuthService AuthService
+@attribute [Authorize]
+@layout WebUI.Shared.MainLayout
+
+<PageTitle>错误日志 - 百花</PageTitle>
+
+<div class="container-fluid py-3">
+    <h4 class="mb-3">🚨 错误日志</h4>
+    <div class="mb-2 d-flex gap-2 align-items-center">
+        <button class="btn btn-sm btn-outline-secondary" @onclick="RefreshAsync">🔄 刷新</button>
+        <span class="small text-muted">最近 @logs.Count 条错误</span>
+        <span class="small @(hasNewError ? "text-danger fw-bold" : "text-muted")">@statusText</span>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+    }
+    else if (logs.Count == 0)
+    {
+        <div class="alert alert-info">暂无错误日志</div>
+    }
+    else
+    {
+        <div class="list-group" style="font-size: 0.85rem;">
+            @foreach (var log in logs)
+            {
+                <div class="list-group-item" style="border-left: 4px solid @(log.IsError ? "#c94c4c" : "#f0ad4e");">
+                    <div class="d-flex justify-content-between">
+                        <small class="text-muted">@log.Time</small>
+                        <small class="badge bg-@(log.IsError ? "danger" : "warning")">@(log.IsError ? "ERROR" : "WARN")</small>
+                    </div>
+                    <div class="mt-1" style="white-space: pre-wrap; word-break: break-all; font-family: monospace; font-size: 0.8rem; max-height: 200px; overflow-y: auto;">@log.Message</div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<LogEntry> logs = new();
+    private bool isLoading;
+    private string statusText = "";
+    private bool hasNewError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadErrorsAsync();
+    }
+
+    private async Task RefreshAsync()
+    {
+        await LoadErrorsAsync();
+    }
+
+    private async Task LoadErrorsAsync()
+    {
+        isLoading = true;
+        statusText = "加载中...";
+        hasNewError = false;
+
+        try
+        {
+            var client = HttpClientFactory.CreateClient("TaskRunnerApi");
+            // 读取 Family 的错误日志
+            var response = await client.GetAsync("api/logs/error?lines=50");
+            if (response.IsSuccessStatusCode)
+            {
+                var lines = await response.Content.ReadFromJsonAsync<List<string>>();
+                if (lines != null)
+                {
+                    logs = lines.Select(line => new LogEntry
+                    {
+                        Time = ExtractTime(line),
+                        Message = line,
+                        IsError = line.Contains("ERR") || line.Contains("Error") || line.Contains("Exception") || line.Contains("500")
+                    }).ToList();
+                    hasNewError = logs.Any(l => l.IsError);
+                    statusText = hasNewError ? "⚠ 发现异常" : "✅ 正常";
+                }
+            }
+            else
+            {
+                // 后端无日志 API 时从日志文件读取（开发模式）
+                logs = await ReadFromLogFile("taskrunner", 50);
+                logs.AddRange(await ReadFromLogFile("webui", 50));
+                logs = logs.OrderByDescending(l => l.Time).Take(50).ToList();
+                statusText = $"已加载 {logs.Count} 条";
+            }
+        }
+        catch (Exception ex)
+        {
+            logs.Add(new LogEntry { Time = DateTime.Now.ToString("HH:mm:ss"), Message = $"加载日志失败：{ex.Message}", IsError = true });
+            statusText = "❌ 加载失败";
+        }
+
+        isLoading = false;
+    }
+
+    private static string ExtractTime(string line)
+    {
+        var m = System.Text.RegularExpressions.Regex.Match(line, @"\d{2}:\d{2}:\d{2}");
+        return m.Success ? m.Value : "";
+    }
+
+    private async Task<List<LogEntry>> ReadFromLogFile(string serviceName, int maxLines)
+    {
+        var entries = new List<LogEntry>();
+        try
+        {
+            var logPath = Path.Combine(Path.GetTempPath(), $"bh-{serviceName}.log");
+            if (!File.Exists(logPath)) return entries;
+
+            var allLines = await File.ReadAllLinesAsync(logPath);
+            var errorLines = allLines.Where(l => l.Contains("ERR") || l.Contains("Error") || l.Contains("Exception") || l.Contains("fail") || l.Contains("WRN"))
+                .Reverse().Take(maxLines);
+
+            foreach (var line in errorLines)
+            {
+                entries.Add(new LogEntry
+                {
+                    Time = ExtractTime(line),
+                    Message = $"[{serviceName}] {line}",
+                    IsError = line.Contains("ERR") || line.Contains("Error") || line.Contains("Exception")
+                });
+            }
+        }
+        catch { }
+        return entries;
+    }
+
+    private class LogEntry
+    {
+        public string Time { get; set; } = "";
+        public string Message { get; set; } = "";
+        public bool IsError { get; set; }
+    }
+}
