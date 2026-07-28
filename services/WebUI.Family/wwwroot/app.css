@@ -1792,4 +1792,73 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
 
     /* ---- Tasks ---- */
     .connection-status { background: #232a3b; color: #c0c8d0; }
+
+    /* ==== 最终批量覆盖 ==== */
+    /* 表格行列 */
+    .downloaded-table-row, .running-table-row, .running-table-header,
+    .downloaded-table-header, .history-table,
+    .comparison-table, .leaderboard-table, .port-table {
+        background: #232a3b;
+    }
+    .downloaded-table-row:nth-child(even), .running-table-row:nth-child(even) {
+        background: rgba(255,255,255,0.03);
+    }
+
+    /* 所有tier/speed/level/platform类 → 降低亮度 */
+    [class*="tier-"]:not(.tier-desc):not(.tier-title):not(.tier-label):not(.tier-recommended),
+    [class*="speed-"], [class*="level-"],
+    [class*="-badge"], .score-badge, .rec-badge, .vram-badge,
+    .platform-badge, .streak-badge {
+        filter: brightness(0.85);
+    }
+
+    /* tier/level 文字色 */
+    .tier-desc, .tier-title, .tier-label, .rec-desc,
+    .platform-model, .platform-name, .spec-label, .spec-value,
+    .sub-text, .tier-review, .tier-cpu, .tier-cpu-only,
+    .tier-range, .tops-value {
+        color: #91a0b0;
+    }
+
+    /* section/group 头 */
+    .tier-group-header, .tier-header, .tier-group,
+    .tier-card, .tier-cards, .tier-model,
+    .tier-recommended, .tier-table-wrapper,
+    .llamacpp-section, .llamacpp-config-form,
+    .load-model-section, .custom-card-form,
+    .config-row, .model-edit-row {
+        background: #232a3b;
+        border-color: #2d3548;
+    }
+
+    /* 平台色暗化 */
+    .amd, .intel, .apple, .nvidia,
+    .tool-llamacpp, .tool-lmstudio, .tool-ollama,
+    .speed-fast, .speed-medium, .speed-slow, .speed-very-slow,
+    .suitability-good, .suitability-ok, .suitability-slow,
+    .btn-forgot, .btn-hard, .btn-remember {
+        filter: brightness(0.7);
+    }
+
+    /* 成就弹窗按钮保色 */
+    .btn-achievement-close, .btn-achievement-next { filter: brightness(0.85); }
+
+    /* 部件状态 */
+    .tool-item, .model-requirements, .model-size,
+    .hw-title, .hw-value, .hw-detail,
+    .memory-summary, .llamacpp-section-title,
+    .preset-label, .preset-checkbox,
+    .card-loading, .no-card, .no-card-icon {
+        color: #91a0b0;
+    }
+
+    /* 表单辅助 */
+    .form-text, .provider-id, .provider-url, .provider-header {
+        color: #91a0b0;
+    }
+
+    /* model tier 文字 */
+    .tier-gb, .tier-model-name, .tier-model-meta, .tier-model-params {
+        color: #c0c8d0;
+    }
 }
