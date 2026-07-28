@@ -38,7 +38,7 @@ done
 # 3. 安装 Systemd 用户服务
 mkdir -p "$HOME/.config/systemd/user"
 
-cat > "$HOME/.config/systemd/user/yj-watchdog.service" << EOF
+cat > "$HOME/.config/systemd/user/baihua.service" << EOF
 [Unit]
 Description=百花 - 文件变化监控与自动构建
 After=docker.service
@@ -55,19 +55,19 @@ StandardError=append:/tmp/baihua-watchdog.log
 WantedBy=default.target
 EOF
 
-echo "✅ Systemd 服务已安装: ~/.config/systemd/user/yj-watchdog.service"
+echo "✅ Systemd 服务已安装: ~/.config/systemd/user/baihua.service"
 
 # 4. 启用并启动服务
 systemctl --user daemon-reload
-systemctl --user enable yj-watchdog.service
+systemctl --user enable baihua.service
 
 # 检查是否已经在运行
-if systemctl --user is-active --quiet yj-watchdog.service; then
+if systemctl --user is-active --quiet baihua.service; then
     echo "🔄 watchdog 已在运行，重新启动..."
-    systemctl --user restart yj-watchdog.service
+    systemctl --user restart baihua.service
 else
     echo "🚀 启动 watchdog..."
-    systemctl --user start yj-watchdog.service
+    systemctl --user start baihua.service
 fi
 
 echo ""
@@ -81,10 +81,10 @@ echo "  2. 文件变化实时监控自动构建（inotify）"
 echo "  3. Systemd 守护进程，开机自启"
 echo ""
 echo "常用命令:"
-echo "  systemctl --user status yj-watchdog   # 查看状态"
-echo "  systemctl --user stop yj-watchdog     # 停止监控"
-echo "  systemctl --user start yj-watchdog    # 启动监控"
-echo "  journalctl --user -u yj-watchdog -f   # 查看实时日志"
+echo "  systemctl --user status baihua   # 查看状态"
+echo "  systemctl --user stop baihua     # 停止监控"
+echo "  systemctl --user start baihua    # 启动监控"
+echo "  journalctl --user -u baihua -f   # 查看实时日志"
 echo "  cat /tmp/baihua-auto-deploy.log           # 查看构建日志"
 echo "  cat /tmp/baihua-watchdog.log              # 查看监控日志"
 echo ""

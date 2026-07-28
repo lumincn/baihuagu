@@ -31,7 +31,7 @@ fi
 
 # 检测当前运行模式：docker 或 native（可同时存在）
 _detect_mode() {
-    if docker ps --format '{{.Names}}' 2>/dev/null | grep -qE "yj-family-(webui|taskrunner|taskrunner-ai|taskrunner-vault|nginx)"; then
+    if docker ps --format '{{.Names}}' 2>/dev/null | grep -qE "baihua-(webui|taskrunner|taskrunner-ai|taskrunner-vault|nginx)"; then
         echo "docker"
     elif lsof -ti:8788 -sTCP:LISTEN &>/dev/null || lsof -ti:8791 -sTCP:LISTEN &>/dev/null || lsof -ti:8790 -sTCP:LISTEN &>/dev/null || lsof -ti:5177 -sTCP:LISTEN &>/dev/null; then
         echo "native"
@@ -43,7 +43,7 @@ _detect_mode() {
 # 检测所有活跃的运行模式（返回逗号分隔列表，如 "docker,native"）
 _detect_all_modes() {
     local modes=""
-    if docker ps --format '{{.Names}}' 2>/dev/null | grep -qE "yj-family-(webui|taskrunner|taskrunner-ai|taskrunner-vault|nginx)"; then
+    if docker ps --format '{{.Names}}' 2>/dev/null | grep -qE "baihua-(webui|taskrunner|taskrunner-ai|taskrunner-vault|nginx)"; then
         modes="docker"
     fi
     if lsof -ti:8788 -sTCP:LISTEN &>/dev/null || lsof -ti:8791 -sTCP:LISTEN &>/dev/null || lsof -ti:8790 -sTCP:LISTEN &>/dev/null || lsof -ti:5177 -sTCP:LISTEN &>/dev/null; then
@@ -279,7 +279,7 @@ cmd_start() {
     echo "正在启动百花服务..."
 
     # 检查 Docker 容器是否已在运行（避免裸机与 Docker 共存）
-    if docker ps --format '{{.Names}}' 2>/dev/null | grep -qE "yj-family-(webui|taskrunner|taskrunner-ai|taskrunner-vault|nginx)"; then
+    if docker ps --format '{{.Names}}' 2>/dev/null | grep -qE "baihua-(webui|taskrunner|taskrunner-ai|taskrunner-vault|nginx)"; then
         echo "[!] 检测到 Docker 容器正在运行"
         echo "    Family 版不支持同时运行 Docker 和裸机进程"
         echo "    请先停止 Docker 容器: ./bh stop"
@@ -467,7 +467,7 @@ cmd_stop() {
     modes=$(_detect_all_modes)
 
     # 总是尝试停止 Docker（即使检测到的模式不是 docker，防止残留）
-    if docker ps --format '{{.Names}}' 2>/dev/null | grep -qE "yj-family-(webui|taskrunner|taskrunner-ai|taskrunner-vault|nginx)"; then
+    if docker ps --format '{{.Names}}' 2>/dev/null | grep -qE "baihua-(webui|taskrunner|taskrunner-ai|taskrunner-vault|nginx)"; then
         echo "[模式] Docker 容器"
         cd "$HG_ROOT/docker"
         if docker compose down --remove-orphans >/dev/null 2>&1; then
@@ -542,7 +542,7 @@ cmd_restart() {
             echo "[…] 检测到源码更新，重新构建…"
             build_flag="--build"
         fi
-        docker compose -p yj-family up -d $build_flag --force-recreate $services
+        docker compose -p baihua up -d $build_flag --force-recreate $services
         echo "[✓] 服务已重启"
     else
         cmd_stop
@@ -721,10 +721,10 @@ cmd_dashboard() {
             export GIT_COMMIT=$(cd "$HG_ROOT" && git rev-parse HEAD 2>/dev/null || echo "unknown")
             export GIT_BRANCH=$(cd "$HG_ROOT" && git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
 
-            # 智能清理：只删除异常状态的 yj-family 容器，保留正常运行的
+            # 智能清理：只删除异常状态的 baihua 容器，保留正常运行的
             # 避免手动操作单个容器后导致的 compose 状态不一致
             local abnormal_containers
-            abnormal_containers=$(docker ps -a --filter "name=yj-family-" --format "{{.Names}}|{{.State}}" 2>/dev/null | grep -v "|running" | cut -d'|' -f1 || true)
+            abnormal_containers=$(docker ps -a --filter "name=baihua-" --format "{{.Names}}|{{.State}}" 2>/dev/null | grep -v "|running" | cut -d'|' -f1 || true)
             if [ -n "$abnormal_containers" ]; then
                 echo "  → 清理异常容器: $(echo $abnormal_containers | tr '\n' ' ')"
                 echo "$abnormal_containers" | while read -r c; do
