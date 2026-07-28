@@ -30,6 +30,7 @@ cmd /c mklink /J "C:\Users\lumin\.baihua" "D:\BaihuaData"
 |------|------|--------|
 | `BAIHUA_HOME` | 数据根目录（db + vaults + logs） | `%USERPROFILE%\.baihua` (Win) / `~/.baihua` (Linux) |
 | `BAIHUA_ENCRYPTION_KEY` | 手动指定 API Key 加密密钥（优先级高于 .baihua-key 文件） | 空（自动生成 .baihua-key） |
+| `BAIHUA_AI_ANTHROPIC_BASE_URL` | Anthropic 协议全局中转地址（各 provider 可覆盖） | 空 |
 | `ASPNETCORE_URLS` | 服务监听地址 | `http://0.0.0.0:8788` / `8791` / `8790` |
 | `ASPNETCORE_ENVIRONMENT` | 运行环境 | `Production` |
 
@@ -89,6 +90,7 @@ API Key 明文
 
 ```
 .baihua-key 文件  >  BAIHUA_ENCRYPTION_KEY 环境变量  >  机器指纹(OS级 MachineGuid)
+| `BAIHUA_AI_ANTHROPIC_BASE_URL` | Anthropic 协议全局中转地址（各 provider 可覆盖） | 空 |
 ```
 
 **机器指纹**（仅在密钥文件丢失时兜底）：

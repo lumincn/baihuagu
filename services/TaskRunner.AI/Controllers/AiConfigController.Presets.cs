@@ -63,6 +63,7 @@ public partial class AiConfigController
                 Id = "deepseek",
                 Name = "DeepSeek (官方)",
                 BaseUrl = "https://api.deepseek.com",
+                AnthropicBaseUrl = "https://api.deepseek.com/anthropic",
                 Models = new()
                 {
                     new() { Name = "deepseek-v4-pro", IsPaid = true, IsMain = true },
