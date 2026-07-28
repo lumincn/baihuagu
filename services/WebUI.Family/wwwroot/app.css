@@ -1955,4 +1955,18 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
     .search-meta { color: #708090; }
     .search-empty { color: #91a0b0; }
     .ai-answer-box { background: #1e2433; border-color: #3d4558; color: #c0c8d0; }
+
+    /* ---- FamilyHome 最近浏览/搜索 ---- */
+    .note-card { background: #232a3b; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+    .note-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+    .section-loading { color: #91a0b0; }
+    .section-empty { color: #708090; }
+
+    /* ---- Devices 设备管理 ---- */
+    .device-card { background: #232a3b; border-color: #2d3548; }
+    .device-name { color: #d4d8dd; }
+    .device-meta, .device-status { color: #91a0b0; }
+    .device-tag { background: #2d3548; color: #91a0b0; }
+    .device-actions { border-color: #2d3548; }
+    .device-pairing { background: #1e2433; border-color: #3d4558; }
 }
