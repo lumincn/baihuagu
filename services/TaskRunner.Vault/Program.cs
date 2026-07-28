@@ -22,6 +22,8 @@ var urls = builder.Configuration["urls"]
     ?? Environment.GetEnvironmentVariable("ASPNETCORE_URLS")
     ?? builder.Configuration["Kestrel:Endpoints:Http:Url"]
     ?? "http://0.0.0.0:8790";
+builder.WebHost.UseUrls(urls);
+
 // 百花统一数据根目录 BAIHUA_HOME 由 Core.Shared.BaihuaPaths 管理
 // 已迁移至 BAIHUA_HOME，详见 services/TaskRunner.Contracts/BaihuaPaths.cs
 
