@@ -20,16 +20,15 @@ public partial class AiConfigController
         {
             new()
             {
-                Id = "siliconflow",
-                Name = "硅基流动 (SiliconFlow)",
-                BaseUrl = "https://api.siliconflow.cn/v1",
+                Id = "zhipu",
+                Name = "智谱 AI (GLM)",
+                BaseUrl = "https://open.bigmodel.cn/api/paas/v4",
                 Models = new()
                 {
-                    new() { Name = "deepseek-ai/DeepSeek-V3.1", IsPaid = false, IsMain = true },
-                    new() { Name = "deepseek-ai/DeepSeek-R1", IsPaid = false, IsMain = false },
-                    new() { Name = "Qwen/Qwen3-235B-A22B", IsPaid = false, IsMain = false },
-                    new() { Name = "Pro/THUDM/GLM-4-0414", IsPaid = true, IsMain = false },
-                    new() { Name = "BAAI/bge-large-zh-v1.5", IsPaid = false, IsMain = false }
+                    new() { Name = "glm-4-plus", IsPaid = true, IsMain = true },
+                    new() { Name = "glm-4-flash", IsPaid = false, IsMain = false },
+                    new() { Name = "glm-4-air", IsPaid = true, IsMain = false },
+                    new() { Name = "glm-4-long", IsPaid = true, IsMain = false }
                 }
             },
             new()
@@ -108,8 +107,8 @@ public partial class AiConfigController
             },
             new()
             {
-                Id = "moonshot",
-                Name = "Moonshot (月之暗面)",
+                Id = "kimi",
+                Name = "Kimi (月之暗面 Moonshot)",
                 BaseUrl = "https://api.moonshot.cn/v1",
                 Models = new()
                 {

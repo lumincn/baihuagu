@@ -42,14 +42,14 @@
                 <label>提供商 ID</label>
                 <input type="text" class="form-control" @bind="editingProvider.Id" 
                        disabled="@(!string.IsNullOrEmpty(editingProvider.Id))" 
-                       placeholder="如：siliconflow, aliyun" />
+                       placeholder="如：aliyun, zhipu, deepseek" />
                 <small class="form-text">唯一标识，创建后不可修改</small>
             </div>
 
             <div class="form-group">
                 <label>显示名称</label>
                 <input type="text" class="form-control" @bind="editingProvider.Name" 
-                       placeholder="如：硅基流动" />
+                       placeholder="如：智谱AI, DeepSeek" />
             </div>
 
             <div class="form-group">
