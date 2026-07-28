@@ -2881,9 +2881,32 @@ namespace WebUI.Services
         {
             var payload = new { goal, industry };
             var response = await _httpClient.PostAsJsonAsync("/api/master/create", payload, cancellationToken);
-            response.EnsureSuccessStatusCode();
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await TryGetErrorMessageAsync(response);
+                throw new HttpRequestException(error ?? $"创建师父失败 (HTTP {(int)response.StatusCode})");
+            }
             return await response.Content.ReadFromJsonAsync<CreateMasterResponse>(cancellationToken)
                    ?? new CreateMasterResponse { Success = false, Message = "创建失败" };
+        }
+
+        private static async Task<string?> TryGetErrorMessageAsync(HttpResponseMessage response)
+        {
+            try
+            {
+                var body = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(body)) return null;
+
+                using var doc = JsonDocument.Parse(body);
+                // Try both PascalCase and camelCase (server uses PascalCase, some endpoints use camelCase)
+                foreach (var key in new[] { "Message", "message", "Title", "title", "error", "Error" })
+                {
+                    if (doc.RootElement.TryGetProperty(key, out var val) && val.ValueKind == JsonValueKind.String)
+                        return val.GetString();
+                }
+            }
+            catch { }
+            return null;
         }
 
         public async IAsyncEnumerable<ChatStreamEvent> StreamMasterChatAsync(
@@ -2910,7 +2933,11 @@ namespace WebUI.Services
                 HttpCompletionOption.ResponseHeadersRead,
                 cancellationToken);
 
-            response.EnsureSuccessStatusCode();
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await TryGetErrorMessageAsync(response);
+                throw new HttpRequestException(error ?? $"师父对话失败 (HTTP {(int)response.StatusCode})");
+            }
 
             var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
             using var reader = new StreamReader(stream, Encoding.UTF8);
@@ -2957,7 +2984,11 @@ namespace WebUI.Services
         {
             var payload = new { stageName };
             var response = await _httpClient.PostAsJsonAsync($"/api/master/{masterId}/stage-complete", payload, cancellationToken);
-            response.EnsureSuccessStatusCode();
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await TryGetErrorMessageAsync(response);
+                throw new HttpRequestException(error ?? $"阶段完成失败 (HTTP {(int)response.StatusCode})");
+            }
             return await response.Content.ReadFromJsonAsync<StageCompleteResponse>(cancellationToken)
                    ?? new StageCompleteResponse { Success = false, Message = "操作失败" };
         }
@@ -2965,7 +2996,11 @@ namespace WebUI.Services
         public async Task<ApprenticeProfileResponse> GetMasterProfileAsync(string masterId, CancellationToken cancellationToken = default)
         {
             var response = await _httpClient.GetAsync($"/api/master/{masterId}/profile", cancellationToken);
-            response.EnsureSuccessStatusCode();
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await TryGetErrorMessageAsync(response);
+                throw new HttpRequestException(error ?? $"获取画像失败 (HTTP {(int)response.StatusCode})");
+            }
             return await response.Content.ReadFromJsonAsync<ApprenticeProfileResponse>(cancellationToken)
                    ?? new ApprenticeProfileResponse { Success = false, Message = "获取失败" };
         }
@@ -2974,7 +3009,11 @@ namespace WebUI.Services
         {
             var payload = new { type };
             var response = await _httpClient.PostAsJsonAsync($"/api/master/{masterId}/assess", payload, cancellationToken);
-            response.EnsureSuccessStatusCode();
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await TryGetErrorMessageAsync(response);
+                throw new HttpRequestException(error ?? $"评估失败 (HTTP {(int)response.StatusCode})");
+            }
             return await response.Content.ReadFromJsonAsync<AssessResponse>(cancellationToken)
                    ?? new AssessResponse { Success = false, Message = "评估失败" };
         }
@@ -2982,7 +3021,11 @@ namespace WebUI.Services
         public async Task<List<MasterListItem>> GetMastersAsync(CancellationToken cancellationToken = default)
         {
             var response = await _httpClient.GetAsync("/api/master", cancellationToken);
-            response.EnsureSuccessStatusCode();
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await TryGetErrorMessageAsync(response);
+                throw new HttpRequestException(error ?? $"获取师父列表失败 (HTTP {(int)response.StatusCode})");
+            }
             return await response.Content.ReadFromJsonAsync<List<MasterListItem>>(cancellationToken)
                    ?? new List<MasterListItem>();
         }

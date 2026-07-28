@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TaskRunner.Data;
 
@@ -10,9 +11,11 @@ using TaskRunner.Data;
 namespace TaskRunner.Data.Migrations.Family
 {
     [DbContext(typeof(FamilyDbContext))]
-    partial class FamilyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260728090850_AddMasterTables")]
+    partial class AddMasterTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0");

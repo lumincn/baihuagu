@@ -107,7 +107,8 @@ public partial class MasterController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "创建师父失败");
-            return StatusCode(500, new CreateMasterResponse { Success = false, Message = $"创建师父失败：{ex.Message}" });
+            var detail = UnwrapExceptionMessage(ex);
+            return StatusCode(500, new CreateMasterResponse { Success = false, Message = $"创建师父失败：{detail}" });
         }
     }
 
@@ -703,6 +704,23 @@ public partial class MasterController : ControllerBase
               ?? "Qwen/Qwen2.5-14B-Instruct";
 
         return (provider, resolvedModel);
+    }
+
+    /// <summary>
+    /// 递归展开异常链，返回最深层的错误信息（通常包含 SQLite/网络等具体原因）
+    /// </summary>
+    private static string UnwrapExceptionMessage(Exception ex)
+    {
+        var messages = new List<string>();
+        var current = ex;
+        while (current != null)
+        {
+            var msg = current.Message.Trim();
+            if (!string.IsNullOrEmpty(msg) && !messages.Contains(msg))
+                messages.Add(msg);
+            current = current.InnerException;
+        }
+        return string.Join(" → ", messages);
     }
 
     private static int GetStageOrder(string stageName)
