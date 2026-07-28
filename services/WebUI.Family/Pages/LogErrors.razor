@@ -1,7 +1,5 @@
 @page "/log-errors"
 @rendermode InteractiveServer
-@using Microsoft.JSInterop
-@inject IHttpClientFactory HttpClientFactory
 @layout WebUI.Shared.MainLayout
 
 <PageTitle>错误日志 - 百花</PageTitle>
@@ -63,32 +61,14 @@
 
         try
         {
-            var client = HttpClientFactory.CreateClient("TaskRunnerApi");
-            // 读取 Family 的错误日志
-            var response = await client.GetAsync("api/logs/error?lines=50");
-            if (response.IsSuccessStatusCode)
-            {
-                var lines = await response.Content.ReadFromJsonAsync<List<string>>();
-                if (lines != null)
-                {
-                    logs = lines.Select(line => new LogEntry
-                    {
-                        Time = ExtractTime(line),
-                        Message = line,
-                        IsError = line.Contains("ERR") || line.Contains("Error") || line.Contains("Exception") || line.Contains("500")
-                    }).ToList();
-                    hasNewError = logs.Any(l => l.IsError);
-                    statusText = hasNewError ? "⚠ 发现异常" : "✅ 正常";
-                }
-            }
-            else
-            {
-                // 后端无日志 API 时从日志文件读取（开发模式）
-                logs = await ReadFromLogFile("taskrunner", 50);
-                logs.AddRange(await ReadFromLogFile("webui", 50));
-                logs = logs.OrderByDescending(l => l.Time).Take(50).ToList();
-                statusText = $"已加载 {logs.Count} 条";
-            }
+            var taskrunner = await ReadFromLogFile("taskrunner", 100);
+            var webui = await ReadFromLogFile("webui", 100);
+            logs = taskrunner.Concat(webui)
+                .OrderByDescending(l => l.Time)
+                .Take(100)
+                .ToList();
+            hasNewError = logs.Any(l => l.IsError);
+            statusText = hasNewError ? "⚠ 发现异常" : "✅ 正常";
         }
         catch (Exception ex)
         {
@@ -110,12 +90,15 @@
         var entries = new List<LogEntry>();
         try
         {
-            var logPath = Path.Combine(Path.GetTempPath(), $"bh-{serviceName}.log");
-            if (!File.Exists(logPath)) return entries;
+            var logPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"bh-{serviceName}.log");
+            if (!System.IO.File.Exists(logPath)) return entries;
 
-            var allLines = await File.ReadAllLinesAsync(logPath);
-            var errorLines = allLines.Where(l => l.Contains("ERR") || l.Contains("Error") || l.Contains("Exception") || l.Contains("fail") || l.Contains("WRN"))
-                .Reverse().Take(maxLines);
+            var content = await System.IO.File.ReadAllTextAsync(logPath);
+            var allLines = content.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            var errorLines = allLines
+                .Where(l => l.Contains("ERR") || l.Contains("Error") || l.Contains("Exception") || l.Contains("fail") || l.Contains("WRN"))
+                .Reverse()
+                .Take(maxLines);
 
             foreach (var line in errorLines)
             {
