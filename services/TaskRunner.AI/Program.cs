@@ -246,19 +246,31 @@ app.MapControllers();
 
 // 执行 AI 数据库迁移与 API Key 加密密钥迁移
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
+
+// 先迁移 API Key（不依赖 Migrate，Migrate 可能因表已存在而失败）
+try
+{
+    using var scope = app.Services.CreateScope();
+    var aiDb = scope.ServiceProvider.GetRequiredService<TaskRunner.Data.AIDbContext>();
+    var migrationService = scope.ServiceProvider.GetRequiredService<MigrationService>();
+    migrationService.MigrateApiKeysIfNeeded(aiDb);
+}
+catch (Exception ex)
+{
+    logger.LogWarning(ex, "API Key 迁移失败（不影响启动）");
+}
+
+// 再执行 EF 数据库迁移
 try
 {
     using var scope = app.Services.CreateScope();
     var aiDb = scope.ServiceProvider.GetRequiredService<TaskRunner.Data.AIDbContext>();
     aiDb.Database.Migrate();
     logger.LogInformation("AI 数据库迁移完成");
-
-    var migrationService = scope.ServiceProvider.GetRequiredService<MigrationService>();
-    migrationService.MigrateApiKeysIfNeeded(aiDb);
 }
 catch (Exception ex)
 {
-    logger.LogError(ex, "AI 数据库迁移失败");
+    logger.LogWarning(ex, "AI 数据库迁移失败（不影响启动，表已存在则跳过）");
 }
 logger.LogInformation("===========================================");
 logger.LogInformation("TaskRunner.AI Service Starting...");
