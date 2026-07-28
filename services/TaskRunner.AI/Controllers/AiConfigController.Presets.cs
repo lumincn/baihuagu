@@ -71,62 +71,14 @@ public partial class AiConfigController
             },
             new()
             {
-                Id = "anthropic",
-                Name = "Anthropic (Claude)",
-                BaseUrl = "https://api.anthropic.com/v1",
-                Models = new()
-                {
-                    new() { Name = "claude-sonnet-4-20250514", IsPaid = true, IsMain = true },
-                    new() { Name = "claude-haiku-3-5-20241022", IsPaid = true, IsMain = false },
-                    new() { Name = "claude-opus-4-20250514", IsPaid = true, IsMain = false }
-                }
-            },
-            new()
-            {
-                Id = "openai",
-                Name = "OpenAI",
-                BaseUrl = "https://api.openai.com/v1",
-                Models = new()
-                {
-                    new() { Name = "gpt-4.1", IsPaid = true, IsMain = true },
-                    new() { Name = "gpt-4.1-mini", IsPaid = true, IsMain = false },
-                    new() { Name = "o4-mini", IsPaid = true, IsMain = false },
-                    new() { Name = "gpt-4o", IsPaid = true, IsMain = false }
-                }
-            },
-            new()
-            {
-                Id = "google",
-                Name = "Google Gemini",
-                BaseUrl = "https://generativelanguage.googleapis.com/v1beta/openai",
-                Models = new()
-                {
-                    new() { Name = "gemini-2.5-pro", IsPaid = true, IsMain = true },
-                    new() { Name = "gemini-2.5-flash", IsPaid = true, IsMain = false }
-                }
-            },
-            new()
-            {
                 Id = "kimi",
-                Name = "Kimi (月之暗面 Moonshot)",
+                Name = "Kimi (月之暗面)",
                 BaseUrl = "https://api.moonshot.cn/v1",
                 Models = new()
                 {
-                    new() { Name = "moonshot-v1-8k", IsPaid = true, IsMain = false },
-                    new() { Name = "moonshot-v1-32k", IsPaid = true, IsMain = true },
-                    new() { Name = "moonshot-v1-128k", IsPaid = true, IsMain = false }
-                }
-            },
-            new()
-            {
-                Id = "azure",
-                Name = "Azure OpenAI",
-                BaseUrl = "https://{your-resource}.openai.azure.com/openai/deployments/{deployment-id}",
-                Models = new()
-                {
-                    new() { Name = "gpt-4o", IsPaid = true, IsMain = true },
-                    new() { Name = "gpt-4.1", IsPaid = true, IsMain = false },
-                    new() { Name = "gpt-35-turbo", IsPaid = true, IsMain = false }
+                    new() { Name = "kimi-k3", IsPaid = true, IsMain = true },
+                    new() { Name = "kimi-k2.7-code", IsPaid = true, IsMain = false },
+                    new() { Name = "kimi-k2.6", IsPaid = true, IsMain = false }
                 }
             },
             new()

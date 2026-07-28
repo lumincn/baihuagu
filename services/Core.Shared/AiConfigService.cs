@@ -273,12 +273,6 @@ public class AiConfigService
     private AiProviderConfig MapToProviderConfig(AiProviderSetting setting)
     {
         var anthropicBaseUrl = setting.AnthropicBaseUrl;
-        if (string.IsNullOrWhiteSpace(anthropicBaseUrl))
-        {
-            var envValue = Environment.GetEnvironmentVariable("BAIHUA_AI_ANTHROPIC_BASE_URL");
-            if (!string.IsNullOrWhiteSpace(envValue))
-                anthropicBaseUrl = envValue.Trim();
-        }
         return new AiProviderConfig
         {
             Id = setting.ProviderId,
