@@ -25,9 +25,10 @@ public partial class AiConfigController
                 BaseUrl = "https://api.siliconflow.cn/v1",
                 Models = new()
                 {
-                    new() { Name = "deepseek-ai/DeepSeek-V3", IsPaid = false, IsMain = true },
+                    new() { Name = "deepseek-ai/DeepSeek-V3.1", IsPaid = false, IsMain = true },
                     new() { Name = "deepseek-ai/DeepSeek-R1", IsPaid = false, IsMain = false },
-                    new() { Name = "Qwen/Qwen3.5-72B-Instruct", IsPaid = false, IsMain = false },
+                    new() { Name = "Qwen/Qwen3-235B-A22B", IsPaid = false, IsMain = false },
+                    new() { Name = "Pro/THUDM/GLM-4-0414", IsPaid = true, IsMain = false },
                     new() { Name = "BAAI/bge-large-zh-v1.5", IsPaid = false, IsMain = false }
                 }
             },
@@ -38,10 +39,10 @@ public partial class AiConfigController
                 BaseUrl = "https://ark.cn-beijing.volces.com/api/v3",
                 Models = new()
                 {
-                    new() { Name = "doubao-1-5-pro-32k-250115", IsPaid = true, IsMain = true },
-                    new() { Name = "doubao-1-5-lite-32k-250115", IsPaid = true, IsMain = false },
-                    new() { Name = "deepseek-r1-250120", IsPaid = true, IsMain = false },
-                    new() { Name = "deepseek-v3-250324", IsPaid = true, IsMain = false }
+                    new() { Name = "doubao-seed-1-6-251015", IsPaid = true, IsMain = true },
+                    new() { Name = "doubao-1-5-pro-256k-250815", IsPaid = true, IsMain = false },
+                    new() { Name = "deepseek-r1-250528", IsPaid = true, IsMain = false },
+                    new() { Name = "deepseek-v3-250528", IsPaid = true, IsMain = false }
                 }
             },
             new()
@@ -51,9 +52,9 @@ public partial class AiConfigController
                 BaseUrl = "https://dashscope.aliyuncs.com/compatible-mode/v1",
                 Models = new()
                 {
-                    new() { Name = "qwen-plus", IsPaid = true, IsMain = true },
-                    new() { Name = "qwen-turbo", IsPaid = true, IsMain = false },
-                    new() { Name = "qwen-max", IsPaid = true, IsMain = false },
+                    new() { Name = "qwen3-plus", IsPaid = true, IsMain = true },
+                    new() { Name = "qwen3-max", IsPaid = true, IsMain = false },
+                    new() { Name = "qwen3-turbo", IsPaid = true, IsMain = false },
                     new() { Name = "deepseek-v3", IsPaid = true, IsMain = false },
                     new() { Name = "deepseek-r1", IsPaid = true, IsMain = false }
                 }
@@ -71,6 +72,42 @@ public partial class AiConfigController
             },
             new()
             {
+                Id = "anthropic",
+                Name = "Anthropic (Claude)",
+                BaseUrl = "https://api.anthropic.com/v1",
+                Models = new()
+                {
+                    new() { Name = "claude-sonnet-4-20250514", IsPaid = true, IsMain = true },
+                    new() { Name = "claude-haiku-3-5-20241022", IsPaid = true, IsMain = false },
+                    new() { Name = "claude-opus-4-20250514", IsPaid = true, IsMain = false }
+                }
+            },
+            new()
+            {
+                Id = "openai",
+                Name = "OpenAI",
+                BaseUrl = "https://api.openai.com/v1",
+                Models = new()
+                {
+                    new() { Name = "gpt-4.1", IsPaid = true, IsMain = true },
+                    new() { Name = "gpt-4.1-mini", IsPaid = true, IsMain = false },
+                    new() { Name = "o4-mini", IsPaid = true, IsMain = false },
+                    new() { Name = "gpt-4o", IsPaid = true, IsMain = false }
+                }
+            },
+            new()
+            {
+                Id = "google",
+                Name = "Google Gemini",
+                BaseUrl = "https://generativelanguage.googleapis.com/v1beta/openai",
+                Models = new()
+                {
+                    new() { Name = "gemini-2.5-pro", IsPaid = true, IsMain = true },
+                    new() { Name = "gemini-2.5-flash", IsPaid = true, IsMain = false }
+                }
+            },
+            new()
+            {
                 Id = "moonshot",
                 Name = "Moonshot (月之暗面)",
                 BaseUrl = "https://api.moonshot.cn/v1",
@@ -83,26 +120,13 @@ public partial class AiConfigController
             },
             new()
             {
-                Id = "openai",
-                Name = "OpenAI",
-                BaseUrl = "https://api.openai.com/v1",
-                Models = new()
-                {
-                    new() { Name = "gpt-4o", IsPaid = true, IsMain = true },
-                    new() { Name = "gpt-4o-mini", IsPaid = true, IsMain = false },
-                    new() { Name = "gpt-4-turbo", IsPaid = true, IsMain = false },
-                    new() { Name = "o3-mini", IsPaid = true, IsMain = false }
-                }
-            },
-            new()
-            {
                 Id = "azure",
                 Name = "Azure OpenAI",
                 BaseUrl = "https://{your-resource}.openai.azure.com/openai/deployments/{deployment-id}",
                 Models = new()
                 {
                     new() { Name = "gpt-4o", IsPaid = true, IsMain = true },
-                    new() { Name = "gpt-4", IsPaid = true, IsMain = false },
+                    new() { Name = "gpt-4.1", IsPaid = true, IsMain = false },
                     new() { Name = "gpt-35-turbo", IsPaid = true, IsMain = false }
                 }
             },
@@ -114,9 +138,9 @@ public partial class AiConfigController
                 Tier = AiModelTier.Tier2_Local,
                 Models = new()
                 {
-                    new() { Name = "qwen2.5:14b", IsPaid = false, IsMain = true },
+                    new() { Name = "qwen3:14b", IsPaid = false, IsMain = true },
                     new() { Name = "deepseek-r1:14b", IsPaid = false, IsMain = false },
-                    new() { Name = "llama3.1:8b", IsPaid = false, IsMain = false }
+                    new() { Name = "llama3.2:latest", IsPaid = false, IsMain = false }
                 }
             },
             new()
