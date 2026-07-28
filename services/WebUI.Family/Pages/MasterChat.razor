@@ -526,7 +526,27 @@
     private string createIndustry = "";
     private string createGoal = "";
 
-    private bool CanSend => !isThinking && !string.IsNullOrWhiteSpace(inputMessage) && selectedMaster != null;
+    private enum AiCheckState { Idle, Checking, Valid, Invalid, NotConfigured }
+    private AiCheckState aiCheckState = AiCheckState.Idle;
+
+    private static readonly string[] UnsafeKeywords = [
+        "真实诊断", "开处方", "开药方", "真实法律建议", "代理诉讼",
+        "医疗诊断", "处方药", "手术方案", "法律代理"
+    ];
+    private const string SafetyWarning = "\n\n⚠️ 以上内容仅供参考，不构成专业医疗/法律意见，请以权威资源为准。";
+
+    private static string SanitizeInput(string input, int maxLength = 200) =>
+        string.Concat(input.Take(maxLength)).Replace("\n", " ").Replace("\r", " ").Replace("【", " ").Replace("】", " ").Trim();
+
+    private static string ApplySafetyFilter(string text)
+    {
+        foreach (var kw in UnsafeKeywords)
+            if (text.Contains(kw, StringComparison.OrdinalIgnoreCase))
+                return text + SafetyWarning;
+        return text;
+    }
+
+    private bool CanSend => !isThinking && !string.IsNullOrWhiteSpace(inputMessage) && selectedMaster != null && (aiCheckState == AiCheckState.Valid || aiCheckState == AiCheckState.Idle);
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -642,7 +662,7 @@
 
         try
         {
-            var result = await ApiService.CreateMasterAsync(createGoal, createIndustry);
+            var result = await ApiService.CreateMasterAsync(SanitizeInput(createGoal), SanitizeInput(createIndustry));
             if (result.Success)
             {
                 showCreateModal = false;
@@ -677,7 +697,7 @@
             return;
 
         chatMessages.Add(new ChatMsg { IsUser = true, Content = inputMessage, Time = DateTime.Now });
-        var userMessage = inputMessage;
+        var userMessage = SanitizeInput(inputMessage, 2000);
         inputMessage = "";
         isThinking = true;
 
@@ -707,6 +727,10 @@
             if (_chatCts.IsCancellationRequested)
             {
                 aiMessage.Content = string.IsNullOrEmpty(aiMessage.Content) ? "（已停止）" : aiMessage.Content + "\n\n（已停止）";
+            }
+            else
+            {
+                aiMessage.Content = ApplySafetyFilter(aiMessage.Content);
             }
         }
         catch (OperationCanceledException)

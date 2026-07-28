@@ -275,6 +275,20 @@
 
     private bool CanAcceptDisclaimer => _confirmedDisclaimer && (!_isMedicalOrLegal || _confirmedAge);
     private bool CanSend => !_isSending && !string.IsNullOrWhiteSpace(_inputMessage) && _aiConfigured;
+
+    private static readonly string[] UnsafeKeywords = ["真实诊断", "开处方", "开药方", "真实法律建议", "代理诉讼", "医疗诊断", "处方药", "手术方案", "法律代理"];
+    private const string SafetyWarning = "\n\n⚠️ 以上内容仅供参考，不构成专业医疗/法律意见，请以权威资源为准。";
+
+    private static string SanitizeInput(string input, int maxLength = 2000) =>
+        string.Concat(input.Take(maxLength)).Replace("\n", " ").Replace("\r", " ").Replace("【", " ").Replace("】", " ").Trim();
+
+    private static string ApplySafetyFilter(string text)
+    {
+        foreach (var kw in UnsafeKeywords)
+            if (text.Contains(kw, StringComparison.OrdinalIgnoreCase))
+                return text + SafetyWarning;
+        return text;
+    }
     private string GetAvatar() => !string.IsNullOrEmpty(_profile?.MasterId) ? _profile.MasterId[..1].ToString() : "师";
     private string _stageTip = "";
 
@@ -429,7 +443,7 @@
         }
 
         _sendError = "";
-        var userText = _inputMessage.Trim();
+        var userText = SanitizeInput(_inputMessage.Trim());
         _inputMessage = "";
         _isSending = true;
         _streamingText = "";
@@ -461,7 +475,7 @@
                 {
                     Id = $"master_{DateTime.Now:HH:mm:ss}",
                     IsUser = false,
-                    Content = _streamingText,
+                    Content = ApplySafetyFilter(_streamingText),
                     Time = DateTime.Now
                 });
             }
