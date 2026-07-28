@@ -145,7 +145,7 @@
     <div class="modal-overlay" @onclick="DismissAiWarning">
         <div class="modal-content" @onclick:stopPropagation>
             <h4>AI 未配置</h4>
-            <p style="color: rgba(255,255,255,0.7); margin: 1rem 0;">虚拟师父需要 AI 服务支持，请先配置 API Key 和模型。</p>
+            <p style="color: var(--master-text-secondary); margin: 1rem 0;">虚拟师父需要 AI 服务支持，请先配置 API Key 和模型。</p>
             <div class="modal-actions">
                 <button class="btn btn-secondary" @onclick="DismissAiWarning">稍后再说</button>
                 <button class="btn btn-primary" @onclick="GoToAiSettings">前往配置</button>
@@ -201,7 +201,7 @@
         flex-shrink: 0;
         display: flex;
         flex-direction: column;
-        border-right: 1px solid rgba(255,255,255,0.1);
+        border-right: 1px solid var(--master-border);
         padding-right: 1rem;
     }
     .sidebar-header {
@@ -224,18 +224,18 @@
     .master-card {
         padding: 0.75rem;
         border-radius: 8px;
-        background: rgba(255,255,255,0.05);
-        border: 1px solid rgba(255,255,255,0.1);
+        background: var(--master-surface);
+        border: 1px solid var(--master-border);
         cursor: pointer;
         transition: all 0.2s;
     }
     .master-card:hover {
-        background: rgba(255,255,255,0.08);
-        border-color: rgba(255,255,255,0.2);
+        background: var(--master-surface-subtle);
+        border-color: var(--master-border);
     }
     .master-card.active {
-        background: rgba(46,139,175,0.2);
-        border-color: rgba(46,139,175,0.5);
+        background: rgba(var(--master-accent-rgb), 0.2);
+        border-color: rgba(var(--master-accent-rgb), 0.5);
     }
     .master-card-name {
         font-weight: 600;
@@ -244,7 +244,7 @@
     }
     .master-card-goal {
         font-size: 0.8rem;
-        color: rgba(255,255,255,0.6);
+        color: var(--master-text-muted);
         margin-bottom: 0.4rem;
     }
     .master-card-stage {
@@ -266,11 +266,11 @@
     .stage-5 { background: #f3e5f5; color: #6a1b9a; }
     .stage-progress {
         font-size: 0.75rem;
-        color: rgba(255,255,255,0.5);
+        color: var(--master-text-dim);
     }
     .empty-hint {
         text-align: center;
-        color: rgba(255,255,255,0.4);
+        color: var(--master-text-dim);
         font-size: 0.85rem;
         padding: 2rem 0;
     }
@@ -286,7 +286,7 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        color: rgba(255,255,255,0.4);
+        color: var(--master-text-dim);
     }
     .empty-icon {
         font-size: 3rem;
@@ -300,7 +300,7 @@
         justify-content: space-between;
         align-items: center;
         padding-bottom: 0.75rem;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
+        border-bottom: 1px solid var(--master-border);
         margin-bottom: 0.5rem;
     }
     .master-info {
@@ -319,10 +319,10 @@
     .stage-tip {
         padding: 0.5rem 0.75rem;
         border-radius: 6px;
-        background: rgba(46,139,175,0.1);
-        border: 1px solid rgba(46,139,175,0.2);
+        background: rgba(var(--master-accent-rgb), 0.1);
+        border: 1px solid rgba(var(--master-accent-rgb), 0.2);
         font-size: 0.85rem;
-        color: rgba(220,235,245,0.9);
+        color: var(--master-text-secondary);
         margin-bottom: 0.75rem;
     }
     .chat-messages {
@@ -349,12 +349,12 @@
         flex-shrink: 0;
     }
     .message.user .message-avatar {
-        background: #2e8baf;
-        color: #fff;
+        background: var(--master-user-bubble);
+        color: var(--master-user-text);
     }
     .message.master .message-avatar {
-        background: rgba(255,255,255,0.1);
-        color: rgba(255,255,255,0.8);
+        background: var(--master-ai-bubble);
+        color: var(--master-ai-text);
         font-weight: 600;
     }
     .message-content {
@@ -367,16 +367,16 @@
         font-size: 0.9rem;
     }
     .message.user .message-text {
-        background: #2e8baf;
-        color: #fff;
+        background: var(--master-user-bubble);
+        color: var(--master-user-text);
     }
     .message.master .message-text {
-        background: rgba(255,255,255,0.08);
-        color: rgba(255,255,255,0.9);
+        background: var(--master-ai-bubble);
+        color: var(--master-ai-text);
     }
     .message-time {
         font-size: 0.7rem;
-        color: rgba(255,255,255,0.3);
+        color: var(--master-text-dim);
         margin-top: 0.2rem;
     }
     .message.user .message-time {
@@ -391,7 +391,7 @@
         width: 8px;
         height: 8px;
         border-radius: 50%;
-        background: rgba(255,255,255,0.4);
+        background: var(--master-text-muted);
         animation: typing 1.4s infinite;
     }
     .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
@@ -404,7 +404,7 @@
         display: flex;
         gap: 0.5rem;
         padding-top: 0.5rem;
-        border-top: 1px solid rgba(255,255,255,0.1);
+        border-top: 1px solid var(--master-border);
     }
     .chat-input textarea {
         flex: 1;
@@ -414,29 +414,29 @@
         overflow-y: auto;
         line-height: 1.4;
         padding: 0.5rem 0.75rem;
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.15);
-        color: #fff;
+        background: var(--master-input-bg);
+        border: 1px solid var(--master-input-border);
+        color: var(--master-input-text);
     }
     .chat-input textarea:focus {
         outline: none;
-        border-color: #2e8baf;
+        border-color: var(--master-accent);
     }
     .chat-input textarea::placeholder {
-        color: rgba(255,255,255,0.4);
+        color: var(--master-text-dim);
     }
     .modal-overlay {
         position: fixed;
         top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0,0,0,0.5);
+        background: var(--master-modal-overlay);
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 1000;
     }
     .modal-content {
-        background: #1e2a3a;
-        border: 1px solid rgba(255,255,255,0.15);
+        background: var(--master-modal-bg);
+        border: 1px solid var(--master-border);
         border-radius: 12px;
         padding: 1.5rem;
         width: 400px;
@@ -452,16 +452,16 @@
         display: block;
         font-size: 0.85rem;
         margin-bottom: 0.3rem;
-        color: rgba(255,255,255,0.7);
+        color: var(--master-text-secondary);
     }
     .form-group select, .form-group input {
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.15);
-        color: #fff;
+        background: var(--master-input-bg);
+        border: 1px solid var(--master-input-border);
+        color: var(--master-input-text);
     }
     .form-group select:focus, .form-group input:focus {
         outline: none;
-        border-color: #2e8baf;
+        border-color: var(--master-accent);
     }
     .modal-actions {
         display: flex;
@@ -475,11 +475,11 @@
     }
     .message-text :deep(p) { margin: 0.3rem 0; line-height: 1.6; }
     .message-text :deep(ul), .message-text :deep(ol) { margin: 0.3rem 0; padding-left: 1.5rem; }
-    .message-text :deep(code) { background: rgba(255,255,255,0.1); padding: 0.1rem 0.3rem; border-radius: 3px; font-size: 0.9em; }
-    .message-text :deep(pre) { background: rgba(0,0,0,0.3); padding: 0.5rem; border-radius: 4px; overflow-x: auto; }
+    .message-text :deep(code) { background: rgba(var(--master-accent-rgb), 0.1); padding: 0.1rem 0.3rem; border-radius: 3px; font-size: 0.9em; }
+    .message-text :deep(pre) { background: var(--master-ai-bubble); padding: 0.5rem; border-radius: 4px; overflow-x: auto; }
     .message-text :deep(pre code) { background: transparent; padding: 0; }
-    .message-text :deep(blockquote) { border-left: 3px solid #2e8baf; padding: 0.3rem 0.5rem; margin: 0.3rem 0; background: rgba(255,255,255,0.05); }
-    .message-text :deep(strong) { color: #fff; }
+    .message-text :deep(blockquote) { border-left: 3px solid var(--master-accent); padding: 0.3rem 0.5rem; margin: 0.3rem 0; background: var(--master-surface); }
+    .message-text :deep(strong) { color: var(--master-text); }
     .quick-questions {
         display: flex;
         flex-direction: column;
@@ -489,15 +489,15 @@
     }
     .quick-hint {
         font-size: 0.9rem;
-        color: rgba(255,255,255,0.5);
+        color: var(--master-text-dim);
         margin-bottom: 0.5rem;
     }
     .quick-q-btn {
         padding: 0.5rem 1rem;
         border-radius: 20px;
-        background: rgba(46,139,175,0.15);
-        border: 1px solid rgba(46,139,175,0.3);
-        color: rgba(220,235,245,0.9);
+        background: rgba(var(--master-accent-rgb), 0.15);
+        border: 1px solid rgba(var(--master-accent-rgb), 0.3);
+        color: var(--master-text-secondary);
         font-size: 0.85rem;
         cursor: pointer;
         transition: all 0.2s;
@@ -505,8 +505,8 @@
         text-align: center;
     }
     .quick-q-btn:hover {
-        background: rgba(46,139,175,0.25);
-        border-color: rgba(46,139,175,0.5);
+        background: rgba(var(--master-accent-rgb), 0.25);
+        border-color: rgba(var(--master-accent-rgb), 0.5);
     }
 </style>
 

@@ -223,19 +223,19 @@ function Stop-ServiceByPort($name){
 	$connections = netstat -ano 2>$null | Select-String ":${port}\s" | Select-String "LISTENING"
 	foreach ($conn in $connections) {
 		$parts = $conn.ToString().Trim() -split '\s+'
-		$pid = $parts[-1]
-		if ($pid -match '^\d+$' -and $pid -ne '0') {
+		$foundPid = $parts[-1]
+		if ($foundPid -match '^\d+$' -and $foundPid -ne '0') {
 			try {
-				$proc = Get-Process -Id $pid -ErrorAction Stop
+				$proc = Get-Process -Id $foundPid -ErrorAction Stop
 				if ($proc.ProcessName -eq 'svchost') {
-					Write-Host "  Port :${port} held by svchost (PID $pid), skipping" -ForegroundColor Yellow
+					Write-Host "  Port :${port} held by svchost (PID $foundPid), skipping" -ForegroundColor Yellow
 					continue
 				}
-				Write-Host "  Killing process on port :${port} (PID $pid, $($proc.ProcessName))" -ForegroundColor Yellow
-				Stop-Process -Id $pid -Force -ErrorAction Stop
+				Write-Host "  Killing process on port :${port} (PID $foundPid, $($proc.ProcessName))" -ForegroundColor Yellow
+				Stop-Process -Id $foundPid -Force -ErrorAction Stop
 				Start-Sleep -Milliseconds 500
 			} catch {
-				Write-Host "  Failed to kill PID $pid on port :${port}: ${_}" -ForegroundColor Red
+				Write-Host "  Failed to kill PID $foundPid on port :${port}: ${_}" -ForegroundColor Red
 			}
 		}
 	}
@@ -248,11 +248,11 @@ function Get-RealServicePid($name){
 	$connections = netstat -ano 2>$null | Select-String ":${port}\s" | Select-String "LISTENING"
 	foreach ($conn in $connections) {
 		$parts = $conn.ToString().Trim() -split '\s+'
-		$pid = $parts[-1]
-		if ($pid -match '^\d+$' -and $pid -ne '0') {
+		$foundPid = $parts[-1]
+		if ($foundPid -match '^\d+$' -and $foundPid -ne '0') {
 			try {
-				$proc = Get-Process -Id $pid -ErrorAction Stop
-				if ($proc.ProcessName -ne 'svchost') { return $pid }
+				$proc = Get-Process -Id $foundPid -ErrorAction Stop
+				if ($proc.ProcessName -ne 'svchost') { return $foundPid }
 			} catch {}
 		}
 	}

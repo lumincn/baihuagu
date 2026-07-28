@@ -186,78 +186,78 @@ else
 }
 
 <style>
-    .empty-state { text-align: center; padding: 3rem; color: rgba(255,255,255,0.5); }
-    .empty-state a { color: #2e8baf; }
-    .loading { text-align: center; padding: 3rem; color: rgba(255,255,255,0.5); }
-    .stage-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
-    .master-label { color: rgba(255,255,255,0.6); font-size: 0.9rem; }
+    .empty-state { text-align: center; padding: 3rem; color: var(--master-text-dim); }
+    .empty-state a { color: var(--master-accent); }
+    .loading { text-align: center; padding: 3rem; color: var(--master-text-dim); }
+    .stage-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--master-border); }
+    .master-label { color: var(--master-text-muted); font-size: 0.9rem; }
     .master-value { font-weight: 600; font-size: 1rem; }
     .timeline { position: relative; padding-left: 2rem; }
-    .timeline::before { content: ''; position: absolute; left: 15px; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.1); }
+    .timeline::before { content: ''; position: absolute; left: 15px; top: 0; bottom: 0; width: 2px; background: var(--master-border); }
     .timeline-item { position: relative; margin-bottom: 1.5rem; }
     .timeline-marker { position: absolute; left: -2rem; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 600; }
-    .timeline-item.completed .timeline-marker { background: #2e7d32; color: #fff; }
-    .timeline-item.current .timeline-marker { background: #2e8baf; color: #fff; }
-    .timeline-item.pending .timeline-marker { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); }
+    .timeline-item.completed .timeline-marker { background: var(--master-stage-dot-completed); color: #fff; }
+    .timeline-item.current .timeline-marker { background: var(--master-stage-dot-current); color: #fff; }
+    .timeline-item.pending .timeline-marker { background: var(--master-stage-dot-pending); color: var(--master-text-dim); }
     .timeline-content { padding-left: 0.5rem; }
     .timeline-title { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem; }
     .stage-name { font-weight: 600; font-size: 1rem; }
     .stage-status-badge { padding: 0.1rem 0.5rem; border-radius: 1rem; font-size: 0.7rem; font-weight: 500; }
-    .stage-status-badge.completed { background: #2e7d32; color: #fff; }
-    .stage-status-badge.current { background: #2e8baf; color: #fff; }
-    .stage-status-badge.pending { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); }
-    .timeline-desc { font-size: 0.85rem; color: rgba(255,255,255,0.6); margin-bottom: 0.5rem; }
+    .stage-status-badge.completed { background: var(--master-stage-dot-completed); color: #fff; }
+    .stage-status-badge.current { background: var(--master-stage-dot-current); color: #fff; }
+    .stage-status-badge.pending { background: var(--master-stage-dot-pending); color: var(--master-text-dim); }
+    .timeline-desc { font-size: 0.85rem; color: var(--master-text-muted); margin-bottom: 0.5rem; }
     .timeline-progress { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
-    .progress-bar { flex: 1; max-width: 200px; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.1); overflow: hidden; }
-    .progress-fill { height: 100%; border-radius: 3px; background: #2e8baf; transition: width 0.3s; }
-    .progress-text { font-size: 0.8rem; color: rgba(255,255,255,0.5); }
-    .stage-summary { margin-top: 0.5rem; padding: 0.5rem 0.75rem; border-radius: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
-    .summary-label { font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-bottom: 0.25rem; }
-    .summary-text { font-size: 0.85rem; color: rgba(255,255,255,0.7); line-height: 1.5; }
-    .stage-corrections { margin-top: 0.4rem; padding: 0.5rem 0.75rem; border-radius: 6px; background: rgba(255,152,0,0.08); border: 1px solid rgba(255,152,0,0.2); }
-    .corrections-label { font-size: 0.75rem; color: #ff9800; margin-bottom: 0.25rem; }
-    .corrections-text { font-size: 0.85rem; color: rgba(255,200,100,0.9); line-height: 1.5; }
+    .progress-bar { flex: 1; max-width: 200px; height: 6px; border-radius: 3px; background: var(--master-border); overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 3px; background: var(--master-accent); transition: width 0.3s; }
+    .progress-text { font-size: 0.8rem; color: var(--master-text-dim); }
+    .stage-summary { margin-top: 0.5rem; padding: 0.5rem 0.75rem; border-radius: 6px; background: var(--master-surface); border: 1px solid var(--master-border); }
+    .summary-label { font-size: 0.75rem; color: var(--master-text-dim); margin-bottom: 0.25rem; }
+    .summary-text { font-size: 0.85rem; color: var(--master-text-secondary); line-height: 1.5; }
+    .stage-corrections { margin-top: 0.4rem; padding: 0.5rem 0.75rem; border-radius: 6px; background: var(--master-correction-bg); border: 1px solid var(--master-correction-border); }
+    .corrections-label { font-size: 0.75rem; color: var(--master-correction-label); margin-bottom: 0.25rem; }
+    .corrections-text { font-size: 0.85rem; color: var(--master-correction-text); line-height: 1.5; }
 
-    .vault-focus-section { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); }
+    .vault-focus-section { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--master-border); }
     .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
     .section-title { font-weight: 600; font-size: 0.95rem; }
-    .vault-empty { font-size: 0.85rem; color: rgba(255,255,255,0.4); padding: 0.5rem 0; }
+    .vault-empty { font-size: 0.85rem; color: var(--master-text-dim); padding: 0.5rem 0; }
     .vault-list { display: flex; flex-direction: column; gap: 0.4rem; }
-    .vault-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.6rem; border-radius: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+    .vault-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.6rem; border-radius: 6px; background: var(--master-surface); border: 1px solid var(--master-border); }
     .vault-name { flex: 1; font-size: 0.85rem; }
-    .vault-state { font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 1rem; background: rgba(46,139,175,0.2); color: #2e8baf; }
+    .vault-state { font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 1rem; background: rgba(var(--master-accent-rgb), 0.2); color: var(--master-accent); }
     .btn-xs { font-size: 0.7rem; padding: 0.15rem 0.4rem; }
-    .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.7); }
-    .btn-outline:hover { border-color: rgba(255,255,255,0.4); color: #fff; }
+    .btn-outline { background: transparent; border: 1px solid var(--master-border); color: var(--master-text-secondary); }
+    .btn-outline:hover { border-color: var(--master-text-muted); color: var(--master-text); }
     .btn-outline-danger { background: transparent; border: 1px solid rgba(220,53,69,0.3); color: rgba(220,53,69,0.8); }
     .btn-outline-danger:hover { border-color: #dc3545; color: #dc3545; }
 
-    .dialog-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-    .dialog-content { background: #1e1e2e; border-radius: 12px; max-width: 480px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+    .dialog-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--master-modal-overlay); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .dialog-content { background: var(--master-modal-bg); border-radius: 12px; max-width: 480px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
     .dialog-wide { max-width: 560px; }
-    .dialog-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .dialog-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-bottom: 1px solid var(--master-border); }
     .dialog-title { font-weight: 600; font-size: 1.05rem; }
-    .dialog-close { background: none; border: none; color: rgba(255,255,255,0.5); font-size: 1.2rem; cursor: pointer; }
-    .dialog-close:hover { color: #fff; }
+    .dialog-close { background: none; border: none; color: var(--master-text-dim); font-size: 1.2rem; cursor: pointer; }
+    .dialog-close:hover { color: var(--master-text); }
     .dialog-body { padding: 1rem 1.25rem; }
-    .dialog-footer { padding: 0.75rem 1.25rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: flex-end; gap: 0.5rem; }
+    .dialog-footer { padding: 0.75rem 1.25rem; border-top: 1px solid var(--master-border); display: flex; justify-content: flex-end; gap: 0.5rem; }
 
-    .blessing-box { padding: 0.75rem 1rem; margin-bottom: 1rem; border-radius: 8px; background: linear-gradient(135deg, rgba(46,139,175,0.1), rgba(46,125,50,0.1)); border: 1px solid rgba(46,139,175,0.2); }
-    .blessing-text { font-size: 0.95rem; color: rgba(255,255,255,0.85); line-height: 1.6; font-style: italic; }
-    .completed-stage-name { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: #2e8baf; }
+    .blessing-box { padding: 0.75rem 1rem; margin-bottom: 1rem; border-radius: 8px; background: var(--master-blessing-bg); border: 1px solid var(--master-blessing-border); }
+    .blessing-text { font-size: 0.95rem; color: var(--master-blessing-text); line-height: 1.6; font-style: italic; }
+    .completed-stage-name { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--master-accent); }
     .completed-summary { margin-bottom: 0.75rem; }
-    .completed-label { font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-bottom: 0.3rem; }
-    .completed-text { font-size: 0.9rem; color: rgba(255,255,255,0.75); line-height: 1.5; }
-    .completed-corrections { padding: 0.5rem 0.75rem; border-radius: 6px; background: rgba(255,152,0,0.08); border: 1px solid rgba(255,152,0,0.2); }
-    .completed-corrections-label { font-size: 0.8rem; color: #ff9800; margin-bottom: 0.3rem; }
-    .completed-corrections-text { font-size: 0.9rem; color: rgba(255,200,100,0.9); line-height: 1.5; }
+    .completed-label { font-size: 0.8rem; color: var(--master-text-dim); margin-bottom: 0.3rem; }
+    .completed-text { font-size: 0.9rem; color: var(--master-text-secondary); line-height: 1.5; }
+    .completed-corrections { padding: 0.5rem 0.75rem; border-radius: 6px; background: var(--master-correction-bg); border: 1px solid var(--master-correction-border); }
+    .completed-corrections-label { font-size: 0.8rem; color: var(--master-correction-label); margin-bottom: 0.3rem; }
+    .completed-corrections-text { font-size: 0.9rem; color: var(--master-correction-text); line-height: 1.5; }
 
-    .vault-picker-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 0.8rem; border-radius: 8px; cursor: pointer; margin-bottom: 0.3rem; border: 1px solid rgba(255,255,255,0.1); transition: all 0.15s; }
-    .vault-picker-item:hover { background: rgba(255,255,255,0.05); }
-    .vault-picker-item.selected { background: rgba(46,139,175,0.1); border-color: rgba(46,139,175,0.3); }
+    .vault-picker-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 0.8rem; border-radius: 8px; cursor: pointer; margin-bottom: 0.3rem; border: 1px solid var(--master-border); transition: all 0.15s; }
+    .vault-picker-item:hover { background: var(--master-surface); }
+    .vault-picker-item.selected { background: rgba(var(--master-accent-rgb), 0.1); border-color: rgba(var(--master-accent-rgb), 0.3); }
     .vault-picker-name { flex: 1; font-size: 0.9rem; }
-    .vault-picker-industry { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
-    .vault-picker-check { color: #2e8baf; font-weight: 600; }
+    .vault-picker-industry { font-size: 0.75rem; color: var(--master-text-dim); }
+    .vault-picker-check { color: var(--master-accent); font-weight: 600; }
 </style>
 
 @code {

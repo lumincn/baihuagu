@@ -1,6 +1,6 @@
 # 拜师系统（Master-Apprentice）跨平台对比分析
 
-> 生成日期：2026-07-28（第十三轮 review 更新 — 花记安全补齐+暗色模式适配）
+> 生成日期：2026-07-28（第十四轮 review 更新 — WebUI 暗色模式适配）
 > 分析范围：鸿蒙版 (ArkTS)、安卓版 (Kotlin/Compose)、WebUI (Blazor)、花圃 (MAUI)
 
 ---
@@ -58,7 +58,7 @@
 | 对话历史同步 | ❌ (仅本地) | ❌ (仅本地) | ❌ (仅localStorage) | ✅ (双向同步) |
 | 知识库关联 UI | ✅ (多选切换) 🆕 | ✅ (多选切换) 🆕 | ✅ (多选切换) | ✅ (最完整, 多选) |
 | 数据淘汰定时任务 | ✅ (本地自动) | ✅ (本地自动) | ⚠️ (手动触发) | ⚠️ (依赖后端) |
-| 暗色模式适配 | ✅ (19个语义颜色资源) 🆕 | ✅ (MaterialTheme.colorScheme) 🆕 | ❌ (硬编码颜色) | ✅ (CSS变量) |
+| 暗色模式适配 | ✅ (19个语义颜色资源) 🆕 | ✅ (MaterialTheme.colorScheme) 🆕 | ✅ (CSS 变量 28 个语义色) 🆕 | ✅ (CSS变量) |
 
 ### 2.2 阶段定义
 
@@ -198,14 +198,16 @@
 
 ---
 
-### 3.3 WebUI (Blazor Server) — 第九轮 review
+### 3.3 WebUI (Blazor Server) — 第十四轮 review
 
 **本轮优化亮点** 🆕
+- ✅ **暗色模式适配** — 拜师页面（MasterChat、MasterStage、MasterDisclaimerDialog）全部硬编码颜色迁移至 CSS 变量（28 个语义色），亮/暗两套完整主题
+- ✅ **主题切换机制** — MainLayout 顶部工具栏新增一键切换按钮（月亮/太阳图标），偏好持久化到 UserPreferencesService
 - ✅ **阶段完成弹窗** — 完成阶段后展示祝福语+摘要+关键纠正的弹窗（对齐鸿蒙端）
 - ✅ **知识库关联 UI** — 支持多选切换关联/解绑知识库
 - ✅ **关键纠正展示** — 已完成阶段在时间线中显示 ⚠️ 关键纠正
 
-**上一轮（第四轮）优化成果**
+**上一轮优化成果（第四轮及后续）**
 - ✅ 真正的 SSE 流式对话
 - ✅ 服务端统一管理，数据一致性好
 - ✅ Markdown 渲染支持（Markdig 库）
@@ -222,9 +224,6 @@
 **缺点**
 - ❌ 需要服务端运行，无法独立运行
 - ❌ 依赖浏览器，移动端体验受限
-- ❌ 阶段完成小结 UI 不完整（仅摘要文本，无弹窗/纠正/祝福语）
-- ❌ 无关键纠正展示
-- ❌ 无知识库关联 UI
 - ❌ 对话历史仅 localStorage，无服务端同步
 - ❌ 数据淘汰仅手动触发，无定时任务
 
@@ -315,7 +314,6 @@
 #### 🔴 WebUI
 1. **对话历史持久化** — 当前仅 localStorage，可考虑服务端同步
 2. **数据淘汰定时任务** — 当前仅手动触发
-3. **暗色模式适配** — 拜师页面大量硬编码颜色（55+处），需迁移至 CSS 变量
 
 #### 🔴 花圃
 1. **增强离线模式** — 当前缓存优先加载，需增加网络断开检测与自动恢复
@@ -354,7 +352,7 @@ BaihuaSdk (移动端 SDK)
 │ 流式对话        │ ✅+fb        │ ✅+fb+注入   │ ✅+fb        │ ✅+fb        │
 │ 数据驱逐        │ ✅ 自动      │ ✅ 自动      │ ⚠️ 手动      │ ⚠️ 依赖后端  │
 │ 知识库联动      │ ✅ 完整+多选 │ ✅ 完整+多选 │ ✅ 完整+UI   │ ✅ 完整      │
-│ 暗色模式        │ ✅ 语义颜色  │ ✅ colorScheme│ ❌ 硬编码    │ ✅ CSS变量   │
+│ 暗色模式        │ ✅ 语义颜色  │ ✅ colorScheme│ ✅ CSS 变量  │ ✅ CSS变量   │
 │ Markdown        │ ✅           │ ✅           │ ✅           │ ✅           │
 │ 画像编辑        │ ✅           │ ✅           │ ✅           │ ✅           │
 │ 快速提问        │ ✅           │ ✅           │ ✅           │ ✅           │
@@ -458,6 +456,7 @@ BaihuaSdk (移动端 SDK)
 | **第十一轮** | AI预检5状态枚举+四色横幅 ✅<br>内容安全过滤(UNSAFE_KEYWORDS) ✅<br>知识库多选关联 ✅ | 内容安全过滤(ContentSafetyFilter) ✅<br>Prompt输入消毒(sanitize) ✅<br>知识库多选(VaultFocusStore Set) ✅<br>行业白名单(VALID_INDUSTRIES) ✅ | — | — |
 | **第十二轮** | — | — | 内容安全过滤(ApplySafetyFilter) ✅<br>Prompt输入消毒(SanitizeInput) ✅<br>AI预检多状态(AiCheckState枚举) ✅ | 内容安全过滤(ApplySafetyFilter) ✅<br>Prompt输入消毒(SanitizeInput) ✅ |
 | **第十三轮** | Prompt输入消毒(sanitizeInput) ✅<br>行业白名单(VALID_INDUSTRIES) ✅<br>暗色模式适配(19语义颜色) ✅ | 暗色模式全量适配(9文件135+处) ✅<br>Markdown暗色模式 ✅ | — | — |
+| **第十四轮** | — | — | **暗色模式适配** ✅<br>app.css新增28个CSS语义变量<br>MasterChat/MasterStage/MasterDisclaimerDialog全部硬编码颜色迁移<br>MainLayout 主题切换按钮+持久化 | — |
 
 ### 已基本解决的问题 ✅
 
@@ -481,6 +480,7 @@ BaihuaSdk (移动端 SDK)
 | 知识库关联 UI | ✅ **全平台覆盖**（四端均支持多选切换） |
 | 内容安全过滤 | ✅ **全平台覆盖**（鸿蒙UNSAFE_KEYWORDS，安卓ContentSafetyFilter，WebUI/花圃客户端扫描+服务端） |
 | Prompt 输入消毒 | ✅ **全平台覆盖**（鸿蒙sanitizeInput，安卓sanitize，WebUI/花圃SanitizeInput） |
+| 暗色模式适配 | ✅ **全平台覆盖**（鸿蒙19语义颜色资源，安卓MaterialTheme.colorScheme，WebUI 28个CSS变量+主题切换，花圃CSS变量） |
 
 ### 仍需优化（按优先级）
 

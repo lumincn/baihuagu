@@ -64,7 +64,10 @@
                     <img src="logo.png" alt="百花" class="top-logo" />
                 }
 
-                <button class="btn btn-sm btn-outline-secondary ms-2" onclick="logoutAndRedirect()" title="登出">
+                <button type="button" class="btn btn-sm btn-outline-secondary me-1" onclick="toggleTheme()" title="切换亮色/暗色模式">
+                    <i class="bi bi-moon-fill" id="theme-icon"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="logoutAndRedirect()" title="登出">
                     <i class="bi bi-box-arrow-right"></i>
                 </button>
             </div>
@@ -106,7 +109,7 @@
 
     .sidebar {
         width: 250px;
-        background: linear-gradient(180deg, #1e3a4c 0%, #2a4a60 100%);
+        background: var(--layout-sidebar-gradient);
         color: rgba(220, 235, 245, 0.9);
         padding: 20px 0;
         transition: transform 0.3s ease;
@@ -187,7 +190,7 @@
         height: 48px;
         border-radius: 50%;
         border: none;
-        background: #1e3a4c;
+        background: var(--layout-fab-bg);
         color: #fff;
         font-size: 1.2rem;
         cursor: pointer;
@@ -212,8 +215,8 @@
         position: absolute;
         bottom: 56px;
         right: 0;
-        background: #fff;
-        border: 1px solid #d8e2e8;
+        background: var(--layout-fab-menu-bg);
+        border: 1px solid var(--layout-fab-menu-border);
         border-radius: 10px;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
         min-width: 160px;
@@ -231,26 +234,26 @@
         align-items: center;
         gap: 8px;
         padding: 10px 16px;
-        color: #333;
+        color: var(--layout-fab-item-color);
         text-decoration: none;
         font-size: 0.85rem;
         transition: background 0.15s;
     }
 
     .fab-menu-item:hover {
-        background: #f0f5f8;
-        color: #1e3a4c;
+        background: var(--layout-fab-item-hover-bg);
+        color: var(--layout-fab-item-hover-color);
     }
 
     .fab-menu-item i {
         width: 18px;
         text-align: center;
-        color: #6b8a9e;
+        color: var(--layout-fab-item-icon-color);
     }
 
     main {
         flex: 1;
-        background: #f5f8fa;
+        background: var(--layout-main-bg);
         min-width: 0;
     }
 
@@ -260,8 +263,8 @@
     }
 
     .top-row {
-        background: white;
-        border-bottom: 1px solid #d8e2e8;
+        background: var(--layout-toprow-bg);
+        border-bottom: 1px solid var(--layout-toprow-border);
         padding: 15px 20px;
         display: flex;
         justify-content: flex-end;
@@ -275,7 +278,7 @@
     .setup-title {
         font-size: 1.1rem;
         font-weight: 600;
-        color: #1e3a4c;
+        color: var(--layout-toprow-text);
     }
 
     .content {
@@ -288,7 +291,7 @@
         top: 15px;
         left: 15px;
         z-index: 1001;
-        background: #1e3a4c;
+        background: var(--layout-mobile-menu-bg);
         color: white;
         border: none;
         border-radius: 5px;
@@ -328,8 +331,8 @@
     }
 
     .ai-configured {
-        background: linear-gradient(135deg, #e0ecf4 0%, #c8dde8 100%);
-        border-color: #2e8baf;
+        background: var(--layout-ai-status-bg);
+        border-color: var(--layout-ai-status-border);
     }
 
     .ai-not-configured {
@@ -349,12 +352,12 @@
 
     .ai-provider {
         font-weight: 600;
-        color: #333;
+        color: var(--layout-ai-provider-color);
     }
 
     .ai-model {
         font-size: 0.75rem;
-        color: #666;
+        color: var(--layout-ai-model-color);
         max-width: 150px;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -422,6 +425,32 @@
         }
     }
 </style>
+
+<script>
+    // 主题切换 — 纯 JS 实现，不依赖 Blazor circuit
+    (function() {
+        // 初始化：从 localStorage 加载主题
+        const savedTheme = localStorage.getItem('webui-theme') || 'light';
+        document.documentElement.setAttribute('data-bs-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+
+        // 全局函数，给 onclick 使用
+        window.toggleTheme = function() {
+            const current = document.documentElement.getAttribute('data-bs-theme') || 'light';
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-bs-theme', next);
+            localStorage.setItem('webui-theme', next);
+            updateThemeIcon(next);
+        };
+
+        function updateThemeIcon(theme) {
+            const icon = document.getElementById('theme-icon');
+            if (icon) {
+                icon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+            }
+        }
+    })();
+</script>
 
 @code {
     private bool _isAiConfigured = true;

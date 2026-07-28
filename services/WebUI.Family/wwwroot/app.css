@@ -1241,3 +1241,306 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
     width: auto;
     min-width: 200px;
 }
+
+/* =============================================
+   暗色模式 — Master（拜师系统）CSS 变量
+   亮色/暗色两套主题，通过 data-bs-theme 切换
+   ============================================= */
+:root {
+    /* === 布局框架颜色 === */
+    --layout-main-bg: #f5f8fa;
+    --layout-toprow-bg: #ffffff;
+    --layout-toprow-border: #d8e2e8;
+    --layout-toprow-text: #1e3a4c;
+    --layout-sidebar-gradient: linear-gradient(180deg, #1e3a4c 0%, #2a4a60 100%);
+    --layout-fab-bg: #1e3a4c;
+    --layout-fab-menu-bg: #ffffff;
+    --layout-fab-menu-border: #d8e2e8;
+    --layout-fab-item-color: #333333;
+    --layout-fab-item-hover-bg: #f0f5f8;
+    --layout-fab-item-hover-color: #1e3a4c;
+    --layout-fab-item-icon-color: #6b8a9e;
+    --layout-ai-status-bg: linear-gradient(135deg, #e0ecf4 0%, #c8dde8 100%);
+    --layout-ai-status-border: #2e8baf;
+    --layout-ai-provider-color: #333333;
+    --layout-ai-model-color: #666666;
+    --layout-mobile-menu-bg: #1e3a4c;
+    /* === Master 页面顏色 === */
+    /* 主背景色 */
+    --master-bg: #f5f8fa;
+    /* 表面/卡片背景 */
+    --master-surface: #ffffff;
+    --master-surface-subtle: #f0f5f8;
+    /* 边框 */
+    --master-border: #d8e2e8;
+    --master-border-light: #e8eef2;
+    /* 文字色 */
+    --master-text: #333333;
+    --master-text-secondary: #555555;
+    --master-text-muted: #888888;
+    --master-text-dim: #aaaaaa;
+    /* 主色（蓝绿） */
+    --master-accent: #2e8baf;
+    --master-accent-rgb: 46, 139, 175;
+    /* 用户消息气泡 */
+    --master-user-bubble: #2e8baf;
+    --master-user-text: #ffffff;
+    /* AI 消息气泡 */
+    --master-ai-bubble: #f0f5f8;
+    --master-ai-text: #333333;
+    --master-ai-text-secondary: #666666;
+    /* 模态对话框 */
+    --master-modal-overlay: rgba(0,0,0,0.4);
+    --master-modal-bg: #ffffff;
+    /* 输入框 */
+    --master-input-bg: #ffffff;
+    --master-input-border: #d8e2e8;
+    --master-input-text: #333333;
+    /* 关键纠正区 */
+    --master-correction-bg: rgba(255,152,0,0.06);
+    --master-correction-border: rgba(255,152,0,0.15);
+    --master-correction-label: #e65100;
+    --master-correction-text: #804000;
+    /* 阶段完成祝福框 */
+    --master-blessing-bg: linear-gradient(135deg, rgba(46,139,175,0.06), rgba(46,125,50,0.06));
+    --master-blessing-border: rgba(46,139,175,0.15);
+    --master-blessing-text: #333333;
+    /* 时间线圆点 */
+    --master-stage-dot-completed: #2e7d32;
+    --master-stage-dot-current: #2e8baf;
+    --master-stage-dot-pending: #d8e2e8;
+}
+
+[data-bs-theme="dark"] {
+    --master-bg: #1a2634;
+    --master-surface: rgba(255,255,255,0.05);
+    --master-surface-subtle: rgba(255,255,255,0.03);
+    --master-border: rgba(255,255,255,0.1);
+    --master-border-light: rgba(255,255,255,0.06);
+    --master-text: #ffffff;
+    --master-text-secondary: rgba(255,255,255,0.75);
+    --master-text-muted: rgba(255,255,255,0.5);
+    --master-text-dim: rgba(255,255,255,0.35);
+    --master-accent: #2e8baf;
+    --master-accent-rgb: 46, 139, 175;
+    --master-user-bubble: #2e8baf;
+    --master-user-text: #ffffff;
+    --master-ai-bubble: rgba(255,255,255,0.08);
+    --master-ai-text: rgba(255,255,255,0.9);
+    --master-ai-text-secondary: rgba(255,255,255,0.7);
+    --master-modal-overlay: rgba(0,0,0,0.5);
+    --master-modal-bg: #1e2a3a;
+    --master-input-bg: rgba(255,255,255,0.08);
+    --master-input-border: rgba(255,255,255,0.15);
+    --master-input-text: #ffffff;
+    --master-correction-bg: rgba(255,152,0,0.08);
+    --master-correction-border: rgba(255,152,0,0.2);
+    --master-correction-label: #ff9800;
+    --master-correction-text: rgba(255,200,100,0.9);
+    --master-blessing-bg: linear-gradient(135deg, rgba(46,139,175,0.1), rgba(46,125,50,0.1));
+    --master-blessing-border: rgba(46,139,175,0.2);
+    --master-blessing-text: rgba(255,255,255,0.85);
+    --master-stage-dot-completed: #2e7d32;
+    --master-stage-dot-current: #2e8baf;
+    --master-stage-dot-pending: rgba(255,255,255,0.1);
+    /* === 布局框架暗色 === */
+    --layout-main-bg: #1a1f2e;
+    --layout-toprow-bg: #232a3b;
+    --layout-toprow-border: #2d3548;
+    --layout-toprow-text: #d4d8dd;
+    --layout-fab-menu-bg: #2a3040;
+    --layout-fab-menu-border: #3d4558;
+    --layout-fab-item-color: #c0c8d0;
+    --layout-fab-item-hover-bg: #363d52;
+    --layout-fab-item-hover-color: #e0e4ea;
+    --layout-fab-item-icon-color: #8090a0;
+    --layout-ai-status-bg: linear-gradient(135deg, rgba(46,139,175,0.2), rgba(46,139,175,0.1));
+    --layout-ai-status-border: rgba(46,139,175,0.5);
+    --layout-ai-provider-color: #d4d8dd;
+    --layout-ai-model-color: #91a0b0;
+}
+
+/* =============================================
+   暗色模式 — 布局框架 & 全局样式覆盖
+   覆盖 MainLayout 框架 + 所有页面通用组件
+   ============================================= */
+[data-bs-theme="dark"] {
+    /* ---- 页面最外层 ---- */
+    body {
+        background: #1a1f2e;
+        color: #d4d8dd;
+    }
+
+    /* ---- 通用卡片 ---- */
+    .card {
+        background: #232a3b;
+        border-color: #2d3548;
+        color: #c0c8d0;
+    }
+    .card p {
+        color: #91a0b0;
+    }
+
+    /* ---- Dashboard ---- */
+    .section-header h2 {
+        color: #d4d8dd;
+    }
+    .note-title {
+        color: #91b8d0;
+    }
+
+    /* ---- 任务列表 ---- */
+    .task-item {
+        background: #232a3b;
+        border-color: #2d3548;
+    }
+    .task-type {
+        color: #91b8d0;
+    }
+    .status-running {
+        background: rgba(46,139,175,0.15);
+        color: #7ab8d0;
+    }
+    .status-failed {
+        background: rgba(200,60,60,0.1);
+        color: #e08080;
+    }
+    .progress-bar {
+        background: #2d3548;
+    }
+
+    /* ---- 搜索 ---- */
+    .search-box {
+        background: #232a3b;
+        border-color: #2d3548;
+        color: #c0c8d0;
+    }
+    .result-item {
+        background: #232a3b;
+        border-color: #2d3548;
+    }
+    .result-item:hover {
+        background: #2a3040;
+    }
+    .no-results {
+        color: #8090a0;
+    }
+
+    /* ---- 设置/表单 ---- */
+    .settings-form, .form-group select, .form-group input,
+    .form-control, .form-select {
+        background-color: #1e2433;
+        border-color: #3d4558;
+        color: #c0c8d0;
+    }
+    .form-floating > label, label.form-label {
+        color: #91a0b0;
+    }
+    .text-muted {
+        color: #708090 !important;
+    }
+
+    /* ---- 页面通用背景 ---- */
+    .card-body, .note-content-card, .result-group {
+        background: #232a3b;
+        border-color: #2d3548;
+        color: #c0c8d0;
+    }
+
+    /* ---- 标签 ---- */
+    .tag, .task-status, .stage-badge {
+        opacity: 0.9;
+    }
+
+    /* ---- 表格 ---- */
+    table, .table {
+        color: #c0c8d0;
+    }
+    .table-striped tbody tr:nth-of-type(odd) {
+        background-color: rgba(255,255,255,0.03);
+    }
+
+    /* ---- Alert ---- */
+    .alert-info {
+        background: rgba(46,139,175,0.15);
+        border-color: rgba(46,139,175,0.3);
+        color: #91c0d8;
+    }
+    .alert-warning {
+        background: rgba(255,152,0,0.1);
+        border-color: rgba(255,152,0,0.3);
+        color: #e0a050;
+    }
+
+    /* ---- 侧边栏已内建暗色，微调 ---- */
+    .sidebar {
+        background: linear-gradient(180deg, #141d28 0%, #1a2735 100%);
+    }
+
+    /* ---- 通用文字增强 ---- */
+    strong, b, .fw-bold {
+        color: #e0e4ea;
+    }
+    a:not(.btn):not(.nav-link):not(.quick-link) {
+        color: #5aacd0;
+    }
+
+    /* ---- 代码块 ---- */
+    code, pre {
+        background: #1a1f2e;
+        color: #c0c8d0;
+        border-color: #2d3548;
+    }
+
+    /* ---- 模态框 ---- */
+    .modal-content {
+        background: #232a3b;
+        border-color: #3d4558;
+        color: #c0c8d0;
+    }
+
+    /* ---- 面包屑 ---- */
+    .breadcrumb {
+        background: transparent;
+    }
+    .breadcrumb-item {
+        color: #91a0b0;
+    }
+
+    /* ---- Chat / Messages ---- */
+    .message-bubble {
+        background: #2d3548;
+    }
+
+    /* ---- 分页 ---- */
+    .page-link {
+        background-color: #232a3b;
+        border-color: #3d4558;
+        color: #91b8d0;
+    }
+    .page-item.active .page-link {
+        background-color: #2e8baf;
+        border-color: #2e8baf;
+    }
+    .page-item.disabled .page-link {
+        background-color: #1a1f2e;
+        color: #556;
+    }
+
+    /* ---- 下拉选择 ---- */
+    .enhanced-select-trigger {
+        background: #1e2433;
+        border-color: #3d4558;
+        color: #c0c8d0;
+    }
+    .enhanced-select-dropdown {
+        background: #232a3b;
+        border-color: #3d4558;
+    }
+    .enhanced-select-option {
+        color: #c0c8d0;
+    }
+    .enhanced-select-option:hover {
+        background: #363d52;
+    }
+}
