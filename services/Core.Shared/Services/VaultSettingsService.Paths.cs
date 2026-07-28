@@ -16,7 +16,7 @@ public partial class VaultSettingsService
             var active = GetActiveVault();
             if (active != null && !string.IsNullOrEmpty(active.Path))
                 return active.Path;
-            return Environment.GetEnvironmentVariable("TASK_RUNNER_VAULT_ROOT") ?? "";
+            return TaskRunner.Contracts.BaihuaPaths.Vaults;
         }
     }
 
