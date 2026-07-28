@@ -118,7 +118,7 @@
                     {
                         <div class="form-group">
                             <label>API Key</label>
-                            <input type="password" class="form-control" @bind="apiKey" placeholder="sk-..." />
+                            <input type="password" class="form-control" @bind="apiKey" @bind:event="oninput" placeholder="sk-..." />
                             <small class="form-text">API Key 将加密存储在本地，不会上传到任何服务器</small>
                         </div>
 
