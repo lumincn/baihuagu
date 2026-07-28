@@ -48,8 +48,8 @@ Type=simple
 ExecStart=$SCRIPT_DIR/watchdog.sh
 Restart=always
 RestartSec=5
-StandardOutput=append:/tmp/yj-watchdog.log
-StandardError=append:/tmp/yj-watchdog.log
+StandardOutput=append:/tmp/baihua-watchdog.log
+StandardError=append:/tmp/baihua-watchdog.log
 
 [Install]
 WantedBy=default.target
@@ -85,7 +85,7 @@ echo "  systemctl --user status yj-watchdog   # 查看状态"
 echo "  systemctl --user stop yj-watchdog     # 停止监控"
 echo "  systemctl --user start yj-watchdog    # 启动监控"
 echo "  journalctl --user -u yj-watchdog -f   # 查看实时日志"
-echo "  cat /tmp/yj-auto-deploy.log           # 查看构建日志"
-echo "  cat /tmp/yj-watchdog.log              # 查看监控日志"
+echo "  cat /tmp/baihua-auto-deploy.log           # 查看构建日志"
+echo "  cat /tmp/baihua-watchdog.log              # 查看监控日志"
 echo ""
 echo "访问地址: http://localhost:5177"

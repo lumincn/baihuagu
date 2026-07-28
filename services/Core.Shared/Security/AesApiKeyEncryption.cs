@@ -7,9 +7,9 @@ namespace TaskRunner.Core.Shared.Security;
 /// AES-256-GCM 加密方案 - 用于 API Key 的加密
 ///
 /// 密钥管理策略（对非专业人员友好）：
-/// 1. 首次启动时自动生成 256-bit 随机密钥，持久化到 /app/data/.yj-key
+/// 1. 首次启动时自动生成 256-bit 随机密钥，持久化到 /app/data/.baihua-key
 /// 2. 容器重建后从文件读取固定密钥，避免机器指纹变化导致无法解密
-/// 3. 高级用户仍可通过 YJ_ENCRYPTION_KEY 环境变量覆盖
+/// 3. 高级用户仍可通过 BAIHUA_ENCRYPTION_KEY 环境变量覆盖
 /// 4. 支持自动迁移：检测到旧密钥（机器指纹）加密的 API Key 时，
 ///    用旧密钥解密后用新密钥重新加密
 ///
@@ -62,7 +62,7 @@ public static class AesApiKeyEncryption
 
     /// <summary>
     /// 解析加密密钥
-    /// 优先级：持久化密钥文件 > YJ_ENCRYPTION_KEY 环境变量 > 旧版机器指纹
+    /// 优先级：持久化密钥文件 > BAIHUA_ENCRYPTION_KEY 环境变量 > 旧版机器指纹
     /// </summary>
     public static byte[] ResolveFingerprint()
     {
@@ -77,8 +77,8 @@ public static class AesApiKeyEncryption
             }
         }
 
-        // 2. 其次使用 YJ_ENCRYPTION_KEY 环境变量（高级用户手动配置）
-        var envKey = Environment.GetEnvironmentVariable("YJ_ENCRYPTION_KEY");
+        // 2. 其次使用 BAIHUA_ENCRYPTION_KEY 环境变量（高级用户手动配置）
+        var envKey = Environment.GetEnvironmentVariable("BAIHUA_ENCRYPTION_KEY");
         if (!string.IsNullOrWhiteSpace(envKey))
         {
             return SHA256.HashData(Encoding.UTF8.GetBytes(envKey.Trim()));

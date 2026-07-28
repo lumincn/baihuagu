@@ -7,7 +7,7 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 (
     cd "$PROJECT_ROOT"
-    exec >> /tmp/yj-auto-deploy.log 2>&1
+    exec >> /tmp/baihua-auto-deploy.log 2>&1
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔗 post-merge hook triggered"
     ./scripts/auto-deploy.sh
 ) &

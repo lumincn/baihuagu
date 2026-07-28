@@ -9,10 +9,10 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 DOCKER_DIR="$PROJECT_ROOT/docker"
-LOG_FILE="/tmp/yj-auto-deploy.log"
-LOCK_FILE="/tmp/yj-auto-deploy.lock"
+LOG_FILE="/tmp/baihua-auto-deploy.log"
+LOCK_FILE="/tmp/baihua-auto-deploy.lock"
 NGINX_CONFIG_SRC="$DOCKER_DIR/nginx/nginx.conf"
-NGINX_CONFIG_DST="/opt/yj-family/config/nginx/nginx.conf"
+NGINX_CONFIG_DST="/opt/baihua/config/nginx/nginx.conf"
 DEBOUNCE_SECONDS=5
 
 log() {
@@ -138,23 +138,23 @@ if [[ "$1" == "--all" || "$2" == "--all" ]]; then
     log "🔨 强制构建所有服务: $SERVICES"
 else
     # 不使用 $(...) 捕获以避免 subshell 丢失 build_nginx 变量
-    detect_services_to_build > /tmp/yj-detect-result.txt
-    SERVICES=$(cat /tmp/yj-detect-result.txt)
+    detect_services_to_build > /tmp/baihua-detect-result.txt
+    SERVICES=$(cat /tmp/baihua-detect-result.txt)
     if [[ -z "$SERVICES" ]]; then
         if [[ "$build_nginx" == true ]]; then
             log "🔄 仅重启 nginx（配置变更）..."
-            docker compose -p yj-family up -d --force-recreate nginx 2>&1 | tee -a "$LOG_FILE"
+            docker compose -p baihua up -d --force-recreate nginx 2>&1 | tee -a "$LOG_FILE"
             log "✅ nginx 已重启"
         fi
-        rm -f /tmp/yj-detect-result.txt
+        rm -f /tmp/baihua-detect-result.txt
         exit 0
     fi
     log "🔨 增量构建: $SERVICES"
 fi
-rm -f /tmp/yj-detect-result.txt
+rm -f /tmp/baihua-detect-result.txt
 
 # 构建核心服务
-if docker compose -p yj-family build $SERVICES 2>&1 | tee -a "$LOG_FILE"; then
+if docker compose -p baihua build $SERVICES 2>&1 | tee -a "$LOG_FILE"; then
     log "✅ 镜像构建成功"
 else
     log "❌ 构建失败，查看日志: $LOG_FILE"
@@ -163,7 +163,7 @@ fi
 
 # 重启服务（保留数据卷）
 log "🔄 重启服务..."
-if docker compose -p yj-family up -d --force-recreate $SERVICES nginx 2>&1 | tee -a "$LOG_FILE"; then
+if docker compose -p baihua up -d --force-recreate $SERVICES nginx 2>&1 | tee -a "$LOG_FILE"; then
     log "✅ 容器已启动"
 else
     log "❌ 部署失败，查看日志: $LOG_FILE"
@@ -183,4 +183,4 @@ for i in {1..30}; do
     sleep 1
 done
 
-log "⚠️  健康检查超时，请手动查看: docker compose -p yj-family ps"
+log "⚠️  健康检查超时，请手动查看: docker compose -p baihua ps"

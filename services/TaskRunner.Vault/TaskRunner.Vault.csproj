@@ -11,7 +11,7 @@
     <GenerateResource>false</GenerateResource>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
     <RootNamespace>TaskRunner.Vault</RootNamespace>
-    <UserSecretsId>yj-family-taskrunner-vault-2026</UserSecretsId>
+    <UserSecretsId>baihua-family-taskrunner-vault-2026</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

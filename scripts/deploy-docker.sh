@@ -25,11 +25,11 @@ fi
 SSH_OPTS="-o StrictHostKeyChecking=no -o ConnectTimeout=10"
 LOCAL_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
-REMOTE_COMPOSE_DIR="/opt/yj-family/compose"
-REMOTE_CONFIG_DIR="/opt/yj-family/config"
-REMOTE_DATA_DIR="/opt/yj-family/data"
-REMOTE_LOGS_DIR="/opt/yj-family/logs"
-REMOTE_SRC_DIR="/opt/yj-family/src"
+REMOTE_COMPOSE_DIR="/opt/baihua/compose"
+REMOTE_CONFIG_DIR="/opt/baihua/config"
+REMOTE_DATA_DIR="/opt/baihua/data"
+REMOTE_LOGS_DIR="/opt/baihua/logs"
+REMOTE_SRC_DIR="/opt/baihua/src"
 
 echo "========================================"
 echo "Family Docker 化部署"
@@ -38,7 +38,7 @@ echo "========================================"
 
 # ---------- 1. 准备源码包 ----------
 echo "[1/7] 准备源码包（排除构建产物）..."
-TMP_PKG="/tmp/yj-family-src.tar.gz"
+TMP_PKG="/tmp/baihua-src.tar.gz"
 cd "${LOCAL_ROOT}"
 tar czf "${TMP_PKG}" \
     --exclude='.git' \
@@ -57,7 +57,7 @@ ssh ${SSH_OPTS} "${SERVER}" "mkdir -p ${REMOTE_COMPOSE_DIR} ${REMOTE_CONFIG_DIR}
 
 # 上传源码
 echo "      上传源码..."
-rsync -avz --delete --progress "${TMP_PKG}" "${SERVER}:${REMOTE_SRC_DIR}/yj-family-src.tar.gz" >/dev/null 2>&1
+rsync -avz --delete --progress "${TMP_PKG}" "${SERVER}:${REMOTE_SRC_DIR}/baihua-src.tar.gz" >/dev/null 2>&1
 
 # 上传 .env（如果本地存在）
 if [[ -f "${LOCAL_ROOT}/docker/.env" ]]; then
@@ -105,7 +105,7 @@ ssh ${SSH_OPTS} "${SERVER}" bash -s "${REMOTE_SRC_DIR}" "${REMOTE_COMPOSE_DIR}" 
     echo "      解压源码..."
     rm -rf "${SRC_DIR}/family"
     mkdir -p "${SRC_DIR}/family"
-    tar xzf "${SRC_DIR}/yj-family-src.tar.gz" -C "${SRC_DIR}/family"
+    tar xzf "${SRC_DIR}/baihua-src.tar.gz" -C "${SRC_DIR}/family"
 
     # 建立 compose 目录软链接（方便管理）
     rm -rf "${COMPOSE_DIR}"
@@ -148,10 +148,10 @@ ssh ${SSH_OPTS} "${SERVER}" bash -s "${REMOTE_SRC_DIR}" << 'REMOTE_SCRIPT'
     systemctl disable taskrunner taskrunner-ai taskrunner-vault webui 2>/dev/null || true
 
     # 确保数据目录权限正确
-    mkdir -p /opt/yj-family/data /opt/yj-family/logs \
-        /opt/yj-family/config/taskrunner /opt/yj-family/config/taskrunner-ai /opt/yj-family/config/taskrunner-vault \
-        /opt/yj-family/config/webui /opt/yj-family/config/nginx \
-        /opt/yj-family/data/openobserve
+    mkdir -p /opt/baihua/data /opt/baihua/logs \
+        /opt/baihua/config/taskrunner /opt/baihua/config/taskrunner-ai /opt/baihua/config/taskrunner-vault \
+        /opt/baihua/config/webui /opt/baihua/config/nginx \
+        /opt/baihua/data/openobserve
 
     # 启动容器
     cd "${SRC_DIR}/family/docker"
@@ -166,11 +166,11 @@ echo "[7/7] 等待服务启动并健康检查..."
 HEALTH_OK=0
 for i in {1..45}; do
     sleep 3
-    TASKRUNNER_HEALTH=$(ssh ${SSH_OPTS} "${SERVER}" "docker inspect --format='{{.State.Health.Status}}' yj-family-taskrunner 2>/dev/null || echo 'unknown'")
-    AI_HEALTH=$(ssh ${SSH_OPTS} "${SERVER}" "docker inspect --format='{{.State.Health.Status}}' yj-family-taskrunner-ai 2>/dev/null || echo 'unknown'")
-    VAULT_HEALTH=$(ssh ${SSH_OPTS} "${SERVER}" "docker inspect --format='{{.State.Health.Status}}' yj-family-taskrunner-vault 2>/dev/null || echo 'unknown'")
-    WEBUI_HEALTH=$(ssh ${SSH_OPTS} "${SERVER}" "docker inspect --format='{{.State.Health.Status}}' yj-family-webui 2>/dev/null || echo 'unknown'")
-    NGINX_HEALTH=$(ssh ${SSH_OPTS} "${SERVER}" "docker inspect --format='{{.State.Health.Status}}' yj-family-nginx 2>/dev/null || echo 'unknown'")
+    TASKRUNNER_HEALTH=$(ssh ${SSH_OPTS} "${SERVER}" "docker inspect --format='{{.State.Health.Status}}' baihua-taskrunner 2>/dev/null || echo 'unknown'")
+    AI_HEALTH=$(ssh ${SSH_OPTS} "${SERVER}" "docker inspect --format='{{.State.Health.Status}}' baihua-taskrunner-ai 2>/dev/null || echo 'unknown'")
+    VAULT_HEALTH=$(ssh ${SSH_OPTS} "${SERVER}" "docker inspect --format='{{.State.Health.Status}}' baihua-taskrunner-vault 2>/dev/null || echo 'unknown'")
+    WEBUI_HEALTH=$(ssh ${SSH_OPTS} "${SERVER}" "docker inspect --format='{{.State.Health.Status}}' baihua-webui 2>/dev/null || echo 'unknown'")
+    NGINX_HEALTH=$(ssh ${SSH_OPTS} "${SERVER}" "docker inspect --format='{{.State.Health.Status}}' baihua-nginx 2>/dev/null || echo 'unknown'")
 
     if [[ "$TASKRUNNER_HEALTH" == "healthy" && "$AI_HEALTH" == "healthy" && "$VAULT_HEALTH" == "healthy" && "$WEBUI_HEALTH" == "healthy" && "$NGINX_HEALTH" == "healthy" ]]; then
         HEALTH_OK=1
@@ -236,7 +236,7 @@ fi
 
 # 清理临时文件
 rm -f "${TMP_PKG}"
-ssh ${SSH_OPTS} "${SERVER}" "rm -f ${REMOTE_SRC_DIR}/yj-family-src.tar.gz"
+ssh ${SSH_OPTS} "${SERVER}" "rm -f ${REMOTE_SRC_DIR}/baihua-src.tar.gz"
 
 echo "========================================"
 echo "Family Docker 化部署成功！"

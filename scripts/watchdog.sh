@@ -4,7 +4,7 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-LOG_FILE="/tmp/yj-watchdog.log"
+LOG_FILE="/tmp/baihua-watchdog.log"
 
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] 👁️  watchdog 启动，监控目录: $PROJECT_ROOT/services/ $PROJECT_ROOT/docker/" | tee -a "$LOG_FILE"
 

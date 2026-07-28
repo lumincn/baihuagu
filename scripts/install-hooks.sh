@@ -27,4 +27,4 @@ done
 echo ""
 echo "🎉 本地流水线已就绪！"
 echo "   每次 git commit 或 git pull 后将自动构建并部署变更的服务。"
-echo "   日志: tail -f /tmp/yj-auto-deploy.log"
+echo "   日志: tail -f /tmp/baihua-auto-deploy.log"

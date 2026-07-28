@@ -275,7 +275,7 @@ public class AiConfigService
         var anthropicBaseUrl = setting.AnthropicBaseUrl;
         if (string.IsNullOrWhiteSpace(anthropicBaseUrl))
         {
-            var envValue = Environment.GetEnvironmentVariable("YJ_AI_MAIN_BASE_URL_ANTHROPIC");
+            var envValue = Environment.GetEnvironmentVariable("BAIHUA_AI_ANTHROPIC_BASE_URL");
             if (!string.IsNullOrWhiteSpace(envValue))
                 anthropicBaseUrl = envValue.Trim();
         }

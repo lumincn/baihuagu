@@ -86,13 +86,13 @@ EOF
 
 # 确保加密密钥文件存在（自动管理，对非专业人员零配置）
 ensure_encryption_key() {
-    local key_file="/opt/yj-family/data/.yj-key"
+    local key_file="/opt/baihua/data/.baihua-key"
     if [ -f "$key_file" ]; then
         return 0
     fi
 
     echo "[ℹ] 首次运行，自动生成加密密钥…"
-    mkdir -p /opt/yj-family/data
+    mkdir -p /opt/baihua/data
     # 生成 256-bit 随机密钥（64 个 hex 字符）
     if command -v openssl &> /dev/null; then
         openssl rand -hex 32 > "$key_file"
@@ -389,11 +389,11 @@ cmd_status() {
         echo "[模式] Docker 容器"
         echo ""
         local tr_status ai_status vault_status webui_status nginx_status
-        tr_status=$(docker ps --filter "name=yj-family-taskrunner" --format "{{.Status}}" 2>/dev/null || echo "未运行")
-        ai_status=$(docker ps --filter "name=yj-family-taskrunner-ai" --format "{{.Status}}" 2>/dev/null || echo "未运行")
-        vault_status=$(docker ps --filter "name=yj-family-taskrunner-vault" --format "{{.Status}}" 2>/dev/null || echo "未运行")
-        webui_status=$(docker ps --filter "name=yj-family-webui" --format "{{.Status}}" 2>/dev/null || echo "未运行")
-        nginx_status=$(docker ps --filter "name=yj-family-nginx" --format "{{.Status}}" 2>/dev/null || echo "未运行")
+        tr_status=$(docker ps --filter "name=baihua-taskrunner" --format "{{.Status}}" 2>/dev/null || echo "未运行")
+        ai_status=$(docker ps --filter "name=baihua-taskrunner-ai" --format "{{.Status}}" 2>/dev/null || echo "未运行")
+        vault_status=$(docker ps --filter "name=baihua-taskrunner-vault" --format "{{.Status}}" 2>/dev/null || echo "未运行")
+        webui_status=$(docker ps --filter "name=baihua-webui" --format "{{.Status}}" 2>/dev/null || echo "未运行")
+        nginx_status=$(docker ps --filter "name=baihua-nginx" --format "{{.Status}}" 2>/dev/null || echo "未运行")
 
         printf "  %-20s %s\n" "TaskRunner (8788)" "$tr_status"
         printf "  %-20s %s\n" "TaskRunner.AI (8791)" "$ai_status"
@@ -538,7 +538,7 @@ cmd_restart() {
         local services="taskrunner taskrunner-ai taskrunner-vault webui nginx"
         # 检测是否需要重建（代码有变更才 --build）
         local build_flag=""
-        if _needs_rebuild "yj-family/taskrunner:latest" || _needs_rebuild "yj-family/taskrunner-ai:latest" || _needs_rebuild "yj-family/taskrunner-vault:latest" || _needs_rebuild "yj-family/webui:latest"; then
+        if _needs_rebuild "baihua/taskrunner:latest" || _needs_rebuild "baihua/taskrunner-ai:latest" || _needs_rebuild "baihua/taskrunner-vault:latest" || _needs_rebuild "baihua/webui:latest"; then
             echo "[…] 检测到源码更新，重新构建…"
             build_flag="--build"
         fi
@@ -559,32 +559,32 @@ cmd_logs() {
     if [ "$mode" = "docker" ]; then
         case "$service" in
             taskrunner|tr)
-                docker logs -f --tail 100 yj-family-taskrunner 2>&1
+                docker logs -f --tail 100 baihua-taskrunner 2>&1
                 ;;
             webui|wuf)
-                docker logs -f --tail 100 yj-family-webui 2>&1
+                docker logs -f --tail 100 baihua-webui 2>&1
                 ;;
             nginx)
-                docker logs -f --tail 100 yj-family-nginx 2>&1
+                docker logs -f --tail 100 baihua-nginx 2>&1
                 ;;
             ai|taskrunner-ai)
-                docker logs -f --tail 100 yj-family-taskrunner-ai 2>&1
+                docker logs -f --tail 100 baihua-taskrunner-ai 2>&1
                 ;;
             vault|taskrunner-vault)
-                docker logs -f --tail 100 yj-family-taskrunner-vault 2>&1
+                docker logs -f --tail 100 baihua-taskrunner-vault 2>&1
                 ;;
             all|*)
                 echo "=== TaskRunner ==="
-                docker logs --tail 50 yj-family-taskrunner 2>&1
+                docker logs --tail 50 baihua-taskrunner 2>&1
                 echo ""
                 echo "=== TaskRunner.AI ==="
-                docker logs --tail 50 yj-family-taskrunner-ai 2>&1
+                docker logs --tail 50 baihua-taskrunner-ai 2>&1
                 echo ""
                 echo "=== TaskRunner.Vault ==="
-                docker logs --tail 50 yj-family-taskrunner-vault 2>&1
+                docker logs --tail 50 baihua-taskrunner-vault 2>&1
                 echo ""
                 echo "=== WebUI ==="
-                docker logs --tail 50 yj-family-webui 2>&1
+                docker logs --tail 50 baihua-webui 2>&1
                 ;;
         esac
     else
@@ -660,7 +660,7 @@ cmd_dashboard() {
 
         # 检查容器是否已运行（若已运行，跳过裸机检测，避免误判容器内进程为裸机）
         local webui_running=0
-        if docker ps --format '{{.Names}}' | grep -q "yj-family-webui"; then
+        if docker ps --format '{{.Names}}' | grep -q "baihua-webui"; then
             webui_running=1
             echo "[✓] WebUI 容器正在运行"
         fi
@@ -679,9 +679,9 @@ cmd_dashboard() {
         if [ "$force_build" -eq 1 ]; then
             need_build=1
             echo "[ℹ] 强制重建模式"
-        elif ! docker images yj-family/webui:latest --format '{{.ID}}' | grep -q .; then
+        elif ! docker images baihua/webui:latest --format '{{.ID}}' | grep -q .; then
             need_build=1
-        elif _needs_rebuild "yj-family/webui:latest" || _needs_rebuild "yj-family/taskrunner:latest" || _needs_rebuild "yj-family/taskrunner-ai:latest" || _needs_rebuild "yj-family/taskrunner-vault:latest"; then
+        elif _needs_rebuild "baihua/webui:latest" || _needs_rebuild "baihua/taskrunner:latest" || _needs_rebuild "baihua/taskrunner-ai:latest" || _needs_rebuild "baihua/taskrunner-vault:latest"; then
             need_build=1
         fi
 
@@ -693,14 +693,14 @@ cmd_dashboard() {
             fi
 
             # 确保数据目录存在
-            mkdir -p /opt/yj-family/data /opt/yj-family/logs /opt/yj-family/config/nginx
+            mkdir -p /opt/baihua/data /opt/baihua/logs /opt/baihua/config/nginx
 
             # 确保加密密钥文件存在（自动管理，容器重建后仍然可用）
             ensure_encryption_key
 
             # 复制 nginx 配置（如果不存在）
-            if [ ! -f /opt/yj-family/config/nginx/nginx.conf ]; then
-                cp "$HG_ROOT/docker/nginx/nginx.conf" /opt/yj-family/config/nginx/nginx.conf 2>/dev/null || true
+            if [ ! -f /opt/baihua/config/nginx/nginx.conf ]; then
+                cp "$HG_ROOT/docker/nginx/nginx.conf" /opt/baihua/config/nginx/nginx.conf 2>/dev/null || true
             fi
 
             # 进入 docker 目录并启动
@@ -709,7 +709,7 @@ cmd_dashboard() {
             # 确定 build 标志
             local build_flag=""
             if [ $need_build -eq 1 ]; then
-                if ! docker images yj-family/webui:latest --format '{{.ID}}' | grep -q .; then
+                if ! docker images baihua/webui:latest --format '{{.ID}}' | grep -q .; then
                     echo "  → 首次运行，构建 Docker 镜像（可能需要几分钟）…"
                 else
                     echo "  → 重新构建 Docker 镜像…"
@@ -742,7 +742,7 @@ cmd_dashboard() {
             if echo "$up_output" | grep -qiE "conflict|already in use"; then
                 echo "  → 检测到容器冲突，执行完整清理后重试…"
                 docker compose down --remove-orphans > /dev/null 2>&1 || true
-                docker rm -f yj-family-taskrunner yj-family-taskrunner-ai yj-family-taskrunner-vault yj-family-webui yj-family-nginx 2>/dev/null || true
+                docker rm -f baihua-taskrunner baihua-taskrunner-ai baihua-taskrunner-vault baihua-webui baihua-nginx 2>/dev/null || true
                 docker compose up -d $build_flag --remove-orphans 2>&1 | grep -v "^$" || true
             else
                 echo "$up_output" | grep -v "^$" || true
@@ -766,10 +766,10 @@ cmd_dashboard() {
             if ! curl -s --max-time 2 "$health_url" > /dev/null 2>&1; then
                 echo "[✗] 服务启动超时（60秒）"
                 echo "请查看容器日志："
-                echo "  docker logs yj-family-webui"
-                echo "  docker logs yj-family-taskrunner"
-                echo "  docker logs yj-family-taskrunner-ai"
-                echo "  docker logs yj-family-taskrunner-vault"
+                echo "  docker logs baihua-webui"
+                echo "  docker logs baihua-taskrunner"
+                echo "  docker logs baihua-taskrunner-ai"
+                echo "  docker logs baihua-taskrunner-vault"
                 exit 1
             fi
         fi
@@ -897,9 +897,9 @@ cmd_dashboard() {
     echo "提示："
     echo "  • 此链接一次性有效，5 分钟内过期"
     echo "  • 仅允许本机（127.0.0.1）生成授权链接"
-    if command -v docker &> /dev/null && docker ps --format '{{.Names}}' | grep -q "yj-family-webui"; then
+    if command -v docker &> /dev/null && docker ps --format '{{.Names}}' | grep -q "baihua-webui"; then
         echo "  • Docker 容器已在运行，关闭终端不会停止服务"
-        echo "  • 查看日志：docker logs yj-family-webui"
+        echo "  • 查看日志：docker logs baihua-webui"
         echo "  • 停止服务：cd $HG_ROOT/docker && docker compose down"
     else
         echo "  • 后台进程已在运行，关闭终端不会停止服务"

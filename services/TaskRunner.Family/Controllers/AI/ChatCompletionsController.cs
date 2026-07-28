@@ -7,7 +7,7 @@ using TaskRunner.Services;
 namespace TaskRunner.Controllers;
     /// <summary>
     /// OpenAI 兼容 Chat Completions API Facade
-    /// 让 Cursor/Claude Code/Windsurf 等工具可以直接使用 yj 的 AI 服务
+    /// 让 Cursor/Claude Code/Windsurf 等工具可以直接使用 百花 AI 服务
     /// </summary>
     [ApiController]
     [Route("api/chat/completions")]

@@ -11,7 +11,7 @@
     <GenerateResource>false</GenerateResource>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
     <RootNamespace>TaskRunner.AI</RootNamespace>
-    <UserSecretsId>yj-family-taskrunner-ai-2026</UserSecretsId>
+    <UserSecretsId>baihua-family-taskrunner-ai-2026</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

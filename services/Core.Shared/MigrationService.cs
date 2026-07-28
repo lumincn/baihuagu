@@ -18,13 +18,13 @@ public class MigrationService
 
     /// <summary>
     /// 检测并迁移因加密密钥变化导致无法解密的 API Key。
-    /// 场景：用户未设置 YJ_ENCRYPTION_KEY，容器重建后机器指纹变化，
+    /// 场景：用户未设置 BAIHUA_ENCRYPTION_KEY，容器重建后机器指纹变化，
     /// 导致之前加密的 API Key 无法解密。
     ///
     /// 迁移策略：
-    /// 1. 如果 .yj-key 文件已存在：尝试用旧版机器指纹解密失败的 Key，成功后用 .yj-key 重新加密
-    /// 2. 如果 .yj-key 文件不存在：尝试用旧版机器指纹解密所有 Key，成功后生成 .yj-key 并重新加密
-    ///    如果没有旧数据能解密，直接生成 .yj-key（确保后续加密使用固定密钥）
+    /// 1. 如果 .baihua-key 文件已存在：尝试用旧版机器指纹解密失败的 Key，成功后用 .baihua-key 重新加密
+    /// 2. 如果 .baihua-key 文件不存在：尝试用旧版机器指纹解密所有 Key，成功后生成 .baihua-key 并重新加密
+    ///    如果没有旧数据能解密，直接生成 .baihua-key（确保后续加密使用固定密钥）
     /// </summary>
     public void MigrateApiKeysIfNeeded(AIDbContext dbContext)
     {
@@ -64,7 +64,7 @@ public class MigrationService
 
                 if (string.IsNullOrEmpty(legacyDecrypted))
                 {
-                    _logger.LogWarning("API Key 无法解密（Provider={ProviderId}），可能使用了已丢失的 YJ_ENCRYPTION_KEY。请重新在 WebUI 中设置 API Key。", provider.ProviderId);
+                    _logger.LogWarning("API Key 无法解密（Provider={ProviderId}），可能使用了已丢失的 BAIHUA_ENCRYPTION_KEY。请重新在 WebUI 中设置 API Key。", provider.ProviderId);
                     continue;
                 }
 
@@ -83,11 +83,11 @@ public class MigrationService
                 _logger.LogInformation("API Key 已自动迁移：Provider={ProviderId}（加密密钥从机器指纹升级到固定密钥）", provider.ProviderId);
             }
 
-            // 如果所有 Key 都能用当前密钥解密，但 .yj-key 还不存在，说明当前用的是 YJ_ENCRYPTION_KEY
-            // 自动持久化到 .yj-key，避免环境变量丢失后无法解密
+            // 如果所有 Key 都能用当前密钥解密，但 .baihua-key 还不存在，说明当前用的是 BAIHUA_ENCRYPTION_KEY
+            // 自动持久化到 .baihua-key，避免环境变量丢失后无法解密
             if (!keyFileExists && !needsKeyFile && migratedCount == 0)
             {
-                var envKey = Environment.GetEnvironmentVariable("YJ_ENCRYPTION_KEY");
+                var envKey = Environment.GetEnvironmentVariable("BAIHUA_ENCRYPTION_KEY");
                 if (!string.IsNullOrWhiteSpace(envKey))
                 {
                     TaskRunner.Core.Shared.Security.AesApiKeyEncryption.GenerateKeyFile();
@@ -101,12 +101,12 @@ public class MigrationService
                             migratedCount++;
                         }
                     }
-                    _logger.LogInformation("已将 YJ_ENCRYPTION_KEY 持久化到密钥文件，并迁移 {Count} 个 API Key", migratedCount);
+                    _logger.LogInformation("已将 BAIHUA_ENCRYPTION_KEY 持久化到密钥文件，并迁移 {Count} 个 API Key", migratedCount);
                 }
                 else
                 {
-                    // 当前用的是机器指纹，直接生成 .yj-key（但机器指纹会变化，这是个问题）
-                    // 为了稳定性，生成 .yj-key 并重新加密
+                    // 当前用的是机器指纹，直接生成 .baihua-key（但机器指纹会变化，这是个问题）
+                    // 为了稳定性，生成 .baihua-key 并重新加密
                     TaskRunner.Core.Shared.Security.AesApiKeyEncryption.GenerateKeyFile();
                     foreach (var provider in providers)
                     {

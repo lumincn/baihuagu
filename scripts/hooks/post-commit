@@ -9,7 +9,7 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 (
     cd "$PROJECT_ROOT"
     # 抑制输出，避免污染 git 命令行输出
-    exec >> /tmp/yj-auto-deploy.log 2>&1
+    exec >> /tmp/baihua-auto-deploy.log 2>&1
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔗 post-commit hook triggered"
     ./scripts/auto-deploy.sh
 ) &

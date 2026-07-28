@@ -7,7 +7,7 @@
     <UseAppHost Condition="'$(Configuration)' == 'Debug'">false</UseAppHost>
     <CompressionEnabled>false</CompressionEnabled>
     <RootNamespace>WebUI</RootNamespace>
-    <UserSecretsId>yj-family-webui-2026</UserSecretsId>
+    <UserSecretsId>baihua-family-webui-2026</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

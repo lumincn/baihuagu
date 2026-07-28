@@ -37,11 +37,10 @@
 
 | 环境变量 | 用途 | 默认值 |
 |----------|------|--------|
-| `YJ_DATA_DIR` | SQLite 数据库文件目录 | `{BaseDirectory}/data` |
-| `YJ_DATA_DIR` | SQLite 数据库文件目录 | `{BaseDirectory}/data` |
-| `TASKRUNNER_VAULT_ROOT` | 知识库根路径（Docker 中挂载到容器） | `/home/lumin/Vaults` |
+| `BAIHUA_HOME` | 百花数据根目录（内含 vaults/db/logs） | `~\.baihua` (Windows) / `~/.baihua` (Linux) |
+| `BAIHUA_ENCRYPTION_KEY` | API Key 加密密钥（可选，优先于自动生成的密钥文件） | 空 |
+| `BAIHUA_AI_ANTHROPIC_BASE_URL` | Anthropic API 代理地址（可选） | 空 |
 | `ASPNETCORE_URLS` | 服务监听地址 | `http://0.0.0.0:8788` / `8791` / `8790` |
-| `YJ_ENCRYPTION_KEY` | API Key 加密密钥（可选，优先于自动生成） | 空 |
 
 ## 数据库表结构
 
