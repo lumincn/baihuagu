@@ -1863,4 +1863,404 @@ Status: {2}
   <data name="Vault_RestoreFailed" xml:space="preserve">
     <value>恢复失败，知识库不存在或原始路径已被占用</value>
   </data>
+  <!-- === Phase 4 Batch 9: Vault + AI remaining strings === -->
+  <data name="Vault_NameNotesRequired" xml:space="preserve">
+    <value>知识库名称和笔记列表不能为空</value>
+  </data>
+  <data name="Vault_DataInconsistencyContactAdmin" xml:space="preserve">
+    <value>知识库数据不一致：数据库记录存在但物理目录已丢失，请联系管理员</value>
+  </data>
+  <data name="Vault_IllegalFilePath" xml:space="preserve">
+    <value>非法文件路径: {0}</value>
+  </data>
+  <data name="Vault_PushSuccessMigrated" xml:space="preserve">
+    <value>知识库推送成功（已迁移路径结构）</value>
+  </data>
+  <data name="Vault_PushSuccess" xml:space="preserve">
+    <value>知识库推送成功</value>
+  </data>
+  <data name="Vault_PushFailed" xml:space="preserve">
+    <value>推送失败: {0}</value>
+  </data>
+  <data name="Vault_PathRequired" xml:space="preserve">
+    <value>路径不能为空</value>
+  </data>
+  <data name="Vault_NoteNotFound" xml:space="preserve">
+    <value>笔记不存在：{0}</value>
+  </data>
+  <data name="Vault_ContentRequired" xml:space="preserve">
+    <value>内容不能为空</value>
+  </data>
+  <data name="Vault_IllegalPath" xml:space="preserve">
+    <value>非法路径</value>
+  </data>
+  <data name="Vault_TokenRequired" xml:space="preserve">
+    <value>Token 不能为空</value>
+  </data>
+  <data name="Vault_TokenInvalidOrExpired" xml:space="preserve">
+    <value>Token 无效或已过期</value>
+  </data>
+  <data name="Vault_NotFoundOrDeleted" xml:space="preserve">
+    <value>知识库不存在或已被删除</value>
+  </data>
+  <data name="Vault_DataInconsistencyDirMissing" xml:space="preserve">
+    <value>知识库数据不一致：物理目录已丢失</value>
+  </data>
+  <data name="Vault_RootPathNotSet" xml:space="preserve">
+    <value>知识库根路径未设置</value>
+  </data>
+  <data name="Vault_RootPathNotExists" xml:space="preserve">
+    <value>根路径不存在: {0}</value>
+  </data>
+  <data name="Vault_Fts5Reindexed" xml:space="preserve">
+    <value>知识库 {0} 的 FTS5 索引已重建</value>
+  </data>
+  <data name="Vault_NoMatchFound" xml:space="preserve">
+    <value>未在知识库中找到匹配内容</value>
+  </data>
+  <data name="Vault_MobileGenerated" xml:space="preserve">
+    <value>移动端生成</value>
+  </data>
+  <data name="Vault_MobileDeviceName" xml:space="preserve">
+    <value>移动端({0})</value>
+  </data>
+  <data name="Vault_SpecifiedVault" xml:space="preserve">
+    <value>指定知识库</value>
+  </data>
+  <data name="Search_VaultPathNotExists" xml:space="preserve">
+    <value>知识库路径不存在：{0}</value>
+  </data>
+  <data name="AiChat_Timeout" xml:space="preserve">
+    <value>AI 调用超时或已被取消</value>
+  </data>
+  <data name="AiChat_LocalAiNotRunning" xml:space="preserve">
+    <value>本地 AI 服务 {0} 未运行且自动启动失败，请手动启动后重试。</value>
+  </data>
+  <data name="AiChat_ProviderNotFound" xml:space="preserve">
+    <value>未找到指定的 AI 提供商</value>
+  </data>
+  <data name="LocalAi_ModelPathRequired" xml:space="preserve">
+    <value>模型路径不能为空</value>
+  </data>
+  <data name="LocalAi_UnsupportedModelType" xml:space="preserve">
+    <value>不支持的本地模型类型: {0}</value>
+  </data>
+  <data name="LocalAi_ModelUnavailable" xml:space="preserve">
+    <value>模型不可用: {0}</value>
+  </data>
+  <data name="Devices_AuthorizeFailed" xml:space="preserve">
+    <value>授权失败: {0}</value>
+  </data>
+  <data name="Devices_RejectFailed" xml:space="preserve">
+    <value>拒绝失败: {0}</value>
+  </data>
+  <data name="Devices_RevokeFailed" xml:space="preserve">
+    <value>撤销失败: {0}</value>
+  </data>
+  <!-- === Phase 4 Batch 10: Remaining Family Controllers === -->
+  <data name="ChatCompletions_MessagesEmpty" xml:space="preserve">
+    <value>消息不能为空</value>
+  </data>
+  <data name="ChatCompletions_ProviderNotConfigured" xml:space="preserve">
+    <value>未配置 AI 提供商</value>
+  </data>
+  <data name="ChatCompletions_ToolResultEmpty" xml:space="preserve">
+    <value>工具执行完成，无返回内容</value>
+  </data>
+  <data name="VaultFocus_MasterIdEmpty" xml:space="preserve">
+    <value>师父ID不能为空</value>
+  </data>
+  <data name="VaultFocus_VaultIdEmpty" xml:space="preserve">
+    <value>知识库ID不能为空</value>
+  </data>
+  <data name="Anki_NotePathEmpty" xml:space="preserve">
+    <value>笔记路径不能为空</value>
+  </data>
+  <data name="Anki_VaultIdEmpty" xml:space="preserve">
+    <value>知识库 ID 不能为空</value>
+  </data>
+  <data name="Anki_VaultNotFound" xml:space="preserve">
+    <value>知识库不存在</value>
+  </data>
+  <data name="Anki_NotesDirNotExist" xml:space="preserve">
+    <value>笔记目录不存在</value>
+  </data>
+  <data name="Anki_GeneratingCardsFor" xml:space="preserve">
+    <value>开始为 {0} 使用 AI 生成记忆卡片...</value>
+  </data>
+  <data name="Anki_AiCardTaskCreated" xml:space="preserve">
+    <value>AI 卡片生成任务已创建</value>
+  </data>
+  <data name="Anki_VaultRequired" xml:space="preserve">
+    <value>必须指定知识库</value>
+  </data>
+  <data name="Anki_RecordFailed" xml:space="preserve">
+    <value>记录失败</value>
+  </data>
+  <data name="Anki_SaveFailed" xml:space="preserve">
+    <value>保存失败</value>
+  </data>
+  <data name="Anki_CardSaved" xml:space="preserve">
+    <value>卡片已保存</value>
+  </data>
+  <data name="Git_VaultNotConfigured" xml:space="preserve">
+    <value>知识库未配置 Git</value>
+  </data>
+  <data name="Git_WorkingDirClean" xml:space="preserve">
+    <value>工作区干净</value>
+  </data>
+  <data name="Git_ChangesCount" xml:space="preserve">
+    <value>有 {0} 个文件变更</value>
+  </data>
+  <data name="Git_StatusFailed" xml:space="preserve">
+    <value>获取状态失败: {0}</value>
+  </data>
+  <data name="Git_NoChangesToDiscard" xml:space="preserve">
+    <value>没有需要撤销的更改</value>
+  </data>
+  <data name="Git_DiscardSuccess" xml:space="preserve">
+    <value>已撤销所有工作区更改</value>
+  </data>
+  <data name="Git_DiscardFailed" xml:space="preserve">
+    <value>撤销失败: {0}</value>
+  </data>
+  <data name="Obsidian_NoVaultConfigured" xml:space="preserve">
+    <value>没有配置知识库</value>
+  </data>
+  <data name="Obsidian_PathEmpty" xml:space="preserve">
+    <value>路径不能为空</value>
+  </data>
+  <data name="Obsidian_CreateDirFailed" xml:space="preserve">
+    <value>无法创建目录: {0}</value>
+  </data>
+  <data name="Obsidian_LaunchFailed" xml:space="preserve">
+    <value>启动失败: {0}</value>
+  </data>
+  <data name="Onboarding_VaultCreated" xml:space="preserve">
+    <value>知识库 '{0}' 创建成功</value>
+  </data>
+  <data name="Onboarding_CreateFailed" xml:space="preserve">
+    <value>创建失败: {0}</value>
+  </data>
+  <data name="OneHop_DeviceIdRequired" xml:space="preserve">
+    <value>DeviceId is required</value>
+  </data>
+  <data name="OneHop_DefaultDeviceName" xml:space="preserve">
+    <value>移动端设备</value>
+  </data>
+  <data name="OneHop_DeviceAuthorized" xml:space="preserve">
+    <value>设备已授权</value>
+  </data>
+  <data name="OneHop_DeviceAuthorizedUpdated" xml:space="preserve">
+    <value>设备已授权（已更新设备标识）</value>
+  </data>
+  <data name="OneHop_DeviceIdChangedReauthorize" xml:space="preserve">
+    <value>设备标识已变更，请在 WebUI 中重新授权</value>
+  </data>
+  <data name="OneHop_DeviceRegistered" xml:space="preserve">
+    <value>设备已注册，请在 WebUI 中授权</value>
+  </data>
+
+  <!-- === Phase 4 Batch 11: MasterPromptBuilder === -->
+  <data name="MasterPrompt_RuDao_Role" xml:space="preserve">
+    <value>引路人</value>
+  </data>
+  <data name="MasterPrompt_RuDao_Style" xml:space="preserve">
+    <value>温和、好奇、善问</value>
+  </data>
+  <data name="MasterPrompt_RuDao_Prompt" xml:space="preserve">
+    <value>你是一位温和的引路人。你的任务是了解学徒的基础、目标和动机。通过提问引导学徒自我认知，而非直接灌输。用好奇的语气探索学徒的背景，帮助他们明确学习方向。</value>
+  </data>
+  <data name="MasterPrompt_ZhuJi_Role" xml:space="preserve">
+    <value>严师</value>
+  </data>
+  <data name="MasterPrompt_ZhuJi_Style" xml:space="preserve">
+    <value>有耐心但要求严格</value>
+  </data>
+  <data name="MasterPrompt_ZhuJi_Prompt" xml:space="preserve">
+    <value>你是一位严格的师父。你要求学徒扎实掌握基础知识，不容许敷衍了事。每日布置功课并检查完成情况。对错误耐心纠正，但要求必须改对。强调'基础不牢，地动山摇'。</value>
+  </data>
+  <data name="MasterPrompt_JingJin_Role" xml:space="preserve">
+    <value>匠人</value>
+  </data>
+  <data name="MasterPrompt_JingJin_Style" xml:space="preserve">
+    <value>极其耐心、绝不放过细节错误</value>
+  </data>
+  <data name="MasterPrompt_JingJin_Prompt" xml:space="preserve">
+    <value>你是一位精益求精的匠人师父。你对细节有近乎偏执的追求，任何微小错误都要指出并纠正。你会反复追问直到学徒完全理解。强调'差之毫厘，谬以千里'。</value>
+  </data>
+  <data name="MasterPrompt_MoLi_Role" xml:space="preserve">
+    <value>考官</value>
+  </data>
+  <data name="MasterPrompt_MoLi_Style" xml:space="preserve">
+    <value>模拟真实考试环境</value>
+  </data>
+  <data name="MasterPrompt_MoLi_Prompt" xml:space="preserve">
+    <value>你是一位严肃的考官。你模拟真实考试环境，出题考察学徒的综合能力。时间限制严格，评分标准明确。考后详细分析错题，指出知识盲区。强调'实战出真知'。</value>
+  </data>
+  <data name="MasterPrompt_ChuShi_Role" xml:space="preserve">
+    <value>前辈</value>
+  </data>
+  <data name="MasterPrompt_ChuShi_Style" xml:space="preserve">
+    <value>实战建议、考试经验</value>
+  </data>
+  <data name="MasterPrompt_ChuShi_Prompt" xml:space="preserve">
+    <value>你是一位经验丰富的前辈。你分享实战经验和考试技巧，帮助学徒做好最后的冲刺准备。提供报考指导、考前心理建设、应试策略。强调'临阵磨枪，不快也光'。</value>
+  </data>
+  <data name="MasterPrompt_MasterQiBo" xml:space="preserve">
+    <value>岐伯</value>
+  </data>
+  <data name="MasterPrompt_MasterTuLing" xml:space="preserve">
+    <value>图灵</value>
+  </data>
+  <data name="MasterPrompt_MasterSuanSheng" xml:space="preserve">
+    <value>算圣</value>
+  </data>
+  <data name="MasterPrompt_MasterFuZi" xml:space="preserve">
+    <value>夫子</value>
+  </data>
+  <data name="MasterPrompt_MasterTingWei" xml:space="preserve">
+    <value>廷尉</value>
+  </data>
+  <data name="MasterPrompt_MasterLuBan" xml:space="preserve">
+    <value>鲁班</value>
+  </data>
+  <data name="MasterPrompt_OutlineHeader" xml:space="preserve">
+    <value># 考试大纲：{0}</value>
+  </data>
+  <data name="MasterPrompt_StageKeyPoints" xml:space="preserve">
+    <value>## 当前阶段考点</value>
+  </data>
+  <data name="MasterPrompt_TransitionCriteria" xml:space="preserve">
+    <value>## 阶段转换标准：{0}</value>
+  </data>
+  <data name="MasterPrompt_Milestones" xml:space="preserve">
+    <value>## 里程碑</value>
+  </data>
+
+  <!-- === Phase 4 Batch 11: OpenClawTaskService === -->
+  <data name="OpenClawTask_CannotStartProcess" xml:space="preserve">
+    <value>无法启动 openclaw 进程</value>
+  </data>
+  <data name="OpenClawTask_Timeout" xml:space="preserve">
+    <value>任务执行超时（超过 {0} 分钟）</value>
+  </data>
+  <data name="OpenClawTask_UserCancelled" xml:space="preserve">
+    <value>用户已取消</value>
+  </data>
+  <data name="OpenClawTask_ReportHeader" xml:space="preserve">
+    <value># OpenClaw 执行报告</value>
+  </data>
+  <data name="OpenClawTask_Duration" xml:space="preserve">
+    <value>- **执行耗时**: {0:F0} ms</value>
+  </data>
+  <data name="OpenClawTask_Model" xml:space="preserve">
+    <value>- **模型**: {0}</value>
+  </data>
+  <data name="OpenClawTask_FallbackOutput" xml:space="preserve">
+    <value># OpenClaw 输出
+
+```
+{0}
+```
+</value>
+  </data>
+
+  <!-- === Phase 4 Batch 11: RestoreService === -->
+  <data name="Restore_FileNotFound" xml:space="preserve">
+    <value>备份文件不存在</value>
+  </data>
+  <data name="Restore_InvalidManifest" xml:space="preserve">
+    <value>无效的备份文件：缺少 manifest.json</value>
+  </data>
+  <data name="Restore_UnsupportedVersion" xml:space="preserve">
+    <value>不支持的备份格式版本</value>
+  </data>
+  <data name="Restore_PasswordRequired" xml:space="preserve">
+    <value>此备份有密码保护，请输入密码</value>
+  </data>
+  <data name="Restore_DatabaseFailed" xml:space="preserve">
+    <value>恢复数据库失败</value>
+  </data>
+  <data name="Restore_Cancelled" xml:space="preserve">
+    <value>恢复已取消</value>
+  </data>
+
+  <!-- === Phase 4 Batch 11: ChatMemoryService === -->
+  <data name="ChatMemory_HistorySummary" xml:space="preserve">
+    <value>【对话历史摘要】</value>
+  </data>
+  <data name="ChatMemory_RelevantMemories" xml:space="preserve">
+    <value>【相关历史记忆】</value>
+  </data>
+
+  <!-- === Phase 4 Batch 11: NoteParser === -->
+  <data name="NoteParser_JsonParseFailed" xml:space="preserve">
+    <value>JSON 解析失败：{0}</value>
+  </data>
+  <data name="NoteParser_EmptyResponse" xml:space="preserve">
+    <value>AI 返回内容为空</value>
+  </data>
+  <data name="NoteParser_NoArrayStart" xml:space="preserve">
+    <value>未找到 JSON 数组起始符 '['</value>
+  </data>
+  <data name="NoteParser_NoArrayEnd" xml:space="preserve">
+    <value>JSON 数组结束符 ']' 不完整</value>
+  </data>
+
+  <!-- === Phase 4 Batch 11: BackupService === -->
+  <data name="Backup_Cancelled" xml:space="preserve">
+    <value>备份已取消</value>
+  </data>
+  <data name="Backup_FileNotFound" xml:space="preserve">
+    <value>文件不存在</value>
+  </data>
+  <data name="Backup_MissingManifest" xml:space="preserve">
+    <value>缺少 manifest.json</value>
+  </data>
+  <data name="Backup_InvalidManifestFormat" xml:space="preserve">
+    <value>manifest.json 格式错误</value>
+  </data>
+
+  <!-- === Phase 4 Batch 11: StartupMonitor === -->
+  <data name="Startup_Uptime" xml:space="preserve">
+    <value>服务运行时间: {0}</value>
+  </data>
+  <data name="Startup_StartTime" xml:space="preserve">
+    <value>启动时间: {0}</value>
+  </data>
+  <data name="Startup_RestartCount" xml:space="preserve">
+    <value>重启次数: {0}</value>
+  </data>
+  <data name="Startup_RecentRestarts" xml:space="preserve">
+    <value>最近10分钟启动次数: {0}</value>
+  </data>
+  <data name="Startup_Pid" xml:space="preserve">
+    <value>PID: {0}</value>
+  </data>
+
+  <!-- === Phase 4 Batch 11: NotesMdCliController === -->
+  <data name="NotesMdCli_PathEmpty" xml:space="preserve">
+    <value>路径不能为空</value>
+  </data>
+  <data name="NotesMdCli_DirNotFound" xml:space="preserve">
+    <value>目录不存在</value>
+  </data>
+  <data name="NotesMdCli_AddFailed" xml:space="preserve">
+    <value>添加失败，请检查 notesmd-cli 是否正常工作</value>
+  </data>
+  <data name="NotesMdCli_PathsEmpty" xml:space="preserve">
+    <value>路径列表不能为空</value>
+  </data>
+  <data name="NotesMdCli_NoValidPaths" xml:space="preserve">
+    <value>没有有效的目录路径</value>
+  </data>
+
+  <!-- === Phase 4 Batch 11: LocalModelDeploymentService.Lifecycle === -->
+  <data name="LocalModel_Lifecycle_OllamaNotRunning" xml:space="preserve">
+    <value>Ollama 服务未运行且自动启动失败，请手动启动后重试。</value>
+  </data>
+  <data name="LocalModel_Lifecycle_LmStudioNotRunning" xml:space="preserve">
+    <value>LM Studio 服务未运行且自动启动失败，请手动启动后重试。</value>
+  </data>
 </root>

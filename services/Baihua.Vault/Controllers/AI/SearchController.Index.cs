@@ -19,13 +19,13 @@ public partial class SearchController
                 var vaultPath = _vaultSettings.GetVaults().FirstOrDefault(v => v.Id == request.VaultId)?.Path;
                 if (string.IsNullOrEmpty(vaultPath) || !Directory.Exists(vaultPath))
                 {
-                    return BadRequest(new { error = "知识库路径无效" });
+                    return BadRequest(new { error = _loc["Vault_PathInvalid"].Value });
                 }
 
                 _logger.LogInformation("开始重建知识库 {VaultId} 的 FTS5 索引", request.VaultId);
                 await _vaultNoteIndexer.IndexVaultAsync(request.VaultId, vaultPath, HttpContext.RequestAborted);
 
-                return Ok(new { success = true, message = $"知识库 {request.VaultId} 的 FTS5 索引已重建" });
+                return Ok(new { success = true, message = _loc["Vault_Fts5Reindexed", request.VaultId].Value });
             }
             catch (Exception ex)
             {

@@ -3,7 +3,9 @@ using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Baihua.Contracts.OpenClaw;
+using Baihua.Core.Localization;
 using Baihua.Data;
 using Baihua.Data.Entities;
 
@@ -25,17 +27,19 @@ public class OpenClawTaskService : IOpenClawTaskService
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly Baihua.Family.Services.TaskManager? _taskManager;
     private readonly ILogger<OpenClawTaskService> _logger;
+    private readonly IStringLocalizer<SharedResources> _loc;
     private readonly string _reportsDir;
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<int, Process> _runningProcesses = new();
     // OpenClaw TaskId -> TaskManager TaskId 映射
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<int, string> _openClawToTaskManagerMap = new();
 
-    public OpenClawTaskService(IDbContextFactory<FamilyDbContext> dbFactory, IHttpClientFactory httpClientFactory, Baihua.Family.Services.TaskManager? taskManager, ILogger<OpenClawTaskService> logger)
+    public OpenClawTaskService(IDbContextFactory<FamilyDbContext> dbFactory, IHttpClientFactory httpClientFactory, Baihua.Family.Services.TaskManager? taskManager, ILogger<OpenClawTaskService> logger, IStringLocalizer<SharedResources> loc)
     {
         _dbFactory = dbFactory;
         _httpClientFactory = httpClientFactory;
         _taskManager = taskManager;
         _logger = logger;
+        _loc = loc;
         var dataDir = Baihua.Contracts.BaihuaPaths.Db;
         _reportsDir = Path.Combine(dataDir, "openclaw-reports");
         Directory.CreateDirectory(_reportsDir);
@@ -103,7 +107,7 @@ public class OpenClawTaskService : IOpenClawTaskService
             using var process = Process.Start(startInfo);
             if (process == null)
             {
-                throw new InvalidOperationException("无法启动 openclaw 进程");
+                throw new InvalidOperationException(_loc["OpenClawTask_CannotStartProcess"]);
             }
 
             _runningProcesses.TryAdd(taskId, process);
@@ -150,7 +154,7 @@ public class OpenClawTaskService : IOpenClawTaskService
         {
             _logger.LogWarning("OpenClaw task {TaskId} timed out after {Timeout}m", task.TaskId, OpenClawTaskTimeout.TotalMinutes);
             task.Status = "failed";
-            task.ErrorMessage = $"任务执行超时（超过 {OpenClawTaskTimeout.TotalMinutes} 分钟）";
+            task.ErrorMessage = string.Format(_loc["OpenClawTask_Timeout"], OpenClawTaskTimeout.TotalMinutes);
             task.CompletedAt = DateTime.UtcNow;
             await db.SaveChangesAsync();
         }
@@ -189,20 +193,20 @@ public class OpenClawTaskService : IOpenClawTaskService
         }
 
         task.Status = "failed";
-        task.ErrorMessage = "用户已取消";
+        task.ErrorMessage = _loc["OpenClawTask_UserCancelled"];
         task.CompletedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
 
         // 同步更新 TaskManager 任务状态
         if (_openClawToTaskManagerMap.TryRemove(id, out var tmTaskId) && _taskManager != null)
         {
-            await _taskManager.UpdateStatus(tmTaskId, Baihua.Core.RunnerTaskStatus.Cancelled, "用户已取消");
+            await _taskManager.UpdateStatus(tmTaskId, Baihua.Core.RunnerTaskStatus.Cancelled, _loc["OpenClawTask_UserCancelled"]);
         }
 
         return true;
     }
 
-    private static string ParseOpenClawOutput(string jsonOutput)
+    private string ParseOpenClawOutput(string jsonOutput)
     {
         try
         {
@@ -210,7 +214,7 @@ public class OpenClawTaskService : IOpenClawTaskService
             var root = doc.RootElement;
 
             var sb = new System.Text.StringBuilder();
-            sb.AppendLine($"# OpenClaw 执行报告");
+            sb.AppendLine(_loc["OpenClawTask_ReportHeader"]);
             sb.AppendLine();
 
             // OpenClaw may wrap payloads/meta under "result" or at root level
@@ -224,10 +228,10 @@ public class OpenClawTaskService : IOpenClawTaskService
             if (result.TryGetProperty("meta", out var meta))
             {
                 if (meta.TryGetProperty("durationMs", out var durationMs))
-                    sb.AppendLine($"- **执行耗时**: {durationMs.GetDouble():F0} ms");
+                    sb.AppendLine(string.Format(_loc["OpenClawTask_Duration"], durationMs.GetDouble()));
                 if (meta.TryGetProperty("agentMeta", out var agentMeta) &&
                     agentMeta.TryGetProperty("model", out var modelProp))
-                    sb.AppendLine($"- **模型**: {modelProp.GetString()}");
+                    sb.AppendLine(string.Format(_loc["OpenClawTask_Model"], modelProp.GetString()));
                 sb.AppendLine();
             }
 
@@ -285,7 +289,7 @@ public class OpenClawTaskService : IOpenClawTaskService
         catch (JsonException)
         {
             // Not valid JSON, return raw output wrapped in markdown
-            return $"# OpenClaw 输出\n\n```\n{jsonOutput}\n```\n";
+            return string.Format(_loc["OpenClawTask_FallbackOutput"], jsonOutput);
         }
     }
 

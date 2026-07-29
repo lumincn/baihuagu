@@ -1,6 +1,8 @@
 using System.IO.Compression;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
 using Baihua.Core.Security;
 using Baihua.Data;
 using Baihua.Data.Entities;
@@ -19,6 +21,7 @@ public class RestoreService
     private readonly ApiKeyProtectionService _apiKeyProtection;
     private readonly DataEncryptionService _dataEncryption;
     private readonly ILogger<RestoreService> _logger;
+    private readonly IStringLocalizer<SharedResources> _loc;
 
     public RestoreService(
         VaultSettingsService vaultSettings,
@@ -27,7 +30,8 @@ public class RestoreService
         IDbContextFactory<AIDbContext> aiDbContextFactory,
         ApiKeyProtectionService apiKeyProtection,
         DataEncryptionService dataEncryption,
-        ILogger<RestoreService> logger)
+        ILogger<RestoreService> logger,
+        IStringLocalizer<SharedResources> loc)
     {
         _vaultSettings = vaultSettings;
         _vaultDbContextFactory = vaultDbContextFactory;
@@ -36,6 +40,7 @@ public class RestoreService
         _apiKeyProtection = apiKeyProtection;
         _dataEncryption = dataEncryption;
         _logger = logger;
+        _loc = loc;
     }
 
     /// <summary>
@@ -50,7 +55,7 @@ public class RestoreService
     {
         if (!File.Exists(backupPath))
         {
-            return new FullRestoreResult { Success = false, Error = "备份文件不存在" };
+            return new FullRestoreResult { Success = false, Error = _loc["Restore_FileNotFound"] };
         }
 
         var tempDir = Path.Combine(Path.GetTempPath(), $"dn_restore_{Guid.NewGuid():N}");
@@ -65,19 +70,19 @@ public class RestoreService
             var manifestPath = Path.Combine(tempDir, "manifest.json");
             if (!File.Exists(manifestPath))
             {
-                return new FullRestoreResult { Success = false, Error = "无效的备份文件：缺少 manifest.json" };
+                return new FullRestoreResult { Success = false, Error = _loc["Restore_InvalidManifest"] };
             }
 
             var manifestJson = await File.ReadAllTextAsync(manifestPath, cancellationToken);
             var manifest = JsonSerializer.Deserialize<BackupManifest>(manifestJson);
             if (manifest == null || manifest.Version < 2)
             {
-                return new FullRestoreResult { Success = false, Error = "不支持的备份格式版本" };
+                return new FullRestoreResult { Success = false, Error = _loc["Restore_UnsupportedVersion"] };
             }
 
             if (manifest.HasPassword && string.IsNullOrEmpty(password))
             {
-                return new FullRestoreResult { Success = false, Error = "此备份有密码保护，请输入密码" };
+                return new FullRestoreResult { Success = false, Error = _loc["Restore_PasswordRequired"] };
             }
 
             var vaultRootPath = !string.IsNullOrEmpty(vaultRootPathOverride)
@@ -87,7 +92,7 @@ public class RestoreService
             var dbResult = await RestoreDatabaseAsync(tempDir, password, vaultRootPath, overwrite, cancellationToken);
             if (!dbResult)
             {
-                return new FullRestoreResult { Success = false, Error = "恢复数据库失败" };
+                return new FullRestoreResult { Success = false, Error = _loc["Restore_DatabaseFailed"] };
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -108,7 +113,7 @@ public class RestoreService
         catch (OperationCanceledException)
         {
             _logger.LogInformation("恢复全量备份已取消");
-            return new FullRestoreResult { Success = false, Error = "恢复已取消" };
+            return new FullRestoreResult { Success = false, Error = _loc["Restore_Cancelled"] };
         }
         catch (Exception ex)
         {

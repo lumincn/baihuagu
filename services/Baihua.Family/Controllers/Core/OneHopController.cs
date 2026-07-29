@@ -1,6 +1,8 @@
 using Baihua.Core;
+using Baihua.Core.Localization;
 using Baihua.Core.Security;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using Baihua.Family.Services;
 
 namespace Baihua.Family.Controllers;
@@ -15,19 +17,22 @@ public partial class OneHopController : ControllerBase
     private readonly IOneHopService _oneHopService;
     private readonly DeviceService _deviceService;
     private readonly RequestSignatureService _signatureService;
+    private readonly IStringLocalizer<SharedResources> _loc;
 
     public OneHopController(
         ILogger<OneHopController> logger,
         OneHopManager oneHopManager,
         IOneHopService oneHopService,
         DeviceService deviceService,
-        RequestSignatureService signatureService)
+        RequestSignatureService signatureService,
+        IStringLocalizer<SharedResources> loc)
     {
         _logger = logger;
         _oneHopManager = oneHopManager;
         _oneHopService = oneHopService;
         _deviceService = deviceService;
         _signatureService = signatureService;
+        _loc = loc;
     }
 
     [HttpGet("status")]

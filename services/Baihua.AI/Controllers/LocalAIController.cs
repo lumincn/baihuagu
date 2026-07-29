@@ -1,5 +1,7 @@
 using System.Text.Json;
+using Baihua.Core.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using Baihua.Contracts.Ai;
 using Baihua.Family.Services.LocalAI;
 
@@ -14,13 +16,16 @@ public class LocalAIController : ControllerBase
 {
     private readonly IEnumerable<ILocalModelInference> _inferences;
     private readonly ILogger<LocalAIController> _logger;
+    private readonly IStringLocalizer<SharedResources> _loc;
 
     public LocalAIController(
         IEnumerable<ILocalModelInference> inferences,
-        ILogger<LocalAIController> logger)
+        ILogger<LocalAIController> logger,
+        IStringLocalizer<SharedResources> loc)
     {
         _inferences = inferences;
         _logger = logger;
+        _loc = loc;
     }
 
     /// <summary>
@@ -44,13 +49,13 @@ public class LocalAIController : ControllerBase
         {
             if (string.IsNullOrWhiteSpace(request.Message))
             {
-                await SendSse("error", "消息不能为空");
+                await SendSse("error", _loc["AiChat_MessageEmpty"].Value);
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(request.ModelPath))
             {
-                await SendSse("error", "模型路径不能为空");
+                await SendSse("error", _loc["LocalAi_ModelPathRequired"].Value);
                 return;
             }
 
@@ -59,13 +64,13 @@ public class LocalAIController : ControllerBase
 
             if (inference == null)
             {
-                await SendSse("error", $"不支持的本地模型类型: {request.ModelType}");
+                await SendSse("error", _loc["LocalAi_UnsupportedModelType", request.ModelType].Value);
                 return;
             }
 
             if (!await inference.IsModelAvailableAsync(request.ModelPath))
             {
-                await SendSse("error", $"模型不可用: {request.ModelPath}");
+                await SendSse("error", _loc["LocalAi_ModelUnavailable", request.ModelPath].Value);
                 return;
             }
 
@@ -94,12 +99,12 @@ public class LocalAIController : ControllerBase
         }
         catch (OperationCanceledException)
         {
-            await SendSse("error", "AI 调用超时或已被取消");
+            await SendSse("error", _loc["AiChat_Timeout"].Value);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "本地模型流式聊天失败: {ModelPath} ({ModelType})", request.ModelPath, request.ModelType);
-            await SendSse("error", $"聊天失败：{ex.Message}");
+            await SendSse("error", _loc["Ai_Chat_Failed", ex.Message].Value);
         }
     }
 

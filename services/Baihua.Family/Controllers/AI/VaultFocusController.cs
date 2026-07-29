@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
 using Baihua.Data;
 using Baihua.Data.Entities;
 
@@ -11,18 +13,20 @@ public class VaultFocusController : ControllerBase
 {
     private readonly IDbContextFactory<FamilyDbContext> _dbFactory;
     private readonly ILogger<VaultFocusController> _logger;
+    private readonly IStringLocalizer<SharedResources> _loc;
 
-    public VaultFocusController(IDbContextFactory<FamilyDbContext> dbFactory, ILogger<VaultFocusController> logger)
+    public VaultFocusController(IDbContextFactory<FamilyDbContext> dbFactory, ILogger<VaultFocusController> logger, IStringLocalizer<SharedResources> loc)
     {
         _dbFactory = dbFactory;
         _logger = logger;
+        _loc = loc;
     }
 
     [HttpGet]
     public async Task<ActionResult> GetFocusedVaults(string masterId)
     {
         if (string.IsNullOrWhiteSpace(masterId))
-            return BadRequest(new { Success = false, Message = "师父ID不能为空" });
+            return BadRequest(new { Success = false, Message = _loc["VaultFocus_MasterIdEmpty"] });
 
         await using var db = await _dbFactory.CreateDbContextAsync();
         var states = await db.VaultFocusStates
@@ -38,9 +42,9 @@ public class VaultFocusController : ControllerBase
     public async Task<ActionResult> FocusVault(string masterId, [FromBody] FocusVaultRequest request)
     {
         if (string.IsNullOrWhiteSpace(masterId))
-            return BadRequest(new { Success = false, Message = "师父ID不能为空" });
+            return BadRequest(new { Success = false, Message = _loc["VaultFocus_MasterIdEmpty"] });
         if (string.IsNullOrWhiteSpace(request.VaultId))
-            return BadRequest(new { Success = false, Message = "知识库ID不能为空" });
+            return BadRequest(new { Success = false, Message = _loc["VaultFocus_VaultIdEmpty"] });
 
         await using var db = await _dbFactory.CreateDbContextAsync();
         var existing = await db.VaultFocusStates
@@ -71,9 +75,9 @@ public class VaultFocusController : ControllerBase
     public async Task<ActionResult> ArchiveVault(string masterId, [FromBody] FocusVaultRequest request)
     {
         if (string.IsNullOrWhiteSpace(masterId))
-            return BadRequest(new { Success = false, Message = "师父ID不能为空" });
+            return BadRequest(new { Success = false, Message = _loc["VaultFocus_MasterIdEmpty"] });
         if (string.IsNullOrWhiteSpace(request.VaultId))
-            return BadRequest(new { Success = false, Message = "知识库ID不能为空" });
+            return BadRequest(new { Success = false, Message = _loc["VaultFocus_VaultIdEmpty"] });
 
         await using var db = await _dbFactory.CreateDbContextAsync();
         var existing = await db.VaultFocusStates
@@ -103,7 +107,7 @@ public class VaultFocusController : ControllerBase
     public async Task<ActionResult> GetAllVaultStates(string masterId)
     {
         if (string.IsNullOrWhiteSpace(masterId))
-            return BadRequest(new { Success = false, Message = "师父ID不能为空" });
+            return BadRequest(new { Success = false, Message = _loc["VaultFocus_MasterIdEmpty"] });
 
         await using var db = await _dbFactory.CreateDbContextAsync();
         var states = await db.VaultFocusStates

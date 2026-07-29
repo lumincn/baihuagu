@@ -1858,4 +1858,404 @@ Duration: {1}</value>
   <data name="Vault_RestoreFailed" xml:space="preserve">
     <value>Restore failed, vault not found or original path is occupied</value>
   </data>
+  <!-- === Phase 4 Batch 9: Vault + AI remaining strings === -->
+  <data name="Vault_NameNotesRequired" xml:space="preserve">
+    <value>Vault name and notes list cannot be empty</value>
+  </data>
+  <data name="Vault_DataInconsistencyContactAdmin" xml:space="preserve">
+    <value>Vault data inconsistency: database record exists but physical directory is missing. Please contact administrator.</value>
+  </data>
+  <data name="Vault_IllegalFilePath" xml:space="preserve">
+    <value>Illegal file path: {0}</value>
+  </data>
+  <data name="Vault_PushSuccessMigrated" xml:space="preserve">
+    <value>Vault pushed successfully (path structure migrated)</value>
+  </data>
+  <data name="Vault_PushSuccess" xml:space="preserve">
+    <value>Vault pushed successfully</value>
+  </data>
+  <data name="Vault_PushFailed" xml:space="preserve">
+    <value>Push failed: {0}</value>
+  </data>
+  <data name="Vault_PathRequired" xml:space="preserve">
+    <value>Path cannot be empty</value>
+  </data>
+  <data name="Vault_NoteNotFound" xml:space="preserve">
+    <value>Note not found: {0}</value>
+  </data>
+  <data name="Vault_ContentRequired" xml:space="preserve">
+    <value>Content cannot be empty</value>
+  </data>
+  <data name="Vault_IllegalPath" xml:space="preserve">
+    <value>Illegal path</value>
+  </data>
+  <data name="Vault_TokenRequired" xml:space="preserve">
+    <value>Token cannot be empty</value>
+  </data>
+  <data name="Vault_TokenInvalidOrExpired" xml:space="preserve">
+    <value>Token invalid or expired</value>
+  </data>
+  <data name="Vault_NotFoundOrDeleted" xml:space="preserve">
+    <value>Vault not found or has been deleted</value>
+  </data>
+  <data name="Vault_DataInconsistencyDirMissing" xml:space="preserve">
+    <value>Vault data inconsistency: physical directory is missing</value>
+  </data>
+  <data name="Vault_RootPathNotSet" xml:space="preserve">
+    <value>Vault root path not set</value>
+  </data>
+  <data name="Vault_RootPathNotExists" xml:space="preserve">
+    <value>Vault root path does not exist: {0}</value>
+  </data>
+  <data name="Vault_Fts5Reindexed" xml:space="preserve">
+    <value>FTS5 index for vault {0} has been rebuilt</value>
+  </data>
+  <data name="Vault_NoMatchFound" xml:space="preserve">
+    <value>No matching content found in the vault</value>
+  </data>
+  <data name="Vault_MobileGenerated" xml:space="preserve">
+    <value>Mobile generated</value>
+  </data>
+  <data name="Vault_MobileDeviceName" xml:space="preserve">
+    <value>Mobile ({0})</value>
+  </data>
+  <data name="Vault_SpecifiedVault" xml:space="preserve">
+    <value>Specified vault</value>
+  </data>
+  <data name="Search_VaultPathNotExists" xml:space="preserve">
+    <value>Vault path does not exist: {0}</value>
+  </data>
+  <data name="AiChat_Timeout" xml:space="preserve">
+    <value>AI call timed out or was cancelled</value>
+  </data>
+  <data name="AiChat_LocalAiNotRunning" xml:space="preserve">
+    <value>Local AI service {0} is not running and auto-start failed. Please start manually and retry.</value>
+  </data>
+  <data name="AiChat_ProviderNotFound" xml:space="preserve">
+    <value>Specified AI provider not found</value>
+  </data>
+  <data name="LocalAi_ModelPathRequired" xml:space="preserve">
+    <value>Model path cannot be empty</value>
+  </data>
+  <data name="LocalAi_UnsupportedModelType" xml:space="preserve">
+    <value>Unsupported local model type: {0}</value>
+  </data>
+  <data name="LocalAi_ModelUnavailable" xml:space="preserve">
+    <value>Model is unavailable: {0}</value>
+  </data>
+  <data name="Devices_AuthorizeFailed" xml:space="preserve">
+    <value>Authorization failed: {0}</value>
+  </data>
+  <data name="Devices_RejectFailed" xml:space="preserve">
+    <value>Reject failed: {0}</value>
+  </data>
+  <data name="Devices_RevokeFailed" xml:space="preserve">
+    <value>Revoke failed: {0}</value>
+  </data>
+  <!-- === Phase 4 Batch 10: Remaining Family Controllers === -->
+  <data name="ChatCompletions_MessagesEmpty" xml:space="preserve">
+    <value>Messages cannot be empty</value>
+  </data>
+  <data name="ChatCompletions_ProviderNotConfigured" xml:space="preserve">
+    <value>AI provider not configured</value>
+  </data>
+  <data name="ChatCompletions_ToolResultEmpty" xml:space="preserve">
+    <value>Tool execution completed, no content returned</value>
+  </data>
+  <data name="VaultFocus_MasterIdEmpty" xml:space="preserve">
+    <value>Master ID cannot be empty</value>
+  </data>
+  <data name="VaultFocus_VaultIdEmpty" xml:space="preserve">
+    <value>Vault ID cannot be empty</value>
+  </data>
+  <data name="Anki_NotePathEmpty" xml:space="preserve">
+    <value>Note path cannot be empty</value>
+  </data>
+  <data name="Anki_VaultIdEmpty" xml:space="preserve">
+    <value>Vault ID cannot be empty</value>
+  </data>
+  <data name="Anki_VaultNotFound" xml:space="preserve">
+    <value>Vault not found</value>
+  </data>
+  <data name="Anki_NotesDirNotExist" xml:space="preserve">
+    <value>Notes directory does not exist</value>
+  </data>
+  <data name="Anki_GeneratingCardsFor" xml:space="preserve">
+    <value>Starting AI card generation for {0}...</value>
+  </data>
+  <data name="Anki_AiCardTaskCreated" xml:space="preserve">
+    <value>AI card generation task created</value>
+  </data>
+  <data name="Anki_VaultRequired" xml:space="preserve">
+    <value>A vault must be specified</value>
+  </data>
+  <data name="Anki_RecordFailed" xml:space="preserve">
+    <value>Failed to record answer</value>
+  </data>
+  <data name="Anki_SaveFailed" xml:space="preserve">
+    <value>Failed to save card</value>
+  </data>
+  <data name="Anki_CardSaved" xml:space="preserve">
+    <value>Card saved</value>
+  </data>
+  <data name="Git_VaultNotConfigured" xml:space="preserve">
+    <value>Vault has no Git configured</value>
+  </data>
+  <data name="Git_WorkingDirClean" xml:space="preserve">
+    <value>Working directory clean</value>
+  </data>
+  <data name="Git_ChangesCount" xml:space="preserve">
+    <value>{0} file(s) changed</value>
+  </data>
+  <data name="Git_StatusFailed" xml:space="preserve">
+    <value>Get status failed: {0}</value>
+  </data>
+  <data name="Git_NoChangesToDiscard" xml:space="preserve">
+    <value>No changes to discard</value>
+  </data>
+  <data name="Git_DiscardSuccess" xml:space="preserve">
+    <value>All workspace changes discarded</value>
+  </data>
+  <data name="Git_DiscardFailed" xml:space="preserve">
+    <value>Discard failed: {0}</value>
+  </data>
+  <data name="Obsidian_NoVaultConfigured" xml:space="preserve">
+    <value>No vault configured</value>
+  </data>
+  <data name="Obsidian_PathEmpty" xml:space="preserve">
+    <value>Path cannot be empty</value>
+  </data>
+  <data name="Obsidian_CreateDirFailed" xml:space="preserve">
+    <value>Failed to create directory: {0}</value>
+  </data>
+  <data name="Obsidian_LaunchFailed" xml:space="preserve">
+    <value>Launch failed: {0}</value>
+  </data>
+  <data name="Onboarding_VaultCreated" xml:space="preserve">
+    <value>Vault '{0}' created successfully</value>
+  </data>
+  <data name="Onboarding_CreateFailed" xml:space="preserve">
+    <value>Creation failed: {0}</value>
+  </data>
+  <data name="OneHop_DeviceIdRequired" xml:space="preserve">
+    <value>DeviceId is required</value>
+  </data>
+  <data name="OneHop_DefaultDeviceName" xml:space="preserve">
+    <value>Mobile device</value>
+  </data>
+  <data name="OneHop_DeviceAuthorized" xml:space="preserve">
+    <value>Device authorized</value>
+  </data>
+  <data name="OneHop_DeviceAuthorizedUpdated" xml:space="preserve">
+    <value>Device authorized (device ID updated)</value>
+  </data>
+  <data name="OneHop_DeviceIdChangedReauthorize" xml:space="preserve">
+    <value>Device ID changed, please reauthorize in WebUI</value>
+  </data>
+  <data name="OneHop_DeviceRegistered" xml:space="preserve">
+    <value>Device registered, please authorize in WebUI</value>
+  </data>
+
+  <!-- === Phase 4 Batch 11: MasterPromptBuilder === -->
+  <data name="MasterPrompt_RuDao_Role" xml:space="preserve">
+    <value>Guide</value>
+  </data>
+  <data name="MasterPrompt_RuDao_Style" xml:space="preserve">
+    <value>Gentle, curious, good at asking questions</value>
+  </data>
+  <data name="MasterPrompt_RuDao_Prompt" xml:space="preserve">
+    <value>You are a gentle guide. Your task is to understand the apprentice's foundation, goals, and motivation. Guide the apprentice to self-awareness through questions rather than direct teaching. Explore the apprentice's background with curiosity and help them clarify their learning direction.</value>
+  </data>
+  <data name="MasterPrompt_ZhuJi_Role" xml:space="preserve">
+    <value>Strict Teacher</value>
+  </data>
+  <data name="MasterPrompt_ZhuJi_Style" xml:space="preserve">
+    <value>Patient but strict</value>
+  </data>
+  <data name="MasterPrompt_ZhuJi_Prompt" xml:space="preserve">
+    <value>You are a strict teacher. You require the apprentice to thoroughly grasp foundational knowledge, no sloppiness allowed. Assign daily homework and check completion. Correct mistakes patiently but insist on correct answers. Emphasize: "A weak foundation leads to shaky progress."</value>
+  </data>
+  <data name="MasterPrompt_JingJin_Role" xml:space="preserve">
+    <value>Master Craftsman</value>
+  </data>
+  <data name="MasterPrompt_JingJin_Style" xml:space="preserve">
+    <value>Extremely patient, never lets mistakes slide</value>
+  </data>
+  <data name="MasterPrompt_JingJin_Prompt" xml:space="preserve">
+    <value>You are a master craftsman who strives for perfection. You have an almost obsessive attention to detail — any tiny mistake must be pointed out and corrected. You will repeatedly question until the apprentice fully understands. Emphasize: "A minor error can lead to a huge discrepancy."</value>
+  </data>
+  <data name="MasterPrompt_MoLi_Role" xml:space="preserve">
+    <value>Examiner</value>
+  </data>
+  <data name="MasterPrompt_MoLi_Style" xml:space="preserve">
+    <value>Simulates real exam environment</value>
+  </data>
+  <data name="MasterPrompt_MoLi_Prompt" xml:space="preserve">
+    <value>You are a strict examiner. You simulate real exam conditions, setting questions to test the apprentice's comprehensive abilities. Time limits are strict, scoring standards are clear. After the exam, analyze wrong answers in detail and identify knowledge gaps. Emphasize: "True knowledge comes from practice."</value>
+  </data>
+  <data name="MasterPrompt_ChuShi_Role" xml:space="preserve">
+    <value>Senior</value>
+  </data>
+  <data name="MasterPrompt_ChuShi_Style" xml:space="preserve">
+    <value>Practical advice, exam experience</value>
+  </data>
+  <data name="MasterPrompt_ChuShi_Prompt" xml:space="preserve">
+    <value>You are an experienced senior. Share practical experience and exam techniques to help the apprentice make final preparations. Provide application guidance, pre-exam mental preparation, and test-taking strategies. Emphasize: "A quick polish before the exam still helps."</value>
+  </data>
+  <data name="MasterPrompt_MasterQiBo" xml:space="preserve">
+    <value>Qi Bo</value>
+  </data>
+  <data name="MasterPrompt_MasterTuLing" xml:space="preserve">
+    <value>Turing</value>
+  </data>
+  <data name="MasterPrompt_MasterSuanSheng" xml:space="preserve">
+    <value>Suan Sheng</value>
+  </data>
+  <data name="MasterPrompt_MasterFuZi" xml:space="preserve">
+    <value>Fu Zi</value>
+  </data>
+  <data name="MasterPrompt_MasterTingWei" xml:space="preserve">
+    <value>Ting Wei</value>
+  </data>
+  <data name="MasterPrompt_MasterLuBan" xml:space="preserve">
+    <value>Lu Ban</value>
+  </data>
+  <data name="MasterPrompt_OutlineHeader" xml:space="preserve">
+    <value>Exam Outline: {0}</value>
+  </data>
+  <data name="MasterPrompt_StageKeyPoints" xml:space="preserve">
+    <value>## Current Stage Key Points</value>
+  </data>
+  <data name="MasterPrompt_TransitionCriteria" xml:space="preserve">
+    <value>## Stage Transition Criteria: {0}</value>
+  </data>
+  <data name="MasterPrompt_Milestones" xml:space="preserve">
+    <value>## Milestones</value>
+  </data>
+
+  <!-- === Phase 4 Batch 11: OpenClawTaskService === -->
+  <data name="OpenClawTask_CannotStartProcess" xml:space="preserve">
+    <value>Cannot start openclaw process</value>
+  </data>
+  <data name="OpenClawTask_Timeout" xml:space="preserve">
+    <value>Task execution timed out (over {0} minutes)</value>
+  </data>
+  <data name="OpenClawTask_UserCancelled" xml:space="preserve">
+    <value>Cancelled by user</value>
+  </data>
+  <data name="OpenClawTask_ReportHeader" xml:space="preserve">
+    <value># OpenClaw Execution Report</value>
+  </data>
+  <data name="OpenClawTask_Duration" xml:space="preserve">
+    <value>- **Duration**: {0:F0} ms</value>
+  </data>
+  <data name="OpenClawTask_Model" xml:space="preserve">
+    <value>- **Model**: {0}</value>
+  </data>
+  <data name="OpenClawTask_FallbackOutput" xml:space="preserve">
+    <value># OpenClaw Output
+
+```
+{0}
+```
+</value>
+  </data>
+
+  <!-- === Phase 4 Batch 11: RestoreService === -->
+  <data name="Restore_FileNotFound" xml:space="preserve">
+    <value>Backup file not found</value>
+  </data>
+  <data name="Restore_InvalidManifest" xml:space="preserve">
+    <value>Invalid backup file: missing manifest.json</value>
+  </data>
+  <data name="Restore_UnsupportedVersion" xml:space="preserve">
+    <value>Unsupported backup format version</value>
+  </data>
+  <data name="Restore_PasswordRequired" xml:space="preserve">
+    <value>This backup is password protected, please enter the password</value>
+  </data>
+  <data name="Restore_DatabaseFailed" xml:space="preserve">
+    <value>Failed to restore database</value>
+  </data>
+  <data name="Restore_Cancelled" xml:space="preserve">
+    <value>Restore cancelled</value>
+  </data>
+
+  <!-- === Phase 4 Batch 11: ChatMemoryService === -->
+  <data name="ChatMemory_HistorySummary" xml:space="preserve">
+    <value>[Conversation History Summary]</value>
+  </data>
+  <data name="ChatMemory_RelevantMemories" xml:space="preserve">
+    <value>[Relevant Historical Memories]</value>
+  </data>
+
+  <!-- === Phase 4 Batch 11: NoteParser === -->
+  <data name="NoteParser_JsonParseFailed" xml:space="preserve">
+    <value>JSON parse failed: {0}</value>
+  </data>
+  <data name="NoteParser_EmptyResponse" xml:space="preserve">
+    <value>AI response is empty</value>
+  </data>
+  <data name="NoteParser_NoArrayStart" xml:space="preserve">
+    <value>JSON array start '[' not found</value>
+  </data>
+  <data name="NoteParser_NoArrayEnd" xml:space="preserve">
+    <value>JSON array end ']' incomplete</value>
+  </data>
+
+  <!-- === Phase 4 Batch 11: BackupService === -->
+  <data name="Backup_Cancelled" xml:space="preserve">
+    <value>Backup cancelled</value>
+  </data>
+  <data name="Backup_FileNotFound" xml:space="preserve">
+    <value>File not found</value>
+  </data>
+  <data name="Backup_MissingManifest" xml:space="preserve">
+    <value>Missing manifest.json</value>
+  </data>
+  <data name="Backup_InvalidManifestFormat" xml:space="preserve">
+    <value>Invalid manifest.json format</value>
+  </data>
+
+  <!-- === Phase 4 Batch 11: StartupMonitor === -->
+  <data name="Startup_Uptime" xml:space="preserve">
+    <value>Uptime: {0}</value>
+  </data>
+  <data name="Startup_StartTime" xml:space="preserve">
+    <value>Start time: {0}</value>
+  </data>
+  <data name="Startup_RestartCount" xml:space="preserve">
+    <value>Restarts: {0}</value>
+  </data>
+  <data name="Startup_RecentRestarts" xml:space="preserve">
+    <value>Restarts in last 10 min: {0}</value>
+  </data>
+  <data name="Startup_Pid" xml:space="preserve">
+    <value>PID: {0}</value>
+  </data>
+
+  <!-- === Phase 4 Batch 11: NotesMdCliController === -->
+  <data name="NotesMdCli_PathEmpty" xml:space="preserve">
+    <value>Path cannot be empty</value>
+  </data>
+  <data name="NotesMdCli_DirNotFound" xml:space="preserve">
+    <value>Directory not found</value>
+  </data>
+  <data name="NotesMdCli_AddFailed" xml:space="preserve">
+    <value>Add failed, please check if notesmd-cli is working properly</value>
+  </data>
+  <data name="NotesMdCli_PathsEmpty" xml:space="preserve">
+    <value>Path list cannot be empty</value>
+  </data>
+  <data name="NotesMdCli_NoValidPaths" xml:space="preserve">
+    <value>No valid directory paths</value>
+  </data>
+
+  <!-- === Phase 4 Batch 11: LocalModelDeploymentService.Lifecycle === -->
+  <data name="LocalModel_Lifecycle_OllamaNotRunning" xml:space="preserve">
+    <value>Ollama service not running and auto-start failed, please start manually and retry.</value>
+  </data>
+  <data name="LocalModel_Lifecycle_LmStudioNotRunning" xml:space="preserve">
+    <value>LM Studio service not running and auto-start failed, please start manually and retry.</value>
+  </data>
 </root>

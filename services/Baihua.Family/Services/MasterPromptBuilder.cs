@@ -17,28 +17,32 @@ public class MasterPromptBuilder
         _loc = loc;
     }
 
-    private static readonly Dictionary<string, string> IndustryMasterNames = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly Dictionary<string, string> IndustryMasterKeys = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["中医"] = "岐伯",
-        ["医学"] = "岐伯",
-        ["计算机"] = "图灵",
-        ["IT"] = "图灵",
-        ["会计"] = "算圣",
-        ["财务"] = "算圣",
-        ["教资"] = "夫子",
-        ["教育"] = "夫子",
-        ["法律"] = "廷尉",
-        ["建筑"] = "鲁班",
+        ["中医"] = "MasterQiBo",
+        ["医学"] = "MasterQiBo",
+        ["计算机"] = "MasterTuLing",
+        ["IT"] = "MasterTuLing",
+        ["会计"] = "MasterSuanSheng",
+        ["财务"] = "MasterSuanSheng",
+        ["教资"] = "MasterFuZi",
+        ["教育"] = "MasterFuZi",
+        ["法律"] = "MasterTingWei",
+        ["建筑"] = "MasterLuBan",
     };
 
-    private static readonly Dictionary<string, StagePersona> StagePersonas = new()
+    private StagePersona GetStagePersona(string stageName)
     {
-        ["入道"] = new("引路人", "温和、好奇、善问", "你是一位温和的引路人。你的任务是了解学徒的基础、目标和动机。通过提问引导学徒自我认知，而非直接灌输。用好奇的语气探索学徒的背景，帮助他们明确学习方向。"),
-        ["筑基"] = new("严师", "有耐心但要求严格", "你是一位严格的师父。你要求学徒扎实掌握基础知识，不容许敷衍了事。每日布置功课并检查完成情况。对错误耐心纠正，但要求必须改对。强调'基础不牢，地动山摇'。"),
-        ["精进"] = new("匠人", "极其耐心、绝不放过细节错误", "你是一位精益求精的匠人师父。你对细节有近乎偏执的追求，任何微小错误都要指出并纠正。你会反复追问直到学徒完全理解。强调'差之毫厘，谬以千里'。"),
-        ["磨砺"] = new("考官", "模拟真实考试环境", "你是一位严肃的考官。你模拟真实考试环境，出题考察学徒的综合能力。时间限制严格，评分标准明确。考后详细分析错题，指出知识盲区。强调'实战出真知'。"),
-        ["出师"] = new("前辈", "实战建议、考试经验", "你是一位经验丰富的前辈。你分享实战经验和考试技巧，帮助学徒做好最后的冲刺准备。提供报考指导、考前心理建设、应试策略。强调'临阵磨枪，不快也光'。"),
-    };
+        return stageName switch
+        {
+            "入道" => new StagePersona(_loc["MasterPrompt_RuDao_Role"], _loc["MasterPrompt_RuDao_Style"], _loc["MasterPrompt_RuDao_Prompt"]),
+            "筑基" => new StagePersona(_loc["MasterPrompt_ZhuJi_Role"], _loc["MasterPrompt_ZhuJi_Style"], _loc["MasterPrompt_ZhuJi_Prompt"]),
+            "精进" => new StagePersona(_loc["MasterPrompt_JingJin_Role"], _loc["MasterPrompt_JingJin_Style"], _loc["MasterPrompt_JingJin_Prompt"]),
+            "磨砺" => new StagePersona(_loc["MasterPrompt_MoLi_Role"], _loc["MasterPrompt_MoLi_Style"], _loc["MasterPrompt_MoLi_Prompt"]),
+            "出师" => new StagePersona(_loc["MasterPrompt_ChuShi_Role"], _loc["MasterPrompt_ChuShi_Style"], _loc["MasterPrompt_ChuShi_Prompt"]),
+            _ => new StagePersona(_loc["MasterPrompt_RuDao_Role"], _loc["MasterPrompt_RuDao_Style"], _loc["MasterPrompt_RuDao_Prompt"])
+        };
+    }
 
     private static readonly string[] SafetyBlockedKeywords =
     [
@@ -48,10 +52,10 @@ public class MasterPromptBuilder
 
     public string ResolveMasterName(string industry)
     {
-        foreach (var (key, name) in IndustryMasterNames)
+        foreach (var (key, locKey) in IndustryMasterKeys)
         {
             if (industry.Contains(key, StringComparison.OrdinalIgnoreCase))
-                return name;
+                return _loc["MasterPrompt_" + locKey];
         }
         return _loc["Prompt_DefaultMasterName"];
     }
@@ -103,8 +107,7 @@ public class MasterPromptBuilder
         string? coreProfile,
         string? stageSummary)
     {
-        var persona = StagePersonas.GetValueOrDefault(currentStage)
-            ?? StagePersonas["入道"];
+        var persona = GetStagePersona(currentStage);
 
         var sb = new System.Text.StringBuilder();
 
@@ -200,21 +203,21 @@ public class MasterPromptBuilder
         if (stageInfo == null) return null;
 
         var sb = new System.Text.StringBuilder();
-        sb.AppendLine($"# 考试大纲：{outline.Name}");
+        sb.AppendLine(string.Format(_loc["MasterPrompt_OutlineHeader"], outline.Name));
 
         if (stageInfo.KeyPoints != null && stageInfo.KeyPoints.Count > 0)
         {
-            sb.AppendLine($"## 当前阶段考点");
+            sb.AppendLine(_loc["MasterPrompt_StageKeyPoints"]);
             foreach (var kp in stageInfo.KeyPoints)
                 sb.AppendLine($"- {kp}");
         }
 
         if (!string.IsNullOrEmpty(stageInfo.TransitionCriteria))
-            sb.AppendLine($"## 阶段转换标准：{stageInfo.TransitionCriteria}");
+            sb.AppendLine(string.Format(_loc["MasterPrompt_TransitionCriteria"], stageInfo.TransitionCriteria));
 
         if (stageInfo.Milestones != null && stageInfo.Milestones.Count > 0)
         {
-            sb.AppendLine($"## 里程碑");
+            sb.AppendLine(_loc["MasterPrompt_Milestones"]);
             foreach (var m in stageInfo.Milestones)
                 sb.AppendLine($"- {m}");
         }

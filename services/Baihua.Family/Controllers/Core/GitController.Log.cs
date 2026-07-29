@@ -15,7 +15,7 @@ public partial class GitController
                 var vaultPath = _vaultSettings.GetVaults().FirstOrDefault(v => v.Id == vaultId)?.Path;
                 if (string.IsNullOrEmpty(vaultPath))
                 {
-                    return BadRequest(new { error = "必须指定有效的知识库" });
+                    return BadRequest(new { error = _loc["Vault_Required"] });
                 }
 
                 var log = await RunGitCommand(vaultPath, $"log --oneline -{count} --format=\"%H|%s|%an|%ar\"");
@@ -56,7 +56,7 @@ public partial class GitController
                 var vaultPath = _vaultSettings.GetVaults().FirstOrDefault(v => v.Id == vaultId)?.Path;
                 if (string.IsNullOrEmpty(vaultPath))
                 {
-                    return BadRequest(new { error = "必须指定有效的知识库" });
+                    return BadRequest(new { error = _loc["Vault_Required"] });
                 }
 
                 // 获取当前分支
@@ -101,14 +101,14 @@ public partial class GitController
                 var vaultPath = _vaultSettings.GetVaults().FirstOrDefault(v => v.Id == vaultId)?.Path;
                 if (string.IsNullOrEmpty(vaultPath))
                 {
-                    return BadRequest(new GitResultResponse { Success = false, Message = "必须指定有效的知识库" });
+                    return BadRequest(new GitResultResponse { Success = false, Message = _loc["Vault_Required"] });
                 }
 
                 // 检查是否有变更
                 var status = await RunGitCommand(vaultPath, "status --porcelain");
                 if (string.IsNullOrWhiteSpace(status))
                 {
-                    return Ok(new GitResultResponse { Success = true, Message = "没有需要撤销的更改" });
+                    return Ok(new GitResultResponse { Success = true, Message = _loc["Git_NoChangesToDiscard"] });
                 }
 
                 // 撤销所有工作区更改（不包括未跟踪的文件）
@@ -120,7 +120,7 @@ public partial class GitController
                 return Ok(new GitResultResponse
                 {
                     Success = true,
-                    Message = "已撤销所有工作区更改"
+                    Message = _loc["Git_DiscardSuccess"]
                 });
             }
             catch (Exception ex)
@@ -129,7 +129,7 @@ public partial class GitController
                 return Ok(new GitResultResponse
                 {
                     Success = false,
-                    Message = $"撤销失败: {ex.Message}"
+                    Message = _loc["Git_DiscardFailed", ex.Message]
                 });
             }
         }

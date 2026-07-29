@@ -1,6 +1,8 @@
 using Baihua.Core;
+using Baihua.Core.Localization;
 using Baihua.Core.Security;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using Baihua.Family.Services;
 
 namespace Baihua.Family.Controllers;
@@ -14,11 +16,11 @@ public partial class OneHopController
             {
                 if (string.IsNullOrEmpty(request?.DeviceId))
                 {
-                    return BadRequest(new { error = "DeviceId is required" });
+                    return BadRequest(new { error = _loc["OneHop_DeviceIdRequired"] });
                 }
 
                 var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-                var deviceName = string.IsNullOrEmpty(request.DeviceName) ? "移动端设备" : request.DeviceName;
+                var deviceName = string.IsNullOrEmpty(request.DeviceName) ? _loc["OneHop_DefaultDeviceName"] : request.DeviceName;
                 var deviceType = string.IsNullOrEmpty(request.DeviceType) ? null : request.DeviceType;
 
                 _oneHopManager.RegisterDevice(request.DeviceId, deviceName, ipAddress, deviceType);
@@ -32,7 +34,7 @@ public partial class OneHopController
                 {
                     return Ok(new
                     {
-                        message = "设备已授权",
+                        message = _loc["OneHop_DeviceAuthorized"],
                         deviceId = request.DeviceId,
                         deviceName = deviceName,
                         serverName = serverName,
@@ -56,7 +58,7 @@ public partial class OneHopController
                         _deviceService.UpdateDeviceId(deviceByName.DeviceId ?? "", request.DeviceId, deviceName);
                         return Ok(new
                         {
-                            message = "设备已授权（已更新设备标识）",
+                            message = _loc["OneHop_DeviceAuthorizedUpdated"],
                             deviceId = request.DeviceId,
                             deviceName = deviceName,
                             serverName = serverName,
@@ -75,7 +77,7 @@ public partial class OneHopController
                     _deviceService.UpdateDeviceId(deviceByName.DeviceId, request.DeviceId, deviceName);
                     return Ok(new
                     {
-                        message = "设备已授权（已更新设备标识）",
+                        message = _loc["OneHop_DeviceAuthorizedUpdated"],
                         deviceId = request.DeviceId,
                         deviceName = deviceName,
                         serverName = serverName,
@@ -97,7 +99,7 @@ public partial class OneHopController
                     var pairRequest2 = _deviceService.SubmitLanDiscoveryRequest(deviceName, ipAddress, request.DeviceId);
                     return Ok(new
                     {
-                        message = "设备标识已变更，请在 WebUI 中重新授权",
+                        message = _loc["OneHop_DeviceIdChangedReauthorize"],
                         deviceId = request.DeviceId,
                         deviceName = deviceName,
                         serverName = serverName,
@@ -112,7 +114,7 @@ public partial class OneHopController
 
                 return Ok(new
                 {
-                    message = "设备已注册，请在 WebUI 中授权",
+                    message = _loc["OneHop_DeviceRegistered"],
                     deviceId = request.DeviceId,
                     deviceName = deviceName,
                     serverName = serverName,

@@ -34,11 +34,11 @@ namespace Baihua.Vault.Controllers
         public IActionResult SetVaultRoot([FromBody] VaultRootRequest request)
         {
             if (request == null)
-                return BadRequest(new { error = "请求不能为空" });
+                return BadRequest(new { error = _loc["Vault_RequestCannotBeEmpty"].Value });
 
             var next = string.IsNullOrWhiteSpace(request.VaultPath) ? "" : request.VaultPath.Trim();
             if (string.IsNullOrWhiteSpace(next))
-                return BadRequest(new { error = "VaultPath 不能为空" });
+                return BadRequest(new { error = _loc["Vault_PathCannotBeEmpty"].Value });
 
             _vaultSettings.SetVaultPath(next);
             _ = _webUINotification.NotifyVaultStatusChangedAsync();
@@ -139,10 +139,10 @@ namespace Baihua.Vault.Controllers
         {
             var rootPath = _vaultSettings.VaultRootPathPreference;
             if (string.IsNullOrWhiteSpace(rootPath))
-                return BadRequest(new { error = "知识库根路径未设置" });
+                return BadRequest(new { error = _loc["Vault_RootPathNotSet"].Value });
 
             if (!Directory.Exists(rootPath))
-                return BadRequest(new { error = $"根路径不存在: {rootPath}" });
+                return BadRequest(new { error = _loc["Vault_RootPathNotExists", rootPath].Value });
 
             var (added, removed) = _vaultSettings.SyncVaultsWithFilesystem(rootPath);
             if (added > 0 || removed > 0)

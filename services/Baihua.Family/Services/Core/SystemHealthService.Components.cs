@@ -39,7 +39,7 @@ namespace Baihua.Family.Services
                             Name = "Python",
                             Status = "healthy",
                             Version = HealthCheckHelper.ExtractVersion(output),
-                            Message = $"Python 已安装 ({cmd})"
+                            Message = string.Format(_loc["Health_PythonInstalled"], cmd)
                         };
                     }
                 }
@@ -58,7 +58,7 @@ namespace Baihua.Family.Services
             {
                 Name = "Python",
                 Status = "warning",
-                Message = "Python 未安装（可选，用于脚本扩展）"
+                Message = _loc["Health_PythonNotInstalled"]
             };
         }
 
@@ -83,7 +83,7 @@ namespace Baihua.Family.Services
                     {
                         Name = "Node.js",
                         Status = "warning",
-                        Message = "Node.js 未安装"
+                        Message = _loc["Health_NodeNotInstalled"]
                     };
                 }
 
@@ -149,7 +149,7 @@ namespace Baihua.Family.Services
                             Name = "PIP",
                             Status = "healthy",
                             Version = HealthCheckHelper.ExtractVersion(output),
-                            Message = $"PIP 已安装 ({cmd})"
+                            Message = string.Format(_loc["Health_PipInstalled"], cmd)
                         };
                     }
                 }
@@ -168,7 +168,7 @@ namespace Baihua.Family.Services
             {
                 Name = "PIP",
                 Status = "warning",
-                Message = "PIP 未安装（可选，用于 Python 包管理）"
+                Message = _loc["Health_PipNotInstalled"]
             };
         }
 
@@ -188,7 +188,7 @@ namespace Baihua.Family.Services
                     {
                         Name = "API Key",
                         Status = "warning",
-                        Message = "未配置任何 AI 提供商"
+                        Message = _loc["Health_NoAiProvider"]
                     });
                 }
 
@@ -205,7 +205,7 @@ namespace Baihua.Family.Services
                         {
                             Name = "API Key",
                             Status = "healthy",
-                            Message = $"主提供商 {mainProvider.Name} 为本地服务，无需 API Key"
+                            Message = string.Format(_loc["Health_LocalProviderNoKey"], mainProvider.Name)
                         });
                     }
 
@@ -213,7 +213,7 @@ namespace Baihua.Family.Services
                     {
                         Name = "API Key",
                         Status = "critical",
-                        Message = $"主提供商 {mainProvider.Name} 未配置 API Key"
+                        Message = string.Format(_loc["Health_MainProviderNoKey"], mainProvider.Name)
                     });
                 }
 
@@ -225,14 +225,14 @@ namespace Baihua.Family.Services
                 {
                     var scheme = summary.Scheme switch
                     {
-                        EncryptionScheme.AesGcm => "AES加密",
-                        _ => "已加密"
+                        EncryptionScheme.AesGcm => _loc["Health_AesEncrypted"],
+                        _ => _loc["Health_Encrypted"]
                     };
                     return Task.FromResult(new ComponentStatus
                     {
                         Name = "API Key",
                         Status = "healthy",
-                        Message = $"{mainProvider.Name} API Key 已配置（{scheme}）"
+                        Message = string.Format(_loc["Health_ApiKeyConfigured"], mainProvider.Name, scheme)
                     });
                 }
 
@@ -240,7 +240,7 @@ namespace Baihua.Family.Services
                 {
                     Name = "API Key",
                     Status = "critical",
-                    Message = $"{mainProvider.Name} 未配置 API Key"
+                    Message = string.Format(_loc["Health_ProviderNoKey"], mainProvider.Name)
                 });
             }
             catch (OperationCanceledException)
@@ -254,7 +254,7 @@ namespace Baihua.Family.Services
                 {
                     Name = "API Key",
                     Status = "warning",
-                    Message = "API Key 检测异常"
+                    Message = _loc["Health_ApiKeyCheckError"]
                 });
             }
         }
@@ -276,7 +276,7 @@ namespace Baihua.Family.Services
                     {
                         Name = "知识库",
                         Status = "critical",
-                        Message = "未配置知识库路径。请前往设置页面配置 Obsidian 知识库路径"
+                        Message = _loc["Health_VaultPathNotConfigured"]
                     });
                 }
 
@@ -286,7 +286,7 @@ namespace Baihua.Family.Services
                     {
                         Name = "知识库",
                         Status = "critical",
-                        Message = $"知识库路径不存在: {vaultPath}。该目录可能被删除或移动，请重新配置"
+                        Message = string.Format(_loc["Health_VaultPathNotExists"], vaultPath)
                     });
                 }
 
@@ -315,7 +315,7 @@ namespace Baihua.Family.Services
                 {
                     Name = "知识库",
                     Status = "warning",
-                    Message = "知识库路径检测异常"
+                    Message = _loc["Health_VaultCheckError"]
                 });
             }
         }

@@ -42,9 +42,9 @@ namespace Baihua.Family.Services
             var parts = notePath.Split('/');
             if (parts.Length >= 2)
             {
-                return $"经方::{parts[^2]}";
+                return string.Format(_loc["Anki_DeckPrefixJingFang"], parts[^2]);
             }
-            return "经方";
+            return _loc["Anki_TagJingFang"];
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace Baihua.Family.Services
         /// </summary>
         private List<string> GetTagsFromPath(string notePath)
         {
-            var tags = new List<string> { "经方" };
+            var tags = new List<string> { _loc["Anki_TagJingFang"] };
             var parts = notePath.Split('/');
             
             foreach (var part in parts.Take(parts.Length - 1))
@@ -87,13 +87,13 @@ namespace Baihua.Family.Services
                 var basePath = notesBasePath ?? _vaultSettings.NotesPath;
                 if (string.IsNullOrEmpty(basePath))
                 {
-                    return new GenerateResult { Success = false, Message = "笔记目录未配置" };
+                    return new GenerateResult { Success = false, Message = _loc["Anki_NotesDirNotConfigured"] };
                 }
 
                 var fullPath = Path.Combine(basePath, notePath + ".md");
                 if (!File.Exists(fullPath))
                 {
-                    return new GenerateResult { Success = false, Message = $"笔记不存在：{fullPath}" };
+                    return new GenerateResult { Success = false, Message = string.Format(_loc["Anki_NoteNotFound"], fullPath) };
                 }
 
                 var content = await File.ReadAllTextAsync(fullPath);
@@ -106,7 +106,7 @@ namespace Baihua.Family.Services
                     return new GenerateResult
                     {
                         Success = true,
-                        Message = $"AI 未从笔记生成卡片: {title}",
+                        Message = string.Format(_loc["Anki_AiNoCards"], title),
                         CardCount = 0
                     };
                 }
@@ -150,7 +150,7 @@ namespace Baihua.Family.Services
             var dirPath = directory;
             if (!Directory.Exists(dirPath))
             {
-                return new BatchGenerateResult { Success = false, Message = $"目录不存在：{directory}" };
+                return new BatchGenerateResult { Success = false, Message = string.Format(_loc["Anki_DirNotFound"], directory) };
             }
 
             string? cardsPath = null;
@@ -173,7 +173,7 @@ namespace Baihua.Family.Services
             // 有 taskId 时先汇报总进度
             if (!string.IsNullOrEmpty(progressTaskId))
             {
-                await _taskManager.UpdateProgress(progressTaskId, 0, totalFiles, $"准备处理 {totalFiles} 篇笔记...");
+                await _taskManager.UpdateProgress(progressTaskId, 0, totalFiles, string.Format(_loc["Anki_PreparingNotes"], totalFiles));
             }
 
             for (int i = 0; i < totalFiles; i++)

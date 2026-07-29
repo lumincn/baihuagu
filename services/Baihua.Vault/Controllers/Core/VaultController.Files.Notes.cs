@@ -21,13 +21,13 @@ public partial class VaultController
     {
         if (string.IsNullOrWhiteSpace(path))
         {
-            return BadRequest(new { error = "路径不能为空" });
+            return BadRequest(new { error = _loc["Vault_PathRequired"].Value });
         }
 
         var baseVaultPath = ResolveVaultPath(vaultId);
         if (string.IsNullOrEmpty(baseVaultPath))
         {
-            return BadRequest(new { error = "必须指定有效的知识库" });
+            return BadRequest(new { error = _loc["Vault_Required"].Value });
         }
 
         try
@@ -43,7 +43,7 @@ public partial class VaultController
             
             if (!System.IO.File.Exists(filePath))
             {
-                return NotFound(new { error = $"笔记不存在：{path}" });
+                return NotFound(new { error = _loc["Vault_NoteNotFound", path].Value });
             }
 
             var content = System.IO.File.ReadAllText(filePath);
@@ -80,13 +80,13 @@ public partial class VaultController
     public async Task<IActionResult> WriteNote(string path, [FromQuery] string vaultId, [FromBody] WriteNoteRequest request)
     {
         if (string.IsNullOrWhiteSpace(path))
-            return BadRequest(new { error = "路径不能为空" });
+            return BadRequest(new { error = _loc["Vault_PathRequired"].Value });
         if (request == null || request.Content == null)
-            return BadRequest(new { error = "内容不能为空" });
+            return BadRequest(new { error = _loc["Vault_ContentRequired"].Value });
 
         var baseVaultPath = ResolveVaultPath(vaultId);
         if (string.IsNullOrEmpty(baseVaultPath))
-            return BadRequest(new { error = "必须指定有效的知识库" });
+            return BadRequest(new { error = _loc["Vault_Required"].Value });
 
         try
         {
@@ -99,7 +99,7 @@ public partial class VaultController
             if (path.Contains(".."))
             {
                 _logger.LogWarning("写入操作检测到目录遍历尝试: {Path}", path);
-                return BadRequest(new { error = "非法路径" });
+                return BadRequest(new { error = _loc["Vault_IllegalPath"].Value });
             }
 
             var notesRoot = System.IO.Path.Combine(baseVaultPath, "notes");
@@ -110,7 +110,7 @@ public partial class VaultController
             if (!filePath.StartsWith(baseFullPath, StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogWarning("写入路径遍历被阻止: {FilePath} 不在 {BasePath} 内", filePath, baseFullPath);
-                return BadRequest(new { error = "非法路径" });
+                return BadRequest(new { error = _loc["Vault_IllegalPath"].Value });
             }
 
             var dir = System.IO.Path.GetDirectoryName(filePath);

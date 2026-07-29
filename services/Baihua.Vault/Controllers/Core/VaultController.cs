@@ -1,7 +1,9 @@
 using Baihua.Core;
+using Baihua.Core.Localization;
 using Baihua.Core.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Baihua.Data;
@@ -31,6 +33,7 @@ namespace Baihua.Vault.Controllers;
         private readonly IDbContextFactory<VaultDbContext> _dbContextFactory;
         private readonly RequestSignatureService _signatureService;
         private readonly IVaultNameResolver _vaultNameResolver;
+        private readonly IStringLocalizer<SharedResources> _loc;
 
         // 支持的文件扩展名
         private static readonly HashSet<string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase)
@@ -74,7 +77,8 @@ namespace Baihua.Vault.Controllers;
             ISyncAuthorizationStrategy syncAuthStrategy,
             IDbContextFactory<VaultDbContext> dbContextFactory,
             RequestSignatureService signatureService,
-            IVaultNameResolver vaultNameResolver)
+            IVaultNameResolver vaultNameResolver,
+            IStringLocalizer<SharedResources> loc)
         {
             _vaultSettings = vaultSettings;
             _deviceService = deviceService;
@@ -83,6 +87,7 @@ namespace Baihua.Vault.Controllers;
             _dbContextFactory = dbContextFactory;
             _signatureService = signatureService;
             _vaultNameResolver = vaultNameResolver;
+            _loc = loc;
         }
 
         /// <summary>

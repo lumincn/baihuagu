@@ -18,14 +18,14 @@ public partial class VaultController
         {
             if (string.IsNullOrEmpty(request.Token))
             {
-                return BadRequest(new { valid = false, error = "Token 不能为空" });
+                return BadRequest(new { valid = false, error = _loc["Vault_TokenRequired"].Value });
             }
 
             var isValid = _deviceService.ValidateAccessToken(request.Token);
 
             if (!isValid)
             {
-                return Ok(new { valid = false, error = "Token 无效或已过期" });
+                return Ok(new { valid = false, error = _loc["Vault_TokenInvalidOrExpired"].Value });
             }
 
             return Ok(new { valid = true, deviceId = "" });
@@ -51,13 +51,13 @@ public partial class VaultController
 
             if (string.IsNullOrEmpty(baseVaultPath))
             {
-                return NotFound(new { error = "知识库不存在或已被删除" });
+                return NotFound(new { error = _loc["Vault_NotFoundOrDeleted"].Value });
             }
 
             if (!System.IO.Directory.Exists(baseVaultPath))
             {
                 _logger.LogError("知识库路径无效：{Path}，数据库记录存在但物理目录已丢失", baseVaultPath);
-                return StatusCode(410, new { error = "知识库数据不一致：物理目录已丢失", vaultId });
+                return StatusCode(410, new { error = _loc["Vault_DataInconsistencyDirMissing"].Value, vaultId });
             }
 
             try
@@ -89,7 +89,7 @@ public partial class VaultController
 
                 var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
                 var syncDeviceId = !string.IsNullOrWhiteSpace(deviceId) ? deviceId : "ip-" + ipAddress.GetHashCode().ToString("x");
-                var syncDeviceName = !string.IsNullOrWhiteSpace(deviceId) ? deviceId : "移动端(" + ipAddress + ")";
+                var syncDeviceName = !string.IsNullOrWhiteSpace(deviceId) ? deviceId : _loc["Vault_MobileDeviceName", ipAddress].Value;
                 _deviceService.RecordSyncActivity(syncDeviceId, syncDeviceName, vaultId, files.Count, "manifest", ipAddress);
 
                 _logger.LogInformation("返回全量清单：{Count} 个文件，cursor={Cursor}, vaultId={VaultId}", files.Count, cursor, vaultId);
@@ -97,7 +97,7 @@ public partial class VaultController
                 return Ok(new VaultManifestResponse
                 {
                     VaultId = vaultId,
-                    VaultName = targetVault?.Name ?? "指定知识库",
+                    VaultName = targetVault?.Name ?? _loc["Vault_SpecifiedVault"].Value,
                     Cursor = cursor,
                     Files = files
                 });

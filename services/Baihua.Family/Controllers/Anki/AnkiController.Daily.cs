@@ -12,7 +12,7 @@ public partial class AnkiController
         public async Task<ActionResult<DailyCardResultDto>> GetDailyCard([FromQuery] string vaultId)
         {
             if (string.IsNullOrWhiteSpace(vaultId))
-                return BadRequest(new DailyCardResultDto { HasCard = false, Message = "必须指定知识库" });
+                return BadRequest(new DailyCardResultDto { HasCard = false, Message = _loc["Anki_VaultRequired"] });
 
             var result = await _dailyCardService.GetTodayCardAsync(vaultId);
             var dto = new DailyCardResultDto
@@ -47,11 +47,11 @@ public partial class AnkiController
         public async Task<ActionResult> SubmitDailyAnswer([FromQuery] string vaultId, [FromBody] DailyAnswerRequestDto request)
         {
             if (string.IsNullOrWhiteSpace(vaultId))
-                return BadRequest(new { error = "必须指定知识库" });
+                return BadRequest(new { error = _loc["Anki_VaultRequired"] });
 
             var success = await _dailyCardService.RecordAnswerAsync(vaultId, request.CardId, request.Result);
             if (!success)
-                return StatusCode(500, new { error = "记录失败" });
+                return StatusCode(500, new { error = _loc["Anki_RecordFailed"] });
 
             // 异步检查成就（DailyCardService 已记录 StudyActivity）
             var defaultLearner = await _learnerService.GetDefaultAsync();
@@ -71,7 +71,7 @@ public partial class AnkiController
         public ActionResult<DailyProgressDto> GetDailyProgress([FromQuery] string vaultId)
         {
             if (string.IsNullOrWhiteSpace(vaultId))
-                return BadRequest(new { error = "必须指定知识库" });
+                return BadRequest(new { error = _loc["Anki_VaultRequired"] });
 
             var p = _dailyCardService.GetTodayProgress(vaultId);
             return Ok(new DailyProgressDto
@@ -90,7 +90,7 @@ public partial class AnkiController
         public async Task<ActionResult> SaveCustomCard([FromQuery] string vaultId, [FromBody] CustomCardRequestDto request)
         {
             if (string.IsNullOrWhiteSpace(vaultId))
-                return BadRequest(new { error = "必须指定知识库" });
+                return BadRequest(new { error = _loc["Anki_VaultRequired"] });
 
             var req = new Services.CustomCardRequest
             {
@@ -101,7 +101,7 @@ public partial class AnkiController
             };
             var success = _dailyCardService.SaveCustomCard(vaultId, req);
             if (!success)
-                return StatusCode(500, new { error = "保存失败" });
+                return StatusCode(500, new { error = _loc["Anki_SaveFailed"] });
 
             // 记录出题活动并检查成就
             var defaultLearner = await _learnerService.GetDefaultAsync();
@@ -110,7 +110,7 @@ public partial class AnkiController
                 await _achievementEngine.RecordActivityAsync(defaultLearner.Id, vaultId, "create_card");
             }
 
-            return Ok(new { success = true, message = "卡片已保存" });
+            return Ok(new { success = true, message = _loc["Anki_CardSaved"] });
         }
 
         /// <summary>

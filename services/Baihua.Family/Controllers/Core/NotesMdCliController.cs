@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using Baihua.Contracts.Vaults;
+using Baihua.Core.Localization;
 using Baihua.Family.Services;
 using Baihua.Contracts.Core;
 
@@ -10,10 +12,12 @@ namespace Baihua.Family.Controllers
     public class NotesMdCliController : ControllerBase
     {
         private readonly NotesMdCliService _notesMdCliService;
+        private readonly IStringLocalizer<SharedResources> _loc;
 
-        public NotesMdCliController(NotesMdCliService notesMdCliService)
+        public NotesMdCliController(NotesMdCliService notesMdCliService, IStringLocalizer<SharedResources> loc)
         {
             _notesMdCliService = notesMdCliService;
+            _loc = loc;
         }
 
         /// <summary>
@@ -40,13 +44,13 @@ namespace Baihua.Family.Controllers
         {
             if (string.IsNullOrWhiteSpace(request?.Path))
             {
-                return BadRequest(new { success = false, error = "路径不能为空" });
+                return BadRequest(new { success = false, error = _loc["NotesMdCli_PathEmpty"] });
             }
 
             var path = request.Path.Trim();
             if (!Directory.Exists(path))
             {
-                return BadRequest(new { success = false, error = "目录不存在" });
+                return BadRequest(new { success = false, error = _loc["NotesMdCli_DirNotFound"] });
             }
 
             var success = _notesMdCliService.AddVault(path);
@@ -55,7 +59,7 @@ namespace Baihua.Family.Controllers
                 return Ok(new { success = true, path });
             }
 
-            return StatusCode(500, new { success = false, error = "添加失败，请检查 notesmd-cli 是否正常工作" });
+            return StatusCode(500, new { success = false, error = _loc["NotesMdCli_AddFailed"] });
         }
 
         /// <summary>
@@ -66,7 +70,7 @@ namespace Baihua.Family.Controllers
         {
             if (request?.Paths == null || request.Paths.Count == 0)
             {
-                return BadRequest(new { success = false, error = "路径列表不能为空" });
+                return BadRequest(new { success = false, error = _loc["NotesMdCli_PathsEmpty"] });
             }
 
             var validPaths = request.Paths
@@ -76,7 +80,7 @@ namespace Baihua.Family.Controllers
 
             if (validPaths.Count == 0)
             {
-                return BadRequest(new { success = false, error = "没有有效的目录路径" });
+                return BadRequest(new { success = false, error = _loc["NotesMdCli_NoValidPaths"] });
             }
 
             var (succeeded, failed) = _notesMdCliService.BatchAddVaults(validPaths);

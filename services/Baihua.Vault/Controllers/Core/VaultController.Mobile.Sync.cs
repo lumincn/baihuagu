@@ -24,14 +24,14 @@ public partial class VaultController
 
         if (string.IsNullOrWhiteSpace(request.VaultName) || request.Notes == null || request.Notes.Count == 0)
         {
-            return BadRequest(new { error = "知识库名称和笔记列表不能为空" });
+            return BadRequest(new { error = _loc["Vault_NameNotesRequired"].Value });
         }
 
         try
         {
             var vaultRoot = _vaultSettings.VaultRootPathPreference;
             var mobileDir = Path.Combine(vaultRoot, "mobile");
-            var industry = string.IsNullOrWhiteSpace(request.Industry) ? "移动端生成" : request.Industry.Trim();
+            var industry = string.IsNullOrWhiteSpace(request.Industry) ? _loc["Vault_MobileGenerated"].Value : request.Industry.Trim();
             var safeVaultName = _vaultNameResolver.ToSafeDirectoryName(request.VaultName.Trim());
             var industryDir = Path.Combine(mobileDir, industry);
             Directory.CreateDirectory(industryDir);
@@ -89,7 +89,7 @@ public partial class VaultController
                     // 数据库记录存在但物理目录已丢失，报错而不是静默创建新的
                     _logger.LogError("知识库数据库记录存在但物理目录丢失: {VaultId} {Path}",
                         existingVault.VaultId, existingVault.Path);
-                    return StatusCode(500, new { error = "知识库数据不一致：数据库记录存在但物理目录已丢失，请联系管理员" });
+                    return StatusCode(500, new { error = _loc["Vault_DataInconsistencyContactAdmin"].Value });
                 }
 
                 _logger.LogInformation("复用已有移动端知识库: {VaultId} {VaultName}{MigrationNote}，追加笔记",
@@ -115,7 +115,7 @@ public partial class VaultController
                 if (safeRelPath.Contains(".."))
                 {
                     _logger.LogWarning("检测到路径穿越尝试，已拒绝: {RelPath}", safeRelPath);
-                    return BadRequest(new { error = $"非法文件路径: {safeRelPath}" });
+                    return BadRequest(new { error = _loc["Vault_IllegalFilePath", safeRelPath].Value });
                 }
                 safeRelPath = safeRelPath.TrimStart('/', '\\');
                 var notePath = Path.Combine(notesDir, safeRelPath);
@@ -166,12 +166,12 @@ public partial class VaultController
             _logger.LogInformation("移动端知识库推送成功: {VaultId} {VaultName}，共 {NoteCount} 条笔记",
                 vaultId, request.VaultName, request.Notes.Count);
 
-            return Ok(new { success = true, vaultId, message = migrated ? "知识库推送成功（已迁移路径结构）" : "知识库推送成功" });
+            return Ok(new { success = true, vaultId, message = migrated ? _loc["Vault_PushSuccessMigrated"].Value : _loc["Vault_PushSuccess"].Value });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "移动端知识库推送失败: {VaultName}", request.VaultName);
-            return StatusCode(500, new { error = $"推送失败: {ex.Message}" });
+            return StatusCode(500, new { error = _loc["Vault_PushFailed", ex.Message].Value });
         }
     }
 

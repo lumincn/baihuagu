@@ -1,7 +1,9 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Localization;
 using Baihua.Contracts.Ai;
+using Baihua.Core.Localization;
 using Baihua.Family.Controllers;
 using Baihua.Data;
 using Baihua.Data.Entities;
@@ -21,6 +23,7 @@ public partial class ChatMemoryService
     private readonly DefaultPromptProvider _scenePromptService;
     private readonly IDbContextFactory<AIDbContext> _dbFactory;
     private readonly ILogger<ChatMemoryService> _logger;
+    private readonly IStringLocalizer<SharedResources> _loc;
 
     // 触发摘要压缩的阈值：超过此轮数时，将早期对话压缩为摘要
     private const int SummaryThreshold = 10;
@@ -39,13 +42,15 @@ public partial class ChatMemoryService
         EmbeddingService embeddingService,
         DefaultPromptProvider scenePromptService,
         IDbContextFactory<AIDbContext> dbFactory,
-        ILogger<ChatMemoryService> logger)
+        ILogger<ChatMemoryService> logger,
+        IStringLocalizer<SharedResources> loc)
     {
         _aiClientService = aiClientService;
         _embeddingService = embeddingService;
         _scenePromptService = scenePromptService;
         _dbFactory = dbFactory;
         _logger = logger;
+        _loc = loc;
     }
 
 }

@@ -60,7 +60,7 @@ public partial class OnboardingController
             {
                 Success = true,
                 VaultId = vault.Id,
-                Message = $"知识库 '{vaultName}' 创建成功",
+                Message = _loc["Onboarding_VaultCreated", vaultName],
                 CreatedNotes = createdNotes
             });
         }
@@ -70,7 +70,7 @@ public partial class OnboardingController
             return StatusCode(500, new CreateSampleVaultResponse
             {
                 Success = false,
-                Message = $"创建失败: {ex.Message}"
+                Message = _loc["Onboarding_CreateFailed", ex.Message]
             });
         }
     }

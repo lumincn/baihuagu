@@ -1,6 +1,8 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
 using Baihua.Family.Helpers;
 
 namespace Baihua.Family.Services;
@@ -11,10 +13,12 @@ namespace Baihua.Family.Services;
 public class NoteParser
 {
     private readonly ILogger<NoteParser> _logger;
+    private readonly IStringLocalizer<SharedResources> _loc;
 
-    public NoteParser(ILogger<NoteParser> logger)
+    public NoteParser(ILogger<NoteParser> logger, IStringLocalizer<SharedResources> loc)
     {
         _logger = logger;
+        _loc = loc;
     }
 
     public List<Note> ParseResult(string aiContent)
@@ -35,7 +39,7 @@ public class NoteParser
         catch (Exception ex)
         {
             _logger.LogError(ex, "解析 AI 返回失败：{Content}", aiContent.Substring(0, Math.Min(500, aiContent.Length)));
-            throw new Exception($"JSON 解析失败：{ex.Message}");
+            throw new Exception(string.Format(_loc["NoteParser_JsonParseFailed"], ex.Message));
         }
     }
 
@@ -44,7 +48,7 @@ public class NoteParser
         var raw = (text ?? string.Empty).Trim();
         if (string.IsNullOrEmpty(raw))
         {
-            throw new Exception("AI 返回内容为空");
+            throw new Exception(_loc["NoteParser_EmptyResponse"]);
         }
 
         if (raw.StartsWith("```", StringComparison.Ordinal))
@@ -64,7 +68,7 @@ public class NoteParser
         var start = raw.IndexOf('[');
         if (start < 0)
         {
-            throw new Exception("未找到 JSON 数组起始符 '['");
+            throw new Exception(_loc["NoteParser_NoArrayStart"]);
         }
 
         int depth = 0;
@@ -86,7 +90,7 @@ public class NoteParser
 
         if (end < 0)
         {
-            throw new Exception("JSON 数组结束符 ']' 不完整");
+            throw new Exception(_loc["NoteParser_NoArrayEnd"]);
         }
 
         var jsonPayload = raw.Substring(start, end - start + 1).Trim();

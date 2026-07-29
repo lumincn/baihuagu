@@ -1,5 +1,7 @@
 using Baihua.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
 
 namespace Baihua.Family.Services;
 
@@ -7,11 +9,13 @@ public class MasterDataRetentionService : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<MasterDataRetentionService> _logger;
+    private readonly IStringLocalizer<SharedResources> _loc;
 
-    public MasterDataRetentionService(IServiceScopeFactory scopeFactory, ILogger<MasterDataRetentionService> logger)
+    public MasterDataRetentionService(IServiceScopeFactory scopeFactory, ILogger<MasterDataRetentionService> logger, IStringLocalizer<SharedResources> loc)
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
+        _loc = loc;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -152,14 +156,14 @@ public class MasterDataRetentionService : BackgroundService
         }
     }
 
-    private static (Models.AiProviderConfig Provider, string Model) ResolveProviderAndModel(
+    private (Models.AiProviderConfig Provider, string Model) ResolveProviderAndModel(
         AiSettingsService aiSettings, string? providerId, string? model)
     {
         var providers = aiSettings.GetAiProviders();
         var provider = string.IsNullOrEmpty(providerId)
             ? providers.FirstOrDefault(p => p.IsMain) ?? providers.FirstOrDefault()
             : providers.FirstOrDefault(p => p.Id == providerId);
-        if (provider == null) throw new Exception("未找到可用的AI提供商");
+        if (provider == null) throw new Exception(_loc["AiProvider_NotFound"]);
         var modelOptions = provider.GetModelOptions();
         var resolvedModel = !string.IsNullOrEmpty(model)
             ? model

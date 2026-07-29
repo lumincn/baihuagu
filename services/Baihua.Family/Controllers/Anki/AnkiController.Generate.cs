@@ -16,7 +16,7 @@ public partial class AnkiController
         {
             if (string.IsNullOrWhiteSpace(request.NotePath))
             {
-                return BadRequest(new GenerateResult { Success = false, Message = "笔记路径不能为空" });
+                return BadRequest(new GenerateResult { Success = false, Message = _loc["Anki_NotePathEmpty"] });
             }
 
             var result = await _cardGenerator.GenerateWithAiAsync(request.NotePath, providerId: request.ProviderId, model: request.Model);
@@ -30,15 +30,15 @@ public partial class AnkiController
         public async Task<IActionResult> GenerateAllCardsWithAi([FromQuery] string vaultId)
         {
             if (string.IsNullOrWhiteSpace(vaultId))
-                return BadRequest(new { success = false, message = "知识库 ID 不能为空" });
+                return BadRequest(new { success = false, message = _loc["Anki_VaultIdEmpty"] });
 
             var vault = _vaultSettings.GetVaults().FirstOrDefault(v => v.Id == vaultId);
             if (vault == null)
-                return NotFound(new { success = false, message = "知识库不存在" });
+                return NotFound(new { success = false, message = _loc["Anki_VaultNotFound"] });
 
             var notesPath = System.IO.Path.Combine(vault.Path, "notes");
             if (!Directory.Exists(notesPath))
-                return Ok(new { success = true, message = "笔记目录不存在", totalCards = 0 });
+                return Ok(new { success = true, message = _loc["Anki_NotesDirNotExist"], totalCards = 0 });
 
             var taskId = _taskManager.CreateTask("anki_generate_ai", new Dictionary<string, string>
             {
@@ -50,7 +50,7 @@ public partial class AnkiController
             {
                 try
                 {
-                    await _taskManager.UpdateProgress(taskId, 0, 100, $"开始为 {vault.Name} 使用 AI 生成记忆卡片...");
+                    await _taskManager.UpdateProgress(taskId, 0, 100, _loc["Anki_GeneratingCardsFor", vault.Name]);
                     var result = await _cardGenerator.GenerateBatchWithAiAsync(notesPath, recursive: true, vaultId: vaultId, progressTaskId: taskId);
                     await _taskManager.UpdateProgress(taskId, 100, 100, result.Message);
                     if (result.Success && result.TotalCards > 0)
@@ -69,7 +69,7 @@ public partial class AnkiController
                 }
             });
 
-            return Ok(new { success = true, taskId, message = "AI 卡片生成任务已创建", vaultName = vault.Name });
+            return Ok(new { success = true, taskId, message = _loc["Anki_AiCardTaskCreated"], vaultName = vault.Name });
         }
 
         /// <summary>

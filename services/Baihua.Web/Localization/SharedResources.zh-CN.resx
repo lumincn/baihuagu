@@ -3817,4 +3817,11 @@
   <data name="Api_OperationFailedWithError" xml:space="preserve">
     <value>操作失败：{0}</value>
   </data>
+  <!-- === Phase 4 Batch 9: DevicesService keys === -->
+  <data name="Devices_RequestRejected" xml:space="preserve">
+    <value>已拒绝设备配对</value>
+  </data>
+  <data name="Devices_DeviceRevoked" xml:space="preserve">
+    <value>已撤销设备授权</value>
+  </data>
 </root>

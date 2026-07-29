@@ -1,5 +1,7 @@
 using Baihua.Core;
+using Baihua.Core.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using System.Text.Json;
 using Baihua.Family.Helpers;
 using Baihua.Contracts.Anki;
@@ -19,6 +21,7 @@ namespace Baihua.Family.Controllers;
         private readonly Services.VaultSettingsService _vaultSettings;
         private readonly Services.TaskManager _taskManager;
         private readonly ILogger<AnkiController> _logger;
+        private readonly IStringLocalizer<SharedResources> _loc;
 
         public AnkiController(
             Services.AnkiCardGenerator cardGenerator,
@@ -27,7 +30,8 @@ namespace Baihua.Family.Controllers;
             Services.LearnerService learnerService,
             Services.VaultSettingsService vaultSettings,
             Services.TaskManager taskManager,
-            ILogger<AnkiController> logger)
+            ILogger<AnkiController> logger,
+            IStringLocalizer<SharedResources> loc)
         {
             _cardGenerator = cardGenerator;
             _dailyCardService = dailyCardService;
@@ -36,6 +40,7 @@ namespace Baihua.Family.Controllers;
             _vaultSettings = vaultSettings;
             _taskManager = taskManager;
             _logger = logger;
+            _loc = loc;
         }
 
 

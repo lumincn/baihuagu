@@ -39,7 +39,7 @@ namespace Baihua.Family.Controllers;
                     return Ok(new GitStatusResponse
                     {
                         IsGitRepo = false,
-                        Message = "必须指定有效的知识库"
+                        Message = _loc["Vault_Required"]
                     });
                 }
 
@@ -49,7 +49,7 @@ namespace Baihua.Family.Controllers;
                     return Ok(new GitStatusResponse
                     {
                         IsGitRepo = false,
-                        Message = "知识库未配置 Git"
+                        Message = _loc["Git_VaultNotConfigured"]
                     });
                 }
 
@@ -131,7 +131,7 @@ namespace Baihua.Family.Controllers;
                     Changes = changes,
                     Ahead = ahead,
                     Behind = behind,
-                    Message = changes.Count == 0 ? "工作区干净" : $"有 {changes.Count} 个文件变更"
+                    Message = changes.Count == 0 ? _loc["Git_WorkingDirClean"] : _loc["Git_ChangesCount", changes.Count]
                 });
             }
             catch (Exception ex)
@@ -140,7 +140,7 @@ namespace Baihua.Family.Controllers;
                 return Ok(new GitStatusResponse
                 {
                     IsGitRepo = false,
-                    Message = $"获取状态失败: {ex.Message}"
+                    Message = _loc["Git_StatusFailed", ex.Message]
                 });
             }
         }

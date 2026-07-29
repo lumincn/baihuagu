@@ -64,7 +64,7 @@ public partial class ChatCompletionsController
                         Arguments = arguments
                     }, ct);
 
-                var resultText = toolResult.Content?.ToString() ?? "工具执行完成，无返回内容";
+                var resultText = toolResult.Content?.ToString() ?? _loc["ChatCompletions_ToolResultEmpty"];
 
                 // 将工具结果注入消息列表
                 messages.Add(new ChatMessage(ChatRole.Assistant,

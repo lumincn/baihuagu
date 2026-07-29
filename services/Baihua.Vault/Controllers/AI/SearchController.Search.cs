@@ -20,7 +20,7 @@ public partial class SearchController
                     {
                         VaultConfigured = false,
                         SearchMethod = "none",
-                        ErrorMessage = "必须指定有效的知识库"
+                        ErrorMessage = _loc["Vault_Required"].Value
                     }
                 });
             }
@@ -38,8 +38,8 @@ public partial class SearchController
                         VaultExists = !string.IsNullOrEmpty(vaultPath) && System.IO.Directory.Exists(vaultPath),
                         SearchMethod = "none",
                         ErrorMessage = string.IsNullOrEmpty(vaultPath)
-                            ? "未找到指定的知识库"
-                            : $"知识库路径不存在：{vaultPath}"
+                            ? _loc["Vault_NotFound"].Value
+                            : _loc["Search_VaultPathNotExists", vaultPath].Value
                     }
                 });
             }
@@ -158,7 +158,7 @@ public partial class SearchController
                 
                 if (fileResults.Count == 0)
                 {
-                    errorMessage = "未在知识库中找到匹配内容";
+                    errorMessage = _loc["Vault_NoMatchFound"].Value;
                 }
                 
                 return Ok(new

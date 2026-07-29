@@ -1,5 +1,7 @@
+using Baihua.Core.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Localization;
 using Baihua.Contracts.Ai;
 using Baihua.Family.Models;
 using Baihua.Family.Services;
@@ -17,15 +19,18 @@ public class AiChatController : ControllerBase
     private readonly AiSettingsService _aiSettings;
     private readonly AiClientService _aiClientService;
     private readonly ILogger<AiChatController> _logger;
+    private readonly IStringLocalizer<SharedResources> _loc;
 
     public AiChatController(
         AiSettingsService aiSettings,
         AiClientService aiClientService,
-        ILogger<AiChatController> logger)
+        ILogger<AiChatController> logger,
+        IStringLocalizer<SharedResources> loc)
     {
         _aiSettings = aiSettings;
         _aiClientService = aiClientService;
         _logger = logger;
+        _loc = loc;
     }
 
     /// <summary>
@@ -35,7 +40,7 @@ public class AiChatController : ControllerBase
     public async Task<ActionResult<Baihua.Contracts.Ai.ChatResponse>> Completion([FromBody] ChatRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Message))
-            return BadRequest(new { error = "消息不能为空" });
+            return BadRequest(new { error = _loc["AiChat_MessageEmpty"].Value });
 
         try
         {
@@ -50,7 +55,7 @@ public class AiChatController : ControllerBase
             return Ok(new Baihua.Contracts.Ai.ChatResponse
             {
                 Success = true,
-                Message = "回复成功",
+                Message = _loc["Ai_Chat_ReplySuccess"].Value,
                 Reply = result.Text ?? ""
             });
         }
@@ -60,7 +65,7 @@ public class AiChatController : ControllerBase
             return Ok(new Baihua.Contracts.Ai.ChatResponse
             {
                 Success = false,
-                Message = $"聊天失败：{ex.Message}"
+                Message = _loc["Ai_Chat_Failed", ex.Message].Value
             });
         }
     }
@@ -89,7 +94,7 @@ public class AiChatController : ControllerBase
         {
             if (string.IsNullOrWhiteSpace(request.Message))
             {
-                await SendSse("error", "消息不能为空");
+                await SendSse("error", _loc["AiChat_MessageEmpty"].Value);
                 return;
             }
 
@@ -98,7 +103,7 @@ public class AiChatController : ControllerBase
             var ready = await _aiClientService.EnsureProviderReadyAsync(provider);
             if (!ready && IsLocalProvider(provider))
             {
-                await SendSse("error", $"本地 AI 服务 {provider.Name} 未运行且自动启动失败，请手动启动后重试。");
+                await SendSse("error", _loc["AiChat_LocalAiNotRunning", provider.Name].Value);
                 return;
             }
 
@@ -124,12 +129,12 @@ public class AiChatController : ControllerBase
         }
         catch (OperationCanceledException)
         {
-            await SendSse("error", "AI 调用超时或已被取消");
+            await SendSse("error", _loc["AiChat_Timeout"].Value);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "AI 流式聊天失败");
-            await SendSse("error", $"聊天失败：{ex.Message}");
+            await SendSse("error", _loc["Ai_Chat_Failed", ex.Message].Value);
         }
     }
 
@@ -145,7 +150,7 @@ public class AiChatController : ControllerBase
             : providers.FirstOrDefault(p => p.Id == providerId);
 
         if (provider == null)
-            throw new Exception("未找到指定的 AI 提供商");
+            throw new Exception(_loc["AiChat_ProviderNotFound"].Value);
 
         var modelOptions = provider.GetModelOptions();
         var resolvedModel = !string.IsNullOrEmpty(model)

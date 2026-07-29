@@ -199,7 +199,7 @@ public partial class ChatMemoryService
         if (!string.IsNullOrEmpty(memoryContext.Summary))
         {
             messages.Add(new ChatMessage(ChatRole.System,
-                $"【对话历史摘要】\n{memoryContext.Summary}"));
+                $"{_loc["ChatMemory_HistorySummary"]}\n{memoryContext.Summary}"));
         }
 
         // Layer 3: 语义检索相关记忆
@@ -211,7 +211,7 @@ public partial class ChatMemoryService
                 var memoryText = string.Join("\n---\n", relevantMemories.Select(m =>
                     $"用户: {TruncateForSummary(m.UserContent, 300)}\nAI: {TruncateForSummary(m.AssistantContent, 300)}"));
                 messages.Add(new ChatMessage(ChatRole.System,
-                    $"【相关历史记忆】\n{memoryText}"));
+                    $"{_loc["ChatMemory_RelevantMemories"]}\n{memoryText}"));
             }
         }
 

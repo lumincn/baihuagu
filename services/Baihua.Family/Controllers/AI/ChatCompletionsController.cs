@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
 using Baihua.Family.Models;
 using Baihua.Family.Services;
 
@@ -21,6 +23,7 @@ namespace Baihua.Family.Controllers;
         private readonly LocalModelDeploymentService _localDeployment;
         private readonly DefaultPromptProvider _scenePromptService;
         private readonly ILogger<ChatCompletionsController> _logger;
+        private readonly IStringLocalizer<SharedResources> _loc;
 
         public ChatCompletionsController(
             AiSettingsService aiSettings,
@@ -30,7 +33,8 @@ namespace Baihua.Family.Controllers;
             McpServerService mcpServerService,
             LocalModelDeploymentService localDeployment,
             DefaultPromptProvider scenePromptService,
-            ILogger<ChatCompletionsController> logger)
+            ILogger<ChatCompletionsController> logger,
+            IStringLocalizer<SharedResources> loc)
         {
             _aiSettings = aiSettings;
             _vaultSettings = vaultSettings;
@@ -40,6 +44,7 @@ namespace Baihua.Family.Controllers;
             _localDeployment = localDeployment;
             _scenePromptService = scenePromptService;
             _logger = logger;
+            _loc = loc;
         }
 
         /// <summary>
@@ -51,13 +56,13 @@ namespace Baihua.Family.Controllers;
             try
             {
                 if (request.Messages == null || request.Messages.Count == 0)
-                    return BadRequest(new { error = "messages 不能为空" });
+                    return BadRequest(new { error = _loc["ChatCompletions_MessagesEmpty"] });
 
                 // 解析 model 参数，格式: "provider/model" 或直接使用默认 provider
                 var (providerId, modelId) = ParseModel(request.Model);
                 var provider = _aiSettings.GetAiProvider(providerId)
                     ?? _aiSettings.GetMainAiProvider()
-                    ?? throw new Exception("未配置 AI 提供商");
+                    ?? throw new Exception(_loc["ChatCompletions_ProviderNotConfigured"]);
 
                 var model = string.IsNullOrWhiteSpace(modelId) ? GetDefaultModel(provider) : modelId;
 

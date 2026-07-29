@@ -146,12 +146,12 @@ namespace Baihua.Family.Services
             var recentRestarts = RestartHistory
                 .Where(t => (DateTime.Now - t).TotalMinutes < 10)
                 .Count();
-            
-            return $"服务运行时间: {uptime:hh\\:mm\\:ss}\n" +
-                   $"启动时间: {StartTime:yyyy-MM-dd HH:mm:ss}\n" +
-                   $"重启次数: {RestartCount}\n" +
-                   $"最近10分钟启动次数: {recentRestarts}\n" +
-                   $"PID: {Environment.ProcessId}";
+
+            return string.Format("服务运行时间: {0}", uptime.ToString(@"hh\:mm\:ss")) + "\n" +
+                   string.Format("启动时间: {0}", StartTime.ToString("yyyy-MM-dd HH:mm:ss")) + "\n" +
+                   string.Format("重启次数: {0}", RestartCount) + "\n" +
+                   string.Format("最近10分钟启动次数: {0}", recentRestarts) + "\n" +
+                   string.Format("PID: {0}", Environment.ProcessId);
         }
     }
 }

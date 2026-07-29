@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using System.Diagnostics;
+using Baihua.Core.Localization;
 using Baihua.Family.Services;
 using Baihua.Contracts.Core;
 
@@ -12,15 +14,18 @@ namespace Baihua.Family.Controllers
         private readonly SystemHealthService _healthService;
         private readonly VaultSettingsService _vaultSettings;
         private readonly ILogger<ObsidianController> _logger;
+        private readonly IStringLocalizer<SharedResources> _loc;
 
         public ObsidianController(
             SystemHealthService healthService, 
             VaultSettingsService vaultSettings,
-            ILogger<ObsidianController> logger)
+            ILogger<ObsidianController> logger,
+            IStringLocalizer<SharedResources> loc)
         {
             _healthService = healthService;
             _vaultSettings = vaultSettings;
             _logger = logger;
+            _loc = loc;
         }
 
         /// <summary>
@@ -52,7 +57,7 @@ namespace Baihua.Family.Controllers
                 var vault = _vaultSettings.GetActiveVault();
                 if (vault == null)
                 {
-                    return BadRequest(new { success = false, error = "没有配置知识库" });
+                    return BadRequest(new { success = false, error = _loc["Obsidian_NoVaultConfigured"] });
                 }
 
                 return OpenVaultInternal(vault.Path);
@@ -74,7 +79,7 @@ namespace Baihua.Family.Controllers
             {
                 if (request == null || string.IsNullOrWhiteSpace(request.Path))
                 {
-                    return BadRequest(new { success = false, error = "路径不能为空" });
+                    return BadRequest(new { success = false, error = _loc["Obsidian_PathEmpty"] });
                 }
 
                 return OpenVaultInternal(request.Path.Trim());
@@ -97,7 +102,7 @@ namespace Baihua.Family.Controllers
                 }
                 catch (Exception ex)
                 {
-                    return BadRequest(new { success = false, error = $"无法创建目录: {ex.Message}" });
+                    return BadRequest(new { success = false, error = _loc["Obsidian_CreateDirFailed", ex.Message] });
                 }
             }
 
@@ -129,7 +134,7 @@ namespace Baihua.Family.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "启动 Obsidian 失败");
-                return StatusCode(500, new { success = false, error = $"启动失败: {ex.Message}" });
+                return StatusCode(500, new { success = false, error = _loc["Obsidian_LaunchFailed", ex.Message] });
             }
         }
 

@@ -2,6 +2,8 @@ using Baihua.Core.Security;
 using System.IO.Compression;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
 using Baihua.Data;
 using Baihua.Data.Entities;
 using Baihua.Contracts.Backup;
@@ -49,6 +51,7 @@ public class BackupService
     private readonly DataEncryptionService _dataEncryption;
     private readonly RestoreService _restoreService;
     private readonly ILogger<BackupService> _logger;
+    private readonly IStringLocalizer<SharedResources> _loc;
 
     private static readonly JsonSerializerOptions _jsonOpts = new()
     {
@@ -64,7 +67,8 @@ public class BackupService
         ApiKeyProtectionService apiKeyProtection,
         DataEncryptionService dataEncryption,
         RestoreService restoreService,
-        ILogger<BackupService> logger)
+        ILogger<BackupService> logger,
+        IStringLocalizer<SharedResources> loc)
     {
         _vaultSettings = vaultSettings;
         _vaultDbContextFactory = vaultDbContextFactory;
@@ -74,6 +78,7 @@ public class BackupService
         _dataEncryption = dataEncryption;
         _restoreService = restoreService;
         _logger = logger;
+        _loc = loc;
     }
 
     #region Create Full Backup
@@ -142,7 +147,7 @@ public class BackupService
             return new FullBackupResult
             {
                 Success = false,
-                Error = "备份已取消"
+                Error = _loc["Backup_Cancelled"]
             };
         }
         catch (Exception ex)
@@ -334,7 +339,7 @@ public class BackupService
     {
         if (!File.Exists(backupPath))
         {
-            return new BackupValidationResult { IsValid = false, Error = "文件不存在" };
+            return new BackupValidationResult { IsValid = false, Error = _loc["Backup_FileNotFound"] };
         }
 
         try
@@ -349,7 +354,7 @@ public class BackupService
                 var manifestPath = Path.Combine(tempDir, "manifest.json");
                 if (!File.Exists(manifestPath))
                 {
-                    return new BackupValidationResult { IsValid = false, Error = "缺少 manifest.json" };
+                    return new BackupValidationResult { IsValid = false, Error = _loc["Backup_MissingManifest"] };
                 }
 
                 var manifestJson = await File.ReadAllTextAsync(manifestPath);
@@ -357,7 +362,7 @@ public class BackupService
 
                 if (manifest == null)
                 {
-                    return new BackupValidationResult { IsValid = false, Error = "manifest.json 格式错误" };
+                    return new BackupValidationResult { IsValid = false, Error = _loc["Backup_InvalidManifestFormat"] };
                 }
 
                 // 统计备份内容

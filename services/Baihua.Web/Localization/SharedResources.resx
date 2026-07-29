@@ -2859,6 +2859,7 @@
   </data>
   <data name="Messages_InputPlaceholder" xml:space="preserve">
     <value>Type a message...
+
 Shift+Enter new line, Enter to send</value>
   </data>
   <data name="Messages_Stop" xml:space="preserve">
@@ -3817,5 +3818,12 @@ Shift+Enter new line, Enter to send</value>
   </data>
   <data name="Api_OperationFailedWithError" xml:space="preserve">
     <value>Operation failed: {0}</value>
+  </data>
+  <!-- === Phase 4 Batch 9: DevicesService keys === -->
+  <data name="Devices_RequestRejected" xml:space="preserve">
+    <value>Device pairing rejected</value>
+  </data>
+  <data name="Devices_DeviceRevoked" xml:space="preserve">
+    <value>Device authorization revoked</value>
   </data>
 </root>

@@ -19,14 +19,14 @@ public partial class LocalModelDeploymentService
             {
                 var running = await _autoStarter.TryEnsureRunningAsync("ollama", "http://localhost:11434/v1");
                 if (!running)
-                    throw new InvalidOperationException("Ollama 服务未运行且自动启动失败，请手动启动后重试。");
+                    throw new InvalidOperationException(_loc["LocalModel_Lifecycle_OllamaNotRunning"]);
                 result = await _ollama.LoadModelAsync(modelName, keepAliveMinutes, ct);
             }
             else if (toolId.Equals("lmstudio", StringComparison.OrdinalIgnoreCase))
             {
                 var running = await _autoStarter.TryEnsureRunningAsync("lmstudio", "http://localhost:1234/v1");
                 if (!running)
-                    throw new InvalidOperationException("LM Studio 服务未运行且自动启动失败，请手动启动后重试。");
+                    throw new InvalidOperationException(_loc["LocalModel_Lifecycle_LmStudioNotRunning"]);
                 result = await _lmStudio.LoadModelAsync(modelName, ct);
             }
             else if (toolId.Equals("llamacpp", StringComparison.OrdinalIgnoreCase))

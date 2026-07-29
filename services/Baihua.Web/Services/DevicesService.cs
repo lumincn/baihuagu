@@ -1,4 +1,6 @@
 using Baihua.Contracts.Devices;
+using Baihua.Web.Localization;
+using Microsoft.Extensions.Localization;
 
 namespace Baihua.Web.Services;
 
@@ -9,11 +11,13 @@ public class DevicesService
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<DevicesService> _logger;
+    private readonly IStringLocalizer<SharedResources> _loc;
 
-    public DevicesService(IHttpClientFactory httpClientFactory, ILogger<DevicesService> logger)
+    public DevicesService(IHttpClientFactory httpClientFactory, ILogger<DevicesService> logger, IStringLocalizer<SharedResources> loc)
     {
         _httpClientFactory = httpClientFactory;
         _logger = logger;
+        _loc = loc;
     }
 
     /// <summary>
@@ -90,16 +94,16 @@ public class DevicesService
             
             if (response.IsSuccessStatusCode)
             {
-                return (true, "设备已授权");
+                return (true, _loc["Devices_DeviceAuthorized"].Value);
             }
             
             var error = await response.Content.ReadAsStringAsync();
-            return (false, $"授权失败: {error}");
+            return (false, _loc["Devices_AuthorizeFailed", error].Value);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "授权设备失败，RequestId: {RequestId}", requestId);
-            return (false, $"授权失败: {ex.Message}");
+            return (false, _loc["Devices_AuthorizeFailed", ex.Message].Value);
         }
     }
 
@@ -115,16 +119,16 @@ public class DevicesService
             
             if (response.IsSuccessStatusCode)
             {
-                return (true, "已拒绝设备配对");
+                return (true, _loc["Devices_RequestRejected"].Value);
             }
             
             var error = await response.Content.ReadAsStringAsync();
-            return (false, $"拒绝失败: {error}");
+            return (false, _loc["Devices_RejectFailed", error].Value);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "拒绝设备失败，RequestId: {RequestId}", requestId);
-            return (false, $"拒绝失败: {ex.Message}");
+            return (false, _loc["Devices_RejectFailed", ex.Message].Value);
         }
     }
 
@@ -140,16 +144,16 @@ public class DevicesService
             
             if (response.IsSuccessStatusCode)
             {
-                return (true, "已撤销设备授权");
+                return (true, _loc["Devices_DeviceRevoked"].Value);
             }
             
             var error = await response.Content.ReadAsStringAsync();
-            return (false, $"撤销失败: {error}");
+            return (false, _loc["Devices_RevokeFailed", error].Value);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "撤销设备授权失败，DeviceId: {DeviceId}", deviceId);
-            return (false, $"撤销失败: {ex.Message}");
+            return (false, _loc["Devices_RevokeFailed", ex.Message].Value);
         }
     }
 
