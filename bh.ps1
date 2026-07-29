@@ -175,6 +175,8 @@ function Start-ServiceProc($name, $projRelPath){
 		$env:ASPNETCORE_ENVIRONMENT = 'Development'
 		$exePath = Join-Path $projPath "bin\Debug\net10.0\bh-$name.exe"
 		if (Test-Path $exePath) {
+			$port = $ServicePorts[$name]
+			if ($port) { $env:ASPNETCORE_URLS = "http://0.0.0.0:$port" }
 			$proc = Start-Process -FilePath $exePath -RedirectStandardOutput $log -RedirectStandardError $errLog -NoNewWindow -PassThru
 		} else {
 			$proc = Start-Process -FilePath 'dotnet' -ArgumentList $args -RedirectStandardOutput $log -RedirectStandardError $errLog -NoNewWindow -PassThru
