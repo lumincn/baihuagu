@@ -368,157 +368,157 @@
     <value>关闭</value>
   </data>
   <data name="OpenClaw_PageTitle" xml:space="preserve">
-    <value>OpenClaw 任务委派</value>
+    <value>OpenClaw Task Delegation</value>
   </data>
   <data name="OpenClaw_Title" xml:space="preserve">
-    <value>OpenClaw 任务委派</value>
+    <value>OpenClaw Task Delegation</value>
   </data>
   <data name="OpenClaw_Subtitle" xml:space="preserve">
-    <value>将复杂任务委派给 OpenClaw Agent 执行，自动生成 Markdown 报告。</value>
+    <value>Delegate complex tasks to OpenClaw agents. Markdown reports generated automatically.</value>
   </data>
   <data name="OpenClaw_LocalAiConfig" xml:space="preserve">
-    <value>本地 AI 配置（Ollama / LM Studio / llama.cpp）</value>
+    <value>Local AI Config (Ollama / LM Studio / llama.cpp)</value>
   </data>
   <data name="OpenClaw_UseOllama" xml:space="preserve">
-    <value>在 OpenClaw 中使用 Ollama</value>
+    <value>Use Ollama in OpenClaw</value>
   </data>
   <data name="OpenClaw_UseLmStudio" xml:space="preserve">
-    <value>在 OpenClaw 中使用 LM Studio</value>
+    <value>Use LM Studio in OpenClaw</value>
   </data>
   <data name="OpenClaw_UseLlamaCpp" xml:space="preserve">
-    <value>在 OpenClaw 中使用 llama.cpp（GPU 加速）</value>
+    <value>Use llama.cpp in OpenClaw (GPU accelerated)</value>
   </data>
   <data name="OpenClaw_Running" xml:space="preserve">
-    <value>● 运行中</value>
+    <value>Running</value>
   </data>
   <data name="OpenClaw_NotRunning" xml:space="preserve">
-    <value>● 未运行</value>
+    <value>Not Running</value>
   </data>
   <data name="OpenClaw_OllamaDefaultAddr" xml:space="preserve">
-    <value>Ollama 默认地址：http://localhost:11434</value>
+    <value>Ollama default address: http://localhost:11434</value>
   </data>
   <data name="OpenClaw_LmStudioDefaultAddr" xml:space="preserve">
-    <value>LM Studio 默认地址：http://localhost:1234/v1</value>
+    <value>LM Studio default address: http://localhost:1234/v1</value>
   </data>
   <data name="OpenClaw_ScanModels" xml:space="preserve">
-    <value>扫描模型</value>
+    <value>Scan Models</value>
   </data>
   <data name="OpenClaw_SyncToOpenClaw" xml:space="preserve">
-    <value>同步到 OpenClaw</value>
+    <value>Sync to OpenClaw</value>
   </data>
   <data name="OpenClaw_NoModelsOllama" xml:space="preserve">
-    <value>未扫描到模型，请确认 Ollama 已启动。</value>
+    <value>No models found. Please ensure Ollama is running.</value>
   </data>
   <data name="OpenClaw_NoModelsLmStudio" xml:space="preserve">
-    <value>未扫描到模型，请确认 LM Studio 已启动且服务器已开启。</value>
+    <value>No models found. Please ensure LM Studio is running and the server is enabled.</value>
   </data>
   <data name="OpenClaw_NoModelsLlamaCpp" xml:space="preserve">
-    <value>未扫描到模型，请确认路径正确并点击「扫描模型」。</value>
+    <value>No models found. Please verify the path and click Scan Models.</value>
   </data>
   <data name="OpenClaw_LlamaCppConfigNote" xml:space="preserve">
-    <value>llama.cpp 的详细配置（模型路径、GPU 层数、上下文大小、KV Cache 量化等）请在本地模型页中设置，配置会自动同步到 OpenClaw。</value>
+    <value>Detailed llama.cpp configuration (model path, GPU layers, context size, KV Cache quantization) can be set on the Local Models page; settings sync automatically to OpenClaw.</value>
   </data>
   <data name="OpenClaw_ModelConfigTitle" xml:space="preserve">
-    <value>模型配置文件</value>
+    <value>Model Config File</value>
   </data>
   <data name="OpenClaw_CurrentBadge" xml:space="preserve">
-    <value>当前</value>
+    <value>Current</value>
   </data>
   <data name="OpenClaw_DefaultModelTitle" xml:space="preserve">
-    <value>OpenClaw 默认模型</value>
+    <value>OpenClaw Default Model</value>
   </data>
   <data name="OpenClaw_CurrentDefaultModel" xml:space="preserve">
-    <value>当前默认模型</value>
+    <value>Current Default Model</value>
   </data>
   <data name="OpenClaw_UseBuiltinDefault" xml:space="preserve">
-    <value>-- 使用 OpenClaw 内置默认 --</value>
+    <value>-- Use OpenClaw built-in default --</value>
   </data>
   <data name="OpenClaw_DefaultModelHint" xml:space="preserve">
-    <value>设置后 OpenClaw 会优先使用此模型执行任务</value>
+    <value>OpenClaw will prefer this model when executing tasks</value>
   </data>
   <data name="OpenClaw_SaveDefaultModel" xml:space="preserve">
-    <value>保存默认模型</value>
+    <value>Save Default Model</value>
   </data>
   <data name="OpenClaw_SaveConfig" xml:space="preserve">
-    <value>保存配置</value>
+    <value>Save Config</value>
   </data>
   <data name="OpenClaw_Reset" xml:space="preserve">
-    <value>重置</value>
+    <value>Reset</value>
   </data>
   <data name="OpenClaw_NewTask" xml:space="preserve">
-    <value>新建任务</value>
+    <value>New Task</value>
   </data>
   <data name="OpenClaw_TaskPromptLabel" xml:space="preserve">
-    <value>任务描述 / Prompt</value>
+    <value>Task Description / Prompt</value>
   </data>
   <data name="OpenClaw_PromptPlaceholder" xml:space="preserve">
-    <value>请输入需要 OpenClaw 执行的任务，例如：分析当前目录下的代码结构并给出优化建议...</value>
+    <value>Enter the task you want OpenClaw to execute, e.g.: Analyze the code structure of the current directory and provide optimization suggestions...</value>
   </data>
   <data name="OpenClaw_Submitting" xml:space="preserve">
-    <value>提交中...</value>
+    <value>Submitting...</value>
   </data>
   <data name="OpenClaw_SendTask" xml:space="preserve">
-    <value>发送任务</value>
+    <value>Send Task</value>
   </data>
   <data name="OpenClaw_TaskHistory" xml:space="preserve">
-    <value>任务历史</value>
+    <value>Task History</value>
   </data>
   <data name="OpenClaw_Refresh" xml:space="preserve">
-    <value>刷新</value>
+    <value>Refresh</value>
   </data>
   <data name="OpenClaw_NoTasks" xml:space="preserve">
-    <value>暂无任务，请在上方提交第一个任务。</value>
+    <value>No tasks yet. Submit your first task above.</value>
   </data>
   <data name="OpenClaw_Col_Status" xml:space="preserve">
-    <value>状态</value>
+    <value>Status</value>
   </data>
   <data name="OpenClaw_Col_CreatedAt" xml:space="preserve">
-    <value>创建时间</value>
+    <value>Created At</value>
   </data>
   <data name="OpenClaw_Col_CompletedAt" xml:space="preserve">
-    <value>完成时间</value>
+    <value>Completed At</value>
   </data>
   <data name="OpenClaw_Col_Actions" xml:space="preserve">
-    <value>操作</value>
+    <value>Actions</value>
   </data>
   <data name="OpenClaw_Cancel" xml:space="preserve">
-    <value>取消</value>
+    <value>Cancel</value>
   </data>
   <data name="OpenClaw_ViewReport" xml:space="preserve">
-    <value>查看报告</value>
+    <value>View Report</value>
   </data>
   <data name="OpenClaw_ViewError" xml:space="preserve">
-    <value>查看错误</value>
+    <value>View Error</value>
   </data>
   <data name="OpenClaw_ErrorDetailTitle" xml:space="preserve">
-    <value>错误详情 - {0}</value>
+    <value>Error Details - {0}</value>
   </data>
   <data name="OpenClaw_ReportTitle" xml:space="preserve">
-    <value>执行报告 - {0}</value>
+    <value>Execution Report - {0}</value>
   </data>
   <data name="OpenClaw_TaskFailed" xml:space="preserve">
-    <value>任务执行失败</value>
+    <value>Task Execution Failed</value>
   </data>
   <data name="OpenClaw_FailedAt" xml:space="preserve">
-    <value>失败时间:</value>
+    <value>Failed At:</value>
   </data>
   <data name="OpenClaw_ErrorLog" xml:space="preserve">
-    <value>错误日志</value>
+    <value>Error Log</value>
   </data>
   <data name="OpenClaw_ContentEmpty" xml:space="preserve">
-    <value>内容为空或无法加载。</value>
+    <value>Content is empty or could not be loaded.</value>
   </data>
   <data name="OpenClaw_Close" xml:space="preserve">
-    <value>关闭</value>
+    <value>Close</value>
   </data>
   <data name="OpenClaw_Copy" xml:space="preserve">
-    <value>复制</value>
+    <value>Copy</value>
   </data>
   <data name="OpenClaw_Col_ModelId" xml:space="preserve">
-    <value>模型 ID</value>
+    <value>Model ID</value>
   </data>
   <data name="OpenClaw_Col_Name" xml:space="preserve">
-    <value>名称</value>
+    <value>Name</value>
   </data>
   <data name="OpenClaw_Col_Context" xml:space="preserve">
     <value>Context</value>
@@ -527,9 +527,378 @@
     <value>Max Tokens</value>
   </data>
   <data name="OpenClaw_CharCount" xml:space="preserve">
-    <value>{0} 字符</value>
+    <value>{0} characters</value>
   </data>
   <data name="OpenClaw_Loading" xml:space="preserve">
-    <value>加载中...</value>
+    <value>Loading...</value>
+  </data>
+  <data name="LocalModels_PageTitle" xml:space="preserve">
+    <value>Local Models</value>
+  </data>
+  <data name="LocalModels_Title" xml:space="preserve">
+    <value>Local Model Deployment</value>
+  </data>
+  <data name="LocalModels_TabOverview" xml:space="preserve">
+    <value>Overview</value>
+  </data>
+  <data name="LocalModels_TabHardware" xml:space="preserve">
+    <value>Hardware</value>
+  </data>
+  <data name="LocalModels_TabDownloaded" xml:space="preserve">
+    <value>Downloaded</value>
+  </data>
+  <data name="LocalModels_TabConfig" xml:space="preserve">
+    <value>Config</value>
+  </data>
+  <data name="LocalModels_HardwareTitle" xml:space="preserve">
+    <value>Hardware Environment</value>
+  </data>
+  <data name="LocalModels_CpuDetecting" xml:space="preserve">
+    <value>Detecting...</value>
+  </data>
+  <data name="LocalModels_Disable" xml:space="preserve">
+    <value>Disable</value>
+  </data>
+  <data name="LocalModels_MemoryTitle" xml:space="preserve">
+    <value>Memory</value>
+  </data>
+  <data name="LocalModels_MemoryDetail" xml:space="preserve">
+    <value>Available: {0} GB</value>
+  </data>
+  <data name="LocalModels_GpuTitle" xml:space="preserve">
+    <value>GPU</value>
+  </data>
+  <data name="LocalModels_VramUnknown" xml:space="preserve">
+    <value>VRAM unknown</value>
+  </data>
+  <data name="LocalModels_IntegratedSuffix" xml:space="preserve">
+    <value>(Integrated)</value>
+  </data>
+  <data name="LocalModels_AppleUnifiedSuffix" xml:space="preserve">
+    <value>(Unified Memory)</value>
+  </data>
+  <data name="LocalModels_NoGpuDetected" xml:space="preserve">
+    <value>No GPU detected</value>
+  </data>
+  <data name="LocalModels_CpuFallback" xml:space="preserve">
+    <value>Will run on CPU</value>
+  </data>
+  <data name="LocalModels_DiskTitle" xml:space="preserve">
+    <value>Disk</value>
+  </data>
+  <data name="LocalModels_DiskAvailable" xml:space="preserve">
+    <value>Available Space</value>
+  </data>
+  <data name="LocalModels_RefreshHardware" xml:space="preserve">
+    <value>Refresh Hardware Info</value>
+  </data>
+  <data name="LocalModels_RunningModelsTitle" xml:space="preserve">
+    <value>Running Models</value>
+  </data>
+  <data name="LocalModels_RefreshModels" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="LocalModels_NoRunningModels" xml:space="preserve">
+    <value>No running models. Deploy from recommendations below or load a downloaded model.</value>
+  </data>
+  <data name="LocalModels_Col_Model" xml:space="preserve">
+    <value>Model</value>
+  </data>
+  <data name="LocalModels_Col_Tool" xml:space="preserve">
+    <value>Tool</value>
+  </data>
+  <data name="LocalModels_Col_MemoryUsage" xml:space="preserve">
+    <value>Memory Usage</value>
+  </data>
+  <data name="LocalModels_Col_Expires" xml:space="preserve">
+    <value>Expires</value>
+  </data>
+  <data name="LocalModels_Col_Actions" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="LocalModels_Unload" xml:space="preserve">
+    <value>Unload</value>
+  </data>
+  <data name="LocalModels_TotalRunning" xml:space="preserve">
+    <value>{0} model(s) running, ~{1} GB total</value>
+  </data>
+  <data name="LocalModels_DownloadedOllama" xml:space="preserve">
+    <value>Ollama Downloaded Models</value>
+  </data>
+  <data name="LocalModels_DownloadedLmStudio" xml:space="preserve">
+    <value>LM Studio Downloaded Models</value>
+  </data>
+  <data name="LocalModels_DownloadedLlamaCpp" xml:space="preserve">
+    <value>llama.cpp Available Models</value>
+  </data>
+  <data name="LocalModels_Refreshing" xml:space="preserve">
+    <value>Refreshing...</value>
+  </data>
+  <data name="LocalModels_NoDownloadedModels" xml:space="preserve">
+    <value>No downloaded models. Deploy from recommendations below.</value>
+  </data>
+  <data name="LocalModels_DlName" xml:space="preserve">
+    <value>Model</value>
+  </data>
+  <data name="LocalModels_DlTool" xml:space="preserve">
+    <value>Tool</value>
+  </data>
+  <data name="LocalModels_DlSize" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="LocalModels_DlTime" xml:space="preserve">
+    <value>Modified</value>
+  </data>
+  <data name="LocalModels_DlStatus" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="LocalModels_DlActions" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="LocalModels_RunningBadge" xml:space="preserve">
+    <value>Running</value>
+  </data>
+  <data name="LocalModels_StoppedBadge" xml:space="preserve">
+    <value>Stopped</value>
+  </data>
+  <data name="LocalModels_LoadBtn" xml:space="preserve">
+    <value>Load</value>
+  </data>
+  <data name="LocalModels_DetailsBtn" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="LocalModels_DeleteBtn" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="LocalModels_ModelCount" xml:space="preserve">
+    <value>{0} model(s), ~{1} GB total</value>
+  </data>
+  <data name="LocalModels_LoadOllamaTitle" xml:space="preserve">
+    <value>Load Ollama Model</value>
+  </data>
+  <data name="LocalModels_LoadLmStudioTitle" xml:space="preserve">
+    <value>Load LM Studio Model</value>
+  </data>
+  <data name="LocalModels_LoadLlamaCppTitle" xml:space="preserve">
+    <value>Load llama.cpp Model</value>
+  </data>
+  <data name="LocalModels_ModelSelectLabel" xml:space="preserve">
+    <value>Model</value>
+  </data>
+  <data name="LocalModels_SelectModelPlaceholder" xml:space="preserve">
+    <value>-- Select Model --</value>
+  </data>
+  <data name="LocalModels_KeepAliveLabel" xml:space="preserve">
+    <value>Keep Alive</value>
+  </data>
+  <data name="LocalModels_Keep5Min" xml:space="preserve">
+    <value>5 min</value>
+  </data>
+  <data name="LocalModels_Keep30Min" xml:space="preserve">
+    <value>30 min</value>
+  </data>
+  <data name="LocalModels_Keep1Hour" xml:space="preserve">
+    <value>1 hour</value>
+  </data>
+  <data name="LocalModels_Keep6Hour" xml:space="preserve">
+    <value>6 hours</value>
+  </data>
+  <data name="LocalModels_KeepForever" xml:space="preserve">
+    <value>Forever</value>
+  </data>
+  <data name="LocalModels_LoadModelBtn" xml:space="preserve">
+    <value>Load Model</value>
+  </data>
+  <data name="LocalModels_LocalToolsTitle" xml:space="preserve">
+    <value>Local Tools</value>
+  </data>
+  <data name="LocalModels_Installed" xml:space="preserve">
+    <value>Installed {0}</value>
+  </data>
+  <data name="LocalModels_Running" xml:space="preserve">
+    <value>Running</value>
+  </data>
+  <data name="LocalModels_NotRunning" xml:space="preserve">
+    <value>Not Running</value>
+  </data>
+  <data name="LocalModels_NotInstalled" xml:space="preserve">
+    <value>Not Installed</value>
+  </data>
+  <data name="LocalModels_InstallGuide" xml:space="preserve">
+    <value>Install Guide</value>
+  </data>
+  <data name="LocalModels_LlamaCppConfigTitle" xml:space="preserve">
+    <value>llama.cpp Configuration</value>
+  </data>
+  <data name="LocalModels_LlamaCppNotInstalled" xml:space="preserve">
+    <value>llama.cpp is not installed or path not configured.</value>
+  </data>
+  <data name="LocalModels_ModelPathLabel" xml:space="preserve">
+    <value>Model File Path (.gguf)</value>
+  </data>
+  <data name="LocalModels_ModelPathExample" xml:space="preserve">
+    <value>e.g. /home/lumin/models/Qwen3-8B-Q4_K_M.gguf</value>
+  </data>
+  <data name="LocalModels_PortLabel" xml:space="preserve">
+    <value>Port</value>
+  </data>
+  <data name="LocalModels_BasicConfig" xml:space="preserve">
+    <value>Basic Config</value>
+  </data>
+  <data name="LocalModels_GpuLayersLabel" xml:space="preserve">
+    <value>GPU Layers (-ngl)</value>
+  </data>
+  <data name="LocalModels_GpuLayersHint" xml:space="preserve">
+    <value>0=CPU only, 999=offload all to GPU</value>
+  </data>
+  <data name="LocalModels_ContextSizeLabel" xml:space="preserve">
+    <value>Context Size (-c)</value>
+  </data>
+  <data name="LocalModels_ContextSizeHint" xml:space="preserve">
+    <value>Number of tokens the model can remember; higher uses more VRAM</value>
+  </data>
+  <data name="LocalModels_CpuThreadsLabel" xml:space="preserve">
+    <value>CPU Threads (-t)</value>
+  </data>
+  <data name="LocalModels_CpuThreadsHint" xml:space="preserve">
+    <value>0=auto (use all cores)</value>
+  </data>
+  <data name="LocalModels_BatchSizeLabel" xml:space="preserve">
+    <value>Batch Size (-b)</value>
+  </data>
+  <data name="LocalModels_BatchSizeHint" xml:space="preserve">
+    <value>Higher = more throughput, default 2048</value>
+  </data>
+  <data name="LocalModels_VramOptimization" xml:space="preserve">
+    <value>VRAM Optimization (required for long context)</value>
+  </data>
+  <data name="LocalModels_KvKQuantLabel" xml:space="preserve">
+    <value>KV Cache K Quant</value>
+  </data>
+  <data name="LocalModels_KvKQuantHint" xml:space="preserve">
+    <value>Choose q8_0 when VRAM is tight; greatly reduces long-context VRAM usage</value>
+  </data>
+  <data name="LocalModels_KvVQuantLabel" xml:space="preserve">
+    <value>KV Cache V Quant</value>
+  </data>
+  <data name="LocalModels_KvVQuantHint" xml:space="preserve">
+    <value>Usually keep in sync with K quantization</value>
+  </data>
+  <data name="LocalModels_AdvancedOptions" xml:space="preserve">
+    <value>Advanced Options</value>
+  </data>
+  <data name="LocalModels_FlashAttention" xml:space="preserve">
+    <value>Flash Attention</value>
+  </data>
+  <data name="LocalModels_Mlock" xml:space="preserve">
+    <value>Memory Lock (--mlock)</value>
+  </data>
+  <data name="LocalModels_MlockHint" xml:space="preserve">
+    <value>Prevent model from being swapped out; improves stability</value>
+  </data>
+  <data name="LocalModels_NoMmap" xml:space="preserve">
+    <value>Disable mmap (--no-mmap)</value>
+  </data>
+  <data name="LocalModels_NoMmapHint" xml:space="preserve">
+    <value>More stable on some systems</value>
+  </data>
+  <data name="LocalModels_ContBatching" xml:space="preserve">
+    <value>Continuous Batching (--cont-batching)</value>
+  </data>
+  <data name="LocalModels_ContBatchingHint" xml:space="preserve">
+    <value>Improves throughput for concurrent requests</value>
+  </data>
+  <data name="LocalModels_ExtraArgsLabel" xml:space="preserve">
+    <value>Extra Startup Args</value>
+  </data>
+  <data name="LocalModels_ExtraArgsHint" xml:space="preserve">
+    <value>Advanced custom params (checked options appended automatically)</value>
+  </data>
+  <data name="LocalModels_PresetLabel" xml:space="preserve">
+    <value>Quick Preset:</value>
+  </data>
+  <data name="LocalModels_PresetVram" xml:space="preserve">
+    <value>VRAM Optimized (long context)</value>
+  </data>
+  <data name="LocalModels_PresetSpeed" xml:space="preserve">
+    <value>Speed First</value>
+  </data>
+  <data name="LocalModels_PresetCpu" xml:space="preserve">
+    <value>CPU Only</value>
+  </data>
+  <data name="LocalModels_SavingConfig" xml:space="preserve">
+    <value>Saving...</value>
+  </data>
+  <data name="LocalModels_StopService" xml:space="preserve">
+    <value>Stop Service</value>
+  </data>
+  <data name="LocalModels_Stopping" xml:space="preserve">
+    <value>Stopping...</value>
+  </data>
+  <data name="LocalModels_StartService" xml:space="preserve">
+    <value>Start Service</value>
+  </data>
+  <data name="LocalModels_Starting" xml:space="preserve">
+    <value>Starting...</value>
+  </data>
+  <data name="LocalModels_RecommendationsTitle" xml:space="preserve">
+    <value>Model Recommendations</value>
+  </data>
+  <data name="LocalModels_RefreshLibrary" xml:space="preserve">
+    <value>Refresh Library</value>
+  </data>
+  <data name="LocalModels_VramDisplay" xml:space="preserve">
+    <value>Local VRAM: {0} GB</value>
+  </data>
+  <data name="LocalModels_RecommendedTier" xml:space="preserve">
+    <value>Recommended {0} GB tier</value>
+  </data>
+  <data name="LocalModels_NoRecommendations" xml:space="preserve">
+    <value>No recommendations. Check hardware detection.</value>
+  </data>
+  <data name="LocalModels_RecommendedBadge" xml:space="preserve">
+    <value>Recommended</value>
+  </data>
+  <data name="LocalModels_RecommendedCount" xml:space="preserve">
+    <value>{0} model(s)</value>
+  </data>
+  <data name="LocalModels_DeleteConfirmTitle" xml:space="preserve">
+    <value>Confirm Delete</value>
+  </data>
+  <data name="LocalModels_DeleteConfirmText" xml:space="preserve">
+    <value>Are you sure you want to delete {0}?</value>
+  </data>
+  <data name="LocalModels_DeleteSize" xml:space="preserve">
+    <value>Size: {0} GB</value>
+  </data>
+  <data name="LocalModels_DeleteIrreversible" xml:space="preserve">
+    <value>This action cannot be undone. The model file will be permanently deleted.</value>
+  </data>
+  <data name="LocalModels_Deleting" xml:space="preserve">
+    <value>Deleting...</value>
+  </data>
+  <data name="LocalModels_DeleteConfirmBtn" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="LocalModels_DetailsTitle" xml:space="preserve">
+    <value>Model Details: {0}</value>
+  </data>
+  <data name="LocalModels_DetailsLoading" xml:space="preserve">
+    <value>Loading details...</value>
+  </data>
+  <data name="LocalModels_DetailsNotSupported" xml:space="preserve">
+    <value>Details not supported for this tool.</value>
+  </data>
+  <data name="LocalModels_DeployStatusTitle" xml:space="preserve">
+    <value>Deploy Status</value>
+  </data>
+  <data name="LocalModels_DeployCancelBtn" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="LocalModels_AutoAddedSetting" xml:space="preserve">
+    <value>Automatically added to AI Settings</value>
+  </data>
+  <data name="LocalModels_CpuCore" xml:space="preserve">
+    <value>核</value>
   </data>
 </root>

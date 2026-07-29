@@ -532,4 +532,373 @@
   <data name="OpenClaw_Loading" xml:space="preserve">
     <value>加载中...</value>
   </data>
+  <data name="LocalModels_PageTitle" xml:space="preserve">
+    <value>本地模型</value>
+  </data>
+  <data name="LocalModels_Title" xml:space="preserve">
+    <value>本地模型部署</value>
+  </data>
+  <data name="LocalModels_TabOverview" xml:space="preserve">
+    <value>概览</value>
+  </data>
+  <data name="LocalModels_TabHardware" xml:space="preserve">
+    <value>硬件</value>
+  </data>
+  <data name="LocalModels_TabDownloaded" xml:space="preserve">
+    <value>已下载</value>
+  </data>
+  <data name="LocalModels_TabConfig" xml:space="preserve">
+    <value>配置</value>
+  </data>
+  <data name="LocalModels_HardwareTitle" xml:space="preserve">
+    <value>硬件环境</value>
+  </data>
+  <data name="LocalModels_CpuDetecting" xml:space="preserve">
+    <value>检测中...</value>
+  </data>
+  <data name="LocalModels_Disable" xml:space="preserve">
+    <value>禁用</value>
+  </data>
+  <data name="LocalModels_MemoryTitle" xml:space="preserve">
+    <value>内存</value>
+  </data>
+  <data name="LocalModels_MemoryDetail" xml:space="preserve">
+    <value>可用: {0} GB</value>
+  </data>
+  <data name="LocalModels_GpuTitle" xml:space="preserve">
+    <value>显卡</value>
+  </data>
+  <data name="LocalModels_VramUnknown" xml:space="preserve">
+    <value>显存未知</value>
+  </data>
+  <data name="LocalModels_IntegratedSuffix" xml:space="preserve">
+    <value>(集成)</value>
+  </data>
+  <data name="LocalModels_AppleUnifiedSuffix" xml:space="preserve">
+    <value>(统一内存)</value>
+  </data>
+  <data name="LocalModels_NoGpuDetected" xml:space="preserve">
+    <value>未检测到</value>
+  </data>
+  <data name="LocalModels_CpuFallback" xml:space="preserve">
+    <value>将使用 CPU 运行</value>
+  </data>
+  <data name="LocalModels_DiskTitle" xml:space="preserve">
+    <value>磁盘</value>
+  </data>
+  <data name="LocalModels_DiskAvailable" xml:space="preserve">
+    <value>可用空间</value>
+  </data>
+  <data name="LocalModels_RefreshHardware" xml:space="preserve">
+    <value>刷新硬件信息</value>
+  </data>
+  <data name="LocalModels_RunningModelsTitle" xml:space="preserve">
+    <value>运行中模型</value>
+  </data>
+  <data name="LocalModels_RefreshModels" xml:space="preserve">
+    <value>刷新</value>
+  </data>
+  <data name="LocalModels_NoRunningModels" xml:space="preserve">
+    <value>暂无运行中模型。下方推荐列表可部署新模型，或使用「加载模型」加载已下载的模型。</value>
+  </data>
+  <data name="LocalModels_Col_Model" xml:space="preserve">
+    <value>模型</value>
+  </data>
+  <data name="LocalModels_Col_Tool" xml:space="preserve">
+    <value>工具</value>
+  </data>
+  <data name="LocalModels_Col_MemoryUsage" xml:space="preserve">
+    <value>内存占用</value>
+  </data>
+  <data name="LocalModels_Col_Expires" xml:space="preserve">
+    <value>过期时间</value>
+  </data>
+  <data name="LocalModels_Col_Actions" xml:space="preserve">
+    <value>操作</value>
+  </data>
+  <data name="LocalModels_Unload" xml:space="preserve">
+    <value>卸载</value>
+  </data>
+  <data name="LocalModels_TotalRunning" xml:space="preserve">
+    <value>共 {0} 个模型在运行，总内存占用约 {1} GB</value>
+  </data>
+  <data name="LocalModels_DownloadedOllama" xml:space="preserve">
+    <value>Ollama 已下载模型</value>
+  </data>
+  <data name="LocalModels_DownloadedLmStudio" xml:space="preserve">
+    <value>LM Studio 已下载模型</value>
+  </data>
+  <data name="LocalModels_DownloadedLlamaCpp" xml:space="preserve">
+    <value>llama.cpp 可用模型</value>
+  </data>
+  <data name="LocalModels_Refreshing" xml:space="preserve">
+    <value>刷新中...</value>
+  </data>
+  <data name="LocalModels_NoDownloadedModels" xml:space="preserve">
+    <value>暂无已下载模型。上方推荐列表可部署新模型。</value>
+  </data>
+  <data name="LocalModels_DlName" xml:space="preserve">
+    <value>模型</value>
+  </data>
+  <data name="LocalModels_DlTool" xml:space="preserve">
+    <value>工具</value>
+  </data>
+  <data name="LocalModels_DlSize" xml:space="preserve">
+    <value>大小</value>
+  </data>
+  <data name="LocalModels_DlTime" xml:space="preserve">
+    <value>修改时间</value>
+  </data>
+  <data name="LocalModels_DlStatus" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="LocalModels_DlActions" xml:space="preserve">
+    <value>操作</value>
+  </data>
+  <data name="LocalModels_RunningBadge" xml:space="preserve">
+    <value>运行中</value>
+  </data>
+  <data name="LocalModels_StoppedBadge" xml:space="preserve">
+    <value>已停止</value>
+  </data>
+  <data name="LocalModels_LoadBtn" xml:space="preserve">
+    <value>加载</value>
+  </data>
+  <data name="LocalModels_DetailsBtn" xml:space="preserve">
+    <value>详情</value>
+  </data>
+  <data name="LocalModels_DeleteBtn" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="LocalModels_ModelCount" xml:space="preserve">
+    <value>共 {0} 个模型，总大小约 {1} GB</value>
+  </data>
+  <data name="LocalModels_LoadOllamaTitle" xml:space="preserve">
+    <value>加载 Ollama 模型</value>
+  </data>
+  <data name="LocalModels_LoadLmStudioTitle" xml:space="preserve">
+    <value>加载 LM Studio 模型</value>
+  </data>
+  <data name="LocalModels_LoadLlamaCppTitle" xml:space="preserve">
+    <value>加载 llama.cpp 模型</value>
+  </data>
+  <data name="LocalModels_ModelSelectLabel" xml:space="preserve">
+    <value>模型</value>
+  </data>
+  <data name="LocalModels_SelectModelPlaceholder" xml:space="preserve">
+    <value>-- 选择模型 --</value>
+  </data>
+  <data name="LocalModels_KeepAliveLabel" xml:space="preserve">
+    <value>保持时间</value>
+  </data>
+  <data name="LocalModels_Keep5Min" xml:space="preserve">
+    <value>5 分钟</value>
+  </data>
+  <data name="LocalModels_Keep30Min" xml:space="preserve">
+    <value>30 分钟</value>
+  </data>
+  <data name="LocalModels_Keep1Hour" xml:space="preserve">
+    <value>1 小时</value>
+  </data>
+  <data name="LocalModels_Keep6Hour" xml:space="preserve">
+    <value>6 小时</value>
+  </data>
+  <data name="LocalModels_KeepForever" xml:space="preserve">
+    <value>永久</value>
+  </data>
+  <data name="LocalModels_LoadModelBtn" xml:space="preserve">
+    <value>加载模型</value>
+  </data>
+  <data name="LocalModels_LocalToolsTitle" xml:space="preserve">
+    <value>本地工具</value>
+  </data>
+  <data name="LocalModels_Installed" xml:space="preserve">
+    <value>已安装</value>
+  </data>
+  <data name="LocalModels_Running" xml:space="preserve">
+    <value>运行中</value>
+  </data>
+  <data name="LocalModels_NotRunning" xml:space="preserve">
+    <value>未运行</value>
+  </data>
+  <data name="LocalModels_NotInstalled" xml:space="preserve">
+    <value>未安装</value>
+  </data>
+  <data name="LocalModels_InstallGuide" xml:space="preserve">
+    <value>安装指南</value>
+  </data>
+  <data name="LocalModels_LlamaCppConfigTitle" xml:space="preserve">
+    <value>llama.cpp 配置</value>
+  </data>
+  <data name="LocalModels_LlamaCppNotInstalled" xml:space="preserve">
+    <value>llama.cpp 未安装或未配置二进制路径。</value>
+  </data>
+  <data name="LocalModels_ModelPathLabel" xml:space="preserve">
+    <value>模型文件路径（.gguf）</value>
+  </data>
+  <data name="LocalModels_ModelPathExample" xml:space="preserve">
+    <value>例如：/home/lumin/models/Qwen3-8B-Q4_K_M.gguf</value>
+  </data>
+  <data name="LocalModels_PortLabel" xml:space="preserve">
+    <value>端口</value>
+  </data>
+  <data name="LocalModels_BasicConfig" xml:space="preserve">
+    <value>基础配置</value>
+  </data>
+  <data name="LocalModels_GpuLayersLabel" xml:space="preserve">
+    <value>GPU 层数（-ngl）</value>
+  </data>
+  <data name="LocalModels_GpuLayersHint" xml:space="preserve">
+    <value>0=纯CPU，999=全部 offload 到 GPU</value>
+  </data>
+  <data name="LocalModels_ContextSizeLabel" xml:space="preserve">
+    <value>上下文大小（-c）</value>
+  </data>
+  <data name="LocalModels_ContextSizeHint" xml:space="preserve">
+    <value>模型能记住的 token 数，越大占显存越多</value>
+  </data>
+  <data name="LocalModels_CpuThreadsLabel" xml:space="preserve">
+    <value>CPU 线程数（-t）</value>
+  </data>
+  <data name="LocalModels_CpuThreadsHint" xml:space="preserve">
+    <value>0=自动使用全部核心</value>
+  </data>
+  <data name="LocalModels_BatchSizeLabel" xml:space="preserve">
+    <value>批处理大小（-b）</value>
+  </data>
+  <data name="LocalModels_BatchSizeHint" xml:space="preserve">
+    <value>越大吞吐量越高，默认 2048</value>
+  </data>
+  <data name="LocalModels_VramOptimization" xml:space="preserve">
+    <value>显存优化（长上下文必读）</value>
+  </data>
+  <data name="LocalModels_KvKQuantLabel" xml:space="preserve">
+    <value>KV Cache K 量化</value>
+  </data>
+  <data name="LocalModels_KvKQuantHint" xml:space="preserve">
+    <value>显存紧张时选 q8_0，可大幅降低长上下文显存占用</value>
+  </data>
+  <data name="LocalModels_KvVQuantLabel" xml:space="preserve">
+    <value>KV Cache V 量化</value>
+  </data>
+  <data name="LocalModels_KvVQuantHint" xml:space="preserve">
+    <value>通常与 K 量化保持一致</value>
+  </data>
+  <data name="LocalModels_AdvancedOptions" xml:space="preserve">
+    <value>高级选项</value>
+  </data>
+  <data name="LocalModels_FlashAttention" xml:space="preserve">
+    <value>Flash Attention</value>
+  </data>
+  <data name="LocalModels_Mlock" xml:space="preserve">
+    <value>内存锁定 (--mlock)</value>
+  </data>
+  <data name="LocalModels_MlockHint" xml:space="preserve">
+    <value>防止模型被换出到 swap，提升稳定性</value>
+  </data>
+  <data name="LocalModels_NoMmap" xml:space="preserve">
+    <value>禁用 mmap (--no-mmap)</value>
+  </data>
+  <data name="LocalModels_NoMmapHint" xml:space="preserve">
+    <value>某些系统环境下更稳定</value>
+  </data>
+  <data name="LocalModels_ContBatching" xml:space="preserve">
+    <value>连续批处理 (--cont-batching)</value>
+  </data>
+  <data name="LocalModels_ContBatchingHint" xml:space="preserve">
+    <value>提升多客户端并发请求的吞吐量</value>
+  </data>
+  <data name="LocalModels_ExtraArgsLabel" xml:space="preserve">
+    <value>额外启动参数</value>
+  </data>
+  <data name="LocalModels_ExtraArgsHint" xml:space="preserve">
+    <value>高级自定义参数（上方勾选的选项会自动附加）</value>
+  </data>
+  <data name="LocalModels_PresetLabel" xml:space="preserve">
+    <value>快速预设：</value>
+  </data>
+  <data name="LocalModels_PresetVram" xml:space="preserve">
+    <value>显存优化（长上下文推荐）</value>
+  </data>
+  <data name="LocalModels_PresetSpeed" xml:space="preserve">
+    <value>速度优先</value>
+  </data>
+  <data name="LocalModels_PresetCpu" xml:space="preserve">
+    <value>纯 CPU 模式</value>
+  </data>
+  <data name="LocalModels_SavingConfig" xml:space="preserve">
+    <value>保存中...</value>
+  </data>
+  <data name="LocalModels_StopService" xml:space="preserve">
+    <value>停止服务</value>
+  </data>
+  <data name="LocalModels_Stopping" xml:space="preserve">
+    <value>停止中...</value>
+  </data>
+  <data name="LocalModels_StartService" xml:space="preserve">
+    <value>启动服务</value>
+  </data>
+  <data name="LocalModels_Starting" xml:space="preserve">
+    <value>启动中...</value>
+  </data>
+  <data name="LocalModels_RecommendationsTitle" xml:space="preserve">
+    <value>模型推荐</value>
+  </data>
+  <data name="LocalModels_RefreshLibrary" xml:space="preserve">
+    <value>刷新模型库</value>
+  </data>
+  <data name="LocalModels_VramDisplay" xml:space="preserve">
+    <value>本机显存: {0} GB</value>
+  </data>
+  <data name="LocalModels_RecommendedTier" xml:space="preserve">
+    <value>推荐 {0} GB 档位</value>
+  </data>
+  <data name="LocalModels_NoRecommendations" xml:space="preserve">
+    <value>暂无推荐模型，请检查硬件检测是否正常。</value>
+  </data>
+  <data name="LocalModels_RecommendedBadge" xml:space="preserve">
+    <value>当前配置推荐</value>
+  </data>
+  <data name="LocalModels_RecommendedCount" xml:space="preserve">
+    <value>{0} 个模型</value>
+  </data>
+  <data name="LocalModels_DeleteConfirmTitle" xml:space="preserve">
+    <value>确认删除</value>
+  </data>
+  <data name="LocalModels_DeleteConfirmText" xml:space="preserve">
+    <value>确定要删除模型 {0} 吗？</value>
+  </data>
+  <data name="LocalModels_DeleteSize" xml:space="preserve">
+    <value>大小: {0} GB</value>
+  </data>
+  <data name="LocalModels_DeleteIrreversible" xml:space="preserve">
+    <value>此操作不可恢复，模型文件将被永久删除。</value>
+  </data>
+  <data name="LocalModels_Deleting" xml:space="preserve">
+    <value>删除中...</value>
+  </data>
+  <data name="LocalModels_DeleteConfirmBtn" xml:space="preserve">
+    <value>确认删除</value>
+  </data>
+  <data name="LocalModels_DetailsTitle" xml:space="preserve">
+    <value>模型详情: {0}</value>
+  </data>
+  <data name="LocalModels_DetailsLoading" xml:space="preserve">
+    <value>加载详情中...</value>
+  </data>
+  <data name="LocalModels_DetailsNotSupported" xml:space="preserve">
+    <value>该工具暂不支持显示模型详情。</value>
+  </data>
+  <data name="LocalModels_DeployStatusTitle" xml:space="preserve">
+    <value>部署状态</value>
+  </data>
+  <data name="LocalModels_DeployCancelBtn" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="LocalModels_AutoAddedSetting" xml:space="preserve">
+    <value>已自动添加到 AI 设置</value>
+  </data>
+  <data name="LocalModels_CpuCore" xml:space="preserve">
+    <value>核</value>
+  </data>
 </root>
