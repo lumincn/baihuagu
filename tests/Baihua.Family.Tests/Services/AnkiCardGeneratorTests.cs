@@ -7,6 +7,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
 using Xunit;
 using Moq;
 
@@ -15,6 +17,7 @@ namespace Baihua.Family.Tests.Services;
 public class AnkiCardGeneratorTests : IDisposable
 {
     private readonly string _tempDir;
+    private static readonly IStringLocalizer<SharedResources> _loc = TestLocalizer.Instance;
 
     public AnkiCardGeneratorTests()
     {
@@ -46,7 +49,7 @@ public class AnkiCardGeneratorTests : IDisposable
         var mockTaskDbContextFactory = new Mock<IDbContextFactory<FamilyDbContext>>();
         var taskManager = new TaskManager(mockTaskDbContextFactory.Object);
 
-        return new AnkiCardGenerator(vaultSettings, aiClient, aiSettings, taskManager, logger);
+        return new AnkiCardGenerator(vaultSettings, aiClient, aiSettings, taskManager, logger, _loc);
     }
 
     /// <summary>
@@ -76,7 +79,7 @@ public class AnkiCardGeneratorTests : IDisposable
         var factory = new InMemoryDbContextFactory<VaultDbContext>(options);
         var vaultLogger = LoggerFactory.Create(b => b.AddConsole()).CreateLogger<VaultSettingsService>();
 
-        return new VaultSettingsService(factory, vaultLogger);
+        return new VaultSettingsService(factory, vaultLogger, _loc);
     }
 
     /// <summary>
@@ -136,9 +139,9 @@ public class AnkiCardGeneratorTests : IDisposable
         var mockAiDbFactory = new Mock<IDbContextFactory<AIDbContext>>();
         var mockCache = new Mock<Microsoft.Extensions.Caching.Distributed.IDistributedCache>();
 
-        var metricsService = new AiMetricsService();
+        var metricsService = new AiMetricsService(_loc);
         var httpClient = new HttpClient();
-        var anthropicClient = new AnthropicAiClient(httpClient, anthropicLogger);
+        var anthropicClient = new AnthropicAiClient(httpClient, anthropicLogger, _loc);
 
         return new AiClientService(
             aiSettings,
@@ -147,7 +150,8 @@ public class AnkiCardGeneratorTests : IDisposable
             metricsService,
             mockCache.Object,
             anthropicClient,
-            aiClientLogger);
+            aiClientLogger,
+            _loc);
     }
 
     // ===================== Unit Tests: ExtractJsonArray =====================
@@ -293,7 +297,7 @@ public class AnkiCardGeneratorTests : IDisposable
             .Options;
         var factory = new InMemoryDbContextFactory<VaultDbContext>(options);
         var vaultLogger = loggerFactory.CreateLogger<VaultSettingsService>();
-        var vaultSettings = new VaultSettingsService(factory, vaultLogger);
+        var vaultSettings = new VaultSettingsService(factory, vaultLogger, _loc);
 
         var aiSettings = CreateEmptyAiSettingsService();
         var aiClient = CreateAiClientService(aiSettings);
@@ -301,7 +305,7 @@ public class AnkiCardGeneratorTests : IDisposable
         var mockTaskDbContextFactory = new Mock<IDbContextFactory<FamilyDbContext>>();
         var taskManager = new TaskManager(mockTaskDbContextFactory.Object);
 
-        var generator = new AnkiCardGenerator(vaultSettings, aiClient, aiSettings, taskManager, logger);
+        var generator = new AnkiCardGenerator(vaultSettings, aiClient, aiSettings, taskManager, logger, _loc);
 
         var result = await generator.GenerateWithAiAsync("any-note");
 

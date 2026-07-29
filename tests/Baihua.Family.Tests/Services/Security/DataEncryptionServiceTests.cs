@@ -1,5 +1,8 @@
 using System.Security.Cryptography;
 using Baihua.Core.Security;
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
+using Moq;
 using Xunit;
 
 namespace Baihua.Family.Tests.Services.Security;
@@ -15,7 +18,7 @@ public class DataEncryptionServiceTests
     public DataEncryptionServiceTests()
     {
         var logger = new Microsoft.Extensions.Logging.Abstractions.NullLogger<DataEncryptionService>();
-        _service = new DataEncryptionService(logger);
+        _service = new DataEncryptionService(logger, TestLocalizer.Instance);
     }
 
     // ==================== GCM 加密/解密 ====================

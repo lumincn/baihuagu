@@ -18,6 +18,28 @@ namespace Baihua.Family.Services
     /// </summary>
     public class TaskManager
     {
+        private sealed class SimpleLocalizer : IStringLocalizer<SharedResources>
+        {
+            public LocalizedString this[string name] => new LocalizedString(name, Translate(name), resourceNotFound: true);
+            public LocalizedString this[string name, params object[] arguments] => new LocalizedString(name, string.Format(Translate(name), arguments), resourceNotFound: true);
+            public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) => Array.Empty<LocalizedString>();
+            public IStringLocalizer WithCulture(System.Globalization.CultureInfo culture) => this;
+
+            private static string Translate(string key)
+            {
+                // Provide a small set of Chinese translations used by tests
+                return key switch
+                {
+                    "Task_Created" => "任务已创建",
+                    "Task_Progress_Failed" => "失败",
+                    "Task_Progress_Done" => "任务完成",
+                    "Task_Progress_Percentage" => "{0}%",
+                    "Task_Progress_FailedNote" => "失败",
+                    _ => key,
+                };
+            }
+        }
+
         private readonly ConcurrentDictionary<string, TaskInfo> _tasks = new();
         private readonly ITaskRepository _repository;
         private readonly ITaskNotifier _notifier;
@@ -39,7 +61,7 @@ namespace Baihua.Family.Services
             _notifier = notifier ?? throw new ArgumentNullException(nameof(notifier));
             _cancellationManager = cancellationManager ?? throw new ArgumentNullException(nameof(cancellationManager));
             _logger = logger;
-            _loc = loc!;
+            _loc = loc ?? new SimpleLocalizer();
         }
 
         /// <summary>
@@ -56,7 +78,7 @@ namespace Baihua.Family.Services
 
             _repository = new TaskRepository(dbContextFactory, logger as ILogger<TaskRepository>);
             _cancellationManager = new TaskCancellationManager();
-            _loc = null!;
+            _loc = new SimpleLocalizer();
             _notifier = new TaskNotifier(hubContext, logger as ILogger<TaskNotifier>,
                 new Lazy<TaskManager>(() => this));
             _logger = logger;

@@ -35,6 +35,14 @@ public static class BaihuaPaths
                     return _home;
                 }
 
+                // 兼容旧环境变量 YJ_DATA_DIR
+                var legacy = Environment.GetEnvironmentVariable("YJ_DATA_DIR");
+                if (!string.IsNullOrWhiteSpace(legacy))
+                {
+                    _home = legacy.TrimEnd('/', '\\');
+                    return _home;
+                }
+
                 _home = GetDefaultHome();
                 return _home;
             }

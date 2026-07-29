@@ -1,10 +1,25 @@
 using Baihua.Family.Services;
+using Baihua.Data;
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
+using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
+using Moq;
 using Xunit;
 
 namespace Baihua.Family.Tests.Services;
 
 public class AchievementDefTests
 {
+    private static readonly IStringLocalizer<SharedResources> _loc = TestLocalizer.Instance;
+
+    private static List<AchievementDef> GetDefinitions()
+    {
+        var dbFactory = Mock.Of<IDbContextFactory<FamilyDbContext>>();
+        var logger = Mock.Of<ILogger<AchievementEngine>>();
+        return new AchievementEngine(dbFactory, logger, _loc).Definitions;
+    }
+
     [Fact]
     public void AchievementDef_RecordProperties_AreCorrect()
     {
@@ -32,7 +47,7 @@ public class AchievementDefTests
     [Fact]
     public void AchievementEngine_Definitions_HasExpectedCount()
     {
-        Assert.Equal(14, AchievementEngine.Definitions.Count);
+        Assert.Equal(14, GetDefinitions().Count);
     }
 
     [Theory]
@@ -52,7 +67,7 @@ public class AchievementDefTests
     [InlineData("early_bird", "🌅", "闻鸡起舞")]
     public void AchievementEngine_Definitions_ContainsExpectedAchievement(string key, string icon, string title)
     {
-        var def = AchievementEngine.Definitions.FirstOrDefault(d => d.Key == key);
+        var def = GetDefinitions().FirstOrDefault(d => d.Key == key);
         Assert.NotNull(def);
         Assert.Equal(icon, def.Icon);
         Assert.Equal(title, def.Title);
@@ -75,7 +90,7 @@ public class AchievementDefTests
     [InlineData("early_bird", "bronze")]
     public void AchievementEngine_Definitions_HasCorrectTier(string key, string expectedTier)
     {
-        var def = AchievementEngine.Definitions.FirstOrDefault(d => d.Key == key);
+        var def = GetDefinitions().FirstOrDefault(d => d.Key == key);
         Assert.NotNull(def);
         Assert.Equal(expectedTier, def.Tier);
     }
@@ -90,7 +105,7 @@ public class AchievementDefTests
     [InlineData("explorer_10", "exploration")]
     public void AchievementEngine_Definitions_HasCorrectCategory(string key, string expectedCategory)
     {
-        var def = AchievementEngine.Definitions.FirstOrDefault(d => d.Key == key);
+        var def = GetDefinitions().FirstOrDefault(d => d.Key == key);
         Assert.NotNull(def);
         Assert.Equal(expectedCategory, def.Category);
     }
@@ -98,7 +113,7 @@ public class AchievementDefTests
     [Fact]
     public void AchievementEngine_Definitions_AllKeysAreUnique()
     {
-        var keys = AchievementEngine.Definitions.Select(d => d.Key).ToList();
+        var keys = GetDefinitions().Select(d => d.Key).ToList();
         var uniqueKeys = keys.Distinct().ToList();
         Assert.Equal(keys.Count, uniqueKeys.Count);
     }

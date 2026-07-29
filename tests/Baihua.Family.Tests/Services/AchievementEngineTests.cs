@@ -1,20 +1,35 @@
 using Baihua.Family.Services;
+using Baihua.Data;
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
+using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
+using Moq;
 using Xunit;
 
 namespace Baihua.Family.Tests.Services;
 
 public class AchievementEngineTests
 {
+    private static readonly IStringLocalizer<SharedResources> _loc = TestLocalizer.Instance;
+
+    private static List<AchievementDef> GetDefinitions()
+    {
+        var dbFactory = Mock.Of<IDbContextFactory<FamilyDbContext>>();
+        var logger = Mock.Of<ILogger<AchievementEngine>>();
+        return new AchievementEngine(dbFactory, logger, _loc).Definitions;
+    }
+
     [Fact]
     public void Definitions_HasExpectedCount()
     {
-        Assert.Equal(14, AchievementEngine.Definitions.Count);
+        Assert.Equal(14, GetDefinitions().Count);
     }
 
     [Fact]
     public void Definitions_AllHaveValidKeys()
     {
-        foreach (var def in AchievementEngine.Definitions)
+        foreach (var def in GetDefinitions())
         {
             Assert.False(string.IsNullOrEmpty(def.Key));
             Assert.Contains('_', def.Key); // Keys follow pattern like "first_step", "streak_7"
@@ -24,7 +39,7 @@ public class AchievementEngineTests
     [Fact]
     public void Definitions_AllHaveValidIcons()
     {
-        foreach (var def in AchievementEngine.Definitions)
+        foreach (var def in GetDefinitions())
         {
             Assert.False(string.IsNullOrEmpty(def.Icon));
             Assert.True(def.Icon.Length <= 2); // Emoji icons are typically 1-2 characters
@@ -34,7 +49,7 @@ public class AchievementEngineTests
     [Fact]
     public void Definitions_AllHaveValidTitles()
     {
-        foreach (var def in AchievementEngine.Definitions)
+        foreach (var def in GetDefinitions())
         {
             Assert.False(string.IsNullOrEmpty(def.Title));
         }
@@ -43,7 +58,7 @@ public class AchievementEngineTests
     [Fact]
     public void Definitions_AllHaveValidDescriptions()
     {
-        foreach (var def in AchievementEngine.Definitions)
+        foreach (var def in GetDefinitions())
         {
             Assert.False(string.IsNullOrEmpty(def.Description));
         }
@@ -53,7 +68,7 @@ public class AchievementEngineTests
     public void Definitions_AllHaveValidTiers()
     {
         var validTiers = new[] { "bronze", "silver", "gold", "diamond" };
-        foreach (var def in AchievementEngine.Definitions)
+        foreach (var def in GetDefinitions())
         {
             Assert.Contains(def.Tier, validTiers);
         }
@@ -63,7 +78,7 @@ public class AchievementEngineTests
     public void Definitions_AllHaveValidCategories()
     {
         var validCategories = new[] { "study", "creation", "exploration" };
-        foreach (var def in AchievementEngine.Definitions)
+        foreach (var def in GetDefinitions())
         {
             Assert.Contains(def.Category, validCategories);
         }
@@ -72,7 +87,7 @@ public class AchievementEngineTests
     [Fact]
     public void Definitions_HasFirstStepAchievement()
     {
-        var firstStep = AchievementEngine.Definitions.FirstOrDefault(d => d.Key == "first_step");
+        var firstStep = GetDefinitions().FirstOrDefault(d => d.Key == "first_step");
         Assert.NotNull(firstStep);
         Assert.Equal("第一步", firstStep.Title);
         Assert.Equal("bronze", firstStep.Tier);
@@ -81,7 +96,7 @@ public class AchievementEngineTests
     [Fact]
     public void Definitions_HasStreakAchievements()
     {
-        var streakAchievements = AchievementEngine.Definitions.Where(d => d.Key.StartsWith("streak_")).ToList();
+        var streakAchievements = GetDefinitions().Where(d => d.Key.StartsWith("streak_")).ToList();
         Assert.Equal(3, streakAchievements.Count);
         Assert.Contains(streakAchievements, a => a.Key == "streak_3");
         Assert.Contains(streakAchievements, a => a.Key == "streak_7");
@@ -91,7 +106,7 @@ public class AchievementEngineTests
     [Fact]
     public void Definitions_HasCardsAchievements()
     {
-        var cardsAchievements = AchievementEngine.Definitions.Where(d => d.Key.StartsWith("cards_")).ToList();
+        var cardsAchievements = GetDefinitions().Where(d => d.Key.StartsWith("cards_")).ToList();
         Assert.Equal(4, cardsAchievements.Count);
         Assert.Contains(cardsAchievements, a => a.Key == "cards_10");
         Assert.Contains(cardsAchievements, a => a.Key == "cards_50");
@@ -102,7 +117,7 @@ public class AchievementEngineTests
     [Fact]
     public void Definitions_HasCreatorAchievements()
     {
-        var creatorAchievements = AchievementEngine.Definitions.Where(d => d.Key.StartsWith("creator_")).ToList();
+        var creatorAchievements = GetDefinitions().Where(d => d.Key.StartsWith("creator_")).ToList();
         Assert.Equal(2, creatorAchievements.Count);
         Assert.Contains(creatorAchievements, a => a.Key == "creator_1");
         Assert.Contains(creatorAchievements, a => a.Key == "creator_10");
@@ -111,7 +126,7 @@ public class AchievementEngineTests
     [Fact]
     public void Definitions_HasExplorerAchievements()
     {
-        var explorerAchievements = AchievementEngine.Definitions.Where(d => d.Key.StartsWith("explorer_")).ToList();
+        var explorerAchievements = GetDefinitions().Where(d => d.Key.StartsWith("explorer_")).ToList();
         Assert.Equal(2, explorerAchievements.Count);
         Assert.Contains(explorerAchievements, a => a.Key == "explorer_1");
         Assert.Contains(explorerAchievements, a => a.Key == "explorer_10");
@@ -120,7 +135,7 @@ public class AchievementEngineTests
     [Fact]
     public void Definitions_KeysAreUnique()
     {
-        var keys = AchievementEngine.Definitions.Select(d => d.Key).ToList();
+        var keys = GetDefinitions().Select(d => d.Key).ToList();
         Assert.Equal(keys.Count, keys.Distinct().Count());
     }
 

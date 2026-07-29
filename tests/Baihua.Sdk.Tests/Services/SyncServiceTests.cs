@@ -81,6 +81,9 @@ public class SyncServiceTests
             });
         handler.SetupResponse("/mg/manifest", HttpStatusCode.OK, JsonSerializer.Serialize(manifest));
 
+        // Ensure cache is clear for test isolation
+        SyncServiceImpl.ClearVaultListCache("http://localhost");
+
         var service = new SyncServiceImpl(client, signerMock.Object);
 
         var result = await service.FetchManifestAsync("http://localhost", "vault-1", "device-1");
@@ -100,6 +103,9 @@ public class SyncServiceTests
             .Returns(new Dictionary<string, string>());
 
         handler.SetupResponse("/mg/manifest", HttpStatusCode.InternalServerError, "Server error");
+
+        // Ensure cache is clear for test isolation
+        SyncServiceImpl.ClearVaultListCache("http://localhost");
 
         var service = new SyncServiceImpl(client, signerMock.Object);
 

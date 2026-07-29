@@ -2,6 +2,9 @@ using Microsoft.Extensions.AI;
 using Baihua.Contracts.Ai;
 using Baihua.Contracts.Master;
 using Baihua.Family.Services;
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
+using Moq;
 using Xunit;
 
 namespace Baihua.Family.Tests.Services;
@@ -11,7 +14,8 @@ namespace Baihua.Family.Tests.Services;
 /// </summary>
 public class MasterPromptBuilderTests
 {
-    private readonly MasterPromptBuilder _builder = new();
+    private static readonly IStringLocalizer<SharedResources> _loc = TestLocalizer.Instance;
+    private readonly MasterPromptBuilder _builder = new(_loc);
 
     #region ResolveMasterName
 
@@ -60,14 +64,14 @@ public class MasterPromptBuilderTests
     [Fact]
     public void GetDefaultStages_ReturnsFiveStages()
     {
-        var stages = MasterPromptBuilder.GetDefaultStages();
+        var stages = _builder.GetDefaultStages();
         Assert.Equal(5, stages.Count);
     }
 
     [Fact]
     public void GetDefaultStages_HasCorrectOrder()
     {
-        var stages = MasterPromptBuilder.GetDefaultStages();
+        var stages = _builder.GetDefaultStages();
         Assert.Equal("入道", stages[0].Name);
         Assert.Equal("筑基", stages[1].Name);
         Assert.Equal("精进", stages[2].Name);

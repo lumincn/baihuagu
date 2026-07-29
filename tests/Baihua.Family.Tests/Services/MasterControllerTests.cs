@@ -60,7 +60,7 @@ public class MasterControllerTests
 
         var mockLoc = new Mock<Microsoft.Extensions.Localization.IStringLocalizer<Baihua.Core.Localization.SharedResources>>();
         mockLoc.Setup(l => l["AiProvider_NotFound"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("AiProvider_NotFound", "No available AI provider found"));
-        mockLoc.Setup(l => l["Master_IdRequired"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_IdRequired", "Master ID cannot be empty"));
+        mockLoc.Setup(l => l["Master_IdRequired"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_IdRequired", "师父ID不能为空"));
         mockLoc.Setup(l => l["Master_NotFound"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_NotFound", "Master not found"));
         mockLoc.Setup(l => l["Master_StageUnknown"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_StageUnknown", "Unknown stage: {0}"));
         mockLoc.Setup(l => l["Master_StageSummarySystem"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_StageSummarySystem", "Assessment expert"));
@@ -93,8 +93,8 @@ public class MasterControllerTests
         mockLoc.Setup(l => l["Master_AssessSystemPrompt"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_AssessSystemPrompt", "Assess prompt"));
         mockLoc.Setup(l => l["Master_AssessComplete"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_AssessComplete", "Assess complete"));
         mockLoc.Setup(l => l["Master_AssessFailed"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_AssessFailed", "Assess failed: {0}"));
-        mockLoc.Setup(l => l["Master_GoalRequired"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_GoalRequired", "Goal required"));
-        mockLoc.Setup(l => l["Master_IndustryRequired"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_IndustryRequired", "Industry required"));
+        mockLoc.Setup(l => l["Master_GoalRequired"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_GoalRequired", "目标不能为空"));
+        mockLoc.Setup(l => l["Master_IndustryRequired"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_IndustryRequired", "行业不能为空"));
         mockLoc.Setup(l => l["Master_CreateGreetingTemplate"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_CreateGreetingTemplate", "I want to {0}"));
         mockLoc.Setup(l => l["Master_CreateFallbackGreeting"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_CreateFallbackGreeting", "Welcome"));
         mockLoc.Setup(l => l["Master_CreateFailed"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_CreateFailed", "Create failed"));

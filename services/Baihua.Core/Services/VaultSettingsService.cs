@@ -28,6 +28,22 @@ public partial class VaultSettingsService
         _loc = loc;
     }
 
+    // 兼容旧构造函数（历史测试/调用可能只传入两个参数）
+    public VaultSettingsService(
+        IDbContextFactory<VaultDbContext> dbContextFactory,
+        ILogger<VaultSettingsService> logger)
+        : this(dbContextFactory, logger, new SimpleLocalizer())
+    {
+    }
+
+    private sealed class SimpleLocalizer : IStringLocalizer<SharedResources>
+    {
+        public LocalizedString this[string name] => new LocalizedString(name, name, resourceNotFound: true);
+        public LocalizedString this[string name, params object[] arguments] => new LocalizedString(name, string.Format(name, arguments), resourceNotFound: true);
+        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) => Array.Empty<LocalizedString>();
+        public IStringLocalizer WithCulture(System.Globalization.CultureInfo culture) => this;
+    }
+
     public string VaultRootPathPreference
     {
         get

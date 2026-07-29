@@ -31,7 +31,20 @@ public static class AesApiKeyEncryption
     /// <summary>
     /// 密钥文件路径（挂载到宿主机，容器重建后仍然存在）
     /// </summary>
-    public static string KeyFilePath => Baihua.Contracts.BaihuaPaths.KeyFile;
+    public static string KeyFilePath
+    {
+        get
+        {
+            // 兼容旧环境变量 YJ_DATA_DIR（测试与历史部署使用）
+            var legacy = Environment.GetEnvironmentVariable("YJ_DATA_DIR");
+            if (!string.IsNullOrWhiteSpace(legacy))
+            {
+                return Path.Combine(legacy.TrimEnd('/', '\\'), ".yj-key");
+            }
+
+            return Baihua.Contracts.BaihuaPaths.KeyFile;
+        }
+    }
 
     /// <summary>
     /// <summary>
@@ -137,6 +150,13 @@ public static class AesApiKeyEncryption
         if (!string.IsNullOrWhiteSpace(envKey))
         {
             return SHA256.HashData(Encoding.UTF8.GetBytes(envKey.Trim()));
+        }
+
+        // 兼容旧环境变量 YJ_ENCRYPTION_KEY（测试与历史部署使用）
+        var legacyEnv = Environment.GetEnvironmentVariable("YJ_ENCRYPTION_KEY");
+        if (!string.IsNullOrWhiteSpace(legacyEnv))
+        {
+            return SHA256.HashData(Encoding.UTF8.GetBytes(legacyEnv.Trim()));
         }
 
         // 3. 回退到机器指纹（密钥文件丢失时的兜底）

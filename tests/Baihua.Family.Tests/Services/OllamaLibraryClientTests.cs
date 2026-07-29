@@ -3,6 +3,8 @@ using Moq.Protected;
 using Baihua.Contracts.LocalModels;
 using Baihua.Family.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
 using Xunit;
 
 namespace Baihua.Family.Tests.Services;
@@ -10,6 +12,7 @@ namespace Baihua.Family.Tests.Services;
 public class OllamaLibraryClientTests
 {
     private readonly Mock<ILogger<OllamaLibraryClient>> _mockLogger;
+    private static readonly IStringLocalizer<SharedResources> _loc = TestLocalizer.Instance;
 
     public OllamaLibraryClientTests()
     {
@@ -146,7 +149,7 @@ public class OllamaLibraryClientTests
     public void GetCachedModels_EmptyCache_ReturnsEmptyList()
     {
         var mockHttpClientFactory = new Mock<IHttpClientFactory>();
-        var client = new OllamaLibraryClient(mockHttpClientFactory.Object, _mockLogger.Object);
+        var client = new OllamaLibraryClient(mockHttpClientFactory.Object, _loc, _mockLogger.Object);
         
         var result = client.GetCachedModels();
         
