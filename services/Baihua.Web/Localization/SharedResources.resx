@@ -3319,4 +3319,274 @@
   <data name="QRTool_Description" xml:space="preserve">
     <value>Generate QR codes for mobile scanning, quickly add server</value>
   </data>
+  <data name="ApiCallPerf_TotalCalls" xml:space="preserve">
+    <value>Total Calls</value>
+  </data>
+  <data name="ApiCallPerf_SuccessCount" xml:space="preserve">
+    <value>Success Count</value>
+  </data>
+  <data name="ApiCallPerf_ErrorCount" xml:space="preserve">
+    <value>Error Count</value>
+  </data>
+  <data name="ApiCallPerf_AvgElapsed" xml:space="preserve">
+    <value>Avg Elapsed (ms)</value>
+  </data>
+  <data name="ApiCallPerf_MaxElapsed" xml:space="preserve">
+    <value>Max Elapsed (ms)</value>
+  </data>
+  <data name="ApiCallPerf_SuccessRate" xml:space="preserve">
+    <value>Success Rate</value>
+  </data>
+  <data name="ApiCallPerf_BottleneckAnalysis" xml:space="preserve">
+    <value>API Bottleneck Analysis</value>
+  </data>
+  <data name="ApiCallPerf_Endpoint" xml:space="preserve">
+    <value>Endpoint</value>
+  </data>
+  <data name="ApiCallPerf_CallCount" xml:space="preserve">
+    <value>Call Count</value>
+  </data>
+  <data name="ApiCallPerf_SuccessRateHeader" xml:space="preserve">
+    <value>Success Rate</value>
+  </data>
+  <data name="ApiCallPerf_AvgElapsedHeader" xml:space="preserve">
+    <value>Avg Elapsed</value>
+  </data>
+  <data name="ApiCallPerf_MaxElapsedHeader" xml:space="preserve">
+    <value>Max Elapsed</value>
+  </data>
+  <data name="ApiCallPerf_SlowestApiCalls" xml:space="preserve">
+    <value>Slowest API Calls Top {0}</value>
+  </data>
+  <data name="ApiCallPerf_Time" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="ApiCallPerf_Method" xml:space="preserve">
+    <value>Method</value>
+  </data>
+  <data name="ApiCallPerf_Elapsed" xml:space="preserve">
+    <value>Elapsed</value>
+  </data>
+  <data name="ApiCallPerf_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="ApiCallPerf_Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="ApiCallPerf_Success" xml:space="preserve">
+    <value>Success</value>
+  </data>
+  <data name="ApiCallPerf_Failure" xml:space="preserve">
+    <value>Failure</value>
+  </data>
+  <data name="ApiCallPerf_NoData" xml:space="preserve">
+    <value>No API call data</value>
+  </data>
+  <data name="ApiCallPerf_NoDataHint" xml:space="preserve">
+    <value>Data is collected automatically when WebUI calls the TaskRunner API</value>
+  </data>
+  <data name="ApiCallPerf_PerfTips" xml:space="preserve">
+    <value>Performance Optimization Tips</value>
+  </data>
+  <data name="ApiCallPerf_TipAvgElapsed" xml:space="preserve">
+    <value>&lt;strong&gt;Avg elapsed &amp;gt; 500ms&lt;/strong&gt;: Consider adding cache or optimizing queries</value>
+  </data>
+  <data name="ApiCallPerf_TipP99" xml:space="preserve">
+    <value>&lt;strong&gt;P99 &amp;gt; 2000ms&lt;/strong&gt;: Long tail latency exists, check occasional slow requests</value>
+  </data>
+  <data name="ApiCallPerf_TipSuccessRate" xml:space="preserve">
+    <value>&lt;strong&gt;Success rate &amp;lt; 99%&lt;/strong&gt;: Check TaskRunner service stability</value>
+  </data>
+  <data name="ApiCallPerf_TipTooManyCalls" xml:space="preserve">
+    <value>&lt;strong&gt;Too many calls&lt;/strong&gt;: Consider batch requests or adding client cache</value>
+  </data>
+  <data name="CompPerf_TotalComponents" xml:space="preserve">
+    <value>Total Components</value>
+  </data>
+  <data name="CompPerf_TotalRenders" xml:space="preserve">
+    <value>Total Renders</value>
+  </data>
+  <data name="CompPerf_AvgTimeMs" xml:space="preserve">
+    <value>Avg Time (ms)</value>
+  </data>
+  <data name="CompPerf_MaxTimeMs" xml:space="preserve">
+    <value>Max Time (ms)</value>
+  </data>
+  <data name="CompPerf_SlowComponentCount" xml:space="preserve">
+    <value>Slow Components</value>
+  </data>
+  <data name="CompPerf_SlowRenderCount" xml:space="preserve">
+    <value>Slow Renders</value>
+  </data>
+  <data name="CompPerf_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="CompPerf_SlowThresholdMs" xml:space="preserve">
+    <value>Slow Component Threshold (ms)</value>
+  </data>
+  <data name="CompPerf_Apply" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="CompPerf_ThresholdHint" xml:space="preserve">
+    <value>Renders exceeding this time will be marked as slow. Current threshold:</value>
+  </data>
+  <data name="CompPerf_SlowComponentsTop" xml:space="preserve">
+    <value>Slow Components</value>
+  </data>
+  <data name="CompPerf_ComponentName" xml:space="preserve">
+    <value>Component Name</value>
+  </data>
+  <data name="CompPerf_RenderCount" xml:space="preserve">
+    <value>Render Count</value>
+  </data>
+  <data name="CompPerf_AvgTime" xml:space="preserve">
+    <value>Avg Time</value>
+  </data>
+  <data name="CompPerf_MaxTime" xml:space="preserve">
+    <value>Max Time</value>
+  </data>
+  <data name="CompPerf_SlowRenderCountCol" xml:space="preserve">
+    <value>Slow Render Count</value>
+  </data>
+  <data name="CompPerf_LastRender" xml:space="preserve">
+    <value>Last Render</value>
+  </data>
+  <data name="CompPerf_AllComponentDetails" xml:space="preserve">
+    <value>All Component Details</value>
+  </data>
+  <data name="CompPerf_NoData" xml:space="preserve">
+    <value>No data yet. Refresh or visit other pages to collect performance data.</value>
+  </data>
+  <data name="CompPerf_MinTime" xml:space="preserve">
+    <value>Min Time</value>
+  </data>
+  <data name="CompPerf_TotalTime" xml:space="preserve">
+    <value>Total Time</value>
+  </data>
+  <data name="CompPerf_SlowRenderCol" xml:space="preserve">
+    <value>Slow Render</value>
+  </data>
+  <data name="CompPerf_RecentEvents" xml:space="preserve">
+    <value>Recent Render Events</value>
+  </data>
+  <data name="CompPerf_Time" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="CompPerf_Elapsed" xml:space="preserve">
+    <value>Elapsed</value>
+  </data>
+  <data name="CompPerf_Type" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="CompPerf_FirstRender" xml:space="preserve">
+    <value>First Render</value>
+  </data>
+  <data name="E2EPerf_TotalOperations" xml:space="preserve">
+    <value>Total Operations</value>
+  </data>
+  <data name="E2EPerf_AvgTotalTime" xml:space="preserve">
+    <value>Avg Total Time</value>
+  </data>
+  <data name="E2EPerf_AvgNetworkTime" xml:space="preserve">
+    <value>Avg Network Time</value>
+  </data>
+  <data name="E2EPerf_AvgRenderingTime" xml:space="preserve">
+    <value>Avg Rendering Time</value>
+  </data>
+  <data name="E2EPerf_SlowOperationCount" xml:space="preserve">
+    <value>Slow Ops (&gt;1s)</value>
+  </data>
+  <data name="E2EPerf_MaxTime" xml:space="preserve">
+    <value>Max Time</value>
+  </data>
+  <data name="E2EPerf_SlowestOperationsTop" xml:space="preserve">
+    <value>Slowest Operations</value>
+  </data>
+  <data name="E2EPerf_Page" xml:space="preserve">
+    <value>Page</value>
+  </data>
+  <data name="E2EPerf_Operation" xml:space="preserve">
+    <value>Operation</value>
+  </data>
+  <data name="E2EPerf_Network" xml:space="preserve">
+    <value>Network</value>
+  </data>
+  <data name="E2EPerf_Rendering" xml:space="preserve">
+    <value>Rendering</value>
+  </data>
+  <data name="E2EPerf_ApiCallCount" xml:space="preserve">
+    <value>API Calls</value>
+  </data>
+  <data name="E2EPerf_SlowestComponent" xml:space="preserve">
+    <value>Slowest Component</value>
+  </data>
+  <data name="E2EPerf_RecentOperations" xml:space="preserve">
+    <value>Recent Operation Records</value>
+  </data>
+  <data name="E2EPerf_RecordsCountSuffix" xml:space="preserve">
+    <value>records</value>
+  </data>
+  <data name="E2EPerf_Details" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="E2EPerf_Collapse" xml:space="preserve">
+    <value>Collapse</value>
+  </data>
+  <data name="E2EPerf_Expand" xml:space="preserve">
+    <value>Expand</value>
+  </data>
+  <data name="E2EPerf_ApiCalls" xml:space="preserve">
+    <value>API Calls</value>
+  </data>
+  <data name="E2EPerf_Endpoint" xml:space="preserve">
+    <value>Endpoint</value>
+  </data>
+  <data name="E2EPerf_Method" xml:space="preserve">
+    <value>Method</value>
+  </data>
+  <data name="E2EPerf_Elapsed" xml:space="preserve">
+    <value>Elapsed</value>
+  </data>
+  <data name="E2EPerf_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="E2EPerf_ComponentRenders" xml:space="preserve">
+    <value>Component Renders</value>
+  </data>
+  <data name="E2EPerf_NoData" xml:space="preserve">
+    <value>No E2E performance data</value>
+  </data>
+  <data name="E2EPerf_CollectDataHint" xml:space="preserve">
+    <value>Use E2E tracking API in your pages to collect data</value>
+  </data>
+  <data name="E2EPerf_UsageTitle" xml:space="preserve">
+    <value>E2E Performance Monitoring Guide</value>
+  </data>
+  <data name="E2EPerf_UsageDesc" xml:space="preserve">
+    <value>Trace the full chain: user operation → API call → page rendering:</value>
+  </data>
+  <data name="E2EPerf_TotalTimeLabel" xml:space="preserve">
+    <value>Total Time</value>
+  </data>
+  <data name="E2EPerf_TotalTimeDesc" xml:space="preserve">
+    <value>= From operation start to page render complete</value>
+  </data>
+  <data name="E2EPerf_NetworkTimeLabel" xml:space="preserve">
+    <value>Network Time</value>
+  </data>
+  <data name="E2EPerf_NetworkTimeDesc" xml:space="preserve">
+    <value>= Sum of all API call times</value>
+  </data>
+  <data name="E2EPerf_RenderingTimeLabel" xml:space="preserve">
+    <value>Rendering Time</value>
+  </data>
+  <data name="E2EPerf_RenderingTimeDesc" xml:space="preserve">
+    <value>= Sum of all component render times (may be parallel)</value>
+  </data>
+  <data name="E2EPerf_BottleneckId" xml:space="preserve">
+    <value>Bottleneck Identification</value>
+  </data>
+  <data name="E2EPerf_BottleneckDesc" xml:space="preserve">
+    <value>: High total but low network → rendering issue; high network → API issue</value>
+  </data>
 </root>

@@ -1,4 +1,5 @@
 @using Baihua.Web.Services
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
 <!-- API 调用性能摘要 -->
 @if (ApiSummary != null)
@@ -8,7 +9,7 @@
             <div class="card bg-primary text-white">
                 <div class="card-body text-center">
                     <div class="h3 mb-0">@ApiSummary.TotalCalls</div>
-                    <small>总调用次数</small>
+                    <small>@L["ApiCallPerf_TotalCalls"]</small>
                 </div>
             </div>
         </div>
@@ -16,7 +17,7 @@
             <div class="card @(ApiSummary.ErrorCount > 0 ? "bg-danger" : "bg-success") text-white">
                 <div class="card-body text-center">
                     <div class="h3 mb-0">@ApiSummary.SuccessCount</div>
-                    <small>成功次数</small>
+                    <small>@L["ApiCallPerf_SuccessCount"]</small>
                 </div>
             </div>
         </div>
@@ -24,7 +25,7 @@
             <div class="card @(ApiSummary.ErrorCount > 0 ? "bg-danger" : "bg-success") text-white">
                 <div class="card-body text-center">
                     <div class="h3 mb-0">@ApiSummary.ErrorCount</div>
-                    <small>失败次数</small>
+                    <small>@L["ApiCallPerf_ErrorCount"]</small>
                 </div>
             </div>
         </div>
@@ -32,7 +33,7 @@
             <div class="card bg-info text-white">
                 <div class="card-body text-center">
                     <div class="h3 mb-0">@ApiSummary.AvgElapsedMs.ToString("F1")</div>
-                    <small>平均耗时(ms)</small>
+                    <small>@L["ApiCallPerf_AvgElapsed"]</small>
                 </div>
             </div>
         </div>
@@ -40,7 +41,7 @@
             <div class="card bg-warning text-dark">
                 <div class="card-body text-center">
                     <div class="h3 mb-0">@ApiSummary.MaxElapsedMs.ToString("F0")</div>
-                    <small>最大耗时(ms)</small>
+                    <small>@L["ApiCallPerf_MaxElapsed"]</small>
                 </div>
             </div>
         </div>
@@ -48,7 +49,7 @@
             <div class="card bg-secondary text-white">
                 <div class="card-body text-center">
                     <div class="h3 mb-0">@ApiSummary.SuccessRate.ToString("F1")%</div>
-                    <small>成功率</small>
+                    <small>@L["ApiCallPerf_SuccessRate"]</small>
                 </div>
             </div>
         </div>
@@ -60,21 +61,21 @@
 {
     <div class="card border-warning mb-4">
         <div class="card-header bg-warning text-dark">
-            <h5 class="mb-0">🐌 API 瓶颈分析</h5>
+            <h5 class="mb-0">@L["ApiCallPerf_BottleneckAnalysis"]</h5>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover table-sm mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>端点</th>
-                            <th class="text-end">调用次数</th>
-                            <th class="text-end">成功率</th>
-                            <th class="text-end">平均耗时</th>
+                            <th>@L["ApiCallPerf_Endpoint"]</th>
+                            <th class="text-end">@L["ApiCallPerf_CallCount"]</th>
+                            <th class="text-end">@L["ApiCallPerf_SuccessRateHeader"]</th>
+                            <th class="text-end">@L["ApiCallPerf_AvgElapsedHeader"]</th>
                             <th class="text-end">P50</th>
                             <th class="text-end">P95</th>
                             <th class="text-end">P99</th>
-                            <th class="text-end">最大耗时</th>
+                            <th class="text-end">@L["ApiCallPerf_MaxElapsedHeader"]</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -111,19 +112,19 @@
 {
     <div class="card mb-4">
         <div class="card-header">
-            <h5 class="mb-0">🐢 最慢 API 调用 Top @(ApiMetrics.Count)</h5>
+            <h5 class="mb-0">@L["ApiCallPerf_SlowestApiCalls", ApiMetrics.Count]</h5>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
                 <table class="table table-hover table-sm mb-0">
                     <thead class="table-light sticky-top">
                         <tr>
-                            <th>时间</th>
-                            <th>方法</th>
-                            <th>端点</th>
-                            <th class="text-end">耗时</th>
-                            <th>状态</th>
-                            <th>错误</th>
+                            <th>@L["ApiCallPerf_Time"]</th>
+                            <th>@L["ApiCallPerf_Method"]</th>
+                            <th>@L["ApiCallPerf_Endpoint"]</th>
+                            <th class="text-end">@L["ApiCallPerf_Elapsed"]</th>
+                            <th>@L["ApiCallPerf_Status"]</th>
+                            <th>@L["ApiCallPerf_Error"]</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -141,11 +142,11 @@
                                 <td>
                                     @if (call.Success)
                                     {
-                                        <span class="badge bg-success">成功</span>
+                                        <span class="badge bg-success">@L["ApiCallPerf_Success"]</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-danger">失败</span>
+                                        <span class="badge bg-danger">@L["ApiCallPerf_Failure"]</span>
                                     }
                                 </td>
                                 <td class="small text-danger">@(call.Error?.Length > 50 ? call.Error.Substring(0, 50) + "..." : call.Error)</td>
@@ -162,20 +163,20 @@ else
     <div class="card">
         <div class="card-body text-center py-5 text-muted">
             <div class="mb-3">📭</div>
-            <p>暂无 API 调用数据</p>
-            <p class="small">数据会在 WebUI 调用 TaskRunner API 时自动收集</p>
+            <p>@L["ApiCallPerf_NoData"]</p>
+            <p class="small">@L["ApiCallPerf_NoDataHint"]</p>
         </div>
     </div>
 }
 
 <!-- 使用说明 -->
 <div class="alert alert-info mt-4">
-    <h6>💡 性能优化建议</h6>
+    <h6>@L["ApiCallPerf_PerfTips"]</h6>
     <ul class="mb-0 small">
-        <li><strong>平均耗时 > 500ms</strong>：考虑添加缓存或优化查询</li>
-        <li><strong>P99 > 2000ms</strong>：存在长尾延迟，检查偶发慢请求</li>
-        <li><strong>成功率 &lt; 99%</strong>：检查 TaskRunner 服务稳定性</li>
-        <li><strong>调用次数过多</strong>：考虑批量请求或添加客户端缓存</li>
+        <li>@L["ApiCallPerf_TipAvgElapsed"]</li>
+        <li>@L["ApiCallPerf_TipP99"]</li>
+        <li>@L["ApiCallPerf_TipSuccessRate"]</li>
+        <li>@L["ApiCallPerf_TipTooManyCalls"]</li>
     </ul>
 </div>
 

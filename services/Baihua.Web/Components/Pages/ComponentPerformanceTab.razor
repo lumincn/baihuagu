@@ -1,4 +1,5 @@
 @using Baihua.Web.Services
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
 <!-- 摘要卡片 -->
 @if (summary != null)
@@ -8,7 +9,7 @@
             <div class="card bg-primary text-white">
                 <div class="card-body text-center">
                     <div class="h3 mb-0">@summary.TotalComponents</div>
-                    <small>组件总数</small>
+                    <small>@L["CompPerf_TotalComponents"]</small>
                 </div>
             </div>
         </div>
@@ -16,7 +17,7 @@
             <div class="card bg-info text-white">
                 <div class="card-body text-center">
                     <div class="h3 mb-0">@summary.TotalRenders</div>
-                    <small>总渲染次数</small>
+                    <small>@L["CompPerf_TotalRenders"]</small>
                 </div>
             </div>
         </div>
@@ -24,7 +25,7 @@
             <div class="card bg-success text-white">
                 <div class="card-body text-center">
                     <div class="h3 mb-0">@summary.AverageRenderTimeMs.ToString("F1")</div>
-                    <small>平均耗时(ms)</small>
+                    <small>@L["CompPerf_AvgTimeMs"]</small>
                 </div>
             </div>
         </div>
@@ -32,7 +33,7 @@
             <div class="card bg-warning text-dark">
                 <div class="card-body text-center">
                     <div class="h3 mb-0">@summary.MaxRenderTimeMs.ToString("F0")</div>
-                    <small>最大耗时(ms)</small>
+                    <small>@L["CompPerf_MaxTimeMs"]</small>
                 </div>
             </div>
         </div>
@@ -40,7 +41,7 @@
             <div class="card @(summary.SlowComponentCount > 0 ? "bg-danger text-white" : "bg-success text-white")">
                 <div class="card-body text-center">
                     <div class="h3 mb-0">@summary.SlowComponentCount</div>
-                    <small>慢组件数</small>
+                    <small>@L["CompPerf_SlowComponentCount"]</small>
                 </div>
             </div>
         </div>
@@ -48,7 +49,7 @@
             <div class="card @(summary.SlowRenders > 0 ? "bg-danger text-white" : "bg-success text-white")">
                 <div class="card-body text-center">
                     <div class="h3 mb-0">@summary.SlowRenders</div>
-                    <small>慢渲染次数</small>
+                    <small>@L["CompPerf_SlowRenderCount"]</small>
                 </div>
             </div>
         </div>
@@ -58,20 +59,20 @@
 <!-- 阈值设置 -->
 <div class="card mb-4">
     <div class="card-header">
-        <h5 class="mb-0">⚙️ 设置</h5>
+        <h5 class="mb-0">⚙ @L["CompPerf_Settings"]</h5>
     </div>
     <div class="card-body">
         <div class="row align-items-center">
             <div class="col-md-4">
-                <label class="form-label">慢组件阈值 (ms)</label>
+                <label class="form-label">@L["CompPerf_SlowThresholdMs"]</label>
                 <div class="input-group">
                     <input type="number" class="form-control" @bind="slowThreshold" min="10" max="5000" />
-                    <button class="btn btn-outline-primary" @onclick="UpdateThreshold">应用</button>
+                    <button class="btn btn-outline-primary" @onclick="UpdateThreshold">@L["CompPerf_Apply"]</button>
                 </div>
             </div>
             <div class="col-md-8">
                 <div class="form-text mt-2">
-                    超过此时间的渲染将被标记为"慢渲染"。当前阈值: <strong>@ComponentPerformanceService.SlowThresholdMs ms</strong>
+                    @L["CompPerf_ThresholdHint"] <strong>@ComponentPerformanceService.SlowThresholdMs ms</strong>
                 </div>
             </div>
         </div>
@@ -83,19 +84,19 @@
 {
     <div class="card border-danger mb-4">
         <div class="card-header bg-danger text-white">
-            <h5 class="mb-0">🐌 慢组件 Top @(slowComponents.Count)</h5>
+            <h5 class="mb-0">@L["CompPerf_SlowComponentsTop"] @(slowComponents.Count)</h5>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover table-sm mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>组件名</th>
-                            <th class="text-end">渲染次数</th>
-                            <th class="text-end">平均耗时</th>
-                            <th class="text-end">最大耗时</th>
-                            <th class="text-end">慢渲染次数</th>
-                            <th>最后渲染</th>
+                            <th>@L["CompPerf_ComponentName"]</th>
+                            <th class="text-end">@L["CompPerf_RenderCount"]</th>
+                            <th class="text-end">@L["CompPerf_AvgTime"]</th>
+                            <th class="text-end">@L["CompPerf_MaxTime"]</th>
+                            <th class="text-end">@L["CompPerf_SlowRenderCountCol"]</th>
+                            <th>@L["CompPerf_LastRender"]</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -122,14 +123,14 @@
 <!-- 所有组件详情 -->
 <div class="card">
     <div class="card-header">
-        <h5 class="mb-0">📊 所有组件详情</h5>
+        <h5 class="mb-0">@L["CompPerf_AllComponentDetails"]</h5>
     </div>
     <div class="card-body p-0">
         @if (allMetrics?.Any() != true)
         {
             <div class="text-center py-5 text-muted">
                 <div class="mb-3">📭</div>
-                <p>暂无数据，请刷新页面或访问其他页面以收集性能数据</p>
+                <p>@L["CompPerf_NoData"]</p>
             </div>
         }
         else
@@ -138,14 +139,14 @@
                 <table class="table table-hover table-sm mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>组件名</th>
-                            <th class="text-end">渲染次数</th>
-                            <th class="text-end">平均耗时</th>
-                            <th class="text-end">最小耗时</th>
-                            <th class="text-end">最大耗时</th>
-                            <th class="text-end">总耗时</th>
-                            <th class="text-end">慢渲染</th>
-                            <th>最后渲染</th>
+                            <th>@L["CompPerf_ComponentName"]</th>
+                            <th class="text-end">@L["CompPerf_RenderCount"]</th>
+                            <th class="text-end">@L["CompPerf_AvgTime"]</th>
+                            <th class="text-end">@L["CompPerf_MinTime"]</th>
+                            <th class="text-end">@L["CompPerf_MaxTime"]</th>
+                            <th class="text-end">@L["CompPerf_TotalTime"]</th>
+                            <th class="text-end">@L["CompPerf_SlowRenderCol"]</th>
+                            <th>@L["CompPerf_LastRender"]</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -187,17 +188,17 @@
 {
     <div class="card mt-4">
         <div class="card-header">
-            <h5 class="mb-0">🕐 最近渲染事件</h5>
+            <h5 class="mb-0">@L["CompPerf_RecentEvents"]</h5>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
                 <table class="table table-hover table-sm mb-0">
                     <thead class="table-light sticky-top">
                         <tr>
-                            <th>时间</th>
-                            <th>组件名</th>
-                            <th>耗时</th>
-                            <th>类型</th>
+                            <th>@L["CompPerf_Time"]</th>
+                            <th>@L["CompPerf_ComponentName"]</th>
+                            <th>@L["CompPerf_Elapsed"]</th>
+                            <th>@L["CompPerf_Type"]</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -214,7 +215,7 @@
                                 <td>
                                     @if (evt.IsFirstRender)
                                     {
-                                        <span class="badge bg-info">首次渲染</span>
+                                        <span class="badge bg-info">@L["CompPerf_FirstRender"]</span>
                                     }
                                     else
                                     {

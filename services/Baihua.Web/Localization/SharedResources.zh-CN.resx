@@ -3319,4 +3319,274 @@
   <data name="QRTool_Description" xml:space="preserve">
     <value>生成二维码供移动端扫描，快速添加服务器</value>
   </data>
+  <data name="ApiCallPerf_TotalCalls" xml:space="preserve">
+    <value>总调用次数</value>
+  </data>
+  <data name="ApiCallPerf_SuccessCount" xml:space="preserve">
+    <value>成功次数</value>
+  </data>
+  <data name="ApiCallPerf_ErrorCount" xml:space="preserve">
+    <value>失败次数</value>
+  </data>
+  <data name="ApiCallPerf_AvgElapsed" xml:space="preserve">
+    <value>平均耗时(ms)</value>
+  </data>
+  <data name="ApiCallPerf_MaxElapsed" xml:space="preserve">
+    <value>最大耗时(ms)</value>
+  </data>
+  <data name="ApiCallPerf_SuccessRate" xml:space="preserve">
+    <value>成功率</value>
+  </data>
+  <data name="ApiCallPerf_BottleneckAnalysis" xml:space="preserve">
+    <value>API 瓶颈分析</value>
+  </data>
+  <data name="ApiCallPerf_Endpoint" xml:space="preserve">
+    <value>端点</value>
+  </data>
+  <data name="ApiCallPerf_CallCount" xml:space="preserve">
+    <value>调用次数</value>
+  </data>
+  <data name="ApiCallPerf_SuccessRateHeader" xml:space="preserve">
+    <value>成功率</value>
+  </data>
+  <data name="ApiCallPerf_AvgElapsedHeader" xml:space="preserve">
+    <value>平均耗时</value>
+  </data>
+  <data name="ApiCallPerf_MaxElapsedHeader" xml:space="preserve">
+    <value>最大耗时</value>
+  </data>
+  <data name="ApiCallPerf_SlowestApiCalls" xml:space="preserve">
+    <value>最慢 API 调用 Top {0}</value>
+  </data>
+  <data name="ApiCallPerf_Time" xml:space="preserve">
+    <value>时间</value>
+  </data>
+  <data name="ApiCallPerf_Method" xml:space="preserve">
+    <value>方法</value>
+  </data>
+  <data name="ApiCallPerf_Elapsed" xml:space="preserve">
+    <value>耗时</value>
+  </data>
+  <data name="ApiCallPerf_Status" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="ApiCallPerf_Error" xml:space="preserve">
+    <value>错误</value>
+  </data>
+  <data name="ApiCallPerf_Success" xml:space="preserve">
+    <value>成功</value>
+  </data>
+  <data name="ApiCallPerf_Failure" xml:space="preserve">
+    <value>失败</value>
+  </data>
+  <data name="ApiCallPerf_NoData" xml:space="preserve">
+    <value>暂无 API 调用数据</value>
+  </data>
+  <data name="ApiCallPerf_NoDataHint" xml:space="preserve">
+    <value>数据会在 WebUI 调用 TaskRunner API 时自动收集</value>
+  </data>
+  <data name="ApiCallPerf_PerfTips" xml:space="preserve">
+    <value>性能优化建议</value>
+  </data>
+  <data name="ApiCallPerf_TipAvgElapsed" xml:space="preserve">
+    <value>&lt;strong&gt;平均耗时 &amp;gt; 500ms&lt;/strong&gt;：考虑添加缓存或优化查询</value>
+  </data>
+  <data name="ApiCallPerf_TipP99" xml:space="preserve">
+    <value>&lt;strong&gt;P99 &amp;gt; 2000ms&lt;/strong&gt;：存在长尾延迟，检查偶发慢请求</value>
+  </data>
+  <data name="ApiCallPerf_TipSuccessRate" xml:space="preserve">
+    <value>&lt;strong&gt;成功率 &amp;lt; 99%&lt;/strong&gt;：检查 TaskRunner 服务稳定性</value>
+  </data>
+  <data name="ApiCallPerf_TipTooManyCalls" xml:space="preserve">
+    <value>&lt;strong&gt;调用次数过多&lt;/strong&gt;：考虑批量请求或添加客户端缓存</value>
+  </data>
+  <data name="CompPerf_TotalComponents" xml:space="preserve">
+    <value>组件总数</value>
+  </data>
+  <data name="CompPerf_TotalRenders" xml:space="preserve">
+    <value>总渲染次数</value>
+  </data>
+  <data name="CompPerf_AvgTimeMs" xml:space="preserve">
+    <value>平均耗时(ms)</value>
+  </data>
+  <data name="CompPerf_MaxTimeMs" xml:space="preserve">
+    <value>最大耗时(ms)</value>
+  </data>
+  <data name="CompPerf_SlowComponentCount" xml:space="preserve">
+    <value>慢组件数</value>
+  </data>
+  <data name="CompPerf_SlowRenderCount" xml:space="preserve">
+    <value>慢渲染次数</value>
+  </data>
+  <data name="CompPerf_Settings" xml:space="preserve">
+    <value>设置</value>
+  </data>
+  <data name="CompPerf_SlowThresholdMs" xml:space="preserve">
+    <value>慢组件阈值 (ms)</value>
+  </data>
+  <data name="CompPerf_Apply" xml:space="preserve">
+    <value>应用</value>
+  </data>
+  <data name="CompPerf_ThresholdHint" xml:space="preserve">
+    <value>超过此时间的渲染将被标记为“慢渲染”。当前阈值:</value>
+  </data>
+  <data name="CompPerf_SlowComponentsTop" xml:space="preserve">
+    <value>慢组件 Top</value>
+  </data>
+  <data name="CompPerf_ComponentName" xml:space="preserve">
+    <value>组件名</value>
+  </data>
+  <data name="CompPerf_RenderCount" xml:space="preserve">
+    <value>渲染次数</value>
+  </data>
+  <data name="CompPerf_AvgTime" xml:space="preserve">
+    <value>平均耗时</value>
+  </data>
+  <data name="CompPerf_MaxTime" xml:space="preserve">
+    <value>最大耗时</value>
+  </data>
+  <data name="CompPerf_SlowRenderCountCol" xml:space="preserve">
+    <value>慢渲染次数</value>
+  </data>
+  <data name="CompPerf_LastRender" xml:space="preserve">
+    <value>最后渲染</value>
+  </data>
+  <data name="CompPerf_AllComponentDetails" xml:space="preserve">
+    <value>所有组件详情</value>
+  </data>
+  <data name="CompPerf_NoData" xml:space="preserve">
+    <value>暂无数据，请刷新页面或访问其他页面以收集性能数据</value>
+  </data>
+  <data name="CompPerf_MinTime" xml:space="preserve">
+    <value>最小耗时</value>
+  </data>
+  <data name="CompPerf_TotalTime" xml:space="preserve">
+    <value>总耗时</value>
+  </data>
+  <data name="CompPerf_SlowRenderCol" xml:space="preserve">
+    <value>慢渲染</value>
+  </data>
+  <data name="CompPerf_RecentEvents" xml:space="preserve">
+    <value>最近渲染事件</value>
+  </data>
+  <data name="CompPerf_Time" xml:space="preserve">
+    <value>时间</value>
+  </data>
+  <data name="CompPerf_Elapsed" xml:space="preserve">
+    <value>耗时</value>
+  </data>
+  <data name="CompPerf_Type" xml:space="preserve">
+    <value>类型</value>
+  </data>
+  <data name="CompPerf_FirstRender" xml:space="preserve">
+    <value>首次渲染</value>
+  </data>
+  <data name="E2EPerf_TotalOperations" xml:space="preserve">
+    <value>总操作数</value>
+  </data>
+  <data name="E2EPerf_AvgTotalTime" xml:space="preserve">
+    <value>平均总耗时</value>
+  </data>
+  <data name="E2EPerf_AvgNetworkTime" xml:space="preserve">
+    <value>平均网络耗时</value>
+  </data>
+  <data name="E2EPerf_AvgRenderingTime" xml:space="preserve">
+    <value>平均渲染耗时</value>
+  </data>
+  <data name="E2EPerf_SlowOperationCount" xml:space="preserve">
+    <value>慢操作(&gt;1s)</value>
+  </data>
+  <data name="E2EPerf_MaxTime" xml:space="preserve">
+    <value>最大耗时</value>
+  </data>
+  <data name="E2EPerf_SlowestOperationsTop" xml:space="preserve">
+    <value>最慢的操作 Top</value>
+  </data>
+  <data name="E2EPerf_Page" xml:space="preserve">
+    <value>页面</value>
+  </data>
+  <data name="E2EPerf_Operation" xml:space="preserve">
+    <value>操作</value>
+  </data>
+  <data name="E2EPerf_Network" xml:space="preserve">
+    <value>网络</value>
+  </data>
+  <data name="E2EPerf_Rendering" xml:space="preserve">
+    <value>渲染</value>
+  </data>
+  <data name="E2EPerf_ApiCallCount" xml:space="preserve">
+    <value>API次数</value>
+  </data>
+  <data name="E2EPerf_SlowestComponent" xml:space="preserve">
+    <value>最慢组件</value>
+  </data>
+  <data name="E2EPerf_RecentOperations" xml:space="preserve">
+    <value>最近操作记录</value>
+  </data>
+  <data name="E2EPerf_RecordsCountSuffix" xml:space="preserve">
+    <value>条</value>
+  </data>
+  <data name="E2EPerf_Details" xml:space="preserve">
+    <value>详情</value>
+  </data>
+  <data name="E2EPerf_Collapse" xml:space="preserve">
+    <value>收起</value>
+  </data>
+  <data name="E2EPerf_Expand" xml:space="preserve">
+    <value>展开</value>
+  </data>
+  <data name="E2EPerf_ApiCalls" xml:space="preserve">
+    <value>API 调用</value>
+  </data>
+  <data name="E2EPerf_Endpoint" xml:space="preserve">
+    <value>端点</value>
+  </data>
+  <data name="E2EPerf_Method" xml:space="preserve">
+    <value>方法</value>
+  </data>
+  <data name="E2EPerf_Elapsed" xml:space="preserve">
+    <value>耗时</value>
+  </data>
+  <data name="E2EPerf_Status" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="E2EPerf_ComponentRenders" xml:space="preserve">
+    <value>组件渲染</value>
+  </data>
+  <data name="E2EPerf_NoData" xml:space="preserve">
+    <value>暂无端到端性能数据</value>
+  </data>
+  <data name="E2EPerf_CollectDataHint" xml:space="preserve">
+    <value>需要在页面中使用 E2E 追踪 API 来收集数据</value>
+  </data>
+  <data name="E2EPerf_UsageTitle" xml:space="preserve">
+    <value>端到端性能监控说明</value>
+  </data>
+  <data name="E2EPerf_UsageDesc" xml:space="preserve">
+    <value>追踪从用户操作 → API 调用 → 页面渲染的完整链路：</value>
+  </data>
+  <data name="E2EPerf_TotalTimeLabel" xml:space="preserve">
+    <value>总耗时</value>
+  </data>
+  <data name="E2EPerf_TotalTimeDesc" xml:space="preserve">
+    <value>= 从操作开始到页面渲染完成</value>
+  </data>
+  <data name="E2EPerf_NetworkTimeLabel" xml:space="preserve">
+    <value>网络耗时</value>
+  </data>
+  <data name="E2EPerf_NetworkTimeDesc" xml:space="preserve">
+    <value>= 所有 API 调用耗时之和</value>
+  </data>
+  <data name="E2EPerf_RenderingTimeLabel" xml:space="preserve">
+    <value>渲染耗时</value>
+  </data>
+  <data name="E2EPerf_RenderingTimeDesc" xml:space="preserve">
+    <value>= 所有组件渲染耗时之和（可能有并行）</value>
+  </data>
+  <data name="E2EPerf_BottleneckId" xml:space="preserve">
+    <value>瓶颈识别</value>
+  </data>
+  <data name="E2EPerf_BottleneckDesc" xml:space="preserve">
+    <value>：总耗时高但网络低 → 渲染问题；网络高 → API 问题</value>
+  </data>
 </root>
