@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Baihua.Contracts.Ai;
+using Baihua.Core.Localization;
 using Baihua.Data;
 using Baihua.Data.Entities;
 using Baihua.Core.Security;
@@ -17,15 +19,18 @@ public class EmbeddingConfigController : ControllerBase
     private readonly IDbContextFactory<AIDbContext> _dbContextFactory;
     private readonly ApiKeyProtectionService _protectionService;
     private readonly ILogger<EmbeddingConfigController> _logger;
+    private readonly IStringLocalizer<SharedResources> _loc;
 
     public EmbeddingConfigController(
         IDbContextFactory<AIDbContext> dbContextFactory,
         ApiKeyProtectionService protectionService,
-        ILogger<EmbeddingConfigController> logger)
+        ILogger<EmbeddingConfigController> logger,
+        IStringLocalizer<SharedResources> loc)
     {
         _dbContextFactory = dbContextFactory;
         _protectionService = protectionService;
         _logger = logger;
+        _loc = loc;
     }
 
     /// <summary>
@@ -127,12 +132,12 @@ public class EmbeddingConfigController : ControllerBase
 
             await db.SaveChangesAsync();
             _logger.LogInformation("Embedding 配置已保存: Provider={Provider}, Model={Model}", request.ProviderId, request.Model);
-            return Ok(new { success = true, message = "Embedding 配置已保存" });
+            return Ok(new { success = true, message = _loc["Embedding_ConfigSaved"] });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "保存 Embedding 配置失败");
-            return StatusCode(500, new { error = $"保存失败: {ex.Message}" });
+            return StatusCode(500, new { error = _loc["Embedding_SaveFailed", ex.Message] });
         }
     }
 

@@ -23,8 +23,8 @@ public class RequestMetricsService : IDisposable
     public RequestMetricsService()
     {
         _meter = new Meter(MeterName, "1.0.0");
-        _requestDuration = _meter.CreateHistogram<double>("http.request.duration_ms", unit: "ms", description: "WebUI HTTP 请求耗时");
-        _requestTotal = _meter.CreateCounter<long>("http.request.total", unit: "{request}", description: "WebUI HTTP 请求总数");
+        _requestDuration = _meter.CreateHistogram<double>("http.request.duration_ms", unit: "ms", description: "WebUI HTTP request duration");
+        _requestTotal = _meter.CreateCounter<long>("http.request.total", unit: "{request}", description: "WebUI HTTP request total");
     }
 
     /// <summary>

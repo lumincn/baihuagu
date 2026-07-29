@@ -12,7 +12,7 @@ public partial class GitController
         {
             if (string.IsNullOrEmpty(vaultPath))
             {
-                throw new InvalidOperationException("知识库路径未配置");
+                throw new InvalidOperationException(_loc["Git_VaultPathNotConfigured"]);
             }
 
             var startInfo = new ProcessStartInfo
@@ -48,7 +48,7 @@ public partial class GitController
             if (!process.WaitForExit(timeoutMs))
             {
                 process.Kill();
-                throw new TimeoutException("Git 命令超时");
+                throw new TimeoutException(_loc["Git_CommandTimeout"]);
             }
 
             // 等待异步读取完成

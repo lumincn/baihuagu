@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
 using Baihua.Family.Services;
 
 namespace Baihua.Family.Controllers;
@@ -11,10 +13,12 @@ namespace Baihua.Family.Controllers;
 public class LogSinkController : ControllerBase
 {
     private readonly LogSinkConfigService _configService;
+    private readonly IStringLocalizer<SharedResources> _loc;
 
-    public LogSinkController(LogSinkConfigService configService)
+    public LogSinkController(LogSinkConfigService configService, IStringLocalizer<SharedResources> loc)
     {
         _configService = configService;
+        _loc = loc;
     }
 
     /// <summary>获取当前 OpenObserve 配置</summary>
@@ -29,10 +33,10 @@ public class LogSinkController : ControllerBase
     public ActionResult UpdateConfig([FromBody] OpenObserveConfig config)
     {
         if (config == null)
-            return BadRequest(new { error = "配置不能为空" });
+            return BadRequest(new { error = _loc["LogSink_ConfigEmpty"] });
 
         _configService.UpdateConfig(config);
-        return Ok(new { message = "配置已更新" });
+        return Ok(new { message = _loc["LogSink_ConfigUpdated"] });
     }
 
     /// <summary>获取 OpenObserve Web UI 地址</summary>

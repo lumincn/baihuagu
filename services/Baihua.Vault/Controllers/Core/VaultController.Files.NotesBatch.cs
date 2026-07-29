@@ -10,7 +10,7 @@ public partial class VaultController
     {
         var baseVaultPath = ResolveVaultPath(vaultId);
         if (string.IsNullOrEmpty(baseVaultPath))
-            return NotFound(new { error = "知识库不存在" });
+            return NotFound(new { error = _loc["Vault_NotFound"] });
 
         var notesPath = System.IO.Path.Combine(baseVaultPath, "notes");
         var effectiveRoot = System.IO.Directory.Exists(notesPath) ? notesPath : baseVaultPath;

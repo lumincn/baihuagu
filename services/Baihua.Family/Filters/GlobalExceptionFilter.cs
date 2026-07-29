@@ -1,16 +1,20 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using System.Net;
+using Baihua.Core.Localization;
 
 namespace Baihua.Family.Filters
 {
     public class GlobalExceptionFilter : IExceptionFilter
     {
         private readonly ILogger<GlobalExceptionFilter> _logger;
+        private readonly IStringLocalizer<SharedResources> _loc;
 
-        public GlobalExceptionFilter(ILogger<GlobalExceptionFilter> logger)
+        public GlobalExceptionFilter(ILogger<GlobalExceptionFilter> logger, IStringLocalizer<SharedResources> loc)
         {
             _logger = logger;
+            _loc = loc;
         }
 
         public void OnException(ExceptionContext context)
@@ -32,7 +36,7 @@ namespace Baihua.Family.Filters
             context.Result = new ObjectResult(new
             {
                 Success = false,
-                Message = "服务器内部错误",
+                Message = _loc["Error_InternalServerError"],
                 RequestId = context.HttpContext.TraceIdentifier
             })
             {

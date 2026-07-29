@@ -350,9 +350,9 @@ namespace Baihua.Family.Services
 
                 var simulatedDevices = new[]
                 {
-                    new { Id = "SIM-PHONE-001", Name = "华为手机" },
-                    new { Id = "SIM-TABLET-001", Name = "华为平板" },
-                    new { Id = "SIM-PC-001", Name = "另一台电脑" }
+                    new { Id = "SIM-PHONE-001", Name = "Huawei Phone" },
+                    new { Id = "SIM-TABLET-001", Name = "Huawei Tablet" },
+                    new { Id = "SIM-PC-001", Name = "Another PC" }
                 };
 
                 foreach (var device in simulatedDevices)
@@ -451,7 +451,7 @@ namespace Baihua.Family.Services
                             if (json != null && json.TryGetValue("type", out var msgType) && msgType == "device-register")
                             {
                                 var deviceId = json.GetValueOrDefault("deviceId", $"MOBILE-{Guid.NewGuid():N}");
-                                var deviceName = json.GetValueOrDefault("deviceName", "移动端设备");
+                                var deviceName = json.GetValueOrDefault("deviceName", "Mobile Device");
                                 var remoteEp = client.Client.RemoteEndPoint as System.Net.IPEndPoint;
                                 var ipAddress = remoteEp?.Address.ToString() ?? "unknown";
                                 RegisterDiscoveredDevice(deviceId, deviceName, ipAddress);

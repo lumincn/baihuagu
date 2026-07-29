@@ -248,7 +248,7 @@ public class ModelBenchmarkService
         catch (Exception ex) when (ex is OperationCanceledException or TimeoutException)
         {
             _logger.LogWarning("提示词 {PromptId} 测试超时", prompt.Id);
-            result.Error = "超时";
+            result.Error = "Timeout";
             result.IsTimeout = true;
             result.LatencyMs = sw.ElapsedMilliseconds > 0 ? sw.ElapsedMilliseconds : -1;
 

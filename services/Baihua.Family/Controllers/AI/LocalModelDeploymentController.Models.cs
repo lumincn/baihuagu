@@ -68,7 +68,7 @@ public partial class LocalModelDeploymentController
         catch (Exception ex)
         {
             _logger.LogError(ex, "加载模型失败");
-            return StatusCode(500, new { error = "加载失败", message = ex.Message });
+            return StatusCode(500, new { error = _loc["LocalModel_LoadFailed"], message = ex.Message });
         }
     }
 
@@ -92,7 +92,7 @@ public partial class LocalModelDeploymentController
         catch (Exception ex)
         {
             _logger.LogError(ex, "卸载模型失败");
-            return StatusCode(500, new { error = "卸载失败", message = ex.Message });
+            return StatusCode(500, new { error = _loc["LocalModel_UnloadFailed"], message = ex.Message });
         }
     }
 
@@ -132,7 +132,7 @@ public partial class LocalModelDeploymentController
         catch (Exception ex)
         {
             _logger.LogError(ex, "停止 llama.cpp 失败");
-            return StatusCode(500, new { error = "停止失败", message = ex.Message });
+            return StatusCode(500, new { error = _loc["LocalModel_StopFailed"], message = ex.Message });
         }
     }
 
@@ -174,7 +174,7 @@ public partial class LocalModelDeploymentController
         catch (Exception ex)
         {
             _logger.LogError(ex, "删除模型失败");
-            return StatusCode(500, new { error = "删除失败", message = ex.Message });
+            return StatusCode(500, new { error = _loc["LocalModel_DeleteFailed"], message = ex.Message });
         }
     }
 

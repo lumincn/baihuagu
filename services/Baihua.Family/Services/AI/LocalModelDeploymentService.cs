@@ -79,7 +79,7 @@ namespace Baihua.Family.Services;
                 if (_tasks.TryGetValue(taskId, out var task))
                 {
                     task.Status = "failed";
-                    task.ErrorMessage = "用户取消";
+                    task.ErrorMessage = _loc["Common_UserCancelled"];
                     task.CompletedAt = DateTime.Now;
                 }
                 return true;

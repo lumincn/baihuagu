@@ -1,4 +1,6 @@
 using Baihua.Core;
+using Baihua.Core.Localization;
+using Microsoft.Extensions.Localization;
 using MobileContract.Admin;
 using MobileContract.Devices;
 using MobileContract.Pairing;
@@ -17,11 +19,13 @@ public class MobileDeviceServiceAdapter :
 {
     private readonly DeviceService _deviceService;
     private readonly ILogger<MobileDeviceServiceAdapter> _logger;
+    private readonly IStringLocalizer<SharedResources> _loc;
 
-    public MobileDeviceServiceAdapter(DeviceService deviceService, ILogger<MobileDeviceServiceAdapter> logger)
+    public MobileDeviceServiceAdapter(DeviceService deviceService, ILogger<MobileDeviceServiceAdapter> logger, IStringLocalizer<SharedResources> loc)
     {
         _deviceService = deviceService;
         _logger = logger;
+        _loc = loc;
     }
 
     #region IPairingService
@@ -57,7 +61,7 @@ public class MobileDeviceServiceAdapter :
         {
             RequestId = info.RequestId,
             Status = "pending",
-            Message = "配对请求已提交，等待授权"
+            Message = _loc["Pair_RequestSubmitted"]
         });
     }
 
@@ -70,7 +74,7 @@ public class MobileDeviceServiceAdapter :
             {
                 RequestId = requestId,
                 Status = "pending",
-                Message = "等待授权"
+                Message = _loc["Pair_WaitingAuth"]
             });
         }
 
@@ -84,7 +88,7 @@ public class MobileDeviceServiceAdapter :
                 Status = "authorized",
                 AccessToken = token,
                 ExpiresIn = 86400 * 30,
-                Message = "授权成功"
+                Message = _loc["Pair_AuthSuccess"]
             });
         }
 
@@ -92,7 +96,7 @@ public class MobileDeviceServiceAdapter :
         {
             RequestId = requestId,
             Status = "rejected",
-            Message = "授权被拒绝"
+            Message = _loc["Pair_AuthRejected"]
         });
     }
 

@@ -33,7 +33,7 @@ public partial class ChatCompletionsController
                         Choices = [new OpenAiStreamChoice
                         {
                             Index = 0,
-                            Delta = new OpenAiDelta { Content = "🔍 正在检索知识库...\n\n" },
+                            Delta = new OpenAiDelta { Content = _loc["AiChat_RetrievingVault"] + "\n\n" },
                             FinishReason = null
                         }]
                     };

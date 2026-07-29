@@ -2423,4 +2423,133 @@ Status: {2}
   <data name="Vault_UnsupportedFileType" xml:space="preserve">
     <value>不支持的文件类型：{0}</value>
   </data>
+  <data name="Vault_DirNotFound" xml:space="preserve">
+    <value>目录不存在</value>
+  </data>
+  <data name="Vault_InvalidPath" xml:space="preserve">
+    <value>非法路径</value>
+  </data>
+  <data name="Health_StartupInfoFailed" xml:space="preserve">
+    <value>获取启动信息失败</value>
+  </data>
+  <data name="Health_OsInfoFailed" xml:space="preserve">
+    <value>获取操作系统信息失败</value>
+  </data>
+  <data name="Git_VaultPathNotConfigured" xml:space="preserve">
+    <value>知识库路径未配置</value>
+  </data>
+  <data name="Git_CommandTimeout" xml:space="preserve">
+    <value>Git 命令超时</value>
+  </data>
+  <data name="LogSink_ConfigEmpty" xml:space="preserve">
+    <value>配置不能为空</value>
+  </data>
+  <data name="LogSink_ConfigUpdated" xml:space="preserve">
+    <value>配置已更新</value>
+  </data>
+  <data name="Achievement_NameRequired" xml:space="preserve">
+    <value>名称不能为空</value>
+  </data>
+  <data name="Error_InternalServerError" xml:space="preserve">
+    <value>服务器内部错误</value>
+  </data>
+  <data name="Pair_RequestSubmitted" xml:space="preserve">
+    <value>配对请求已提交，等待授权</value>
+  </data>
+  <data name="Pair_WaitingAuth" xml:space="preserve">
+    <value>等待授权</value>
+  </data>
+  <data name="Pair_AuthSuccess" xml:space="preserve">
+    <value>授权成功</value>
+  </data>
+  <data name="Pair_AuthRejected" xml:space="preserve">
+    <value>授权被拒绝</value>
+  </data>
+  <data name="Pair_CodeRequired" xml:space="preserve">
+    <value>配对码不能为空</value>
+  </data>
+  <data name="Pair_RequestSentToWebUI" xml:space="preserve">
+    <value>配对请求已提交，请在 WebUI 中授权</value>
+  </data>
+  <data name="DailyCard_None" xml:space="preserve">
+    <value>暂无卡片，请先生成卡片</value>
+  </data>
+  <data name="Embedding_ConfigSaved" xml:space="preserve">
+    <value>Embedding 配置已保存</value>
+  </data>
+  <data name="Embedding_SaveFailed" xml:space="preserve">
+    <value>保存失败：{0}</value>
+  </data>
+  <data name="Search_ReindexFailed" xml:space="preserve">
+    <value>重建索引失败</value>
+  </data>
+  <data name="Search_StatusFailed" xml:space="preserve">
+    <value>获取状态失败</value>
+  </data>
+  <data name="Program_Description_Family" xml:space="preserve">
+    <value>百花后台服务 - 健康检查与运行状态 API</value>
+  </data>
+  <data name="Program_Description_AI" xml:space="preserve">
+    <value>百花 AI 服务 - 模型、聊天、搜索、指标</value>
+  </data>
+  <data name="Program_Description_Vault" xml:space="preserve">
+    <value>百花知识库服务 - Vault、同步、搜索</value>
+  </data>
+  <data name="Program_AiAccessDenied" xml:space="preserve">
+    <value>AI 管理 API 仅允许本机访问</value>
+  </data>
+  <data name="Program_VaultAccessDenied" xml:space="preserve">
+    <value>Vault API 仅允许本机访问</value>
+  </data>
+  <data name="Program_FamilyAccessDenied" xml:space="preserve">
+    <value>管理 API 仅允许本机访问。请通过 WebUI 界面操作。</value>
+  </data>
+  <data name="Program_InvalidSignature" xml:space="preserve">
+    <value>无效的请求签名</value>
+  </data>
+  <data name="Program_BearerTokenRequired" xml:space="preserve">
+    <value>需要 Bearer Token 认证</value>
+  </data>
+  <data name="Program_InvalidAccessToken" xml:space="preserve">
+    <value>无效的访问令牌</value>
+  </data>
+  <data name="Program_VaultUnavailable" xml:space="preserve">
+    <value>Vault 服务不可用</value>
+  </data>
+  <data name="LocalModel_DownloadComplete" xml:space="preserve">
+    <value>下载完成</value>
+  </data>
+  <data name="LocalModel_SearchModel" xml:space="preserve">
+    <value>搜索模型</value>
+  </data>
+  <data name="LocalModel_PullManifest" xml:space="preserve">
+    <value>下载清单</value>
+  </data>
+  <data name="LocalModel_VerifyFile" xml:space="preserve">
+    <value>验证文件</value>
+  </data>
+  <data name="LocalModel_WriteModel" xml:space="preserve">
+    <value>写入模型</value>
+  </data>
+  <data name="Task_OutlineParsedEmpty" xml:space="preserve">
+    <value>解析为空</value>
+  </data>
+  <data name="Common_ReadFailed" xml:space="preserve">
+    <value>读取失败</value>
+  </data>
+  <data name="Common_WriteFailed" xml:space="preserve">
+    <value>写入失败</value>
+  </data>
+  <data name="Common_SearchFailed" xml:space="preserve">
+    <value>搜索失败</value>
+  </data>
+  <data name="Common_LoadFailed" xml:space="preserve">
+    <value>加载失败</value>
+  </data>
+  <data name="Common_UserCancelled" xml:space="preserve">
+    <value>用户取消</value>
+  </data>
+  <data name="AiChat_RetrievingVault" xml:space="preserve">
+    <value>🔍 正在检索知识库...</value>
+  </data>
 </root>

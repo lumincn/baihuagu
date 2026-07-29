@@ -22,7 +22,7 @@ public partial class VaultController
         var baseVaultPath = ResolveVaultPath(vaultId);
         if (string.IsNullOrEmpty(baseVaultPath))
         {
-            return NotFound(new { error = "知识库不存在" });
+            return NotFound(new { error = _loc["Vault_NotFound"] });
         }
 
         // 使用 notes/ 子目录作为知识库内容根目录
@@ -37,12 +37,12 @@ public partial class VaultController
         var fullTargetPath = System.IO.Path.GetFullPath(targetPath);
         if (!fullTargetPath.StartsWith(fullRootPath, StringComparison.OrdinalIgnoreCase))
         {
-            return BadRequest(new { error = "非法路径" });
+            return BadRequest(new { error = _loc["Vault_IllegalPath"] });
         }
 
         if (!System.IO.Directory.Exists(targetPath))
         {
-            return NotFound(new { error = "目录不存在" });
+            return NotFound(new { error = _loc["Vault_DirNotFound"] });
         }
 
         var items = new List<VaultBrowseItem>();

@@ -105,7 +105,7 @@ public partial class VaultController
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取清单失败");
-                return StatusCode(500, new { error = "获取失败", message = ex.Message });
+                return StatusCode(500, new { error = _loc["Common_ReadFailed"], message = ex.Message });
             }
         }
 

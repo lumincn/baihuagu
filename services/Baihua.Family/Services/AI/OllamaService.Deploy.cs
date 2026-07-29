@@ -77,13 +77,13 @@ public partial class OllamaService
             }
 
             if (line.Contains("pulling manifest", StringComparison.OrdinalIgnoreCase))
-                task.CurrentStep = "下载清单";
+                task.CurrentStep = "Downloading manifest";
             else if (line.Contains("pulling", StringComparison.OrdinalIgnoreCase))
-                task.CurrentStep = "下载模型文件";
+                task.CurrentStep = "Downloading model file";
             else if (line.Contains("verifying", StringComparison.OrdinalIgnoreCase))
-                task.CurrentStep = "验证文件";
+                task.CurrentStep = "Verifying file";
             else if (line.Contains("writing", StringComparison.OrdinalIgnoreCase))
-                task.CurrentStep = "写入模型";
+                task.CurrentStep = "Writing model";
         }
 
         public async Task<bool> VerifyModelAsync(string modelName, CancellationToken ct = default)

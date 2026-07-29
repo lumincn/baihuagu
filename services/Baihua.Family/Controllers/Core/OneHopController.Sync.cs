@@ -14,7 +14,7 @@ public partial class OneHopController
             {
                 if (string.IsNullOrEmpty(vaultId))
                 {
-                    return BadRequest(new { error = "必须指定知识库" });
+                    return BadRequest(new { error = _loc["Vault_Required"] });
                 }
 
                 var success = await _oneHopManager.SendSyncRequestAsync(vaultId, since);

@@ -60,7 +60,7 @@ namespace Baihua.Family.Controllers
                 var (enrichedMessages, wasEnriched) = await _ragService.TryEnrichForStreamingAsync(messages, linkedCts.Token);
                 if (wasEnriched)
                 {
-                    await SendSse("delta", System.Text.Json.JsonSerializer.Serialize(new { content = "🔍 正在检索知识库...\n\n" }));
+                    await SendSse("delta", System.Text.Json.JsonSerializer.Serialize(new { content = _loc["AiChat_RetrievingVault"] + "\n\n" }));
                 }
                 messages = enrichedMessages;
 

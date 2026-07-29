@@ -298,7 +298,7 @@ namespace Baihua.Family.Controllers
             try
             {
                 var outline = JsonSerializer.Deserialize<List<NoteOutlineItem>>(jsonStr, JsonHelper.CaseInsensitive);
-                if (outline == null || outline.Count == 0) throw new Exception("解析为空");
+                if (outline == null || outline.Count == 0) throw new Exception(_loc["Task_OutlineParsedEmpty"]);
                 return outline.ToList();
             }
             catch (Exception ex)

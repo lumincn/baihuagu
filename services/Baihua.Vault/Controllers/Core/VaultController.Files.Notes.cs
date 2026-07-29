@@ -67,7 +67,7 @@ public partial class VaultController
         catch (Exception ex)
         {
             _logger.LogError(ex, "读取笔记失败：{Path}", path);
-            return StatusCode(500, new { error = "读取失败", message = ex.Message });
+            return StatusCode(500, new { error = _loc["Common_ReadFailed"], message = ex.Message });
         }
     }
 
@@ -125,7 +125,7 @@ public partial class VaultController
         catch (Exception ex)
         {
             _logger.LogError(ex, "写入笔记失败：{Path}", path);
-            return StatusCode(500, new { error = "写入失败", message = ex.Message });
+            return StatusCode(500, new { error = _loc["Common_WriteFailed"], message = ex.Message });
         }
     }
 

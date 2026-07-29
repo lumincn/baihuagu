@@ -150,7 +150,7 @@ public partial class AtomNoteSplitter
             foreach (var note in notes)
             {
                 var fullPath = Path.Combine(notesPath, note.Path + ".md");
-                var directory = Path.GetDirectoryName(fullPath) ?? throw new InvalidOperationException($"无法获取目录：{fullPath}");
+                var directory = Path.GetDirectoryName(fullPath) ?? throw new InvalidOperationException($"Cannot get directory: {fullPath}");
                 directoriesToCreate.Add(directory);
             }
 

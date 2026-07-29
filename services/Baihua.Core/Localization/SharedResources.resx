@@ -2418,4 +2418,142 @@ Duration: {1}</value>
   <data name="Vault_UnsupportedFileType" xml:space="preserve">
     <value>Unsupported file type: {0}</value>
   </data>
+  <data name="Vault_DirNotFound" xml:space="preserve">
+    <value>Directory not found</value>
+  </data>
+  <data name="Vault_InvalidPath" xml:space="preserve">
+    <value>Invalid path</value>
+  </data>
+  <data name="Health_StartupInfoFailed" xml:space="preserve">
+    <value>Failed to get startup information</value>
+  </data>
+  <data name="Health_OsInfoFailed" xml:space="preserve">
+    <value>Failed to get OS information</value>
+  </data>
+  <data name="Git_VaultPathNotConfigured" xml:space="preserve">
+    <value>Vault path is not configured</value>
+  </data>
+  <data name="Git_CommandTimeout" xml:space="preserve">
+    <value>Git command timed out</value>
+  </data>
+  <data name="LogSink_ConfigEmpty" xml:space="preserve">
+    <value>Configuration cannot be empty</value>
+  </data>
+  <data name="LogSink_ConfigUpdated" xml:space="preserve">
+    <value>Configuration updated</value>
+  </data>
+  <data name="Achievement_NameRequired" xml:space="preserve">
+    <value>Name cannot be empty</value>
+  </data>
+  <data name="Error_InternalServerError" xml:space="preserve">
+    <value>Internal server error</value>
+  </data>
+  <data name="Pair_RequestSubmitted" xml:space="preserve">
+    <value>Pairing request submitted, waiting for authorization</value>
+  </data>
+  <data name="Pair_WaitingAuth" xml:space="preserve">
+    <value>Waiting for authorization</value>
+  </data>
+  <data name="Pair_AuthSuccess" xml:space="preserve">
+    <value>Authorization successful</value>
+  </data>
+  <data name="Pair_AuthRejected" xml:space="preserve">
+    <value>Authorization rejected</value>
+  </data>
+  <data name="Pair_CodeRequired" xml:space="preserve">
+    <value>Pairing code cannot be empty</value>
+  </data>
+  <data name="Pair_RequestSentToWebUI" xml:space="preserve">
+    <value>Pairing request submitted, please authorize in WebUI</value>
+  </data>
+  <data name="DailyCard_None" xml:space="preserve">
+    <value>No cards yet, please generate cards first</value>
+  </data>
+  <data name="Embedding_ConfigSaved" xml:space="preserve">
+    <value>Embedding configuration saved</value>
+  </data>
+  <data name="Embedding_SaveFailed" xml:space="preserve">
+    <value>Save failed: {0}</value>
+  </data>
+  <data name="Search_ReindexFailed" xml:space="preserve">
+    <value>Failed to rebuild index</value>
+  </data>
+  <data name="Search_StatusFailed" xml:space="preserve">
+    <value>Failed to get status</value>
+  </data>
+  <data name="Program_Description_Family" xml:space="preserve">
+    <value>Baihua Family Service - Health check and runtime status API</value>
+  </data>
+  <data name="Program_Description_AI" xml:space="preserve">
+    <value>Baihua AI Service - Models, Chat, Search, Metrics</value>
+  </data>
+  <data name="Program_Description_Vault" xml:space="preserve">
+    <value>Baihua Vault Service - Vault, Sync, Search</value>
+  </data>
+  <data name="Program_AiAccessDenied" xml:space="preserve">
+    <value>AI Management API only allows local access</value>
+  </data>
+  <data name="Program_VaultAccessDenied" xml:space="preserve">
+    <value>Vault API only allows local access</value>
+  </data>
+  <data name="Program_FamilyAccessDenied" xml:space="preserve">
+    <value>Management API only allows local access. Please operate through WebUI.</value>
+  </data>
+  <data name="Program_InvalidSignature" xml:space="preserve">
+    <value>Invalid request signature</value>
+  </data>
+  <data name="Program_BearerTokenRequired" xml:space="preserve">
+    <value>Bearer Token authentication required</value>
+  </data>
+  <data name="Program_InvalidAccessToken" xml:space="preserve">
+    <value>Invalid access token</value>
+  </data>
+  <data name="Program_VaultUnavailable" xml:space="preserve">
+    <value>Vault service unavailable</value>
+  </data>
+  <data name="LocalModel_DownloadComplete" xml:space="preserve">
+    <value>Download complete</value>
+  </data>
+  <data name="LocalModel_SearchModel" xml:space="preserve">
+    <value>Searching model</value>
+  </data>
+  <data name="LocalModel_PullManifest" xml:space="preserve">
+    <value>Downloading manifest</value>
+  </data>
+  <data name="LocalModel_VerifyFile" xml:space="preserve">
+    <value>Verifying file</value>
+  </data>
+  <data name="LocalModel_WriteModel" xml:space="preserve">
+    <value>Writing model</value>
+  </data>
+  <data name="Task_OutlineParsedEmpty" xml:space="preserve">
+    <value>Parsed outline is empty</value>
+  </data>
+  <data name="Common_ReadFailed" xml:space="preserve">
+    <value>Failed to read</value>
+  </data>
+  <data name="Common_WriteFailed" xml:space="preserve">
+    <value>Failed to write</value>
+  </data>
+  <data name="Common_SearchFailed" xml:space="preserve">
+    <value>Search failed</value>
+  </data>
+  <data name="Common_ReadFailed" xml:space="preserve">
+    <value>Failed to read</value>
+  </data>
+  <data name="Common_WriteFailed" xml:space="preserve">
+    <value>Failed to write</value>
+  </data>
+  <data name="Common_SearchFailed" xml:space="preserve">
+    <value>Search failed</value>
+  </data>
+  <data name="Common_LoadFailed" xml:space="preserve">
+    <value>Load failed</value>
+  </data>
+  <data name="Common_UserCancelled" xml:space="preserve">
+    <value>User cancelled</value>
+  </data>
+  <data name="AiChat_RetrievingVault" xml:space="preserve">
+    <value>🔍 Retrieving from knowledge base...</value>
+  </data>
 </root>

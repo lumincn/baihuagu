@@ -1,16 +1,26 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Baihua.Contracts.LocalModels;
+using Baihua.Core.Localization;
 using Baihua.Family.Helpers;
 using Baihua.Family.Models;
+using Microsoft.Extensions.Localization;
 
 namespace Baihua.Family.Services;
 
 /// <summary>
 /// LM Studio 模型下载服务
 /// </summary>
-public class LmStudioDownloadService(ILogger<LmStudioDownloadService> logger)
+public class LmStudioDownloadService
 {
+    private readonly ILogger<LmStudioDownloadService> _logger;
+    private readonly IStringLocalizer<SharedResources> _loc;
+
+    public LmStudioDownloadService(ILogger<LmStudioDownloadService> logger, IStringLocalizer<SharedResources> loc)
+    {
+        _logger = logger;
+        _loc = loc;
+    }
     public async Task PullModelAsync(DeployTaskStatusDto task, ModelEntry model, string preferredSource, CancellationToken ct)
     {
         var searchName = model.LmStudioSearchName ?? model.Id;
@@ -76,11 +86,11 @@ public class LmStudioDownloadService(ILogger<LmStudioDownloadService> logger)
         }
 
         if (line.Contains("downloading", StringComparison.OrdinalIgnoreCase))
-            task.CurrentStep = "下载模型文件";
+            task.CurrentStep = _loc["LocalModel_DownloadModel"];
         else if (line.Contains("downloaded", StringComparison.OrdinalIgnoreCase) || line.Contains("finished", StringComparison.OrdinalIgnoreCase))
-            task.CurrentStep = "下载完成";
+            task.CurrentStep = _loc["LocalModel_DownloadComplete"];
         else if (line.Contains("searching", StringComparison.OrdinalIgnoreCase))
-            task.CurrentStep = "搜索模型";
+            task.CurrentStep = _loc["LocalModel_SearchModel"];
     }
 
     public async Task<bool> VerifyModelAsync(string searchName, CancellationToken ct = default)
@@ -128,7 +138,7 @@ public class LmStudioDownloadService(ILogger<LmStudioDownloadService> logger)
                 }
             }
         }
-        catch (Exception ex) { logger.LogDebug(ex, "操作失败"); }
+        catch (Exception ex) { _logger.LogDebug(ex, "Operation failed"); }
 
         try
         {
@@ -145,7 +155,7 @@ public class LmStudioDownloadService(ILogger<LmStudioDownloadService> logger)
                     return true;
             }
         }
-        catch (Exception ex) { logger.LogDebug(ex, "操作失败"); }
+        catch (Exception ex) { _logger.LogDebug(ex, "Operation failed"); }
 
         return false;
     }

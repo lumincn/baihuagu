@@ -58,7 +58,7 @@ if (!skipMutex)
     }
     catch (Exception ex)
     {
-        Console.Error.WriteLine($"[FATAL] Mutex 创建失败: {ex.Message}");
+        Console.Error.WriteLine($"[FATAL] Mutex creation failed: {ex.Message}");
     }
 
     if (!createdNew)
@@ -765,7 +765,7 @@ startupMonitor.RecordStartup();
 
 logger.LogInformation("===========================================");
 logger.LogInformation("Task Runner Service Starting...");
-logger.LogInformation("启动时间：{StartTime}", startupMonitor.StartTime.ToString("yyyy-MM-dd HH:mm:ss"));
+logger.LogInformation("Start time: {StartTime}", startupMonitor.StartTime.ToString("yyyy-MM-dd HH:mm:ss"));
 logger.LogInformation("PID: {ProcessId}", Environment.ProcessId);
 logger.LogInformation("Content Root: {ContentRoot}", host);
 logger.LogInformation("Environment: {Environment}", app.Environment.EnvironmentName);
@@ -776,7 +776,7 @@ logger.LogInformation("API: {BaseUrl}/api/tasks", displayBaseUrl);
 logger.LogInformation("Health: {BaseUrl}/health", displayBaseUrl);
 logger.LogInformation("Full Health: {BaseUrl}/api/health/full", displayBaseUrl);
 logger.LogInformation("Component Check: {BaseUrl}/api/health/check/{{component}}", displayBaseUrl);
-logger.LogInformation("监听开始后将在后台执行自检与 Obsidian 初始化（不阻塞 API/SignalR）");
+logger.LogInformation("Background self-check and Obsidian initialization after listen start (non-blocking API/SignalR)");
 
 
 // 测试 PairingService 是否能被正确解析
@@ -804,8 +804,8 @@ app.Lifetime.ApplicationStarted.Register(() =>
             // 自检信息可以稍后做（Obsidian warmup 由 HostedService 负责）
             var report = await healthService.GetHealthReportAsync();
             var healthMessage = report.Status == "healthy"
-                ? $"健康度：{report.HealthScore}%"
-                : $"健康度：{report.HealthScore}% (问题：{string.Join(", ", report.Components.Where(c => c.Status != "healthy").Select(c => c.Name))})";
+                ? $"Health: {report.HealthScore}%"
+                : $"Health: {report.HealthScore}% (Issues: {string.Join(", ", report.Components.Where(c => c.Status != "healthy").Select(c => c.Name))})";
             logger.LogInformation("System Status: {Status} - {HealthMessage}", report.Status, healthMessage);
         }
         catch (Exception ex)

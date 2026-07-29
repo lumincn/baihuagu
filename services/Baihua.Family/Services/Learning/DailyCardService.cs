@@ -1,8 +1,10 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 using Baihua.Contracts.Anki;
+using Baihua.Core.Localization;
 using Baihua.Family.Helpers;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Baihua.Data;
 using Baihua.Data.Entities;
 
@@ -18,18 +20,21 @@ public partial class DailyCardService
     private readonly LearnerService _learnerService;
     private readonly CardRepository _cardRepo;
     private readonly ILogger<DailyCardService> _logger;
+    private readonly IStringLocalizer<SharedResources> _loc;
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, object> _fileLocks = new();
 
     public DailyCardService(
         IDbContextFactory<FamilyDbContext> dbFactory,
         LearnerService learnerService,
         CardRepository cardRepo,
-        ILogger<DailyCardService> logger)
+        ILogger<DailyCardService> logger,
+        IStringLocalizer<SharedResources> loc)
     {
         _dbFactory = dbFactory;
         _learnerService = learnerService;
         _cardRepo = cardRepo;
         _logger = logger;
+        _loc = loc;
     }
 
     /// <summary>
@@ -45,13 +50,13 @@ public partial class DailyCardService
         var cardsPath = _cardRepo.ResolveCardsPath(vaultId);
         if (string.IsNullOrEmpty(cardsPath) || !Directory.Exists(cardsPath))
         {
-            return new DailyCardResult { HasCard = false, Message = "暂无卡片，请先生成卡片" };
+            return new DailyCardResult { HasCard = false, Message = _loc["DailyCard_None"] };
         }
 
         var allCards = _cardRepo.LoadAllCards(cardsPath);
         if (allCards.Count == 0)
         {
-            return new DailyCardResult { HasCard = false, Message = "暂无卡片，请先生成卡片" };
+            return new DailyCardResult { HasCard = false, Message = _loc["DailyCard_None"] };
         }
 
         var todayStudied = GetTodayStudiedIds(vaultId);

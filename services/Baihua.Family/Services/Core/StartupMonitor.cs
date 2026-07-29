@@ -147,10 +147,10 @@ namespace Baihua.Family.Services
                 .Where(t => (DateTime.Now - t).TotalMinutes < 10)
                 .Count();
 
-            return string.Format("服务运行时间: {0}", uptime.ToString(@"hh\:mm\:ss")) + "\n" +
-                   string.Format("启动时间: {0}", StartTime.ToString("yyyy-MM-dd HH:mm:ss")) + "\n" +
-                   string.Format("重启次数: {0}", RestartCount) + "\n" +
-                   string.Format("最近10分钟启动次数: {0}", recentRestarts) + "\n" +
+            return string.Format("Service uptime: {0}", uptime.ToString(@"hh\:mm\:ss")) + "\n" +
+                   string.Format("Start time: {0}", StartTime.ToString("yyyy-MM-dd HH:mm:ss")) + "\n" +
+                   string.Format("Restart count: {0}", RestartCount) + "\n" +
+                   string.Format("Recent restarts (10 min): {0}", recentRestarts) + "\n" +
                    string.Format("PID: {0}", Environment.ProcessId);
         }
     }

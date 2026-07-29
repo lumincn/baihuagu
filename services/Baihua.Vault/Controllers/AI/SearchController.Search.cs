@@ -177,7 +177,7 @@ public partial class SearchController
             catch (Exception ex)
             {
                 _logger.LogError(ex, "搜索失败");
-                return StatusCode(500, new { error = "搜索失败", message = ex.Message });
+                return StatusCode(500, new { error = _loc["Common_SearchFailed"], message = ex.Message });
             }
         }
 }

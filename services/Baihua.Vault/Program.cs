@@ -45,7 +45,7 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "TaskRunner Vault API",
         Version = "v1",
-        Description = "百花知识库服务 - Vault、同步、搜索"
+        Description = "Baihua Vault Service - Vault, Sync, Search"
     });
 });
 
@@ -285,7 +285,7 @@ app.Use(async (context, next) =>
     logger.LogWarning("[AccessControl] Blocked non-loopback request to Vault API from {RemoteIP}: {Path}",
         remoteIp?.ToString(), path);
     context.Response.StatusCode = 403;
-    await context.Response.WriteAsJsonAsync(new { error = "Vault API 仅允许本机访问。" });
+    await context.Response.WriteAsJsonAsync(new { error = "Vault API only allows local access." });
 });
 
 app.UseAuthorization();

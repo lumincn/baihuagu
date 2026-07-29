@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
 using Baihua.Family.Services;
 using Baihua.Contracts.Achievements;
 
@@ -14,15 +16,18 @@ public partial class AchievementsController : ControllerBase
     private readonly LearnerService _learnerService;
     private readonly AchievementEngine _achievementEngine;
     private readonly LeaderboardService _leaderboardService;
+    private readonly IStringLocalizer<SharedResources> _loc;
 
     public AchievementsController(
         LearnerService learnerService,
         AchievementEngine achievementEngine,
-        LeaderboardService leaderboardService)
+        LeaderboardService leaderboardService,
+        IStringLocalizer<SharedResources> loc)
     {
         _learnerService = learnerService;
         _achievementEngine = achievementEngine;
         _leaderboardService = leaderboardService;
+        _loc = loc;
     }
 
     // ---- 学习者管理 ----
@@ -45,7 +50,7 @@ public partial class AchievementsController : ControllerBase
     public async Task<ActionResult<LearnerDto>> CreateLearner([FromBody] CreateLearnerRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Name))
-            return BadRequest(new { error = "名称不能为空" });
+            return BadRequest(new { error = _loc["Achievement_NameRequired"] });
 
         var learner = await _learnerService.CreateAsync(request.Name.Trim(), request.AvatarEmoji ?? "👤", request.Color ?? "#007bff");
         return Ok(new LearnerDto

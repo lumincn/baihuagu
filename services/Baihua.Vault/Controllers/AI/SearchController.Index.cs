@@ -30,7 +30,7 @@ public partial class SearchController
             catch (Exception ex)
             {
                 _logger.LogError(ex, "重建 FTS5 索引失败");
-                return StatusCode(500, new { error = "重建索引失败", message = ex.Message });
+                return StatusCode(500, new { error = _loc["Search_ReindexFailed"], message = ex.Message });
             }
         }
 
@@ -48,7 +48,7 @@ public partial class SearchController
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取 FTS5 索引状态失败");
-                return StatusCode(500, new { error = "获取状态失败", message = ex.Message });
+                return StatusCode(500, new { error = _loc["Search_StatusFailed"], message = ex.Message });
             }
         }
 

@@ -274,7 +274,7 @@ namespace Baihua.Family.Services
                 {
                     return Task.FromResult(new ComponentStatus
                     {
-                        Name = "知识库",
+                        Name = "Vault",
                         Status = "critical",
                         Message = _loc["Health_VaultPathNotConfigured"]
                     });
@@ -284,7 +284,7 @@ namespace Baihua.Family.Services
                 {
                     return Task.FromResult(new ComponentStatus
                     {
-                        Name = "知识库",
+                        Name = "Vault",
                         Status = "critical",
                         Message = string.Format(_loc["Health_VaultPathNotExists"], vaultPath)
                     });
@@ -297,7 +297,7 @@ namespace Baihua.Family.Services
                 
                 return Task.FromResult(new ComponentStatus
                 {
-                    Name = "知识库",
+                    Name = "Vault",
                     Status = "healthy",
                     Message = hasObsidianDir 
                         ? string.Format(_loc["Health_VaultConfigured"], Path.GetFileName(vaultPath), mdFiles.Length)
@@ -313,7 +313,7 @@ namespace Baihua.Family.Services
                 _logger.LogDebug(ex, "知识库路径检测失败");
                 return Task.FromResult(new ComponentStatus
                 {
-                    Name = "知识库",
+                    Name = "Vault",
                     Status = "warning",
                     Message = _loc["Health_VaultCheckError"]
                 });

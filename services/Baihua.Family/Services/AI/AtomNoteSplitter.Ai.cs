@@ -41,7 +41,7 @@ public partial class AtomNoteSplitter
                     var response = await chatClient.GetResponseAsync(messages, options, cts.Token);
                     var aiContent = response.Text;
                     _logger.LogDebug("解析到 AI 内容长度：{Len}", aiContent?.Length ?? 0);
-                    return aiContent ?? throw new Exception("AI 返回内容为空");
+                    return aiContent ?? throw new Exception("AI returned empty content");
                 }
                 catch (Exception ex) when (attempt < maxAttempts && IsTransient(ex))
                 {
@@ -75,7 +75,7 @@ public partial class AtomNoteSplitter
                 }
             }
 
-            throw new Exception("AI 请求在多次重试后仍然失败");
+            throw new Exception("AI request still failed after multiple retries");
         }
 
         private static string NormalizeRelPath(string relPath)

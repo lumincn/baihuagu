@@ -249,7 +249,7 @@ app.Use(async (context, next) =>
     logger.LogWarning("[AccessControl] Blocked non-loopback request to AI API from {RemoteIP}: {Path}",
         remoteIp?.ToString(), path);
     context.Response.StatusCode = 403;
-    await context.Response.WriteAsJsonAsync(new { error = "AI 管理 API 仅允许本机访问。" });
+    await context.Response.WriteAsJsonAsync(new { error = "AI Management API only allows local access." });
 });
 
 app.UseAuthorization();

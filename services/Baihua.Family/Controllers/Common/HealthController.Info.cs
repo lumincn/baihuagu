@@ -27,7 +27,7 @@ public partial class HealthController
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取启动信息失败");
-                return StatusCode(500, new { error = "获取启动信息失败", message = ex.Message });
+                return StatusCode(500, new { error = _loc["Health_StartupInfoFailed"], message = ex.Message });
             }
         }
 
@@ -62,7 +62,7 @@ public partial class HealthController
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取操作系统信息失败");
-                return StatusCode(500, new { error = "获取操作系统信息失败", message = ex.Message });
+                return StatusCode(500, new { error = _loc["Health_OsInfoFailed"], message = ex.Message });
             }
         }
 }
