@@ -2556,4 +2556,154 @@ Duration: {1}</value>
   <data name="AiChat_RetrievingVault" xml:space="preserve">
     <value>🔍 Retrieving from knowledge base...</value>
   </data>
+
+  <data name="AiTask_SourceInfo" xml:space="preserve">
+    <value>&gt; 📌 **Source**: AI Generated  
+&gt; 🤖 **Model**: {0}  
+&gt; 🏢 **Provider**: {1}  
+&gt; ⏰ **Time**: {2}  
+&gt; ⏱️ **Duration**: {3}ms  
+
+</value>
+  </data>
+  <data name="AiTask_RetrySourceInfo" xml:space="preserve">
+    <value>&gt; 📌 **Source**: AI Generated (Retry)  
+&gt; 🤖 **Model**: {0}  
+&gt; 🏢 **Provider**: {1}  
+&gt; ⏰ **Time**: {2}  
+&gt; ⏱️ **Duration**: {3}ms  
+
+</value>
+  </data>
+  <data name="AiGeneratedDir" xml:space="preserve">
+    <value>AI Generated</value>
+  </data>
+  <data name="Device_RequestNotFound" xml:space="preserve">
+    <value>Request not found or already processed</value>
+  </data>
+  <data name="Exception_CannotEncryptKey" xml:space="preserve">
+    <value>Unable to encrypt API Key</value>
+  </data>
+  <data name="Exception_GgufModelNotFound" xml:space="preserve">
+    <value>GGUF model file not found</value>
+  </data>
+  <data name="Exception_OnnxDirNotFound" xml:space="preserve">
+    <value>ONNX model directory not found: {0}</value>
+  </data>
+  <data name="Exception_NotesMdCliStart" xml:space="preserve">
+    <value>Unable to start notesmd-cli process</value>
+  </data>
+  <data name="Default_Learner" xml:space="preserve">
+    <value>Default Learner</value>
+  </data>
+  <data name="Default_VaultCategory" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="Default_Unnamed" xml:space="preserve">
+    <value>Unnamed</value>
+  </data>
+  <data name="OpenClaw_Profile_Quick_Name" xml:space="preserve">
+    <value>Fast</value>
+  </data>
+  <data name="OpenClaw_Profile_Quick_Desc" xml:space="preserve">
+    <value>671MB ultra-lightweight model, extremely fast response, suitable for simple Q&amp;A and daily queries</value>
+  </data>
+  <data name="OpenClaw_Profile_Quick_Speed" xml:space="preserve">
+    <value>⚡ Extremely Fast</value>
+  </data>
+  <data name="OpenClaw_Profile_Balanced_Name" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="OpenClaw_Profile_Balanced_Desc" xml:space="preserve">
+    <value>4.7GB quantized model, well-balanced performance on knowledge base content, recommended for daily use</value>
+  </data>
+  <data name="OpenClaw_Profile_Powerful_Name" xml:space="preserve">
+    <value>Powerful</value>
+  </data>
+  <data name="OpenClaw_Profile_Powerful_Desc" xml:space="preserve">
+    <value>27B large parameter model, strong reasoning capability, suitable for complex dialectical analysis and deep Q&amp;A</value>
+  </data>
+  <data name="OpenClaw_Profile_Powerful_Speed" xml:space="preserve">
+    <value>🐢 Slower</value>
+  </data>
+  <data name="LocalModel_Mirror_HuggingFace" xml:space="preserve">
+    <value>Hugging Face Mirror (hf-mirror.com)</value>
+  </data>
+  <data name="LocalModel_Mirror_ModelScope" xml:space="preserve">
+    <value>ModelScope Community</value>
+  </data>
+  <data name="LocalModel_DefaultOllamaProvider" xml:space="preserve">
+    <value>Local Ollama</value>
+  </data>
+  <data name="LocalModel_DefaultLmStudioProvider" xml:space="preserve">
+    <value>Local LM Studio</value>
+  </data>
+  <data name="LocalModel_NeedsStart" xml:space="preserve">
+    <value>{0} (needs service startup)</value>
+  </data>
+  <data name="OllamaLibrary_DefaultDesc" xml:space="preserve">
+    <value>Ollama Library official model: {0}</value>
+  </data>
+  <data name="Embedding_EmptyResult" xml:space="preserve">
+    <value>Returned empty result</value>
+  </data>
+  <data name="Ai_KnowledgeBasePrompt" xml:space="preserve">
+    <value>Knowledge Base: {0}. Please answer combined with knowledge base content.</value>
+  </data>
+  <data name="Ai_Tools_AvailablePrompt" xml:space="preserve">
+    <value>You have the following tools available:
+{toolDescriptions}
+
+If you need to call a tool, use the following format (strict JSON) at the beginning of your response:
+TOOL_CALL: {{&quot;tool&quot;:&quot;tool_name&quot;,&quot;arguments&quot;:{{argument_object}}}}
+Then on a new line, give your normal response.</value>
+  </data>
+  <data name="Ai_Tools_CallingTool" xml:space="preserve">
+    <value>I will call the tool {0} to help you.</value>
+  </data>
+  <data name="Ai_RagContextPrompt" xml:space="preserve">
+    <value>The following are relevant contents from the knowledge base. Please answer in conjunction with these contents:
+
+{0}</value>
+  </data>
+  <data name="Vault_MigrationTagMigrated" xml:space="preserve">
+    <value> (path migrated)</value>
+  </data>
+  <data name="AiService_Description" xml:space="preserve">
+    <value>Baihua AI Service - Models, Chat, Search, Metrics</value>
+  </data>
+  <data name="Performance_NetworkRenderMs" xml:space="preserve">
+    <value>(Network: {0}ms, Render: {1}ms)</value>
+  </data>
+  <data name="Onboarding_DefaultTcmIndustry" xml:space="preserve">
+    <value>Traditional Chinese Medicine</value>
+  </data>
+  <data name="Onboarding_DefaultComputerIndustry" xml:space="preserve">
+    <value>Computer</value>
+  </data>
+  <data name="Ai_NoteAboutQuery" xml:space="preserve">
+    <value>About: {0}</value>
+  </data>
+  <data name="StartupMonitor_RestartDetected" xml:space="preserve">
+    <value>[{0}] ⚠️ Fast restart detected! Time since last start: {1:F1}s, restart count: {2}
+</value>
+  </data>
+  <data name="StartupMonitor_ServiceStarted" xml:space="preserve">
+    <value>Service started</value>
+  </data>
+  <data name="DailyCard_DefaultDeck" xml:space="preserve">
+    <value>Parent Questions</value>
+  </data>
+  <data name="Health_FixCategory_Vault" xml:space="preserve">
+    <value>Knowledge Base</value>
+  </data>
+  <data name="Ai_RagSearchPrompt" xml:space="preserve">
+    <value>The following are knowledge base contents related to the question. Please answer in conjunction with these contents:
+
+{context}
+
+---
+
+User question: {query}</value>
+  </data>
 </root>

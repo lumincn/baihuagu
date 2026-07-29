@@ -108,7 +108,7 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "Task Runner API",
         Version = "v1",
-        Description = "百花后台服务 - 健康检查与运行状态 API"
+        Description = "Baihua Backend Service - Health Check & Runtime Status API"
     });
 });
 
@@ -497,7 +497,7 @@ app.Use(async (context, next) =>
             if (!signatureService.VerifySignature(context.Request.Method, context.Request.Path + context.Request.QueryString, body, signatureHeader))
             {
                 context.Response.StatusCode = 401;
-                await context.Response.WriteAsJsonAsync(new { error = "无效的请求签名" });
+                await context.Response.WriteAsJsonAsync(new { error = "Invalid request signature" });
                 return;
             }
         }
@@ -520,14 +520,14 @@ app.Use(async (context, next) =>
                 if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
                 {
                     context.Response.StatusCode = 401;
-                    await context.Response.WriteAsJsonAsync(new { error = "需要 Bearer Token 认证" });
+                    await context.Response.WriteAsJsonAsync(new { error = "Bearer Token authentication required" });
                     return;
                 }
                 var token = authHeader.Substring("Bearer ".Length).Trim();
                 if (deviceService == null || !deviceService.ValidateAccessToken(token))
                 {
                     context.Response.StatusCode = 401;
-                    await context.Response.WriteAsJsonAsync(new { error = "无效的访问令牌" });
+                    await context.Response.WriteAsJsonAsync(new { error = "Invalid access token" });
                     return;
                 }
             }
@@ -586,7 +586,7 @@ app.Use(async (context, next) =>
     context.Response.StatusCode = 403;
     await context.Response.WriteAsJsonAsync(new
     {
-        error = "管理 API 仅允许本机访问。请通过 WebUI 界面操作。"
+        error = "Admin API is restricted to local access only. Please use the WebUI."
     });
 });
 
@@ -692,7 +692,7 @@ app.Use(async (context, next) =>
             var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
             logger.LogError(ex, "转发移动端请求到 Vault 服务失败: {TargetUrl}", targetUrl);
             context.Response.StatusCode = 503;
-            await context.Response.WriteAsJsonAsync(new { error = "Vault 服务不可用" });
+            await context.Response.WriteAsJsonAsync(new { error = "Vault service unavailable" });
             return;
         }
     }
