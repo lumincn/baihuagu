@@ -2,11 +2,12 @@
 @rendermode InteractiveServer
 @inject Baihua.Web.Services.IApiService ApiService
 @inject Baihua.Web.Services.VaultsService VaultsService
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
-<PageTitle>每日一帖</PageTitle>
+<PageTitle>@L["DailyCard_PageTitle"]</PageTitle>
 
 <div class="daily-card-page">
-    <h1>📚 每日一帖</h1>
+    <h1>📚 @L["DailyCard_Title"]</h1>
 
     @if (!string.IsNullOrEmpty(errorMessage))
     {
@@ -15,7 +16,7 @@
 
     <!-- 知识库选择 -->
     <div class="vault-selector" style="margin-bottom:1rem;">
-        <label>知识库：</label>
+        <label>@L["DailyCard_VaultLabel"]</label>
         <select class="form-control" style="display:inline-block;width:auto;min-width:200px;" @bind="selectedVaultId" @bind:after="OnVaultChanged">
             @foreach (var vault in vaults)
             {
@@ -31,7 +32,7 @@
             <div class="streak-badge">
                 <span class="streak-flame">🔥</span>
                 <span class="streak-count">@(progress.Streak)</span>
-                <span class="streak-label">连续 @(progress.Streak) 天</span>
+                <span class="streak-label">@L["DailyCard_StreakLabel", progress.Streak]</span>
             </div>
             <div class="progress-bar-wrap">
                 <div class="progress-bar">
@@ -45,16 +46,16 @@
     <!-- 卡片区域 -->
     @if (isLoading)
     {
-        <div class="card-loading">加载中...</div>
+        <div class="card-loading">@L["DailyCard_Loading"]</div>
     }
     else if (currentCard == null)
     {
         <div class="no-card">
             <div class="no-card-icon">🎉</div>
-            <div>今日卡片已全部完成！</div>
+            <div>@L["DailyCard_AllDone"]</div>
             @if (progress != null && progress.TotalCards == 0)
             {
-                <div style="margin-top:0.5rem;color:#666;font-size:0.9rem;">暂无卡片，请先生成卡片</div>
+                <div style="margin-top:0.5rem;color:#666;font-size:0.9rem;">@L["DailyCard_NoCards"]</div>
             }
         </div>
     }
@@ -65,7 +66,7 @@
                 <div class="card-face card-front">
                     <div class="card-deck">@currentCard.Deck</div>
                     <div class="card-content">@currentCard.Front</div>
-                    <div class="card-hint">点击翻转</div>
+                    <div class="card-hint">@L["DailyCard_TapToFlip"]</div>
                 </div>
                 <div class="card-face card-back">
                     <div class="card-deck">@currentCard.Deck</div>
@@ -87,42 +88,42 @@
         {
             <div class="answer-buttons">
                 <button class="btn btn-forgot" @onclick='() => SubmitAnswer("forgot")' disabled="@isSubmitting">
-                    ❌ 忘记
+                    ❌ @L["DailyCard_Forgot"]
                 </button>
                 <button class="btn btn-hard" @onclick='() => SubmitAnswer("hard")' disabled="@isSubmitting">
-                    🤔 模糊
+                    🤔 @L["DailyCard_Hard"]
                 </button>
                 <button class="btn btn-remember" @onclick='() => SubmitAnswer("remember")' disabled="@isSubmitting">
-                    ✅ 记得
+                    ✅ @L["DailyCard_Remember"]
                 </button>
             </div>
         }
         else
         {
-            <div class="flip-hint">点击卡片查看答案</div>
+            <div class="flip-hint">@L["DailyCard_FlipHint"]</div>
         }
     }
 
     <!-- 家长出题 -->
     <div class="custom-card-section" style="margin-top:2rem;">
         <details>
-            <summary class="custom-card-toggle">✏️ 家长出题</summary>
+            <summary class="custom-card-toggle">✏️ @L["DailyCard_CustomCardToggle"]</summary>
             <div class="custom-card-form">
                 <div class="form-group">
-                    <label>题目（正面）</label>
-                    <textarea class="form-control" @bind="customFront" rows="3" placeholder="输入问题..."></textarea>
+                    <label>@L["DailyCard_QuestionLabel"]</label>
+                    <textarea class="form-control" @bind="customFront" rows="3" placeholder="@L["DailyCard_QuestionPlaceholder"]"></textarea>
                 </div>
                 <div class="form-group">
-                    <label>答案（背面）</label>
-                    <textarea class="form-control" @bind="customBack" rows="3" placeholder="输入答案..."></textarea>
+                    <label>@L["DailyCard_AnswerLabel"]</label>
+                    <textarea class="form-control" @bind="customBack" rows="3" placeholder="@L["DailyCard_AnswerPlaceholder"]"></textarea>
                 </div>
                 <div class="form-group">
-                    <label>牌组</label>
-                    <input type="text" class="form-control" @bind="customDeck" placeholder="家长出题" />
+                    <label>@L["DailyCard_DeckLabel"]</label>
+                    <input type="text" class="form-control" @bind="customDeck" placeholder="@L["DailyCard_DeckPlaceholder"]" />
                 </div>
                 <div class="form-actions">
                     <button class="btn btn-primary" @onclick="SaveCustomCard" disabled="@isSavingCustom">
-                        @(isSavingCustom ? "保存中..." : "保存卡片")
+                        @(isSavingCustom ? L["DailyCard_Saving"] : L["DailyCard_SaveCard"])
                     </button>
                 </div>
                 @if (!string.IsNullOrEmpty(customMessage))
@@ -143,7 +144,7 @@
         <div class="achievement-popup" @onclick:stopPropagation="true">
             <div class="achievement-shine"></div>
             <div class="achievement-content">
-                <div class="achievement-header">🏆 成就解锁</div>
+                <div class="achievement-header">🏆 @L["DailyCard_AchievementHeader"]</div>
                 <div class="achievement-icon">@CurrentPopupAchievement.Icon</div>
                 <div class="achievement-title">@CurrentPopupAchievement.Title</div>
                 <div class="achievement-desc">@CurrentPopupAchievement.Description</div>
@@ -156,11 +157,11 @@
             <div class="achievement-actions">
                 @if (currentAchievementIndex < newAchievements.Count - 1)
                 {
-                    <button class="btn-achievement-next" @onclick="NextAchievement">下一个 ➡️</button>
+                    <button class="btn-achievement-next" @onclick="NextAchievement">@L["DailyCard_NextAchievement"] ➡️</button>
                 }
                 else
                 {
-                    <button class="btn-achievement-close" @onclick="DismissPopup">太棒了！🎉</button>
+                    <button class="btn-achievement-close" @onclick="DismissPopup">@L["DailyCard_AchievementClose"] 🎉</button>
                 }
             </div>
         </div>
@@ -604,14 +605,14 @@
             else
             {
                 isLoading = false;
-                errorMessage = "请先创建或选择一个知识库";
+                errorMessage = L["DailyCard_SelectVault"];
             }
             await InvokeAsync(StateHasChanged);
         }
         catch (Exception ex)
         {
             isLoading = false;
-            errorMessage = $"加载知识库失败: {ex.Message}";
+            errorMessage = L["DailyCard_LoadVaultsFailed", ex.Message];
             await InvokeAsync(StateHasChanged);
         }
     }
@@ -665,10 +666,10 @@
     {
         return tier?.ToLowerInvariant() switch
         {
-            "bronze" => "铜",
-            "silver" => "银",
-            "gold" => "金",
-            "platinum" => "铂金",
+            "bronze" => L["DailyCard_Tier_Bronze"],
+            "silver" => L["DailyCard_Tier_Silver"],
+            "gold" => L["DailyCard_Tier_Gold"],
+            "platinum" => L["DailyCard_Tier_Platinum"],
             _ => tier ?? ""
         };
     }
@@ -694,7 +695,7 @@
         }
         catch (Exception ex)
         {
-            errorMessage = $"加载卡片失败: {ex.Message}";
+            errorMessage = L["DailyCard_LoadCardFailed", ex.Message];
             currentCard = null;
         }
         finally
@@ -723,12 +724,12 @@
             }
             else
             {
-                errorMessage = "提交失败，请重试";
+                errorMessage = L["DailyCard_SubmitFailedRetry"];
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"提交失败: {ex.Message}";
+            errorMessage = L["DailyCard_SubmitFailed", ex.Message];
         }
         finally
         {
@@ -740,7 +741,7 @@
     {
         if (string.IsNullOrWhiteSpace(customFront) || string.IsNullOrWhiteSpace(customBack))
         {
-            customMessage = "题目和答案不能为空";
+            customMessage = L["DailyCard_CardRequired"];
             customSuccess = false;
             return;
         }
@@ -758,7 +759,7 @@
             };
             var success = await ApiService.SaveCustomCardAsync(selectedVaultId, request);
             customSuccess = success;
-            customMessage = success ? "✅ 卡片已保存" : "❌ 保存失败";
+            customMessage = success ? L["DailyCard_CardSaved"] : L["DailyCard_SaveFailed"];
             if (success)
             {
                 customFront = "";
@@ -770,7 +771,7 @@
         catch (Exception ex)
         {
             customSuccess = false;
-            customMessage = $"保存失败: {ex.Message}";
+            customMessage = L["DailyCard_SaveFailedDetail", ex.Message];
         }
         finally
         {

@@ -2,11 +2,12 @@
 @rendermode InteractiveServer
 @inject Baihua.Web.Services.IApiService ApiService
 @inject Baihua.Web.Services.VaultsService VaultsService
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
-<PageTitle>成就墙</PageTitle>
+<PageTitle>@L["Achievements_PageTitle"]</PageTitle>
 
 <div class="achievements-page">
-    <h1>🏆 成就墙</h1>
+    <h1>🏆 @L["Achievements_Title"]</h1>
 
     <!-- 学习者选择 -->
     <div class="learner-bar">
@@ -19,23 +20,23 @@
                 <span>@learner.Name</span>
                 @if (learner.IsDefault)
                 {
-                    <span class="default-badge">默认</span>
+                    <span class="default-badge">@L["Achievements_DefaultBadge"]</span>
                 }
             </button>
         }
         <button class="learner-chip add-learner" @onclick="ShowAddLearner">
-            <span>+ 添加</span>
+            <span>+ @L["Achievements_AddLearner"]</span>
         </button>
     </div>
 
     @if (showAddForm)
     {
         <div class="add-learner-form">
-            <input type="text" class="form-control" @bind="newLearnerName" placeholder="名字" />
+            <input type="text" class="form-control" @bind="newLearnerName" placeholder="@L["Achievements_NamePlaceholder"]" />
             <input type="text" class="form-control" style="width:80px;" @bind="newLearnerEmoji" placeholder="👤" />
             <input type="color" class="form-control" style="width:60px;padding:0;" @bind="newLearnerColor" />
-            <button class="btn btn-primary btn-sm" @onclick="AddLearner" disabled="@isAdding">添加</button>
-            <button class="btn btn-secondary btn-sm" @onclick="() => showAddForm = false">取消</button>
+            <button class="btn btn-primary btn-sm" @onclick="AddLearner" disabled="@isAdding">@L["Achievements_AddBtn"]</button>
+            <button class="btn btn-secondary btn-sm" @onclick="() => showAddForm = false">@L["Common_Cancel"]</button>
         </div>
     }
 
@@ -46,15 +47,15 @@
         <div class="stats-overview">
             <div class="stat-card">
                 <div class="stat-value">@unlocked / @achievements.Count</div>
-                <div class="stat-label">已解锁</div>
+                <div class="stat-label">@L["Achievements_Unlocked"]</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value">@achievements.Count(a => a.IsUnlocked && a.Tier == "gold")</div>
-                <div class="stat-label">金牌</div>
+                <div class="stat-label">@L["Achievements_Gold"]</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value">@achievements.Count(a => a.IsUnlocked && a.Tier == "diamond")</div>
-                <div class="stat-label">钻石</div>
+                <div class="stat-label">@L["Achievements_Diamond"]</div>
             </div>
         </div>
     }
@@ -62,7 +63,7 @@
     <!-- 成就列表 -->
     @if (isLoading)
     {
-        <div class="loading">加载中...</div>
+        <div class="loading">@L["Common_Loading"]</div>
     }
     else
     {

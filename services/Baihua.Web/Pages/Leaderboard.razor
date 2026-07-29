@@ -2,11 +2,12 @@
 @rendermode InteractiveServer
 @inject Baihua.Web.Services.IApiService ApiService
 @inject Baihua.Web.Services.VaultsService VaultsService
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
-<PageTitle>家庭赛舟榜</PageTitle>
+<PageTitle>@L["Leaderboard_PageTitle"]</PageTitle>
 
 <div class="leaderboard-page">
-    <h1>🐲 家庭赛舟榜</h1>
+    <h1>🐲 @L["Leaderboard_Title"]</h1>
 
     <div class="toolbar">
         <div class="tab-group">
@@ -21,11 +22,11 @@
 
     @if (isLoading)
     {
-        <div class="loading">加载中...</div>
+        <div class="loading">@L["Leaderboard_Loading"]</div>
     }
     else if (entries.Count == 0)
     {
-        <div class="empty">暂无数据，快去每日一帖学习吧！</div>
+        <div class="empty">@L["Leaderboard_EmptyHint"]</div>
     }
     else
     {
@@ -58,11 +59,11 @@
                     <div class="stats">
                         <div class="stat">
                             <span class="stat-value">@entry.CardsStudied</span>
-                            <span class="stat-label">题</span>
+                            <span class="stat-label">@L["Leaderboard_CardsStat"]</span>
                         </div>
                         <div class="stat">
                             <span class="stat-value">@entry.Accuracy.ToString("F0")%</span>
-                            <span class="stat-label">正确率</span>
+                            <span class="stat-label">@L["Leaderboard_AccuracyStat"]</span>
                         </div>
                         <div class="stat">
                             <span class="stat-value">@entry.Streak</span>
