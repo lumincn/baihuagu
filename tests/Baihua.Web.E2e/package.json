@@ -1,5 +1,5 @@
 {
-  "name": "webui-e2e",
+  "name": "baihua-web-e2e",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -11,3 +11,4 @@
     "@playwright/test": "^1.58.0"
   }
 }
+
