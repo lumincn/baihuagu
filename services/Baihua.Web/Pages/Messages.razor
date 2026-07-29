@@ -8,11 +8,12 @@
 @inject CapabilityService CapabilityService
 @inject GlobalStateService GlobalStateService
 @inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 @implements IDisposable
 
-<PageTitle>消息</PageTitle>
+<PageTitle>@L["Messages_PageTitle"]</PageTitle>
 
-<h1>💬 AI 对话</h1>
+<h1>@L["Messages_Title"]</h1>
 
 <div class="ai-info-bar">
     @if (aiStatus?.IsConfigured ?? false)
@@ -25,16 +26,16 @@
     }
     else
     {
-        <span class="ai-info-badge ai-not-ready">⚠️ AI 未配置，请先设置 API Key</span>
+        <span class="ai-info-badge ai-not-ready">@L["Messages_AiNotConfigured"]</span>
     }
     @if (messages.Count > 0)
     {
         <div style="margin-left: auto; display: flex; gap: 0.5rem;">
             <button class="btn btn-sm btn-outline-secondary" @onclick="ExportChatAsync">
-                📥 导出对话
+                @L["Messages_ExportChat"]
             </button>
             <button class="btn btn-sm btn-outline-secondary" @onclick="ClearChatHistoryAsync">
-                🗑️ 清空对话
+                @L["Messages_ClearChat"]
             </button>
         </div>
     }
@@ -71,8 +72,8 @@
                     <div class="message-actions">
                         @if (!message.IsUser)
                         {
-                            <button class="msg-action-btn" @onclick="() => RegenerateAsync(message)" title="重新生成">
-                                🔄 重新生成
+                            <button class="msg-action-btn" @onclick="() => RegenerateAsync(message)" title="@L["Messages_Regenerate"]">
+                                @L["Messages_Regenerate"]
                             </button>
                         }
                         <span class="message-time">@message.Time.ToString("HH:mm")</span>
@@ -97,9 +98,9 @@
     <div class="chat-controls">
         <div class="model-selector-bar">
             <div class="selector-group">
-                <label>模式</label>
+                <label>@L["Messages_Mode"]</label>
                 <div class="btn-group btn-group-sm" role="group">
-                    <button type="button" class="btn @(chatMode == "remote" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => OnChatModeChangedSync("remote"))" disabled="@isThinking">🌐 远程</button>
+                    <button type="button" class="btn @(chatMode == "remote" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => OnChatModeChangedSync("remote"))" disabled="@isThinking">@L["Messages_ModeRemote"]</button>
                     <button type="button" class="btn @(chatMode == "gguf" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => OnChatModeChangedSync("gguf"))" disabled="@isThinking">🦙 GGUF</button>
                     <button type="button" class="btn @(chatMode == "onnx" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => OnChatModeChangedSync("onnx"))" disabled="@isThinking">📦 ONNX</button>
                 </div>
@@ -107,30 +108,30 @@
             @if (chatMode == "remote")
             {
                 <div class="selector-group">
-                    <label>提供商</label>
+                    <label>@L["Messages_Provider"]</label>
                     <select class="form-select" value="@selectedProviderId" @onchange="OnProviderChanged" disabled="@isThinking">
                         @foreach (var provider in providers)
                         {
-                            <option value="@provider.Id">@provider.Name @(provider.IsMain ? "(主)" : "")</option>
+                            <option value="@provider.Id">@provider.Name @(provider.IsMain ? L["Messages_MainProvider"] : "")</option>
                         }
                     </select>
                 </div>
                 <div class="selector-group">
-                    <label>模型</label>
+                    <label>@L["Messages_Model"]</label>
                     <select class="form-select" @bind="selectedModel" disabled="@isThinking">
                         @if (availableModels.Count == 0)
                         {
-                            <option value="">— 无可用模型 —</option>
+                            <option value="">@L["Messages_NoModelsAvailable"]</option>
                         }
                         @foreach (var model in availableModels)
                         {
-                            <option value="@model.Name">@GetShortModelName(model.Name) @(model.IsMain ? "(默认)" : "")</option>
+                            <option value="@model.Name">@GetShortModelName(model.Name) @(model.IsMain ? L["Messages_DefaultModel"] : "")</option>
                         }
                     </select>
                     @if (availableModels.Count == 0 && IsLocalProvider(selectedProviderId))
                     {
                         <a href="settings" class="link-small" style="margin-top: 0.25rem; display: inline-block;">
-                            去设置页获取模型 →
+                            @L["Messages_GoToSettings"]
                         </a>
                     }
                 </div>
@@ -138,7 +139,7 @@
             else
             {
                 <div class="selector-group" style="flex: 1; min-width: 12rem;">
-                    <label>模型路径</label>
+                    <label>@L["Messages_ModelPath"]</label>
                     <div style="display: flex; gap: 0.5rem; flex: 1;">
                         <input type="text"
                                class="form-control"
@@ -147,7 +148,7 @@
                                disabled="@isThinking"
                                style="flex: 1; font-size: 0.85rem;" />
                         <button @onclick="ScanLocalModels" class="btn btn-secondary" disabled="@isThinking" style="white-space: nowrap; font-size: 0.85rem;">
-                            🔍 扫描
+                            @L["Messages_Scan"]
                         </button>
                     </div>
                 </div>
@@ -155,11 +156,11 @@
             @if (chatMode == "remote")
             {
                 <div class="selector-group" style="align-items: center;">
-                    <label>知识库</label>
+                    <label>@L["Messages_KnowledgeBase"]</label>
                     <div class="form-check form-switch mb-0">
                         <input class="form-check-input" type="checkbox" @bind="useVaultSearch" id="vaultSearchSwitch" disabled="@isThinking">
                         <label class="form-check-label" for="vaultSearchSwitch" style="font-size: 0.85rem;">
-                            @(useVaultSearch ? "🔍 检索中" : "关闭")
+                            @(useVaultSearch ? L["Messages_Searching"] : L["Messages_Closed"])
                         </label>
                     </div>
                 </div>
@@ -182,20 +183,20 @@
             <textarea @bind="inputMessage"
                       @bind:event="oninput"
                       @onkeydown="HandleKeyDown"
-                      placeholder="输入消息...&#10;Shift+Enter 换行，Enter 发送"
+                      placeholder="@L["Messages_InputPlaceholder"]"
                       class="form-control chat-textarea"
                       rows="1"
                       disabled="@isThinking"></textarea>
             @if (isThinking)
             {
                 <button @onclick="StopChat" class="btn btn-danger">
-                    ⏹ 停止
+                    @L["Messages_Stop"]
                 </button>
             }
             else
             {
                 <button @onclick="SendMessage" class="btn btn-primary" disabled="@(!CanSend)">
-                    发送
+                    @L["Messages_Send"]
                 </button>
             }
         </div>
@@ -603,19 +604,19 @@
         if (messages.Count == 0) return;
 
         var sb = new System.Text.StringBuilder();
-        sb.AppendLine("# AI 对话记录");
-        sb.AppendLine($"导出时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+        sb.AppendLine(L["Messages_ExportTitle"]);
+        sb.AppendLine(string.Format(L["Messages_ExportTimeFormat"], DateTime.Now));
         sb.AppendLine();
         foreach (var msg in messages)
         {
-            var role = msg.IsUser ? "**用户**" : "**AI**";
+            var role = msg.IsUser ? L["Messages_ExportUser"] : L["Messages_ExportAI"];
             sb.AppendLine($"## {role} ({msg.Time:HH:mm:ss})");
             sb.AppendLine();
             sb.AppendLine(msg.Content);
             if (msg.ToolCalls.Any())
             {
                 sb.AppendLine();
-                sb.AppendLine($"> 🔧 调用了工具: {string.Join(", ", msg.ToolCalls.Select(t => t.DisplayName))}");
+                sb.AppendLine(string.Format(L["Messages_ExportToolCalls"], string.Join(", ", msg.ToolCalls.Select(t => t.DisplayName))));
             }
             sb.AppendLine();
             sb.AppendLine("---");
@@ -700,12 +701,12 @@
                         {
                             var displayName = evt.ToolName switch
                             {
-                                "search_vault" => "🔍 搜索知识库",
-                                "create_note" => "📝 创建笔记",
-                                "get_system_status" => "📊 获取系统状态",
-                                "get_current_date" => "📅 获取时间",
-                                "list_vaults" => "📚 列出知识库",
-                                _ => $"🔧 {evt.ToolName}"
+                                "search_vault" => L["Messages_ToolSearchVault"],
+                                "create_note" => L["Messages_ToolCreateNote"],
+                                "get_system_status" => L["Messages_ToolGetSystemStatus"],
+                                "get_current_date" => L["Messages_ToolGetCurrentDate"],
+                                "list_vaults" => L["Messages_ToolListVaults"],
+                                _ => string.Format(L["Messages_ToolCallUnknown"], evt.ToolName)
                             };
                             aiMessage.ToolCalls.Add(new ToolCallInfo { Name = evt.ToolName ?? "", DisplayName = displayName });
                         }
@@ -728,19 +729,19 @@
             if (_chatCts.IsCancellationRequested)
             {
                 aiMessage.Content = string.IsNullOrEmpty(aiMessage.Content)
-                    ? "（已停止）"
-                    : aiMessage.Content + "\n\n（已停止）";
+                    ? L["Messages_Stopped"]
+                    : aiMessage.Content + "\n\n" + L["Messages_Stopped"];
             }
         }
         catch (OperationCanceledException)
         {
             aiMessage.Content = string.IsNullOrEmpty(aiMessage.Content)
-                ? "（已停止）"
-                : aiMessage.Content + "\n\n（已停止）";
+                ? L["Messages_Stopped"]
+                : aiMessage.Content + "\n\n" + L["Messages_Stopped"];
         }
         catch (Exception ex)
         {
-            aiMessage.Content = $"请求失败：{ex.Message}";
+            aiMessage.Content = string.Format(L["Messages_RequestFailed"], ex.Message);
         }
         finally
         {
@@ -756,7 +757,7 @@
 
     private string GetShortModelName(string? fullName)
     {
-        if (string.IsNullOrWhiteSpace(fullName)) return "默认模型";
+        if (string.IsNullOrWhiteSpace(fullName)) return L["Messages_DefaultModelName"];
         var parts = fullName.Split('/', StringSplitOptions.RemoveEmptyEntries);
         return parts.Length > 0 ? parts[^1] : fullName;
     }

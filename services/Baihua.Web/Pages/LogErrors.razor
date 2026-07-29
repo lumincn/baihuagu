@@ -4,18 +4,20 @@
 @using System.Net.Http.Headers
 @using System.Text
 @using System.Text.Json
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
-<PageTitle>错误日志 - 百花</PageTitle>
+<PageTitle>@L["LogErrors_PageTitle"]</PageTitle>
 
 <div class="container-fluid py-3">
-    <h4 class="mb-3">🚨 错误日志</h4>
+    <h4 class="mb-3">@L["LogErrors_Title"]</h4>
 
     <div class="mb-2 d-flex gap-2 align-items-center flex-wrap">
-        <button class="btn btn-sm btn-outline-secondary" @onclick="RefreshLocal" disabled="@loading">🔄 刷新本地</button>
-        <button class="btn btn-sm btn-outline-info" @onclick="RefreshOpenObserve" disabled="@loadingOo">📊 OpenObserve 错误</button>
-        <button class="btn btn-sm btn-outline-danger" @onclick="ClearLocalLogs">🗑️ 清空本地日志</button>
-        <button class="btn btn-sm btn-outline-warning" @onclick="ClearOpenObserve" disabled="@clearingOo">🗑️ 清空 OpenObserve</button>
-        <a href="http://localhost:5082" target="_blank" class="btn btn-sm btn-outline-info">📊 OpenObserve UI</a>
+        <button class="btn btn-sm btn-outline-secondary" @onclick="RefreshLocal" disabled="@loading">@L["LogErrors_RefreshLocal"]</button>
+        <button class="btn btn-sm btn-outline-info" @onclick="RefreshOpenObserve" disabled="@loadingOo">@L["LogErrors_OpenObserveErrors"]</button>
+        <button class="btn btn-sm btn-outline-danger" @onclick="ClearLocalLogs">@L["LogErrors_ClearLocal"]</button>
+        <button class="btn btn-sm btn-outline-warning" @onclick="ClearOpenObserve" disabled="@clearingOo">@L["LogErrors_ClearOpenObserve"]</button>
+        <a href="http://localhost:5082" target="_blank" class="btn btn-sm btn-outline-info">@L["LogErrors_OpenObserveUI"]</a>
         <span class="small">@status</span>
     </div>
 
@@ -25,11 +27,11 @@
     }
     else if (entries.Count == 0)
     {
-        <div class="alert alert-info">暂无错误日志</div>
+        <div class="alert alert-info">@L["LogErrors_NoErrors"]</div>
     }
     else
     {
-        <div class="mb-1 small text-muted">当前来源：@sourceLabel</div>
+        <div class="mb-1 small text-muted">@L["LogErrors_CurrentSource"]@sourceLabel</div>
         <div class="list-group" style="font-size: 0.85rem;">
             @foreach (var e in entries)
             {
@@ -57,7 +59,7 @@
     private bool loadingOo;
     private bool clearingOo;
     private string status = "";
-    private string sourceLabel = "本地文件";
+    private string sourceLabel = "";
     private string? ooAuthHeader;
 
     private static readonly string[] SvcNames = { "taskrunner", "webui", "vault", "ai" };
@@ -88,7 +90,7 @@
         loading = true;
         loadingOo = false;
         entries.Clear();
-        sourceLabel = "本地文件";
+        sourceLabel = L["LogErrors_SourceLocalFiles"];
 
         try
         {
@@ -124,12 +126,12 @@
                 }
                 if (entries.Count >= 200) break;
             }
-            status = $"{entries.Count} 条（本地）";
+            status = string.Format(L["LogErrors_StatusLocal"], entries.Count);
         }
         catch (Exception ex)
         {
-            entries.Add(new Entry("", $"读取失败: {ex.Message}", "", "ERROR"));
-            status = "❌";
+            entries.Add(new Entry("", string.Format(L["LogErrors_ReadFailedEntry"], ex.Message), "", "ERROR"));
+            status = L["LogErrors_StatusError"];
         }
 
         loading = false;
@@ -177,12 +179,12 @@
                 // 流不存在 = 暂无日志数据，不是真正的错误
                 if (errBody.Contains("stream not found"))
                 {
-                    status = "ℹ️ OpenObserve 日志流暂无数据（新日志推送后将自动创建）";
+                    status = L["LogErrors_OpenObserveNoStream"];
                     loadingOo = false;
                     return;
                 }
 
-                status = $"❌ OpenObserve 查询失败 ({(int)resp.StatusCode}): {errBody.Substring(0, Math.Min(errBody.Length, 200))}";
+                status = string.Format(L["LogErrors_OpenObserveQueryFailed"], (int)resp.StatusCode, errBody.Substring(0, Math.Min(errBody.Length, 200)));
                 loadingOo = false;
                 return;
             }
@@ -215,12 +217,12 @@
                 }
             }
 
-            status = total == 0 ? "✅ 无错误日志（OpenObserve）" : $"{entries.Count} 条（OpenObserve）";
+            status = total == 0 ? L["LogErrors_OpenObserveNoErrors"] : string.Format(L["LogErrors_StatusOpenObserve"], entries.Count);
         }
         catch (Exception ex)
         {
-            entries.Add(new Entry("", $"查询 OpenObserve 失败: {ex.Message}", "", "ERROR"));
-            status = "❌";
+            entries.Add(new Entry("", string.Format(L["LogErrors_QueryFailedEntry"], ex.Message), "", "ERROR"));
+            status = L["LogErrors_StatusError"];
         }
 
         loadingOo = false;
@@ -228,7 +230,7 @@
 
     private async Task ClearLocalLogs()
     {
-        if (!await JSRuntime.InvokeAsync<bool>("confirm", "确定要清空所有本地错误日志文件吗？"))
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", L["LogErrors_ConfirmClearLocal"]))
             return;
 
         var cleared = 0;
@@ -248,14 +250,14 @@
         }
 
         entries.Clear();
-        status = $"已清空 {cleared} 个日志文件";
+        status = string.Format(L["LogErrors_ClearedLocalLogs"], cleared);
         StateHasChanged();
     }
 
     private async Task ClearOpenObserve()
     {
         if (string.IsNullOrEmpty(ooAuthHeader)) return;
-        if (!await JSRuntime.InvokeAsync<bool>("confirm", "确定要清空 OpenObserve 中的所有日志吗？\n\n这是通过删除日志流实现的，OpenObserve 会在新数据到达时自动重建。"))
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", L["LogErrors_ConfirmClearOpenObserve"]))
             return;
 
         clearingOo = true;
@@ -271,17 +273,17 @@
             if (resp.IsSuccessStatusCode)
             {
                 entries.Clear();
-                status = "✅ OpenObserve 日志流已删除，将在新数据到达时自动重建";
+                status = L["LogErrors_OpenObserveStreamDeleted"];
             }
             else
             {
                 var errBody = await resp.Content.ReadAsStringAsync();
-                status = $"❌ 删除失败 ({(int)resp.StatusCode}): {errBody}";
+                status = string.Format(L["LogErrors_DeleteFailed"], (int)resp.StatusCode, errBody);
             }
         }
         catch (Exception ex)
         {
-            status = $"❌ 请求失败: {ex.Message}";
+            status = string.Format(L["LogErrors_RequestFailed"], ex.Message);
         }
 
         clearingOo = false;

@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+﻿<?xml version='1.0' encoding='utf-8'?>
 <root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:schema id="root">
     <xs:element name="root" ns1:IsDataSet="true">
@@ -2784,5 +2784,113 @@
   </data>
   <data name="DailyCard_Tier_Platinum" xml:space="preserve">
     <value>铂金</value>
+  </data>
+  <data name="Messages_PageTitle" xml:space="preserve">
+    <value>消息</value>
+  </data>
+  <data name="Messages_Title" xml:space="preserve">
+    <value>💬 AI 对话</value>
+  </data>
+  <data name="Messages_AiNotConfigured" xml:space="preserve">
+    <value>⚠️ AI 未配置，请先设置 API Key</value>
+  </data>
+  <data name="Messages_ExportChat" xml:space="preserve">
+    <value>📥 导出对话</value>
+  </data>
+  <data name="Messages_ClearChat" xml:space="preserve">
+    <value>🗑️ 清空对话</value>
+  </data>
+  <data name="Messages_Regenerate" xml:space="preserve">
+    <value>🔄 重新生成</value>
+  </data>
+  <data name="Messages_Mode" xml:space="preserve">
+    <value>模式</value>
+  </data>
+  <data name="Messages_ModeRemote" xml:space="preserve">
+    <value>🌐 远程</value>
+  </data>
+  <data name="Messages_Provider" xml:space="preserve">
+    <value>提供商</value>
+  </data>
+  <data name="Messages_MainProvider" xml:space="preserve">
+    <value>(主)</value>
+  </data>
+  <data name="Messages_Model" xml:space="preserve">
+    <value>模型</value>
+  </data>
+  <data name="Messages_NoModelsAvailable" xml:space="preserve">
+    <value>— 无可用模型 —</value>
+  </data>
+  <data name="Messages_DefaultModel" xml:space="preserve">
+    <value>(默认)</value>
+  </data>
+  <data name="Messages_GoToSettings" xml:space="preserve">
+    <value>去设置页获取模型 →</value>
+  </data>
+  <data name="Messages_ModelPath" xml:space="preserve">
+    <value>模型路径</value>
+  </data>
+  <data name="Messages_Scan" xml:space="preserve">
+    <value>🔍 扫描</value>
+  </data>
+  <data name="Messages_KnowledgeBase" xml:space="preserve">
+    <value>知识库</value>
+  </data>
+  <data name="Messages_Searching" xml:space="preserve">
+    <value>🔍 检索中</value>
+  </data>
+  <data name="Messages_Closed" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="Messages_InputPlaceholder" xml:space="preserve">
+    <value>输入消息...&#x0D;&#x0A;Shift+Enter 换行，Enter 发送</value>
+  </data>
+  <data name="Messages_Stop" xml:space="preserve">
+    <value>⏹ 停止</value>
+  </data>
+  <data name="Messages_Send" xml:space="preserve">
+    <value>发送</value>
+  </data>
+  <data name="Messages_ToolSearchVault" xml:space="preserve">
+    <value>🔍 搜索知识库</value>
+  </data>
+  <data name="Messages_ToolCreateNote" xml:space="preserve">
+    <value>📝 创建笔记</value>
+  </data>
+  <data name="Messages_ToolGetSystemStatus" xml:space="preserve">
+    <value>📊 获取系统状态</value>
+  </data>
+  <data name="Messages_ToolGetCurrentDate" xml:space="preserve">
+    <value>📅 获取时间</value>
+  </data>
+  <data name="Messages_ToolListVaults" xml:space="preserve">
+    <value>📚 列出知识库</value>
+  </data>
+  <data name="Messages_ToolCallUnknown" xml:space="preserve">
+    <value>🔧 {0}</value>
+  </data>
+  <data name="Messages_Stopped" xml:space="preserve">
+    <value>（已停止）</value>
+  </data>
+  <data name="Messages_RequestFailed" xml:space="preserve">
+    <value>请求失败：{0}</value>
+  </data>
+  <data name="Messages_DefaultModelName" xml:space="preserve">
+    <value>默认模型</value>
+  </data>
+  <data name="Messages_ExportTitle" xml:space="preserve">
+    <value># AI 对话记录</value>
+  </data>
+  <data name="Messages_ExportTimeFormat" xml:space="preserve">
+    <value>导出时间: {0:yyyy-MM-dd HH:mm:ss}</value>
+  </data>
+  <data name="Messages_ExportUser" xml:space="preserve">
+    <value>**用户**</value>
+  </data>
+  <data name="Messages_ExportAI" xml:space="preserve">
+    <value>**AI**</value>
+  </data>
+  <data name="Messages_ExportToolCalls" xml:space="preserve">
+    <value>&gt; 🔧 调用了工具: {0}</value>
   </data>
 </root>

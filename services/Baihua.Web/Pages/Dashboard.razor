@@ -3,21 +3,22 @@
 @inject Baihua.Web.Services.IApiService ApiService
 @inject Baihua.Web.Services.VaultsService VaultsService
 @inject Microsoft.Extensions.Logging.ILogger<Dashboard> Logger
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
-<PageTitle>家长看板</PageTitle>
+<PageTitle>@L["Dashboard_PageTitle"]</PageTitle>
 
 <div class="dashboard-page">
-    <h1>📊 家长看板</h1>
+    <h1>@L["Dashboard_Title"]</h1>
 
     @if (isLoading)
     {
-        <div class="loading">加载中...</div>
+        <div class="loading">@L["Dashboard_Loading"]</div>
     }
     else
     {
         <!-- 家庭成员统计 -->
         <div class="section">
-            <h2>👨‍👩‍👧‍👦 本周学习动态</h2>
+            <h2>@L["Dashboard_WeeklyLearning"]</h2>
             <div class="family-grid">
                 @foreach (var member in data.FamilyStats)
                 {
@@ -29,15 +30,15 @@
                         <div class="member-stats">
                             <div class="m-stat">
                                 <div class="m-value">@member.WeekTotal</div>
-                                <div class="m-label">本周学习</div>
+                                <div class="m-label">@L["Dashboard_WeekTotal"]</div>
                             </div>
                             <div class="m-stat">
                                 <div class="m-value">@member.Accuracy.ToString("F0")%</div>
-                                <div class="m-label">正确率</div>
+                                <div class="m-label">@L["Dashboard_Accuracy"]</div>
                             </div>
                             <div class="m-stat">
                                 <div class="m-value">🔥 @member.Streak</div>
-                                <div class="m-label">连续</div>
+                                <div class="m-label">@L["Dashboard_Streak"]</div>
                             </div>
                         </div>
                     </div>
@@ -49,7 +50,7 @@
         @if (data.WeeklyTrend.Count > 0)
         {
             <div class="section">
-                <h2>📈 本周学习趋势</h2>
+                <h2>@L["Dashboard_WeeklyTrend"]</h2>
                 <div class="trend-chart">
                     @{ var maxCount = data.WeeklyTrend.Max(t => t.Count); if (maxCount == 0) maxCount = 1; }
                     @foreach (var day in data.WeeklyTrend)
@@ -69,22 +70,22 @@
         {
             var total = data.ResultDistribution.Remember + data.ResultDistribution.Hard + data.ResultDistribution.Forgot;
             <div class="section">
-                <h2>🎯 本周答题分布</h2>
+                <h2>@L["Dashboard_AnswerDistribution"]</h2>
                 <div class="distribution">
                     <div class="dist-item dist-remember">
                         <div class="dist-value">@data.ResultDistribution.Remember</div>
                         <div class="dist-bar" style="width: @(total > 0 ? data.ResultDistribution.Remember * 100 / total : 0)%"></div>
-                        <div class="dist-label">✅ 记得</div>
+                        <div class="dist-label">@L["Dashboard_Remembered"]</div>
                     </div>
                     <div class="dist-item dist-hard">
                         <div class="dist-value">@data.ResultDistribution.Hard</div>
                         <div class="dist-bar" style="width: @(total > 0 ? data.ResultDistribution.Hard * 100 / total : 0)%"></div>
-                        <div class="dist-label">🤔 模糊</div>
+                        <div class="dist-label">@L["Dashboard_Hard"]</div>
                     </div>
                     <div class="dist-item dist-forgot">
                         <div class="dist-value">@data.ResultDistribution.Forgot</div>
                         <div class="dist-bar" style="width: @(total > 0 ? data.ResultDistribution.Forgot * 100 / total : 0)%"></div>
-                        <div class="dist-label">❌ 忘记</div>
+                        <div class="dist-label">@L["Dashboard_Forgot"]</div>
                     </div>
                 </div>
             </div>
@@ -94,7 +95,7 @@
         @if (data.RecentAchievements.Count > 0)
         {
             <div class="section">
-                <h2>🏆 最近解锁</h2>
+                <h2>@L["Dashboard_RecentAchievements"]</h2>
                 <div class="recent-achievements">
                     @foreach (var ach in data.RecentAchievements)
                     {
