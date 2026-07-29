@@ -289,7 +289,7 @@ builder.Services.AddSingleton<Baihua.Web.Services.CapabilityService>();
 
 // Add Localization services (i18n, default: zh-CN)
 builder.Services.AddLocalization();
-builder.Services.AddSingleton<Baihua.Web.Services.CultureService>();
+builder.Services.AddScoped<Baihua.Web.Services.CultureService>();
 
 // Add HttpClient with API base address + Polly retry
 var retryPolicy = HttpPolicyExtensions
