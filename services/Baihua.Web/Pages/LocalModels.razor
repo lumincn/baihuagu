@@ -855,7 +855,7 @@ else
                     <p class="text-error">@L["LocalModels_DeleteIrreversible"]</p>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="CancelDeleteModel">@L["LocalModels_DeployCancelBtn"]</button>
+                    <button class="btn btn-secondary" @onclick="CancelDeleteModel">@L["Common_Cancel"]</button>
                     <button class="btn btn-danger" @onclick="ConfirmDeleteModel" disabled="@isLoadingModel">
                         @(isLoadingModel ? L["LocalModels_Deleting"] : L["LocalModels_DeleteConfirmBtn"])
                     </button>
@@ -919,7 +919,7 @@ else
                     }
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="CloseDetailsModal">@L["LocalModels_DeployCancelBtn"]</button>
+                    <button class="btn btn-secondary" @onclick="CloseDetailsModal">@L["Common_Close"]</button>
                 </div>
             </div>
         </div>
@@ -954,7 +954,7 @@ else
                     </div>
                     @if (task.Status == "running")
                     {
-                        <button class="btn btn-danger btn-sm" @onclick="() => CancelDeploy(task.TaskId)">@L["LocalModels_DeployCancelBtn"]</button>
+                        <button class="btn btn-danger btn-sm" @onclick="() => CancelDeploy(task.TaskId)">@L["Common_Cancel"]</button>
                     }
                     @if (task.Status == "completed" && task.AutoConfiguredProvider)
                     {
