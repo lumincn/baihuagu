@@ -18006,4 +18006,71 @@
   <data name="BrowseVault_Playlist" xml:space="preserve">
     <value>Playlist</value>
   </data>
+
+  <data name="Cards_PageTitle" xml:space="preserve">
+    <value>Memory Cards</value>
+  </data>
+  <data name="Cards_Title" xml:space="preserve">
+    <value>Memory Cards</value>
+  </data>
+  <data name="Cards_Vault" xml:space="preserve">
+    <value>Vault</value>
+  </data>
+  <data name="Cards_AllVaults" xml:space="preserve">
+    <value>All Vaults</value>
+  </data>
+  <data name="Cards_SearchPlaceholder" xml:space="preserve">
+    <value>Search card content...</value>
+  </data>
+  <data name="Cards_Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Cards_Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+  <data name="Cards_TotalCards" xml:space="preserve">
+    <value>Total Cards</value>
+  </data>
+  <data name="Cards_DeckCount" xml:space="preserve">
+    <value>Decks</value>
+  </data>
+  <data name="Cards_AiGenerated" xml:space="preserve">
+    <value>AI Generated</value>
+  </data>
+  <data name="Cards_DeckDistribution" xml:space="preserve">
+    <value>Deck Distribution</value>
+  </data>
+  <data name="Cards_DeckName" xml:space="preserve">
+    <value>Deck Name</value>
+  </data>
+  <data name="Cards_CardCount" xml:space="preserve">
+    <value>Cards</value>
+  </data>
+  <data name="Cards_SourceNote" xml:space="preserve">
+    <value>Source Note</value>
+  </data>
+  <data name="Cards_Actions" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="Cards_ViewDeckCardsTitle" xml:space="preserve">
+    <value>View cards in this deck</value>
+  </data>
+  <data name="Cards_View" xml:space="preserve">
+    <value>View</value>
+  </data>
+  <data name="Cards_CardList" xml:space="preserve">
+    <value>Card List</value>
+  </data>
+  <data name="Cards_ClearFilter" xml:space="preserve">
+    <value>Clear Filter</value>
+  </data>
+  <data name="Cards_TotalCount" xml:space="preserve">
+    <value>Total: {0}</value>
+  </data>
+  <data name="Cards_NoCards" xml:space="preserve">
+    <value>No cards</value>
+  </data>
+  <data name="Cards_NoCardsHint" xml:space="preserve">
+    <value>Please select notes in the vault browser, then click &quot;Generate Anki Cards&quot;</value>
+  </data>
 </root>

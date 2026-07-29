@@ -18006,4 +18006,71 @@
   <data name="BrowseVault_Playlist" xml:space="preserve">
     <value>播放列表</value>
   </data>
+
+  <data name="Cards_PageTitle" xml:space="preserve">
+    <value>记忆卡片</value>
+  </data>
+  <data name="Cards_Title" xml:space="preserve">
+    <value>记忆卡片</value>
+  </data>
+  <data name="Cards_Vault" xml:space="preserve">
+    <value>知识库</value>
+  </data>
+  <data name="Cards_AllVaults" xml:space="preserve">
+    <value>全部知识库</value>
+  </data>
+  <data name="Cards_SearchPlaceholder" xml:space="preserve">
+    <value>搜索卡片内容...</value>
+  </data>
+  <data name="Cards_Search" xml:space="preserve">
+    <value>搜索</value>
+  </data>
+  <data name="Cards_Loading" xml:space="preserve">
+    <value>加载中...</value>
+  </data>
+  <data name="Cards_TotalCards" xml:space="preserve">
+    <value>卡片总数</value>
+  </data>
+  <data name="Cards_DeckCount" xml:space="preserve">
+    <value>牌组数</value>
+  </data>
+  <data name="Cards_AiGenerated" xml:space="preserve">
+    <value>AI 生成</value>
+  </data>
+  <data name="Cards_DeckDistribution" xml:space="preserve">
+    <value>牌组分布</value>
+  </data>
+  <data name="Cards_DeckName" xml:space="preserve">
+    <value>牌组名称</value>
+  </data>
+  <data name="Cards_CardCount" xml:space="preserve">
+    <value>卡片数</value>
+  </data>
+  <data name="Cards_SourceNote" xml:space="preserve">
+    <value>来源笔记</value>
+  </data>
+  <data name="Cards_Actions" xml:space="preserve">
+    <value>操作</value>
+  </data>
+  <data name="Cards_ViewDeckCardsTitle" xml:space="preserve">
+    <value>查看该牌组卡片</value>
+  </data>
+  <data name="Cards_View" xml:space="preserve">
+    <value>查看</value>
+  </data>
+  <data name="Cards_CardList" xml:space="preserve">
+    <value>卡片列表</value>
+  </data>
+  <data name="Cards_ClearFilter" xml:space="preserve">
+    <value>清除筛选</value>
+  </data>
+  <data name="Cards_TotalCount" xml:space="preserve">
+    <value>共 {0} 条</value>
+  </data>
+  <data name="Cards_NoCards" xml:space="preserve">
+    <value>暂无卡片</value>
+  </data>
+  <data name="Cards_NoCardsHint" xml:space="preserve">
+    <value>请在知识库浏览页选择笔记，点击&quot;生成 Anki 卡片&quot;</value>
+  </data>
 </root>

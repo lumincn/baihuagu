@@ -1,6 +1,8 @@
 @page "/search"
 @rendermode InteractiveServer
 @using Microsoft.AspNetCore.Components.Web
+@using Microsoft.Extensions.Localization
+@using Baihua.Web.Localization
 @inject NavigationManager Navigation
 @inject Baihua.Web.Services.IApiService ApiService
 @inject Baihua.Web.Services.SearchStateService SearchStateService
@@ -8,21 +10,21 @@
 @inject Baihua.Web.Services.ObsidianStatusService ObsidianStatusService
 @inject Baihua.Web.Services.VaultsService VaultsService
 @inject Microsoft.Extensions.Logging.ILogger<Search> Logger
+@inject IStringLocalizer<SharedResources> L
 @using Baihua.Web.Services
 
-<PageTitle>搜索</PageTitle>
+<PageTitle>@L["Search_PageTitle"]</PageTitle>
 
-<h1>🔍 搜索</h1>
+<h1>@L["Search_Title"]</h1>
 
-<!-- Obsidian 状态提示 -->
 @if (obsidianStatus != null)
 {
     @if (obsidianStatus.IsRunning)
     {
         <div class="obsidian-hint alert alert-success alert-dismissible fade show" role="alert">
-            <strong>✅ Obsidian 已启动</strong>
+            <strong>@L["Search_ObsidianRunning"]</strong>
             <p class="mb-0 small mt-1">
-                搜索本地知识库时将使用 Obsidian 的搜索功能，支持更强大的全文检索、标签搜索和链接关系查询。
+                @L["Search_ObsidianRunningDesc"]
             </p>
             <button type="button" class="btn-close" aria-label="Close"></button>
         </div>
@@ -30,10 +32,10 @@
     else
     {
         <div class="obsidian-hint alert alert-warning alert-dismissible fade show" role="alert">
-            <strong>💡 提示：</strong>Obsidian 桌面客户端未启动
+            <strong>@L["Search_ObsidianHint"]</strong>@L["Search_ObsidianNotRunning"]
             <p class="mb-0 small mt-1">
-                启动 Obsidian 后可使用其强大的搜索功能检索本地知识库，支持全文检索、标签搜索和链接关系查询。
-                <a href="https://obsidian.md/download" target="_blank" class="alert-link">下载 Obsidian</a>
+                @L["Search_ObsidianNotRunningDesc"]
+                <a href="https://obsidian.md/download" target="_blank" class="alert-link">@L["Search_DownloadObsidian"]</a>
             </p>
             <button type="button" class="btn-close" aria-label="Close"></button>
         </div>
@@ -47,18 +49,18 @@
             <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
                 @if (industries.Count > 1)
                 {
-                    <label class="form-label mb-0 text-nowrap" style="font-size:0.9em">🏭 行业：</label>
+                    <label class="form-label mb-0 text-nowrap" style="font-size:0.9em">@L["Search_FilterIndustry"]</label>
                     <select class="form-select form-select-sm" @bind="selectedIndustry" @bind:after="OnIndustryChanged" style="max-width:150px">
-                        <option value="">全部</option>
+                        <option value="">@L["Search_All"]</option>
                         @foreach (var industry in industries)
                         {
                             <option value="@industry">@industry</option>
                         }
                     </select>
                 }
-                <label class="form-label mb-0 text-nowrap" style="font-size:0.9em">📚 知识库：</label>
+                <label class="form-label mb-0 text-nowrap" style="font-size:0.9em">@L["Search_FilterVault"]</label>
                 <select class="form-select form-select-sm" @bind="selectedVaultId" @bind:after="OnVaultChanged" style="max-width:300px">
-                    <option value="">🌐 全部</option>
+                    <option value="">@L["Search_AllVaults"]</option>
                     @foreach (var vault in FilteredVaults)
                     {
                         <option value="@vault.Id">@vault.Name</option>
@@ -71,17 +73,17 @@
                    @bind="searchQuery" 
                    @bind:event="oninput"
                    @onkeydown="HandleKeyDown"
-                   placeholder="输入关键词搜索本地笔记..." 
+                   placeholder="@L["Search_Placeholder"]" 
                    class="form-control" />
-            <button @onclick="PerformSearch" class="btn btn-primary">搜索</button>
+            <button @onclick="PerformSearch" class="btn btn-primary">@L["Search_SearchButton"]</button>
         </div>
 
         @if (recentSearches != null && recentSearches.Any() && string.IsNullOrWhiteSpace(searchQuery))
         {
             <div class="recent-searches">
                 <div class="section-header">
-                    <h3>🔍 最近搜索</h3>
-                    <button @onclick="ClearSearchHistory" class="btn btn-sm btn-link">清空</button>
+                    <h3>@L["Search_RecentTitle"]</h3>
+                    <button @onclick="ClearSearchHistory" class="btn btn-sm btn-link">@L["Search_ClearHistory"]</button>
                 </div>
                 <div class="search-chips">
                     @foreach (var query in recentSearches)
@@ -99,7 +101,7 @@
         {
             <div class="loading">
                 <div class="spinner"></div>
-                <span>搜索中...</span>
+                <span>@L["Search_Searching"]</span>
             </div>
         }
         else
@@ -113,17 +115,17 @@
                     @if (indexStatus != null)
                     {
                         <span class="badge @GetIndexBadgeClass(indexStatus.HasIndex) ms-1">
-                            索引: @(indexStatus.HasIndex ? $"{indexStatus.IndexedCount} 篇" : "未建立")
+                            @L["Search_IndexLabel"] @(indexStatus.HasIndex ? $"{indexStatus.IndexedCount} {L["Search_IndexCountSuffix"]}" : L["Search_IndexNotBuilt"])
                         </span>
                         @if (!indexStatus.HasIndex)
                         {
                             @if (isRebuildingIndex)
                             {
-                                <button class="btn btn-sm btn-link py-0 text-danger" @onclick="StopRebuildIndexAsync">取消重建</button>
+                                <button class="btn btn-sm btn-link py-0 text-danger" @onclick="StopRebuildIndexAsync">@L["Search_CancelRebuild"]</button>
                             }
                             else
                             {
-                                <button class="btn btn-sm btn-link py-0" @onclick="RebuildIndexAsync">重建索引</button>
+                                <button class="btn btn-sm btn-link py-0" @onclick="RebuildIndexAsync">@L["Search_RebuildIndex"]</button>
                             }
                         }
                     }
@@ -135,14 +137,14 @@
                 var groupedResults = BuildGroupedResults();
                 
                 <div class="results">
-                    <h2>搜索结果 (@searchResults.Count 条)</h2>
+                    <h2>@L["Search_ResultsTitle"] (@searchResults.Count @L["Search_ResultsCountSuffix"])</h2>
                     
                     @foreach (var group in groupedResults)
                     {
                         <div class="result-group">
                             <div class="group-header" @onclick="(() => ToggleGroup(group.Key))">
                                 <span class="group-icon">@(expandedGroups.Contains(group.Key) ? "📂" : "📁")</span>
-                                <h3>@group.Key (@group.Value.Count 条)</h3>
+                                <h3>@group.Key (@group.Value.Count @L["Search_ResultsCountSuffix"])</h3>
                             </div>
                             
                             @if (expandedGroups.Contains(group.Key))
@@ -153,7 +155,7 @@
                                         <div class="result-item" @onclick="(() => ViewNote(result))" style="cursor: pointer;">
                                             <div class="result-header">
                                                 <h3>@result.Title</h3>
-                                                <span class="result-hint">点击查看 →</span>
+                                                <span class="result-hint">@L["Search_ClickToView"]</span>
                                             </div>
                                             <p class="preview">@result.Preview</p>
                                             <div class="meta">
@@ -176,20 +178,20 @@
                         <p>@searchStatus.ErrorMessage</p>
                         @if (!searchStatus.VaultConfigured)
                         {
-                            <p class="text-muted">请前往 <a href="settings" class="btn btn-sm btn-outline-primary mt-2">设置页面</a> 配置知识库路径</p>
+                            <p class="text-muted">@L["Search_ConfigVaultPath"] <a href="settings" class="btn btn-sm btn-outline-primary mt-2">@L["Search_SettingsPage"]</a> @L["Search_ConfigVaultPathSuffix"]</p>
                         }
                         else if (!searchStatus.VaultExists)
                         {
-                            <p class="text-muted">请检查知识库路径是否正确，或确认文件夹存在</p>
+                            <p class="text-muted">@L["Search_CheckVaultPath"]</p>
                         }
                     }
                     else
                     {
                         <span>😕</span>
-                        <p>未找到相关结果</p>
+                        <p>@L["Search_NoResults"]</p>
                         @if (searchStatus != null)
                         {
-                            <p class="text-muted">搜索方式：@(searchStatus.SearchMethod == "obsidian-cli" ? "Obsidian CLI" : searchStatus.SearchMethod == "semantic" ? "语义搜索" : "文件扫描")</p>
+                            <p class="text-muted">@L["Search_MethodLabel"]@(searchStatus.SearchMethod == "obsidian-cli" ? L["Search_MethodObsidianCli"] : searchStatus.SearchMethod == "semantic" ? L["Search_MethodSemantic"] : L["Search_MethodFileScan"])</p>
                         }
                     }
                 </div>
@@ -197,11 +199,11 @@
             else
             {
                 <div class="search-tips">
-                    <h3>💡 搜索提示</h3>
+                    <h3>@L["Search_TipsTitle"]</h3>
                     <ul>
-                        <li>输入关键词搜索笔记标题和内容</li>
-                        <li>支持搜索知识库内容</li>
-                        <li>例如："桂枝汤"、"发热"、"太阳病"</li>
+                        <li>@L["Search_Tip1"]</li>
+                        <li>@L["Search_Tip2"]</li>
+                        <li>@L["Search_Tip3"]</li>
                     </ul>
                 </div>
             }
@@ -209,7 +211,6 @@
     </div>
 
 @code {
-    // 从 URL 中读取 q 参数（不使用 SupplyParameterFromQuery，因为 Blazor Server 交互模式下不稳定）
     private static string? ReadQueryParam(string uri, string param)
     {
         var pattern = $"?{param}=";
@@ -248,10 +249,8 @@
         var startTime = DateTime.Now;
         Logger.LogDebug("页面初始化开始: {StartTime:HH:mm:ss.fff}", startTime);
 
-        // 初始化时缓存 URL 中的 q 参数（后续在后台线程也可安全读取）
         _initialQuery = ReadQueryParam(Navigation.Uri, "q");
 
-        // 优先使用 URL 查询参数 q（从首页最近搜索点击过来）
         if (!string.IsNullOrWhiteSpace(_initialQuery))
         {
             searchQuery = _initialQuery;
@@ -259,7 +258,6 @@
         }
         else
         {
-            // 无 URL 参数时恢复之前的搜索状态
             var savedState = SearchStateService.Retrieve();
             if (savedState != null)
             {
@@ -274,7 +272,6 @@
         var renderTime = DateTime.Now;
         Logger.LogDebug("页面可以渲染，耗时: {ElapsedMs}ms", (renderTime - startTime).TotalMilliseconds);
         
-        // 后台异步加载数据，不阻塞页面显示
         _ = Task.Run(async () =>
         {
             try
@@ -282,7 +279,6 @@
                 var loadStartTime = DateTime.Now;
                 Logger.LogDebug("后台数据加载开始: {StartTime:HH:mm:ss.fff}", loadStartTime);
                 
-                // 并行加载所有数据
                 var loadRecentSearchesTask = SearchHistoryService.GetRecentSearches();
                 var loadObsidianStatusTask = ObsidianStatusService.GetStatusSummaryAsync();
                 var loadVaultsTask = VaultsService.GetVaultsAsync();
@@ -292,19 +288,17 @@
                 var loadEndTime = DateTime.Now;
                 Logger.LogDebug("后台数据加载完成，耗时: {ElapsedMs}ms", (loadEndTime - loadStartTime).TotalMilliseconds);
                 
-                // 更新UI（需要在UI线程执行）
                 await InvokeAsync(() =>
                 {
                     recentSearches = loadRecentSearchesTask.Result;
                     obsidianStatus = loadObsidianStatusTask.Result;
                     var vaultsResponse = loadVaultsTask.Result;
                     vaults = vaultsResponse.Vaults;
-                    selectedVaultId = "";  // 默认
+                    selectedVaultId = "";
                     StateHasChanged();
                     Logger.LogDebug("UI更新完成");
                 });
                 
-                // 加载索引状态
                 await LoadIndexStatusAsync();
             }
             catch (Exception ex)
@@ -318,7 +312,6 @@
     {
         if (firstRender && !string.IsNullOrWhiteSpace(_initialQuery))
         {
-            // 等待后台数据加载完成（vaults 列表就绪），最多等 8 秒
             for (int i = 0; i < 16; i++)
             {
                 if (vaults.Count > 0) break;
@@ -341,7 +334,6 @@
 
     private async Task OnIndustryChanged()
     {
-        // 切换行业后，自动选中该行业的第一个知识库
         var firstVault = FilteredVaults.FirstOrDefault();
         if (firstVault != null)
         {
@@ -352,13 +344,11 @@
 
     private async Task OnVaultChanged()
     {
-        // 加载索引状态（知识库为空时跳过）
         if (!string.IsNullOrEmpty(selectedVaultId))
         {
             await LoadIndexStatusAsync();
         }
 
-        // 如果已有搜索词，重新搜索
         if (!string.IsNullOrWhiteSpace(searchQuery) && hasSearched)
         {
             await SearchWithQuery(searchQuery);
@@ -416,11 +406,11 @@
 
     private string GetSearchMethodLabel(string method) => method switch
     {
-        "obsidian-cli" => "🔮 Obsidian CLI",
-        "fts5" => "📚 FTS5 全文",
-        "fts5+semantic" => "🧠 FTS5 + 语义重排",
-        "semantic" => "🧠 语义搜索",
-        _ => "📁 文件扫描"
+        "obsidian-cli" => L["Search_MethodObsidianCli"],
+        "fts5" => L["Search_MethodFts5"],
+        "fts5+semantic" => L["Search_MethodFts5Semantic"],
+        "semantic" => L["Search_MethodSemantic"],
+        _ => L["Search_MethodFileScan"]
     };
 
     private string GetIndexBadgeClass(bool hasIndex) => hasIndex ? "text-bg-success" : "text-bg-warning";
@@ -435,7 +425,6 @@
     {
         if (string.IsNullOrWhiteSpace(query)) return;
 
-        // 未选择知识库时，自动选择第一个可用的
         if (string.IsNullOrWhiteSpace(selectedVaultId))
         {
             var firstVault = vaults.FirstOrDefault();
@@ -445,7 +434,7 @@
             }
             else
             {
-                searchStatus = new SearchStatusInfo { ErrorMessage = "请先创建知识库" };
+                searchStatus = new SearchStatusInfo { ErrorMessage = L["Search_NeedCreateVault"] };
                 hasSearched = true;
                 return;
             }
@@ -469,7 +458,7 @@
         {
             Logger.LogWarning(ex, "搜索失败");
             searchResults = new List<SearchResult>();
-            searchStatus = new SearchStatusInfo { ErrorMessage = "搜索服务不可用" };
+            searchStatus = new SearchStatusInfo { ErrorMessage = L["Search_ErrorMessage"] };
         }
         finally
         {
@@ -479,7 +468,6 @@
 
     private void ViewNote(SearchResult result)
     {
-        // 保存搜索状态，以便返回时恢复
         SearchStateService.Save(searchQuery, searchResults, expandedGroups);
         var vaultParam = string.IsNullOrEmpty(selectedVaultId) ? "" : $"&vaultId={Uri.EscapeDataString(selectedVaultId)}";
         Navigation.NavigateTo($"note?id={Uri.EscapeDataString(result.Path)}{vaultParam}");
@@ -512,16 +500,16 @@
             if (items.Count > 0) groups[title] = items;
         }
 
-        AddGroup("症状 / 病名", n => n.Path.Contains("症状/") || n.Path.Contains("病名/"));
-        AddGroup("病机 / 病理 / 证型", n => n.Path.Contains("病机/") || n.Path.Contains("病理/") || n.Path.Contains("证型/"));
-        AddGroup("方剂 / 中药", n => n.Path.Contains("方剂/") || n.Path.Contains("中药/"));
-        AddGroup("舌诊 / 脉诊 / 望诊 / 闻诊", n => n.Path.Contains("舌诊/") || n.Path.Contains("脉诊/") || n.Path.Contains("望诊/") || n.Path.Contains("闻诊/"));
-        AddGroup("治法", n => n.Path.StartsWith("治法/"));
-        AddGroup("医案", n => n.Path.StartsWith("医案/"));
-        AddGroup("AI 查询", n => n.Path.Contains("AI 查询/") || n.Path.Contains("AI 生成/"));
+        AddGroup(L["Search_GroupSymptoms"], n => n.Path.Contains("症状/") || n.Path.Contains("病名/"));
+        AddGroup(L["Search_GroupPathogenesis"], n => n.Path.Contains("病机/") || n.Path.Contains("病理/") || n.Path.Contains("证型/"));
+        AddGroup(L["Search_GroupFormulas"], n => n.Path.Contains("方剂/") || n.Path.Contains("中药/"));
+        AddGroup(L["Search_GroupDiagnosis"], n => n.Path.Contains("舌诊/") || n.Path.Contains("脉诊/") || n.Path.Contains("望诊/") || n.Path.Contains("闻诊/"));
+        AddGroup(L["Search_GroupTreatment"], n => n.Path.StartsWith("治法/"));
+        AddGroup(L["Search_GroupCases"], n => n.Path.StartsWith("医案/"));
+        AddGroup(L["Search_GroupAiQuery"], n => n.Path.Contains("AI 查询/") || n.Path.Contains("AI 生成/"));
         
         var other = Pick(n => !used.Contains(n.Path));
-        if (other.Count > 0) groups["其他"] = other;
+        if (other.Count > 0) groups[L["Search_GroupOther"]] = other;
 
         return groups;
     }

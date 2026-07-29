@@ -1,12 +1,14 @@
 @page "/prompt-templates"
 @rendermode InteractiveServer
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 @inject Baihua.Web.Services.IApiService ApiService
 @inject IJSRuntime JSRuntime
 @inject Microsoft.Extensions.Logging.ILogger<PromptTemplates> Logger
 
-<PageTitle>行业提示词模板</PageTitle>
+<PageTitle>@L["PromptTemplates_PageTitle"]</PageTitle>
 
-<h2 class="mb-4">📝 行业提示词模板</h2>
+<h2 class="mb-4">@L["PromptTemplates_Title"]</h2>
 
 @if (isLoading)
 {
@@ -15,7 +17,7 @@
 else
 {
     <div class="mb-3">
-        <p class="text-muted">不同行业的知识库使用不同的 AI 系统提示词，影响 AI 生成内容的专业性和结构。修改后立即生效。</p>
+        <p class="text-muted">@L["PromptTemplates_Description"]</p>
     </div>
 
     <div class="row g-3">
@@ -24,28 +26,28 @@ else
             <div class="col-md-6">
                 <div class="card h-100">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0">🏷️ @tmpl.DisplayName</h6>
+                        <h6 class="mb-0">@L["PromptTemplates_CardTitleFormat", tmpl.DisplayName]</h6>
                         <div class="d-flex gap-1">
-                            <button class="btn btn-sm btn-outline-primary" @onclick="() => EditTemplate(tmpl)">编辑</button>
+                            <button class="btn btn-sm btn-outline-primary" @onclick="() => EditTemplate(tmpl)">@L["PromptTemplates_EditBtn"]</button>
                             @if (tmpl.DisplayName != "通用")
                             {
-                                <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteTemplate(tmpl.DisplayName)">删除</button>
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteTemplate(tmpl.DisplayName)">@L["PromptTemplates_DeleteBtn"]</button>
                             }
                         </div>
                     </div>
                     <div class="card-body">
                         <div class="mb-2">
-                            <small class="text-muted fw-bold">对话系统提示词</small>
+                            <small class="text-muted fw-bold">@L["PromptTemplates_CardChatSystemPromptLabel"]</small>
                             <div class="border rounded p-2 mt-1" style="max-height:120px;overflow-y:auto;font-size:0.85em;white-space:pre-wrap;">@tmpl.ChatSystemPrompt</div>
                         </div>
                         <div class="mb-2">
-                            <small class="text-muted fw-bold">笔记拆分提示词</small>
+                            <small class="text-muted fw-bold">@L["PromptTemplates_CardSplitSystemPromptLabel"]</small>
                             <div class="border rounded p-2 mt-1" style="max-height:80px;overflow-y:auto;font-size:0.85em;white-space:pre-wrap;">@tmpl.SplitSystemPrompt</div>
                         </div>
                         @if (tmpl.DefaultCategories?.Any() == true)
                         {
                             <div>
-                                <small class="text-muted">默认分类：</small>
+                                <small class="text-muted">@L["PromptTemplates_DefaultCategoriesLabel"]</small>
                                 @foreach (var cat in tmpl.DefaultCategories)
                                 {
                                     <span class="badge bg-secondary me-1" style="font-size:0.7em;">@cat</span>
@@ -59,7 +61,7 @@ else
     </div>
 
     <div class="mt-3">
-        <button class="btn btn-outline-success" @onclick="CreateNewTemplate">+ 新建行业模板</button>
+        <button class="btn btn-outline-success" @onclick="CreateNewTemplate">@L["PromptTemplates_CreateNewBtn"]</button>
     </div>
 }
 
@@ -69,44 +71,44 @@ else
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">@(isNewTemplate ? "新建行业模板" : $"编辑模板 - {editingTemplate.DisplayName}")</h5>
+                    <h5 class="modal-title">@(isNewTemplate ? L["PromptTemplates_NewTemplateTitle"] : L["PromptTemplates_EditTemplateTitle", editingTemplate.DisplayName])</h5>
                     <button type="button" class="btn-close" @onclick="CloseEditModal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label fw-bold">行业名称</label>
-                        <input type="text" class="form-control" @bind="editingTemplate.DisplayName" disabled="@(!isNewTemplate)" placeholder="例如：法律、金融、教育" />
+                        <label class="form-label fw-bold">@L["PromptTemplates_IndustryNameLabel"]</label>
+                        <input type="text" class="form-control" @bind="editingTemplate.DisplayName" disabled="@(!isNewTemplate)" placeholder="@L["PromptTemplates_IndustryNamePlaceholder"]" />
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">💬 对话系统提示词</label>
-                        <textarea class="form-control" rows="6" @bind="editingTemplate.ChatSystemPrompt" placeholder="AI 对话时使用的系统提示词..."></textarea>
-                        <small class="text-muted">影响 AI 聊天、知识库问答的回复风格和专业性</small>
+                        <label class="form-label fw-bold">@L["PromptTemplates_ModalChatSystemPromptLabel"]</label>
+                        <textarea class="form-control" rows="6" @bind="editingTemplate.ChatSystemPrompt" placeholder="@L["PromptTemplates_ChatSystemPromptPlaceholder"]"></textarea>
+                        <small class="text-muted">@L["PromptTemplates_ChatSystemPromptHint"]</small>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">✂️ 笔记拆分系统提示词</label>
-                        <textarea class="form-control" rows="4" @bind="editingTemplate.SplitSystemPrompt" placeholder="AI 拆分笔记时使用的系统提示词..."></textarea>
+                        <label class="form-label fw-bold">@L["PromptTemplates_ModalSplitSystemPromptLabel"]</label>
+                        <textarea class="form-control" rows="4" @bind="editingTemplate.SplitSystemPrompt" placeholder="@L["PromptTemplates_SplitSystemPromptPlaceholder"]"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">📝 笔记拆分用户提示词</label>
-                        <textarea class="form-control" rows="4" @bind="editingTemplate.SplitUserPrompt" placeholder="AI 拆分笔记时使用的用户提示词..."></textarea>
+                        <label class="form-label fw-bold">@L["PromptTemplates_ModalSplitUserPromptLabel"]</label>
+                        <textarea class="form-control" rows="4" @bind="editingTemplate.SplitUserPrompt" placeholder="@L["PromptTemplates_SplitUserPromptPlaceholder"]"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">➕ 补充提示词</label>
-                        <textarea class="form-control" rows="3" @bind="editingTemplate.SupplementUserPrompt" placeholder="AI 补充遗漏笔记时使用的提示词..."></textarea>
+                        <label class="form-label fw-bold">@L["PromptTemplates_ModalSupplementPromptLabel"]</label>
+                        <textarea class="form-control" rows="3" @bind="editingTemplate.SupplementUserPrompt" placeholder="@L["PromptTemplates_SupplementPromptPlaceholder"]"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">📂 默认分类（逗号分隔）</label>
-                        <input type="text" class="form-control" @bind="categoriesText" placeholder="分类1, 分类2, 分类3" />
+                        <label class="form-label fw-bold">@L["PromptTemplates_ModalDefaultCategoriesLabel"]</label>
+                        <input type="text" class="form-control" @bind="categoriesText" placeholder="@L["PromptTemplates_DefaultCategoriesPlaceholder"]" />
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">💡 配置建议</label>
-                        <input type="text" class="form-control" @bind="editingTemplate.ConfigurationAdvice" placeholder="该行业知识库的组织建议" />
+                        <label class="form-label fw-bold">@L["PromptTemplates_ModalConfigurationAdviceLabel"]</label>
+                        <input type="text" class="form-control" @bind="editingTemplate.ConfigurationAdvice" placeholder="@L["PromptTemplates_ConfigurationAdvicePlaceholder"]" />
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="CloseEditModal">取消</button>
+                    <button class="btn btn-secondary" @onclick="CloseEditModal">@L["Common_Cancel"]</button>
                     <button class="btn btn-primary" @onclick="SaveTemplate" disabled="@isSaving">
-                        @(isSaving ? "保存中..." : "保存")
+                        @(isSaving ? L["PromptTemplates_Saving"] : L["PromptTemplates_SaveBtn"])
                     </button>
                 </div>
             </div>
@@ -144,7 +146,7 @@ else
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "加载提示词模板失败");
+            Logger.LogError(ex, L["PromptTemplates_LoadFailed"]);
         }
     }
 
@@ -208,20 +210,20 @@ else
             }
             else
             {
-                await JSRuntime.InvokeVoidAsync("alert", "保存失败");
+                await JSRuntime.InvokeVoidAsync("alert", L["PromptTemplates_SaveFailed"]);
             }
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "保存提示词模板失败");
-            await JSRuntime.InvokeVoidAsync("alert", $"保存失败：{ex.Message}");
+            Logger.LogError(ex, L["PromptTemplates_LoadFailed"]);
+            await JSRuntime.InvokeVoidAsync("alert", L["PromptTemplates_SaveFailedFormat", ex.Message]);
         }
         isSaving = false;
     }
 
     private async Task DeleteTemplate(string displayName)
     {
-        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"确定要删除「{displayName}」模板吗？");
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", L["PromptTemplates_ConfirmDelete", displayName]);
         if (!confirmed) return;
 
         try
@@ -235,7 +237,7 @@ else
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "删除提示词模板失败");
+            Logger.LogError(ex, L["PromptTemplates_LoadFailed"]);
         }
     }
 

@@ -5,19 +5,20 @@
 @inject Baihua.Web.Services.IApiService ApiService
 @inject Baihua.Web.Services.VaultsService VaultsService
 @inject ILogger<Cards> Logger
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
-<PageTitle>记忆卡片</PageTitle>
+<PageTitle>@L["Cards_PageTitle"]</PageTitle>
 
 <div class="container mt-4">
-    <h2 class="mb-4">🧠 记忆卡片</h2>
+    <h2 class="mb-4">🧠 @L["Cards_Title"]</h2>
 
     <!-- 知识库选择 + 搜索 -->
     <div class="row mb-4">
         <div class="col-md-6">
             <div class="input-group">
-                <span class="input-group-text">知识库</span>
+                <span class="input-group-text">@L["Cards_Vault"]</span>
                 <select class="form-select" @onchange="OnVaultChanged">
-                    <option value="">全部知识库</option>
+                    <option value="">@L["Cards_AllVaults"]</option>
                     @foreach (var vault in vaults)
                     {
                         <option value="@vault.Id">@vault.Name</option>
@@ -28,9 +29,9 @@
         <div class="col-md-6">
             <div class="input-group">
                 <span class="input-group-text">🔍</span>
-                <input type="text" class="form-control" placeholder="搜索卡片内容..."
+                <input type="text" class="form-control" placeholder="@(L["Cards_SearchPlaceholder"])"
                        @bind="searchQuery" @bind:event="oninput" @onkeyup="OnSearchKeyUp" />
-                <button class="btn btn-primary" @onclick="DoSearch">搜索</button>
+                <button class="btn btn-primary" @onclick="DoSearch">@L["Cards_Search"]</button>
             </div>
         </div>
     </div>
@@ -39,7 +40,7 @@
     {
         <div class="text-center py-5">
             <div class="spinner-border text-primary" role="status"></div>
-            <p class="mt-3 text-muted">加载中...</p>
+            <p class="mt-3 text-muted">@L["Cards_Loading"]</p>
         </div>
     }
     else
@@ -50,7 +51,7 @@
                 <div class="card text-center h-100">
                     <div class="card-body">
                         <div class="display-5 text-primary">@totalCards</div>
-                        <div class="text-muted">卡片总数</div>
+                        <div class="text-muted">@L["Cards_TotalCards"]</div>
                     </div>
                 </div>
             </div>
@@ -58,7 +59,7 @@
                 <div class="card text-center h-100">
                     <div class="card-body">
                         <div class="display-5 text-success">@decks.Count</div>
-                        <div class="text-muted">牌组数</div>
+                        <div class="text-muted">@L["Cards_DeckCount"]</div>
                     </div>
                 </div>
             </div>
@@ -66,7 +67,7 @@
                 <div class="card text-center h-100">
                     <div class="card-body">
                         <div class="display-5 text-info">@aiCards</div>
-                        <div class="text-muted">AI 生成</div>
+                        <div class="text-muted">@L["Cards_AiGenerated"]</div>
                     </div>
                 </div>
             </div>
@@ -77,17 +78,17 @@
         {
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="mb-0">📂 牌组分布</h5>
+                    <h5 class="mb-0">📂 @L["Cards_DeckDistribution"]</h5>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-sm table-hover mb-0">
                             <thead>
                                 <tr>
-                                    <th>牌组名称</th>
-                                    <th class="text-end">卡片数</th>
-                                    <th>来源笔记</th>
-                                    <th class="text-end">操作</th>
+                                    <th>@L["Cards_DeckName"]</th>
+                                    <th class="text-end">@L["Cards_CardCount"]</th>
+                                    <th>@L["Cards_SourceNote"]</th>
+                                    <th class="text-end">@L["Cards_Actions"]</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -111,8 +112,8 @@
                                             }
                                         </td>
                                         <td class="text-end">
-                                            <button class="btn btn-sm btn-outline-success" @onclick="() => FilterByDeck(deck.Name)" title="查看该牌组卡片">
-                                                👁️ 查看
+                                            <button class="btn btn-sm btn-outline-success" @onclick="() => FilterByDeck(deck.Name)" title="@(L["Cards_ViewDeckCardsTitle"])">
+                                                👁️ @L["Cards_View"]
                                             </button>
                                         </td>
                                     </tr>
@@ -128,24 +129,24 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-2">
-                    <h5 class="mb-0">📝 卡片列表</h5>
+                    <h5 class="mb-0">📝 @L["Cards_CardList"]</h5>
                     @if (!string.IsNullOrEmpty(selectedDeckFilter))
                     {
                         <span class="badge bg-primary">📁 @selectedDeckFilter</span>
-                        <button class="btn btn-sm btn-link p-0" @onclick="ClearDeckFilter">清除筛选</button>
+                        <button class="btn btn-sm btn-link p-0" @onclick="ClearDeckFilter">@L["Cards_ClearFilter"]</button>
                     }
                 </div>
-                <span class="text-muted small">共 @filteredCards.Count 条</span>
+                <span class="text-muted small">@L["Cards_TotalCount", filteredCards.Count]</span>
             </div>
             <div class="card-body p-0">
                 @if (filteredCards.Count == 0)
                 {
                     <div class="text-center py-5 text-muted">
                         <div class="fs-1">📝</div>
-                        <p>暂无卡片</p>
+                        <p>@L["Cards_NoCards"]</p>
                         @if (!string.IsNullOrWhiteSpace(selectedVaultId))
                         {
-                            <p class="small">请在知识库浏览页选择笔记，点击"生成 Anki 卡片"</p>
+                            <p class="small">@L["Cards_NoCardsHint"]</p>
                         }
                     </div>
                 }
