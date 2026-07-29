@@ -1,11 +1,13 @@
 @page "/hardware-benchmark"
 @rendermode InteractiveServer
 @using Baihua.Contracts.LocalModels
+@using Microsoft.Extensions.Localization
 @inject Baihua.Web.Services.IApiService ApiService
 @inject Microsoft.Extensions.Logging.ILogger<HardwareBenchmark> Logger
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 @implements IDisposable
 
-<PageTitle>硬件评测</PageTitle>
+<PageTitle>@L["HardwareBenchmark_PageTitle"]</PageTitle>
 
 <h1>🖥️ 硬件评测</h1>
 
