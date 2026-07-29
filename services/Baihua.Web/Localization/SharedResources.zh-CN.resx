@@ -17612,4 +17612,398 @@
   <data name="ModelBenchmark_Title" xml:space="preserve">
     <value>📊 模型 benchmark</value>
   </data>
+  <data name="KnowledgeGen_PageTitle" xml:space="preserve">
+    <value>AI 生成知识库</value>
+  </data>
+  <data name="KnowledgeGen_Title" xml:space="preserve">
+    <value>🤖 AI 生成知识库</value>
+  </data>
+  <data name="KnowledgeGen_Subtitle" xml:space="preserve">
+    <value>输入主题或问题，AI 将自动生成结构化笔记内容和记忆卡片。</value>
+  </data>
+  <data name="KnowledgeGen_LoadingVisuallyHidden" xml:space="preserve">
+    <value>加载中...</value>
+  </data>
+  <data name="KnowledgeGen_LoadingConfig" xml:space="preserve">
+    <value>正在加载配置...</value>
+  </data>
+  <data name="KnowledgeGen_TopicLabel" xml:space="preserve">
+    <value>🎯 主题关键词</value>
+  </data>
+  <data name="KnowledgeGen_QueryLabel" xml:space="preserve">
+    <value>🎯 问题描述</value>
+  </data>
+  <data name="KnowledgeGen_TopicPlaceholder" xml:space="preserve">
+    <value>例如：Python编程、中医诊断学...</value>
+  </data>
+  <data name="KnowledgeGen_TopicHint" xml:space="preserve">
+    <value>输入一个主题，AI 将生成完整的知识库大纲和笔记内容</value>
+  </data>
+  <data name="KnowledgeGen_QueryPlaceholder" xml:space="preserve">
+    <value>输入一个问题，AI 将生成结构化的原子笔记...</value>
+  </data>
+  <data name="KnowledgeGen_QueryHint" xml:space="preserve">
+    <value>输入一个具体问题，AI 将生成单条结构化笔记</value>
+  </data>
+  <data name="KnowledgeGen_GenerationModeLabel" xml:space="preserve">
+    <value>🎯 生成方式</value>
+  </data>
+  <data name="KnowledgeGen_GenerateFullVault" xml:space="preserve">
+    <value>📚 生成完整知识库</value>
+  </data>
+  <data name="KnowledgeGen_GenerateSingleNote" xml:space="preserve">
+    <value>📝 生成单条笔记</value>
+  </data>
+  <data name="KnowledgeGen_IndustryLabel" xml:space="preserve">
+    <value>🏷️ 行业</value>
+  </data>
+  <data name="KnowledgeGen_AiAutoInfer" xml:space="preserve">
+    <value>✨ AI 自动推断</value>
+  </data>
+  <data name="KnowledgeGen_Custom" xml:space="preserve">
+    <value>✏️ 自定义</value>
+  </data>
+  <data name="KnowledgeGen_CustomIndustryPlaceholder" xml:space="preserve">
+    <value>输入自定义行业名称...</value>
+  </data>
+  <data name="KnowledgeGen_AutoInferHint" xml:space="preserve">
+    <value>AI 将根据您输入的主题自动推断所属行业</value>
+  </data>
+  <data name="KnowledgeGen_AiModelLabel" xml:space="preserve">
+    <value>🤖 AI 模型</value>
+  </data>
+  <data name="KnowledgeGen_MainSuffix" xml:space="preserve">
+    <value>(主)</value>
+  </data>
+  <data name="KnowledgeGen_PaidTag" xml:space="preserve">
+    <value>付费</value>
+  </data>
+  <data name="KnowledgeGen_DefaultTag" xml:space="preserve">
+    <value>默认</value>
+  </data>
+  <data name="KnowledgeGen_TargetVaultLabel" xml:space="preserve">
+    <value>📚 目标知识库</value>
+  </data>
+  <data name="KnowledgeGen_NewVaultOption" xml:space="preserve">
+    <value>✨ 新建（AI 自动命名）</value>
+  </data>
+  <data name="KnowledgeGen_VaultRootPath" xml:space="preserve">
+    <value>📂 知识库根路径：</value>
+  </data>
+  <data name="KnowledgeGen_NewVaultSubdirHint" xml:space="preserve">
+    <value>— 新知识库将在此路径下创建子目录</value>
+  </data>
+  <data name="KnowledgeGen_NoVaultsInIndustry_Prefix" xml:space="preserve">
+    <value>当前行业暂无知识库，请先</value>
+  </data>
+  <data name="KnowledgeGen_ConfigureVaults" xml:space="preserve">
+    <value>配置知识库</value>
+  </data>
+  <data name="KnowledgeGen_SetRootPath" xml:space="preserve">
+    <value>设置知识库根路径</value>
+  </data>
+  <data name="KnowledgeGen_Dot" xml:space="preserve">
+    <value>。</value>
+  </data>
+  <data name="KnowledgeGen_NewVaultMode" xml:space="preserve">
+    <value>✨ 新建知识库模式</value>
+  </data>
+  <data name="KnowledgeGen_NewVaultModeDesc" xml:space="preserve">
+    <value>AI 将自动命名并创建新知识库</value>
+  </data>
+  <data name="KnowledgeGen_AutoGenerateCards" xml:space="preserve">
+    <value>🧠 生成笔记后自动生成记忆卡片</value>
+  </data>
+  <data name="KnowledgeGen_AutoGenerateCardsHint" xml:space="preserve">
+    <value>笔记生成完成后，自动将其转换为 Anki 记忆卡片</value>
+  </data>
+  <data name="KnowledgeGen_CollapsePrompt" xml:space="preserve">
+    <value>🔼 收起提示词</value>
+  </data>
+  <data name="KnowledgeGen_EditPrompt" xml:space="preserve">
+    <value>✏️ 编辑提示词</value>
+  </data>
+  <data name="KnowledgeGen_SystemPromptLabel" xml:space="preserve">
+    <value>系统提示词</value>
+  </data>
+  <data name="KnowledgeGen_SystemPromptPlaceholder" xml:space="preserve">
+    <value>留空则使用默认提示词...</value>
+  </data>
+  <data name="KnowledgeGen_UsingDefaultPrompt" xml:space="preserve">
+    <value>使用默认提示词</value>
+  </data>
+  <data name="KnowledgeGen_CustomPromptSuffix" xml:space="preserve">
+    <value>（已自定义）</value>
+  </data>
+  <data name="KnowledgeGen_GenerateVaultBtn" xml:space="preserve">
+    <value>🚀 生成知识库 </value>
+  </data>
+  <data name="KnowledgeGen_GenerateNoteBtn" xml:space="preserve">
+    <value>🤖 生成笔记 </value>
+  </data>
+  <data name="KnowledgeGen_WithCards" xml:space="preserve">
+    <value>并创建记忆卡片</value>
+  </data>
+  <data name="KnowledgeGen_ViewCards" xml:space="preserve">
+    <value>🧠 查看记忆卡片</value>
+  </data>
+  <data name="KnowledgeGen_InitLoadFailed" xml:space="preserve">
+    <value>初始化加载失败</value>
+  </data>
+  <data name="KnowledgeGen_LoadVaultsFailed" xml:space="preserve">
+    <value>加载知识库列表失败</value>
+  </data>
+  <data name="KnowledgeGen_LoadProvidersFailed" xml:space="preserve">
+    <value>加载 AI 提供方失败</value>
+  </data>
+  <data name="KnowledgeGen_InferIndustryTimeout" xml:space="preserve">
+    <value>AI 推断行业超时</value>
+  </data>
+  <data name="KnowledgeGen_InferIndustryFailed" xml:space="preserve">
+    <value>AI 推断行业失败</value>
+  </data>
+  <data name="KnowledgeGen_InferIndustryNoMatch" xml:space="preserve">
+    <value>AI 推断行业结果 '{Inferred}' 未匹配预定义选项，使用通用</value>
+  </data>
+  <data name="KnowledgeGen_InferIndustryMatched" xml:space="preserve">
+    <value>AI 推断行业：{Inferred}，匹配：{Matched}</value>
+  </data>
+  <data name="KnowledgeGen_InferringIndustry" xml:space="preserve">
+    <value>AI 推断行业中...</value>
+  </data>
+  <data name="KnowledgeGen_SubmittingTask" xml:space="preserve">
+    <value>提交生成任务中...</value>
+  </data>
+  <data name="KnowledgeGen_CreatingVault" xml:space="preserve">
+    <value>创建知识库中...</value>
+  </data>
+  <data name="KnowledgeGen_GeneratingNote" xml:space="preserve">
+    <value>生成笔记中...</value>
+  </data>
+  <data name="KnowledgeGen_WaitingForTask" xml:space="preserve">
+    <value>笔记生成任务已提交，等待完成后生成记忆卡片...</value>
+  </data>
+  <data name="KnowledgeGen_GeneratingCards" xml:space="preserve">
+    <value>生成记忆卡片中...</value>
+  </data>
+  <data name="KnowledgeGen_TaskCreateFailed" xml:space="preserve">
+    <value>任务创建失败</value>
+  </data>
+  <data name="KnowledgeGen_GenerateFailed" xml:space="preserve">
+    <value>生成失败：</value>
+  </data>
+  <data name="KnowledgeGen_NeedRootPath" xml:space="preserve">
+    <value>请先在知识库管理页设置知识库根路径</value>
+  </data>
+  <data name="KnowledgeGen_VaultNameGenFailed" xml:space="preserve">
+    <value>无法生成知识库名称，请检查 AI 配置或重新输入问题</value>
+  </data>
+  <data name="KnowledgeGen_CreateVaultFailed" xml:space="preserve">
+    <value>创建知识库失败：</value>
+  </data>
+  <data name="KnowledgeGen_InvalidVaultId" xml:space="preserve">
+    <value>创建知识库成功但返回了无效的 ID，请刷新页面重试</value>
+  </data>
+  <data name="KnowledgeGen_CreateTaskFailed" xml:space="preserve">
+    <value>创建任务失败：</value>
+  </data>
+  <data name="KnowledgeGen_SelectVaultFirst" xml:space="preserve">
+    <value>请先选择知识库</value>
+  </data>
+  <data name="KnowledgeGen_Or" xml:space="preserve">
+    <value>或</value>
+  </data>
+  <data name="KnowledgeGen_CreateFailed" xml:space="preserve">
+    <value>创建失败：</value>
+  </data>
+  <data name="KnowledgeGen_UnableToGenerateName" xml:space="preserve">
+    <value>无法生成知识库名称</value>
+  </data>
+  <data name="KnowledgeGen_VaultCreationComplete" xml:space="preserve">
+    <value>新建知识库完成，名称={VaultName}, Id={VaultId}</value>
+  </data>
+  <data name="KnowledgeGen_CardsGenerationComplete" xml:space="preserve">
+    <value>记忆卡片生成完成，任务ID={TaskId}</value>
+  </data>
+  <data name="KnowledgeGen_CardsGenerationSkipped" xml:space="preserve">
+    <value>生成记忆卡片失败，跳过</value>
+  </data>
+
+  <data name="AiMetrics_PageTitle" xml:space="preserve">
+    <value>AI 性能监控</value>
+  </data>
+
+  <data name="AiMetrics_Title" xml:space="preserve">
+    <value>📈 AI 性能监控</value>
+  </data>
+
+  <data name="AiMetrics_Loading" xml:space="preserve">
+    <value>加载中...</value>
+  </data>
+
+  <data name="AiMetrics_TimeRangeLabel" xml:space="preserve">
+    <value>时间范围：</value>
+  </data>
+
+  <data name="AiMetrics_DaysFormat" xml:space="preserve">
+    <value>{0} 天</value>
+  </data>
+
+  <data name="AiMetrics_TotalCalls" xml:space="preserve">
+    <value>总调用次数</value>
+  </data>
+
+  <data name="AiMetrics_AvgLatency" xml:space="preserve">
+    <value>平均耗时</value>
+  </data>
+
+  <data name="AiMetrics_SuccessRate" xml:space="preserve">
+    <value>成功率</value>
+  </data>
+
+  <data name="AiMetrics_TotalTokens" xml:space="preserve">
+    <value>总 Token 数</value>
+  </data>
+
+  <data name="AiMetrics_BestProvider" xml:space="preserve">
+    <value>最佳 Provider</value>
+  </data>
+
+  <data name="AiMetrics_TrendTitle" xml:space="preserve">
+    <value>📊 最近 {0} 天趋势</value>
+  </data>
+
+  <data name="AiMetrics_ProviderRankingTitle" xml:space="preserve">
+    <value>🏆 Provider 排行榜</value>
+  </data>
+
+  <data name="AiMetrics_Col_CallCount" xml:space="preserve">
+    <value>调用次数</value>
+  </data>
+
+  <data name="AiMetrics_Col_AvgLatency" xml:space="preserve">
+    <value>平均耗时</value>
+  </data>
+
+  <data name="AiMetrics_Col_AvgTps" xml:space="preserve">
+    <value>平均 TPS</value>
+  </data>
+
+  <data name="AiMetrics_Col_SuccessRate" xml:space="preserve">
+    <value>成功率</value>
+  </data>
+
+  <data name="AiMetrics_Col_TotalTokens" xml:space="preserve">
+    <value>总 Tokens</value>
+  </data>
+
+  <data name="AiMetrics_ModelRankingTitle" xml:space="preserve">
+    <value>🤖 模型排行榜</value>
+  </data>
+
+  <data name="AiMetrics_Col_Model" xml:space="preserve">
+    <value>模型</value>
+  </data>
+
+  <data name="AiMetrics_RecentCallsTitle" xml:space="preserve">
+    <value>📝 最近调用记录</value>
+  </data>
+
+  <data name="AiMetrics_Col_Time" xml:space="preserve">
+    <value>时间</value>
+  </data>
+
+  <data name="AiMetrics_Col_Operation" xml:space="preserve">
+    <value>操作</value>
+  </data>
+
+  <data name="AiMetrics_Col_Latency" xml:space="preserve">
+    <value>耗时</value>
+  </data>
+
+  <data name="AiMetrics_Col_Status" xml:space="preserve">
+    <value>状态</value>
+  </data>
+
+  <data name="AiMetrics_NoData" xml:space="preserve">
+    <value>暂无数据</value>
+  </data>
+  <data name="BrowseVault_PageTitle" xml:space="preserve">
+    <value>知识库浏览</value>
+  </data>
+  <data name="BrowseVault_Title" xml:space="preserve">
+    <value>📚 知识库浏览</value>
+  </data>
+  <data name="BrowseVault_NoVaultsPrefix" xml:space="preserve">
+    <value>暂无知识库，请先</value>
+  </data>
+  <data name="BrowseVault_CreateOrImportVault" xml:space="preserve">
+    <value>创建或导入知识库</value>
+  </data>
+  <data name="BrowseVault_IndustryLabel" xml:space="preserve">
+    <value>🏭 行业：</value>
+  </data>
+  <data name="BrowseVault_AllIndustries" xml:space="preserve">
+    <value>全部</value>
+  </data>
+  <data name="BrowseVault_TagLabel" xml:space="preserve">
+    <value>🏷️ 标签：</value>
+  </data>
+  <data name="BrowseVault_AllTags" xml:space="preserve">
+    <value>全部</value>
+  </data>
+  <data name="BrowseVault_MobilePush" xml:space="preserve">
+    <value>📱 移动端推送</value>
+  </data>
+  <data name="BrowseVault_Local" xml:space="preserve">
+    <value>🏠 本地</value>
+  </data>
+  <data name="BrowseVault_ListenTitle" xml:space="preserve">
+    <value>听知识库</value>
+  </data>
+  <data name="BrowseVault_Listen" xml:space="preserve">
+    <value>🎧 听</value>
+  </data>
+  <data name="BrowseVault_BackToList" xml:space="preserve">
+    <value>← 返回知识库列表</value>
+  </data>
+  <data name="BrowseVault_DirectoryEmpty" xml:space="preserve">
+    <value>该目录下暂无内容</value>
+  </data>
+  <data name="BrowseVault_Folder" xml:space="preserve">
+    <value>文件夹</value>
+  </data>
+  <data name="BrowseVault_AiGenerated" xml:space="preserve">
+    <value>🤖 AI 生成</value>
+  </data>
+  <data name="BrowseVault_OpenInDetailPage" xml:space="preserve">
+    <value>在详情页打开</value>
+  </data>
+  <data name="BrowseVault_ListenVaultTitle" xml:space="preserve">
+    <value>🎧 听知识库 - {0}</value>
+  </data>
+  <data name="BrowseVault_VaultNoNotes" xml:space="preserve">
+    <value>该知识库暂无笔记</value>
+  </data>
+  <data name="BrowseVault_Playing" xml:space="preserve">
+    <value>播放中</value>
+  </data>
+  <data name="BrowseVault_Paused" xml:space="preserve">
+    <value>已暂停</value>
+  </data>
+  <data name="BrowseVault_Previous" xml:space="preserve">
+    <value>← 上一篇</value>
+  </data>
+  <data name="BrowseVault_Play" xml:space="preserve">
+    <value>▶ 播放</value>
+  </data>
+  <data name="BrowseVault_Pause" xml:space="preserve">
+    <value>⏸ 暂停</value>
+  </data>
+  <data name="BrowseVault_Next" xml:space="preserve">
+    <value>下一篇 →</value>
+  </data>
+  <data name="BrowseVault_Playlist" xml:space="preserve">
+    <value>播放列表</value>
+  </data>
 </root>

@@ -6,66 +6,68 @@
 @inject Baihua.Web.Services.VaultsService VaultsService
 @inject Microsoft.Extensions.Logging.ILogger<KnowledgeGenerate> Logger
 @inject Microsoft.JSInterop.IJSRuntime JS
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 @using Microsoft.JSInterop
+@using Microsoft.Extensions.Localization
 
-<PageTitle>AI 生成知识库</PageTitle>
+<PageTitle>@L["KnowledgeGen_PageTitle"]</PageTitle>
 
-<h1>🤖 AI 生成知识库</h1>
+<h1>@L["KnowledgeGen_Title"]</h1>
 
-<p class="text-muted mb-3">输入主题或问题，AI 将自动生成结构化笔记内容和记忆卡片。</p>
+<p class="text-muted mb-3">@L["KnowledgeGen_Subtitle"]</p>
 
 @if (isInitializing)
 {
     <div class="text-center py-5">
         <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">加载中...</span>
+            <span class="visually-hidden">@L["KnowledgeGen_LoadingVisuallyHidden"]</span>
         </div>
-        <p class="mt-3 text-muted">正在加载配置...</p>
+        <p class="mt-3 text-muted">@L["KnowledgeGen_LoadingConfig"]</p>
     </div>
 }
 else
 {
     <div class="generate-section">
-        <!-- 主题/问题输入（最上方） -->
+        <!-- Topic/Query Input (Top) -->
         <div class="form-group">
             <label>
-                @(generationMode == "vault" ? "🎯 主题关键词" : "🎯 问题描述")
+                @(generationMode == "vault" ? L["KnowledgeGen_TopicLabel"] : L["KnowledgeGen_QueryLabel"])
             </label>
             @if (generationMode == "vault")
             {
-                <input type="text" @bind="aiQuery" class="form-control" placeholder="例如：Python编程、中医诊断学..." />
-                <div class="form-text">输入一个主题，AI 将生成完整的知识库大纲和笔记内容</div>
+                <input type="text" @bind="aiQuery" class="form-control" placeholder="@L["KnowledgeGen_TopicPlaceholder"]" />
+                <div class="form-text">@L["KnowledgeGen_TopicHint"]</div>
             }
             else
             {
                 <textarea @bind="aiQuery" @bind:event="oninput" class="form-control" rows="4"
-                          placeholder="输入一个问题，AI 将生成结构化的原子笔记..."></textarea>
-                <div class="form-text">输入一个具体问题，AI 将生成单条结构化笔记</div>
+                          placeholder="@L["KnowledgeGen_QueryPlaceholder"]"></textarea>
+                <div class="form-text">@L["KnowledgeGen_QueryHint"]</div>
             }
         </div>
 
-        <!-- 生成方式选择 -->
+        <!-- Generation Mode Selection -->
         <div class="form-group">
-            <label>🎯 生成方式</label>
+            <label>@L["KnowledgeGen_GenerationModeLabel"]</label>
             <div class="btn-group" role="group">
                 <button class="btn @(generationMode == "vault" ? "btn-primary" : "btn-outline-primary")"
                         @onclick='() => generationMode = "vault"'>
-                    📚 生成完整知识库
+                    @L["KnowledgeGen_GenerateFullVault"]
                 </button>
                 <button class="btn @(generationMode == "note" ? "btn-primary" : "btn-outline-primary")"
                         @onclick='() => generationMode = "note"'>
-                    📝 生成单条笔记
+                    @L["KnowledgeGen_GenerateSingleNote"]
                 </button>
             </div>
         </div>
 
-        <!-- 行业选择（含 AI 自动推断 + 手动输入） -->
+        <!-- Industry Selection (AI auto-infer + manual input) -->
         <div class="form-group">
-            <label>🏷️ 行业</label>
+            <label>@L["KnowledgeGen_IndustryLabel"]</label>
             <div class="d-flex flex-wrap gap-1 mb-2">
                 <button class="btn @(string.IsNullOrEmpty(selectedIndustry) && !manualIndustryMode ? "btn-primary" : "btn-outline-primary") btn-sm"
                         @onclick="SelectAutoIndustry">
-                    ✨ AI 自动推断
+                    @L["KnowledgeGen_AiAutoInfer"]
                 </button>
                 @foreach (var industry in GetIndustryOptions())
                 {
@@ -76,31 +78,31 @@ else
                 }
                 <button class="btn @(manualIndustryMode ? "btn-primary" : "btn-outline-secondary") btn-sm"
                         @onclick="EnableManualIndustry">
-                    ✏️ 自定义
+                    @L["KnowledgeGen_Custom"]
                 </button>
             </div>
             @if (manualIndustryMode)
             {
                 <input type="text" class="form-control form-control-sm" @bind="manualIndustryValue" @bind:event="oninput"
                        @bind:after="SyncManualIndustry"
-                       placeholder="输入自定义行业名称..." style="max-width: 250px;" />
+                       placeholder="@L["KnowledgeGen_CustomIndustryPlaceholder"]" style="max-width: 250px;" />
             }
             else if (string.IsNullOrEmpty(selectedIndustry))
             {
-                <div class="form-text text-info">AI 将根据您输入的主题自动推断所属行业</div>
+                <div class="form-text text-info">@L["KnowledgeGen_AutoInferHint"]</div>
             }
         </div>
 
-        <!-- AI 模型选择 -->
+        <!-- AI Model Selection -->
         @if (aiProviders.Count > 0)
         {
             <div class="form-group">
-                <label>🤖 AI 模型</label>
+                <label>@L["KnowledgeGen_AiModelLabel"]</label>
                 <div class="ai-model-selector">
                     @foreach (var provider in aiProviders)
                     {
                         <div style="font-size: 0.85rem; color: #666; margin-bottom: 0.25rem;">
-                            @provider.Name @(provider.IsMain ? "(主)" : "")
+                            @provider.Name @(provider.IsMain ? L["KnowledgeGen_MainSuffix"] : "")
                         </div>
                         <div class="model-options">
                             @foreach (var model in provider.Models)
@@ -114,11 +116,11 @@ else
                                     @displayName
                                     @if (model.IsPaid)
                                     {
-                                        <span class="tag tag-paid" style="margin-left: 0.3rem;">付费</span>
+                                        <span class="tag tag-paid" style="margin-left: 0.3rem;">@L["KnowledgeGen_PaidTag"]</span>
                                     }
                                     @if (model.IsMain)
                                     {
-                                        <span class="tag tag-default" style="margin-left: 0.3rem;">默认</span>
+                                        <span class="tag tag-default" style="margin-left: 0.3rem;">@L["KnowledgeGen_DefaultTag"]</span>
                                     }
                                 </button>
                             }
@@ -128,9 +130,9 @@ else
             </div>
         }
 
-        <!-- 知识库选择 -->
+        <!-- Vault Selection -->
         <div class="form-group">
-            <label>📚 目标知识库</label>
+            <label>@L["KnowledgeGen_TargetVaultLabel"]</label>
             <div class="vault-selector">
                 <select class="form-select form-select-sm" @bind="selectedVaultId">
                     @foreach (var vault in GetFilteredVaults())
@@ -139,7 +141,7 @@ else
                     }
                     @if (!string.IsNullOrEmpty(vaultRootPath))
                     {
-                        <option value="__new__">✨ 新建（AI 自动命名）</option>
+                        <option value="__new__">@L["KnowledgeGen_NewVaultOption"]</option>
                     }
                 </select>
                 @if (!string.IsNullOrEmpty(selectedVaultId) && selectedVaultId != "__new__")
@@ -158,17 +160,17 @@ else
                 @if (!string.IsNullOrEmpty(vaultRootPath))
                 {
                     <small class="text-muted mt-2 d-block">
-                        📂 知识库根路径：<code>@vaultRootPath</code>
+                        @L["KnowledgeGen_VaultRootPath"]<code>@vaultRootPath</code>
                         @if (selectedVaultId == "__new__")
                         {
-                            <span class="ms-2 text-info">— 新知识库将在此路径下创建子目录</span>
+                            <span class="ms-2 text-info">@L["KnowledgeGen_NewVaultSubdirHint"]</span>
                         }
                     </small>
                 }
                 else if (GetFilteredVaults().Count == 0)
                 {
                     <div class="alert alert-warning mt-2">
-                        当前行业暂无知识库，请先<a href="vaults" class="alert-link">配置知识库</a>或<a href="vaults" class="alert-link">设置知识库根路径</a>。
+                        @L["KnowledgeGen_NoVaultsInIndustry_Prefix"]<a href="vaults" class="alert-link">@L["KnowledgeGen_ConfigureVaults"]</a>@L["KnowledgeGen_Or"]<a href="vaults" class="alert-link">@L["KnowledgeGen_SetRootPath"]</a>@L["KnowledgeGen_Dot"]
                     </div>
                 }
             </div>
@@ -177,47 +179,47 @@ else
         @if (selectedVaultId == "__new__")
         {
             <div class="new-vault-hint alert alert-info mb-3">
-                <strong>✨ 新建知识库模式</strong>
-                <small class="ms-2 text-muted">AI 将自动命名并创建新知识库</small>
+                <strong>@L["KnowledgeGen_NewVaultMode"]</strong>
+                <small class="ms-2 text-muted">@L["KnowledgeGen_NewVaultModeDesc"]</small>
             </div>
 
-            <!-- 生成记忆卡片选项（仅新建模式） -->
+            <!-- Generate Cards Option (new vault mode only) -->
             <div class="form-group">
                 <label class="form-check-label">
                     <input type="checkbox" @bind="generateCards" class="form-check-input" />
-                    🧠 生成笔记后自动生成记忆卡片
+                    @L["KnowledgeGen_AutoGenerateCards"]
                 </label>
-                <div class="form-text text-muted">笔记生成完成后，自动将其转换为 Anki 记忆卡片</div>
+                <div class="form-text text-muted">@L["KnowledgeGen_AutoGenerateCardsHint"]</div>
             </div>
         }
 
-        <!-- 提示词编辑 -->
+        <!-- Prompt Editor -->
         <div class="form-group">
             <button class="btn btn-sm btn-outline-secondary" @onclick="() => showPromptEditor = !showPromptEditor">
-                @(showPromptEditor ? "🔼 收起提示词" : "✏️ 编辑提示词")
+                @(showPromptEditor ? L["KnowledgeGen_CollapsePrompt"] : L["KnowledgeGen_EditPrompt"])
             </button>
         </div>
 
         @if (showPromptEditor)
         {
             <div class="form-group">
-                <label>系统提示词</label>
+                <label>@L["KnowledgeGen_SystemPromptLabel"]</label>
                 <textarea class="form-control" @bind="customSystemPrompt" rows="6"
-                          placeholder="留空则使用默认提示词..."></textarea>
+                          placeholder="@L["KnowledgeGen_SystemPromptPlaceholder"]"></textarea>
                 <div class="form-text">
                     @if (string.IsNullOrWhiteSpace(customSystemPrompt))
                     {
-                        <span class="text-muted">使用默认提示词</span>
+                        <span class="text-muted">@L["KnowledgeGen_UsingDefaultPrompt"]</span>
                     }
                     else
                     {
-                        <span class="text-info">（已自定义）</span>
+                        <span class="text-info">@L["KnowledgeGen_CustomPromptSuffix"]</span>
                     }
                 </div>
             </div>
         }
 
-        <!-- 生成按钮 -->
+        <!-- Generation Button -->
         <div class="form-actions">
             <button @onclick="ExecuteGeneration"
                     class="btn btn-primary btn-lg"
@@ -228,20 +230,20 @@ else
                 }
                 else if (generationMode == "vault")
                 {
-                    <span>🚀 生成知识库 @(generateCards ? "并创建记忆卡片" : "")</span>
+                    <span>@L["KnowledgeGen_GenerateVaultBtn"]@(generateCards ? L["KnowledgeGen_WithCards"] : "")</span>
                 }
                 else
                 {
-                    <span>🤖 生成笔记 @(generateCards ? "并创建记忆卡片" : "")</span>
+                    <span>@L["KnowledgeGen_GenerateNoteBtn"]@(generateCards ? L["KnowledgeGen_WithCards"] : "")</span>
                 }
             </button>
         </div>
     </div>
 
-    <!-- 记忆卡片入口 -->
+    <!-- Cards Entry -->
     <div class="mt-3">
         <a href="cards" class="btn btn-outline-info">
-            <span>🧠 查看记忆卡片</span>
+            <span>@L["KnowledgeGen_ViewCards"]</span>
         </a>
     </div>
 }
@@ -364,7 +366,7 @@ else
         }
         catch (Exception ex)
         {
-            Logger.LogWarning(ex, "初始化加载失败");
+            Logger.LogWarning(ex, L["KnowledgeGen_InitLoadFailed"]);
         }
         finally
         {
@@ -403,7 +405,7 @@ else
         }
         catch (Exception ex)
         {
-            Logger.LogWarning(ex, "加载知识库列表失败");
+            Logger.LogWarning(ex, L["KnowledgeGen_LoadVaultsFailed"]);
             vaults = new List<VaultConfig>();
         }
     }
@@ -423,7 +425,7 @@ else
         }
         catch (Exception ex)
         {
-            Logger.LogWarning(ex, "加载 AI 提供方失败");
+            Logger.LogWarning(ex, L["KnowledgeGen_LoadProvidersFailed"]);
             aiProviders = new List<AiProviderInfo>();
         }
     }
@@ -491,19 +493,19 @@ else
                 var matched = available.FirstOrDefault(i => inferred.Contains(i));
                 if (!string.IsNullOrEmpty(matched))
                 {
-                    Logger.LogInformation("AI 推断行业：{Inferred}，匹配：{Matched}", inferred, matched);
+                    Logger.LogInformation(L["KnowledgeGen_InferIndustryMatched"], inferred, matched);
                     return matched;
                 }
-                Logger.LogWarning("AI 推断行业结果 '{Inferred}' 未匹配预定义选项，使用通用", inferred);
+                Logger.LogWarning(L["KnowledgeGen_InferIndustryNoMatch"], inferred);
             }
         }
         catch (OperationCanceledException)
         {
-            Logger.LogWarning("AI 推断行业超时");
+            Logger.LogWarning(L["KnowledgeGen_InferIndustryTimeout"]);
         }
         catch (Exception ex)
         {
-            Logger.LogWarning(ex, "AI 推断行业失败");
+            Logger.LogWarning(ex, L["KnowledgeGen_InferIndustryFailed"]);
         }
         return "通用";
     }
@@ -516,7 +518,7 @@ else
         if (string.IsNullOrWhiteSpace(industry))
         {
             isProcessing = true;
-            processingStep = "AI 推断行业中...";
+            processingStep = L["KnowledgeGen_InferringIndustry"];
             StateHasChanged();
 
             var inferred = await InferIndustryAsync(aiQuery);
@@ -545,7 +547,7 @@ else
     private async Task GenerateFullVault(string industry)
     {
         isProcessing = true;
-        processingStep = "提交生成任务中...";
+        processingStep = L["KnowledgeGen_SubmittingTask"];
         try
         {
             var response = await ApiService.CreateVaultGenerationTaskAsync(industry.Trim(), aiQuery.Trim(), selectedModel, generateCards: generateCards);
@@ -555,13 +557,13 @@ else
             }
             else
             {
-                await JS.InvokeVoidAsync("alert", string.IsNullOrWhiteSpace(response.Message) ? "任务创建失败" : response.Message);
+                await JS.InvokeVoidAsync("alert", string.IsNullOrWhiteSpace(response.Message) ? L["KnowledgeGen_TaskCreateFailed"] : response.Message);
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "生成知识库失败");
-            await JS.InvokeVoidAsync("alert", $"生成失败：{ex.Message}");
+            await JS.InvokeVoidAsync("alert", $"{L["KnowledgeGen_GenerateFailed"]}{ex.Message}");
         }
         finally
         {
@@ -577,19 +579,19 @@ else
         {
             if (string.IsNullOrEmpty(vaultRootPath))
             {
-                await JS.InvokeVoidAsync("alert", "请先在知识库管理页设置知识库根路径");
+                await JS.InvokeVoidAsync("alert", L["KnowledgeGen_NeedRootPath"]);
                 return;
             }
 
             isProcessing = true;
-            processingStep = "创建知识库中...";
+            processingStep = L["KnowledgeGen_CreatingVault"];
             try
             {
                 var vaultName = await GenerateVaultNameAsync(aiQuery, industry);
                 if (string.IsNullOrWhiteSpace(vaultName))
                 {
-                    Logger.LogWarning("无法生成知识库名称");
-                    await JS.InvokeVoidAsync("alert", "无法生成知识库名称，请检查 AI 配置或重新输入问题");
+                    Logger.LogWarning(L["KnowledgeGen_UnableToGenerateName"]);
+                    await JS.InvokeVoidAsync("alert", L["KnowledgeGen_VaultNameGenFailed"]);
                     return;
                 }
 
@@ -597,14 +599,14 @@ else
                 var (success, vault, error) = await VaultsService.AddVaultAsync(vaultName, vaultPath, industry);
                 if (!success || vault == null)
                 {
-                    await JS.InvokeVoidAsync("alert", $"创建知识库失败：{error}");
+                    await JS.InvokeVoidAsync("alert", $"{L["KnowledgeGen_CreateVaultFailed"]}{error}");
                     return;
                 }
 
                 if (string.IsNullOrWhiteSpace(vault.Id))
                 {
                     Logger.LogError("AddVaultAsync 返回了无效的 vault.Id");
-                    await JS.InvokeVoidAsync("alert", "创建知识库成功但返回了无效的 ID，请刷新页面重试");
+                    await JS.InvokeVoidAsync("alert", L["KnowledgeGen_InvalidVaultId"]);
                     return;
                 }
 
@@ -612,9 +614,9 @@ else
                 var vaultsResponse = await VaultsService.GetVaultsAsync(forceRefresh: true);
                 vaults = vaultsResponse.Vaults;
 
-                Logger.LogInformation("新建知识库完成，名称={VaultName}, Id={VaultId}", vaultName, vault.Id);
+                Logger.LogInformation(L["KnowledgeGen_VaultCreationComplete"], vaultName, vault.Id);
 
-                processingStep = "生成笔记中...";
+                processingStep = L["KnowledgeGen_GeneratingNote"];
                 StateHasChanged();
 
                 var response = await ApiService.CreateAiTaskAsync(aiQuery, saveToVault, vault.Id, selectedModel, autoSplitAfterGenerate, customSystemPrompt, industry);
@@ -623,7 +625,7 @@ else
                 {
                     if (generateCards && !string.IsNullOrWhiteSpace(response.TaskId))
                     {
-                        processingStep = "笔记生成任务已提交，等待完成后生成记忆卡片...";
+                        processingStep = L["KnowledgeGen_WaitingForTask"];
                         StateHasChanged();
 
                         await WaitForTaskCompletion(response.TaskId);
@@ -633,12 +635,12 @@ else
                 }
                 else
                 {
-                    await JS.InvokeVoidAsync("alert", $"创建任务失败：{response.Message}");
+                    await JS.InvokeVoidAsync("alert", $"{L["KnowledgeGen_CreateTaskFailed"]}{response.Message}");
                 }
             }
             catch (Exception ex)
             {
-                await JS.InvokeVoidAsync("alert", $"创建失败：{ex.Message}");
+                await JS.InvokeVoidAsync("alert", $"{L["KnowledgeGen_CreateFailed"]}{ex.Message}");
             }
             finally
             {
@@ -650,12 +652,12 @@ else
 
         if (string.IsNullOrWhiteSpace(selectedVaultId))
         {
-            await JS.InvokeVoidAsync("alert", "请先选择知识库");
+            await JS.InvokeVoidAsync("alert", L["KnowledgeGen_SelectVaultFirst"]);
             return;
         }
 
         isProcessing = true;
-        processingStep = "生成笔记中...";
+        processingStep = L["KnowledgeGen_GeneratingNote"];
         try
         {
             var response = await ApiService.CreateAiTaskAsync(aiQuery, saveToVault, selectedVaultId, selectedModel, autoSplitAfterGenerate, customSystemPrompt, industry);
@@ -664,7 +666,7 @@ else
             {
                 if (generateCards && !string.IsNullOrWhiteSpace(response.TaskId))
                 {
-                    processingStep = "笔记生成任务已提交，等待完成后生成记忆卡片...";
+                    processingStep = L["KnowledgeGen_WaitingForTask"];
                     StateHasChanged();
 
                     await WaitForTaskCompletion(response.TaskId);
@@ -674,12 +676,12 @@ else
             }
             else
             {
-                await JS.InvokeVoidAsync("alert", $"创建任务失败：{response.Message}");
+                await JS.InvokeVoidAsync("alert", $"{L["KnowledgeGen_CreateTaskFailed"]}{response.Message}");
             }
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", $"创建任务失败：{ex.Message}");
+            await JS.InvokeVoidAsync("alert", $"{L["KnowledgeGen_CreateTaskFailed"]}{ex.Message}");
         }
         finally
         {
@@ -707,7 +709,7 @@ else
     {
         if (string.IsNullOrWhiteSpace(vaultId)) return;
 
-        processingStep = "生成记忆卡片中...";
+        processingStep = L["KnowledgeGen_GeneratingCards"];
         StateHasChanged();
 
         try
@@ -715,12 +717,12 @@ else
             var result = await ApiService.GenerateAllCardsAsync(vaultId);
             if (result != null)
             {
-                Logger.LogInformation("记忆卡片生成完成，任务ID={TaskId}", result.TaskId);
+                Logger.LogInformation(L["KnowledgeGen_CardsGenerationComplete"], result.TaskId);
             }
         }
         catch (Exception ex)
         {
-            Logger.LogWarning(ex, "生成记忆卡片失败，跳过");
+            Logger.LogWarning(ex, L["KnowledgeGen_CardsGenerationSkipped"]);
         }
     }
 

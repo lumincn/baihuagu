@@ -6,27 +6,28 @@
 @inject NavigationManager Navigation
 @inject ILogger<BrowseVault> Logger
 @inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 @using Markdig
 @using Microsoft.JSInterop
 @using Baihua.Contracts.Vaults
 @implements IAsyncDisposable
 
-<PageTitle>知识库浏览</PageTitle>
+<PageTitle>@L["BrowseVault_PageTitle"]</PageTitle>
 
 <div class="container mt-4">
-    <h2 class="mb-4">📚 知识库浏览</h2>
+    <h2 class="mb-4">@L["BrowseVault_Title"]</h2>
 
     @if (isLoadingVaults)
     {
         <div class="text-center py-5">
             <div class="spinner-border text-primary" role="status"></div>
-            <p class="mt-2 text-muted">加载中...</p>
+            <p class="mt-2 text-muted">@L["Common_Loading"]</p>
         </div>
     }
     else if (vaults.Count == 0)
     {
         <div class="alert alert-info">
-            暂无知识库，请先<a href="vaults" class="alert-link">创建或导入知识库</a>。
+            @L["BrowseVault_NoVaultsPrefix"]<a href="vaults" class="alert-link">@L["BrowseVault_CreateOrImportVault"]</a>。
         </div>
     }
     else if (string.IsNullOrEmpty(selectedVaultId))
@@ -35,9 +36,9 @@
         @if (allIndustries.Count > 0)
         {
             <div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
-                <span class="text-muted small">🏭 行业：</span>
+                <span class="text-muted small">@L["BrowseVault_IndustryLabel"]</span>
                 <button class="btn btn-sm @(selectedIndustries.Count == 0 ? "btn-primary" : "btn-outline-secondary")" @onclick="ClearIndustryFilter">
-                    全部
+                    @L["BrowseVault_AllIndustries"]
                 </button>
                 @foreach (var industry in allIndustries)
                 {
@@ -53,9 +54,9 @@
         @if (allTags.Count > 0)
         {
             <div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
-                <span class="text-muted small">🏷️ 标签：</span>
+                <span class="text-muted small">@L["BrowseVault_TagLabel"]</span>
                 <button class="btn btn-sm @(selectedTags.Count == 0 ? "btn-primary" : "btn-outline-secondary")" @onclick="ClearTagFilter">
-                    全部
+                    @L["BrowseVault_AllTags"]
                 </button>
                 @foreach (var tag in allTags)
                 {
@@ -80,11 +81,11 @@
                             <div class="mt-1 d-flex flex-wrap justify-content-center gap-1">
                                 @if (v.Source == "mobile")
                                 {
-                                    <span class="badge bg-info" style="font-size: 0.6em;">📱 移动端推送</span>
+                                    <span class="badge bg-info" style="font-size: 0.6em;">@L["BrowseVault_MobilePush"]</span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-light text-dark border" style="font-size: 0.6em;">🏠 本地</span>
+                                    <span class="badge bg-light text-dark border" style="font-size: 0.6em;">@L["BrowseVault_Local"]</span>
                                 }
                                 @if (!string.IsNullOrWhiteSpace(v.Industry))
                                 {
@@ -101,8 +102,8 @@
                                 </div>
                             }
                             <div class="mt-2">
-                                <button class="btn btn-sm btn-outline-primary" @onclick="() => StartListening(v.Id, v.Name)" title="听知识库">
-                                    🎧 听
+                                <button class="btn btn-sm btn-outline-primary" @onclick="() => StartListening(v.Id, v.Name)" title="@L["BrowseVault_ListenTitle"]">
+                                    @L["BrowseVault_Listen"]
                                 </button>
                             </div>
                         </div>
@@ -116,7 +117,7 @@
         <!-- 已选择知识库，显示面包屑 + 目录内容 -->
         <div class="d-flex align-items-center mb-3 gap-2">
             <button class="btn btn-sm btn-outline-secondary" @onclick="BackToVaultList">
-                ← 返回知识库列表
+                @L["BrowseVault_BackToList"]
             </button>
             <span class="text-muted">|</span>
             <strong>@currentVaultName</strong>
@@ -148,12 +149,12 @@
         {
             <div class="text-center py-5">
                 <div class="spinner-border text-primary" role="status"></div>
-                <p class="mt-2 text-muted">加载中...</p>
+                <p class="mt-2 text-muted">@L["Common_Loading"]</p>
             </div>
         }
         else if (browseItems.Count == 0)
         {
-            <div class="alert alert-light border">该目录下暂无内容</div>
+            <div class="alert alert-light border">@L["BrowseVault_DirectoryEmpty"]</div>
         }
         else
         {
@@ -167,7 +168,7 @@
                                 <div class="card-body text-center py-4">
                                     <div class="fs-1 mb-2">📁</div>
                                     <div class="fw-bold text-truncate">@item.Name</div>
-                                    <small class="text-muted">文件夹</small>
+                                    <small class="text-muted">@L["BrowseVault_Folder"]</small>
                                 </div>
                             </div>
                         }
@@ -210,7 +211,7 @@
                         @if (noteContent.AiGenerated)
                         {
                             <div class="mb-3 d-flex flex-wrap gap-1 align-items-center">
-                                <span class="badge bg-info">🤖 AI 生成</span>
+                                <span class="badge bg-info">@L["BrowseVault_AiGenerated"]</span>
                                 @if (!string.IsNullOrEmpty(noteContent.AiProvider))
                                 {
                                     <span class="badge bg-light text-dark border">@noteContent.AiProvider</span>
@@ -240,8 +241,8 @@
                     }
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="CloseNote">关闭</button>
-                    <button class="btn btn-primary" @onclick="OpenInDetailPage">在详情页打开</button>
+                    <button class="btn btn-secondary" @onclick="CloseNote">@L["Common_Close"]</button>
+                    <button class="btn btn-primary" @onclick="OpenInDetailPage">@L["BrowseVault_OpenInDetailPage"]</button>
                 </div>
             </div>
         </div>
@@ -256,14 +257,14 @@
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">🎧 听知识库 - @listeningVaultName</h5>
-                    <button type="button" class="btn-close" @onclick="CloseListening"></button>
+                    <h5 class="modal-title">@L["BrowseVault_ListenVaultTitle", listeningVaultName]</h5>
+                    <button type="button" class="btn-close" @onclick="CloseListening" aria-label="@L["Common_Close"]"></button>
                 </div>
                 <div class="modal-body">
                     @if (listeningPlaylist.Count == 0)
                     {
                         <div class="text-center py-4">
-                            <p class="text-muted">该知识库暂无笔记</p>
+                            <p class="text-muted">@L["BrowseVault_VaultNoNotes"]</p>
                         </div>
                     }
                     else
@@ -271,7 +272,7 @@
                         <div class="mb-4" style="border:1px solid #eee;border-radius:6px;padding:16px;">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <span class="text-muted small">@(listeningCurrentIndex + 1) / @listeningPlaylist.Count</span>
-                                <span class="badge @(isPlaying ? "bg-primary" : "bg-secondary")">@(isPlaying ? "播放中" : "已暂停")</span>
+                                <span class="badge @(isPlaying ? "bg-primary" : "bg-secondary")">@(isPlaying ? L["BrowseVault_Playing"] : L["BrowseVault_Paused"])</span>
                             </div>
                             <h4 style="margin-top:0;">@listeningPlaylist[listeningCurrentIndex].Title</h4>
                             <div style="color:#666;font-size:14px;max-height:200px;overflow-y:auto;line-height:1.7;white-space:pre-wrap;">
@@ -281,18 +282,18 @@
 
                         <div class="mb-3 d-flex justify-content-center gap-2">
                             <button class="btn btn-outline-secondary" @onclick="PlayPrev" disabled="@(listeningCurrentIndex == 0)">
-                                ← 上一篇
+                                @L["BrowseVault_Previous"]
                             </button>
                             <button class="btn btn-primary" @onclick="TogglePlayPause">
-                                @(isPlaying ? "⏸ 暂停" : "▶ 播放")
+                                @(isPlaying ? L["BrowseVault_Pause"] : L["BrowseVault_Play"])
                             </button>
                             <button class="btn btn-outline-secondary" @onclick="PlayNext" disabled="@(listeningCurrentIndex >= listeningPlaylist.Count - 1)">
-                                下一篇 →
+                                @L["BrowseVault_Next"]
                             </button>
                         </div>
 
                         <div style="max-height:300px;overflow-y:auto;border:1px solid #eee;border-radius:6px;">
-                            <div style="padding:8px 16px;color:#666;font-size:14px;border-bottom:1px solid #eee;position:sticky;top:0;background:white;z-index:1;">播放列表</div>
+                            <div style="padding:8px 16px;color:#666;font-size:14px;border-bottom:1px solid #eee;position:sticky;top:0;background:white;z-index:1;">@L["BrowseVault_Playlist"]</div>
                             @{
                                 string? lastCategory = null;
                             }
@@ -323,7 +324,7 @@
                     }
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="CloseListening">关闭</button>
+                    <button class="btn btn-secondary" @onclick="CloseListening">@L["Common_Close"]</button>
                 </div>
             </div>
         </div>

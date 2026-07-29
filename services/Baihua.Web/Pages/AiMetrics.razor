@@ -3,25 +3,26 @@
 @using Baihua.Contracts.Metrics
 @inject Baihua.Web.Services.IApiService ApiService
 @implements IDisposable
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
-<PageTitle>AI 性能监控</PageTitle>
+<PageTitle>@L["AiMetrics_PageTitle"]</PageTitle>
 
-<h1>📈 AI 性能监控</h1>
+<h1>@L["AiMetrics_Title"]</h1>
 
 @if (isLoading)
 {
-    <div class="loading-spinner">加载中...</div>
+    <div class="loading-spinner">@L["AiMetrics_Loading"]</div>
 }
 else
 {
     <!-- 时间范围选择 -->
     <div class="metrics-filter">
-        <span>时间范围：</span>
+        <span>@L["AiMetrics_TimeRangeLabel"]</span>
         @foreach (var d in dayOptions)
         {
             <button class="btn btn-sm @(selectedDays == d ? "btn-primary" : "btn-outline-secondary")"
                     @onclick="() => ChangeDays(d)">
-                @d 天
+                @L["AiMetrics_DaysFormat", d]
             </button>
         }
     </div>
@@ -30,23 +31,23 @@ else
     <div class="metrics-cards">
         <div class="metric-card">
             <div class="metric-value">@summary?.TotalCalls</div>
-            <div class="metric-label">总调用次数</div>
+            <div class="metric-label">@L["AiMetrics_TotalCalls"]</div>
         </div>
         <div class="metric-card">
             <div class="metric-value">@(summary?.AvgLatencyMs)ms</div>
-            <div class="metric-label">平均耗时</div>
+            <div class="metric-label">@L["AiMetrics_AvgLatency"]</div>
         </div>
         <div class="metric-card">
             <div class="metric-value">@(summary?.SuccessRate)%</div>
-            <div class="metric-label">成功率</div>
+            <div class="metric-label">@L["AiMetrics_SuccessRate"]</div>
         </div>
         <div class="metric-card">
             <div class="metric-value">@FormatNumber(summary?.TotalTokens ?? 0)</div>
-            <div class="metric-label">总 Token 数</div>
+            <div class="metric-label">@L["AiMetrics_TotalTokens"]</div>
         </div>
         <div class="metric-card">
             <div class="metric-value">@(summary?.BestProvider ?? "-")</div>
-            <div class="metric-label">最佳 Provider @(summary?.BestProviderTps != null ? $"({Math.Round(summary.BestProviderTps.Value, 1)} tps)" : "")
+            <div class="metric-label">@L["AiMetrics_BestProvider"] @(summary?.BestProviderTps != null ? $"({Math.Round(summary.BestProviderTps.Value, 1)} tps)" : "")
             </div>
         </div>
     </div>
@@ -55,7 +56,7 @@ else
     @if (trends?.Count > 0)
     {
         <div class="metrics-section">
-            <h3>📊 最近 @selectedDays 天趋势</h3>
+            <h3>@L["AiMetrics_TrendTitle", selectedDays]</h3>
             <div class="trend-chart">
                 @foreach (var t in trends)
                 {
@@ -71,18 +72,18 @@ else
 
     <!-- Provider 排行榜 -->
     <div class="metrics-section">
-        <h3>🏆 Provider 排行榜</h3>
+        <h3>@L["AiMetrics_ProviderRankingTitle"]</h3>
         @if (providerMetrics?.Count > 0)
         {
             <table class="table table-sm">
                 <thead>
                     <tr>
                         <th>Provider</th>
-                        <th>调用次数</th>
-                        <th>平均耗时</th>
-                        <th>平均 TPS</th>
-                        <th>成功率</th>
-                        <th>总 Tokens</th>
+                        <th>@L["AiMetrics_Col_CallCount"]</th>
+                        <th>@L["AiMetrics_Col_AvgLatency"]</th>
+                        <th>@L["AiMetrics_Col_AvgTps"]</th>
+                        <th>@L["AiMetrics_Col_SuccessRate"]</th>
+                        <th>@L["AiMetrics_Col_TotalTokens"]</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -102,24 +103,24 @@ else
         }
         else
         {
-            <p class="text-muted">暂无数据</p>
+            <p class="text-muted">@L["AiMetrics_NoData"]</p>
         }
     </div>
 
     <!-- 模型排行榜 -->
     <div class="metrics-section">
-        <h3>🤖 模型排行榜</h3>
+        <h3>@L["AiMetrics_ModelRankingTitle"]</h3>
         @if (modelMetrics?.Count > 0)
         {
             <table class="table table-sm">
                 <thead>
                     <tr>
-                        <th>模型</th>
+                        <th>@L["AiMetrics_Col_Model"]</th>
                         <th>Provider</th>
-                        <th>调用次数</th>
-                        <th>平均耗时</th>
-                        <th>平均 TPS</th>
-                        <th>成功率</th>
+                        <th>@L["AiMetrics_Col_CallCount"]</th>
+                        <th>@L["AiMetrics_Col_AvgLatency"]</th>
+                        <th>@L["AiMetrics_Col_AvgTps"]</th>
+                        <th>@L["AiMetrics_Col_SuccessRate"]</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -139,26 +140,26 @@ else
         }
         else
         {
-            <p class="text-muted">暂无数据</p>
+            <p class="text-muted">@L["AiMetrics_NoData"]</p>
         }
     </div>
 
     <!-- 最近调用记录 -->
     <div class="metrics-section">
-        <h3>📝 最近调用记录</h3>
+        <h3>@L["AiMetrics_RecentCallsTitle"]</h3>
         @if (recentMetrics?.Count > 0)
         {
             <table class="table table-sm">
                 <thead>
                     <tr>
-                        <th>时间</th>
+                        <th>@L["AiMetrics_Col_Time"]</th>
                         <th>Provider</th>
-                        <th>模型</th>
-                        <th>操作</th>
-                        <th>耗时</th>
+                        <th>@L["AiMetrics_Col_Model"]</th>
+                        <th>@L["AiMetrics_Col_Operation"]</th>
+                        <th>@L["AiMetrics_Col_Latency"]</th>
                         <th>Tokens</th>
                         <th>TPS</th>
-                        <th>状态</th>
+                        <th>@L["AiMetrics_Col_Status"]</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -180,7 +181,7 @@ else
         }
         else
         {
-            <p class="text-muted">暂无数据</p>
+            <p class="text-muted">@L["AiMetrics_NoData"]</p>
         }
     </div>
 }

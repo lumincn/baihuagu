@@ -17612,4 +17612,398 @@
   <data name="ModelBenchmark_Title" xml:space="preserve">
     <value>📊 Model Benchmark</value>
   </data>
+  <data name="KnowledgeGen_PageTitle" xml:space="preserve">
+    <value>AI Knowledge Generation</value>
+  </data>
+  <data name="KnowledgeGen_Title" xml:space="preserve">
+    <value>🤖 AI Knowledge Generation</value>
+  </data>
+  <data name="KnowledgeGen_Subtitle" xml:space="preserve">
+    <value>Enter a topic or question, and AI will auto-generate structured note content and memory cards.</value>
+  </data>
+  <data name="KnowledgeGen_LoadingVisuallyHidden" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+  <data name="KnowledgeGen_LoadingConfig" xml:space="preserve">
+    <value>Loading configuration...</value>
+  </data>
+  <data name="KnowledgeGen_TopicLabel" xml:space="preserve">
+    <value>🎯 Topic Keywords</value>
+  </data>
+  <data name="KnowledgeGen_QueryLabel" xml:space="preserve">
+    <value>🎯 Query Description</value>
+  </data>
+  <data name="KnowledgeGen_TopicPlaceholder" xml:space="preserve">
+    <value>e.g., Python Programming, TCM Diagnostics...</value>
+  </data>
+  <data name="KnowledgeGen_TopicHint" xml:space="preserve">
+    <value>Enter a topic — AI will generate a complete knowledge base outline and note content</value>
+  </data>
+  <data name="KnowledgeGen_QueryPlaceholder" xml:space="preserve">
+    <value>Enter a question — AI will generate structured atomic notes...</value>
+  </data>
+  <data name="KnowledgeGen_QueryHint" xml:space="preserve">
+    <value>Enter a specific question — AI will generate a single structured note</value>
+  </data>
+  <data name="KnowledgeGen_GenerationModeLabel" xml:space="preserve">
+    <value>🎯 Generation Mode</value>
+  </data>
+  <data name="KnowledgeGen_GenerateFullVault" xml:space="preserve">
+    <value>📚 Generate Full Knowledge Base</value>
+  </data>
+  <data name="KnowledgeGen_GenerateSingleNote" xml:space="preserve">
+    <value>📝 Generate Single Note</value>
+  </data>
+  <data name="KnowledgeGen_IndustryLabel" xml:space="preserve">
+    <value>🏷️ Industry</value>
+  </data>
+  <data name="KnowledgeGen_AiAutoInfer" xml:space="preserve">
+    <value>✨ AI Auto-Infer</value>
+  </data>
+  <data name="KnowledgeGen_Custom" xml:space="preserve">
+    <value>✏️ Custom</value>
+  </data>
+  <data name="KnowledgeGen_CustomIndustryPlaceholder" xml:space="preserve">
+    <value>Enter custom industry name...</value>
+  </data>
+  <data name="KnowledgeGen_AutoInferHint" xml:space="preserve">
+    <value>AI will auto-infer the industry based on your input</value>
+  </data>
+  <data name="KnowledgeGen_AiModelLabel" xml:space="preserve">
+    <value>🤖 AI Model</value>
+  </data>
+  <data name="KnowledgeGen_MainSuffix" xml:space="preserve">
+    <value>(Main)</value>
+  </data>
+  <data name="KnowledgeGen_PaidTag" xml:space="preserve">
+    <value>Paid</value>
+  </data>
+  <data name="KnowledgeGen_DefaultTag" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="KnowledgeGen_TargetVaultLabel" xml:space="preserve">
+    <value>📚 Target Vault</value>
+  </data>
+  <data name="KnowledgeGen_NewVaultOption" xml:space="preserve">
+    <value>✨ New (AI auto-name)</value>
+  </data>
+  <data name="KnowledgeGen_VaultRootPath" xml:space="preserve">
+    <value>📂 Vault root path:</value>
+  </data>
+  <data name="KnowledgeGen_NewVaultSubdirHint" xml:space="preserve">
+    <value>— New vault will create a subdirectory under this path</value>
+  </data>
+  <data name="KnowledgeGen_NoVaultsInIndustry_Prefix" xml:space="preserve">
+    <value>No vaults in current industry, please </value>
+  </data>
+  <data name="KnowledgeGen_ConfigureVaults" xml:space="preserve">
+    <value>configure a vault</value>
+  </data>
+  <data name="KnowledgeGen_SetRootPath" xml:space="preserve">
+    <value>set vault root path</value>
+  </data>
+  <data name="KnowledgeGen_Dot" xml:space="preserve">
+    <value>.</value>
+  </data>
+  <data name="KnowledgeGen_NewVaultMode" xml:space="preserve">
+    <value>✨ New Vault Mode</value>
+  </data>
+  <data name="KnowledgeGen_NewVaultModeDesc" xml:space="preserve">
+    <value>AI will auto-name and create a new vault</value>
+  </data>
+  <data name="KnowledgeGen_AutoGenerateCards" xml:space="preserve">
+    <value>🧠 Auto-generate memory cards after note generation</value>
+  </data>
+  <data name="KnowledgeGen_AutoGenerateCardsHint" xml:space="preserve">
+    <value>After note generation completes, auto-convert to Anki memory cards</value>
+  </data>
+  <data name="KnowledgeGen_CollapsePrompt" xml:space="preserve">
+    <value>🔼 Collapse Prompt</value>
+  </data>
+  <data name="KnowledgeGen_EditPrompt" xml:space="preserve">
+    <value>✏️ Edit Prompt</value>
+  </data>
+  <data name="KnowledgeGen_SystemPromptLabel" xml:space="preserve">
+    <value>System Prompt</value>
+  </data>
+  <data name="KnowledgeGen_SystemPromptPlaceholder" xml:space="preserve">
+    <value>Leave empty to use default prompt...</value>
+  </data>
+  <data name="KnowledgeGen_UsingDefaultPrompt" xml:space="preserve">
+    <value>Using default prompt</value>
+  </data>
+  <data name="KnowledgeGen_CustomPromptSuffix" xml:space="preserve">
+    <value>(Customized)</value>
+  </data>
+  <data name="KnowledgeGen_GenerateVaultBtn" xml:space="preserve">
+    <value>🚀 Generate Vault </value>
+  </data>
+  <data name="KnowledgeGen_GenerateNoteBtn" xml:space="preserve">
+    <value>🤖 Generate Note </value>
+  </data>
+  <data name="KnowledgeGen_WithCards" xml:space="preserve">
+    <value>and Create Cards</value>
+  </data>
+  <data name="KnowledgeGen_ViewCards" xml:space="preserve">
+    <value>🧠 View Memory Cards</value>
+  </data>
+  <data name="KnowledgeGen_InitLoadFailed" xml:space="preserve">
+    <value>Initialization failed</value>
+  </data>
+  <data name="KnowledgeGen_LoadVaultsFailed" xml:space="preserve">
+    <value>Failed to load vaults list</value>
+  </data>
+  <data name="KnowledgeGen_LoadProvidersFailed" xml:space="preserve">
+    <value>Failed to load AI providers</value>
+  </data>
+  <data name="KnowledgeGen_InferIndustryTimeout" xml:space="preserve">
+    <value>AI industry inference timeout</value>
+  </data>
+  <data name="KnowledgeGen_InferIndustryFailed" xml:space="preserve">
+    <value>AI industry inference failed</value>
+  </data>
+  <data name="KnowledgeGen_InferIndustryNoMatch" xml:space="preserve">
+    <value>AI inferred industry '{Inferred}' didn't match any predefined option, using General</value>
+  </data>
+  <data name="KnowledgeGen_InferIndustryMatched" xml:space="preserve">
+    <value>AI inferred industry: {Inferred}, matched: {Matched}</value>
+  </data>
+  <data name="KnowledgeGen_InferringIndustry" xml:space="preserve">
+    <value>Inferring industry...</value>
+  </data>
+  <data name="KnowledgeGen_SubmittingTask" xml:space="preserve">
+    <value>Submitting task...</value>
+  </data>
+  <data name="KnowledgeGen_CreatingVault" xml:space="preserve">
+    <value>Creating vault...</value>
+  </data>
+  <data name="KnowledgeGen_GeneratingNote" xml:space="preserve">
+    <value>Generating note...</value>
+  </data>
+  <data name="KnowledgeGen_WaitingForTask" xml:space="preserve">
+    <value>Note generation task submitted, waiting for completion to generate cards...</value>
+  </data>
+  <data name="KnowledgeGen_GeneratingCards" xml:space="preserve">
+    <value>Generating memory cards...</value>
+  </data>
+  <data name="KnowledgeGen_TaskCreateFailed" xml:space="preserve">
+    <value>Task creation failed</value>
+  </data>
+  <data name="KnowledgeGen_GenerateFailed" xml:space="preserve">
+    <value>Generation failed: </value>
+  </data>
+  <data name="KnowledgeGen_NeedRootPath" xml:space="preserve">
+    <value>Please set the vault root path on the vault management page first</value>
+  </data>
+  <data name="KnowledgeGen_VaultNameGenFailed" xml:space="preserve">
+    <value>Unable to generate vault name. Please check AI config or rephrase your question</value>
+  </data>
+  <data name="KnowledgeGen_CreateVaultFailed" xml:space="preserve">
+    <value>Failed to create vault: </value>
+  </data>
+  <data name="KnowledgeGen_InvalidVaultId" xml:space="preserve">
+    <value>Vault created but returned an invalid ID. Please refresh and try again</value>
+  </data>
+  <data name="KnowledgeGen_CreateTaskFailed" xml:space="preserve">
+    <value>Failed to create task: </value>
+  </data>
+  <data name="KnowledgeGen_SelectVaultFirst" xml:space="preserve">
+    <value>Please select a vault first</value>
+  </data>
+  <data name="KnowledgeGen_Or" xml:space="preserve">
+    <value> or </value>
+  </data>
+  <data name="KnowledgeGen_CreateFailed" xml:space="preserve">
+    <value>Creation failed: </value>
+  </data>
+  <data name="KnowledgeGen_UnableToGenerateName" xml:space="preserve">
+    <value>Unable to generate vault name</value>
+  </data>
+  <data name="KnowledgeGen_VaultCreationComplete" xml:space="preserve">
+    <value>New vault created, Name={VaultName}, Id={VaultId}</value>
+  </data>
+  <data name="KnowledgeGen_CardsGenerationComplete" xml:space="preserve">
+    <value>Memory cards generation complete, TaskID={TaskId}</value>
+  </data>
+  <data name="KnowledgeGen_CardsGenerationSkipped" xml:space="preserve">
+    <value>Memory card generation failed, skipping</value>
+  </data>
+
+  <data name="AiMetrics_PageTitle" xml:space="preserve">
+    <value>AI Performance Monitor</value>
+  </data>
+
+  <data name="AiMetrics_Title" xml:space="preserve">
+    <value>📈 AI Performance Monitor</value>
+  </data>
+
+  <data name="AiMetrics_Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+
+  <data name="AiMetrics_TimeRangeLabel" xml:space="preserve">
+    <value>Time Range:</value>
+  </data>
+
+  <data name="AiMetrics_DaysFormat" xml:space="preserve">
+    <value>{0}d</value>
+  </data>
+
+  <data name="AiMetrics_TotalCalls" xml:space="preserve">
+    <value>Total Calls</value>
+  </data>
+
+  <data name="AiMetrics_AvgLatency" xml:space="preserve">
+    <value>Avg Latency</value>
+  </data>
+
+  <data name="AiMetrics_SuccessRate" xml:space="preserve">
+    <value>Success Rate</value>
+  </data>
+
+  <data name="AiMetrics_TotalTokens" xml:space="preserve">
+    <value>Total Tokens</value>
+  </data>
+
+  <data name="AiMetrics_BestProvider" xml:space="preserve">
+    <value>Best Provider</value>
+  </data>
+
+  <data name="AiMetrics_TrendTitle" xml:space="preserve">
+    <value>📊 Last {0} Day Trends</value>
+  </data>
+
+  <data name="AiMetrics_ProviderRankingTitle" xml:space="preserve">
+    <value>🏆 Provider Rankings</value>
+  </data>
+
+  <data name="AiMetrics_Col_CallCount" xml:space="preserve">
+    <value>Calls</value>
+  </data>
+
+  <data name="AiMetrics_Col_AvgLatency" xml:space="preserve">
+    <value>Avg Latency</value>
+  </data>
+
+  <data name="AiMetrics_Col_AvgTps" xml:space="preserve">
+    <value>Avg TPS</value>
+  </data>
+
+  <data name="AiMetrics_Col_SuccessRate" xml:space="preserve">
+    <value>Success Rate</value>
+  </data>
+
+  <data name="AiMetrics_Col_TotalTokens" xml:space="preserve">
+    <value>Total Tokens</value>
+  </data>
+
+  <data name="AiMetrics_ModelRankingTitle" xml:space="preserve">
+    <value>🤖 Model Rankings</value>
+  </data>
+
+  <data name="AiMetrics_Col_Model" xml:space="preserve">
+    <value>Model</value>
+  </data>
+
+  <data name="AiMetrics_RecentCallsTitle" xml:space="preserve">
+    <value>📝 Recent Calls</value>
+  </data>
+
+  <data name="AiMetrics_Col_Time" xml:space="preserve">
+    <value>Time</value>
+  </data>
+
+  <data name="AiMetrics_Col_Operation" xml:space="preserve">
+    <value>Operation</value>
+  </data>
+
+  <data name="AiMetrics_Col_Latency" xml:space="preserve">
+    <value>Latency</value>
+  </data>
+
+  <data name="AiMetrics_Col_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+
+  <data name="AiMetrics_NoData" xml:space="preserve">
+    <value>No data</value>
+  </data>
+  <data name="BrowseVault_PageTitle" xml:space="preserve">
+    <value>Vault Browser</value>
+  </data>
+  <data name="BrowseVault_Title" xml:space="preserve">
+    <value>📚 Vault Browser</value>
+  </data>
+  <data name="BrowseVault_NoVaultsPrefix" xml:space="preserve">
+    <value>No vaults yet. Please </value>
+  </data>
+  <data name="BrowseVault_CreateOrImportVault" xml:space="preserve">
+    <value>Create or Import a Vault</value>
+  </data>
+  <data name="BrowseVault_IndustryLabel" xml:space="preserve">
+    <value>🏭 Industry:</value>
+  </data>
+  <data name="BrowseVault_AllIndustries" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="BrowseVault_TagLabel" xml:space="preserve">
+    <value>🏷️ Tags:</value>
+  </data>
+  <data name="BrowseVault_AllTags" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="BrowseVault_MobilePush" xml:space="preserve">
+    <value>📱 Mobile Push</value>
+  </data>
+  <data name="BrowseVault_Local" xml:space="preserve">
+    <value>🏠 Local</value>
+  </data>
+  <data name="BrowseVault_ListenTitle" xml:space="preserve">
+    <value>Listen to Vault</value>
+  </data>
+  <data name="BrowseVault_Listen" xml:space="preserve">
+    <value>🎧 Listen</value>
+  </data>
+  <data name="BrowseVault_BackToList" xml:space="preserve">
+    <value>← Back to Vault List</value>
+  </data>
+  <data name="BrowseVault_DirectoryEmpty" xml:space="preserve">
+    <value>This directory is empty</value>
+  </data>
+  <data name="BrowseVault_Folder" xml:space="preserve">
+    <value>Folder</value>
+  </data>
+  <data name="BrowseVault_AiGenerated" xml:space="preserve">
+    <value>🤖 AI Generated</value>
+  </data>
+  <data name="BrowseVault_OpenInDetailPage" xml:space="preserve">
+    <value>Open in Detail Page</value>
+  </data>
+  <data name="BrowseVault_ListenVaultTitle" xml:space="preserve">
+    <value>🎧 Listen to Vault - {0}</value>
+  </data>
+  <data name="BrowseVault_VaultNoNotes" xml:space="preserve">
+    <value>This vault has no notes</value>
+  </data>
+  <data name="BrowseVault_Playing" xml:space="preserve">
+    <value>Playing</value>
+  </data>
+  <data name="BrowseVault_Paused" xml:space="preserve">
+    <value>Paused</value>
+  </data>
+  <data name="BrowseVault_Previous" xml:space="preserve">
+    <value>← Previous</value>
+  </data>
+  <data name="BrowseVault_Play" xml:space="preserve">
+    <value>▶ Play</value>
+  </data>
+  <data name="BrowseVault_Pause" xml:space="preserve">
+    <value>⏸ Pause</value>
+  </data>
+  <data name="BrowseVault_Next" xml:space="preserve">
+    <value>Next →</value>
+  </data>
+  <data name="BrowseVault_Playlist" xml:space="preserve">
+    <value>Playlist</value>
+  </data>
 </root>
