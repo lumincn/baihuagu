@@ -4,39 +4,40 @@
 @using Baihua.Contracts.LocalModels
 @inject Baihua.Web.Services.IApiService ApiService
 @inject Baihua.Web.Services.SettingsService SettingsService
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 @implements IDisposable
 
-<PageTitle>模型 benchmark</PageTitle>
+<PageTitle>@L["ModelBenchmark_PageTitle"]</PageTitle>
 
-<h1>📊 模型 benchmark</h1>
+<h1>@L["ModelBenchmark_Title"]</h1>
 
-<p class="text-muted">对笔记大模型与编程模型进行标准化测试，比较质量与速度。</p>
+<p class="text-muted">@L["ModelBenchmark_Description"]</p>
 
 <!-- 分类切换 -->
 <div class="benchmark-tabs">
     <button class="tab-btn @(activeCategory == "tcm" ? "active" : "")" @onclick='@(() => SwitchCategory("tcm"))'>
-        📝 笔记大模型
+        @L["ModelBenchmark_TabTcm"]
     </button>
     <button class="tab-btn @(activeCategory == "coding" ? "active" : "")" @onclick='@(() => SwitchCategory("coding"))'>
-        💻 编程大模型
+        @L["ModelBenchmark_TabCoding"]
     </button>
 </div>
 
 @if (isLoading)
 {
-    <div class="loading-spinner">加载中...</div>
+    <div class="loading-spinner">@L["ModelBenchmark_Loading"]</div>
 }
 else
 {
     <!-- 测试配置 -->
 
     <div class="section test-config">
-        <h3>测试配置</h3>
+        <h3>@L["ModelBenchmark_TestConfig"]</h3>
         <div class="config-row">
             <div class="form-group">
-                <label>选择 Provider</label>
+                <label>@L["ModelBenchmark_SelectProvider"]</label>
                 <select class="form-control" @bind="selectedProviderId" @bind:after="LoadModelsAsync">
-                    <option value="">-- 请选择 --</option>
+                    <option value="">@L["ModelBenchmark_SelectPlaceholder"]</option>
                     @foreach (var p in aiProviders)
                     {
                         <option value="@p.Id">@p.Name</option>
@@ -44,9 +45,9 @@ else
                 </select>
             </div>
             <div class="form-group">
-                <label>选择模型</label>
+                <label>@L["ModelBenchmark_SelectModel"]</label>
                 <select class="form-control" @bind="selectedModelId">
-                    <option value="">-- 请选择 --</option>
+                    <option value="">@L["ModelBenchmark_SelectPlaceholder"]</option>
                     @foreach (var m in availableModels)
                     {
                         <option value="@m">@m</option>
@@ -58,13 +59,13 @@ else
                 @if (isRunning)
                 {
                     <button class="btn btn-danger" @onclick="StopBenchmarkAsync">
-                        <span>⏹ 停止测试</span>
+                        <span>@L["ModelBenchmark_StopTest"]</span>
                     </button>
                 }
                 else
                 {
                     <button class="btn btn-primary" @onclick="StartBenchmarkAsync" disabled="@(!CanStart)">
-                        <span>▶️ 开始测试</span>
+                        <span>@L["ModelBenchmark_StartTest"]</span>
                     </button>
                 }
             </div>
@@ -79,7 +80,7 @@ else
     @if (isRunning || status?.Status == "running")
     {
         <div class="section progress-section">
-            <h3>测试进度</h3>
+            <h3>@L["ModelBenchmark_TestProgress"]</h3>
             <div class="progress-bar-bg">
                 <div class="progress-bar-fill" style="width: @ProgressPercent%"></div>
             </div>
@@ -87,7 +88,7 @@ else
                 @status?.CompletedCount / @status?.TotalCount
                 @if (!string.IsNullOrEmpty(status?.CurrentPromptTitle))
                 {
-                    <span> — 正在测：@status.CurrentPromptTitle</span>
+                    <span> @L["ModelBenchmark_CurrentlyTesting"]@status.CurrentPromptTitle</span>
                 }
             </div>
         </div>
@@ -97,33 +98,33 @@ else
     @if (latestResult != null)
     {
         <div class="section">
-            <h3>最新结果：@latestResult.ModelName</h3>
+            <h3>@L["ModelBenchmark_LatestResult"]@latestResult.ModelName</h3>
             <div class="result-summary">
                 <div class="summary-card">
                     <div class="summary-value">@latestResult.TotalScore</div>
-                    <div class="summary-label">质量均分</div>
+                    <div class="summary-label">@L["ModelBenchmark_QualityAvg"]</div>
                 </div>
                 <div class="summary-card">
                     <div class="summary-value">@latestResult.AvgTokensPerSecond.ToString("F1")</div>
-                    <div class="summary-label">平均 tok/s</div>
+                    <div class="summary-label">@L["ModelBenchmark_AvgTokensPerSec"]</div>
                 </div>
                 <div class="summary-card">
                     <div class="summary-value">@latestResult.AvgLatencyMs.ToString("F0")</div>
-                    <div class="summary-label">平均延迟 ms</div>
+                    <div class="summary-label">@L["ModelBenchmark_AvgLatencyMs"]</div>
                 </div>
                 <div class="summary-card">
                     <div class="summary-value">@(latestResult.CompletionRate.ToString("P0"))</div>
-                    <div class="summary-label">完成率</div>
+                    <div class="summary-label">@L["ModelBenchmark_CompletionRate"]</div>
                 </div>
             </div>
             <table class="table result-table">
                 <thead>
                     <tr>
-                        <th>题目</th>
-                        <th>质量分</th>
+                        <th>@L["ModelBenchmark_ColumnPrompt"]</th>
+                        <th>@L["ModelBenchmark_ColumnQualityScore"]</th>
                         <th>tok/s</th>
-                        <th>耗时 ms</th>
-                        <th>匹配关键词</th>
+                        <th>@L["ModelBenchmark_ColumnLatency"]</th>
+                        <th>@L["ModelBenchmark_ColumnKeywords"]</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -134,11 +135,11 @@ else
                             <td>
                                 @if (r.IsTimeout)
                                 {
-                                    <span class="score-badge" style="background:#fef3c7;color:#92400e;">超时</span>
+                                    <span class="score-badge" style="background:#fef3c7;color:#92400e;">@L["ModelBenchmark_TimeoutBadge"]</span>
                                 }
                                 else if (r.IsError)
                                 {
-                                    <span class="score-badge bad">失败</span>
+                                    <span class="score-badge bad">@L["ModelBenchmark_FailedBadge"]</span>
                                 }
                                 else
                                 {
@@ -148,7 +149,7 @@ else
                                 }
                             </td>
                             <td>@(r.IsTimeout || r.IsError ? "-" : r.TokensPerSecond.ToString("F1"))</td>
-                            <td>@(r.IsTimeout ? "⏱ 超时" : r.IsError ? "失败" : r.LatencyMs.ToString())</td>
+                            <td>@(r.IsTimeout ? L["ModelBenchmark_TimeoutLabel"] : r.IsError ? L["ModelBenchmark_FailedLabel"] : r.LatencyMs.ToString())</td>
                             <td>
                                 @if (r.MatchedKeywords.Length > 0)
                                 {
@@ -168,22 +169,22 @@ else
 
     <!-- 排行榜 -->
     <div class="section">
-        <h3>🏆 排行榜</h3>
+        <h3>@L["ModelBenchmark_Leaderboard"]</h3>
         @if (leaderboard.Count == 0)
         {
-            <div class="alert alert-info">暂无数据，请先运行测试。</div>
+            <div class="alert alert-info">@L["ModelBenchmark_NoLeaderboardData"]</div>
         }
         else
         {
             <table class="table leaderboard-table">
                 <thead>
                     <tr>
-                        <th>排名</th>
-                        <th>模型</th>
-                        <th>质量均分</th>
+                        <th>@L["ModelBenchmark_ColumnRank"]</th>
+                        <th>@L["ModelBenchmark_ColumnModel"]</th>
+                        <th>@L["ModelBenchmark_QualityAvg"]</th>
                         <th>tok/s</th>
-                        <th>测试次数</th>
-                        <th>最近测试</th>
+                        <th>@L["ModelBenchmark_ColumnTestCount"]</th>
+                        <th>@L["ModelBenchmark_ColumnLastTest"]</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -228,26 +229,26 @@ else
     <!-- 历史记录 -->
     <div class="section">
         <div class="section-header">
-            <h3>📝 历史记录</h3>
+            <h3>@L["ModelBenchmark_History"]</h3>
             @if (history.Count > 0)
             {
-                <button class="btn btn-outline-danger btn-sm" @onclick="ClearHistoryAsync">清空</button>
+                <button class="btn btn-outline-danger btn-sm" @onclick="ClearHistoryAsync">@L["ModelBenchmark_ClearHistory"]</button>
             }
         </div>
         @if (history.Count == 0)
         {
-            <div class="alert alert-info">暂无历史记录。</div>
+            <div class="alert alert-info">@L["ModelBenchmark_NoHistory"]</div>
         }
         else
         {
             <table class="table history-table">
                 <thead>
                     <tr>
-                        <th>时间</th>
-                        <th>模型</th>
-                        <th>质量均分</th>
+                        <th>@L["ModelBenchmark_ColumnTime"]</th>
+                        <th>@L["ModelBenchmark_ColumnModel"]</th>
+                        <th>@L["ModelBenchmark_QualityAvg"]</th>
                         <th>tok/s</th>
-                        <th>操作</th>
+                        <th>@L["ModelBenchmark_ColumnActions"]</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -263,8 +264,8 @@ else
                             </td>
                             <td>@h.AvgTokensPerSecond.ToString("F1")</td>
                             <td>
-                                <button class="btn btn-sm btn-outline-secondary" @onclick="() => ViewDetail(h)">详情</button>
-                                <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteSessionAsync(h.Id)">删除</button>
+                                <button class="btn btn-sm btn-outline-secondary" @onclick="() => ViewDetail(h)">@L["ModelBenchmark_Detail"]</button>
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteSessionAsync(h.Id)">@L["ModelBenchmark_Delete"]</button>
                             </td>
                         </tr>
                     }
@@ -275,7 +276,7 @@ else
 
     <!-- 提示词预览 -->
     <div class="section">
-        <h3>📋 测试题目预览</h3>
+        <h3>@L["ModelBenchmark_PromptPreview"]</h3>
         <div class="prompt-list">
             @foreach (var p in prompts)
             {
@@ -283,7 +284,7 @@ else
                     <summary>@p.Title</summary>
                     <div class="prompt-text">@p.Prompt</div>
                     <div class="prompt-kws">
-                        <strong>预期关键词：</strong>@string.Join("、", p.ExpectedKeywords)
+                        <strong>@L["ModelBenchmark_ExpectedKeywords"]</strong>@string.Join("、", p.ExpectedKeywords)
                     </div>
                 </details>
             }
@@ -387,7 +388,7 @@ else
         var ok = await ApiService.RunBenchmarkAsync(config);
         if (!ok)
         {
-            runError = "启动测试失败，请检查后台服务状态。";
+            runError = L["ModelBenchmark_TestStartFailed"];
             return;
         }
 
@@ -419,7 +420,7 @@ else
             else if (status?.Status == "failed" && isRunning)
             {
                 isRunning = false;
-                runError = status.Error ?? "测试失败";
+                runError = status.Error ?? L["ModelBenchmark_TestFailed"];
             }
 
             await InvokeAsync(StateHasChanged);

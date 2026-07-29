@@ -5,11 +5,12 @@
 @inject Baihua.Web.Services.AIStatusService AIStatusService
 @inject NavigationManager Navigation
 @inject Microsoft.Extensions.Logging.ILogger<Onboarding> Logger
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
 @using Baihua.Contracts.Ai
 @using Microsoft.JSInterop
 
-<PageTitle>欢迎使用</PageTitle>
+<PageTitle>@L["Onboarding_PageTitle"]</PageTitle>
 
 <div class="onboarding-overlay">
     <div class="onboarding-container">
@@ -18,17 +19,17 @@
             <div class="progress-steps">
                 <div class="step @(currentStep >= 1 ? "active" : "") @(currentStep > 1 ? "completed" : "")">
                     <div class="step-number">1</div>
-                    <div class="step-label">欢迎</div>
+                    <div class="step-label">@L["Onboarding_Step1Label"]</div>
                 </div>
                 <div class="step-line @(currentStep > 1 ? "completed" : "")"></div>
                 <div class="step @(currentStep >= 2 ? "active" : "") @(currentStep > 2 ? "completed" : "")">
                     <div class="step-number">2</div>
-                    <div class="step-label">AI配置</div>
+                    <div class="step-label">@L["Onboarding_Step2Label"]</div>
                 </div>
                 <div class="step-line @(currentStep > 2 ? "completed" : "")"></div>
                 <div class="step @(currentStep >= 3 ? "active" : "")">
                     <div class="step-number">3</div>
-                    <div class="step-label">完成</div>
+                    <div class="step-label">@L["Onboarding_Step3Label"]</div>
                 </div>
             </div>
         </div>
@@ -39,41 +40,41 @@
             <div class="onboarding-step">
                 <div class="step-header">
                     <div class="welcome-icon">🏠</div>
-                    <h1>欢迎来到家庭知识库</h1>
-                    <p class="subtitle">让知识在家人之间流动</p>
+                    <h1>@L["Onboarding_WelcomeTitle"]</h1>
+                    <p class="subtitle">@L["Onboarding_WelcomeSubtitle"]</p>
                 </div>
 
                 <div class="step-content">
                     <div class="feature-cards">
                         <div class="feature-card">
                             <div class="feature-icon">📚</div>
-                            <h3>家长管理知识</h3>
-                            <p>您作为家庭管理员，可以整理养生和计算机技术知识，建立全家共享的知识宝库</p>
+                            <h3>@L["Onboarding_Feature1Title"]</h3>
+                            <p>@L["Onboarding_Feature1Desc"]</p>
                         </div>
                         <div class="feature-card">
                             <div class="feature-icon">📱</div>
-                            <h3>成员随时学习</h3>
-                            <p>家庭成员通过手机端扫码连接，随时访问知识库，利用碎片时间学习</p>
+                            <h3>@L["Onboarding_Feature2Title"]</h3>
+                            <p>@L["Onboarding_Feature2Desc"]</p>
                         </div>
                         <div class="feature-card">
                             <div class="feature-icon">🤖</div>
-                            <h3>AI 辅助整理</h3>
-                            <p>借助 AI 能力，快速生成结构化笔记，把零散知识变成体系化的学习资料</p>
+                            <h3>@L["Onboarding_Feature3Title"]</h3>
+                            <p>@L["Onboarding_Feature3Desc"]</p>
                         </div>
                     </div>
 
                     <div class="info-box">
-                        <strong>💡 开始之前</strong>
-                        <p>AI 功能需要连接大模型服务。你可以使用自己已有的 API Key，也可以从下方列出的模型服务商处获取。</p>
+                        <strong>💡 @L["Onboarding_BeforeStart"]</strong>
+                        <p>@L["Onboarding_BeforeStartDesc"]</p>
                     </div>
                 </div>
 
                 <div class="step-actions">
                     <button class="btn btn-primary btn-lg" @onclick="GoToStep2">
-                        开始配置 →
+                        @L["Onboarding_StartConfig"]
                     </button>
                     <button class="btn btn-outline-secondary btn-lg ms-3" @onclick="SkipOnboarding">
-                        稍后设置
+                        @L["Onboarding_SkipSetup"]
                     </button>
                 </div>
             </div>
@@ -84,8 +85,8 @@
             <div class="onboarding-step">
                 <div class="step-header">
                     <div class="welcome-icon">🤖</div>
-                    <h1>配置 AI 服务</h1>
-                    <p class="subtitle">选择一个 AI 提供商，开启智能知识管理</p>
+                    <h1>@L["Onboarding_AiConfigTitle"]</h1>
+                    <p class="subtitle">@L["Onboarding_AiConfigSubtitle"]</p>
                 </div>
 
                 <div class="step-content">
@@ -98,47 +99,47 @@
                     {
                         <div class="saving-overlay">
                             <div class="spinner"></div>
-                            <p>正在保存配置并验证...</p>
+                            <p>@L["Onboarding_SavingMessage"]</p>
                         </div>
                     }
 
                     <div class="form-group">
-                        <label>选择预设提供商</label>
+                        <label>@L["Onboarding_SelectPreset"]</label>
                         <select class="form-control" @onchange="OnPresetSelected" value="@selectedPresetId">
-                            <option value="">-- 请选择 --</option>
+                            <option value="">@L["Onboarding_SelectPlaceholder"]</option>
                             @foreach (var preset in providerPresets)
                             {
                                 <option value="@preset.Id">@preset.Name</option>
                             }
                         </select>
-                        <small class="form-text">选择知名提供商可自动填充 API 地址和推荐模型</small>
+                        <small class="form-text">@L["Onboarding_PresetHint"]</small>
                     </div>
 
                     @if (!string.IsNullOrEmpty(selectedPresetId))
                     {
                         <div class="form-group">
-                            <label>API Key</label>
+                            <label>@L["Onboarding_ApiKeyLabel"]</label>
                             <input type="password" class="form-control" @bind="apiKey" @bind:event="oninput" placeholder="sk-..." />
-                            <small class="form-text">API Key 将加密存储在本地，不会上传到任何服务器</small>
+                            <small class="form-text">@L["Onboarding_ApiKeyHint"]</small>
                         </div>
 
                         <div class="preset-info">
                             <div class="info-row">
-                                <span class="info-label">提供商：</span>
+                                <span class="info-label">@L["Onboarding_ProviderLabel"]</span>
                                 <span class="info-value">@selectedPresetName</span>
                             </div>
                             <div class="info-row">
-                                <span class="info-label">API 地址：</span>
+                                <span class="info-label">@L["Onboarding_ApiUrlLabel"]</span>
                                 <span class="info-value">@selectedPresetUrl</span>
                             </div>
                             <div class="info-row">
-                                <span class="info-label">推荐模型：</span>
+                                <span class="info-label">@L["Onboarding_RecommendedModelLabel"]</span>
                                 <span class="info-value">@selectedPresetModel</span>
                             </div>
                         </div>
 
                         <div class="help-links">
-                            <p>获取 API Key：</p>
+                            <p>@L["Onboarding_GetApiKey"]</p>
                             <div class="link-buttons">
                                 @if (selectedPresetId == "zhipu")
                                 {
@@ -166,9 +167,9 @@
                 </div>
 
                 <div class="step-actions">
-                    <button class="btn btn-secondary" @onclick="() => currentStep = 1">← 返回</button>
+                    <button class="btn btn-secondary" @onclick="() => currentStep = 1">@L["Onboarding_Back"]</button>
                     <button class="btn btn-primary" @onclick="SaveAiConfig" disabled="@(!CanSave)">
-                        @(isSaving ? "保存中..." : "保存并继续 →")
+                        @(isSaving ? L["Onboarding_Saving"] : L["Onboarding_SaveAndContinue"])
                     </button>
                 </div>
             </div>
@@ -179,35 +180,35 @@
             <div class="onboarding-step">
                 <div class="step-header">
                     <div class="welcome-icon">🎉</div>
-                    <h1>配置完成！</h1>
-                    <p class="subtitle">您的家庭知识库已就绪</p>
+                    <h1>@L["Onboarding_CompleteTitle"]</h1>
+                    <p class="subtitle">@L["Onboarding_CompleteSubtitle"]</p>
                 </div>
 
                 <div class="step-content">
                     <div class="completion-summary">
                         <div class="summary-item success">
                             <span class="summary-icon">✅</span>
-                            <span>AI 服务已配置</span>
+                            <span>@L["Onboarding_AiConfigured"]</span>
                         </div>
                         <div class="summary-item">
                             <span class="summary-icon">📱</span>
-                            <span>接下来：添加家庭成员，让他们也能访问知识库</span>
+                            <span>@L["Onboarding_NextAddMembers"]</span>
                         </div>
                         <div class="summary-item">
                             <span class="summary-icon">📚</span>
-                            <span>接下来：创建「计算机」和「中医」知识库</span>
+                            <span>@L["Onboarding_NextCreateLibraries"]</span>
                         </div>
                     </div>
 
                     <div class="info-box">
-                        <strong>🚀 下一步引导</strong>
-                        <p>进入首页后，您会看到一个初始化任务清单。完成这些任务，就能让全家人开始使用知识库了！</p>
+                        <strong>🚀 @L["Onboarding_NextSteps"]</strong>
+                        <p>@L["Onboarding_NextStepsDesc"]</p>
                     </div>
                 </div>
 
                 <div class="step-actions">
                     <button class="btn btn-primary btn-lg" @onclick="FinishOnboarding">
-                        进入知识库 →
+                        @L["Onboarding_EnterLibrary"]
                     </button>
                 </div>
             </div>
@@ -703,7 +704,7 @@
             var preset = providerPresets.FirstOrDefault(p => p.Id == selectedPresetId);
             if (preset == null)
             {
-                configError = "请选择有效的提供商";
+                configError = L["Onboarding_InvalidProvider"];
                 return;
             }
 
@@ -730,12 +731,12 @@
             }
             else
             {
-                configError = $"保存失败: {result.Message}";
+                configError = L["Onboarding_SaveFailed", result.Message];
             }
         }
         catch (Exception ex)
         {
-            configError = $"保存时出错: {ex.Message}";
+            configError = L["Onboarding_SaveError", ex.Message];
         }
         finally
         {
