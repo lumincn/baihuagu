@@ -173,7 +173,12 @@ function Start-ServiceProc($name, $projRelPath){
 	try {
 		$prevEnv = $env:ASPNETCORE_ENVIRONMENT
 		$env:ASPNETCORE_ENVIRONMENT = 'Development'
-		$proc = Start-Process -FilePath 'dotnet' -ArgumentList $args -RedirectStandardOutput $log -RedirectStandardError $errLog -NoNewWindow -PassThru
+		$exePath = Join-Path $projPath "bin\Debug\net10.0\bh-$name.exe"
+		if (Test-Path $exePath) {
+			$proc = Start-Process -FilePath $exePath -RedirectStandardOutput $log -RedirectStandardError $errLog -NoNewWindow -PassThru
+		} else {
+			$proc = Start-Process -FilePath 'dotnet' -ArgumentList $args -RedirectStandardOutput $log -RedirectStandardError $errLog -NoNewWindow -PassThru
+		}
 		if ($null -ne $prevEnv) { $env:ASPNETCORE_ENVIRONMENT = $prevEnv } else { Remove-Item Env:\ASPNETCORE_ENVIRONMENT -ErrorAction SilentlyContinue }
 		Start-Sleep -Milliseconds 200
 		$procId = $proc.Id

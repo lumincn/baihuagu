@@ -2,9 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>bh-webui</AssemblyName>
+    <UseAppHost>true</UseAppHost>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UseAppHost Condition="'$(Configuration)' == 'Debug'">false</UseAppHost>
     <CompressionEnabled>false</CompressionEnabled>
     <RootNamespace>WebUI</RootNamespace>
     <UserSecretsId>baihua-family-webui-2026</UserSecretsId>
@@ -27,3 +28,4 @@
   </ItemGroup>
 
 </Project>
+
