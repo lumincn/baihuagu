@@ -1,5913 +1,13191 @@
 <?xml version="1.0" encoding="utf-8"?>
-<root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    
+    
   
   
   
   
-  <xs:schema id="root">
+  
+    
+    <xs:schema id="root">
+      
+      
     
     
     
     
-    <xs:element name="root" ns1:IsDataSet="true">
+    
+      
+      <xs:element name="root" ns1:IsDataSet="true">
     </xs:element>
+      
+      
     
     
   
   
-  </xs:schema>
   
-  
-  
-  
-  <resheader name="resmimetype">
-    
     
+    </xs:schema>
     
     
-    <value>text/microsoft-resx</value>
-    
-    
   
   
-  </resheader>
   
   
   
-  
-  <resheader name="version">
     
+    <resheader name="resmimetype">
+      
+      
     
     
     
-    <value>2.0</value>
     
     
-  
-  
-  </resheader>
-  
+      
+      <value>text/microsoft-resx</value>
+      
+      
+    
+    
   
   
   
-  <resheader name="reader">
     
+    </resheader>
     
     
-    
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-    
-    
-  
   
-  </resheader>
   
   
   
   
-  <resheader name="writer">
     
+    <resheader name="version">
+      
+      
     
     
     
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     
     
-  
-  
-  </resheader>
-  
+      
+      <value>2.0</value>
+      
+      
+    
+    
   
   
   
-  <data name="LanguageName" xml:space="preserve">
-    
-    
-    
     
-    <value>中文</value>
+    </resheader>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="Nav_Home" xml:space="preserve">
     
+    <resheader name="reader">
+      
+      
     
     
     
-    <value>首页</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+      
+      
+    
+    
   
   
   
-  <data name="Nav_Search" xml:space="preserve">
-    
-    
     
+    </resheader>
     
-    <value>搜索</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="Nav_Tasks" xml:space="preserve">
     
+    <resheader name="writer">
+      
+      
     
     
     
-    <value>任务</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+      
+      
+    
+    
   
   
   
-  <data name="Nav_Cards" xml:space="preserve">
-    
     
+    </resheader>
     
     
-    <value>卡片</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="Nav_Vaults" xml:space="preserve">
     
+    <data name="LanguageName" xml:space="preserve">
+      
+      
     
     
     
-    <value>知识库</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>中文</value>
+      
+      
+    
+    
   
   
   
-  <data name="Nav_Settings" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>设置</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="Nav_Login" xml:space="preserve">
     
+    <data name="Nav_Home" xml:space="preserve">
+      
+      
     
     
     
-    <value>登录</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>首页</value>
+      
+      
+    
+    
   
   
   
-  <data name="Nav_Dashboard" xml:space="preserve">
-    
-    
-    
     
-    <value>仪表板</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="Nav_Messages" xml:space="preserve">
     
+    <data name="Nav_Search" xml:space="preserve">
+      
+      
     
     
     
-    <value>消息</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>搜索</value>
+      
+      
+    
+    
   
   
   
-  <data name="Search_Placeholder" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>搜索笔记...</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="Common_Save" xml:space="preserve">
     
+    <data name="Nav_Tasks" xml:space="preserve">
+      
+      
     
     
     
-    <value>保存</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>任务</value>
+      
+      
+    
+    
   
   
   
-  <data name="Common_Cancel" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>取消</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="Common_Delete" xml:space="preserve">
     
+    <data name="Nav_Cards" xml:space="preserve">
+      
+      
     
     
     
-    <value>删除</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>卡片</value>
+      
+      
+    
+    
   
   
   
-  <data name="Common_Confirm" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>确认</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="Common_Loading" xml:space="preserve">
     
+    <data name="Nav_Vaults" xml:space="preserve">
+      
+      
     
     
     
-    <value>加载中...</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>知识库</value>
+      
+      
+    
+    
   
   
   
-  <data name="Common_Error" xml:space="preserve">
-    
-    
-    
     
-    <value>发生错误</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="Common_Retry" xml:space="preserve">
     
+    <data name="Nav_Settings" xml:space="preserve">
+      
+      
     
     
     
-    <value>重试</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>设置</value>
+      
+      
+    
+    
   
   
   
-  <data name="Common_Close" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>关闭</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="Language" xml:space="preserve">
     
+    <data name="Nav_Login" xml:space="preserve">
+      
+      
     
     
     
-    <value>语言</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>登录</value>
+      
+      
+    
+    
   
   
   
-  <data name="HardwareBenchmark_PageTitle" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>硬件评测</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="HardwareBenchmark_Title" xml:space="preserve">
     
+    <data name="Nav_Dashboard" xml:space="preserve">
+      
+      
     
     
     
-    <value>硬件评测</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>仪表板</value>
+      
+      
+    
+    
   
   
   
-  <data name="HardwareBenchmark_Description" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>评估当前机器的 AI 算力水平，与主流 AI 计算平台进行对比，帮助您了解硬件性能定位。</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="HardwareBenchmark_Loading" xml:space="preserve">
     
+    <data name="Nav_Messages" xml:space="preserve">
+      
+      
     
     
     
-    <value>正在检测硬件信息...</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>消息</value>
+      
+      
+    
+    
   
   
   
-  <data name="HardwareBenchmark_CurrentMachine" xml:space="preserve">
-    
-    
-    
     
-    <value>本机配置</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="HardwareBenchmark_CurrentMachineLabel" xml:space="preserve">
     
+    <data name="Search_Placeholder" xml:space="preserve">
+      
+      
     
     
     
-    <value>当前机器</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>搜索笔记...</value>
+      
+      
+    
+    
   
   
   
-  <data name="HardwareBenchmark_Unknown" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>未知</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="HardwareBenchmark_CoreCount" xml:space="preserve">
     
+    <data name="Common_Save" xml:space="preserve">
+      
+      
     
     
     
-    <value>核心数</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>保存</value>
+      
+      
+    
+    
   
   
   
-  <data name="HardwareBenchmark_Memory" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>内存</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="HardwareBenchmark_Gpu" xml:space="preserve">
     
+    <data name="Common_Cancel" xml:space="preserve">
+      
+      
     
     
     
-    <value>显卡</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>取消</value>
+      
+      
+    
+    
   
   
   
-  <data name="HardwareBenchmark_System" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>系统</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="HardwareBenchmark_DiskAvailable" xml:space="preserve">
     
+    <data name="Common_Delete" xml:space="preserve">
+      
+      
     
     
     
-    <value>磁盘可用</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>删除</value>
+      
+      
+    
+    
   
   
   
-  <data name="HardwareBenchmark_CpuInference" xml:space="preserve">
-    
-    
-    
     
-    <value>CPU 推理</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="HardwareBenchmark_SharedMemory" xml:space="preserve">
     
+    <data name="Common_Confirm" xml:space="preserve">
+      
+      
     
     
     
-    <value>共享内存</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>确认</value>
+      
+      
+    
+    
   
   
   
-  <data name="HardwareBenchmark_DedicatedVram" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>专用显存</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="HardwareBenchmark_SystemMemory" xml:space="preserve">
     
+    <data name="Common_Loading" xml:space="preserve">
+      
+      
     
     
     
-    <value>系统内存</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>加载中...</value>
+      
+      
+    
+    
   
   
   
-  <data name="HardwareBenchmark_NoGpu" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>无独立 GPU</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="HardwareBenchmark_NoGpuDetected" xml:space="preserve">
     
+    <data name="Common_Error" xml:space="preserve">
+      
+      
     
     
     
-    <value>未检测到独立 GPU</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>发生错误</value>
+      
+      
+    
+    
   
   
   
-  <data name="HardwareBenchmark_Tier_Cpu" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>CPU 推理</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="HardwareBenchmark_Tier_Entry" xml:space="preserve">
     
+    <data name="Common_Retry" xml:space="preserve">
+      
+      
     
     
     
-    <value>入门 GPU</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>重试</value>
+      
+      
+    
+    
   
   
   
-  <data name="HardwareBenchmark_Tier_Mid" xml:space="preserve">
-    
-    
-    
     
-    <value>中端 GPU</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="HardwareBenchmark_Tier_High" xml:space="preserve">
     
+    <data name="Common_Close" xml:space="preserve">
+      
+      
     
     
     
-    <value>高端 GPU</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>关闭</value>
+      
+      
+    
+    
   
   
   
-  <data name="HardwareBenchmark_Tier_Top" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>顶级 GPU</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="HardwareBenchmark_ComparisonTitle" xml:space="preserve">
     
+    <data name="Language" xml:space="preserve">
+      
+      
     
     
     
-    <value>⚡ AI 算力对比表</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>语言</value>
+      
+      
+    
+    
   
   
   
-  <data name="HardwareBenchmark_ComparisonDesc" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>按 Llama-3-8B Q4 估算推理速度排序。数据为理论/实测参考值，供性能定位参考。</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="HardwareBenchmark_Col_Rank" xml:space="preserve">
     
+    <data name="HardwareBenchmark_PageTitle" xml:space="preserve">
+      
+      
     
     
     
-    <value>排名</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>硬件评测</value>
+      
+      
+    
+    
   
   
   
-  <data name="HardwareBenchmark_Col_Platform" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>平台</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="HardwareBenchmark_Col_Gpu" xml:space="preserve">
     
+    <data name="HardwareBenchmark_Title" xml:space="preserve">
+      
+      
     
     
     
-    <value>GPU / NPU / 加速器</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>硬件评测</value>
+      
+      
+    
+    
   
   
   
-  <data name="HardwareBenchmark_Col_Memory" xml:space="preserve">
-    
-    
-    
     
-    <value>显存 / 统一内存</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="HardwareBenchmark_Col_Int8" xml:space="preserve">
     
+    <data name="HardwareBenchmark_Description" xml:space="preserve">
+      
+      
     
     
     
-    <value>INT8 算力</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>评估当前机器的 AI 算力水平，与主流 AI 计算平台进行对比，帮助您了解硬件性能定位。</value>
+      
+      
+    
+    
   
   
   
-  <data name="HardwareBenchmark_Col_Int4" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>INT4 算力</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="HardwareBenchmark_Col_Bandwidth" xml:space="preserve">
+    
+    <data name="HardwareBenchmark_Loading" xml:space="preserve">
+      
+      
+    
     
     
     
     
-    <value>显存带宽</value>
+      
+      <value>正在检测硬件信息...</value>
+      
+      
     
     
   
+  
+  
+    
+    </data>
+    
+    
   
-  </data>
   
   
   
   
-  <data name="HardwareBenchmark_Col_Speed" xml:space="preserve">
     
+    <data name="HardwareBenchmark_CurrentMachine" xml:space="preserve">
+      
+      
     
     
     
-    <value>Llama3-8B Q4 估速</value>
     
     
+      
+      <value>本机配置</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_CurrentMachineLabel" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>当前机器</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_Unknown" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>未知</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_CoreCount" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>核心数</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_Memory" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>内存</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_Gpu" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>显卡</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_System" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>系统</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_DiskAvailable" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>磁盘可用</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_CpuInference" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>CPU 推理</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_SharedMemory" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>共享内存</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_DedicatedVram" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>专用显存</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_SystemMemory" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>系统内存</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_NoGpu" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>无独立 GPU</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_NoGpuDetected" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>未检测到独立 GPU</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_Tier_Cpu" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>CPU 推理</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_Tier_Entry" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>入门 GPU</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_Tier_Mid" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>中端 GPU</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_Tier_High" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>高端 GPU</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_Tier_Top" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>顶级 GPU</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_ComparisonTitle" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>⚡ AI 算力对比表</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_ComparisonDesc" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>按 Llama-3-8B Q4 估算推理速度排序。数据为理论/实测参考值，供性能定位参考。</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_Col_Rank" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>排名</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_Col_Platform" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>平台</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_Col_Gpu" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>GPU / NPU / 加速器</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_Col_Memory" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>显存 / 统一内存</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_Col_Int8" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>INT8 算力</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_Col_Int4" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>INT4 算力</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_Col_Bandwidth" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>显存带宽</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_Col_Speed" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>Llama3-8B Q4 估速</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_Col_Power" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>典型功耗</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_Col_Price" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>参考价格</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_DataSourceTitle" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>📋 数据来源与估算说明</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_Tier_Title" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>📊 性能等级说明</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_RecommendationTitle" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>🎯 本机适用场景建议</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_Analyzing" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>正在分析硬件配置...</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_LoadError" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>获取硬件信息失败</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_RefreshBtn" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>🔄 刷新硬件信息</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_RefreshingBtn" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>🔄 刷新中...</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_Disclaimer" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>数据仅供参考，实际性能受驱动、散热、模型优化等因素影响。</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_Level_Limited" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>受限</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_Level_Adequate" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>可用</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_Level_Good" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>良好</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_Level_Great" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>优秀</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_Level_Excellent" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>顶级</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="HardwareBenchmark_Level_Unsupported" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>不支持</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterChat_PageTitle" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>虚拟师父</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterChat_Title" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>师父</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterChat_CreateMaster" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>+ 拜师</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterChat_EmptyHint" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>还没有师父，点击「拜师」创建</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterChat_EmptyDesc" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>选择一位师父开始学习之旅</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterChat_ViewProfile" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>画像查看</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterChat_StageProgress" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>阶段进度</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterChat_EvictData" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>清理旧数据</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterChat_DeleteMaster" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>删除</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterChat_QuickHint" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>不知道该问什么？试试这些：</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterChat_InputPlaceholder" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>向师父请教...</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterChat_StopBtn" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>停止</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterChat_SendBtn" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>发送</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterChat_AiNotConfigured" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>AI 未配置</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterChat_AiConfigRequired" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>虚拟师父需要 AI 服务支持，请在「设置 &gt; AI 服务」中配置</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterChat_AiConfigLater" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>稍后再说</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterChat_AiConfigGo" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>前往配置</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterChat_ModalTitle" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>拜师学艺</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterChat_Industry" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>行业</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterChat_LearningGoal" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>学习目标</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterChat_GoalPlaceholder" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>例如：通过执业医师考试</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterChat_Cancel" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>取消</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterChat_Creating" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>正在拜师...</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterChat_ConfirmCreate" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>确认拜师</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterStage_PageTitle" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>阶段进度</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterStage_Title" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>阶段进度</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterStage_NoMasterHint" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>未选择师父，&lt;a href=&quot;master-chat&quot;&gt;返回师父对话页&lt;/a&gt;</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterStage_Loading" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>加载中...</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterStage_MasterLabel" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>师父：</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterStage_GoBack" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>返回对话</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterStage_ProgressText" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>{0}/{1} 阶段完成</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterStage_CompleteBtn" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>完成此阶段</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterStage_CompletingBtn" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>处理中...</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterStage_StageSummary" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>阶段摘要</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterStage_KeyCorrections" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>关键纠正</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterStage_KnowledgeBase" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>知识库关联</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterStage_LinkVaultBtn" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>关联知识库</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterStage_LoadingVaults" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>加载中...</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterStage_VaultEmpty" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>尚未关联知识库，关联后师父将参考知识库内容教学</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterStage_RemoveVault" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>解除关联</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterStage_DialogTitle" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>阶段完成</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterStage_StageComplete" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>「{0}」阶段完成！</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterStage_StageSummaryDesc" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>阶段小结</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterStage_StageCorrections" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>关键纠正</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterStage_ContinueBtn" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>继续修行</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterStage_VaultPickerTitle" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>选择知识库</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterStage_NoVaults" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>暂无可用知识库</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="MasterStage_CloseBtn" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>关闭</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_PageTitle" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>OpenClaw 任务委派</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_Title" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>OpenClaw 任务委派</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_Subtitle" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>将复杂任务委派给 OpenClaw Agent 执行，自动生成 Markdown 报告。</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_LocalAiConfig" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>本地 AI 配置（Ollama / LM Studio / llama.cpp）</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_UseOllama" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>在 OpenClaw 中使用 Ollama</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_UseLmStudio" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>在 OpenClaw 中使用 LM Studio</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_UseLlamaCpp" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>在 OpenClaw 中使用 llama.cpp（GPU 加速）</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_Running" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>● 运行中</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_NotRunning" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>● 未运行</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_OllamaDefaultAddr" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>Ollama 默认地址：http://localhost:11434</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_LmStudioDefaultAddr" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>LM Studio 默认地址：http://localhost:1234/v1</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_ScanModels" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>扫描模型</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_SyncToOpenClaw" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>同步到 OpenClaw</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_NoModelsOllama" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>未扫描到模型，请确认 Ollama 已启动。</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_NoModelsLmStudio" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>未扫描到模型，请确认 LM Studio 已启动且服务器已开启。</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_NoModelsLlamaCpp" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>未扫描到模型，请确认路径正确并点击「扫描模型」。</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_LlamaCppConfigNote" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>llama.cpp 的详细配置（模型路径、GPU 层数、上下文大小、KV Cache 量化等）请在本地模型页中设置，配置会自动同步到 OpenClaw。</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_ModelConfigTitle" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>模型配置文件</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_CurrentBadge" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>当前</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_DefaultModelTitle" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>OpenClaw 默认模型</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_CurrentDefaultModel" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>当前默认模型</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_UseBuiltinDefault" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>-- 使用 OpenClaw 内置默认 --</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_DefaultModelHint" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>设置后 OpenClaw 会优先使用此模型执行任务</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_SaveDefaultModel" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>保存默认模型</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_SaveConfig" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>保存配置</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_Reset" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>重置</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_NewTask" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>新建任务</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_TaskPromptLabel" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>任务描述 / Prompt</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_PromptPlaceholder" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>请输入需要 OpenClaw 执行的任务，例如：分析当前目录下的代码结构并给出优化建议...</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_Submitting" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>提交中...</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_SendTask" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>发送任务</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_TaskHistory" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>任务历史</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_Refresh" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>刷新</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_NoTasks" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>暂无任务，请在上方提交第一个任务。</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_Col_Status" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>状态</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_Col_CreatedAt" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>创建时间</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_Col_CompletedAt" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>完成时间</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
   
   
-  </data>
   
+    
+    <data name="OpenClaw_Col_Actions" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>操作</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_Cancel" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>取消</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_ViewReport" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>查看报告</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_ViewError" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>查看错误</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_ErrorDetailTitle" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>错误详情 - {0}</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_ReportTitle" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>执行报告 - {0}</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+  
+  
+    
+    <data name="OpenClaw_TaskFailed" xml:space="preserve">
+      
+      
+    
+    
+    
+    
+    
+      
+      <value>任务执行失败</value>
+      
+      
+    
+    
+  
+  
+  
+    
+    </data>
+    
+    
   
   
   
-  <data name="HardwareBenchmark_Col_Power" xml:space="preserve">
+  
+  
+    
+    <data name="OpenClaw_FailedAt" xml:space="preserve">
+      
+      
+    
     
     
     
     
-    <value>典型功耗</value>
+      
+      <value>失败时间:</value>
+      
+      
     
     
   
+  
+  
+    
+    </data>
+    
+    
   
-  </data>
   
   
   
   
-  <data name="HardwareBenchmark_Col_Price" xml:space="preserve">
+    
+    <data name="OpenClaw_ErrorLog" xml:space="preserve">
+      
+      
     
     
     
     
-    <value>参考价格</value>
     
+      
+      <value>错误日志</value>
+      
+      
     
+    
+  
   
+  
+    
+    </data>
+    
+    
   
-  </data>
   
   
   
   
-  <data name="HardwareBenchmark_DataSourceTitle" xml:space="preserve">
     
+    <data name="OpenClaw_ContentEmpty" xml:space="preserve">
+      
+      
     
     
     
-    <value>📋 数据来源与估算说明</value>
     
     
+      
+      <value>内容为空或无法加载。</value>
+      
+      
+    
+    
+  
+  
   
+    
+    </data>
+    
+    
   
-  </data>
   
   
   
   
-  <data name="HardwareBenchmark_Tier_Title" xml:space="preserve">
+    
+    <data name="OpenClaw_Close" xml:space="preserve">
+      
+      
     
     
     
     
-    <value>📊 性能等级说明</value>
     
+      
+      <value>关闭</value>
+      
+      
     
+    
+  
   
+  
+    
+    </data>
+    
+    
   
-  </data>
   
   
   
   
-  <data name="HardwareBenchmark_RecommendationTitle" xml:space="preserve">
+    
+    <data name="OpenClaw_Copy" xml:space="preserve">
+      
+      
+    
     
     
     
     
-    <value>🎯 本机适用场景建议</value>
+      
+      <value>复制</value>
+      
+      
     
     
   
   
-  </data>
   
+    
+    </data>
+    
+    
+  
   
   
   
-  <data name="HardwareBenchmark_Analyzing" xml:space="preserve">
+  
+    
+    <data name="OpenClaw_Col_ModelId" xml:space="preserve">
+      
+      
     
     
     
     
-    <value>正在分析硬件配置...</value>
     
+      
+      <value>模型 ID</value>
+      
+      
     
+    
+  
   
   
-  </data>
+    
+    </data>
+    
+    
+  
   
   
   
   
-  <data name="HardwareBenchmark_LoadError" xml:space="preserve">
     
+    <data name="OpenClaw_Col_Name" xml:space="preserve">
+      
+      
     
     
     
-    <value>获取硬件信息失败</value>
     
     
+      
+      <value>名称</value>
+      
+      
+    
+    
+  
+  
   
+    
+    </data>
+    
+    
   
-  </data>
   
   
   
   
-  <data name="HardwareBenchmark_RefreshBtn" xml:space="preserve">
+    
+    <data name="OpenClaw_Col_Context" xml:space="preserve">
+      
+      
     
     
     
     
-    <value>🔄 刷新硬件信息</value>
     
+      
+      <value>Context</value>
+      
+      
     
+    
+  
   
+  
+    
+    </data>
+    
+    
   
-  </data>
   
   
   
   
-  <data name="HardwareBenchmark_RefreshingBtn" xml:space="preserve">
+    
+    <data name="OpenClaw_Col_MaxTokens" xml:space="preserve">
+      
+      
+    
     
     
     
     
-    <value>🔄 刷新中...</value>
+      
+      <value>Max Tokens</value>
+      
+      
     
     
   
+  
+  
+    
+    </data>
+    
+    
   
-  </data>
   
   
   
   
-  <data name="HardwareBenchmark_Disclaimer" xml:space="preserve">
+    
+    <data name="OpenClaw_CharCount" xml:space="preserve">
+      
+      
     
     
     
     
-    <value>数据仅供参考，实际性能受驱动、散热、模型优化等因素影响。</value>
     
+      
+      <value>{0} 字符</value>
+      
+      
     
+    
+  
   
+  
+    
+    </data>
+    
+    
   
-  </data>
   
   
   
   
-  <data name="HardwareBenchmark_Level_Limited" xml:space="preserve">
     
+    <data name="OpenClaw_Loading" xml:space="preserve">
+      
+      
     
     
     
-    <value>受限</value>
     
     
+      
+      <value>加载中...</value>
+      
+      
+    
+    
+  
+  
   
+    
+    </data>
+    
+    
   
-  </data>
   
   
   
   
-  <data name="HardwareBenchmark_Level_Adequate" xml:space="preserve">
+    
+    <data name="LocalModels_PageTitle" xml:space="preserve">
+      
+      
     
     
     
     
-    <value>可用</value>
     
+      
+      <value>本地模型</value>
+      
+      
     
+    
+  
   
+  
+    
+    </data>
+    
+    
   
-  </data>
   
   
   
   
-  <data name="HardwareBenchmark_Level_Good" xml:space="preserve">
+    
+    <data name="LocalModels_Title" xml:space="preserve">
+      
+      
+    
     
     
     
     
-    <value>良好</value>
+      
+      <value>本地模型部署</value>
+      
+      
     
     
   
   
-  </data>
   
+    
+    </data>
+    
+    
+  
   
   
   
-  <data name="HardwareBenchmark_Level_Great" xml:space="preserve">
+  
+    
+    <data name="LocalModels_TabOverview" xml:space="preserve">
+      
+      
     
     
     
     
-    <value>优秀</value>
     
+      
+      <value>概览</value>
+      
+      
     
+    
+  
   
   
-  </data>
+    
+    </data>
+    
+    
+  
   
   
   
   
-  <data name="HardwareBenchmark_Level_Excellent" xml:space="preserve">
     
+    <data name="LocalModels_TabHardware" xml:space="preserve">
+      
+      
     
     
     
-    <value>顶级</value>
     
     
+      
+      <value>硬件</value>
+      
+      
+    
+    
+  
+  
   
+    
+    </data>
+    
+    
   
-  </data>
   
   
   
   
-  <data name="HardwareBenchmark_Level_Unsupported" xml:space="preserve">
+    
+    <data name="LocalModels_TabDownloaded" xml:space="preserve">
+      
+      
     
     
     
     
-    <value>不支持</value>
     
+      
+      <value>已下载</value>
+      
+      
     
+    
+  
   
+  
+    
+    </data>
+    
+    
   
-  </data>
   
   
   
   
-  <data name="MasterChat_PageTitle" xml:space="preserve">
+    
+    <data name="LocalModels_TabConfig" xml:space="preserve">
+      
+      
+    
     
     
     
     
-    <value>虚拟师父</value>
+      
+      <value>配置</value>
+      
+      
     
     
   
+  
+  
+    
+    </data>
+    
+    
   
-  </data>
   
   
   
   
-  <data name="MasterChat_Title" xml:space="preserve">
+    
+    <data name="LocalModels_HardwareTitle" xml:space="preserve">
+      
+      
+    
+    
     
     
     
+      
+      <value>硬件环境</value>
+      
+      
+    
+    
+  
+  
+  
     
-    <value>师父</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="MasterChat_CreateMaster" xml:space="preserve">
     
+    <data name="LocalModels_CpuDetecting" xml:space="preserve">
+      
+      
     
     
     
-    <value>+ 拜师</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>检测中...</value>
+      
+      
+    
+    
   
   
   
-  <data name="MasterChat_EmptyHint" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>还没有师父，点击「拜师」创建</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="MasterChat_EmptyDesc" xml:space="preserve">
     
+    <data name="LocalModels_Disable" xml:space="preserve">
+      
+      
     
     
     
-    <value>选择一位师父开始学习之旅</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>禁用</value>
+      
+      
+    
+    
   
   
   
-  <data name="MasterChat_ViewProfile" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>画像查看</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="MasterChat_StageProgress" xml:space="preserve">
     
+    <data name="LocalModels_MemoryTitle" xml:space="preserve">
+      
+      
     
     
     
-    <value>阶段进度</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>内存</value>
+      
+      
+    
+    
   
   
   
-  <data name="MasterChat_EvictData" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>清理旧数据</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="MasterChat_DeleteMaster" xml:space="preserve">
     
+    <data name="LocalModels_MemoryDetail" xml:space="preserve">
+      
+      
     
     
     
-    <value>删除</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>可用: {0} GB</value>
+      
+      
+    
+    
   
   
   
-  <data name="MasterChat_QuickHint" xml:space="preserve">
-    
-    
-    
     
-    <value>不知道该问什么？试试这些：</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="MasterChat_InputPlaceholder" xml:space="preserve">
     
+    <data name="LocalModels_GpuTitle" xml:space="preserve">
+      
+      
     
     
     
-    <value>向师父请教...</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>显卡</value>
+      
+      
+    
+    
   
   
   
-  <data name="MasterChat_StopBtn" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>停止</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="MasterChat_SendBtn" xml:space="preserve">
     
+    <data name="LocalModels_VramUnknown" xml:space="preserve">
+      
+      
     
     
     
-    <value>发送</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>显存未知</value>
+      
+      
+    
+    
   
   
   
-  <data name="MasterChat_AiNotConfigured" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>AI 未配置</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="MasterChat_AiConfigRequired" xml:space="preserve">
     
+    <data name="LocalModels_IntegratedSuffix" xml:space="preserve">
+      
+      
     
     
     
-    <value>虚拟师父需要 AI 服务支持，请在「设置 &gt; AI 服务」中配置</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>(集成)</value>
+      
+      
+    
+    
   
   
   
-  <data name="MasterChat_AiConfigLater" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>稍后再说</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="MasterChat_AiConfigGo" xml:space="preserve">
     
+    <data name="LocalModels_AppleUnifiedSuffix" xml:space="preserve">
+      
+      
     
     
     
-    <value>前往配置</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>(统一内存)</value>
+      
+      
+    
+    
   
   
   
-  <data name="MasterChat_ModalTitle" xml:space="preserve">
-    
-    
-    
     
-    <value>拜师学艺</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="MasterChat_Industry" xml:space="preserve">
     
+    <data name="LocalModels_NoGpuDetected" xml:space="preserve">
+      
+      
     
     
     
-    <value>行业</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>未检测到</value>
+      
+      
+    
+    
   
   
   
-  <data name="MasterChat_LearningGoal" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>学习目标</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="MasterChat_GoalPlaceholder" xml:space="preserve">
     
+    <data name="LocalModels_CpuFallback" xml:space="preserve">
+      
+      
     
     
     
-    <value>例如：通过执业医师考试</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>将使用 CPU 运行</value>
+      
+      
+    
+    
   
   
   
-  <data name="MasterChat_Cancel" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>取消</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="MasterChat_Creating" xml:space="preserve">
     
+    <data name="LocalModels_DiskTitle" xml:space="preserve">
+      
+      
     
     
     
-    <value>正在拜师...</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>磁盘</value>
+      
+      
+    
+    
   
   
   
-  <data name="MasterChat_ConfirmCreate" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>确认拜师</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="MasterStage_PageTitle" xml:space="preserve">
     
+    <data name="LocalModels_DiskAvailable" xml:space="preserve">
+      
+      
     
     
     
-    <value>阶段进度</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>可用空间</value>
+      
+      
+    
+    
   
   
   
-  <data name="MasterStage_Title" xml:space="preserve">
-    
-    
-    
     
-    <value>阶段进度</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="MasterStage_NoMasterHint" xml:space="preserve">
     
+    <data name="LocalModels_RefreshHardware" xml:space="preserve">
+      
+      
     
     
     
-    <value>未选择师父，&lt;a href=&quot;master-chat&quot;&gt;返回师父对话页&lt;/a&gt;</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>刷新硬件信息</value>
+      
+      
+    
+    
   
   
   
-  <data name="MasterStage_Loading" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>加载中...</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="MasterStage_MasterLabel" xml:space="preserve">
     
+    <data name="LocalModels_RunningModelsTitle" xml:space="preserve">
+      
+      
     
     
     
-    <value>师父：</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>运行中模型</value>
+      
+      
+    
+    
   
   
   
-  <data name="MasterStage_GoBack" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>返回对话</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="MasterStage_ProgressText" xml:space="preserve">
     
+    <data name="LocalModels_RefreshModels" xml:space="preserve">
+      
+      
     
     
     
-    <value>{0}/{1} 阶段完成</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>刷新</value>
+      
+      
+    
+    
   
   
   
-  <data name="MasterStage_CompleteBtn" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>完成此阶段</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="MasterStage_CompletingBtn" xml:space="preserve">
     
+    <data name="LocalModels_NoRunningModels" xml:space="preserve">
+      
+      
     
     
     
-    <value>处理中...</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>暂无运行中模型。下方推荐列表可部署新模型，或使用「加载模型」加载已下载的模型。</value>
+      
+      
+    
+    
   
   
   
-  <data name="MasterStage_StageSummary" xml:space="preserve">
-    
-    
-    
     
-    <value>阶段摘要</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="MasterStage_KeyCorrections" xml:space="preserve">
     
+    <data name="LocalModels_Col_Model" xml:space="preserve">
+      
+      
     
     
     
-    <value>关键纠正</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>模型</value>
+      
+      
+    
+    
   
   
   
-  <data name="MasterStage_KnowledgeBase" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>知识库关联</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="MasterStage_LinkVaultBtn" xml:space="preserve">
     
+    <data name="LocalModels_Col_Tool" xml:space="preserve">
+      
+      
     
     
     
-    <value>关联知识库</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>工具</value>
+      
+      
+    
+    
   
   
   
-  <data name="MasterStage_LoadingVaults" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>加载中...</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="MasterStage_VaultEmpty" xml:space="preserve">
     
+    <data name="LocalModels_Col_MemoryUsage" xml:space="preserve">
+      
+      
     
     
     
-    <value>尚未关联知识库，关联后师父将参考知识库内容教学</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>内存占用</value>
+      
+      
+    
+    
   
   
   
-  <data name="MasterStage_RemoveVault" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>解除关联</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="MasterStage_DialogTitle" xml:space="preserve">
     
+    <data name="LocalModels_Col_Expires" xml:space="preserve">
+      
+      
     
     
     
-    <value>阶段完成</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>过期时间</value>
+      
+      
+    
+    
   
   
   
-  <data name="MasterStage_StageComplete" xml:space="preserve">
-    
-    
-    
     
-    <value>「{0}」阶段完成！</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="MasterStage_StageSummaryDesc" xml:space="preserve">
     
+    <data name="LocalModels_Col_Actions" xml:space="preserve">
+      
+      
     
     
     
-    <value>阶段小结</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>操作</value>
+      
+      
+    
+    
   
   
   
-  <data name="MasterStage_StageCorrections" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>关键纠正</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="MasterStage_ContinueBtn" xml:space="preserve">
     
+    <data name="LocalModels_Unload" xml:space="preserve">
+      
+      
     
     
     
-    <value>继续修行</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>卸载</value>
+      
+      
+    
+    
   
   
   
-  <data name="MasterStage_VaultPickerTitle" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>选择知识库</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="MasterStage_NoVaults" xml:space="preserve">
     
+    <data name="LocalModels_TotalRunning" xml:space="preserve">
+      
+      
     
     
     
-    <value>暂无可用知识库</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>共 {0} 个模型在运行，总内存占用约 {1} GB</value>
+      
+      
+    
+    
   
   
   
-  <data name="MasterStage_CloseBtn" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>关闭</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="OpenClaw_PageTitle" xml:space="preserve">
     
+    <data name="LocalModels_DownloadedOllama" xml:space="preserve">
+      
+      
     
     
     
-    <value>OpenClaw 任务委派</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>Ollama 已下载模型</value>
+      
+      
+    
+    
   
   
   
-  <data name="OpenClaw_Title" xml:space="preserve">
-    
-    
-    
     
-    <value>OpenClaw 任务委派</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="OpenClaw_Subtitle" xml:space="preserve">
     
+    <data name="LocalModels_DownloadedLmStudio" xml:space="preserve">
+      
+      
     
     
     
-    <value>将复杂任务委派给 OpenClaw Agent 执行，自动生成 Markdown 报告。</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>LM Studio 已下载模型</value>
+      
+      
+    
+    
   
   
   
-  <data name="OpenClaw_LocalAiConfig" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>本地 AI 配置（Ollama / LM Studio / llama.cpp）</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="OpenClaw_UseOllama" xml:space="preserve">
     
+    <data name="LocalModels_DownloadedLlamaCpp" xml:space="preserve">
+      
+      
     
     
     
-    <value>在 OpenClaw 中使用 Ollama</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>llama.cpp 可用模型</value>
+      
+      
+    
+    
   
   
   
-  <data name="OpenClaw_UseLmStudio" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>在 OpenClaw 中使用 LM Studio</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="OpenClaw_UseLlamaCpp" xml:space="preserve">
+    
+    <data name="LocalModels_Refreshing" xml:space="preserve">
+      
+      
     
     
     
     
-    <value>在 OpenClaw 中使用 llama.cpp（GPU 加速）</value>
     
+      
+      <value>刷新中...</value>
+      
+      
     
+    
+  
   
+  
+    
+    </data>
+    
+    
   
-  </data>
   
   
   
   
-  <data name="OpenClaw_Running" xml:space="preserve">
+    
+    <data name="LocalModels_NoDownloadedModels" xml:space="preserve">
+      
+      
+    
     
     
     
     
-    <value>● 运行中</value>
+      
+      <value>暂无已下载模型。上方推荐列表可部署新模型。</value>
+      
+      
     
     
   
+  
+  
+    
+    </data>
+    
+    
   
-  </data>
   
   
   
   
-  <data name="OpenClaw_NotRunning" xml:space="preserve">
     
+    <data name="LocalModels_DlName" xml:space="preserve">
+      
+      
     
     
     
-    <value>● 未运行</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>模型</value>
+      
+      
+    
+    
   
   
   
-  <data name="OpenClaw_OllamaDefaultAddr" xml:space="preserve">
-    
-    
-    
     
-    <value>Ollama 默认地址：http://localhost:11434</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="OpenClaw_LmStudioDefaultAddr" xml:space="preserve">
     
+    <data name="LocalModels_DlTool" xml:space="preserve">
+      
+      
     
     
     
-    <value>LM Studio 默认地址：http://localhost:1234/v1</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>工具</value>
+      
+      
+    
+    
   
   
   
-  <data name="OpenClaw_ScanModels" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>扫描模型</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="OpenClaw_SyncToOpenClaw" xml:space="preserve">
     
+    <data name="LocalModels_DlSize" xml:space="preserve">
+      
+      
     
     
     
-    <value>同步到 OpenClaw</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>大小</value>
+      
+      
+    
+    
   
   
   
-  <data name="OpenClaw_NoModelsOllama" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>未扫描到模型，请确认 Ollama 已启动。</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="OpenClaw_NoModelsLmStudio" xml:space="preserve">
     
+    <data name="LocalModels_DlTime" xml:space="preserve">
+      
+      
     
     
     
-    <value>未扫描到模型，请确认 LM Studio 已启动且服务器已开启。</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>修改时间</value>
+      
+      
+    
+    
   
   
   
-  <data name="OpenClaw_NoModelsLlamaCpp" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>未扫描到模型，请确认路径正确并点击「扫描模型」。</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="OpenClaw_LlamaCppConfigNote" xml:space="preserve">
     
+    <data name="LocalModels_DlStatus" xml:space="preserve">
+      
+      
     
     
     
-    <value>llama.cpp 的详细配置（模型路径、GPU 层数、上下文大小、KV Cache 量化等）请在本地模型页中设置，配置会自动同步到 OpenClaw。</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>状态</value>
+      
+      
+    
+    
   
   
   
-  <data name="OpenClaw_ModelConfigTitle" xml:space="preserve">
-    
-    
-    
     
-    <value>模型配置文件</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="OpenClaw_CurrentBadge" xml:space="preserve">
     
+    <data name="LocalModels_DlActions" xml:space="preserve">
+      
+      
     
     
     
-    <value>当前</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>操作</value>
+      
+      
+    
+    
   
   
   
-  <data name="OpenClaw_DefaultModelTitle" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>OpenClaw 默认模型</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="OpenClaw_CurrentDefaultModel" xml:space="preserve">
     
+    <data name="LocalModels_RunningBadge" xml:space="preserve">
+      
+      
     
     
     
-    <value>当前默认模型</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>运行中</value>
+      
+      
+    
+    
   
   
   
-  <data name="OpenClaw_UseBuiltinDefault" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>-- 使用 OpenClaw 内置默认 --</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="OpenClaw_DefaultModelHint" xml:space="preserve">
     
+    <data name="LocalModels_StoppedBadge" xml:space="preserve">
+      
+      
     
     
     
-    <value>设置后 OpenClaw 会优先使用此模型执行任务</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>已停止</value>
+      
+      
+    
+    
   
   
   
-  <data name="OpenClaw_SaveDefaultModel" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>保存默认模型</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="OpenClaw_SaveConfig" xml:space="preserve">
     
+    <data name="LocalModels_LoadBtn" xml:space="preserve">
+      
+      
     
     
     
-    <value>保存配置</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>加载</value>
+      
+      
+    
+    
   
   
   
-  <data name="OpenClaw_Reset" xml:space="preserve">
-    
-    
-    
     
-    <value>重置</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="OpenClaw_NewTask" xml:space="preserve">
     
+    <data name="LocalModels_DetailsBtn" xml:space="preserve">
+      
+      
     
     
     
-    <value>新建任务</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>详情</value>
+      
+      
+    
+    
   
   
   
-  <data name="OpenClaw_TaskPromptLabel" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>任务描述 / Prompt</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="OpenClaw_PromptPlaceholder" xml:space="preserve">
     
+    <data name="LocalModels_DeleteBtn" xml:space="preserve">
+      
+      
     
     
     
-    <value>请输入需要 OpenClaw 执行的任务，例如：分析当前目录下的代码结构并给出优化建议...</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>删除</value>
+      
+      
+    
+    
   
   
   
-  <data name="OpenClaw_Submitting" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>提交中...</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="OpenClaw_SendTask" xml:space="preserve">
     
+    <data name="LocalModels_ModelCount" xml:space="preserve">
+      
+      
     
     
     
-    <value>发送任务</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>共 {0} 个模型，总大小约 {1} GB</value>
+      
+      
+    
+    
   
   
   
-  <data name="OpenClaw_TaskHistory" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>任务历史</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="OpenClaw_Refresh" xml:space="preserve">
     
+    <data name="LocalModels_LoadOllamaTitle" xml:space="preserve">
+      
+      
     
     
     
-    <value>刷新</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>加载 Ollama 模型</value>
+      
+      
+    
+    
   
   
   
-  <data name="OpenClaw_NoTasks" xml:space="preserve">
-    
-    
-    
     
-    <value>暂无任务，请在上方提交第一个任务。</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="OpenClaw_Col_Status" xml:space="preserve">
     
+    <data name="LocalModels_LoadLmStudioTitle" xml:space="preserve">
+      
+      
     
     
     
-    <value>状态</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>加载 LM Studio 模型</value>
+      
+      
+    
+    
   
   
   
-  <data name="OpenClaw_Col_CreatedAt" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>创建时间</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="OpenClaw_Col_CompletedAt" xml:space="preserve">
     
+    <data name="LocalModels_LoadLlamaCppTitle" xml:space="preserve">
+      
+      
     
     
     
-    <value>完成时间</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>加载 llama.cpp 模型</value>
+      
+      
+    
+    
   
   
   
-  <data name="OpenClaw_Col_Actions" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>操作</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="OpenClaw_Cancel" xml:space="preserve">
     
+    <data name="LocalModels_ModelSelectLabel" xml:space="preserve">
+      
+      
     
     
     
-    <value>取消</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>模型</value>
+      
+      
+    
+    
   
   
   
-  <data name="OpenClaw_ViewReport" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>查看报告</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="OpenClaw_ViewError" xml:space="preserve">
     
+    <data name="LocalModels_SelectModelPlaceholder" xml:space="preserve">
+      
+      
     
     
     
-    <value>查看错误</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>-- 选择模型 --</value>
+      
+      
+    
+    
   
   
   
-  <data name="OpenClaw_ErrorDetailTitle" xml:space="preserve">
-    
-    
-    
     
-    <value>错误详情 - {0}</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="OpenClaw_ReportTitle" xml:space="preserve">
     
+    <data name="LocalModels_KeepAliveLabel" xml:space="preserve">
+      
+      
     
     
     
-    <value>执行报告 - {0}</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>保持时间</value>
+      
+      
+    
+    
   
   
   
-  <data name="OpenClaw_TaskFailed" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>任务执行失败</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="OpenClaw_FailedAt" xml:space="preserve">
     
+    <data name="LocalModels_Keep5Min" xml:space="preserve">
+      
+      
     
     
     
-    <value>失败时间:</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>5 分钟</value>
+      
+      
+    
+    
   
   
   
-  <data name="OpenClaw_ErrorLog" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>错误日志</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="OpenClaw_ContentEmpty" xml:space="preserve">
     
+    <data name="LocalModels_Keep30Min" xml:space="preserve">
+      
+      
     
     
     
-    <value>内容为空或无法加载。</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>30 分钟</value>
+      
+      
+    
+    
   
   
   
-  <data name="OpenClaw_Close" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>关闭</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="OpenClaw_Copy" xml:space="preserve">
     
+    <data name="LocalModels_Keep1Hour" xml:space="preserve">
+      
+      
     
     
     
-    <value>复制</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>1 小时</value>
+      
+      
+    
+    
   
   
   
-  <data name="OpenClaw_Col_ModelId" xml:space="preserve">
-    
-    
-    
     
-    <value>模型 ID</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="OpenClaw_Col_Name" xml:space="preserve">
     
+    <data name="LocalModels_Keep6Hour" xml:space="preserve">
+      
+      
     
     
     
-    <value>名称</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>6 小时</value>
+      
+      
+    
+    
   
   
   
-  <data name="OpenClaw_Col_Context" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>Context</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="OpenClaw_Col_MaxTokens" xml:space="preserve">
     
+    <data name="LocalModels_KeepForever" xml:space="preserve">
+      
+      
     
     
     
-    <value>Max Tokens</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>永久</value>
+      
+      
+    
+    
   
   
   
-  <data name="OpenClaw_CharCount" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>{0} 字符</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="OpenClaw_Loading" xml:space="preserve">
     
+    <data name="LocalModels_LoadModelBtn" xml:space="preserve">
+      
+      
     
     
     
-    <value>加载中...</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>加载模型</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_PageTitle" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>本地模型</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_Title" xml:space="preserve">
     
+    <data name="LocalModels_LocalToolsTitle" xml:space="preserve">
+      
+      
     
     
     
-    <value>本地模型部署</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>本地工具</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_TabOverview" xml:space="preserve">
-    
-    
-    
     
-    <value>概览</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_TabHardware" xml:space="preserve">
     
+    <data name="LocalModels_Installed" xml:space="preserve">
+      
+      
     
     
     
-    <value>硬件</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>已安装</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_TabDownloaded" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>已下载</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_TabConfig" xml:space="preserve">
     
+    <data name="LocalModels_Running" xml:space="preserve">
+      
+      
     
     
     
-    <value>配置</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>运行中</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_HardwareTitle" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>硬件环境</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_CpuDetecting" xml:space="preserve">
+    
+    <data name="LocalModels_NotRunning" xml:space="preserve">
+      
+      
     
     
     
     
-    <value>检测中...</value>
     
+      
+      <value>未运行</value>
+      
+      
     
+    
+  
   
+  
+    
+    </data>
+    
+    
   
-  </data>
   
   
   
   
-  <data name="LocalModels_Disable" xml:space="preserve">
+    
+    <data name="LocalModels_NotInstalled" xml:space="preserve">
+      
+      
+    
     
     
     
     
-    <value>禁用</value>
+      
+      <value>未安装</value>
+      
+      
     
     
   
+  
+  
+    
+    </data>
+    
+    
   
-  </data>
   
   
   
   
-  <data name="LocalModels_MemoryTitle" xml:space="preserve">
     
+    <data name="LocalModels_InstallGuide" xml:space="preserve">
+      
+      
     
     
     
-    <value>内存</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>安装指南</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_MemoryDetail" xml:space="preserve">
-    
-    
-    
     
-    <value>可用: {0} GB</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_GpuTitle" xml:space="preserve">
     
+    <data name="LocalModels_LlamaCppConfigTitle" xml:space="preserve">
+      
+      
     
     
     
-    <value>显卡</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>llama.cpp 配置</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_VramUnknown" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>显存未知</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_IntegratedSuffix" xml:space="preserve">
     
+    <data name="LocalModels_LlamaCppNotInstalled" xml:space="preserve">
+      
+      
     
     
     
-    <value>(集成)</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>llama.cpp 未安装或未配置二进制路径。</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_AppleUnifiedSuffix" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>(统一内存)</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_NoGpuDetected" xml:space="preserve">
     
+    <data name="LocalModels_ModelPathLabel" xml:space="preserve">
+      
+      
     
     
     
-    <value>未检测到</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>模型文件路径（.gguf）</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_CpuFallback" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>将使用 CPU 运行</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_DiskTitle" xml:space="preserve">
     
+    <data name="LocalModels_ModelPathExample" xml:space="preserve">
+      
+      
     
     
     
-    <value>磁盘</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>例如：/home/lumin/models/Qwen3-8B-Q4_K_M.gguf</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_DiskAvailable" xml:space="preserve">
-    
-    
-    
     
-    <value>可用空间</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_RefreshHardware" xml:space="preserve">
     
+    <data name="LocalModels_PortLabel" xml:space="preserve">
+      
+      
     
     
     
-    <value>刷新硬件信息</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>端口</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_RunningModelsTitle" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>运行中模型</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_RefreshModels" xml:space="preserve">
     
+    <data name="LocalModels_BasicConfig" xml:space="preserve">
+      
+      
     
     
     
-    <value>刷新</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>基础配置</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_NoRunningModels" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>暂无运行中模型。下方推荐列表可部署新模型，或使用「加载模型」加载已下载的模型。</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_Col_Model" xml:space="preserve">
     
+    <data name="LocalModels_GpuLayersLabel" xml:space="preserve">
+      
+      
     
     
     
-    <value>模型</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>GPU 层数（-ngl）</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_Col_Tool" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>工具</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_Col_MemoryUsage" xml:space="preserve">
     
+    <data name="LocalModels_GpuLayersHint" xml:space="preserve">
+      
+      
     
     
     
-    <value>内存占用</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>0=纯CPU，999=全部 offload 到 GPU</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_Col_Expires" xml:space="preserve">
-    
-    
-    
     
-    <value>过期时间</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_Col_Actions" xml:space="preserve">
     
+    <data name="LocalModels_ContextSizeLabel" xml:space="preserve">
+      
+      
     
     
     
-    <value>操作</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>上下文大小（-c）</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_Unload" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>卸载</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_TotalRunning" xml:space="preserve">
     
+    <data name="LocalModels_ContextSizeHint" xml:space="preserve">
+      
+      
     
     
     
-    <value>共 {0} 个模型在运行，总内存占用约 {1} GB</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>模型能记住的 token 数，越大占显存越多</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_DownloadedOllama" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>Ollama 已下载模型</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_DownloadedLmStudio" xml:space="preserve">
     
+    <data name="LocalModels_CpuThreadsLabel" xml:space="preserve">
+      
+      
     
     
     
-    <value>LM Studio 已下载模型</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>CPU 线程数（-t）</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_DownloadedLlamaCpp" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>llama.cpp 可用模型</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_Refreshing" xml:space="preserve">
     
+    <data name="LocalModels_CpuThreadsHint" xml:space="preserve">
+      
+      
     
     
     
-    <value>刷新中...</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>0=自动使用全部核心</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_NoDownloadedModels" xml:space="preserve">
-    
-    
-    
     
-    <value>暂无已下载模型。上方推荐列表可部署新模型。</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_DlName" xml:space="preserve">
     
+    <data name="LocalModels_BatchSizeLabel" xml:space="preserve">
+      
+      
     
     
     
-    <value>模型</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>批处理大小（-b）</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_DlTool" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>工具</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_DlSize" xml:space="preserve">
     
+    <data name="LocalModels_BatchSizeHint" xml:space="preserve">
+      
+      
     
     
     
-    <value>大小</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>越大吞吐量越高，默认 2048</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_DlTime" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>修改时间</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_DlStatus" xml:space="preserve">
     
+    <data name="LocalModels_VramOptimization" xml:space="preserve">
+      
+      
     
     
     
-    <value>状态</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>显存优化（长上下文必读）</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_DlActions" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>操作</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_RunningBadge" xml:space="preserve">
     
+    <data name="LocalModels_KvKQuantLabel" xml:space="preserve">
+      
+      
     
     
     
-    <value>运行中</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>KV Cache K 量化</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_StoppedBadge" xml:space="preserve">
-    
-    
-    
     
-    <value>已停止</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_LoadBtn" xml:space="preserve">
     
+    <data name="LocalModels_KvKQuantHint" xml:space="preserve">
+      
+      
     
     
     
-    <value>加载</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>显存紧张时选 q8_0，可大幅降低长上下文显存占用</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_DetailsBtn" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>详情</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_DeleteBtn" xml:space="preserve">
     
+    <data name="LocalModels_KvVQuantLabel" xml:space="preserve">
+      
+      
     
     
     
-    <value>删除</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>KV Cache V 量化</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_ModelCount" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>共 {0} 个模型，总大小约 {1} GB</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_LoadOllamaTitle" xml:space="preserve">
     
+    <data name="LocalModels_KvVQuantHint" xml:space="preserve">
+      
+      
     
     
     
-    <value>加载 Ollama 模型</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>通常与 K 量化保持一致</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_LoadLmStudioTitle" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>加载 LM Studio 模型</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_LoadLlamaCppTitle" xml:space="preserve">
     
+    <data name="LocalModels_AdvancedOptions" xml:space="preserve">
+      
+      
     
     
     
-    <value>加载 llama.cpp 模型</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>高级选项</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_ModelSelectLabel" xml:space="preserve">
-    
-    
-    
     
-    <value>模型</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_SelectModelPlaceholder" xml:space="preserve">
     
+    <data name="LocalModels_FlashAttention" xml:space="preserve">
+      
+      
     
     
     
-    <value>-- 选择模型 --</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>Flash Attention</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_KeepAliveLabel" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>保持时间</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_Keep5Min" xml:space="preserve">
     
+    <data name="LocalModels_Mlock" xml:space="preserve">
+      
+      
     
     
     
-    <value>5 分钟</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>内存锁定 (--mlock)</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_Keep30Min" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>30 分钟</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_Keep1Hour" xml:space="preserve">
     
+    <data name="LocalModels_MlockHint" xml:space="preserve">
+      
+      
     
     
     
-    <value>1 小时</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>防止模型被换出到 swap，提升稳定性</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_Keep6Hour" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>6 小时</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_KeepForever" xml:space="preserve">
     
+    <data name="LocalModels_NoMmap" xml:space="preserve">
+      
+      
     
     
     
-    <value>永久</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>禁用 mmap (--no-mmap)</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_LoadModelBtn" xml:space="preserve">
-    
-    
-    
     
-    <value>加载模型</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_LocalToolsTitle" xml:space="preserve">
     
+    <data name="LocalModels_NoMmapHint" xml:space="preserve">
+      
+      
     
     
     
-    <value>本地工具</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>某些系统环境下更稳定</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_Installed" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>已安装</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_Running" xml:space="preserve">
     
+    <data name="LocalModels_ContBatching" xml:space="preserve">
+      
+      
     
     
     
-    <value>运行中</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>连续批处理 (--cont-batching)</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_NotRunning" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>未运行</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_NotInstalled" xml:space="preserve">
+    
+    <data name="LocalModels_ContBatchingHint" xml:space="preserve">
+      
+      
     
     
     
     
-    <value>未安装</value>
     
+      
+      <value>提升多客户端并发请求的吞吐量</value>
+      
+      
     
+    
+  
   
+  
+    
+    </data>
+    
+    
   
-  </data>
   
   
   
   
-  <data name="LocalModels_InstallGuide" xml:space="preserve">
+    
+    <data name="LocalModels_ExtraArgsLabel" xml:space="preserve">
+      
+      
+    
     
     
     
     
-    <value>安装指南</value>
+      
+      <value>额外启动参数</value>
+      
+      
     
     
   
+  
+  
+    
+    </data>
+    
+    
   
-  </data>
   
   
   
   
-  <data name="LocalModels_LlamaCppConfigTitle" xml:space="preserve">
     
+    <data name="LocalModels_ExtraArgsHint" xml:space="preserve">
+      
+      
     
     
     
-    <value>llama.cpp 配置</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>高级自定义参数（上方勾选的选项会自动附加）</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_LlamaCppNotInstalled" xml:space="preserve">
-    
-    
-    
     
-    <value>llama.cpp 未安装或未配置二进制路径。</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_ModelPathLabel" xml:space="preserve">
     
+    <data name="LocalModels_PresetLabel" xml:space="preserve">
+      
+      
     
     
     
-    <value>模型文件路径（.gguf）</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>快速预设：</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_ModelPathExample" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>例如：/home/lumin/models/Qwen3-8B-Q4_K_M.gguf</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_PortLabel" xml:space="preserve">
     
+    <data name="LocalModels_PresetVram" xml:space="preserve">
+      
+      
     
     
     
-    <value>端口</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>显存优化（长上下文推荐）</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_BasicConfig" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>基础配置</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_GpuLayersLabel" xml:space="preserve">
     
+    <data name="LocalModels_PresetSpeed" xml:space="preserve">
+      
+      
     
     
     
-    <value>GPU 层数（-ngl）</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>速度优先</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_GpuLayersHint" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>0=纯CPU，999=全部 offload 到 GPU</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_ContextSizeLabel" xml:space="preserve">
     
+    <data name="LocalModels_PresetCpu" xml:space="preserve">
+      
+      
     
     
     
-    <value>上下文大小（-c）</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>纯 CPU 模式</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_ContextSizeHint" xml:space="preserve">
-    
-    
-    
     
-    <value>模型能记住的 token 数，越大占显存越多</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_CpuThreadsLabel" xml:space="preserve">
     
+    <data name="LocalModels_SavingConfig" xml:space="preserve">
+      
+      
     
     
     
-    <value>CPU 线程数（-t）</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>保存中...</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_CpuThreadsHint" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>0=自动使用全部核心</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_BatchSizeLabel" xml:space="preserve">
     
+    <data name="LocalModels_StopService" xml:space="preserve">
+      
+      
     
     
     
-    <value>批处理大小（-b）</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>停止服务</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_BatchSizeHint" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>越大吞吐量越高，默认 2048</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_VramOptimization" xml:space="preserve">
     
+    <data name="LocalModels_Stopping" xml:space="preserve">
+      
+      
     
     
     
-    <value>显存优化（长上下文必读）</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>停止中...</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_KvKQuantLabel" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>KV Cache K 量化</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_KvKQuantHint" xml:space="preserve">
     
+    <data name="LocalModels_StartService" xml:space="preserve">
+      
+      
     
     
     
-    <value>显存紧张时选 q8_0，可大幅降低长上下文显存占用</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>启动服务</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_KvVQuantLabel" xml:space="preserve">
-    
-    
-    
     
-    <value>KV Cache V 量化</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_KvVQuantHint" xml:space="preserve">
     
+    <data name="LocalModels_Starting" xml:space="preserve">
+      
+      
     
     
     
-    <value>通常与 K 量化保持一致</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>启动中...</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_AdvancedOptions" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>高级选项</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_FlashAttention" xml:space="preserve">
     
+    <data name="LocalModels_RecommendationsTitle" xml:space="preserve">
+      
+      
     
     
     
-    <value>Flash Attention</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>模型推荐</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_Mlock" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>内存锁定 (--mlock)</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_MlockHint" xml:space="preserve">
     
+    <data name="LocalModels_RefreshLibrary" xml:space="preserve">
+      
+      
     
     
     
-    <value>防止模型被换出到 swap，提升稳定性</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>刷新模型库</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_NoMmap" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>禁用 mmap (--no-mmap)</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_NoMmapHint" xml:space="preserve">
     
+    <data name="LocalModels_VramDisplay" xml:space="preserve">
+      
+      
     
     
     
-    <value>某些系统环境下更稳定</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>本机显存: {0} GB</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_ContBatching" xml:space="preserve">
-    
-    
-    
     
-    <value>连续批处理 (--cont-batching)</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_ContBatchingHint" xml:space="preserve">
     
+    <data name="LocalModels_RecommendedTier" xml:space="preserve">
+      
+      
     
     
     
-    <value>提升多客户端并发请求的吞吐量</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>推荐 {0} GB 档位</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_ExtraArgsLabel" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>额外启动参数</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_ExtraArgsHint" xml:space="preserve">
     
+    <data name="LocalModels_NoRecommendations" xml:space="preserve">
+      
+      
     
     
     
-    <value>高级自定义参数（上方勾选的选项会自动附加）</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>暂无推荐模型，请检查硬件检测是否正常。</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_PresetLabel" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>快速预设：</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_PresetVram" xml:space="preserve">
     
+    <data name="LocalModels_RecommendedBadge" xml:space="preserve">
+      
+      
     
     
     
-    <value>显存优化（长上下文推荐）</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>当前配置推荐</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_PresetSpeed" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>速度优先</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_PresetCpu" xml:space="preserve">
     
+    <data name="LocalModels_RecommendedCount" xml:space="preserve">
+      
+      
     
     
     
-    <value>纯 CPU 模式</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>{0} 个模型</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_SavingConfig" xml:space="preserve">
-    
-    
-    
     
-    <value>保存中...</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_StopService" xml:space="preserve">
     
+    <data name="LocalModels_DeleteConfirmTitle" xml:space="preserve">
+      
+      
     
     
     
-    <value>停止服务</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>确认删除</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_Stopping" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>停止中...</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_StartService" xml:space="preserve">
     
+    <data name="LocalModels_DeleteConfirmText" xml:space="preserve">
+      
+      
     
     
     
-    <value>启动服务</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>确定要删除模型 {0} 吗？</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_Starting" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>启动中...</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_RecommendationsTitle" xml:space="preserve">
     
+    <data name="LocalModels_DeleteSize" xml:space="preserve">
+      
+      
     
     
     
-    <value>模型推荐</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>大小: {0} GB</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_RefreshLibrary" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>刷新模型库</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_VramDisplay" xml:space="preserve">
     
+    <data name="LocalModels_DeleteIrreversible" xml:space="preserve">
+      
+      
     
     
     
-    <value>本机显存: {0} GB</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>此操作不可恢复，模型文件将被永久删除。</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_RecommendedTier" xml:space="preserve">
-    
-    
-    
     
-    <value>推荐 {0} GB 档位</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_NoRecommendations" xml:space="preserve">
     
+    <data name="LocalModels_Deleting" xml:space="preserve">
+      
+      
     
     
     
-    <value>暂无推荐模型，请检查硬件检测是否正常。</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>删除中...</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_RecommendedBadge" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>当前配置推荐</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_RecommendedCount" xml:space="preserve">
     
+    <data name="LocalModels_DeleteConfirmBtn" xml:space="preserve">
+      
+      
     
     
     
-    <value>{0} 个模型</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>确认删除</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_DeleteConfirmTitle" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>确认删除</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_DeleteConfirmText" xml:space="preserve">
     
+    <data name="LocalModels_DetailsTitle" xml:space="preserve">
+      
+      
     
     
     
-    <value>确定要删除模型 {0} 吗？</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>模型详情: {0}</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_DeleteSize" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>大小: {0} GB</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_DeleteIrreversible" xml:space="preserve">
     
+    <data name="LocalModels_DetailsLoading" xml:space="preserve">
+      
+      
     
     
     
-    <value>此操作不可恢复，模型文件将被永久删除。</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>加载详情中...</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_Deleting" xml:space="preserve">
-    
-    
-    
     
-    <value>删除中...</value>
+    </data>
     
     
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_DeleteConfirmBtn" xml:space="preserve">
     
+    <data name="LocalModels_DetailsNotSupported" xml:space="preserve">
+      
+      
     
     
     
-    <value>确认删除</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>该工具暂不支持显示模型详情。</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_DetailsTitle" xml:space="preserve">
-    
-    
     
+    </data>
     
-    <value>模型详情: {0}</value>
     
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_DetailsLoading" xml:space="preserve">
     
+    <data name="LocalModels_DeployStatusTitle" xml:space="preserve">
+      
+      
     
     
     
-    <value>加载详情中...</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>部署状态</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_DetailsNotSupported" xml:space="preserve">
-    
     
+    </data>
     
     
-    <value>该工具暂不支持显示模型详情。</value>
-    
-    
   
   
-  </data>
   
   
   
-  
-  <data name="LocalModels_DeployStatusTitle" xml:space="preserve">
     
+    <data name="LocalModels_DeployCancelBtn" xml:space="preserve">
+      
+      
     
     
     
-    <value>部署状态</value>
     
     
-  
-  
-  </data>
-  
+      
+      <value>取消</value>
+      
+      
+    
+    
   
   
   
-  <data name="LocalModels_DeployCancelBtn" xml:space="preserve">
     
+    </data>
     
     
-    
-    <value>取消</value>
-    
-    
-  
   
-  </data>
   
   
   
   
-  <data name="LocalModels_AutoAddedSetting" xml:space="preserve">
     
+    <data name="LocalModels_AutoAddedSetting" xml:space="preserve">
+      
+      
     
     
     
-    <value>已自动添加到 AI 设置</value>
     
     
+      
+      <value>已自动添加到 AI 设置</value>
+      
+      
+    
+    
+  
+  
   
+    
+    </data>
+    
+    
   
-  </data>
   
   
   
   
-  <data name="LocalModels_CpuCore" xml:space="preserve">
+    
+    <data name="LocalModels_CpuCore" xml:space="preserve">
+      
+      
     
     
     
     
-    <value>核</value>
     
+      
+      <value>核</value>
+      
+      
     
+    
+  
   
   
-  </data>
+    
+    </data>
+    
+    
   
   
 
   
-  <data name="Vaults_PageTitle" xml:space="preserve">
+  
+    
+    <data name="Vaults_PageTitle" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>知识库管理</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_Title" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>知识库管理</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_Refresh" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>刷新</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_TabPathConfig" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>知识库路径配置</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_TabGit" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>根路径 Git</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_TabBackup" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>备份恢复</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_TabTrash" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>回收站</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_ViewTask" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>查看任务</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_LoadingVaultData" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>正在加载知识库数据...</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_RootPath" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>知识库根路径</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_RootPathHint" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>新建知识库时，将在此路径下创建子目录。</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_RootPathFixed" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>使用约定的固定路径，不可修改</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_PathExists" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>路径存在</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_PathNotExist" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>路径不存在，新建知识库时会自动创建</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_NotesMdRecommend" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>推荐安装 NotesMD CLI</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_NotesMdDesc" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>是一个无需运行 Obsidian 即可管理 vault 的命令行工具，非常适合脚本化和自动化场景。</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_NotesMdRegisterHint" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>安装后可将本系统的知识库一键注册到 Obsidian，实现无缝衔接。</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_NotesMdInstallCmd" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>安装命令（Windows: scoop install notesmd-cli | macOS/Linux: brew install yakitrak/yakitrak/notesmd-cli）</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_NotesMdReady" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>notesmd-cli 已就绪</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_RegisterAllToObsidian" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>一键注册全部到 Obsidian</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_AddVault" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>添加新知识库</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_Industry" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>行业</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_IndustryNote" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>笔记</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_IndustryComputer" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>计算机</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_IndustryGeneral" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>通用</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_VaultName" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>知识库名称</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_VaultNamePlaceholder" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>例如：脾胃病、Python入门...</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_Add" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>添加</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_WillCreateAt" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>将创建到：</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_SetRootPathFirst" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>请先设置知识库根路径</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_AllVaults" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>所有知识库</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_SyncVaults" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>同步知识库</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_NoVaults" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>暂无知识库，请添加一个</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_TableName" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>名称</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_TablePath" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>路径</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_TableIndustry" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>行业</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_TableCreatedAt" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>创建时间</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_TableTags" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>标签</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_TableNotes" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>笔记</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_TableCards" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>记忆卡片</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_TableActions" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>操作</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_ClickEditIndustry" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>点击编辑行业</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_SetIndustry" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>设置行业</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_TagsPlaceholder" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>标签1, 标签2...</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_ClickEditTags" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>点击编辑标签</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_AddTag" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>添加标签</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_NoteCountSuffix" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>篇</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_CardCountSuffix" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>张</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_GenerateCards" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>生成记忆卡片</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_OpenInObsidian" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>用 Obsidian 打开</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_RegisterToObsidian" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>注册到 Obsidian (notesmd-cli)</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_RegisteredToObsidian" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>已注册到 Obsidian</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_Rename" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>重命名</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_Delete" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>删除</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_Loading" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>正在加载...</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_RootPathGit" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>根路径 Git</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_GitRootPathHint" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>此功能对知识库根路径进行 Git 版本管理。请先在&quot;知识库路径配置&quot;Tab 中设置知识库根路径。</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_LoadFailed" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>加载失败</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_GitStatusFail" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>无法获取 Git 状态。请检查后端服务是否正常运行。</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_GitInitHint" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>请在知识库目录中运行 git init 初始化仓库。</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_RepoStatus" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>仓库状态</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_Branch" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>分支</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_Remote" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>远程</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
+  
+  
+    
+    <data name="Vaults_Configured" xml:space="preserve">
+      
+      
     
     
-    <value>知识库管理</value>
     
-  
-  </data>
+      
+      <value>已配置</value>
+      
+      
+    
   
   
-  <data name="Vaults_Title" xml:space="preserve">
     
+    </data>
     
-    <value>知识库管理</value>
     
   
-  </data>
   
   
-  <data name="Vaults_Refresh" xml:space="preserve">
     
+    <data name="Vaults_NotConfigured" xml:space="preserve">
+      
+      
     
-    <value>刷新</value>
     
-  
-  </data>
+    
+      
+      <value>未配置</value>
+      
+      
+    
   
   
-  <data name="Vaults_TabPathConfig" xml:space="preserve">
     
+    </data>
     
-    <value>知识库路径配置</value>
     
   
-  </data>
   
   
-  <data name="Vaults_TabGit" xml:space="preserve">
     
+    <data name="Vaults_Changes" xml:space="preserve">
+      
+      
     
-    <value>根路径 Git</value>
     
-  
-  </data>
+    
+      
+      <value>变更</value>
+      
+      
+    
   
   
-  <data name="Vaults_TabBackup" xml:space="preserve">
     
+    </data>
     
-    <value>备份恢复</value>
     
   
-  </data>
   
   
-  <data name="Vaults_TabTrash" xml:space="preserve">
     
+    <data name="Vaults_FileCount" xml:space="preserve">
+      
+      
     
-    <value>回收站</value>
     
-  
-  </data>
+    
+      
+      <value>个文件</value>
+      
+      
+    
   
   
-  <data name="Vaults_ViewTask" xml:space="preserve">
     
+    </data>
     
-    <value>查看任务</value>
     
   
-  </data>
   
   
-  <data name="Vaults_LoadingVaultData" xml:space="preserve">
     
+    <data name="Vaults_Sync" xml:space="preserve">
+      
+      
     
-    <value>正在加载知识库数据...</value>
     
-  
-  </data>
+    
+      
+      <value>同步</value>
+      
+      
+    
   
   
-  <data name="Vaults_RootPath" xml:space="preserve">
     
+    </data>
     
-    <value>知识库根路径</value>
     
   
-  </data>
   
   
-  <data name="Vaults_RootPathHint" xml:space="preserve">
     
+    <data name="Vaults_PendingPush_Badge" xml:space="preserve">
+      
+      
     
-    <value>新建知识库时，将在此路径下创建子目录。</value>
     
-  
-  </data>
+    
+      
+      <value>待推送</value>
+      
+      
+    
   
   
-  <data name="Vaults_RootPathFixed" xml:space="preserve">
     
+    </data>
     
-    <value>使用约定的固定路径，不可修改</value>
     
   
-  </data>
   
   
-  <data name="Vaults_PathExists" xml:space="preserve">
     
+    <data name="Vaults_PendingPull_Badge" xml:space="preserve">
+      
+      
     
-    <value>路径存在</value>
     
-  
-  </data>
+    
+      
+      <value>待拉取</value>
+      
+      
+    
   
   
-  <data name="Vaults_PathNotExist" xml:space="preserve">
     
+    </data>
     
-    <value>路径不存在，新建知识库时会自动创建</value>
     
   
-  </data>
   
   
-  <data name="Vaults_NotesMdRecommend" xml:space="preserve">
     
+    <data name="Vaults_QuickActions" xml:space="preserve">
+      
+      
     
-    <value>推荐安装 NotesMD CLI</value>
     
-  
-  </data>
+    
+      
+      <value>快捷操作</value>
+      
+      
+    
   
   
-  <data name="Vaults_NotesMdDesc" xml:space="preserve">
     
+    </data>
     
-    <value>是一个无需运行 Obsidian 即可管理 vault 的命令行工具，非常适合脚本化和自动化场景。</value>
     
   
-  </data>
   
   
-  <data name="Vaults_NotesMdRegisterHint" xml:space="preserve">
     
+    <data name="Vaults_PullChanges" xml:space="preserve">
+      
+      
     
-    <value>安装后可将本系统的知识库一键注册到 Obsidian，实现无缝衔接。</value>
     
-  
-  </data>
+    
+      
+      <value>拉取远程变更</value>
+      
+      
+    
   
   
-  <data name="Vaults_NotesMdInstallCmd" xml:space="preserve">
     
+    </data>
     
-    <value>安装命令（Windows: scoop install notesmd-cli | macOS/Linux: brew install yakitrak/yakitrak/notesmd-cli）</value>
     
   
-  </data>
   
   
-  <data name="Vaults_NotesMdReady" xml:space="preserve">
     
+    <data name="Vaults_PendingChanges" xml:space="preserve">
+      
+      
     
-    <value>notesmd-cli 已就绪</value>
     
-  
-  </data>
+    
+      
+      <value>待提交的变更</value>
+      
+      
+    
   
   
-  <data name="Vaults_RegisterAllToObsidian" xml:space="preserve">
     
+    </data>
     
-    <value>一键注册全部到 Obsidian</value>
     
   
-  </data>
   
   
-  <data name="Vaults_AddVault" xml:space="preserve">
     
+    <data name="Vaults_CommitPlaceholder" xml:space="preserve">
+      
+      
     
-    <value>添加新知识库</value>
     
-  
-  </data>
+    
+      
+      <value>输入提交信息...</value>
+      
+      
+    
   
   
-  <data name="Vaults_Industry" xml:space="preserve">
     
+    </data>
     
-    <value>行业</value>
     
   
-  </data>
   
   
-  <data name="Vaults_IndustryNote" xml:space="preserve">
     
+    <data name="Vaults_Commit" xml:space="preserve">
+      
+      
     
-    <value>笔记</value>
     
-  
-  </data>
+    
+      
+      <value>提交</value>
+      
+      
+    
   
   
-  <data name="Vaults_IndustryComputer" xml:space="preserve">
     
+    </data>
     
-    <value>计算机</value>
     
   
-  </data>
   
   
-  <data name="Vaults_IndustryGeneral" xml:space="preserve">
     
+    <data name="Vaults_DiscardChanges" xml:space="preserve">
+      
+      
     
-    <value>通用</value>
     
-  
-  </data>
+    
+      
+      <value>撤销更改</value>
+      
+      
+    
   
   
-  <data name="Vaults_VaultName" xml:space="preserve">
     
+    </data>
     
-    <value>知识库名称</value>
     
   
-  </data>
   
   
-  <data name="Vaults_VaultNamePlaceholder" xml:space="preserve">
     
+    <data name="Vaults_PendingPush" xml:space="preserve">
+      
+      
     
-    <value>例如：脾胃病、Python入门...</value>
     
-  
-  </data>
+    
+      
+      <value>待推送的提交</value>
+      
+      
+    
   
   
-  <data name="Vaults_Add" xml:space="preserve">
     
+    </data>
     
-    <value>添加</value>
     
   
-  </data>
   
   
-  <data name="Vaults_WillCreateAt" xml:space="preserve">
     
+    <data name="Vaults_PushToRemote" xml:space="preserve">
+      
+      
     
-    <value>将创建到：</value>
     
-  
-  </data>
+    
+      
+      <value>推送到远程</value>
+      
+      
+    
   
   
-  <data name="Vaults_SetRootPathFirst" xml:space="preserve">
     
+    </data>
     
-    <value>请先设置知识库根路径</value>
     
   
-  </data>
   
   
-  <data name="Vaults_AllVaults" xml:space="preserve">
     
+    <data name="Vaults_RecentCommits" xml:space="preserve">
+      
+      
     
-    <value>所有知识库</value>
     
-  
-  </data>
+    
+      
+      <value>最近提交</value>
+      
+      
+    
   
   
-  <data name="Vaults_SyncVaults" xml:space="preserve">
     
+    </data>
     
-    <value>同步知识库</value>
     
   
-  </data>
   
   
-  <data name="Vaults_NoVaults" xml:space="preserve">
     
+    <data name="Vaults_NoCommits" xml:space="preserve">
+      
+      
     
-    <value>暂无知识库，请添加一个</value>
     
-  
-  </data>
+    
+      
+      <value>暂无提交历史</value>
+      
+      
+    
   
   
-  <data name="Vaults_TableName" xml:space="preserve">
     
+    </data>
     
-    <value>名称</value>
     
   
-  </data>
   
   
-  <data name="Vaults_TablePath" xml:space="preserve">
     
+    <data name="Vaults_CreateBackup" xml:space="preserve">
+      
+      
     
-    <value>路径</value>
     
-  
-  </data>
+    
+      
+      <value>创建备份</value>
+      
+      
+    
   
   
-  <data name="Vaults_TableIndustry" xml:space="preserve">
     
+    </data>
     
-    <value>行业</value>
     
   
-  </data>
   
   
-  <data name="Vaults_TableCreatedAt" xml:space="preserve">
     
+    <data name="Vaults_BackupDescription" xml:space="preserve">
+      
+      
     
-    <value>创建时间</value>
     
-  
-  </data>
+    
+      
+      <value>全量备份包含：数据库、AI 配置、知识库文件、用户偏好。支持跨平台恢复。</value>
+      
+      
+    
   
   
-  <data name="Vaults_TableTags" xml:space="preserve">
     
+    </data>
     
-    <value>标签</value>
     
   
-  </data>
   
   
-  <data name="Vaults_TableNotes" xml:space="preserve">
     
+    <data name="Vaults_BackupDir" xml:space="preserve">
+      
+      
     
-    <value>笔记</value>
     
-  
-  </data>
+    
+      
+      <value>备份保存目录</value>
+      
+      
+    
   
   
-  <data name="Vaults_TableCards" xml:space="preserve">
     
+    </data>
     
-    <value>记忆卡片</value>
     
   
-  </data>
   
   
-  <data name="Vaults_TableActions" xml:space="preserve">
     
+    <data name="Vaults_BackupDirPlaceholder" xml:space="preserve">
+      
+      
     
-    <value>操作</value>
     
-  
-  </data>
+    
+      
+      <value>留空使用默认目录（文档/HuajiBackups）</value>
+      
+      
+    
   
   
-  <data name="Vaults_ClickEditIndustry" xml:space="preserve">
     
+    </data>
     
-    <value>点击编辑行业</value>
     
   
-  </data>
   
   
-  <data name="Vaults_SetIndustry" xml:space="preserve">
     
+    <data name="Vaults_BackupPassword" xml:space="preserve">
+      
+      
     
-    <value>设置行业</value>
     
-  
-  </data>
+    
+      
+      <value>备份密码（可选，用于保护 API Key）</value>
+      
+      
+    
   
   
-  <data name="Vaults_TagsPlaceholder" xml:space="preserve">
     
+    </data>
     
-    <value>标签1, 标签2...</value>
     
   
-  </data>
   
   
-  <data name="Vaults_ClickEditTags" xml:space="preserve">
     
+    <data name="Vaults_BackupPasswordPlaceholder" xml:space="preserve">
+      
+      
     
-    <value>点击编辑标签</value>
     
-  
-  </data>
+    
+      
+      <value>不设密码则 API Key 明文存储</value>
+      
+      
+    
   
   
-  <data name="Vaults_AddTag" xml:space="preserve">
     
+    </data>
     
-    <value>添加标签</value>
     
   
-  </data>
   
   
-  <data name="Vaults_NoteCountSuffix" xml:space="preserve">
     
+    <data name="Vaults_BackupPasswordHint" xml:space="preserve">
+      
+      
     
-    <value>篇</value>
     
-  
-  </data>
+    
+      
+      <value>设置密码后，API Key 将用此密码加密，恢复时需输入相同密码。</value>
+      
+      
+    
   
   
-  <data name="Vaults_CardCountSuffix" xml:space="preserve">
     
+    </data>
     
-    <value>张</value>
     
   
-  </data>
   
   
-  <data name="Vaults_GenerateCards" xml:space="preserve">
     
+    <data name="Vaults_CreateFullBackup" xml:space="preserve">
+      
+      
     
-    <value>生成记忆卡片</value>
     
-  
-  </data>
+    
+      
+      <value>创建全量备份</value>
+      
+      
+    
   
   
-  <data name="Vaults_OpenInObsidian" xml:space="preserve">
     
+    </data>
     
-    <value>用 Obsidian 打开</value>
     
   
-  </data>
   
   
-  <data name="Vaults_RegisterToObsidian" xml:space="preserve">
     
+    <data name="Vaults_RestoreBackup" xml:space="preserve">
+      
+      
     
-    <value>注册到 Obsidian (notesmd-cli)</value>
     
-  
-  </data>
+    
+      
+      <value>恢复备份</value>
+      
+      
+    
   
   
-  <data name="Vaults_RegisteredToObsidian" xml:space="preserve">
     
+    </data>
     
-    <value>已注册到 Obsidian</value>
     
   
-  </data>
   
   
-  <data name="Vaults_Rename" xml:space="preserve">
     
+    <data name="Vaults_BackupFilePath" xml:space="preserve">
+      
+      
     
-    <value>重命名</value>
     
-  
-  </data>
+    
+      
+      <value>备份文件路径</value>
+      
+      
+    
   
   
-  <data name="Vaults_Delete" xml:space="preserve">
     
+    </data>
     
-    <value>删除</value>
     
   
-  </data>
   
   
-  <data name="Vaults_Loading" xml:space="preserve">
     
+    <data name="Vaults_BackupFilePlaceholder" xml:space="preserve">
+      
+      
     
-    <value>正在加载...</value>
     
-  
-  </data>
+    
+      
+      <value>选择 .zip 备份文件</value>
+      
+      
+    
   
   
-  <data name="Vaults_RootPathGit" xml:space="preserve">
     
+    </data>
     
-    <value>根路径 Git</value>
     
   
-  </data>
   
   
-  <data name="Vaults_GitRootPathHint" xml:space="preserve">
     
+    <data name="Vaults_RestorePassword" xml:space="preserve">
+      
+      
     
-    <value>此功能对知识库根路径进行 Git 版本管理。请先在&quot;知识库路径配置&quot;Tab 中设置知识库根路径。</value>
     
-  
-  </data>
+    
+      
+      <value>备份密码</value>
+      
+      
+    
   
   
-  <data name="Vaults_LoadFailed" xml:space="preserve">
     
+    </data>
     
-    <value>加载失败</value>
     
   
-  </data>
   
   
-  <data name="Vaults_GitStatusFail" xml:space="preserve">
     
+    <data name="Vaults_RestorePasswordPlaceholder" xml:space="preserve">
+      
+      
     
-    <value>无法获取 Git 状态。请检查后端服务是否正常运行。</value>
     
-  
-  </data>
+    
+      
+      <value>如果备份有密码保护则输入</value>
+      
+      
+    
   
   
-  <data name="Vaults_GitInitHint" xml:space="preserve">
     
+    </data>
     
-    <value>请在知识库目录中运行 git init 初始化仓库。</value>
     
   
-  </data>
   
   
-  <data name="Vaults_RepoStatus" xml:space="preserve">
     
+    <data name="Vaults_RootPathOverride" xml:space="preserve">
+      
+      
     
-    <value>仓库状态</value>
     
-  
-  </data>
+    
+      
+      <value>知识库根路径覆盖（跨平台恢复时）</value>
+      
+      
+    
   
   
-  <data name="Vaults_Branch" xml:space="preserve">
     
+    </data>
     
-    <value>分支</value>
     
   
-  </data>
   
   
-  <data name="Vaults_Remote" xml:space="preserve">
     
+    <data name="Vaults_RootPathOverridePlaceholder" xml:space="preserve">
+      
+      
     
-    <value>远程</value>
     
-  
-  </data>
+    
+      
+      <value>留空使用当前系统根路径</value>
+      
+      
+    
   
   
-  <data name="Vaults_Configured" xml:space="preserve">
     
+    </data>
     
-    <value>已配置</value>
     
   
-  </data>
   
   
-  <data name="Vaults_NotConfigured" xml:space="preserve">
     
+    <data name="Vaults_RootPathOverrideHint" xml:space="preserve">
+      
+      
     
-    <value>未配置</value>
     
-  
-  </data>
+    
+      
+      <value>从 Windows 恢复到 Linux 时，可在此指定新的知识库根路径。</value>
+      
+      
+    
   
   
-  <data name="Vaults_Changes" xml:space="preserve">
     
+    </data>
     
-    <value>变更</value>
     
   
-  </data>
   
   
-  <data name="Vaults_FileCount" xml:space="preserve">
     
+    <data name="Vaults_OverwriteData" xml:space="preserve">
+      
+      
     
-    <value>个文件</value>
     
-  
-  </data>
+    
+      
+      <value>覆盖现有数据</value>
+      
+      
+    
   
   
-  <data name="Vaults_Sync" xml:space="preserve">
     
+    </data>
     
-    <value>同步</value>
     
   
-  </data>
   
   
-  <data name="Vaults_PendingPush_Badge" xml:space="preserve">
     
+    <data name="Vaults_BackupInfo" xml:space="preserve">
+      
+      
     
-    <value>待推送</value>
     
-  
-  </data>
+    
+      
+      <value>备份信息：</value>
+      
+      
+    
   
   
-  <data name="Vaults_PendingPull_Badge" xml:space="preserve">
     
+    </data>
     
-    <value>待拉取</value>
     
   
-  </data>
   
   
-  <data name="Vaults_QuickActions" xml:space="preserve">
     
+    <data name="Vaults_Version" xml:space="preserve">
+      
+      
     
-    <value>快捷操作</value>
     
-  
-  </data>
+    
+      
+      <value>版本：</value>
+      
+      
+    
   
   
-  <data name="Vaults_PullChanges" xml:space="preserve">
     
+    </data>
     
-    <value>拉取远程变更</value>
     
   
-  </data>
   
   
-  <data name="Vaults_PendingChanges" xml:space="preserve">
     
+    <data name="Vaults_CreatedAt" xml:space="preserve">
+      
+      
     
-    <value>待提交的变更</value>
     
-  
-  </data>
+    
+      
+      <value>创建时间：</value>
+      
+      
+    
   
   
-  <data name="Vaults_CommitPlaceholder" xml:space="preserve">
     
+    </data>
     
-    <value>输入提交信息...</value>
     
   
-  </data>
   
   
-  <data name="Vaults_Commit" xml:space="preserve">
     
+    <data name="Vaults_Unknown" xml:space="preserve">
+      
+      
     
-    <value>提交</value>
     
-  
-  </data>
+    
+      
+      <value>未知</value>
+      
+      
+    
   
   
-  <data name="Vaults_DiscardChanges" xml:space="preserve">
     
+    </data>
     
-    <value>撤销更改</value>
     
   
-  </data>
   
   
-  <data name="Vaults_PendingPush" xml:space="preserve">
     
+    <data name="Vaults_SourcePlatform" xml:space="preserve">
+      
+      
     
-    <value>待推送的提交</value>
     
-  
-  </data>
+    
+      
+      <value>源平台：</value>
+      
+      
+    
   
   
-  <data name="Vaults_PushToRemote" xml:space="preserve">
     
+    </data>
     
-    <value>推送到远程</value>
     
   
-  </data>
   
   
-  <data name="Vaults_RecentCommits" xml:space="preserve">
     
+    <data name="Vaults_PasswordProtected" xml:space="preserve">
+      
+      
     
-    <value>最近提交</value>
     
-  
-  </data>
+    
+      
+      <value>有密码保护</value>
+      
+      
+    
   
   
-  <data name="Vaults_NoCommits" xml:space="preserve">
     
+    </data>
     
-    <value>暂无提交历史</value>
     
   
-  </data>
   
   
-  <data name="Vaults_CreateBackup" xml:space="preserve">
     
+    <data name="Vaults_VaultCount" xml:space="preserve">
+      
+      
     
-    <value>创建备份</value>
     
-  
-  </data>
+    
+      
+      <value>知识库数量：</value>
+      
+      
+    
   
   
-  <data name="Vaults_BackupDescription" xml:space="preserve">
     
+    </data>
     
-    <value>全量备份包含：数据库、AI 配置、知识库文件、用户偏好。支持跨平台恢复。</value>
     
   
-  </data>
   
   
-  <data name="Vaults_BackupDir" xml:space="preserve">
     
+    <data name="Vaults_ValidateBackup" xml:space="preserve">
+      
+      
     
-    <value>备份保存目录</value>
     
-  
-  </data>
+    
+      
+      <value>验证备份</value>
+      
+      
+    
   
   
-  <data name="Vaults_BackupDirPlaceholder" xml:space="preserve">
     
+    </data>
     
-    <value>留空使用默认目录（文档/HuajiBackups）</value>
     
   
-  </data>
   
   
-  <data name="Vaults_BackupPassword" xml:space="preserve">
     
+    <data name="Vaults_DoRestore" xml:space="preserve">
+      
+      
     
-    <value>备份密码（可选，用于保护 API Key）</value>
     
-  
-  </data>
+    
+      
+      <value>恢复备份</value>
+      
+      
+    
   
   
-  <data name="Vaults_BackupPasswordPlaceholder" xml:space="preserve">
     
+    </data>
     
-    <value>不设密码则 API Key 明文存储</value>
     
   
-  </data>
   
   
-  <data name="Vaults_BackupPasswordHint" xml:space="preserve">
     
+    <data name="Vaults_ExistingBackups" xml:space="preserve">
+      
+      
     
-    <value>设置密码后，API Key 将用此密码加密，恢复时需输入相同密码。</value>
     
-  
-  </data>
+    
+      
+      <value>已有备份</value>
+      
+      
+    
   
   
-  <data name="Vaults_CreateFullBackup" xml:space="preserve">
     
+    </data>
     
-    <value>创建全量备份</value>
     
   
-  </data>
   
   
-  <data name="Vaults_RestoreBackup" xml:space="preserve">
     
+    <data name="Vaults_NoBackups" xml:space="preserve">
+      
+      
     
-    <value>恢复备份</value>
     
-  
-  </data>
+    
+      
+      <value>暂无备份文件</value>
+      
+      
+    
   
   
-  <data name="Vaults_BackupFilePath" xml:space="preserve">
     
+    </data>
     
-    <value>备份文件路径</value>
     
   
-  </data>
   
   
-  <data name="Vaults_BackupFilePlaceholder" xml:space="preserve">
     
+    <data name="Vaults_TableFileName" xml:space="preserve">
+      
+      
     
-    <value>选择 .zip 备份文件</value>
     
-  
-  </data>
+    
+      
+      <value>文件名</value>
+      
+      
+    
   
   
-  <data name="Vaults_RestorePassword" xml:space="preserve">
     
+    </data>
     
-    <value>备份密码</value>
     
   
-  </data>
   
   
-  <data name="Vaults_RestorePasswordPlaceholder" xml:space="preserve">
     
+    <data name="Vaults_TableSize" xml:space="preserve">
+      
+      
     
-    <value>如果备份有密码保护则输入</value>
     
-  
-  </data>
+    
+      
+      <value>大小</value>
+      
+      
+    
   
   
-  <data name="Vaults_RootPathOverride" xml:space="preserve">
     
+    </data>
     
-    <value>知识库根路径覆盖（跨平台恢复时）</value>
     
   
-  </data>
   
   
-  <data name="Vaults_RootPathOverridePlaceholder" xml:space="preserve">
     
+    <data name="Vaults_Trash" xml:space="preserve">
+      
+      
     
-    <value>留空使用当前系统根路径</value>
     
-  
-  </data>
+    
+      
+      <value>回收站</value>
+      
+      
+    
   
   
-  <data name="Vaults_RootPathOverrideHint" xml:space="preserve">
     
+    </data>
     
-    <value>从 Windows 恢复到 Linux 时，可在此指定新的知识库根路径。</value>
     
   
-  </data>
   
   
-  <data name="Vaults_OverwriteData" xml:space="preserve">
     
+    <data name="Vaults_EmptyTrash" xml:space="preserve">
+      
+      
     
-    <value>覆盖现有数据</value>
     
-  
-  </data>
+    
+      
+      <value>清空回收站</value>
+      
+      
+    
   
   
-  <data name="Vaults_BackupInfo" xml:space="preserve">
     
+    </data>
     
-    <value>备份信息：</value>
     
   
-  </data>
   
   
-  <data name="Vaults_Version" xml:space="preserve">
     
+    <data name="Vaults_TrashEmpty" xml:space="preserve">
+      
+      
     
-    <value>版本：</value>
     
-  
-  </data>
+    
+      
+      <value>回收站为空</value>
+      
+      
+    
   
   
-  <data name="Vaults_CreatedAt" xml:space="preserve">
     
+    </data>
     
-    <value>创建时间：</value>
     
   
-  </data>
   
   
-  <data name="Vaults_Unknown" xml:space="preserve">
     
+    <data name="Vaults_TrashHint" xml:space="preserve">
+      
+      
     
-    <value>未知</value>
     
-  
-  </data>
+    
+      
+      <value>删除的知识库会暂存在这里</value>
+      
+      
+    
   
   
-  <data name="Vaults_SourcePlatform" xml:space="preserve">
     
+    </data>
     
-    <value>源平台：</value>
     
   
-  </data>
   
   
-  <data name="Vaults_PasswordProtected" xml:space="preserve">
     
+    <data name="Vaults_Dash" xml:space="preserve">
+      
+      
     
-    <value>有密码保护</value>
     
-  
-  </data>
+    
+      
+      <value>-</value>
+      
+      
+    
   
   
-  <data name="Vaults_VaultCount" xml:space="preserve">
     
+    </data>
     
-    <value>知识库数量：</value>
     
   
-  </data>
   
   
-  <data name="Vaults_ValidateBackup" xml:space="preserve">
     
+    <data name="Vaults_Restore" xml:space="preserve">
+      
+      
     
-    <value>验证备份</value>
     
-  
-  </data>
+    
+      
+      <value>恢复</value>
+      
+      
+    
   
   
-  <data name="Vaults_DoRestore" xml:space="preserve">
     
+    </data>
     
-    <value>恢复备份</value>
     
   
-  </data>
   
   
-  <data name="Vaults_ExistingBackups" xml:space="preserve">
     
+    <data name="Vaults_ConfirmDeleteTitle" xml:space="preserve">
+      
+      
     
-    <value>已有备份</value>
     
-  
-  </data>
+    
+      
+      <value>确认删除知识库</value>
+      
+      
+    
   
   
-  <data name="Vaults_NoBackups" xml:space="preserve">
     
+    </data>
     
-    <value>暂无备份文件</value>
     
   
-  </data>
   
   
-  <data name="Vaults_TableFileName" xml:space="preserve">
     
+    <data name="Vaults_ConfirmDeleteBody" xml:space="preserve">
+      
+      
     
-    <value>文件名</value>
     
-  
-  </data>
+    
+      
+      <value>确定要删除知识库 &quot;@vaultToDelete?.Name&quot; 吗？</value>
+      
+      
+    
   
   
-  <data name="Vaults_TableSize" xml:space="preserve">
     
+    </data>
     
-    <value>大小</value>
     
   
-  </data>
   
   
-  <data name="Vaults_Trash" xml:space="preserve">
     
+    <data name="Vaults_DeleteHint" xml:space="preserve">
+      
+      
     
-    <value>回收站</value>
     
-  
-  </data>
+    
+      
+      <value>知识库将移入回收站，可随时恢复。</value>
+      
+      
+    
   
   
-  <data name="Vaults_EmptyTrash" xml:space="preserve">
     
+    </data>
     
-    <value>清空回收站</value>
     
   
-  </data>
   
   
-  <data name="Vaults_TrashEmpty" xml:space="preserve">
     
+    <data name="Vaults_ConfirmDelete" xml:space="preserve">
+      
+      
     
-    <value>回收站为空</value>
     
-  
-  </data>
+    
+      
+      <value>确认删除</value>
+      
+      
+    
   
   
-  <data name="Vaults_TrashHint" xml:space="preserve">
     
+    </data>
     
-    <value>删除的知识库会暂存在这里</value>
     
   
-  </data>
   
   
-  <data name="Vaults_Dash" xml:space="preserve">
     
+    <data name="Vaults_ConfirmRestoreTitle" xml:space="preserve">
+      
+      
     
-    <value>-</value>
     
-  
-  </data>
+    
+      
+      <value>确认恢复知识库</value>
+      
+      
+    
   
   
-  <data name="Vaults_Restore" xml:space="preserve">
     
+    </data>
     
-    <value>恢复</value>
     
   
-  </data>
   
   
-  <data name="Vaults_ConfirmDeleteTitle" xml:space="preserve">
     
+    <data name="Vaults_ConfirmRestoreBody" xml:space="preserve">
+      
+      
     
-    <value>确认删除知识库</value>
     
-  
-  </data>
+    
+      
+      <value>确定要恢复知识库 &quot;@vaultToRestore?.Name&quot; 吗？</value>
+      
+      
+    
   
   
-  <data name="Vaults_ConfirmDeleteBody" xml:space="preserve">
     
+    </data>
     
-    <value>确定要删除知识库 &quot;@vaultToDelete?.Name&quot; 吗？</value>
     
   
-  </data>
   
   
-  <data name="Vaults_DeleteHint" xml:space="preserve">
     
+    <data name="Vaults_RestorePath" xml:space="preserve">
+      
+      
     
-    <value>知识库将移入回收站，可随时恢复。</value>
     
-  
-  </data>
+    
+      
+      <value>将移回原始路径：</value>
+      
+      
+    
   
   
-  <data name="Vaults_ConfirmDelete" xml:space="preserve">
     
+    </data>
     
-    <value>确认删除</value>
     
   
-  </data>
   
   
-  <data name="Vaults_ConfirmRestoreTitle" xml:space="preserve">
     
+    <data name="Vaults_ConfirmRestore" xml:space="preserve">
+      
+      
     
-    <value>确认恢复知识库</value>
     
-  
-  </data>
+    
+      
+      <value>确认恢复</value>
+      
+      
+    
   
   
-  <data name="Vaults_ConfirmRestoreBody" xml:space="preserve">
     
+    </data>
     
-    <value>确定要恢复知识库 &quot;@vaultToRestore?.Name&quot; 吗？</value>
     
   
-  </data>
   
   
-  <data name="Vaults_RestorePath" xml:space="preserve">
     
+    <data name="Vaults_ConfirmEmptyTrashTitle" xml:space="preserve">
+      
+      
     
-    <value>将移回原始路径：</value>
     
-  
-  </data>
+    
+      
+      <value>确认清空回收站</value>
+      
+      
+    
   
   
-  <data name="Vaults_ConfirmRestore" xml:space="preserve">
     
+    </data>
     
-    <value>确认恢复</value>
     
   
-  </data>
   
   
-  <data name="Vaults_ConfirmEmptyTrashTitle" xml:space="preserve">
     
+    <data name="Vaults_ConfirmEmptyTrashBody" xml:space="preserve">
+      
+      
     
-    <value>确认清空回收站</value>
     
-  
-  </data>
+    
+      
+      <value>确定要清空回收站吗？</value>
+      
+      
+    
   
   
-  <data name="Vaults_ConfirmEmptyTrashBody" xml:space="preserve">
     
+    </data>
     
-    <value>确定要清空回收站吗？</value>
     
   
-  </data>
+  
+  
+    
+    <data name="Vaults_EmptyTrashWarning" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>个知识库将被&lt;strong&gt;永久删除&lt;/strong&gt;，无法恢复。</value>
+      
+      
+    
   
   
-  <data name="Vaults_EmptyTrashWarning" xml:space="preserve">
     
+    </data>
     
-    <value>个知识库将被&lt;strong&gt;永久删除&lt;/strong&gt;，无法恢复。</value>
     
+  
   
-  </data>
+  
+    
+    <data name="Vaults_ConfirmEmptyTrash" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>确认清空</value>
+      
+      
+    
   
   
-  <data name="Vaults_ConfirmEmptyTrash" xml:space="preserve">
     
+    </data>
     
-    <value>确认清空</value>
     
+  
+  
   
-  </data>
+    
+    <data name="Vaults_ConfirmDiscardTitle" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>确认撤销更改</value>
+      
+      
+    
   
   
-  <data name="Vaults_ConfirmDiscardTitle" xml:space="preserve">
     
+    </data>
     
-    <value>确认撤销更改</value>
     
+  
   
-  </data>
+  
+    
+    <data name="Vaults_ConfirmDiscardBody" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>此操作将撤销所有未提交的工作区更改，&lt;strong&gt;无法恢复&lt;/strong&gt;。</value>
+      
+      
+    
   
   
-  <data name="Vaults_ConfirmDiscardBody" xml:space="preserve">
     
+    </data>
     
-    <value>此操作将撤销所有未提交的工作区更改，&lt;strong&gt;无法恢复&lt;/strong&gt;。</value>
     
   
-  </data>
   
   
-  <data name="Vaults_DiscardDetail" xml:space="preserve">
     
+    <data name="Vaults_DiscardDetail" xml:space="preserve">
+      
+      
     
-    <value>包括：已修改的文件、新增的文件、删除的文件。</value>
     
+    
+      
+      <value>包括：已修改的文件、新增的文件、删除的文件。</value>
+      
+      
+    
+  
+  
+    
+    </data>
+    
+    
+  
   
-  </data>
   
+    
+    <data name="Vaults_ConfirmDiscard" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>确认撤销</value>
+      
+      
+    
+  
   
-  <data name="Vaults_ConfirmDiscard" xml:space="preserve">
     
+    </data>
     
-    <value>确认撤销</value>
     
+  
+  
   
-  </data>
+    
+    <data name="Vaults_RegisteredCountBefore" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>已注册</value>
+      
+      
+    
   
   
-  <data name="Vaults_RegisteredCountBefore" xml:space="preserve">
     
+    </data>
     
-    <value>已注册</value>
     
+  
   
-  </data>
+  
+    
+    <data name="Vaults_RegisteredCountAfter" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>个 Obsidian 知识库</value>
+      
+      
+    
   
   
-  <data name="Vaults_RegisteredCountAfter" xml:space="preserve">
     
+    </data>
     
-    <value>个 Obsidian 知识库</value>
     
   
-  </data>
+  
+  
+    
+    <data name="Vaults_UnregisteredCountBefore" xml:space="preserve">
+      
+      
+    
+    
+    
+      
+      <value>，尚有</value>
+      
+      
+    
   
   
-  <data name="Vaults_UnregisteredCountBefore" xml:space="preserve">
     
+    </data>
     
-    <value>，尚有</value>
     
   
-  </data>
   
   
-  <data name="Vaults_UnregisteredCountAfter" xml:space="preserve">
+    
+    <data name="Vaults_UnregisteredCountAfter" xml:space="preserve">
+      
+      
     
     
-    <value>个未注册</value>
     
+      
+      <value>个未注册</value>
+      
+      
+    
+  
   
-  </data>
+    
+    </data>
+    
+    
   
 
-  <data name="Vaults_CreatedAtLabel" xml:space="preserve">
-    <value>创建时间：</value>
-  </data>
+  
+    
+    <data name="Vaults_CreatedAtLabel" xml:space="preserve">
+      
+      
+    
+      
+      <value>创建时间：</value>
+      
+      
+  
+    
+    </data>
+    
+    
 
-  <data name="Health_ArchDesc1_Mid" xml:space="preserve">
-    <value>，在服务端</value>
-  </data>
-  <data name="Health_ArchDesc1_Post" xml:space="preserve">
-    <value>探测本机工具链。</value>
-  </data>
-  <data name="Health_ArchDesc1_Pre" xml:space="preserve">
-    <value>本页向 Task Runner 请求</value>
-  </data>
-  <data name="Health_ArchDesc1_Strong" xml:space="preserve">
-    <value>并行</value>
-  </data>
-  <data name="Health_ArchitectureDesc2" xml:space="preserve">
-    <value>健康检查的意义是：在跑笔记同步、脚本任务或本地 AI 之前，早发现「缺装、未启动或不可用」的依赖，避免任务跑到一半才失败。</value>
-  </data>
-  <data name="Health_ArchitectureTitle" xml:space="preserve">
-    <value>运行环境架构</value>
-  </data>
-  <data name="Health_AvgElapsed" xml:space="preserve">
-    <value>平均耗时</value>
-  </data>
-  <data name="Health_CheckTimeLabel" xml:space="preserve">
-    <value>检测时间：</value>
-  </data>
-  <data name="Health_CheckingServices" xml:space="preserve">
-    <value>正在检测各项服务，请稍候…</value>
-  </data>
-  <data name="Health_ClearAll" xml:space="preserve">
-    <value>清空全部</value>
-  </data>
-  <data name="Health_ClearLogs" xml:space="preserve">
-    <value>清空日志</value>
-  </data>
-  <data name="Health_ClearMetrics" xml:space="preserve">
-    <value>清空统计</value>
-  </data>
-  <data name="Health_ClickRefreshToLoadLogs" xml:space="preserve">
-    <value>点击刷新按钮加载错误日志</value>
-  </data>
-  <data name="Health_ClickRefreshToLoadMetrics" xml:space="preserve">
-    <value>点击刷新按钮加载请求指标</value>
-  </data>
-  <data name="Health_Component" xml:space="preserve">
-    <value>组件</value>
-  </data>
-  <data name="Health_Count" xml:space="preserve">
-    <value>次数</value>
-  </data>
-  <data name="Health_Elapsed" xml:space="preserve">
-    <value>耗时</value>
-  </data>
-  <data name="Health_ErrorCount" xml:space="preserve">
-    <value>错误数</value>
-  </data>
-  <data name="Health_ErrorLogsTitle" xml:space="preserve">
-    <value>错误日志 (Warning/Error/Critical)</value>
-  </data>
-  <data name="Health_FixRequestFailed" xml:space="preserve">
-    <value>修复请求失败: {0}</value>
-  </data>
-  <data name="Health_FixResults" xml:space="preserve">
-    <value>修复结果</value>
-  </data>
-  <data name="Health_FixStatus_Failed" xml:space="preserve">
-    <value>修复失败</value>
-  </data>
-  <data name="Health_FixStatus_Fixed" xml:space="preserve">
-    <value>已修复</value>
-  </data>
-  <data name="Health_FixStatus_ManualRequired" xml:space="preserve">
-    <value>需手动处理</value>
-  </data>
-  <data name="Health_FixStatus_Skipped" xml:space="preserve">
-    <value>已跳过</value>
-  </data>
-  <data name="Health_FrequentPaths" xml:space="preserve">
-    <value>高频调用路径 (Top 10)</value>
-  </data>
-  <data name="Health_HealthScoreLabel" xml:space="preserve">
-    <value>健康度：</value>
-  </data>
-  <data name="Health_Level" xml:space="preserve">
-    <value>级别</value>
-  </data>
-  <data name="Health_Loading" xml:space="preserve">
-    <value>加载中...</value>
-  </data>
-  <data name="Health_MaxElapsed" xml:space="preserve">
-    <value>最大耗时</value>
-  </data>
-  <data name="Health_Message" xml:space="preserve">
-    <value>消息</value>
-  </data>
-  <data name="Health_NoData" xml:space="preserve">
-    <value>暂无数据</value>
-  </data>
-  <data name="Health_NoErrorLogs" xml:space="preserve">
-    <value>暂无错误日志 🎉</value>
-  </data>
-  <data name="Health_NoHealthReport" xml:space="preserve">
-    <value>未获取到健康报告</value>
-  </data>
-  <data name="Health_OneClickFix" xml:space="preserve">
-    <value>一键修复</value>
-  </data>
-  <data name="Health_OpenClawSetupResult" xml:space="preserve">
-    <value>OpenClaw 配置结果</value>
-  </data>
-  <data name="Health_PageTitle" xml:space="preserve">
-    <value>系统健康检查</value>
-  </data>
-  <data name="Health_ParallelWallClockLabel" xml:space="preserve">
-    <value>· 并行墙钟</value>
-  </data>
-  <data name="Health_Path" xml:space="preserve">
-    <value>路径</value>
-  </data>
-  <data name="Health_RecentLogs" xml:space="preserve">
-    <value>最近10条日志</value>
-  </data>
-  <data name="Health_Refresh" xml:space="preserve">
-    <value>刷新</value>
-  </data>
-  <data name="Health_RefreshPerfData" xml:space="preserve">
-    <value>刷新性能数据</value>
-  </data>
-  <data name="Health_RequestMetricsTitle" xml:space="preserve">
-    <value>请求性能指标</value>
-  </data>
-  <data name="Health_SetupFailed" xml:space="preserve">
-    <value>配置失败: {0}</value>
-  </data>
-  <data name="Health_SetupOpenClaw" xml:space="preserve">
-    <value>配置 OpenClaw</value>
-  </data>
-  <data name="Health_SlowestRequests" xml:space="preserve">
-    <value>最慢请求 (Top 10)</value>
-  </data>
-  <data name="Health_Source" xml:space="preserve">
-    <value>来源</value>
-  </data>
-  <data name="Health_Status" xml:space="preserve">
-    <value>状态</value>
-  </data>
-  <data name="Health_SystemHealthCheck" xml:space="preserve">
-    <value>系统健康检查</value>
-  </data>
-  <data name="Health_TabApi" xml:space="preserve">
-    <value>API 调用性能</value>
-  </data>
-  <data name="Health_TabComponent" xml:space="preserve">
-    <value>组件渲染性能</value>
-  </data>
-  <data name="Health_TabE2E" xml:space="preserve">
-    <value>端到端性能</value>
-  </data>
-  <data name="Health_TabHealth" xml:space="preserve">
-    <value>健康检查</value>
-  </data>
-  <data name="Health_TabPerformance" xml:space="preserve">
-    <value>性能监控</value>
-  </data>
-  <data name="Health_Timestamp" xml:space="preserve">
-    <value>时间</value>
-  </data>
-  <data name="Health_TotalErrors" xml:space="preserve">
-    <value>总错误数</value>
-  </data>
-  <data name="Health_TotalRequests" xml:space="preserve">
-    <value>总请求数</value>
-  </data>
-  <data name="Health_WebuiConnectivityFailed" xml:space="preserve">
-    <value>WebUI 无法访问 Task Runner: {0}</value>
-  </data>
-  <data name="Health_WebuiConnectivityOk" xml:space="preserve">
-    <value>WebUI 可正常访问 Task Runner（{0}ms）</value>
-  </data>
-</root>
+  
+    
+    <data name="Health_ArchDesc1_Mid" xml:space="preserve">
+      
+      
+    
+      
+      <value>，在服务端</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_ArchDesc1_Post" xml:space="preserve">
+      
+      
+    
+      
+      <value>探测本机工具链。</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_ArchDesc1_Pre" xml:space="preserve">
+      
+      
+    
+      
+      <value>本页向 Task Runner 请求</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_ArchDesc1_Strong" xml:space="preserve">
+      
+      
+    
+      
+      <value>并行</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_ArchitectureDesc2" xml:space="preserve">
+      
+      
+    
+      
+      <value>健康检查的意义是：在跑笔记同步、脚本任务或本地 AI 之前，早发现「缺装、未启动或不可用」的依赖，避免任务跑到一半才失败。</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_ArchitectureTitle" xml:space="preserve">
+      
+      
+    
+      
+      <value>运行环境架构</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_AvgElapsed" xml:space="preserve">
+      
+      
+    
+      
+      <value>平均耗时</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_CheckTimeLabel" xml:space="preserve">
+      
+      
+    
+      
+      <value>检测时间：</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_CheckingServices" xml:space="preserve">
+      
+      
+    
+      
+      <value>正在检测各项服务，请稍候…</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_ClearAll" xml:space="preserve">
+      
+      
+    
+      
+      <value>清空全部</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_ClearLogs" xml:space="preserve">
+      
+      
+    
+      
+      <value>清空日志</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_ClearMetrics" xml:space="preserve">
+      
+      
+    
+      
+      <value>清空统计</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_ClickRefreshToLoadLogs" xml:space="preserve">
+      
+      
+    
+      
+      <value>点击刷新按钮加载错误日志</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_ClickRefreshToLoadMetrics" xml:space="preserve">
+      
+      
+    
+      
+      <value>点击刷新按钮加载请求指标</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_Component" xml:space="preserve">
+      
+      
+    
+      
+      <value>组件</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_Count" xml:space="preserve">
+      
+      
+    
+      
+      <value>次数</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_Elapsed" xml:space="preserve">
+      
+      
+    
+      
+      <value>耗时</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_ErrorCount" xml:space="preserve">
+      
+      
+    
+      
+      <value>错误数</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_ErrorLogsTitle" xml:space="preserve">
+      
+      
+    
+      
+      <value>错误日志 (Warning/Error/Critical)</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_FixRequestFailed" xml:space="preserve">
+      
+      
+    
+      
+      <value>修复请求失败: {0}</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_FixResults" xml:space="preserve">
+      
+      
+    
+      
+      <value>修复结果</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_FixStatus_Failed" xml:space="preserve">
+      
+      
+    
+      
+      <value>修复失败</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_FixStatus_Fixed" xml:space="preserve">
+      
+      
+    
+      
+      <value>已修复</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_FixStatus_ManualRequired" xml:space="preserve">
+      
+      
+    
+      
+      <value>需手动处理</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_FixStatus_Skipped" xml:space="preserve">
+      
+      
+    
+      
+      <value>已跳过</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_FrequentPaths" xml:space="preserve">
+      
+      
+    
+      
+      <value>高频调用路径 (Top 10)</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_HealthScoreLabel" xml:space="preserve">
+      
+      
+    
+      
+      <value>健康度：</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_Level" xml:space="preserve">
+      
+      
+    
+      
+      <value>级别</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_Loading" xml:space="preserve">
+      
+      
+    
+      
+      <value>加载中...</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_MaxElapsed" xml:space="preserve">
+      
+      
+    
+      
+      <value>最大耗时</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_Message" xml:space="preserve">
+      
+      
+    
+      
+      <value>消息</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_NoData" xml:space="preserve">
+      
+      
+    
+      
+      <value>暂无数据</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_NoErrorLogs" xml:space="preserve">
+      
+      
+    
+      
+      <value>暂无错误日志 🎉</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_NoHealthReport" xml:space="preserve">
+      
+      
+    
+      
+      <value>未获取到健康报告</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_OneClickFix" xml:space="preserve">
+      
+      
+    
+      
+      <value>一键修复</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_OpenClawSetupResult" xml:space="preserve">
+      
+      
+    
+      
+      <value>OpenClaw 配置结果</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_PageTitle" xml:space="preserve">
+      
+      
+    
+      
+      <value>系统健康检查</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_ParallelWallClockLabel" xml:space="preserve">
+      
+      
+    
+      
+      <value>· 并行墙钟</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_Path" xml:space="preserve">
+      
+      
+    
+      
+      <value>路径</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_RecentLogs" xml:space="preserve">
+      
+      
+    
+      
+      <value>最近10条日志</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_Refresh" xml:space="preserve">
+      
+      
+    
+      
+      <value>刷新</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_RefreshPerfData" xml:space="preserve">
+      
+      
+    
+      
+      <value>刷新性能数据</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_RequestMetricsTitle" xml:space="preserve">
+      
+      
+    
+      
+      <value>请求性能指标</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_SetupFailed" xml:space="preserve">
+      
+      
+    
+      
+      <value>配置失败: {0}</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_SetupOpenClaw" xml:space="preserve">
+      
+      
+    
+      
+      <value>配置 OpenClaw</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_SlowestRequests" xml:space="preserve">
+      
+      
+    
+      
+      <value>最慢请求 (Top 10)</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_Source" xml:space="preserve">
+      
+      
+    
+      
+      <value>来源</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_Status" xml:space="preserve">
+      
+      
+    
+      
+      <value>状态</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_SystemHealthCheck" xml:space="preserve">
+      
+      
+    
+      
+      <value>系统健康检查</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_TabApi" xml:space="preserve">
+      
+      
+    
+      
+      <value>API 调用性能</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_TabComponent" xml:space="preserve">
+      
+      
+    
+      
+      <value>组件渲染性能</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_TabE2E" xml:space="preserve">
+      
+      
+    
+      
+      <value>端到端性能</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_TabHealth" xml:space="preserve">
+      
+      
+    
+      
+      <value>健康检查</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_TabPerformance" xml:space="preserve">
+      
+      
+    
+      
+      <value>性能监控</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_Timestamp" xml:space="preserve">
+      
+      
+    
+      
+      <value>时间</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_TotalErrors" xml:space="preserve">
+      
+      
+    
+      
+      <value>总错误数</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_TotalRequests" xml:space="preserve">
+      
+      
+    
+      
+      <value>总请求数</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_WebuiConnectivityFailed" xml:space="preserve">
+      
+      
+    
+      
+      <value>WebUI 无法访问 Task Runner: {0}</value>
+      
+      
+  
+    
+    </data>
+    
+    
+  
+    
+    <data name="Health_WebuiConnectivityOk" xml:space="preserve">
+      
+      
+    
+      
+      <value>WebUI 可正常访问 Task Runner（{0}ms）</value>
+      
+      
+  
+    
+    </data>
+    
+    
+
+    
+    <data name="Devices_PageTitle" xml:space="preserve">
+      
+      
+      <value>移动端管理</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_Title" xml:space="preserve">
+      
+      
+      <value>📱 移动端管理</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_TabDevices" xml:space="preserve">
+      
+      
+      <value>📱 设备</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_TabDiscover" xml:space="preserve">
+      
+      
+      <value>🔍 发现</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_LanAutoDiscovery" xml:space="preserve">
+      
+      
+      <value>📱 局域网自动发现</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_LanDiscoveryHint" xml:space="preserve">
+      
+      
+      <value>确保手机和电脑连接同一 WiFi，打开移动端「花记」APP 即可自动被发现。</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_OneHopDiscoveryTitle" xml:space="preserve">
+      
+      
+      <value>🔍 OneHop 局域网发现</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_DiscoveryRunning" xml:space="preserve">
+      
+      
+      <value>发现服务运行中</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_DiscoveryNotRunning" xml:space="preserve">
+      
+      
+      <value>发现服务未运行</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_StopDiscovery" xml:space="preserve">
+      
+      
+      <value>停止发现</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_StartDiscovery" xml:space="preserve">
+      
+      
+      <value>开始发现</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_Refresh" xml:space="preserve">
+      
+      
+      <value>刷新</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_Status" xml:space="preserve">
+      
+      
+      <value>状态</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_Running" xml:space="preserve">
+      
+      
+      <value>运行中</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_Stopped" xml:space="preserve">
+      
+      
+      <value>已停止</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_DiscoveredDevicesCount" xml:space="preserve">
+      
+      
+      <value>已发现设备</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_CurrentConnection" xml:space="preserve">
+      
+      
+      <value>当前连接</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_None" xml:space="preserve">
+      
+      
+      <value>无</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_Discovering" xml:space="preserve">
+      
+      
+      <value>正在发现设备...</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_DiscoveredDevicesTitle" xml:space="preserve">
+      
+      
+      <value>发现的设备</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_ColDeviceName" xml:space="preserve">
+      
+      
+      <value>设备名称</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_ColSignalStrength" xml:space="preserve">
+      
+      
+      <value>信号强度</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_ColDiscoveryTime" xml:space="preserve">
+      
+      
+      <value>发现时间</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_ColActions" xml:space="preserve">
+      
+      
+      <value>操作</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_DeviceTypeMobile" xml:space="preserve">
+      
+      
+      <value>📱 移动端</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_Authorized" xml:space="preserve">
+      
+      
+      <value>已授权</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_Authorize" xml:space="preserve">
+      
+      
+      <value>授权</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_Connect" xml:space="preserve">
+      
+      
+      <value>连接</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_NoLanDevices" xml:space="preserve">
+      
+      
+      <value>未发现局域网设备</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_ScanPair" xml:space="preserve">
+      
+      
+      <value>🖼️ 扫码配对</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_PendingDevices" xml:space="preserve">
+      
+      
+      <value>⏳ 待授权设备</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_Loading" xml:space="preserve">
+      
+      
+      <value>加载中...</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_NoPendingDevices" xml:space="preserve">
+      
+      
+      <value>暂无待授权设备</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_ColDeviceInfo" xml:space="preserve">
+      
+      
+      <value>设备信息</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_ColIpAddress" xml:space="preserve">
+      
+      
+      <value>IP 地址</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_ColRequestTime" xml:space="preserve">
+      
+      
+      <value>请求时间</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_Reject" xml:space="preserve">
+      
+      
+      <value>拒绝</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_AuthorizedDevicesTitle" xml:space="preserve">
+      
+      
+      <value>✅ 已授权设备</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_NoAuthorizedDevices" xml:space="preserve">
+      
+      
+      <value>暂无已授权设备</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_ColAuthorizedTime" xml:space="preserve">
+      
+      
+      <value>授权时间</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_ColFirstSync" xml:space="preserve">
+      
+      
+      <value>首次同步</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_ColLastSync" xml:space="preserve">
+      
+      
+      <value>最后同步</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_ColSyncCount" xml:space="preserve">
+      
+      
+      <value>同步次数</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_ColSyncedVaults" xml:space="preserve">
+      
+      
+      <value>已同步知识库</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_Revoke" xml:space="preserve">
+      
+      
+      <value>撤销授权</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_RevokeConfirm" xml:space="preserve">
+      
+      
+      <value>确定要撤销此设备的授权吗？设备将无法再同步和访问知识库。</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_UnknownDevice" xml:space="preserve">
+      
+      
+      <value>未知设备</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_DeviceAuthorized" xml:space="preserve">
+      
+      
+      <value>设备已授权</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_AuthorizeFailed" xml:space="preserve">
+      
+      
+      <value>授权失败: {0}</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_RejectedPairing" xml:space="preserve">
+      
+      
+      <value>已拒绝设备配对</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_RejectFailed" xml:space="preserve">
+      
+      
+      <value>拒绝失败: {0}</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_Revoked" xml:space="preserve">
+      
+      
+      <value>已撤销设备授权</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_RevokeFailed" xml:space="preserve">
+      
+      
+      <value>撤销失败: {0}</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_DiscoveryStarted" xml:space="preserve">
+      
+      
+      <value>设备发现已启动</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_DiscoveryStartFailed" xml:space="preserve">
+      
+      
+      <value>启动发现失败: {0}</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_DiscoveryStopped" xml:space="preserve">
+      
+      
+      <value>设备发现已停止</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_DiscoveryStopFailed" xml:space="preserve">
+      
+      
+      <value>停止发现失败: {0}</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_Connected" xml:space="preserve">
+      
+      
+      <value>已连接到 {0}</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_ConnectFailed" xml:space="preserve">
+      
+      
+      <value>连接失败: {0}</value>
+      
+    
+    </data>
+    
+    
+    <data name="Devices_PendingRequestNotFound" xml:space="preserve">
+      
+      
+      <value>未找到 {0} 的待授权请求，请稍后重试</value>
+      
+    
+    </data>
+    
+  
+  
+    <data name="Common_Refresh" xml:space="preserve">
+      
+    
+      <value>刷新</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_AddModel" xml:space="preserve">
+      
+    
+      <value>+ 添加模型</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_AddProvider" xml:space="preserve">
+      
+    
+      <value>添加 AI 提供商</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_AddProviderBtn" xml:space="preserve">
+      
+    
+      <value>+ 添加AI提供商</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_AnthropicUrl" xml:space="preserve">
+      
+    
+      <value>Anthropic 协议地址（可选，用于 DeepSeek 返回为空时 fallback）</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_AnthropicUrlHint" xml:space="preserve">
+      
+    
+      <value>仅在当前提供商返回空响应时自动切换到 Anthropic 协议</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_ApiBaseUrl" xml:space="preserve">
+      
+    
+      <value>API 基础地址</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_ApiKey" xml:space="preserve">
+      
+    
+      <value>API Key</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_ApiKeyConfigured" xml:space="preserve">
+      
+    
+      <value>已配置：</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_ApiKeyEncrypted" xml:space="preserve">
+      
+    
+      <value>已加密存储</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_ApiKeyEncryptedHint" xml:space="preserve">
+      
+    
+      <value>API Key 将加密后存储在本地</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_ApiKeyEncryptedNote" xml:space="preserve">
+      
+    
+      <value>API Key 加密存储在本地。</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_ApiKeyKeepExisting" xml:space="preserve">
+      
+    
+      <value>留空保留现有密钥：</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_ApiKeyNotConfigured" xml:space="preserve">
+      
+    
+      <value>未配置 API Key</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_ApiKeyOptional" xml:space="preserve">
+      
+    
+      <value>API Key（本地 Ollama 可留空）</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_AutoFetchModels" xml:space="preserve">
+      
+    
+      <value>自动获取模型</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_ConfirmDeleteProvider" xml:space="preserve">
+      
+    
+      <value>确定要删除 '{0}' 吗？</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_ConfirmRemoveMissing" xml:space="preserve">
+      
+    
+      <value>确定要从配置中删除 {0} 个缺失的模型吗？</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_Default" xml:space="preserve">
+      
+    
+      <value>默认</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_DefaultModel" xml:space="preserve">
+      
+    
+      <value>默认</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_Dismiss" xml:space="preserve">
+      
+    
+      <value>忽略</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_DisplayName" xml:space="preserve">
+      
+    
+      <value>显示名称</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_DisplayNamePlaceholder" xml:space="preserve">
+      
+    
+      <value>如：智谱AI, DeepSeek</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_DownloadDir" xml:space="preserve">
+      
+    
+      <value>模型下载目录</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_DownloadDirCurrent" xml:space="preserve">
+      
+    
+      <value>当前: </value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_DownloadDirDefault" xml:space="preserve">
+      
+    
+      <value>平台默认值: </value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_DownloadDirPlaceholder" xml:space="preserve">
+      
+    
+      <value>留空使用平台默认值</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_DownloadSource" xml:space="preserve">
+      
+    
+      <value>下载源偏好</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_Edit" xml:space="preserve">
+      
+    
+      <value>编辑</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_EditProvider" xml:space="preserve">
+      
+    
+      <value>编辑 AI 提供商</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_EmbeddingConfig" xml:space="preserve">
+      
+    
+      <value>Embedding 配置（一级·固本）</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_EmbeddingCustom" xml:space="preserve">
+      
+    
+      <value>自定义</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_EmbeddingDescription" xml:space="preserve">
+      
+    
+      <value>配置 RAG 知识库检索所需的 Embedding 模型。纯 CPU 即可运行，推荐 nomic-embed-text 或 bge-small-zh-v1.5。</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_EmbeddingModelHint" xml:space="preserve">
+      
+    
+      <value>推荐：nomic-embed-text, bge-small-zh-v1.5, text-embedding-3-small</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_EmbeddingOllama" xml:space="preserve">
+      
+    
+      <value>Ollama（本地）</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_EmbeddingOpenai" xml:space="preserve">
+      
+    
+      <value>OpenAI API</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_EmbeddingSavedSuccess" xml:space="preserve">
+      
+    
+      <value>✅ Embedding 配置已保存</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_EmbeddingSiliconflow" xml:space="preserve">
+      
+    
+      <value>硅基流动</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_EnableEmbedding" xml:space="preserve">
+      
+    
+      <value>启用 Embedding 检索</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_ErrorBaseUrlEmpty" xml:space="preserve">
+      
+    
+      <value>API 基础地址不能为空</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_ErrorDisplayNameEmpty" xml:space="preserve">
+      
+    
+      <value>显示名称不能为空</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_ErrorNoModelsFetched" xml:space="preserve">
+      
+    
+      <value>未获取到模型，请检查工具是否运行</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_ErrorProviderIdEmpty" xml:space="preserve">
+      
+    
+      <value>提供商 ID 不能为空</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_ErrorSaveProviderFailed" xml:space="preserve">
+      
+    
+      <value>保存提供商失败: {0}</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_ErrorUnknownToolType" xml:space="preserve">
+      
+    
+      <value>无法识别本地工具类型</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_FetchCancelled" xml:space="preserve">
+      
+    
+      <value>已取消获取</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_FetchFailed" xml:space="preserve">
+      
+    
+      <value>获取失败: {0}</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_FreeModel" xml:space="preserve">
+      
+    
+      <value>免费</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_GoToDownloadModels" xml:space="preserve">
+      
+    
+      <value>前往下载模型</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_LocalConfigSavedSuccess" xml:space="preserve">
+      
+    
+      <value>✅ 本地模型设置已保存</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_LocalModelSettings" xml:space="preserve">
+      
+    
+      <value>本地模型设置</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_MainBadge" xml:space="preserve">
+      
+    
+      <value>主</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_ManualInput" xml:space="preserve">
+      
+    
+      <value>手动输入（自定义）</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_MissingModelsWarning" xml:space="preserve">
+      
+    
+      <value>以下配置的模型在本地工具中未找到：</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_ModelList" xml:space="preserve">
+      
+    
+      <value>模型列表</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_ModelName" xml:space="preserve">
+      
+    
+      <value>模型名称</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_ModelNamePlaceholder" xml:space="preserve">
+      
+    
+      <value>模型名称</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_ModelTier" xml:space="preserve">
+      
+    
+      <value>模型层级</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_ModelsUpToDate" xml:space="preserve">
+      
+    
+      <value>模型列表已是最新（共 {0} 个）</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_NoProviders" xml:space="preserve">
+      
+    
+      <value>暂无 AI 提供商配置，点击“添加提供商”创建一个。</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_PageTitle" xml:space="preserve">
+      
+    
+      <value>AI 配置</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_Paid" xml:space="preserve">
+      
+    
+      <value>付费</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_PaidModel" xml:space="preserve">
+      
+    
+      <value>付费</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_PresetHint" xml:space="preserve">
+      
+    
+      <value>选择知名提供商可自动填充 API 地址和推荐模型</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_Provider" xml:space="preserve">
+      
+    
+      <value>提供商</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_ProviderId" xml:space="preserve">
+      
+    
+      <value>提供商 ID</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_ProviderIdHint" xml:space="preserve">
+      
+    
+      <value>唯一标识，创建后不可修改</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_ProviderIdPlaceholder" xml:space="preserve">
+      
+    
+      <value>如：aliyun, zhipu, deepseek</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_RemoveMissingModels" xml:space="preserve">
+      
+    
+      <value>从配置中删除缺失模型</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_SaveEmbedding" xml:space="preserve">
+      
+    
+      <value>保存 Embedding 配置</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_SaveFailed" xml:space="preserve">
+      
+    
+      <value>❌ 保存失败</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_SaveFailedWithMessage" xml:space="preserve">
+      
+    
+      <value>❌ 保存失败: {0}</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_SaveLocalConfig" xml:space="preserve">
+      
+    
+      <value>保存本地模型设置</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_SelectPreset" xml:space="preserve">
+      
+    
+      <value>选择预设提供商</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_SetAsMainProvider" xml:space="preserve">
+      
+    
+      <value>设为主提供商</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_SourceAuto" xml:space="preserve">
+      
+    
+      <value>自动</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_SourceHfMirror" xml:space="preserve">
+      
+    
+      <value>HF 镜像</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_SourceHuggingface" xml:space="preserve">
+      
+    
+      <value>HuggingFace</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_SourceModelscope" xml:space="preserve">
+      
+    
+      <value>魔搭</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_Tier1" xml:space="preserve">
+      
+    
+      <value>固本</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_Tier2" xml:space="preserve">
+      
+    
+      <value>问道</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_Tier3" xml:space="preserve">
+      
+    
+      <value>通玄</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_TierHint" xml:space="preserve">
+      
+    
+      <value>固本 = Embedding 向量模型 / 问道 = 本地大模型 / 通玄 = 云端 API</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_TierUnset" xml:space="preserve">
+      
+    
+      <value>未设置</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_Title" xml:space="preserve">
+      
+    
+      <value>AI 配置</value>
+      
+  
+    </data>
+    
+  
+    <data name="Settings_UseChinaMirror" xml:space="preserve">
+      
+    
+      <value>优先使用国内镜像加速下载</value>
+      
+  
+    </data>
+    <data name="Devices_DeviceAuthorizedFormat" xml:space="preserve">
+      <value>{0} 已授权</value>
+    </data>
+    <data name="Devices_DiscoveryStartFailedSimple" xml:space="preserve">
+      <value>启动发现失败</value>
+    </data>
+    <data name="Devices_DiscoveryStopFailedSimple" xml:space="preserve">
+      <value>停止发现失败</value>
+    </data>
+  </root>

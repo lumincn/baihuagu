@@ -2,23 +2,25 @@
 @rendermode InteractiveServer
 @using Baihua.Web.Components
 @using Baihua.Contracts.OneHop
+@using Microsoft.Extensions.Localization
 @inject HttpClient HttpClient
 @inject IJSRuntime JSRuntime
 @inject ILogger<Devices> Logger
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 @implements IDisposable
 
-<PageTitle>移动端管理</PageTitle>
+<PageTitle>@L["Devices_PageTitle"]</PageTitle>
 
 <div class="container-fluid mt-4">
-    <h2 class="mb-4">📱 移动端管理</h2>
+    <h2 class="mb-4">📱 @L["Devices_Title"]</h2>
 
     <!-- Tab 导航 -->
     <ul class="nav nav-tabs mb-4">
         <li class="nav-item">
-            <button class="nav-link @(activeTab == "devices" ? "active" : "")" @onclick='() => SwitchTab("devices")'>📱 设备</button>
+            <button class="nav-link @(activeTab == "devices" ? "active" : "")" @onclick='() => SwitchTab("devices")'>📱 @L["Devices_TabDevices"]</button>
         </li>
         <li class="nav-item">
-            <button class="nav-link @(activeTab == "discover" ? "active" : "")" @onclick='() => SwitchTab("discover")'>🔍 发现</button>
+            <button class="nav-link @(activeTab == "discover" ? "active" : "")" @onclick='() => SwitchTab("discover")'>🔍 @L["Devices_TabDiscover"]</button>
         </li>
     </ul>
 
@@ -33,26 +35,26 @@
     @if (activeTab == "discover")
     {
         <div class="alert alert-info mb-4">
-            <p class="mb-1"><strong>📱 局域网自动发现</strong></p>
-            <p class="mb-0 small">确保手机和电脑连接同一 WiFi，打开移动端「花记」APP 即可自动被发现。</p>
+            <p class="mb-1"><strong>📱 @L["Devices_LanAutoDiscovery"]</strong></p>
+            <p class="mb-0 small">@L["Devices_LanDiscoveryHint"]</p>
         </div>
 
         <!-- 发现 Tab -->
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">🔍 OneHop 局域网发现</h5>
+                <h5 class="mb-0">🔍 @L["Devices_OneHopDiscoveryTitle"]</h5>
                 <div class="d-flex gap-2">
                     @if (oneHopStatus?.IsRunning == true)
                     {
-                        <span class="badge bg-success">发现服务运行中</span>
-                        <button class="btn btn-sm btn-outline-danger" @onclick="StopDiscoveryAsync" disabled="@isDiscovering">停止发现</button>
+                        <span class="badge bg-success">@L["Devices_DiscoveryRunning"]</span>
+                        <button class="btn btn-sm btn-outline-danger" @onclick="StopDiscoveryAsync" disabled="@isDiscovering">@L["Devices_StopDiscovery"]</button>
                     }
                     else
                     {
-                        <span class="badge bg-secondary">发现服务未运行</span>
-                        <button class="btn btn-sm btn-outline-primary" @onclick="StartDiscoveryAsync" disabled="@isDiscovering">开始发现</button>
+                        <span class="badge bg-secondary">@L["Devices_DiscoveryNotRunning"]</span>
+                        <button class="btn btn-sm btn-outline-primary" @onclick="StartDiscoveryAsync" disabled="@isDiscovering">@L["Devices_StartDiscovery"]</button>
                     }
-                    <button class="btn btn-sm btn-outline-secondary" @onclick="LoadOneHopDataAsync" disabled="@isDiscovering">刷新</button>
+                    <button class="btn btn-sm btn-outline-secondary" @onclick="LoadOneHopDataAsync" disabled="@isDiscovering">@L["Devices_Refresh"]</button>
                 </div>
             </div>
             <div class="card-body">
@@ -61,20 +63,20 @@
                     <div class="row g-3 mb-3">
                         <div class="col-md-3">
                             <div class="p-2 bg-light rounded text-center">
-                                <div class="text-muted small">状态</div>
-                                <div class="fw-bold">@(oneHopStatus.IsRunning ? "运行中" : "已停止")</div>
+                                <div class="text-muted small">@L["Devices_Status"]</div>
+                                <div class="fw-bold">@(oneHopStatus.IsRunning ? L["Devices_Running"] : L["Devices_Stopped"])</div>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="p-2 bg-light rounded text-center">
-                                <div class="text-muted small">已发现设备</div>
+                                <div class="text-muted small">@L["Devices_DiscoveredDevicesCount"]</div>
                                 <div class="fw-bold">@oneHopStatus.DiscoveredDevicesCount</div>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="p-2 bg-light rounded text-center">
-                                <div class="text-muted small">当前连接</div>
-                                <div class="fw-bold">@(string.IsNullOrEmpty(oneHopStatus.CurrentConnection?.DeviceName) ? "无" : oneHopStatus.CurrentConnection.DeviceName)</div>
+                                <div class="text-muted small">@L["Devices_CurrentConnection"]</div>
+                                <div class="fw-bold">@(string.IsNullOrEmpty(oneHopStatus.CurrentConnection?.DeviceName) ? L["Devices_None"] : oneHopStatus.CurrentConnection.DeviceName)</div>
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -90,20 +92,20 @@
                 {
                     <div class="text-center py-4">
                         <div class="spinner-border text-primary" role="status"></div>
-                        <p class="mt-2 text-muted">正在发现设备...</p>
+                        <p class="mt-2 text-muted">@L["Devices_Discovering"]</p>
                     </div>
                 }
                 else if (oneHopDevices.Any())
                 {
-                    <h6 class="mb-3">发现的设备</h6>
+                    <h6 class="mb-3">@L["Devices_DiscoveredDevicesTitle"]</h6>
                     <div class="table-responsive">
                         <table class="table table-hover table-sm">
                             <thead class="table-light">
                                 <tr>
-                                    <th>设备名称</th>
-                                    <th>信号强度</th>
-                                    <th>发现时间</th>
-                                    <th>操作</th>
+                                    <th>@L["Devices_ColDeviceName"]</th>
+                                    <th>@L["Devices_ColSignalStrength"]</th>
+                                    <th>@L["Devices_ColDiscoveryTime"]</th>
+                                    <th>@L["Devices_ColActions"]</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -116,14 +118,14 @@
                                         "android" => "🤖 Android",
                                         "harmonyos" => "🔷 HarmonyOS",
                                         "ios" => "🍎 iOS",
-                                        _ => "📱 移动端"
+                                        _ => "📱 " + L["Devices_DeviceTypeMobile"]
                                     };
                                     <tr>
                                         <td>
                                             <strong>@device.DeviceName</strong>
                                             @if (isAuthorized)
                                             {
-                                                <span class="badge bg-success ms-2">已授权</span>
+                                                <span class="badge bg-success ms-2">@L["Devices_Authorized"]</span>
                                             }
                                             <div class="text-muted small">@device.DeviceId</div>
                                             <span class="badge bg-secondary">@typeLabel</span>
@@ -140,13 +142,13 @@
                                                 @if (!isAuthorized)
                                                 {
                                                     <button class="btn btn-sm btn-success" @onclick="() => AuthorizeOneHopDeviceAsync(device.DeviceName)" disabled="@isProcessingDevice">
-                                                        授权
+                                                        @L["Devices_Authorize"]
                                                     </button>
                                                 }
                                                 else
                                                 {
                                                     <button class="btn btn-sm btn-outline-primary" @onclick="() => ConnectOneHopDeviceAsync(device.DeviceId)" disabled="@isProcessingDevice">
-                                                        连接
+                                                        @L["Devices_Connect"]
                                                     </button>
                                                 }
                                             </div>
@@ -160,8 +162,8 @@
                 else
                 {
                     <div class="text-center py-5 text-muted">
-                        <p>未发现局域网设备</p>
-                        <button class="btn btn-primary" @onclick="StartDiscoveryAsync" disabled="@isDiscovering">开始发现</button>
+                        <p>@L["Devices_NoLanDevices"]</p>
+                        <button class="btn btn-primary" @onclick="StartDiscoveryAsync" disabled="@isDiscovering">@L["Devices_StartDiscovery"]</button>
                     </div>
                 }
             </div>
@@ -175,7 +177,7 @@
             <div class="col-md-6 mb-4">
                 <div class="card h-100">
                     <div class="card-header">
-                        <h5 class="mb-0">🖼️ 扫码配对</h5>
+                        <h5 class="mb-0">🖼️ @L["Devices_ScanPair"]</h5>
                     </div>
                     <div class="card-body">
                         <QRToolPanel />
@@ -187,19 +189,19 @@
             <div class="col-md-6 mb-4">
                 <div class="card h-100">
                     <div class="card-header bg-warning bg-opacity-25">
-                        <h5 class="mb-0">⏳ 待授权设备 (@pendingDevices.Count)</h5>
+                        <h5 class="mb-0">⏳ @L["Devices_PendingDevices"] (@pendingDevices.Count)</h5>
                     </div>
                     <div class="card-body">
                         @if (isLoadingDevices)
                         {
                             <div class="text-center py-3">
                                 <div class="spinner-border spinner-border-sm text-primary"></div>
-                                <span class="ms-2 text-muted">加载中...</span>
+                                <span class="ms-2 text-muted">@L["Devices_Loading"]</span>
                             </div>
                         }
                         else if (!pendingDevices.Any())
                         {
-                            <p class="text-muted mb-0">暂无待授权设备</p>
+                            <p class="text-muted mb-0">@L["Devices_NoPendingDevices"]</p>
                         }
                         else
                         {
@@ -207,10 +209,10 @@
                                 <table class="table table-hover table-sm mb-0">
                                     <thead class="table-light">
                                         <tr>
-                                            <th>设备信息</th>
-                                            <th>IP 地址</th>
-                                            <th>请求时间</th>
-                                            <th>操作</th>
+                                            <th>@L["Devices_ColDeviceInfo"]</th>
+                                            <th>@L["Devices_ColIpAddress"]</th>
+                                            <th>@L["Devices_ColRequestTime"]</th>
+                                            <th>@L["Devices_ColActions"]</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -222,8 +224,8 @@
                                                 <td class="small">@device.RequestTime.ToLocalTime().ToString("MM-dd HH:mm:ss")</td>
                                                 <td>
                                                     <div class="d-flex gap-2">
-                                                        <button class="btn btn-sm btn-success" @onclick="() => AuthorizeDeviceAsync(device.RequestId)" disabled="@isProcessingDevice">授权</button>
-                                                        <button class="btn btn-sm btn-outline-danger" @onclick="() => RejectDeviceAsync(device.RequestId)" disabled="@isProcessingDevice">拒绝</button>
+                                                        <button class="btn btn-sm btn-success" @onclick="() => AuthorizeDeviceAsync(device.RequestId)" disabled="@isProcessingDevice">@L["Devices_Authorize"]</button>
+                                                        <button class="btn btn-sm btn-outline-danger" @onclick="() => RejectDeviceAsync(device.RequestId)" disabled="@isProcessingDevice">@L["Devices_Reject"]</button>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -240,20 +242,20 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header bg-success bg-opacity-10 d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">✅ 已授权设备 (@authorizedDevices.Count)</h5>
-                        <button class="btn btn-sm btn-outline-secondary" @onclick="LoadDevicesAsync" disabled="@isLoadingDevices">刷新</button>
+                        <h5 class="mb-0">✅ @L["Devices_AuthorizedDevicesTitle"] (@authorizedDevices.Count)</h5>
+                        <button class="btn btn-sm btn-outline-secondary" @onclick="LoadDevicesAsync" disabled="@isLoadingDevices">@L["Devices_Refresh"]</button>
                     </div>
                     <div class="card-body">
                         @if (isLoadingDevices)
                         {
                             <div class="text-center py-3">
                                 <div class="spinner-border spinner-border-sm text-primary"></div>
-                                <span class="ms-2 text-muted">加载中...</span>
+                                <span class="ms-2 text-muted">@L["Devices_Loading"]</span>
                             </div>
                         }
                         else if (!authorizedDevices.Any())
                         {
-                            <p class="text-muted mb-0">暂无已授权设备</p>
+                            <p class="text-muted mb-0">@L["Devices_NoAuthorizedDevices"]</p>
                         }
                         else
                         {
@@ -261,14 +263,14 @@
                                 <table class="table table-hover table-sm mb-0">
                                     <thead class="table-light">
                                         <tr>
-                                            <th>设备名称</th>
-                                            <th>IP 地址</th>
-                                            <th>授权时间</th>
-                                            <th>首次同步</th>
-                                            <th>最后同步</th>
-                                            <th>同步次数</th>
-                                            <th>已同步知识库</th>
-                                            <th>操作</th>
+                                            <th>@L["Devices_ColDeviceName"]</th>
+                                            <th>@L["Devices_ColIpAddress"]</th>
+                                            <th>@L["Devices_ColAuthorizedTime"]</th>
+                                            <th>@L["Devices_ColFirstSync"]</th>
+                                            <th>@L["Devices_ColLastSync"]</th>
+                                            <th>@L["Devices_ColSyncCount"]</th>
+                                            <th>@L["Devices_ColSyncedVaults"]</th>
+                                            <th>@L["Devices_ColActions"]</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -309,7 +311,7 @@
                                                     }
                                                 </td>
                                                 <td>
-                                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => RevokeDeviceAsync(device.DeviceId)" disabled="@isProcessingDevice">撤销授权</button>
+                                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => RevokeDeviceAsync(device.DeviceId)" disabled="@isProcessingDevice">@L["Devices_Revoke"]</button>
                                                 </td>
                                             </tr>
                                         }
@@ -445,7 +447,7 @@
             pendingDevices = (pendingResult ?? new()).Select(d => new PendingDeviceInfo
             {
                 RequestId = d.SessionId ?? "",
-                DeviceName = d.DeviceInfo ?? "未知设备",
+                DeviceName = d.DeviceInfo ?? L["Devices_UnknownDevice"],
                 RequestTime = d.CreatedAt != default ? d.CreatedAt : DateTime.Now,
                 IpAddress = d.IpAddress
             }).ToList();
@@ -453,7 +455,7 @@
             authorizedDevices = (authorizedResult ?? new()).Select(d => new AuthorizedDeviceInfo
             {
                 DeviceId = d.DeviceId ?? "",
-                DeviceName = d.DeviceName ?? "未知设备",
+                DeviceName = d.DeviceName ?? L["Devices_UnknownDevice"],
                 AuthorizedTime = d.AuthorizedTime,
                 LastSyncTime = d.LastSyncTime,
                 IpAddress = d.IpAddress,
@@ -484,20 +486,20 @@
             var response = await HttpClient.PostAsJsonAsync("api/devices/authorize", new { requestId });
             if (response.IsSuccessStatusCode)
             {
-                message = "设备已授权";
+                message = L["Devices_DeviceAuthorized"];
                 isSuccess = true;
                 await LoadDevicesAsync();
             }
             else
             {
                 var error = await response.Content.ReadAsStringAsync();
-                message = $"授权失败: {error}";
+                message = string.Format(L["Devices_AuthorizeFailed"], error);
                 isSuccess = false;
             }
         }
         catch (Exception ex)
         {
-            message = $"授权失败: {ex.Message}";
+            message = string.Format(L["Devices_AuthorizeFailed"], ex.Message);
             isSuccess = false;
         }
         finally
@@ -514,20 +516,20 @@
             var response = await HttpClient.PostAsJsonAsync("api/devices/reject", new { requestId });
             if (response.IsSuccessStatusCode)
             {
-                message = "已拒绝设备配对";
+                message = L["Devices_RejectedPairing"];
                 isSuccess = true;
                 await LoadDevicesAsync();
             }
             else
             {
                 var error = await response.Content.ReadAsStringAsync();
-                message = $"拒绝失败: {error}";
+                message = string.Format(L["Devices_RejectFailed"], error);
                 isSuccess = false;
             }
         }
         catch (Exception ex)
         {
-            message = $"拒绝失败: {ex.Message}";
+            message = string.Format(L["Devices_RejectFailed"], ex.Message);
             isSuccess = false;
         }
         finally
@@ -538,7 +540,7 @@
 
     private async Task RevokeDeviceAsync(string deviceId)
     {
-        if (!await JSRuntime.InvokeAsync<bool>("confirm", "确定要撤销此设备的授权吗？设备将无法再同步和访问知识库。"))
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", L["Devices_RevokeConfirm"]))
             return;
         try
         {
@@ -546,20 +548,20 @@
             var response = await HttpClient.PostAsJsonAsync("api/devices/revoke", new { deviceId });
             if (response.IsSuccessStatusCode)
             {
-                message = "已撤销设备授权";
+                message = L["Devices_Revoked"];
                 isSuccess = true;
                 await LoadDevicesAsync();
             }
             else
             {
                 var error = await response.Content.ReadAsStringAsync();
-                message = $"撤销失败: {error}";
+                message = string.Format(L["Devices_RevokeFailed"], error);
                 isSuccess = false;
             }
         }
         catch (Exception ex)
         {
-            message = $"撤销失败: {ex.Message}";
+            message = string.Format(L["Devices_RevokeFailed"], ex.Message);
             isSuccess = false;
         }
         finally
@@ -617,19 +619,19 @@
             var response = await HttpClient.PostAsync("api/onehop/discovery/start", null);
             if (response.IsSuccessStatusCode)
             {
-                message = "设备发现已启动";
+                message = L["Devices_DiscoveryStarted"];
                 isSuccess = true;
             }
             else
             {
-                message = "启动发现失败";
+                message = L["Devices_DiscoveryStartFailedSimple"];
                 isSuccess = false;
             }
             await LoadOneHopDataAsync();
         }
         catch (Exception ex)
         {
-            message = $"启动发现失败: {ex.Message}";
+            message = string.Format(L["Devices_DiscoveryStartFailed"], ex.Message);
             isSuccess = false;
         }
         finally
@@ -646,19 +648,19 @@
             var response = await HttpClient.PostAsync("api/onehop/discovery/stop", null);
             if (response.IsSuccessStatusCode)
             {
-                message = "设备发现已停止";
+                message = L["Devices_DiscoveryStopped"];
                 isSuccess = true;
             }
             else
             {
-                message = "停止发现失败";
+                message = L["Devices_DiscoveryStopFailedSimple"];
                 isSuccess = false;
             }
             await LoadOneHopDataAsync();
         }
         catch (Exception ex)
         {
-            message = $"停止发现失败: {ex.Message}";
+            message = string.Format(L["Devices_DiscoveryStopFailed"], ex.Message);
             isSuccess = false;
         }
         finally
@@ -676,20 +678,20 @@
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<OneHopConnectionResponse>();
-                message = $"已连接到 {result?.DeviceName ?? deviceId}";
+                message = string.Format(L["Devices_Connected"], result?.DeviceName ?? deviceId);
                 isSuccess = true;
                 await LoadOneHopDataAsync();
             }
             else
             {
                 var error = await response.Content.ReadAsStringAsync();
-                message = $"连接失败: {error}";
+                message = string.Format(L["Devices_ConnectFailed"], error);
                 isSuccess = false;
             }
         }
         catch (Exception ex)
         {
-            message = $"连接失败: {ex.Message}";
+            message = string.Format(L["Devices_ConnectFailed"], ex.Message);
             isSuccess = false;
         }
         finally
@@ -710,7 +712,7 @@
 
             if (pending == null)
             {
-                message = $"未找到 {deviceName} 的待授权请求，请稍后重试";
+                message = string.Format(L["Devices_PendingRequestNotFound"], deviceName);
                 isSuccess = false;
                 return;
             }
@@ -718,7 +720,7 @@
             var response = await HttpClient.PostAsJsonAsync("api/devices/authorize", new { requestId = pending.RequestId });
             if (response.IsSuccessStatusCode)
             {
-                message = $"{deviceName} 已授权";
+                message = string.Format(L["Devices_DeviceAuthorizedFormat"], deviceName);
                 isSuccess = true;
                 await LoadDevicesAsync();
                 await LoadOneHopDataAsync();
@@ -726,13 +728,13 @@
             else
             {
                 var error = await response.Content.ReadAsStringAsync();
-                message = $"授权失败: {error}";
+                message = string.Format(L["Devices_AuthorizeFailed"], error);
                 isSuccess = false;
             }
         }
         catch (Exception ex)
         {
-            message = $"授权失败: {ex.Message}";
+            message = string.Format(L["Devices_AuthorizeFailed"], ex.Message);
             isSuccess = false;
         }
         finally
