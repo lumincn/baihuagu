@@ -7,6 +7,7 @@ using Moq;
 using TaskRunner.Contracts.Ai;
 using TaskRunner.Contracts.Master;
 using TaskRunner.Controllers;
+using TaskRunner.Controllers.AI.Stages;
 using TaskRunner.Data;
 using TaskRunner.Data.Entities;
 using TaskRunner.Models;
@@ -438,6 +439,396 @@ public class MasterControllerTests
             current = current.InnerException;
         }
         return messages;
+    }
+
+    #endregion
+
+    #region GetConversations
+
+    [Fact]
+    public async Task GetConversations_ExistingMasterNoConversations_ReturnsEmptyList()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        var options = CreateInMemoryOptions(dbName);
+        await using var db = new FamilyDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        db.Masters.Add(new Master
+        {
+            MasterId = "conv-1", MasterName = "岐伯", Goal = "中医学",
+            Industry = "中医", Status = "active"
+        });
+        await db.SaveChangesAsync();
+
+        var controller = CreateControllerForDbOps(options);
+        var result = await controller.GetConversations("conv-1");
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var response = Assert.IsType<ConversationHistoryResponse>(okResult.Value);
+        Assert.True(response.Success);
+        Assert.Empty(response.Items);
+    }
+
+    [Fact]
+    public async Task GetConversations_NonExistingMaster_ReturnsNotFound()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        var options = CreateInMemoryOptions(dbName);
+        await SeedDbAsync(options);
+        var controller = CreateControllerForDbOps(options);
+
+        var result = await controller.GetConversations("nonexistent");
+
+        Assert.IsType<NotFoundObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task GetConversations_EmptyId_ReturnsBadRequest()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        var options = CreateInMemoryOptions(dbName);
+        await SeedDbAsync(options);
+        var controller = CreateControllerForDbOps(options);
+
+        var result = await controller.GetConversations("");
+
+        Assert.IsType<BadRequestObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task GetConversations_ReturnsLimitedResults()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        var options = CreateInMemoryOptions(dbName);
+        await using var db = new FamilyDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+
+        db.Masters.Add(new Master
+        {
+            MasterId = "conv-2", MasterName = "图灵", Goal = "编程",
+            Industry = "IT", Status = "active"
+        });
+        for (int i = 0; i < 5; i++)
+        {
+            db.MasterConversations.Add(new MasterConversation
+            {
+                MasterId = "conv-2", Role = i % 2 == 0 ? "user" : "assistant",
+                Content = $"Message {i}", Stage = "入道",
+                CreatedAt = DateTime.Now.AddMinutes(-(5 - i))
+            });
+        }
+        await db.SaveChangesAsync();
+
+        var controller = CreateControllerForDbOps(options);
+        var result = await controller.GetConversations("conv-2", limit: 3);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var response = Assert.IsType<ConversationHistoryResponse>(okResult.Value);
+        Assert.True(response.Success);
+        Assert.Equal(3, response.Items.Count);
+    }
+
+    #endregion
+
+    #region SyncConversations
+
+    [Fact]
+    public async Task SyncConversations_EmptyId_ReturnsBadRequest()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        var options = CreateInMemoryOptions(dbName);
+        await SeedDbAsync(options);
+        var controller = CreateControllerForDbOps(options);
+
+        var result = await controller.SyncConversations("", new ConversationSyncRequest());
+
+        Assert.IsType<BadRequestObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task SyncConversations_NonExistingMaster_ReturnsNotFound()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        var options = CreateInMemoryOptions(dbName);
+        await SeedDbAsync(options);
+        var controller = CreateControllerForDbOps(options);
+
+        var result = await controller.SyncConversations("nonexistent", new ConversationSyncRequest());
+
+        Assert.IsType<NotFoundObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task SyncConversations_SyncsItemsSuccessfully()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        var options = CreateInMemoryOptions(dbName);
+        await using var db = new FamilyDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+
+        db.Masters.Add(new Master
+        {
+            MasterId = "sync-1", MasterName = "岐伯", Goal = "中医学",
+            Industry = "中医", Status = "active"
+        });
+        await db.SaveChangesAsync();
+
+        var controller = CreateControllerForDbOps(options);
+        var request = new ConversationSyncRequest
+        {
+            Items = new List<ConversationHistoryItem>
+            {
+                new() { Role = "user", Content = "你好", Stage = "入道", CreatedAt = DateTime.Now },
+                new() { Role = "assistant", Content = "你好，有什么可以帮你？", Stage = "入道", CreatedAt = DateTime.Now.AddSeconds(1) }
+            }
+        };
+
+        var result = await controller.SyncConversations("sync-1", request);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var response = Assert.IsType<ConversationSyncResponse>(okResult.Value);
+        Assert.True(response.Success);
+        Assert.Equal(2, response.SyncedCount);
+
+        await using var verifyDb = new FamilyDbContext(options);
+        Assert.Equal(2, await verifyDb.MasterConversations.CountAsync(c => c.MasterId == "sync-1"));
+    }
+
+    #endregion
+
+    #region UpdateProfile
+
+    [Fact]
+    public async Task UpdateProfile_NonExistingMaster_ReturnsNotFound()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        var options = CreateInMemoryOptions(dbName);
+        await SeedDbAsync(options);
+        var controller = CreateControllerForDbOps(options);
+
+        var result = await controller.UpdateProfile("nonexistent", new UpdateProfileRequest());
+
+        Assert.IsType<NotFoundObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task UpdateProfile_EmptyId_ReturnsBadRequest()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        var options = CreateInMemoryOptions(dbName);
+        await SeedDbAsync(options);
+        var controller = CreateControllerForDbOps(options);
+
+        var result = await controller.UpdateProfile("", new UpdateProfileRequest());
+
+        Assert.IsType<BadRequestObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task UpdateProfile_CreatesNewProfileIfNotExists()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        var options = CreateInMemoryOptions(dbName);
+        await using var db = new FamilyDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        db.Masters.Add(new Master
+        {
+            MasterId = "up-1", MasterName = "岐伯", Goal = "中医学",
+            Industry = "中医", Status = "active"
+        });
+        await db.SaveChangesAsync();
+
+        var controller = CreateControllerForDbOps(options);
+        var result = await controller.UpdateProfile("up-1", new UpdateProfileRequest
+        {
+            Foundation = "新基础", LearningStyle = "新风格"
+        });
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var profile = Assert.IsType<ApprenticeProfileResponse>(okResult.Value);
+        Assert.True(profile.Success);
+        Assert.Equal("新基础", profile.Foundation);
+        Assert.Equal("新风格", profile.LearningStyle);
+    }
+
+    [Fact]
+    public async Task UpdateProfile_UpdatesExistingProfileFields()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        var options = CreateInMemoryOptions(dbName);
+        await using var db = new FamilyDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        db.Masters.Add(new Master
+        {
+            MasterId = "up-2", MasterName = "岐伯", Goal = "中医学",
+            Industry = "中医", Status = "active"
+        });
+        db.ApprenticeProfiles.Add(new ApprenticeProfile
+        {
+            MasterId = "up-2", Foundation = "旧基础", Strengths = "好记忆"
+        });
+        await db.SaveChangesAsync();
+
+        var controller = CreateControllerForDbOps(options);
+        var result = await controller.UpdateProfile("up-2", new UpdateProfileRequest
+        {
+            Foundation = "新基础", Weaknesses = "临床弱"
+        });
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var profile = Assert.IsType<ApprenticeProfileResponse>(okResult.Value);
+        Assert.True(profile.Success);
+        Assert.Equal("新基础", profile.Foundation);
+        Assert.Equal("好记忆", profile.Strengths);
+        Assert.Equal("临床弱", profile.Weaknesses);
+    }
+
+    #endregion
+
+    #region StageStrategyFactory
+
+    [Fact]
+    public void StageStrategyFactory_GetStrategy_ReturnsCorrectStrategy()
+    {
+        var strategy = StageStrategyFactory.GetStrategy("入道");
+        Assert.NotNull(strategy);
+        Assert.Equal("入道", strategy.StageName);
+        Assert.Equal(1, strategy.Order);
+        Assert.Equal("引路人", strategy.RoleName);
+        Assert.NotEmpty(strategy.BlessingTemplates);
+    }
+
+    [Fact]
+    public void StageStrategyFactory_GetNextStrategy_ReturnsNextStage()
+    {
+        var next = StageStrategyFactory.GetNextStrategy("入道");
+        Assert.NotNull(next);
+        Assert.Equal("筑基", next.StageName);
+        Assert.Equal(2, next.Order);
+
+        next = StageStrategyFactory.GetNextStrategy("筑基");
+        Assert.NotNull(next);
+        Assert.Equal("精进", next.StageName);
+    }
+
+    [Fact]
+    public void StageStrategyFactory_GetNextStrategy_LastStageReturnsNull()
+    {
+        var next = StageStrategyFactory.GetNextStrategy("出师");
+        Assert.Null(next);
+    }
+
+    [Fact]
+    public void StageStrategyFactory_UnknownStage_ReturnsNull()
+    {
+        var strategy = StageStrategyFactory.GetStrategy("未知阶段");
+        Assert.Null(strategy);
+
+        var next = StageStrategyFactory.GetNextStrategy("未知阶段");
+        Assert.Null(next);
+    }
+
+    [Fact]
+    public void StageStrategyFactory_AllStrategies_HaveUniqueOrder()
+    {
+        var all = StageStrategyFactory.GetAllStrategies();
+        var orders = all.Select(s => s.Order).ToList();
+        Assert.Equal(orders.Distinct().Count(), orders.Count);
+        Assert.Equal(5, all.Count);
+    }
+
+    [Fact]
+    public void StageStrategy_GetBlessing_ReturnsNonEmptyString()
+    {
+        var strategy = StageStrategyFactory.GetStrategy("入道");
+        Assert.NotNull(strategy);
+        var blessing = strategy.GetBlessing("岐伯");
+        Assert.False(string.IsNullOrWhiteSpace(blessing));
+        Assert.Contains("岐伯", blessing);
+    }
+
+    #endregion
+
+    #region Evict - 参数验证
+
+    [Fact]
+    public async Task Compress_NonExistingMaster_ReturnsNotFound()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        var options = CreateInMemoryOptions(dbName);
+        await SeedDbAsync(options);
+        var controller = CreateControllerForDbOps(options);
+
+        var result = await controller.Compress("nonexistent");
+
+        Assert.IsType<NotFoundObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task Evict_EmptyId_ReturnsBadRequest()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        var options = CreateInMemoryOptions(dbName);
+        await SeedDbAsync(options);
+        var controller = CreateControllerForDbOps(options);
+
+        Assert.IsType<BadRequestResult>(await controller.Evict(""));
+    }
+
+    [Fact]
+    public async Task Evict_NonExistingMaster_ReturnsNotFound()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        var options = CreateInMemoryOptions(dbName);
+        await SeedDbAsync(options);
+        var controller = CreateControllerForDbOps(options);
+
+        var result = await controller.Evict("nonexistent");
+
+        Assert.IsType<NotFoundObjectResult>(result);
+    }
+
+    #endregion
+
+    #region Utility
+
+    [Fact]
+    public void GetStageOrder_ReturnsCorrectOrder()
+    {
+        // Access via reflection since it's private static
+        var method = typeof(MasterController).GetMethod("GetStageOrder",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+        Assert.NotNull(method);
+
+        Assert.Equal(1, method.Invoke(null, new object[] { "入道" }));
+        Assert.Equal(2, method.Invoke(null, new object[] { "筑基" }));
+        Assert.Equal(3, method.Invoke(null, new object[] { "精进" }));
+        Assert.Equal(4, method.Invoke(null, new object[] { "磨砺" }));
+        Assert.Equal(5, method.Invoke(null, new object[] { "出师" }));
+        Assert.Equal(0, method.Invoke(null, new object[] { "未知" }));
+    }
+
+    [Fact]
+    public void TruncateText_ShortText_ReturnsAsIs()
+    {
+        var method = typeof(MasterController).GetMethod("TruncateText",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+        Assert.NotNull(method);
+
+        var text = "Hello";
+        var result = method.Invoke(null, new object[] { text, 10 });
+        Assert.Equal("Hello", result);
+    }
+
+    [Fact]
+    public void TruncateText_LongText_Truncates()
+    {
+        var method = typeof(MasterController).GetMethod("TruncateText",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+        Assert.NotNull(method);
+
+        var text = "Hello World This Is Long";
+        var result = method.Invoke(null, new object[] { text, 5 });
+        Assert.Equal("Hello...", result);
     }
 
     #endregion
