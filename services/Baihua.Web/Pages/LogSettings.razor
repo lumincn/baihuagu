@@ -3,20 +3,21 @@
 @inject Baihua.Web.Services.SettingsService SettingsService
 @inject HttpClient Http
 @inject IJSRuntime JS
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
-<PageTitle>日志配置</PageTitle>
+<PageTitle>@L["LogSettings_PageTitle"]</PageTitle>
 
-<h1>📋 OpenObserve 日志配置</h1>
+<h1>@L["LogSettings_Heading"]</h1>
 
 <div class="settings-form">
     <p class="form-description">
-        OpenObserve 是高性能的可观测性平台，支持日志、指标、追踪。应用通过 OpenTelemetry OTLP 协议推送日志、指标和追踪数据到 OpenObserve 进行集中查询和分析。
+        @L["LogSettings_Description"]
     </p>
 
     @if (isLoading)
     {
         <div class="loading-spinner">
-            <span class="spinner"></span> 加载中...
+            <span class="spinner"></span> @L["LogSettings_Loading"]
         </div>
     }
     else if (errorMessage != null)
@@ -26,29 +27,29 @@
     else
     {
         <div class="sink-config-section">
-            <h4>OpenObserve 配置</h4>
+            <h4>@L["LogSettings_SinkHeading"]</h4>
             <div class="form-group">
-                <label>用户名</label>
+                <label>@L["LogSettings_UserLabel"]</label>
                 <input type="text" class="form-control" @bind="user"
                        placeholder="root@example.com" />
             </div>
             <div class="form-group">
-                <label>密码</label>
+                <label>@L["LogSettings_PasswordLabel"]</label>
                 <input type="password" class="form-control" @bind="password"
                        placeholder="通过环境变量 OPENOBSERVE_ROOT_PASSWORD 配置" />
             </div>
             <div class="form-group">
-                <label>Web UI 地址</label>
+                <label>@L["LogSettings_WebUrlLabel"]</label>
                 <input type="text" class="form-control" @bind="webUrl"
                        placeholder="http://localhost:5082" />
-                <small class="form-text">浏览器访问地址</small>
+                <small class="form-text">@L["LogSettings_WebUrlHint"]</small>
             </div>
         </div>
 
         <!-- 打开 Web UI 按钮 -->
         <div class="form-group" style="margin-top: 1rem;">
             <button class="btn btn-secondary" @onclick="OpenWebUI" @disabled="string.IsNullOrEmpty(webUrl)">
-                🔗 打开 OpenObserve
+                @L["LogSettings_OpenWebUI"]
             </button>
             @if (!string.IsNullOrEmpty(webUrl))
             {
@@ -59,7 +60,7 @@
         <!-- 保存按钮 -->
         <div class="form-actions">
             <button class="btn btn-primary" @onclick="SaveConfig" @disabled="isSaving">
-                @(isSaving ? "保存中..." : "💾 保存配置")
+                @(isSaving ? L["LogSettings_Saving"] : L["LogSettings_SaveConfig"])
             </button>
             @if (saveMessage != null)
             {
@@ -69,18 +70,18 @@
 
         <!-- Docker 部署提示 -->
         <details class="deploy-hint" style="margin-top: 2rem;">
-            <summary>🐳 Docker 部署命令</summary>
+            <summary>@L["LogSettings_DockerSummary"]</summary>
             <div class="hint-content">
-                <p>在项目目录运行以下命令启动 OpenObserve：</p>
+                <p>@L["LogSettings_DockerHint"]</p>
                 <pre><code>cd docker
 docker compose -f docker-compose.observability.yml up -d</code></pre>
                 <table class="port-table">
                     <thead>
-                        <tr><th>服务</th><th>端口</th><th>说明</th></tr>
+                        <tr><th>@L["LogSettings_ServiceColumn"]</th><th>@L["LogSettings_PortColumn"]</th><th>@L["LogSettings_DescriptionColumn"]</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td>OpenObserve HTTP</td><td>5082</td><td>Web UI 和 REST API 日志推送</td></tr>
-                        <tr><td>OpenObserve gRPC</td><td>5083</td><td>OTLP gRPC（内部查询用）</td></tr>
+                        <tr><td>@L["LogSettings_OpenObserveHttp"]</td><td>5082</td><td>@L["LogSettings_HttpPortDesc"]</td></tr>
+                        <tr><td>@L["LogSettings_OpenObserveGrpc"]</td><td>5083</td><td>@L["LogSettings_GrpcPortDesc"]</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -121,7 +122,7 @@ docker compose -f docker-compose.observability.yml up -d</code></pre>
         }
         catch (Exception ex)
         {
-            errorMessage = $"加载配置失败：{ex.Message}";
+            errorMessage = string.Format(L["LogSettings_LoadConfigFailed"], ex.Message);
         }
         finally
         {
@@ -150,18 +151,18 @@ docker compose -f docker-compose.observability.yml up -d</code></pre>
             var response = await Http.PutAsync($"{backendUrl}/api/log-sink", content);
             if (response.IsSuccessStatusCode)
             {
-                saveMessage = "配置已保存（重启服务后生效）";
+                saveMessage = L["LogSettings_SaveSuccess"];
                 saveMessageClass = "success";
             }
             else
             {
-                saveMessage = $"保存失败：{response.StatusCode}";
+                saveMessage = string.Format(L["LogSettings_SaveFailed"], response.StatusCode);
                 saveMessageClass = "error";
             }
         }
         catch (Exception ex)
         {
-            saveMessage = $"保存失败：{ex.Message}";
+            saveMessage = string.Format(L["LogSettings_SaveFailed"], ex.Message);
             saveMessageClass = "error";
         }
         finally

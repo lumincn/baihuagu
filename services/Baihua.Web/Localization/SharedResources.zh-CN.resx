@@ -2893,4 +2893,169 @@
   <data name="Messages_ExportToolCalls" xml:space="preserve">
     <value>&gt; 🔧 调用了工具: {0}</value>
   </data>
+  <data name="Login_PageTitle" xml:space="preserve">
+    <value>授权访问 - 百花</value>
+  </data>
+  <data name="Login_Title" xml:space="preserve">
+    <value>百花</value>
+  </data>
+  <data name="Login_Subtitle" xml:space="preserve">
+    <value>需要授权访问</value>
+  </data>
+  <data name="Login_OneClickAuth" xml:space="preserve">
+    <value>本机命令行一键授权</value>
+  </data>
+  <data name="Login_RunCommand" xml:space="preserve">
+    <value>请在服务器本机终端运行以下命令：</value>
+  </data>
+  <data name="Login_AutoGenerateLink" xml:space="preserve">
+    <value>命令会自动生成一次性授权链接并在浏览器中打开。</value>
+  </data>
+  <data name="Login_Hint" xml:space="preserve">
+    <value>💡 提示：授权基于操作系统用户权限</value>
+  </data>
+  <data name="Login_OnlyLocalUsers" xml:space="preserve">
+    <value>只有能登录到本机的用户才能访问管理面板</value>
+  </data>
+  <data name="LogSettings_PageTitle" xml:space="preserve">
+    <value>日志配置</value>
+  </data>
+  <data name="LogSettings_Heading" xml:space="preserve">
+    <value>📋 OpenObserve 日志配置</value>
+  </data>
+  <data name="LogSettings_Description" xml:space="preserve">
+    <value>OpenObserve 是高性能的可观测性平台，支持日志、指标、追踪。应用通过 OpenTelemetry OTLP 协议推送日志、指标和追踪数据到 OpenObserve 进行集中查询和分析。</value>
+  </data>
+  <data name="LogSettings_Loading" xml:space="preserve">
+    <value>加载中...</value>
+  </data>
+  <data name="LogSettings_SinkHeading" xml:space="preserve">
+    <value>OpenObserve 配置</value>
+  </data>
+  <data name="LogSettings_UserLabel" xml:space="preserve">
+    <value>用户名</value>
+  </data>
+  <data name="LogSettings_PasswordLabel" xml:space="preserve">
+    <value>密码</value>
+  </data>
+  <data name="LogSettings_WebUrlLabel" xml:space="preserve">
+    <value>Web UI 地址</value>
+  </data>
+  <data name="LogSettings_WebUrlHint" xml:space="preserve">
+    <value>浏览器访问地址</value>
+  </data>
+  <data name="LogSettings_OpenWebUI" xml:space="preserve">
+    <value>🔗 打开 OpenObserve</value>
+  </data>
+  <data name="LogSettings_Saving" xml:space="preserve">
+    <value>保存中...</value>
+  </data>
+  <data name="LogSettings_SaveConfig" xml:space="preserve">
+    <value>💾 保存配置</value>
+  </data>
+  <data name="LogSettings_DockerSummary" xml:space="preserve">
+    <value>🐳 Docker 部署命令</value>
+  </data>
+  <data name="LogSettings_DockerHint" xml:space="preserve">
+    <value>在项目目录运行以下命令启动 OpenObserve：</value>
+  </data>
+  <data name="LogSettings_ServiceColumn" xml:space="preserve">
+    <value>服务</value>
+  </data>
+  <data name="LogSettings_PortColumn" xml:space="preserve">
+    <value>端口</value>
+  </data>
+  <data name="LogSettings_DescriptionColumn" xml:space="preserve">
+    <value>说明</value>
+  </data>
+  <data name="LogSettings_OpenObserveHttp" xml:space="preserve">
+    <value>OpenObserve HTTP</value>
+  </data>
+  <data name="LogSettings_HttpPortDesc" xml:space="preserve">
+    <value>Web UI 和 REST API 日志推送</value>
+  </data>
+  <data name="LogSettings_OpenObserveGrpc" xml:space="preserve">
+    <value>OpenObserve gRPC</value>
+  </data>
+  <data name="LogSettings_GrpcPortDesc" xml:space="preserve">
+    <value>OTLP gRPC（内部查询用）</value>
+  </data>
+  <data name="LogSettings_LoadConfigFailed" xml:space="preserve">
+    <value>加载配置失败：{0}</value>
+  </data>
+  <data name="LogSettings_SaveSuccess" xml:space="preserve">
+    <value>配置已保存（重启服务后生效）</value>
+  </data>
+  <data name="LogSettings_SaveFailed" xml:space="preserve">
+    <value>保存失败：{0}</value>
+  </data>
+  <data name="NoteDetail_PageTitle" xml:space="preserve">
+    <value>笔记详情</value>
+  </data>
+  <data name="NoteDetail_NoteNotFound" xml:space="preserve">
+    <value>笔记未找到</value>
+  </data>
+  <data name="NoteDetail_NoteNotFoundPath" xml:space="preserve">
+    <value>无法找到路径为 &quot;{0}&quot; 的笔记</value>
+  </data>
+  <data name="NoteDetail_BackToSearch" xml:space="preserve">
+    <value>返回搜索</value>
+  </data>
+  <data name="NoteDetail_AiGenerating" xml:space="preserve">
+    <value>AI 生成中...</value>
+  </data>
+  <data name="NoteDetail_AiGeneratingHint" xml:space="preserve">
+    <value>AI 正在生成笔记，预计需要 10-30 秒，请稍候...</value>
+  </data>
+  <data name="NoteDetail_AiGenerateNote" xml:space="preserve">
+    <value>AI 生成此笔记</value>
+  </data>
+  <data name="NoteDetail_Back" xml:space="preserve">
+    <value>&#x2190; 返回</value>
+  </data>
+  <data name="NoteDetail_Favorite" xml:space="preserve">
+    <value>收藏</value>
+  </data>
+  <data name="NoteDetail_Favorited" xml:space="preserve">
+    <value>已收藏</value>
+  </data>
+  <data name="NoteDetail_Edit" xml:space="preserve">
+    <value>编辑</value>
+  </data>
+  <data name="NoteDetail_CancelEdit" xml:space="preserve">
+    <value>取消编辑</value>
+  </data>
+  <data name="NoteDetail_Note" xml:space="preserve">
+    <value>注意：</value>
+  </data>
+  <data name="NoteDetail_EmptyContent" xml:space="preserve">
+    <value>笔记内容为空或笔记不存在</value>
+  </data>
+  <data name="NoteDetail_Path" xml:space="preserve">
+    <value>路径：</value>
+  </data>
+  <data name="NoteDetail_NoteContent" xml:space="preserve">
+    <value>笔记内容</value>
+  </data>
+  <data name="NoteDetail_NoContent" xml:space="preserve">
+    <value>（无内容）</value>
+  </data>
+  <data name="NoteDetail_SelectNoteHint" xml:space="preserve">
+    <value>请从搜索结果中选择一个笔记</value>
+  </data>
+  <data name="NoteDetail_GoToSearch" xml:space="preserve">
+    <value>去搜索</value>
+  </data>
+  <data name="NoteDetail_GenerateFailed" xml:space="preserve">
+    <value>生成失败</value>
+  </data>
+  <data name="NoteDetail_NoteGenerated" xml:space="preserve">
+    <value>笔记已生成：{0}</value>
+  </data>
+  <data name="NoteDetail_LinksCorrected" xml:space="preserve">
+    <value>，同时纠正了 {0} 条链接</value>
+  </data>
+  <data name="NoteDetail_GenerateFailedWithError" xml:space="preserve">
+    <value>生成失败：{0}</value>
+  </data>
 </root>

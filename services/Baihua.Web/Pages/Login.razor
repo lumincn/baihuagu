@@ -2,35 +2,36 @@
 @layout Baihua.Web.Components.Layout.EmptyLayout
 @rendermode InteractiveServer
 @inject Baihua.Web.Services.AuthService AuthService
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
-<PageTitle>授权访问 - 百花</PageTitle>
+<PageTitle>@L["Login_PageTitle"]</PageTitle>
 
 <div class="login-page">
     <div class="login-card">
         <div class="login-header">
             <img src="logo.png" alt="百花" class="logo-icon" />
-            <h1>百花</h1>
-            <p class="subtitle">需要授权访问</p>
+            <h1>@L["Login_Title"]</h1>
+            <p class="subtitle">@L["Login_Subtitle"]</p>
         </div>
 
         <div class="alert alert-info" role="alert">
             <span class="bi bi-info-circle-fill" aria-hidden="true"></span>
-            本机命令行一键授权
+            @L["Login_OneClickAuth"]
         </div>
 
         <div class="login-form text-center">
-            <p class="mb-3">请在服务器本机终端运行以下命令：</p>
+            <p class="mb-3">@L["Login_RunCommand"]</p>
             <div class="code-block">
                 <code>./bh dashboard</code>
             </div>
             <p class="mt-3 text-muted small">
-                命令会自动生成一次性授权链接并在浏览器中打开。
+                @L["Login_AutoGenerateLink"]
             </p>
         </div>
 
         <div class="login-footer">
-            <p>💡 提示：授权基于操作系统用户权限</p>
-            <p>只有能登录到本机的用户才能访问管理面板</p>
+            <p>@L["Login_Hint"]</p>
+            <p>@L["Login_OnlyLocalUsers"]</p>
         </div>
     </div>
 </div>

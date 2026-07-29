@@ -2893,4 +2893,169 @@
   <data name="Messages_ExportToolCalls" xml:space="preserve">
     <value>&gt; 🔧 Tools used: {0}</value>
   </data>
+  <data name="Login_PageTitle" xml:space="preserve">
+    <value>Authorized Access - Baihua</value>
+  </data>
+  <data name="Login_Title" xml:space="preserve">
+    <value>Baihua</value>
+  </data>
+  <data name="Login_Subtitle" xml:space="preserve">
+    <value>Authorization Required</value>
+  </data>
+  <data name="Login_OneClickAuth" xml:space="preserve">
+    <value>One-Click Authorization from Server Command Line</value>
+  </data>
+  <data name="Login_RunCommand" xml:space="preserve">
+    <value>Please run the following command on the server's local terminal:</value>
+  </data>
+  <data name="Login_AutoGenerateLink" xml:space="preserve">
+    <value>The command will automatically generate a one-time authorization link and open it in the browser.</value>
+  </data>
+  <data name="Login_Hint" xml:space="preserve">
+    <value>Tip: Authorization is based on OS user permissions</value>
+  </data>
+  <data name="Login_OnlyLocalUsers" xml:space="preserve">
+    <value>Only users who can log in to this machine can access the management panel.</value>
+  </data>
+  <data name="NoteDetail_PageTitle" xml:space="preserve">
+    <value>Note Details</value>
+  </data>
+  <data name="NoteDetail_NoteNotFound" xml:space="preserve">
+    <value>Note Not Found</value>
+  </data>
+  <data name="NoteDetail_NoteNotFoundPath" xml:space="preserve">
+    <value>Note with path &quot;{0}&quot; not found</value>
+  </data>
+  <data name="NoteDetail_BackToSearch" xml:space="preserve">
+    <value>Back to Search</value>
+  </data>
+  <data name="NoteDetail_AiGenerating" xml:space="preserve">
+    <value>AI Generating...</value>
+  </data>
+  <data name="NoteDetail_AiGeneratingHint" xml:space="preserve">
+    <value>AI is generating the note, expected 10-30 seconds, please wait...</value>
+  </data>
+  <data name="NoteDetail_AiGenerateNote" xml:space="preserve">
+    <value>AI Generate This Note</value>
+  </data>
+  <data name="NoteDetail_Back" xml:space="preserve">
+    <value>&#x2190; Back</value>
+  </data>
+  <data name="NoteDetail_Favorite" xml:space="preserve">
+    <value>Favorite</value>
+  </data>
+  <data name="NoteDetail_Favorited" xml:space="preserve">
+    <value>Favorited</value>
+  </data>
+  <data name="NoteDetail_Edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="NoteDetail_CancelEdit" xml:space="preserve">
+    <value>Cancel Edit</value>
+  </data>
+  <data name="NoteDetail_Note" xml:space="preserve">
+    <value>Note:</value>
+  </data>
+  <data name="NoteDetail_EmptyContent" xml:space="preserve">
+    <value>Note content is empty or note does not exist</value>
+  </data>
+  <data name="NoteDetail_Path" xml:space="preserve">
+    <value>Path:</value>
+  </data>
+  <data name="NoteDetail_NoteContent" xml:space="preserve">
+    <value>Note Content</value>
+  </data>
+  <data name="NoteDetail_NoContent" xml:space="preserve">
+    <value>(No content)</value>
+  </data>
+  <data name="NoteDetail_SelectNoteHint" xml:space="preserve">
+    <value>Please select a note from search results</value>
+  </data>
+  <data name="NoteDetail_GoToSearch" xml:space="preserve">
+    <value>Go to Search</value>
+  </data>
+  <data name="NoteDetail_GenerateFailed" xml:space="preserve">
+    <value>Generation failed</value>
+  </data>
+  <data name="NoteDetail_NoteGenerated" xml:space="preserve">
+    <value>Note generated: {0}</value>
+  </data>
+  <data name="NoteDetail_LinksCorrected" xml:space="preserve">
+    <value>, and corrected {0} links</value>
+  </data>
+  <data name="NoteDetail_GenerateFailedWithError" xml:space="preserve">
+    <value>Generation failed: {0}</value>
+  </data>
+  <data name="LogSettings_PageTitle" xml:space="preserve">
+    <value>Log Settings</value>
+  </data>
+  <data name="LogSettings_Heading" xml:space="preserve">
+    <value>📋 OpenObserve Log Settings</value>
+  </data>
+  <data name="LogSettings_Description" xml:space="preserve">
+    <value>OpenObserve is a high-performance observability platform supporting logs, metrics, and traces. Applications push logs, metrics, and tracing data to OpenObserve via the OpenTelemetry OTLP protocol for centralized query and analysis.</value>
+  </data>
+  <data name="LogSettings_Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+  <data name="LogSettings_SinkHeading" xml:space="preserve">
+    <value>OpenObserve Configuration</value>
+  </data>
+  <data name="LogSettings_UserLabel" xml:space="preserve">
+    <value>Username</value>
+  </data>
+  <data name="LogSettings_PasswordLabel" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="LogSettings_WebUrlLabel" xml:space="preserve">
+    <value>Web UI Address</value>
+  </data>
+  <data name="LogSettings_WebUrlHint" xml:space="preserve">
+    <value>Browser access address</value>
+  </data>
+  <data name="LogSettings_OpenWebUI" xml:space="preserve">
+    <value>🔗 Open OpenObserve</value>
+  </data>
+  <data name="LogSettings_Saving" xml:space="preserve">
+    <value>Saving...</value>
+  </data>
+  <data name="LogSettings_SaveConfig" xml:space="preserve">
+    <value>💾 Save Configuration</value>
+  </data>
+  <data name="LogSettings_DockerSummary" xml:space="preserve">
+    <value>🐳 Docker Deployment Commands</value>
+  </data>
+  <data name="LogSettings_DockerHint" xml:space="preserve">
+    <value>Run the following command in the project directory to start OpenObserve:</value>
+  </data>
+  <data name="LogSettings_ServiceColumn" xml:space="preserve">
+    <value>Service</value>
+  </data>
+  <data name="LogSettings_PortColumn" xml:space="preserve">
+    <value>Port</value>
+  </data>
+  <data name="LogSettings_DescriptionColumn" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="LogSettings_OpenObserveHttp" xml:space="preserve">
+    <value>OpenObserve HTTP</value>
+  </data>
+  <data name="LogSettings_HttpPortDesc" xml:space="preserve">
+    <value>Web UI and REST API log push</value>
+  </data>
+  <data name="LogSettings_OpenObserveGrpc" xml:space="preserve">
+    <value>OpenObserve gRPC</value>
+  </data>
+  <data name="LogSettings_GrpcPortDesc" xml:space="preserve">
+    <value>OTLP gRPC (for internal queries)</value>
+  </data>
+  <data name="LogSettings_LoadConfigFailed" xml:space="preserve">
+    <value>Failed to load configuration: {0}</value>
+  </data>
+  <data name="LogSettings_SaveSuccess" xml:space="preserve">
+    <value>Configuration saved (takes effect after restart)</value>
+  </data>
+  <data name="LogSettings_SaveFailed" xml:space="preserve">
+    <value>Save failed: {0}</value>
+  </data>
 </root>

@@ -10,38 +10,39 @@
 @inject IApiService ApiService
 @inject Baihua.Web.Services.VaultsService VaultsService
 @inject Microsoft.JSInterop.IJSRuntime JS
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 @using Markdig
 @using Microsoft.JSInterop
 
-<PageTitle>笔记详情</PageTitle>
+<PageTitle>@L["NoteDetail_PageTitle"]</PageTitle>
 
 @if (isLoading)
 {
     <div class="loading">
         <div class="spinner"></div>
-        <span>加载中...</span>
+        <span>@L["Common_Loading"]</span>
     </div>
 }
 else if (note == null && !string.IsNullOrEmpty(noteId))
 {
     <div class="error-message">
-        <h1>❌ 笔记未找到</h1>
-        <p>无法找到路径为 "@noteId" 的笔记</p>
+        <h1>❌ @L["NoteDetail_NoteNotFound"]</h1>
+        <p>@L["NoteDetail_NoteNotFoundPath", noteId]</p>
         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem;">
-            <button @onclick="GoBack" class="btn btn-secondary">返回搜索</button>
+            <button @onclick="GoBack" class="btn btn-secondary">@L["NoteDetail_BackToSearch"]</button>
             @if (isGeneratingMissingNote)
             {
                 <button disabled class="btn btn-primary">
                     <span class="spinner" style="display:inline-block; width:16px; height:16px; border-width:2px; vertical-align:middle;"></span>
-                    AI 生成中...
+                    @L["NoteDetail_AiGenerating"]
                 </button>
                 <p style="color: #888; font-size: 0.85rem; margin-top: 0.5rem; width: 100%;">
-                    AI 正在生成笔记，预计需要 10-30 秒，请稍候...
+                    @L["NoteDetail_AiGeneratingHint"]
                 </p>
             }
             else
             {
-                <button @onclick="GenerateMissingNote" class="btn btn-primary">✨ AI 生成此笔记</button>
+                <button @onclick="GenerateMissingNote" class="btn btn-primary">✨ @L["NoteDetail_AiGenerateNote"]</button>
             }
         </div>
         @if (!string.IsNullOrEmpty(generateMessage))
@@ -57,9 +58,9 @@ else if (note != null)
     <div class="note-detail">
         @* 面包屑导航 *@
         <div class="breadcrumb">
-            <a href="" @onclick:preventDefault @onclick="GoHome" class="breadcrumb-item">🏠 首页</a>
+            <a href="" @onclick:preventDefault @onclick="GoHome" class="breadcrumb-item">🏠 @L["Nav_Home"]</a>
             <span class="breadcrumb-separator">/</span>
-            <a href="search" class="breadcrumb-item">🔍 搜索</a>
+            <a href="search" class="breadcrumb-item">🔍 @L["Nav_Search"]</a>
             <span class="breadcrumb-separator">/</span>
             @if (!string.IsNullOrEmpty(note?.Path))
             {
@@ -75,13 +76,13 @@ else if (note != null)
         </div>
 
             <div class="note-header">
-                <button @onclick="GoBack" class="btn btn-link">← 返回</button>
+                <button @onclick="GoBack" class="btn btn-link">@L["NoteDetail_Back"]</button>
                 <div class="note-actions">
                 <button @onclick="ToggleFavorite" class="btn @(isFavorite ? "btn-warning" : "btn-outline-warning")">
-                    <span>@(isFavorite ? "⭐" : "☆")</span> @(isFavorite ? "已收藏" : "收藏")
+                    <span>@(isFavorite ? "⭐" : "☆")</span> @(isFavorite ? L["NoteDetail_Favorited"] : L["NoteDetail_Favorite"])
                 </button>
                 <button @onclick="EditNote" class="btn btn-secondary">
-                    <span>✏️</span> @(isEditing ? "取消编辑" : "编辑")
+                    <span>✏️</span> @(isEditing ? L["NoteDetail_CancelEdit"] : L["NoteDetail_Edit"])
                 </button>
             </div>
         </div>
@@ -92,9 +93,9 @@ else if (note != null)
             @if (note == null || string.IsNullOrEmpty(note.Content))
             {
                 <div class="alert alert-warning" style="background: #f5eee0; border: 1px solid #d4a574; padding: 1rem; border-radius: 4px; margin: 1rem 0;">
-                    <strong>⚠️ 注意：</strong> 笔记内容为空或笔记不存在
+                    <strong>⚠️ @L["NoteDetail_Note"]</strong> @L["NoteDetail_EmptyContent"]
                     <br/>
-                    <small>路径：@noteId</small>
+                    <small>@L["NoteDetail_Path"] @noteId</small>
                 </div>
             }
             
@@ -107,7 +108,7 @@ else if (note != null)
             {
                 <div class="note-edit-form">
                     <div class="form-group">
-                        <label for="editContent">笔记内容</label>
+                        <label for="editContent">@L["NoteDetail_NoteContent"]</label>
                         <textarea id="editContent" 
                                   @bind="editContent"
                                   class="form-control" 
@@ -117,10 +118,10 @@ else if (note != null)
                     </div>
                     <div class="edit-actions">
                         <button @onclick="SaveNote" class="btn btn-primary" disabled="@string.IsNullOrWhiteSpace(editContent)">
-                            💾 保存
+                            💾 @L["Common_Save"]
                         </button>
                         <button @onclick="CancelEdit" class="btn btn-secondary">
-                            ❌ 取消
+                            ❌ @L["Common_Cancel"]
                         </button>
                     </div>
                 </div>
@@ -135,7 +136,7 @@ else if (note != null)
                     }
                     else
                     {
-                        <p><em>（无内容）</em></p>
+                        <p><em>@L["NoteDetail_NoContent"]</em></p>
                     }
                 </div>
             }
@@ -155,9 +156,9 @@ else if (note != null)
 else
 {
     <div class="empty-state">
-        <h1>📝 笔记详情</h1>
-        <p>请从搜索结果中选择一个笔记</p>
-        <button @onclick="GoToSearch" class="btn btn-primary">去搜索</button>
+        <h1>📝 @L["NoteDetail_PageTitle"]</h1>
+        <p>@L["NoteDetail_SelectNoteHint"]</p>
+        <button @onclick="GoToSearch" class="btn btn-primary">@L["NoteDetail_GoToSearch"]</button>
     </div>
 }
 
@@ -438,9 +439,9 @@ else
             if (result != null && result.Success)
             {
                 generateSuccess = true;
-                var msg = $"笔记已生成：{result.NotePath}";
+                var msg = L["NoteDetail_NoteGenerated", result.NotePath].Value;
                 if (result.FixedLinks > 0)
-                    msg += $"，同时纠正了 {result.FixedLinks} 条链接";
+                    msg += L["NoteDetail_LinksCorrected", result.FixedLinks].Value;
                 generateMessage = msg;
 
                 // 重新加载笔记（现在应该能找到了）
@@ -449,13 +450,13 @@ else
             else
             {
                 generateSuccess = false;
-                generateMessage = result?.Message ?? "生成失败";
+                generateMessage = result?.Message ?? L["NoteDetail_GenerateFailed"].Value;
             }
         }
         catch (Exception ex)
         {
             generateSuccess = false;
-            generateMessage = $"生成失败：{ex.Message}";
+            generateMessage = L["NoteDetail_GenerateFailedWithError", ex.Message].Value;
             Logger.LogError(ex, "AI 生成缺失笔记失败");
         }
         finally
