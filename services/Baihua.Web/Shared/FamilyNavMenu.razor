@@ -5,21 +5,22 @@
 @inject GlobalStateService GlobalStateService
 @inject NavigationManager NavigationManager
 @inject UserTypeService UserTypeService
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 @implements IDisposable
 
 <!-- 场景选择器 -->
 <div class="scene-selector">
     <button class="scene-btn @(_activeScene == 0 ? "active" : "")" @onclick="() => _activeScene = 0">
         <span class="scene-icon">📚</span>
-        <span class="scene-label">知识库</span>
+        <span class="scene-label">@L["Nav_KnowledgeBase"]</span>
     </button>
     <button class="scene-btn @(_activeScene == 1 ? "active" : "")" @onclick="() => _activeScene = 1">
         <span class="scene-icon">👨‍👩‍👧</span>
-        <span class="scene-label">家庭</span>
+        <span class="scene-label">@L["Nav_Family"]</span>
     </button>
     <button class="scene-btn @(_activeScene == 2 ? "active" : "")" @onclick="() => _activeScene = 2">
         <span class="scene-icon">🤖</span>
-        <span class="scene-label">AI 实验室</span>
+        <span class="scene-label">@L["Nav_AiLab"]</span>
     </button>
 </div>
 
@@ -29,23 +30,23 @@
     <div class="nav-group">
         <NavLink href="" Match="NavLinkMatch.All">
             <span class="nav-icon bi bi-house-door"></span>
-            <span>首页</span>
+            <span>@L["Nav_Home"]</span>
         </NavLink>
         <NavLink href="browse">
             <span class="nav-icon bi bi-folder2-open"></span>
-            <span>知识库浏览</span>
+            <span>@L["Nav_BrowseKnowledge"]</span>
         </NavLink>
         <NavLink href="search">
             <span class="nav-icon bi bi-search"></span>
-            <span>搜索</span>
+            <span>@L["Nav_Search"]</span>
         </NavLink>
         <NavLink href="cards">
             <span class="nav-icon bi bi-layers"></span>
-            <span>记忆卡片</span>
+            <span>@L["Nav_MemoryCards"]</span>
         </NavLink>
         <NavLink href="vaults">
             <span class="nav-icon bi bi-folder2-open"></span>
-            <span>知识库管理</span>
+            <span>@L["Nav_ManageVaults"]</span>
         </NavLink>
     </div>
 }
@@ -56,7 +57,7 @@
     <div class="nav-group">
         <NavLink href="tasks">
             <span class="nav-icon bi bi-list-check"></span>
-            <span>任务</span>
+            <span>@L["Nav_Tasks"]</span>
         </NavLink>
         <NavLink href="openclaw">
             <span class="nav-icon bi bi-robot"></span>
@@ -64,19 +65,19 @@
         </NavLink>
         <NavLink href="daily-card">
             <span class="nav-icon bi bi-journal-bookmark"></span>
-            <span>每日一帖</span>
+            <span>@L["Nav_DailyCard"]</span>
         </NavLink>
         <NavLink href="achievements">
             <span class="nav-icon bi bi-trophy"></span>
-            <span>成就墙</span>
+            <span>@L["Nav_Achievements"]</span>
         </NavLink>
         <NavLink href="leaderboard">
             <span class="nav-icon bi bi-joystick"></span>
-            <span>赛舟榜</span>
+            <span>@L["Nav_Leaderboard"]</span>
         </NavLink>
         <NavLink href="dashboard">
             <span class="nav-icon bi bi-bar-chart-line"></span>
-            <span>家长看板</span>
+            <span>@L["Nav_ParentDashboard"]</span>
         </NavLink>
     </div>
 }
@@ -85,54 +86,54 @@
 @if (_activeScene == 2)
 {
     <div class="nav-group">
-        <div class="nav-group-label">对话</div>
+        <div class="nav-group-label">@L["Nav_ChatLabel"]</div>
         <NavLink href="messages">
             <span class="nav-icon bi bi-chat-dots"></span>
-            <span>AI 对话</span>
+            <span>@L["Nav_AiChat"]</span>
         </NavLink>
         <NavLink href="master-chat">
             <span class="nav-icon bi bi-mortarboard"></span>
-            <span>虚拟师父</span>
+            <span>@L["Nav_VirtualMaster"]</span>
         </NavLink>
     </div>
 
     @if (_isProfessional)
     {
         <div class="nav-group">
-            <div class="nav-group-label">研究</div>
+            <div class="nav-group-label">@L["Nav_ResearchLabel"]</div>
             @if (_canShowLocalModels)
             {
                 <NavLink href="local-models">
                     <span class="nav-icon bi bi-cpu"></span>
-                    <span>本地模型</span>
+                    <span>@L["Nav_LocalModels"]</span>
                 </NavLink>
             }
             @if (_canShowModelBenchmark)
             {
                 <NavLink href="model-benchmark">
                     <span class="nav-icon bi bi-speedometer2"></span>
-                    <span>模型评测</span>
+                    <span>@L["Nav_ModelBenchmark"]</span>
                 </NavLink>
             }
             <NavLink href="ai-metrics">
                 <span class="nav-icon bi bi-graph-up-arrow"></span>
-                <span>AI 性能监控</span>
+                <span>@L["Nav_AiMetrics"]</span>
             </NavLink>
             <NavLink href="hardware-benchmark">
                 <span class="nav-icon bi bi-motherboard"></span>
-                <span>硬件评测</span>
+                <span>@L["Nav_HardwareBenchmark"]</span>
             </NavLink>
         </div>
     }
     <div class="nav-group">
-        <div class="nav-group-label">配置</div>
+        <div class="nav-group-label">@L["Nav_ConfigLabel"]</div>
         <NavLink href="settings">
             <span class="nav-icon bi bi-gear"></span>
-            <span>AI 设置</span>
+            <span>@L["Nav_AiSettings"]</span>
         </NavLink>
         <NavLink href="prompt-templates">
             <span class="nav-icon bi bi-chat-square-text"></span>
-            <span>提示词模板</span>
+            <span>@L["Nav_PromptTemplates"]</span>
         </NavLink>
     </div>
 }
@@ -141,13 +142,13 @@
 
 <!-- 模式切换 -->
 <div class="nav-group">
-    <div class="nav-group-label">模式</div>
-    <div class="mode-switch" @onclick="ToggleUserType" title="@(_isProfessional ? "当前：专业模式" : "当前：简易模式")">
-        <span class="mode-label @(_isProfessional ? "active" : "muted")">🔧 专业</span>
+    <div class="nav-group-label">@L["Nav_ModeLabel"]</div>
+    <div class="mode-switch" @onclick="ToggleUserType" title="@(_isProfessional ? L["Nav_ModeProTooltip"] : L["Nav_ModeEasyTooltip"])">
+        <span class="mode-label @(_isProfessional ? "active" : "muted")">@L["Nav_ModePro"]</span>
         <div class="switch-track @(_isProfessional ? "track-pro" : "track-easy")">
             <div class="switch-thumb @(_isProfessional ? "thumb-left" : "thumb-right")"></div>
         </div>
-        <span class="mode-label @(!_isProfessional ? "active" : "muted")">👤 简易</span>
+        <span class="mode-label @(!_isProfessional ? "active" : "muted")">@L["Nav_ModeEasy"]</span>
     </div>
 </div>
 

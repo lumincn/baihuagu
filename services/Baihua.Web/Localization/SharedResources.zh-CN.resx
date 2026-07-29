@@ -3589,4 +3589,124 @@
   <data name="E2EPerf_BottleneckDesc" xml:space="preserve">
     <value>：总耗时高但网络低 → 渲染问题；网络高 → API 问题</value>
   </data>
+  <data name="App_Title" xml:space="preserve">
+    <value>百花</value>
+  </data>
+  <data name="DailyHealth_Title" xml:space="preserve">
+    <value>每日健康自查</value>
+  </data>
+  <data name="DailyHealth_Subtitle" xml:space="preserve">
+    <value>今天身体有哪里不舒服吗？</value>
+  </data>
+  <data name="DailyHealth_SymptomPlaceholder" xml:space="preserve">
+    <value>其他症状，请描述...</value>
+  </data>
+  <data name="DailyHealth_LearnMore" xml:space="preserve">
+    <value>📖 多学一点</value>
+  </data>
+  <data name="DailyHealth_DismissToday" xml:space="preserve">
+    <value>今天没不舒服</value>
+  </data>
+  <data name="DailyHealth_DismissForever" xml:space="preserve">
+    <value>🚫 永久关闭</value>
+  </data>
+  <data name="DailyHealth_DismissForeverTitle" xml:space="preserve">
+    <value>不再弹出</value>
+  </data>
+  <data name="DailyHealth_Symptom_Headache" xml:space="preserve">
+    <value>头痛</value>
+  </data>
+  <data name="DailyHealth_Symptom_Cough" xml:space="preserve">
+    <value>咳嗽</value>
+  </data>
+  <data name="DailyHealth_Symptom_Stomachache" xml:space="preserve">
+    <value>胃痛</value>
+  </data>
+  <data name="DailyHealth_Symptom_Insomnia" xml:space="preserve">
+    <value>失眠</value>
+  </data>
+  <data name="DailyHealth_Symptom_Fatigue" xml:space="preserve">
+    <value>疲劳</value>
+  </data>
+  <data name="DailyHealth_Symptom_FireHeat" xml:space="preserve">
+    <value>上火</value>
+  </data>
+  <data name="Nav_KnowledgeBase" xml:space="preserve">
+    <value>知识库</value>
+  </data>
+  <data name="Nav_Family" xml:space="preserve">
+    <value>家庭</value>
+  </data>
+  <data name="Nav_AiLab" xml:space="preserve">
+    <value>AI 实验室</value>
+  </data>
+  <data name="Nav_BrowseKnowledge" xml:space="preserve">
+    <value>知识库浏览</value>
+  </data>
+  <data name="Nav_MemoryCards" xml:space="preserve">
+    <value>记忆卡片</value>
+  </data>
+  <data name="Nav_ManageVaults" xml:space="preserve">
+    <value>知识库管理</value>
+  </data>
+  <data name="Nav_DailyCard" xml:space="preserve">
+    <value>每日一帖</value>
+  </data>
+  <data name="Nav_Achievements" xml:space="preserve">
+    <value>成就墙</value>
+  </data>
+  <data name="Nav_Leaderboard" xml:space="preserve">
+    <value>赛舟榜</value>
+  </data>
+  <data name="Nav_ParentDashboard" xml:space="preserve">
+    <value>家长看板</value>
+  </data>
+  <data name="Nav_ChatLabel" xml:space="preserve">
+    <value>对话</value>
+  </data>
+  <data name="Nav_AiChat" xml:space="preserve">
+    <value>AI 对话</value>
+  </data>
+  <data name="Nav_VirtualMaster" xml:space="preserve">
+    <value>虚拟师父</value>
+  </data>
+  <data name="Nav_ResearchLabel" xml:space="preserve">
+    <value>研究</value>
+  </data>
+  <data name="Nav_LocalModels" xml:space="preserve">
+    <value>本地模型</value>
+  </data>
+  <data name="Nav_ModelBenchmark" xml:space="preserve">
+    <value>模型评测</value>
+  </data>
+  <data name="Nav_AiMetrics" xml:space="preserve">
+    <value>AI 性能监控</value>
+  </data>
+  <data name="Nav_HardwareBenchmark" xml:space="preserve">
+    <value>硬件评测</value>
+  </data>
+  <data name="Nav_ConfigLabel" xml:space="preserve">
+    <value>配置</value>
+  </data>
+  <data name="Nav_AiSettings" xml:space="preserve">
+    <value>AI 设置</value>
+  </data>
+  <data name="Nav_PromptTemplates" xml:space="preserve">
+    <value>提示词模板</value>
+  </data>
+  <data name="Nav_ModeLabel" xml:space="preserve">
+    <value>模式</value>
+  </data>
+  <data name="Nav_ModeProTooltip" xml:space="preserve">
+    <value>当前：专业模式</value>
+  </data>
+  <data name="Nav_ModeEasyTooltip" xml:space="preserve">
+    <value>当前：简易模式</value>
+  </data>
+  <data name="Nav_ModePro" xml:space="preserve">
+    <value>🔧 专业</value>
+  </data>
+  <data name="Nav_ModeEasy" xml:space="preserve">
+    <value>👤 简易</value>
+  </data>
 </root>

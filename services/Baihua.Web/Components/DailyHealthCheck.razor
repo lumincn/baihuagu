@@ -1,6 +1,7 @@
 @rendermode InteractiveServer
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
 @if (showPopup)
 {
@@ -8,8 +9,8 @@
         <div class="health-check-popup" @onclick:stopPropagation="true">
             <div class="health-check-header">
                 <span class="health-icon">🌿</span>
-                <h3>每日健康自查</h3>
-                <p class="health-subtitle">今天身体有哪里不舒服吗？</p>
+                <h3>@L["DailyHealth_Title"]</h3>
+                <p class="health-subtitle">@L["DailyHealth_Subtitle"]</p>
             </div>
 
             <div class="health-symptoms">
@@ -24,7 +25,7 @@
 
             <div class="health-custom">
                 <input type="text" class="form-control"
-                       placeholder="其他症状，请描述..."
+                       placeholder="@L["DailyHealth_SymptomPlaceholder"]"
                        @bind="customSymptom"
                        @bind:event="oninput"
                        @onkeypress="OnKeyPress" />
@@ -32,14 +33,14 @@
 
             <div class="health-actions">
                 <button class="btn-health-learn" @onclick="LearnMore" disabled="@string.IsNullOrWhiteSpace(SearchQuery)">
-                    📖 多学一点
+                    @L["DailyHealth_LearnMore"]
                 </button>
                 <div class="health-actions-secondary">
                     <button class="btn-health-dismiss" @onclick="DismissForToday">
-                        今天没不舒服
+                        @L["DailyHealth_DismissToday"]
                     </button>
-                    <button class="btn-health-forever" @onclick="DismissForever" title="不再弹出">
-                        🚫 永久关闭
+                    <button class="btn-health-forever" @onclick="DismissForever" title="@L["DailyHealth_DismissForeverTitle"]">
+                        @L["DailyHealth_DismissForever"]
                     </button>
                 </div>
             </div>
@@ -217,10 +218,20 @@
     private string selectedSymptom = "";
     private string customSymptom = "";
 
-    private readonly List<string> quickSymptoms = new()
+    private List<string> quickSymptoms = new();
+
+    protected override void OnInitialized()
     {
-        "头痛", "咳嗽", "胃痛", "失眠", "疲劳", "上火"
-    };
+        quickSymptoms = new()
+        {
+            L["DailyHealth_Symptom_Headache"],
+            L["DailyHealth_Symptom_Cough"],
+            L["DailyHealth_Symptom_Stomachache"],
+            L["DailyHealth_Symptom_Insomnia"],
+            L["DailyHealth_Symptom_Fatigue"],
+            L["DailyHealth_Symptom_FireHeat"]
+        };
+    }
 
     private string SearchQuery => !string.IsNullOrWhiteSpace(selectedSymptom)
         ? selectedSymptom

@@ -3589,4 +3589,124 @@
   <data name="E2EPerf_BottleneckDesc" xml:space="preserve">
     <value>: High total but low network → rendering issue; high network → API issue</value>
   </data>
+  <data name="App_Title" xml:space="preserve">
+    <value>Baihua</value>
+  </data>
+  <data name="DailyHealth_Title" xml:space="preserve">
+    <value>Daily Health Check</value>
+  </data>
+  <data name="DailyHealth_Subtitle" xml:space="preserve">
+    <value>How are you feeling today?</value>
+  </data>
+  <data name="DailyHealth_SymptomPlaceholder" xml:space="preserve">
+    <value>Describe other symptoms...</value>
+  </data>
+  <data name="DailyHealth_LearnMore" xml:space="preserve">
+    <value>📖 Learn More</value>
+  </data>
+  <data name="DailyHealth_DismissToday" xml:space="preserve">
+    <value>I'm fine today</value>
+  </data>
+  <data name="DailyHealth_DismissForever" xml:space="preserve">
+    <value>🚫 Disable Forever</value>
+  </data>
+  <data name="DailyHealth_DismissForeverTitle" xml:space="preserve">
+    <value>Never show again</value>
+  </data>
+  <data name="DailyHealth_Symptom_Headache" xml:space="preserve">
+    <value>Headache</value>
+  </data>
+  <data name="DailyHealth_Symptom_Cough" xml:space="preserve">
+    <value>Cough</value>
+  </data>
+  <data name="DailyHealth_Symptom_Stomachache" xml:space="preserve">
+    <value>Stomachache</value>
+  </data>
+  <data name="DailyHealth_Symptom_Insomnia" xml:space="preserve">
+    <value>Insomnia</value>
+  </data>
+  <data name="DailyHealth_Symptom_Fatigue" xml:space="preserve">
+    <value>Fatigue</value>
+  </data>
+  <data name="DailyHealth_Symptom_FireHeat" xml:space="preserve">
+    <value>Excessive Heat</value>
+  </data>
+  <data name="Nav_KnowledgeBase" xml:space="preserve">
+    <value>Knowledge Base</value>
+  </data>
+  <data name="Nav_Family" xml:space="preserve">
+    <value>Family</value>
+  </data>
+  <data name="Nav_AiLab" xml:space="preserve">
+    <value>AI Lab</value>
+  </data>
+  <data name="Nav_BrowseKnowledge" xml:space="preserve">
+    <value>Browse Knowledge</value>
+  </data>
+  <data name="Nav_MemoryCards" xml:space="preserve">
+    <value>Memory Cards</value>
+  </data>
+  <data name="Nav_ManageVaults" xml:space="preserve">
+    <value>Manage Vaults</value>
+  </data>
+  <data name="Nav_DailyCard" xml:space="preserve">
+    <value>Daily Card</value>
+  </data>
+  <data name="Nav_Achievements" xml:space="preserve">
+    <value>Achievements</value>
+  </data>
+  <data name="Nav_Leaderboard" xml:space="preserve">
+    <value>Leaderboard</value>
+  </data>
+  <data name="Nav_ParentDashboard" xml:space="preserve">
+    <value>Parent Dashboard</value>
+  </data>
+  <data name="Nav_ChatLabel" xml:space="preserve">
+    <value>Chat</value>
+  </data>
+  <data name="Nav_AiChat" xml:space="preserve">
+    <value>AI Chat</value>
+  </data>
+  <data name="Nav_VirtualMaster" xml:space="preserve">
+    <value>Virtual Master</value>
+  </data>
+  <data name="Nav_ResearchLabel" xml:space="preserve">
+    <value>Research</value>
+  </data>
+  <data name="Nav_LocalModels" xml:space="preserve">
+    <value>Local Models</value>
+  </data>
+  <data name="Nav_ModelBenchmark" xml:space="preserve">
+    <value>Model Benchmark</value>
+  </data>
+  <data name="Nav_AiMetrics" xml:space="preserve">
+    <value>AI Performance</value>
+  </data>
+  <data name="Nav_HardwareBenchmark" xml:space="preserve">
+    <value>Hardware Benchmark</value>
+  </data>
+  <data name="Nav_ConfigLabel" xml:space="preserve">
+    <value>Config</value>
+  </data>
+  <data name="Nav_AiSettings" xml:space="preserve">
+    <value>AI Settings</value>
+  </data>
+  <data name="Nav_PromptTemplates" xml:space="preserve">
+    <value>Prompt Templates</value>
+  </data>
+  <data name="Nav_ModeLabel" xml:space="preserve">
+    <value>Mode</value>
+  </data>
+  <data name="Nav_ModeProTooltip" xml:space="preserve">
+    <value>Current: Professional Mode</value>
+  </data>
+  <data name="Nav_ModeEasyTooltip" xml:space="preserve">
+    <value>Current: Beginner Mode</value>
+  </data>
+  <data name="Nav_ModePro" xml:space="preserve">
+    <value>🔧 Professional</value>
+  </data>
+  <data name="Nav_ModeEasy" xml:space="preserve">
+    <value>👤 Beginner</value>
+  </data>
 </root>

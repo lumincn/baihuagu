@@ -1,4 +1,5 @@
 @inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 <!DOCTYPE html>
 <html lang="en">
 
@@ -19,7 +20,7 @@
     <link rel="stylesheet" href="@Assets["WebUI.Family.styles.css"]" />
     <ImportMap />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <title>百花</title>
+    <title>@L["App_Title"]</title>
     <HeadOutlet @rendermode="new InteractiveServerRenderMode(prerender: false)" />
 </head>
 
