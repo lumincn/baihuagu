@@ -58,6 +58,7 @@
                 }
                 <label class="form-label mb-0 text-nowrap" style="font-size:0.9em">📚 知识库：</label>
                 <select class="form-select form-select-sm" @bind="selectedVaultId" @bind:after="OnVaultChanged" style="max-width:300px">
+                    <option value="">🌐 全部</option>
                     @foreach (var vault in FilteredVaults)
                     {
                         <option value="@vault.Id">@vault.Name</option>
@@ -298,7 +299,7 @@
                     obsidianStatus = loadObsidianStatusTask.Result;
                     var vaultsResponse = loadVaultsTask.Result;
                     vaults = vaultsResponse.Vaults;
-                    selectedVaultId = vaults.FirstOrDefault()?.Id ?? "";
+                    selectedVaultId = "";  // 默认
                     StateHasChanged();
                     Logger.LogDebug("UI更新完成");
                 });
@@ -317,20 +318,16 @@
     {
         if (firstRender && !string.IsNullOrWhiteSpace(_initialQuery))
         {
-            // 尽可能等待后台加载完成，最多等 8 秒
+            // 等待后台数据加载完成（vaults 列表就绪），最多等 8 秒
             for (int i = 0; i < 16; i++)
             {
-                if (!string.IsNullOrWhiteSpace(selectedVaultId) && vaults.Count > 0) break;
+                if (vaults.Count > 0) break;
                 await Task.Delay(500);
             }
 
-            // 无论 vaultId 是否就绪，只要有关键字就触发搜索（无 vaultId 时搜索 API 会返回提示）
-            if (!string.IsNullOrWhiteSpace(selectedVaultId))
-            {
-                searchQuery = _initialQuery;
-                await PerformSearch();
-                StateHasChanged();
-            }
+            searchQuery = _initialQuery;
+            await PerformSearch();
+            StateHasChanged();
         }
     }
 
@@ -355,10 +352,11 @@
 
     private async Task OnVaultChanged()
     {
-        if (string.IsNullOrEmpty(selectedVaultId)) return;
-
-        // 加载新知识库的索引状态
-        await LoadIndexStatusAsync();
+        // 加载索引状态（知识库为空时跳过）
+        if (!string.IsNullOrEmpty(selectedVaultId))
+        {
+            await LoadIndexStatusAsync();
+        }
 
         // 如果已有搜索词，重新搜索
         if (!string.IsNullOrWhiteSpace(searchQuery) && hasSearched)
@@ -437,11 +435,20 @@
     {
         if (string.IsNullOrWhiteSpace(query)) return;
 
+        // 未选择知识库时，自动选择第一个可用的
         if (string.IsNullOrWhiteSpace(selectedVaultId))
         {
-            searchStatus = new SearchStatusInfo { ErrorMessage = "请先选择知识库" };
-            hasSearched = true;
-            return;
+            var firstVault = vaults.FirstOrDefault();
+            if (firstVault != null)
+            {
+                selectedVaultId = firstVault.Id;
+            }
+            else
+            {
+                searchStatus = new SearchStatusInfo { ErrorMessage = "请先创建知识库" };
+                hasSearched = true;
+                return;
+            }
         }
 
         await SearchHistoryService.AddSearchQuery(query);
