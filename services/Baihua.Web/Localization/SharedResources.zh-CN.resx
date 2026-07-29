@@ -1,4 +1,4 @@
-﻿<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:schema id="root">
     <xs:element name="root" ns1:IsDataSet="true">
@@ -2858,7 +2858,8 @@
     <value>关闭</value>
   </data>
   <data name="Messages_InputPlaceholder" xml:space="preserve">
-    <value>输入消息...&#x0D;&#x0A;Shift+Enter 换行，Enter 发送</value>
+    <value>输入消息...
+Shift+Enter 换行，Enter 发送</value>
   </data>
   <data name="Messages_Stop" xml:space="preserve">
     <value>⏹ 停止</value>
@@ -3011,7 +3012,7 @@
     <value>笔记未找到</value>
   </data>
   <data name="NoteDetail_NoteNotFoundPath" xml:space="preserve">
-    <value>无法找到路径为 &quot;{0}&quot; 的笔记</value>
+    <value>无法找到路径为 "{0}" 的笔记</value>
   </data>
   <data name="NoteDetail_BackToSearch" xml:space="preserve">
     <value>返回搜索</value>
@@ -3026,7 +3027,7 @@
     <value>AI 生成此笔记</value>
   </data>
   <data name="NoteDetail_Back" xml:space="preserve">
-    <value>&#x2190; 返回</value>
+    <value>← 返回</value>
   </data>
   <data name="NoteDetail_Favorite" xml:space="preserve">
     <value>收藏</value>
@@ -3817,14 +3818,14 @@
   <data name="Api_OperationFailedWithError" xml:space="preserve">
     <value>操作失败：{0}</value>
   </data>
-  <!-- === Phase 4 Batch 9: DevicesService keys === -->
+  
   <data name="Devices_RequestRejected" xml:space="preserve">
     <value>已拒绝设备配对</value>
   </data>
   <data name="Devices_DeviceRevoked" xml:space="preserve">
     <value>已撤销设备授权</value>
   </data>
-  <!-- === Phase 4 Batch 13: ObsidianStatusService keys === -->
+  
   <data name="ObsidianStatus_Unknown" xml:space="preserve">
     <value>Obsidian 状态未知</value>
   </data>
@@ -3834,4 +3835,4 @@
   <data name="ObsidianStatus_CheckFailed" xml:space="preserve">
     <value>检测 Obsidian 状态失败</value>
   </data>
-</root>
+<data name="PromptTemplates_CardChatSystemPromptLabel" xml:space="preserve"><value>对话系统提示词：</value></data><data name="PromptTemplates_CardSplitSystemPromptLabel" xml:space="preserve"><value>拆分系统提示词：</value></data><data name="PromptTemplates_CardTitleFormat" xml:space="preserve"><value>模板：{0}</value></data><data name="PromptTemplates_ChatSystemPromptHint" xml:space="preserve"><value>用于 AI 对话的默认系统提示词</value></data><data name="PromptTemplates_ChatSystemPromptPlaceholder" xml:space="preserve"><value>输入对话系统提示词...</value></data><data name="PromptTemplates_ConfigurationAdvicePlaceholder" xml:space="preserve"><value>输入配置建议...</value></data><data name="PromptTemplates_ConfirmDelete" xml:space="preserve"><value>确定要删除模板"{0}"吗？</value></data><data name="PromptTemplates_CreateNewBtn" xml:space="preserve"><value>新建模板</value></data><data name="PromptTemplates_DefaultCategoriesLabel" xml:space="preserve"><value>默认分类：</value></data><data name="PromptTemplates_DefaultCategoriesPlaceholder" xml:space="preserve"><value>用逗号分隔，例如：方剂, 中药</value></data><data name="PromptTemplates_DeleteBtn" xml:space="preserve"><value>删除</value></data><data name="PromptTemplates_Description" xml:space="preserve"><value>管理 AI 对话和笔记拆分的提示词模板，可针对不同行业定制。</value></data><data name="PromptTemplates_EditBtn" xml:space="preserve"><value>编辑</value></data><data name="PromptTemplates_EditTemplateTitle" xml:space="preserve"><value>编辑模板 - {0}</value></data><data name="PromptTemplates_IndustryNameLabel" xml:space="preserve"><value>行业名称</value></data><data name="PromptTemplates_IndustryNamePlaceholder" xml:space="preserve"><value>例如：中医、法律、教育</value></data><data name="PromptTemplates_LoadFailed" xml:space="preserve"><value>加载模板失败</value></data><data name="PromptTemplates_ModalChatSystemPromptLabel" xml:space="preserve"><value>对话系统提示词</value></data><data name="PromptTemplates_ModalConfigurationAdviceLabel" xml:space="preserve"><value>配置建议</value></data><data name="PromptTemplates_ModalDefaultCategoriesLabel" xml:space="preserve"><value>默认分类</value></data><data name="PromptTemplates_ModalSplitSystemPromptLabel" xml:space="preserve"><value>拆分系统提示词</value></data><data name="PromptTemplates_ModalSplitUserPromptLabel" xml:space="preserve"><value>拆分用户提示词</value></data><data name="PromptTemplates_ModalSupplementPromptLabel" xml:space="preserve"><value>补充提示词</value></data><data name="PromptTemplates_NewTemplateTitle" xml:space="preserve"><value>新建提示词模板</value></data><data name="PromptTemplates_PageTitle" xml:space="preserve"><value>提示词模板管理</value></data><data name="PromptTemplates_SaveBtn" xml:space="preserve"><value>保存</value></data><data name="PromptTemplates_SaveFailed" xml:space="preserve"><value>保存失败</value></data><data name="PromptTemplates_Saving" xml:space="preserve"><value>保存中...</value></data><data name="PromptTemplates_SplitSystemPromptPlaceholder" xml:space="preserve"><value>输入拆分系统提示词...</value></data><data name="PromptTemplates_SplitUserPromptPlaceholder" xml:space="preserve"><value>输入拆分用户提示词...</value></data><data name="PromptTemplates_SupplementPromptPlaceholder" xml:space="preserve"><value>输入补充提示词...</value></data><data name="PromptTemplates_Title" xml:space="preserve"><value>提示词模板管理</value></data><data name="Search_All" xml:space="preserve"><value>全部</value></data><data name="Search_AllVaults" xml:space="preserve"><value>所有知识库</value></data><data name="Search_CancelRebuild" xml:space="preserve"><value>取消重建</value></data><data name="Search_CheckVaultPath" xml:space="preserve"><value>请检查知识库路径配置是否正确</value></data><data name="Search_ClearHistory" xml:space="preserve"><value>清空记录</value></data><data name="Search_ClickToView" xml:space="preserve"><value>点击查看</value></data><data name="Search_ConfigVaultPath" xml:space="preserve"><value>请先</value></data><data name="Search_ConfigVaultPathSuffix" xml:space="preserve"><value>后再搜索</value></data><data name="Search_DownloadObsidian" xml:space="preserve"><value>下载 Obsidian</value></data><data name="Search_ErrorMessage" xml:space="preserve"><value>搜索失败，请稍后重试</value></data><data name="Search_FilterIndustry" xml:space="preserve"><value>行业</value></data><data name="Search_FilterVault" xml:space="preserve"><value>知识库</value></data><data name="Search_GroupAiQuery" xml:space="preserve"><value>AI 查询</value></data><data name="Search_GroupCases" xml:space="preserve"><value>医案</value></data><data name="Search_GroupDiagnosis" xml:space="preserve"><value>诊法</value></data><data name="Search_GroupFormulas" xml:space="preserve"><value>方剂/中药</value></data><data name="Search_GroupOther" xml:space="preserve"><value>其他</value></data><data name="Search_GroupPathogenesis" xml:space="preserve"><value>病机/病理</value></data><data name="Search_GroupSymptoms" xml:space="preserve"><value>症状</value></data><data name="Search_GroupTreatment" xml:space="preserve"><value>治法</value></data><data name="Search_IndexCountSuffix" xml:space="preserve"><value>篇</value></data><data name="Search_IndexLabel" xml:space="preserve"><value>索引状态</value></data><data name="Search_IndexNotBuilt" xml:space="preserve"><value>未建立索引</value></data><data name="Search_MethodFileScan" xml:space="preserve"><value>文件扫描</value></data><data name="Search_MethodFts5" xml:space="preserve"><value>FTS5 全文搜索</value></data><data name="Search_MethodFts5Semantic" xml:space="preserve"><value>FTS5 + 语义搜索</value></data><data name="Search_MethodLabel" xml:space="preserve"><value>搜索方式：</value></data><data name="Search_MethodObsidianCli" xml:space="preserve"><value>Obsidian CLI</value></data><data name="Search_MethodSemantic" xml:space="preserve"><value>语义搜索</value></data><data name="Search_NeedCreateVault" xml:space="preserve"><value>请先创建知识库</value></data><data name="Search_NoResults" xml:space="preserve"><value>未找到相关结果</value></data><data name="Search_ObsidianHint" xml:space="preserve"><value>提示：</value></data><data name="Search_ObsidianNotRunning" xml:space="preserve"><value>正在监听剪贴板</value></data><data name="Search_ObsidianNotRunningDesc" xml:space="preserve"><value>如果您使用 Obsidian 管理笔记，推荐安装 Obsidian 以获得更好的体验。</value></data><data name="Search_ObsidianRunning" xml:space="preserve"><value>Obsidian 已连接</value></data><data name="Search_ObsidianRunningDesc" xml:space="preserve"><value>正在监听剪贴板，随时可以粘贴和搜索。</value></data><data name="Search_PageTitle" xml:space="preserve"><value>全文搜索</value></data><data name="Search_RebuildIndex" xml:space="preserve"><value>重建索引</value></data><data name="Search_RecentTitle" xml:space="preserve"><value>最近搜索</value></data><data name="Search_ResultsCountSuffix" xml:space="preserve"><value>条</value></data><data name="Search_ResultsTitle" xml:space="preserve"><value>搜索结果</value></data><data name="Search_SearchButton" xml:space="preserve"><value>搜索</value></data><data name="Search_Searching" xml:space="preserve"><value>搜索中...</value></data><data name="Search_SettingsPage" xml:space="preserve"><value>配置知识库路径</value></data><data name="Search_Tip1" xml:space="preserve"><value>支持全文关键词搜索和语义搜索</value></data><data name="Search_Tip2" xml:space="preserve"><value>可以使用拼音或英文关键词</value></data><data name="Search_Tip3" xml:space="preserve"><value>选中知识库可缩小搜索范围</value></data><data name="Search_TipsTitle" xml:space="preserve"><value>搜索提示</value></data><data name="Search_Title" xml:space="preserve"><value>全文知识搜索</value></data></root>
