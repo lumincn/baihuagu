@@ -133,7 +133,7 @@ public class AiFunctionService
             {
                 var relativePath = Path.GetRelativePath(notesRoot, notePath);
                 relativePath = relativePath.Substring(0, relativePath.Length - 3); // 去掉 .md
-                _ = Task.Run(async () => await _cardGenerator.GenerateFromNote(relativePath));
+                _ = Task.Run(async () => await _cardGenerator.GenerateWithAiAsync(relativePath));
                 _logger.LogInformation("[AI Function] create_note: 笔记已保存，已触发卡片生成任务：{Path}", relativePath);
             }
             catch (Exception ex)

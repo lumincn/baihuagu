@@ -1096,22 +1096,22 @@
             if (result != null && result.Success)
             {
                 lastCreatedTaskId = result.TaskId;
-                message = $"已创建卡片生成任务：{result.VaultName}，可前往任务页查看进度";
-                success = true;
+                // 直接跳转到任务页，用户可以在那看进度
+                Navigation.NavigateTo("tasks");
             }
             else
             {
                 message = $"创建任务失败: {result?.Message ?? "未知错误"}";
                 success = false;
+                isGeneratingCards = false;
+                generatingVaultId = null;
+                StateHasChanged();
             }
         }
         catch (Exception ex)
         {
             message = $"生成失败: {ex.Message}";
             success = false;
-        }
-        finally
-        {
             isGeneratingCards = false;
             generatingVaultId = null;
             StateHasChanged();

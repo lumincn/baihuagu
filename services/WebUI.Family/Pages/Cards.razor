@@ -70,14 +70,6 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card text-center h-100">
-                    <div class="card-body">
-                        <div class="display-5 text-warning">@ruleCards</div>
-                        <div class="text-muted">规则生成</div>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- 牌组列表 -->
@@ -210,7 +202,7 @@
     private bool isLoading = true;
     private int totalCards = 0;
     private int aiCards = 0;
-    private int ruleCards = 0;
+
 
     /// <summary>经过牌组筛选后的卡片</summary>
     private List<CardItemDto> filteredCards =>
@@ -248,16 +240,20 @@
         isLoading = true;
         try
         {
-            // 加载牌组列表
-            deckResult = await ApiService.GetAnkiDecksAsync(selectedVaultId);
-            totalCards = decks.Sum(d => d.CardCount);
+            // 未选择知识库时跳过 API 调用
+            if (!string.IsNullOrWhiteSpace(selectedVaultId))
+            {
+                // 加载牌组列表
+                deckResult = await ApiService.GetAnkiDecksAsync(selectedVaultId);
+                totalCards = decks.Sum(d => d.CardCount);
 
-            // 搜索卡片（空查询返回全部）
-            searchResult = await ApiService.SearchAnkiCardsAsync(searchQuery, selectedVaultId, 200);
+                // 搜索卡片（空查询返回全部）
+                searchResult = await ApiService.SearchAnkiCardsAsync(searchQuery, selectedVaultId, 200);
 
-            // 统计来源分布（从搜索结果中统计，最多 200 条样本）
-            aiCards = searchResult.Cards.Count(c => c.Source == "ai");
-            ruleCards = searchResult.Cards.Count(c => c.Source == "rule");
+                // 统计来源分布（从搜索结果中统计，最多 200 条样本）
+                aiCards = searchResult.Cards.Count(c => c.Source == "ai");
+
+            }
         }
         catch (Exception ex)
         {

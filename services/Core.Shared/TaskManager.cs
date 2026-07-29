@@ -333,6 +333,13 @@ namespace TaskRunner.Services
             using var dbContext = _dbContextFactory.CreateDbContext();
             if (_tasks.TryGetValue(taskId, out var task))
             {
+                // 首次更新进度时自动将 Pending 转为 Running
+                var prevStatus = task.Status;
+                if (task.Status == RunnerTaskStatus.Pending)
+                {
+                    task.Status = RunnerTaskStatus.Running;
+                }
+
                 task.Progress = new TaskProgress
                 {
                     Current = current,
@@ -348,6 +355,12 @@ namespace TaskRunner.Services
                     var dbTask = dbContext.Tasks.FirstOrDefault(t => t.TaskId == taskId);
                     if (dbTask != null)
                     {
+                        // 如果状态从 Pending 变为 Running，同步更新数据库状态
+                        if (prevStatus == RunnerTaskStatus.Pending && task.Status == RunnerTaskStatus.Running)
+                        {
+                            dbTask.Status = "Running";
+                            dbTask.StartedAt = DateTime.UtcNow;
+                        }
                         dbTask.Progress = (int)task.Progress.Percentage;
                         dbTask.ProgressMessage = message;
                         dbContext.SaveChanges();

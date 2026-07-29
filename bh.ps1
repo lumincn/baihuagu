@@ -785,6 +785,23 @@ switch ($Command.ToLower()){
 		Write-Host "  webui : " -NoNewline
 		if (Wait-For-Url 'http://127.0.0.1:5177/login' 20) {
 			Write-Host "v ready" -ForegroundColor Green
+			# 自动登录
+			Write-Host "[i] Auto-login with CLI token..." -ForegroundColor DarkGray
+			try {
+				$resp = Invoke-WebRequest -Uri 'http://127.0.0.1:5177/api/auth/cli-token' -Method POST -UseBasicParsing -TimeoutSec 5
+				if ($resp.StatusCode -eq 200) {
+					$token = ($resp.Content | ConvertFrom-Json).token
+					$dashboardUrl = "http://127.0.0.1:5177/?cli-token=$token"
+					Write-Host "[v] Auto-login OK" -ForegroundColor Green
+					Start-Process $dashboardUrl
+				} else {
+					Write-Host "[!] Auto-login failed (status $($resp.StatusCode)), open manually" -ForegroundColor Yellow
+					Start-Process 'http://127.0.0.1:5177'
+				}
+			} catch {
+				Write-Host "[!] Auto-login failed: $($_.Exception.Message), open manually" -ForegroundColor Yellow
+				Start-Process 'http://127.0.0.1:5177'
+			}
 		} else {
 			Write-Host "X not ready" -ForegroundColor Red
 		}

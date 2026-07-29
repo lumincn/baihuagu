@@ -9,73 +9,11 @@
 @implements IDisposable
 
 <div class="nav-menu">
-    @if (!_isAiConfigured)
-    {
-        <!-- AI 未配置：只显示 AI 设置入口 -->
-        <div class="nav-group">
-            <div class="nav-group-label">开始使用</div>
-            <NavLink href="settings" Match="NavLinkMatch.All">
-                <span class="nav-icon bi bi-gear"></span>
-                <span>AI 配置</span>
-            </NavLink>
-        </div>
-    }
-    else
-    {
-        <FamilyNavMenu />
-    }
+    <FamilyNavMenu />
 </div>
 
 @code {
-    private bool _isAiConfigured = false;
-
-    protected override async Task OnInitializedAsync()
-    {
-        var aiStatus = GlobalStateService.GetAIStatus();
-        if (aiStatus?.IsConfigured ?? false)
-        {
-            _isAiConfigured = true;
-        }
-        else
-        {
-            try
-            {
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-                var client = HttpClientFactory.CreateClient("TaskRunnerAiApi");
-                var response = await client.GetAsync("api/ai/config/providers", cts.Token);
-                if (response.IsSuccessStatusCode)
-                {
-                    var providers = await response.Content.ReadFromJsonAsync<List<ProviderCheck>>(cts.Token);
-                    _isAiConfigured = providers?.Any() ?? false;
-                }
-            }
-            catch { }
-        }
-
-        GlobalStateService.StateChanged += OnGlobalStateChanged;
-    }
-
-    private void OnGlobalStateChanged(object? sender, EventArgs e)
-    {
-        var aiStatus = GlobalStateService.GetAIStatus();
-        var wasConfigured = _isAiConfigured;
-        _isAiConfigured = aiStatus?.IsConfigured ?? false;
-        if (wasConfigured != _isAiConfigured)
-        {
-            InvokeAsync(StateHasChanged);
-        }
-    }
-
-    public void Dispose()
-    {
-        GlobalStateService.StateChanged -= OnGlobalStateChanged;
-    }
-
-    private class ProviderCheck
-    {
-        public string Id { get; set; } = "";
-        public bool IsMain { get; set; }
-    }
+    public void Dispose() { }
 }
 
 <style>

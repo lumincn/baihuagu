@@ -6,6 +6,7 @@ namespace TaskRunner.Controllers;
 
 public partial class HealthController
 {
+        [HttpGet("startup")]
         public ActionResult<dynamic> GetStartupInfo()
         {
             try

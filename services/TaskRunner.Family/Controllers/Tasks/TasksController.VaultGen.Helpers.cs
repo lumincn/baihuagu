@@ -153,13 +153,13 @@ namespace TaskRunner.Controllers
 
                         if (request.GenerateCards && !string.IsNullOrEmpty(vaultId))
                         {
-                            var cardTaskId = _taskManager.CreateTask("anki_generate", new Dictionary<string, string>
+                            var cardTaskId = _taskManager.CreateTask("anki_generate_ai", new Dictionary<string, string>
                             {
                                 ["vaultId"] = vaultId,
                                 ["vaultName"] = vaultName,
                                 ["trigger"] = "vault_generation"
                             });
-                            _taskManager.UpdateProgress(cardTaskId, 0, 100, $"开始为「{vaultName}」生成记忆卡片...");
+                            _taskManager.UpdateProgress(cardTaskId, 0, 100, $"开始为「{vaultName}」使用 AI 生成记忆卡片...");
 
                             var notesPath = Path.Combine(vaultPath, "notes");
                             if (Directory.Exists(notesPath))
@@ -168,7 +168,7 @@ namespace TaskRunner.Controllers
                                 {
                                     try
                                     {
-                                        var result = await _cardGenerator.GenerateFromDirectory(notesPath, recursive: true, vaultId: vaultId);
+                                        var result = await _cardGenerator.GenerateBatchWithAiAsync(notesPath, recursive: true, vaultId: vaultId);
                                         await _taskManager.UpdateProgress(cardTaskId, 100, 100, result.Message);
                                         await _taskManager.UpdateStatus(cardTaskId, RunnerTaskStatus.Success, data: new { totalCards = result.TotalCards, message = result.Message });
                                     }

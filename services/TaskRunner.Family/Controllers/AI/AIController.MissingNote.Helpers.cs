@@ -95,7 +95,7 @@ namespace TaskRunner.Controllers
                         try
                         {
                             await _taskManager.UpdateStatus(taskId, RunnerTaskStatus.Running);
-                            var result = await _cardGenerator.GenerateFromNote(notePath, cardsPath: cardsRoot, notesBasePath: notesPath);
+                            var result = await _cardGenerator.GenerateWithAiAsync(notePath, cardsPath: cardsRoot, notesBasePath: notesPath);
                             await _taskManager.UpdateStatus(taskId, result.Success ? RunnerTaskStatus.Success : RunnerTaskStatus.Failed,
                                 data: new { message = result.Message, cardCount = result.CardCount });
                         }

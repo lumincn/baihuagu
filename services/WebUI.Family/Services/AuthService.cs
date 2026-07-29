@@ -1,11 +1,13 @@
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
+using System.Text.Json;
 
 namespace WebUI.Services;
 
 /// <summary>
 /// 认证服务 - 管理用户认证状态
 /// 使用随机令牌 + 过期时间，替代基于日期的弱令牌
+/// 令牌持久化到 JSON 文件，重启后不会丢失登录状态
 /// </summary>
 public class AuthService
 {
@@ -16,16 +18,23 @@ public class AuthService
     // 令牌有效期（小时）
     private const int TokenExpiryHours = 24;
 
+    // 令牌持久化文件（存到项目 data/ 目录，重启后不丢失）
+    // 存到项目 bin 同级 data/ 目录
+    private static readonly string TokensFilePath = Path.GetFullPath(
+        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "..", "data", "auth-tokens.json"));
+
     // 活跃会话令牌（tokenId -> 过期时间）
-    private readonly ConcurrentDictionary<string, DateTime> _activeTokens = new();
+    private ConcurrentDictionary<string, DateTime> _activeTokens = new();
+    private readonly object _fileLock = new();
 
     // CLI 一次性令牌（token -> 过期时间）
     private readonly ConcurrentDictionary<string, DateTime> _cliTokens = new();
-    // CLI 令牌有效期（分钟）
     private const int CliTokenExpiryMinutes = 5;
 
     public AuthService()
     {
+        LoadTokens();
+        CleanupExpiredTokens();
     }
 
     /// <summary>
@@ -33,17 +42,15 @@ public class AuthService
     /// </summary>
     public Task<string> GenerateAuthTokenAsync()
     {
-        // 生成随机令牌
         var tokenBytes = RandomNumberGenerator.GetBytes(32);
         var token = Convert.ToBase64String(tokenBytes);
-        
-        // 存储到活跃会话中
+
         var expiry = DateTime.UtcNow.AddHours(TokenExpiryHours);
         _activeTokens[token] = expiry;
-        
-        // 清理过期令牌
+
+        SaveTokens();
         CleanupExpiredTokens();
-        
+
         return Task.FromResult(token);
     }
 
@@ -55,20 +62,18 @@ public class AuthService
         if (string.IsNullOrEmpty(token))
             return Task.FromResult(false);
 
-        // 检查活跃会话中是否存在且未过期
         if (_activeTokens.TryGetValue(token, out var expiry))
         {
             if (DateTime.UtcNow < expiry)
                 return Task.FromResult(true);
 
-            // 已过期，移除
             _activeTokens.TryRemove(token, out _);
+            SaveTokens();
             return Task.FromResult(false);
         }
 
         return Task.FromResult(false);
     }
-
 
     /// <summary>
     /// 登出 - 移除指定令牌
@@ -78,6 +83,57 @@ public class AuthService
         if (!string.IsNullOrEmpty(token))
         {
             _activeTokens.TryRemove(token, out _);
+            SaveTokens();
+        }
+    }
+
+    /// <summary>
+    /// 从 JSON 文件加载持久化的令牌
+    /// </summary>
+    private void LoadTokens()
+    {
+        try
+        {
+            var dir = Path.GetDirectoryName(TokensFilePath);
+            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
+
+            if (File.Exists(TokensFilePath))
+            {
+                var json = File.ReadAllText(TokensFilePath);
+                var tokens = JsonSerializer.Deserialize<Dictionary<string, DateTime>>(json);
+                if (tokens != null)
+                    _activeTokens = new ConcurrentDictionary<string, DateTime>(tokens);
+            }
+        }
+        catch (Exception)
+        {
+            // 文件损坏时使用空字典
+            _activeTokens = new ConcurrentDictionary<string, DateTime>();
+        }
+    }
+
+    /// <summary>
+    /// 将令牌持久化到 JSON 文件
+    /// </summary>
+    private void SaveTokens()
+    {
+        try
+        {
+            lock (_fileLock)
+            {
+                var dir = Path.GetDirectoryName(TokensFilePath);
+                if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                    Directory.CreateDirectory(dir);
+
+                var json = JsonSerializer.Serialize(_activeTokens.ToDictionary(
+                    kvp => kvp.Key, kvp => kvp.Value));
+                File.WriteAllText(TokensFilePath, json);
+            }
+        }
+        catch (Exception)
+        {
+            // 持久化失败不影响运行，仅丢失重启后的登录状态
         }
     }
 
@@ -87,20 +143,20 @@ public class AuthService
     private void CleanupExpiredTokens()
     {
         var now = DateTime.UtcNow;
+        bool changed = false;
         foreach (var kvp in _activeTokens)
         {
             if (now >= kvp.Value)
             {
                 _activeTokens.TryRemove(kvp.Key, out _);
+                changed = true;
             }
         }
+        if (changed) SaveTokens();
     }
 
     #region CLI Token
 
-    /// <summary>
-    /// 生成 CLI 一次性访问令牌（仅供本机命令行工具使用）
-    /// </summary>
     public string GenerateCliToken()
     {
         var tokenBytes = RandomNumberGenerator.GetBytes(24);
@@ -114,15 +170,11 @@ public class AuthService
         return token;
     }
 
-    /// <summary>
-    /// 验证 CLI 令牌是否有效（一次性使用，验证后立即删除）
-    /// </summary>
     public bool ValidateCliToken(string token)
     {
         if (string.IsNullOrEmpty(token))
             return false;
 
-        // 原子操作：尝试移除并获取过期时间，防止并发重放攻击
         if (_cliTokens.TryRemove(token, out var expiry))
         {
             if (DateTime.UtcNow < expiry)
@@ -131,9 +183,6 @@ public class AuthService
         return false;
     }
 
-    /// <summary>
-    /// 清理过期 CLI 令牌
-    /// </summary>
     private void CleanupExpiredCliTokens()
     {
         var now = DateTime.UtcNow;

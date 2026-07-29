@@ -352,4 +352,73 @@ docker compose -f docker-compose.observability.yml up -d</code></pre>
         padding: 2rem;
         color: #888;
     }
+
+    /* === 暗色模式 === */
+    [data-bs-theme="dark"] .form-description {
+        color: rgba(255,255,255,0.65);
+    }
+    [data-bs-theme="dark"] .sink-config-section {
+        background: rgba(255,255,255,0.05);
+    }
+    [data-bs-theme="dark"] .sink-config-section h4 {
+        color: rgba(255,255,255,0.85);
+    }
+    [data-bs-theme="dark"] .form-group label {
+        color: rgba(255,255,255,0.7);
+    }
+    [data-bs-theme="dark"] .form-control {
+        background: rgba(255,255,255,0.08);
+        border-color: rgba(255,255,255,0.15);
+        color: #ffffff;
+    }
+    [data-bs-theme="dark"] .form-control:focus {
+        border-color: #4a9eff;
+        box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.25);
+    }
+    [data-bs-theme="dark"] .form-text {
+        color: rgba(255,255,255,0.4);
+    }
+    [data-bs-theme="dark"] .btn-secondary {
+        background: rgba(255,255,255,0.1);
+        color: rgba(255,255,255,0.75);
+    }
+    [data-bs-theme="dark"] .btn-secondary:hover {
+        background: rgba(255,255,255,0.15);
+    }
+    [data-bs-theme="dark"] .save-message.success {
+        color: #7bb88a;
+    }
+    [data-bs-theme="dark"] .save-message.error {
+        color: #e06666;
+    }
+    [data-bs-theme="dark"] .alert-error {
+        background: rgba(244, 67, 54, 0.2);
+        border-color: rgba(244, 67, 54, 0.4);
+        color: #e06666;
+    }
+    [data-bs-theme="dark"] .deploy-hint {
+        background: rgba(255,255,255,0.04);
+        border-color: rgba(255,255,255,0.1);
+    }
+    [data-bs-theme="dark"] .deploy-hint summary {
+        color: rgba(255,255,255,0.5);
+    }
+    [data-bs-theme="dark"] .hint-content {
+        color: rgba(255,255,255,0.55);
+    }
+    [data-bs-theme="dark"] .hint-content pre {
+        background: rgba(255,255,255,0.06);
+    }
+    [data-bs-theme="dark"] .hint-content code {
+        color: rgba(255,255,255,0.8);
+    }
+    [data-bs-theme="dark"] .port-table th, [data-bs-theme="dark"] .port-table td {
+        border-bottom-color: rgba(255,255,255,0.08);
+    }
+    [data-bs-theme="dark"] .port-table th {
+        color: rgba(255,255,255,0.45);
+    }
+    [data-bs-theme="dark"] .loading-spinner {
+        color: rgba(255,255,255,0.4);
+    }
 </style>

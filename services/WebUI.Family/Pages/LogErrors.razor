@@ -1,18 +1,25 @@
 @page "/log-errors"
 @rendermode InteractiveServer
 @layout WebUI.Shared.MainLayout
+@using System.Net.Http.Headers
+@using System.Text
+@using System.Text.Json
 
 <PageTitle>错误日志 - 百花</PageTitle>
 
 <div class="container-fluid py-3">
     <h4 class="mb-3">🚨 错误日志</h4>
-    <div class="mb-2 d-flex gap-2 align-items-center">
-        <button class="btn btn-sm btn-outline-secondary" @onclick="Refresh">🔄 刷新</button>
-        <a href="http://localhost:5082" target="_blank" class="btn btn-sm btn-outline-info">📊 OpenObserve</a>
+
+    <div class="mb-2 d-flex gap-2 align-items-center flex-wrap">
+        <button class="btn btn-sm btn-outline-secondary" @onclick="RefreshLocal" disabled="@loading">🔄 刷新本地</button>
+        <button class="btn btn-sm btn-outline-info" @onclick="RefreshOpenObserve" disabled="@loadingOo">📊 OpenObserve 错误</button>
+        <button class="btn btn-sm btn-outline-danger" @onclick="ClearLocalLogs">🗑️ 清空本地日志</button>
+        <button class="btn btn-sm btn-outline-warning" @onclick="ClearOpenObserve" disabled="@clearingOo">🗑️ 清空 OpenObserve</button>
+        <a href="http://localhost:5082" target="_blank" class="btn btn-sm btn-outline-info">📊 OpenObserve UI</a>
         <span class="small">@status</span>
     </div>
 
-    @if (loading)
+    @if (loading || loadingOo)
     {
         <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
     }
@@ -22,11 +29,20 @@
     }
     else
     {
+        <div class="mb-1 small text-muted">当前来源：@sourceLabel</div>
         <div class="list-group" style="font-size: 0.85rem;">
             @foreach (var e in entries)
             {
                 <div class="list-group-item py-1 px-2">
                     <small class="text-muted">@e.Time</small>
+                    @if (!string.IsNullOrEmpty(e.Service))
+                    {
+                        <span class="badge bg-secondary me-1" style="font-size:0.7rem;">@e.Service</span>
+                    }
+                    @if (!string.IsNullOrEmpty(e.Level))
+                    {
+                        <span class="badge @LevelBadge(e.Level) me-1" style="font-size:0.7rem;">@e.Level</span>
+                    }
                     <code style="font-size:0.8rem;white-space:pre-wrap;word-break:break-all;">@e.Msg</code>
                 </div>
             }
@@ -35,21 +51,48 @@
 </div>
 
 @code {
-    private record Entry(string Time, string Msg);
+    private record Entry(string Time, string Msg, string Service = "", string Level = "");
     private List<Entry> entries = new();
     private bool loading = true;
+    private bool loadingOo;
+    private bool clearingOo;
     private string status = "";
+    private string sourceLabel = "本地文件";
+    private string? ooAuthHeader;
 
-    protected override async Task OnInitializedAsync() => await Refresh();
+    private static readonly string[] SvcNames = { "taskrunner", "webui", "vault", "ai" };
 
-    private async Task Refresh()
+    protected override async Task OnInitializedAsync()
+    {
+        // Build OpenObserve auth header
+        var ooUrl = Configuration["OpenObserve:WebUrl"] ?? "http://localhost:5082";
+        var ooUser = Configuration["OpenObserve:User"] ?? "root@localhost.com";
+        var ooPass = Configuration["OpenObserve:Password"] ?? "Complexpass#123";
+        if (!string.IsNullOrEmpty(ooUser) && !string.IsNullOrEmpty(ooPass))
+        {
+            var raw = Encoding.UTF8.GetBytes($"{ooUser}:{ooPass}");
+            ooAuthHeader = Convert.ToBase64String(raw);
+        }
+
+        await RefreshLocal();
+    }
+
+    [Microsoft.AspNetCore.Components.Inject]
+    private Microsoft.AspNetCore.Components.NavigationManager NavigationManager { get; set; } = default!;
+
+    [Microsoft.AspNetCore.Components.Inject]
+    private IConfiguration Configuration { get; set; } = default!;
+
+    private async Task RefreshLocal()
     {
         loading = true;
+        loadingOo = false;
         entries.Clear();
+        sourceLabel = "本地文件";
 
         try
         {
-            foreach (var svc in new[] { "taskrunner", "webui", "vault", "ai" })
+            foreach (var svc in SvcNames)
             {
                 var path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"bh-{svc}.log");
                 if (!System.IO.File.Exists(path)) continue;
@@ -74,19 +117,184 @@
                     var m = System.Text.RegularExpressions.Regex.Match(t, @"\d{2}:\d{2}:\d{2}");
                     if (m.Success) time = m.Value;
 
-                    entries.Add(new Entry(time, $"[{svc}] {t}"));
+                    var level = t.Contains("ERR") ? "ERROR" : t.Contains("WRN") ? "WARN" : "ERROR";
+
+                    entries.Add(new Entry(time, t, svc, level));
                     if (entries.Count >= 200) break;
                 }
                 if (entries.Count >= 200) break;
             }
-            status = $"{entries.Count} 条";
+            status = $"{entries.Count} 条（本地）";
         }
         catch (Exception ex)
         {
-            entries.Add(new Entry("", $"读取失败: {ex.Message}"));
+            entries.Add(new Entry("", $"读取失败: {ex.Message}", "", "ERROR"));
             status = "❌";
         }
 
         loading = false;
     }
+
+    private async Task RefreshOpenObserve()
+    {
+        if (string.IsNullOrEmpty(ooAuthHeader)) return;
+
+        loadingOo = true;
+        loading = false;
+        entries.Clear();
+        sourceLabel = "OpenObserve";
+
+        try
+        {
+            var baseUrl = (Configuration["OpenObserve:WebUrl"] ?? "http://localhost:5082").TrimEnd('/');
+
+            var endTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() * 1000L;
+            var startTime = DateTimeOffset.UtcNow.AddHours(-24).ToUnixTimeMilliseconds() * 1000L;
+
+            var queryObj = new
+            {
+                query = new
+                {
+                    sql = "SELECT _timestamp, body, service_name, severity FROM default WHERE severity = 'Error' OR severity = 'Warn' ORDER BY _timestamp DESC LIMIT 200",
+                    start_time = startTime,
+                    end_time = endTime
+                }
+            };
+
+            var json = JsonSerializer.Serialize(queryObj);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            using var http = new HttpClient();
+            http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", ooAuthHeader);
+            http.Timeout = TimeSpan.FromSeconds(15);
+
+            var resp = await http.PostAsync($"{baseUrl}/api/default/_search", content);
+
+            if (!resp.IsSuccessStatusCode)
+            {
+                var errBody = await resp.Content.ReadAsStringAsync();
+
+                // 流不存在 = 暂无日志数据，不是真正的错误
+                if (errBody.Contains("stream not found"))
+                {
+                    status = "ℹ️ OpenObserve 日志流暂无数据（新日志推送后将自动创建）";
+                    loadingOo = false;
+                    return;
+                }
+
+                status = $"❌ OpenObserve 查询失败 ({(int)resp.StatusCode}): {errBody.Substring(0, Math.Min(errBody.Length, 200))}";
+                loadingOo = false;
+                return;
+            }
+
+            var respJson = await resp.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(respJson);
+            var root = doc.RootElement;
+
+            var total = 0;
+            if (root.TryGetProperty("total", out var totalEl)) total = totalEl.GetInt32();
+
+            if (total > 0 && root.TryGetProperty("hits", out var hits))
+            {
+                foreach (var hit in hits.EnumerateArray())
+                {
+                    var ts = "";
+                    if (hit.TryGetProperty("_timestamp", out var tsEl))
+                    {
+                        var micros = tsEl.GetInt64();
+                        var dt = DateTimeOffset.FromUnixTimeMilliseconds(micros / 1000);
+                        ts = dt.ToLocalTime().ToString("MM-dd HH:mm:ss");
+                    }
+
+                    var body = hit.TryGetProperty("body", out var bEl) ? bEl.GetString() ?? "" : "";
+                    var svc = hit.TryGetProperty("service_name", out var svcEl) ? svcEl.GetString() ?? "" : "";
+                    var level = hit.TryGetProperty("severity", out var lvlEl) ? lvlEl.GetString() ?? "Error" : "Error";
+
+                    entries.Add(new Entry(ts, body, svc, level));
+                    if (entries.Count >= 200) break;
+                }
+            }
+
+            status = total == 0 ? "✅ 无错误日志（OpenObserve）" : $"{entries.Count} 条（OpenObserve）";
+        }
+        catch (Exception ex)
+        {
+            entries.Add(new Entry("", $"查询 OpenObserve 失败: {ex.Message}", "", "ERROR"));
+            status = "❌";
+        }
+
+        loadingOo = false;
+    }
+
+    private async Task ClearLocalLogs()
+    {
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", "确定要清空所有本地错误日志文件吗？"))
+            return;
+
+        var cleared = 0;
+        foreach (var svc in SvcNames)
+        {
+            var path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"bh-{svc}.log");
+            try
+            {
+                if (System.IO.File.Exists(path))
+                {
+                    using var fs = new System.IO.FileStream(path, System.IO.FileMode.Truncate, System.IO.FileAccess.Write, System.IO.FileShare.ReadWrite);
+                    fs.SetLength(0);
+                    cleared++;
+                }
+            }
+            catch { }
+        }
+
+        entries.Clear();
+        status = $"已清空 {cleared} 个日志文件";
+        StateHasChanged();
+    }
+
+    private async Task ClearOpenObserve()
+    {
+        if (string.IsNullOrEmpty(ooAuthHeader)) return;
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", "确定要清空 OpenObserve 中的所有日志吗？\n\n这是通过删除日志流实现的，OpenObserve 会在新数据到达时自动重建。"))
+            return;
+
+        clearingOo = true;
+        try
+        {
+            var baseUrl = (Configuration["OpenObserve:WebUrl"] ?? "http://localhost:5082").TrimEnd('/');
+
+            using var http = new HttpClient();
+            http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", ooAuthHeader);
+            http.Timeout = TimeSpan.FromSeconds(15);
+
+            var resp = await http.DeleteAsync($"{baseUrl}/api/default/streams/default");
+            if (resp.IsSuccessStatusCode)
+            {
+                entries.Clear();
+                status = "✅ OpenObserve 日志流已删除，将在新数据到达时自动重建";
+            }
+            else
+            {
+                var errBody = await resp.Content.ReadAsStringAsync();
+                status = $"❌ 删除失败 ({(int)resp.StatusCode}): {errBody}";
+            }
+        }
+        catch (Exception ex)
+        {
+            status = $"❌ 请求失败: {ex.Message}";
+        }
+
+        clearingOo = false;
+    }
+
+    private string LevelBadge(string level) => level.ToUpperInvariant() switch
+    {
+        "ERROR" => "bg-danger",
+        "WARN" => "bg-warning text-dark",
+        "WARNING" => "bg-warning text-dark",
+        _ => "bg-secondary"
+    };
+
+    [Microsoft.AspNetCore.Components.Inject]
+    private IJSRuntime JSRuntime { get; set; } = default!;
 }

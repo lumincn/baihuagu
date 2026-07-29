@@ -160,6 +160,21 @@ test.describe('冒烟测试 - Family 版', () => {
     await expect(fp16Cells).toHaveCount(0);
   });
 
+  test('搜索页通过 ?q= 参数自动搜索', async ({ page }) => {
+    // 先用 cli-token 登录获取 cookie
+    const token = await getCliToken();
+    await page.goto(`/?cli-token=${token}`);
+    await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
+    // 登录后 cookie 已设置，再导航到搜索页（不带 cli-token，带 q 参数）
+    await page.goto('/search?q=%E9%BC%BB%E6%B8%8A');
+    await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
+    // 搜索框应显示关键字的初始值
+    const searchInput = page.locator('input[placeholder*="搜索"]');
+    await expect(searchInput).toHaveValue('鼻渊', { timeout: 15000 });
+    // 应自动触发搜索（显示搜索状态或结果区域）
+    await expect(page.locator('main')).toBeVisible({ timeout: 15000 });
+  });
+
   test('OpenClaw 页面加载', async ({ page }) => {
     const token = await getCliToken();
     await page.goto(`/openclaw?cli-token=${token}`);

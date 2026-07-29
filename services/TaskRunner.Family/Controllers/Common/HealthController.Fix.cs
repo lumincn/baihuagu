@@ -6,6 +6,7 @@ namespace TaskRunner.Controllers;
 
 public partial class HealthController
 {
+        [HttpPost("fix")]
         public async Task<ActionResult<HealthFixResultDto>> FixIssues(CancellationToken cancellationToken)
         {
             var result = new HealthFixResultDto();

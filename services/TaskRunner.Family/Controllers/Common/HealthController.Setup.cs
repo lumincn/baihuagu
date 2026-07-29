@@ -6,6 +6,7 @@ namespace TaskRunner.Controllers;
 
 public partial class HealthController
 {
+        [HttpPost("setup/openclaw")]
         public async Task<ActionResult<dynamic>> SetupOpenClaw(CancellationToken cancellationToken)
         {
             try

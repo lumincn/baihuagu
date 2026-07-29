@@ -47,6 +47,10 @@
             <span class="nav-icon bi bi-folder2-open"></span>
             <span>知识库管理</span>
         </NavLink>
+        <NavLink href="log-errors">
+            <span class="nav-icon bi bi-bug"></span>
+            <span>错误日志</span>
+        </NavLink>
     </div>
 }
 
@@ -134,10 +138,6 @@
             <span class="nav-icon bi bi-chat-square-text"></span>
             <span>提示词模板</span>
         </NavLink>
-        <NavLink href="log-errors">
-            <span class="nav-icon bi bi-bug"></span>
-            <span>错误日志</span>
-        </NavLink>
     </div>
 }
 
@@ -201,6 +201,7 @@
         {
             string p when p.StartsWith("tasks") || p.StartsWith("openclaw") || p.StartsWith("achievements") || p.StartsWith("leaderboard") || p.StartsWith("dashboard") || p.StartsWith("daily-card") => 1,
             string p when p.StartsWith("messages") || p.StartsWith("master-chat") || p.StartsWith("master-stage") || p.StartsWith("generate") || p.StartsWith("local-models") || p.StartsWith("model-benchmark") || p.StartsWith("ai-metrics") || p.StartsWith("hardware-benchmark") || p.StartsWith("settings") || p.StartsWith("prompt-templates") => 2,
+            string p when p.StartsWith("log-errors") || p.StartsWith("log-settings") || p.StartsWith("browse") || p.StartsWith("search") || p.StartsWith("cards") || p.StartsWith("vaults") || p == "" => 0,
             _ => 0
         };
         if (inferred != _activeScene)

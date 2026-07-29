@@ -5,6 +5,7 @@ using TaskRunner.Helpers;
 using AnkiGen.Core;
 using Microsoft.Extensions.AI;
 using TaskRunner.Models;
+using TaskRunner.Core.Shared;
 
 namespace TaskRunner.Services
 {
@@ -16,117 +17,19 @@ namespace TaskRunner.Services
         private readonly VaultSettingsService _vaultSettings;
         private readonly AiClientService _aiClient;
         private readonly AiSettingsService _aiSettings;
+        private readonly TaskManager _taskManager;
         private readonly ILogger<AnkiCardGenerator> _logger;
 
-        public AnkiCardGenerator(VaultSettingsService vaultSettings, AiClientService aiClient, AiSettingsService aiSettings, ILogger<AnkiCardGenerator> logger)
+        public AnkiCardGenerator(VaultSettingsService vaultSettings, AiClientService aiClient, AiSettingsService aiSettings, TaskManager taskManager, ILogger<AnkiCardGenerator> logger)
         {
             _vaultSettings = vaultSettings;
             _aiClient = aiClient;
             _aiSettings = aiSettings;
+            _taskManager = taskManager;
             _logger = logger;
         }
 
-        /// <summary>
-        /// 从单个笔记生成 Anki 卡片
-        /// </summary>
-        public async Task<GenerateResult> GenerateFromNote(string notePath, string? cardsPath = null, string? notesBasePath = null)
-        {
-            var basePath = notesBasePath ?? _vaultSettings.NotesPath;
-            if (string.IsNullOrEmpty(basePath))
-            {
-                return new GenerateResult { Success = false, Message = "笔记目录未配置" };
-            }
 
-            var fullPath = Path.Combine(basePath, notePath + ".md");
-            if (!File.Exists(fullPath))
-            {
-                return new GenerateResult { Success = false, Message = $"笔记不存在：{fullPath}" };
-            }
-
-            try
-            {
-                var content = await File.ReadAllTextAsync(fullPath);
-                var deckName = GetDeckName(notePath);
-                var deck = AnkiDeck.Create(deckName);
-
-                // 解析笔记内容生成卡片
-                ParseAndAddCards(deck, content, notePath);
-
-                if (deck.Notes.Count == 0)
-                {
-                    return new GenerateResult { Success = true, Message = "未生成卡片（笔记内容不适合生成卡片）", CardCount = 0 };
-                }
-
-                // 保存为 JSON
-                await SaveAsJson(notePath, deck, cardsPath);
-
-                return new GenerateResult
-                {
-                    Success = true,
-                    Message = $"生成 {deck.Notes.Count} 张卡片",
-                    CardCount = deck.Notes.Count
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "生成卡片失败：{NotePath}", notePath);
-                return new GenerateResult { Success = false, Message = $"生成失败：{ex.Message}" };
-            }
-        }
-
-        /// <summary>
-        /// 批量生成卡片（从目录）
-        /// </summary>
-        public async Task<BatchGenerateResult> GenerateFromDirectory(string directory, bool recursive = true, string? vaultId = null)
-        {
-            // directory 传入的是完整路径（如 /home/lumin/Vaults/中医/失眠/notes），直接使用
-            var dirPath = directory;
-            if (!Directory.Exists(dirPath))
-            {
-                return new BatchGenerateResult { Success = false, Message = $"目录不存在：{directory}" };
-            }
-
-            // 根据 vaultId 计算正确的 cards 保存路径
-            string? cardsPath = null;
-            if (!string.IsNullOrEmpty(vaultId))
-            {
-                var vault = _vaultSettings.GetVaults().FirstOrDefault(v => v.Id == vaultId);
-                if (vault != null)
-                {
-                    cardsPath = Path.Combine(vault.Path, "cards");
-                    _logger.LogInformation("[AnkiGenerate] vaultId={VaultId}, cardsPath={CardsPath}", vaultId, cardsPath);
-                }
-            }
-
-            var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-            var files = Directory.GetFiles(dirPath, "*.md", searchOption);
-            _logger.LogInformation("[AnkiGenerate] 发现 {Count} 个笔记文件于 {Dir}", files.Length, dirPath);
-
-            var results = new List<GenerateResult>();
-            var totalCards = 0;
-
-            foreach (var file in files)
-            {
-                var relativePath = Path.GetRelativePath(dirPath, file);
-                var notePath = relativePath.Substring(0, relativePath.Length - 3);
-
-                var result = await GenerateFromNote(notePath, cardsPath, notesBasePath: dirPath);
-                results.Add(result);
-                if (result.Success)
-                {
-                    totalCards += result.CardCount;
-                }
-            }
-
-            _logger.LogInformation("[AnkiGenerate] 完成：处理 {Files} 个笔记，生成 {Cards} 张卡片", files.Length, totalCards);
-            return new BatchGenerateResult
-            {
-                Success = true,
-                Message = $"处理 {files.Length} 个笔记，生成 {totalCards} 张卡片",
-                TotalCards = totalCards,
-                Results = results
-            };
-        }
         /// <summary>
         /// 从路径获取牌组名
         /// </summary>
@@ -237,7 +140,8 @@ namespace TaskRunner.Services
         /// </summary>
         public async Task<BatchGenerateResult> GenerateBatchWithAiAsync(
             string directory, bool recursive = true, string? vaultId = null,
-            string? providerId = null, string? model = null)
+            string? providerId = null, string? model = null,
+            string? progressTaskId = null)
         {
             var dirPath = directory;
             if (!Directory.Exists(dirPath))
@@ -260,11 +164,26 @@ namespace TaskRunner.Services
 
             var results = new List<GenerateResult>();
             var totalCards = 0;
+            var totalFiles = files.Length;
 
-            foreach (var file in files)
+            // 有 taskId 时先汇报总进度
+            if (!string.IsNullOrEmpty(progressTaskId))
             {
+                await _taskManager.UpdateProgress(progressTaskId, 0, totalFiles, $"准备处理 {totalFiles} 篇笔记...");
+            }
+
+            for (int i = 0; i < totalFiles; i++)
+            {
+                var file = files[i];
                 var relativePath = Path.GetRelativePath(dirPath, file);
                 var notePath = relativePath.Substring(0, relativePath.Length - 3);
+
+                // 汇报进度
+                if (!string.IsNullOrEmpty(progressTaskId))
+                {
+                    var progressMsg = $"[{i + 1}/{totalFiles}] {notePath}";
+                    await _taskManager.UpdateProgress(progressTaskId, i + 1, totalFiles, progressMsg);
+                }
 
                 var result = await GenerateWithAiAsync(notePath, cardsPath, notesBasePath: dirPath, providerId, model);
                 results.Add(result);
@@ -279,7 +198,7 @@ namespace TaskRunner.Services
             return new BatchGenerateResult
             {
                 Success = true,
-                Message = $"AI 批量生成完成: {totalCards} 张卡片，来自 {files.Length} 篇笔记",
+                Message = $"AI 批量生成完成: {totalCards} 张卡片，来自 {totalFiles} 篇笔记",
                 TotalCards = totalCards,
                 Results = results
             };

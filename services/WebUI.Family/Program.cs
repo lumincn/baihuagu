@@ -275,15 +275,17 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddRateLimiter(options =>
 {
-    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+    options.RejectionStatusCode = 429;
+
+    // API 路由限流（只限 /api/*），不影响 Blazor SignalR / 静态文件
+    options.AddPolicy("api", httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(
             partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             factory: _ => new FixedWindowRateLimiterOptions
             {
-                PermitLimit = 100,
+                PermitLimit = 300,
                 Window = TimeSpan.FromMinutes(1)
             }));
-    options.RejectionStatusCode = 429;
 });
 
 WebApplication app;
@@ -312,7 +314,6 @@ if (basePath != "/")
 }
 
 app.UseRouting();
-app.UseRateLimiter();
 app.UseStaticFiles();
 app.MapStaticAssets();
 app.UseAntiforgery();

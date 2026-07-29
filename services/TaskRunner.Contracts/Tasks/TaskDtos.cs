@@ -18,6 +18,7 @@ public class TaskInfo
         2 => "Success",
         3 => "Failed",
         4 => "Timeout",
+        5 => "Cancelled",
         _ => "Unknown"
     };
 

@@ -64,8 +64,17 @@ public class AuthenticationMiddleware
                 HttpOnly = true
             });
 
-            // 重定向到当前路径（去掉 query string，避免 token 残留在 URL）
+            // 重定向到当前路径（仅去掉 cli-token，保留其他 query 参数）
+            var remainingParams = context.Request.Query
+                .Where(kvp => !string.Equals(kvp.Key, "cli-token", StringComparison.OrdinalIgnoreCase))
+                .ToList();
             var cleanUrl = context.Request.PathBase + context.Request.Path;
+            if (remainingParams.Count > 0)
+            {
+                var qs = string.Join("&", remainingParams.Select(kvp =>
+                    $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value.ToString())}"));
+                cleanUrl += "?" + qs;
+            }
             context.Response.Redirect(cleanUrl);
             return;
         }

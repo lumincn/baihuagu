@@ -12,31 +12,28 @@
 @inject ILogger<MainLayout> Logger
 @implements IDisposable
 
-<div class="page @(!_isAiConfigured ? "ai-not-configured" : "")">
-    @if (_isAiConfigured)
-    {
-        <!-- 移动端菜单按钮（纯 JS 交互，不依赖 Blazor circuit） -->
-        <button class="mobile-menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">
-            ☰
-        </button>
+<div class="page">
+    <!-- 移动端菜单按钮（纯 JS 交互，不依赖 Blazor circuit） -->
+    <button class="mobile-menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">
+        ☰
+    </button>
+    
+    <nav class="sidebar">
+        <div class="sidebar-quick-links">
+            <NavLink href="devices" class="quick-link">
+                <span class="quick-icon bi bi-phone"></span>
+                <span>移动端管理</span>
+            </NavLink>
+            <NavLink href="generate" class="quick-link">
+                <span class="quick-icon bi bi-robot"></span>
+                <span>AI 生成知识库</span>
+            </NavLink>
+        </div>
         
-        <nav class="sidebar">
-            <div class="sidebar-quick-links">
-                <NavLink href="devices" class="quick-link">
-                    <span class="quick-icon bi bi-phone"></span>
-                    <span>移动端管理</span>
-                </NavLink>
-                <NavLink href="generate" class="quick-link">
-                    <span class="quick-icon bi bi-robot"></span>
-                    <span>AI 生成知识库</span>
-                </NavLink>
-            </div>
-            
-            <NavMenu />
-        </nav>
-    }
+        <NavMenu />
+    </nav>
 
-    <main class="@(!_isAiConfigured ? "full-width" : "")">
+    <main>
         @if (_apiConnectionError)
         {
             <div class="api-error-banner">
@@ -47,22 +44,11 @@
             </div>
         }
         <div class="top-row px-4">
-            @if (_isAiConfigured)
-            {
-                <!-- AI 状态显示 -->
-                <HeaderStatusBadge />
-            }
+            <HeaderStatusBadge />
 
             <div class="ms-auto d-flex align-items-center">
-                @if (!_isAiConfigured)
-                {
-                    <span class="setup-title">🌿 百花 — 首次配置</span>
-                }
-                else
-                {
-                    <span class="top-row-subtitle">百花@(_serverDisplayName != null ? $"（{_serverDisplayName}）" : "") - 家庭知识港湾</span>
-                    <img src="logo.png" alt="百花" class="top-logo" />
-                }
+                <span class="top-row-subtitle">百花@(_serverDisplayName != null ? $"（{_serverDisplayName}）" : "") - 家庭知识港湾</span>
+                <img src="logo.png" alt="百花" class="top-logo" />
 
                 <button type="button" class="btn btn-sm btn-outline-secondary me-1" onclick="toggleTheme()" title="切换亮色/暗色模式">
                     <i class="bi bi-moon-fill" id="theme-icon"></i>
@@ -78,17 +64,15 @@
         </article>
     </main>
 
-    @if (_isAiConfigured)
-    {
-        <div class="fab-container" id="fab-container">
-            <button class="fab-btn" id="fab-btn" title="系统工具" onclick="toggleFabMenu(event)">
-                <i class="bi bi-gear-fill"></i>
-            </button>
-            <div class="fab-menu" id="fab-menu" style="display:none">
-                <a href="health" class="fab-menu-item" onclick="closeFabMenu()">
-                    <i class="bi bi-heart-pulse"></i> 健康检查
-                </a>
-                <a href="log-settings" class="fab-menu-item" onclick="closeFabMenu()">
+    <div class="fab-container" id="fab-container">
+        <button class="fab-btn" id="fab-btn" title="系统工具" onclick="toggleFabMenu(event)">
+            <i class="bi bi-gear-fill"></i>
+        </button>
+        <div class="fab-menu" id="fab-menu" style="display:none">
+            <a href="health" class="fab-menu-item" onclick="closeFabMenu()">
+                <i class="bi bi-heart-pulse"></i> 健康检查
+            </a>
+            <a href="log-settings" class="fab-menu-item" onclick="closeFabMenu()">
                     <i class="bi bi-journal-code"></i> 日志配置
                 </a>
                 <a href="health?tab=performance" class="fab-menu-item" onclick="closeFabMenu()">
@@ -257,10 +241,7 @@
         min-width: 0;
     }
 
-    /* AI 未配置时全屏布局 */
-    main.full-width {
-        width: 100%;
-    }
+
 
     .top-row {
         background: var(--layout-toprow-bg);
@@ -275,11 +256,7 @@
         z-index: 100;
     }
 
-    .setup-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: var(--layout-toprow-text);
-    }
+
 
     .content {
         padding: 20px;
@@ -453,7 +430,6 @@
 </script>
 
 @code {
-    private bool _isAiConfigured = true;
     private bool _onboardingChecked = false;
     private bool _isProfessional = false;
     private bool _apiConnectionError = false;
@@ -504,35 +480,20 @@
 
     private async Task LoadAiStatusAsync()
     {
+        // 不再根据 AI 配置隐藏菜单，仅记录日志
         try
         {
-            // 直接调用 TaskRunner API 检测 AI 配置状态
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             var client = HttpClientFactory.CreateClient("TaskRunnerAiApi");
-            Logger.LogInformation("[MainLayout] Calling API: {BaseAddress}api/ai/config/providers", client.BaseAddress);
             var response = await client.GetAsync("api/ai/config/providers", cts.Token);
-            Logger.LogInformation("[MainLayout] API response: {StatusCode}", response.StatusCode);
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync(cts.Token);
-                Logger.LogInformation("[MainLayout] API body length: {Length}", json.Length);
                 var providers = System.Text.Json.JsonSerializer.Deserialize<List<AiProviderCheck>>(json);
-                _isAiConfigured = providers?.Any() ?? false;
-            }
-            Logger.LogInformation("[MainLayout] AI configured status: {IsConfigured}", _isAiConfigured);
-            await InvokeAsync(StateHasChanged);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogWarning(ex, "[MainLayout] Failed to check AI status: {Message}", ex.Message);
-            _isAiConfigured = false;
-            if (!_apiConnectionError)
-            {
-                _apiConnectionError = true;
-                _apiErrorMessage = $"AI 服务连接失败 ({ex.Message})";
-                _ = InvokeAsync(StateHasChanged);
+                Logger.LogInformation("[MainLayout] AI providers: {Count}", providers?.Count ?? 0);
             }
         }
+        catch { }
     }
 
     private async Task LoadServerDisplayNameAsync()
@@ -566,12 +527,6 @@
 
     private void OnGlobalStateChanged(object? sender, EventArgs e)
     {
-        var aiStatus = GlobalStateService.GetAIStatus();
-        // 只在有明确状态时才更新，避免 null 覆盖初始默认值
-        if (aiStatus != null)
-        {
-            _isAiConfigured = aiStatus.IsConfigured;
-        }
         InvokeAsync(StateHasChanged);
     }
 

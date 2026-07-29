@@ -187,7 +187,7 @@ public partial class AtomNoteSplitter
                             try
                             {
                                 await _taskManager.UpdateStatus(taskId, RunnerTaskStatus.Running);
-                                var result = await _cardGenerator.GenerateFromNote(note.Path, cardsPath: cardsRoot, notesBasePath: notesPath);
+                                var result = await _cardGenerator.GenerateWithAiAsync(note.Path, cardsPath: cardsRoot, notesBasePath: notesPath);
                                 await _taskManager.UpdateStatus(taskId, result.Success ? RunnerTaskStatus.Success : RunnerTaskStatus.Failed,
                                     data: new { message = result.Message, cardCount = result.CardCount });
                             }

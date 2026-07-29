@@ -8,46 +8,6 @@ namespace TaskRunner.Controllers;
 
 public partial class AnkiController
 {
-        [HttpGet("generate-all")]
-        public async Task<IActionResult> GenerateAllCards([FromQuery] string vaultId)
-        {
-            if (string.IsNullOrWhiteSpace(vaultId))
-                return BadRequest(new { success = false, message = "知识库 ID 不能为空" });
-
-            var vault = _vaultSettings.GetVaults().FirstOrDefault(v => v.Id == vaultId);
-            if (vault == null)
-                return NotFound(new { success = false, message = "知识库不存在" });
-
-            var notesPath = System.IO.Path.Combine(vault.Path, "notes");
-            if (!Directory.Exists(notesPath))
-                return Ok(new { success = true, message = "笔记目录不存在", totalCards = 0 });
-
-            // 创建后台任务执行卡片生成
-            var taskId = _taskManager.CreateTask("anki_generate", new Dictionary<string, string>
-            {
-                ["vaultId"] = vaultId,
-                ["vaultName"] = vault.Name,
-                ["notesPath"] = notesPath
-            });
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    await _taskManager.UpdateProgress(taskId, 0, 100, $"开始为 {vault.Name} 生成记忆卡片...");
-                    var result = await _cardGenerator.GenerateFromDirectory(notesPath, recursive: true, vaultId: vaultId);
-                    await _taskManager.UpdateProgress(taskId, 100, 100, result.Message);
-                    await _taskManager.UpdateStatus(taskId, RunnerTaskStatus.Success, data: new { totalCards = result.TotalCards, message = result.Message });
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "[AnkiController] 任务 {TaskId} 生成卡片失败", taskId);
-                    await _taskManager.UpdateStatus(taskId, RunnerTaskStatus.Failed, error: ex.Message);
-                }
-            });
-
-            return Ok(new { success = true, taskId, message = "卡片生成任务已创建", vaultName = vault.Name });
-        }
-
         /// <summary>
         /// 使用 AI 从单篇笔记生成 Anki 卡片
         /// </summary>
@@ -91,9 +51,16 @@ public partial class AnkiController
                 try
                 {
                     await _taskManager.UpdateProgress(taskId, 0, 100, $"开始为 {vault.Name} 使用 AI 生成记忆卡片...");
-                    var result = await _cardGenerator.GenerateBatchWithAiAsync(notesPath, recursive: true, vaultId: vaultId);
+                    var result = await _cardGenerator.GenerateBatchWithAiAsync(notesPath, recursive: true, vaultId: vaultId, progressTaskId: taskId);
                     await _taskManager.UpdateProgress(taskId, 100, 100, result.Message);
-                    await _taskManager.UpdateStatus(taskId, RunnerTaskStatus.Success, data: new { totalCards = result.TotalCards, message = result.Message });
+                    if (result.Success && result.TotalCards > 0)
+                    {
+                        await _taskManager.UpdateStatus(taskId, RunnerTaskStatus.Success, data: new { totalCards = result.TotalCards, message = result.Message });
+                    }
+                    else
+                    {
+                        await _taskManager.UpdateStatus(taskId, RunnerTaskStatus.Failed, error: result.Message);
+                    }
                 }
                 catch (Exception ex)
                 {

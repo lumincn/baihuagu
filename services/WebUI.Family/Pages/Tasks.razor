@@ -100,7 +100,7 @@ else
                         </div>
                     }
                 }
-                @if (task.StatusText == "Timeout" || task.StatusText == "Failed" || task.StatusText == "Pending")
+                @if (task.StatusText == "Timeout" || task.StatusText == "Failed" || task.StatusText == "Pending" || task.StatusText == "Cancelled")
                 {
                     <div class="task-detail-info">
                         @if (task.Parameters != null)
@@ -116,28 +116,19 @@ else
                         }
                     </div>
                     <div class="task-retry-section mt-1">
-                        <div class="input-group input-group-sm" style="max-width: 300px">
-                            <span class="input-group-text">超时</span>
-                            <input type="number" class="form-control" 
-                                   value="@GetRetryTimeout(task.Id)"
-                                   @onchange="((ChangeEventArgs e) => SetRetryTimeout(task.Id, int.TryParse(e.Value?.ToString(), out var v) ? v : 10))"
-                                   min="1" max="60" step="1" 
-                                   style="width: 60px" />
-                            <span class="input-group-text">分钟</span>
-                            <button class="btn btn-outline-warning"
-                                    @onclick="(() => RetryTask(task))"
-                                    @onclick:stopPropagation="true"
-                                    disabled="@retryingTaskIds.Contains(task.Id)">
-                                @if (retryingTaskIds.Contains(task.Id))
-                                {
-                                    <span class="spinner-border spinner-border-sm"></span>
-                                }
-                                else
-                                {
-                                    <span>🔄 重试</span>
-                                }
-                            </button>
-                        </div>
+                        <button class="btn btn-outline-warning btn-sm"
+                                @onclick="(() => RetryTask(task))"
+                                @onclick:stopPropagation="true"
+                                disabled="@retryingTaskIds.Contains(task.Id)">
+                            @if (retryingTaskIds.Contains(task.Id))
+                            {
+                                <span class="spinner-border spinner-border-sm"></span>
+                            }
+                            else
+                            {
+                                <span>🔄 重试</span>
+                            }
+                        </button>
                     </div>
                 }
                 @if (task.Result?.Success == true && task.Result?.Data != null)
@@ -179,7 +170,7 @@ else
                             </div>
                         }
                     }
-                    else if ((task.Type == "anki_generate" || task.Type == "anki_card_generate") && task.Result.Data is System.Text.Json.JsonElement ankiData)
+                    else if ((task.Type == "anki_generate" || task.Type == "anki_generate_ai" || task.Type == "anki_card_generate") && task.Result.Data is System.Text.Json.JsonElement ankiData)
                     {
                         <div class="task-notes-list">
                             @if (ankiData.TryGetProperty("totalCards", out var tc))
@@ -261,7 +252,6 @@ else
     private bool isHubConnected = false;
     private bool showClearConfirm = false;
     private HashSet<string> retryingTaskIds = new();
-    private Dictionary<string, int> retryTimeouts = new(); // taskId -> timeout minutes
     private readonly SemaphoreSlim _loadTasksLock = new(1, 1);
     private HubConnection? _hubConnection;
     
@@ -645,24 +635,13 @@ else
         if (success) await LoadTasks();
     }
 
-    private int GetRetryTimeout(string taskId)
-    {
-        return retryTimeouts.GetValueOrDefault(taskId, 10);
-    }
-
-    private void SetRetryTimeout(string taskId, int value)
-    {
-        retryTimeouts[taskId] = Math.Max(1, Math.Min(60, value));
-    }
-
     private async Task RetryTask(TaskInfo task)
     {
         retryingTaskIds.Add(task.Id);
         try
         {
-            var timeout = GetRetryTimeout(task.Id);
             var model = task.Parameters?.GetValueOrDefault("model");
-            var response = await ApiService.RetryAiTaskAsync(task.Id, timeout, model);
+            var response = await ApiService.RetryAiTaskAsync(task.Id, 0, model);
             if (response.Success)
             {
                 await LoadTasks();

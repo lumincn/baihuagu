@@ -25,7 +25,7 @@ namespace TaskRunner.Services
                 Cards = deck.Notes.SelectMany(n => NoteToCards(n, deck.Name)).ToList()
             };
 
-            var fileName = notePath.Replace("/", "_") + ".json";
+            var fileName = notePath.Replace("/", "_").Replace("\\", "_") + ".json";
             var fullPath = Path.Combine(targetCardsPath, fileName);
 
             var json = JsonSerializer.Serialize(deckData, JsonHelper.IndentedUnicode);

@@ -1671,7 +1671,7 @@ namespace WebUI.Services
             try
             {
                 using var quick = new CancellationTokenSource(QuickCallTimeout);
-                var response = await PostWithMetricsAsync($"/api/anki/generate-all?vaultId={Uri.EscapeDataString(vaultId)}", new StringContent(""), quick.Token);
+                var response = await GetWithMetricsAsync($"/api/anki/generate-all-ai?vaultId={Uri.EscapeDataString(vaultId)}", quick.Token);
                 response.EnsureSuccessStatusCode();
                 return await response.Content.ReadFromJsonAsync<GenerateCardsTaskDto>(quick.Token);
             }

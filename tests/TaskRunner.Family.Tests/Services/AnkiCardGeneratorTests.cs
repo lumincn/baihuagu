@@ -1,292 +1,534 @@
 using AnkiGen.Core;
 using TaskRunner.Services;
 using TaskRunner.Data;
+using TaskRunner.Models;
+using TaskRunner.Contracts.Anki;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Configuration;
 using Xunit;
+using Moq;
 
 namespace TaskRunner.Family.Tests.Services;
 
-public class AnkiCardGeneratorTests
+public class AnkiCardGeneratorTests : IDisposable
 {
-    private AnkiCardGenerator CreateGenerator()
+    private readonly string _tempDir;
+
+    public AnkiCardGeneratorTests()
+    {
+        _tempDir = Path.Combine(Path.GetTempPath(), "AnkiCardGeneratorTests_" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(_tempDir);
+    }
+
+    public void Dispose()
+    {
+        if (Directory.Exists(_tempDir))
+        {
+            try { Directory.Delete(_tempDir, recursive: true); }
+            catch { /* ignore cleanup failures */ }
+        }
+    }
+
+    // ===================== Factory Methods =====================
+
+    private AnkiCardGenerator CreateGenerator(bool configureAi = true)
     {
         var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
         var logger = loggerFactory.CreateLogger<AnkiCardGenerator>();
-        
-        var mockVaultSettings = new MockVaultSettingsService();
-        var mockAiClient = (AiClientService?)null;
-        var mockAiSettings = (AiSettingsService?)null;
-        
-        return new AnkiCardGenerator(mockVaultSettings, mockAiClient!, mockAiSettings!, logger);
+
+        var vaultSettings = CreateVaultSettingsService();
+
+        var aiSettings = configureAi ? CreateAiSettingsService() : CreateEmptyAiSettingsService();
+        var aiClient = CreateAiClientService(aiSettings);
+
+        var mockTaskDbContextFactory = new Mock<IDbContextFactory<FamilyDbContext>>();
+        var taskManager = new TaskManager(mockTaskDbContextFactory.Object);
+
+        return new AnkiCardGenerator(vaultSettings, aiClient, aiSettings, taskManager, logger);
     }
 
-    [Fact]
-    public void GetDeckName_WithSubdirectory_ReturnsQualifiedName()
+    /// <summary>
+    /// Creates a VaultSettingsService backed by InMemory database, seeded with
+    /// a vault record pointing at _tempDir so NotesPath/CardsPath return valid paths.
+    /// </summary>
+    private VaultSettingsService CreateVaultSettingsService()
     {
-        var generator = CreateGenerator();
-        
-        var result = GetDeckName(generator, "伤寒论/桂枝汤");
-        
-        Assert.Equal("经方::伤寒论", result);
-    }
+        var dbName = Guid.NewGuid().ToString();
+        var options = new DbContextOptionsBuilder<VaultDbContext>()
+            .UseInMemoryDatabase(dbName)
+            .Options;
 
-    [Fact]
-    public void GetDeckName_WithoutSubdirectory_ReturnsDefault()
-    {
-        var generator = CreateGenerator();
-        
-        var result = GetDeckName(generator, "桂枝汤");
-        
-        Assert.Equal("经方", result);
-    }
-
-    [Fact]
-    public void GetTagsFromPath_WithNestedPath_ReturnsAllParts()
-    {
-        var generator = CreateGenerator();
-        
-        var result = GetTagsFromPath(generator, "伤寒论/太阳病/桂枝汤");
-        
-        Assert.Equal(new[] { "经方", "伤寒论", "太阳病" }, result);
-    }
-
-    [Fact]
-    public void GetTagsFromPath_WithoutSubdirectory_ReturnsDefaultTag()
-    {
-        var generator = CreateGenerator();
-        
-        var result = GetTagsFromPath(generator, "桂枝汤");
-        
-        Assert.Equal(new[] { "经方" }, result);
-    }
-
-    [Fact]
-    public void ParseQAFormat_ChineseQuestionMark_ExtractsAnswer()
-    {
-        var deck = AnkiDeck.Create("Test");
-        var lines = new[]
+        // Seed a vault record
+        using (var db = new VaultDbContext(options))
         {
-            "# 测试标题",
-            "桂枝汤的组成是什么？",
-            "桂枝三两，芍药三两，甘草二两，生姜三两，大枣十二枚",
-            "",
-            "另一个问题？",
-            "另一个答案"
-        };
-
-        var generator = CreateGenerator();
-        ParseQAFormat(generator, deck, lines, "测试标题", new List<string>());
-
-        Assert.Equal(2, deck.Notes.Count);
-        Assert.Contains(deck.Notes, n => n.Fields[0] == "桂枝汤的组成是什么？");
-        Assert.Contains(deck.Notes, n => n.Fields[1] == "桂枝三两，芍药三两，甘草二两，生姜三两，大枣十二枚");
-    }
-
-    [Fact]
-    public void ParseQAFormat_EnglishQuestionMark_ExtractsAnswer()
-    {
-        var deck = AnkiDeck.Create("Test");
-        var lines = new[]
-        {
-            "# Title",
-            "What is this?",
-            "This is a test"
-        };
-
-        var generator = CreateGenerator();
-        ParseQAFormat(generator, deck, lines, "Title", new List<string>());
-
-        Assert.Single(deck.Notes);
-        Assert.Equal("What is this?", deck.Notes[0].Fields[0]);
-    }
-
-    [Fact]
-    public void ParseQAFormat_NoAnswer_IgnoresQuestion()
-    {
-        var deck = AnkiDeck.Create("Test");
-        var lines = new[]
-        {
-            "# Title",
-            "Question with no answer?"
-        };
-
-        var generator = CreateGenerator();
-        ParseQAFormat(generator, deck, lines, "Title", new List<string>());
-
-        Assert.Empty(deck.Notes);
-    }
-
-    [Fact]
-    public void ParseListItems_ChineseColon_Found()
-    {
-        var deck = AnkiDeck.Create("Test");
-        var lines = new[]
-        {
-            "# Title",
-            "- 组成：桂枝三两，芍药三两",
-            "- 功效：解肌发表，调和营卫"
-        };
-
-        var generator = CreateGenerator();
-        ParseListItems(generator, deck, lines, "Title", new List<string>());
-
-        Assert.Equal(2, deck.Notes.Count);
-        Assert.Contains(deck.Notes, n => n.Fields[0] == "组成" && n.Fields[1] == "桂枝三两，芍药三两");
-        Assert.Contains(deck.Notes, n => n.Fields[0] == "功效" && n.Fields[1] == "解肌发表，调和营卫");
-    }
-
-    [Fact]
-    public void ParseListItems_AsteriskBullet_Found()
-    {
-        var deck = AnkiDeck.Create("Test");
-        var lines = new[]
-        {
-            "# Title",
-            "* 成分：中药"
-        };
-
-        var generator = CreateGenerator();
-        ParseListItems(generator, deck, lines, "Title", new List<string>());
-
-        Assert.Single(deck.Notes);
-        Assert.Equal("成分", deck.Notes[0].Fields[0]);
-    }
-
-    [Fact]
-    public void ParseListItems_NoColon_Ignored()
-    {
-        var deck = AnkiDeck.Create("Test");
-        var lines = new[]
-        {
-            "# Title",
-            "- 普通列表项"
-        };
-
-        var generator = CreateGenerator();
-        ParseListItems(generator, deck, lines, "Title", new List<string>());
-
-        Assert.Empty(deck.Notes);
-    }
-
-    [Fact]
-    public void ParseDefinitions_ChineseDefinition_Found()
-    {
-        var deck = AnkiDeck.Create("Test");
-        var content = "# Title\n桂枝汤是解肌发表、调和营卫的方剂。\n伤寒论是中医经典著作。";
-
-        var generator = CreateGenerator();
-        ParseDefinitions(generator, deck, content, "Title", new List<string>());
-
-        Assert.Equal(2, deck.Notes.Count);
-        Assert.Contains(deck.Notes, n => n.Fields[0] == "什么是桂枝汤？");
-        Assert.Contains(deck.Notes, n => n.Fields[0] == "什么是伤寒论？");
-    }
-
-    [Fact]
-    public void ParseDefinitions_ChineseColon_Found()
-    {
-        var deck = AnkiDeck.Create("Test");
-        var content = "# Title\n桂枝汤：解肌发表、调和营卫的方剂。";
-
-        var generator = CreateGenerator();
-        ParseDefinitions(generator, deck, content, "Title", new List<string>());
-
-        Assert.Single(deck.Notes);
-        Assert.Contains(deck.Notes, n => n.Fields[0] == "什么是桂枝汤？");
-    }
-
-    [Fact]
-    public void ParseAndAddCards_NoCards_CreatesSummaryCard()
-    {
-        var deck = AnkiDeck.Create("Test");
-        var content = "# 测试标题\n这是一段普通文本内容。\n没有特殊格式。";
-
-        var generator = CreateGenerator();
-        ParseAndAddCards(generator, deck, content, "test/note");
-
-        Assert.Single(deck.Notes);
-        Assert.Contains(deck.Notes, n => n.Fields[0] == "测试标题 - 概述");
-    }
-
-    [Fact]
-    public void ParseAndAddCards_HasCards_NoSummaryCard()
-    {
-        var deck = AnkiDeck.Create("Test");
-        var content = "# 测试标题\n桂枝汤的组成是什么？\n桂枝三两";
-
-        var generator = CreateGenerator();
-        ParseAndAddCards(generator, deck, content, "test/note");
-
-        Assert.Single(deck.Notes);
-        Assert.DoesNotContain(deck.Notes, n => n.Fields[0].Contains("概述"));
-    }
-
-    private static string GetDeckName(AnkiCardGenerator generator, string notePath)
-    {
-        var method = typeof(AnkiCardGenerator).GetMethod("GetDeckName", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        return (string)method!.Invoke(generator, new object[] { notePath })!;
-    }
-
-    private static List<string> GetTagsFromPath(AnkiCardGenerator generator, string notePath)
-    {
-        var method = typeof(AnkiCardGenerator).GetMethod("GetTagsFromPath", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        return (List<string>)method!.Invoke(generator, new object[] { notePath })!;
-    }
-
-    private static void ParseQAFormat(AnkiCardGenerator generator, AnkiDeck deck, string[] lines, string title, List<string> tags)
-    {
-        var method = typeof(AnkiCardGenerator).GetMethod("ParseQAFormat", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        method!.Invoke(generator, new object[] { deck, lines, title, tags });
-    }
-
-    private static void ParseListItems(AnkiCardGenerator generator, AnkiDeck deck, string[] lines, string title, List<string> tags)
-    {
-        var method = typeof(AnkiCardGenerator).GetMethod("ParseListItems", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        method!.Invoke(generator, new object[] { deck, lines, title, tags });
-    }
-
-    private static void ParseDefinitions(AnkiCardGenerator generator, AnkiDeck deck, string content, string title, List<string> tags)
-    {
-        var method = typeof(AnkiCardGenerator).GetMethod("ParseDefinitions", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        method!.Invoke(generator, new object[] { deck, content, title, tags });
-    }
-
-    private static void ParseAndAddCards(AnkiCardGenerator generator, AnkiDeck deck, string content, string notePath)
-    {
-        var method = typeof(AnkiCardGenerator).GetMethod("ParseAndAddCards", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        method!.Invoke(generator, new object[] { deck, content, notePath });
-    }
-
-    private class MockVaultSettingsService : VaultSettingsService
-    {
-        public MockVaultSettingsService() : base(CreateFactory(), LoggerFactory.Create(b => b.AddConsole()).CreateLogger<VaultSettingsService>())
-        {
+            db.Vaults.Add(new TaskRunner.Data.Entities.Vault
+            {
+                VaultId = Guid.NewGuid().ToString("N"),
+                Name = "TestVault",
+                Path = _tempDir,
+                CreatedAt = DateTime.UtcNow,
+            });
+            db.SaveChanges();
         }
 
-        private static IDbContextFactory<VaultDbContext> CreateFactory()
-        {
-            var options = new DbContextOptionsBuilder<VaultDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
+        var factory = new InMemoryDbContextFactory<VaultDbContext>(options);
+        var vaultLogger = LoggerFactory.Create(b => b.AddConsole()).CreateLogger<VaultSettingsService>();
 
-            return new InMemoryDbContextFactory<VaultDbContext>(options);
-        }
+        return new VaultSettingsService(factory, vaultLogger);
+    }
+
+    /// <summary>
+    /// Configures AiSettingsService with a test provider (GetMainAiProvider returns it).
+    /// </summary>
+    private AiSettingsService CreateAiSettingsService()
+    {
+        var configData = new Dictionary<string, string?>
+        {
+            {"Ai:0:Id", "test-provider"},
+            {"Ai:0:Name", "Test Provider"},
+            {"Ai:0:AiBaseUrl", "http://localhost:19999/v1"},
+            {"Ai:0:IsMain", "true"},
+            {"Ai:0:Models:0:Name", "test-model"},
+            {"Ai:0:Models:0:IsMain", "true"},
+        };
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(configData)
+            .Build();
+
+        var mockServiceProvider = new Mock<IServiceProvider>();
+        mockServiceProvider
+            .Setup(x => x.GetService(It.Is<Type>(t => t == typeof(AiConfigService))))
+            .Returns((object?)null);
+
+        var logger = LoggerFactory.Create(b => b.AddConsole()).CreateLogger<AiSettingsService>();
+
+        return new AiSettingsService(configuration, mockServiceProvider.Object, logger);
+    }
+
+    /// <summary>
+    /// Creates an AiSettingsService with no providers configured (GetMainAiProvider returns null).
+    /// </summary>
+    private AiSettingsService CreateEmptyAiSettingsService()
+    {
+        var configuration = new ConfigurationBuilder().Build();
+        var mockServiceProvider = new Mock<IServiceProvider>();
+        mockServiceProvider
+            .Setup(x => x.GetService(It.IsAny<Type>()))
+            .Returns((object?)null);
+        var logger = LoggerFactory.Create(b => b.AddConsole()).CreateLogger<AiSettingsService>();
+
+        return new AiSettingsService(configuration, mockServiceProvider.Object, logger);
+    }
+
+    /// <summary>
+    /// Creates a real AiClientService wired up with the given AiSettingsService.
+    /// </summary>
+    private AiClientService CreateAiClientService(AiSettingsService aiSettings)
+    {
+        var loggerFactory = LoggerFactory.Create(b => b.AddConsole());
+        var autoStarterLogger = loggerFactory.CreateLogger<LocalAiAutoStarter>();
+        var aiClientLogger = loggerFactory.CreateLogger<AiClientService>();
+        var anthropicLogger = loggerFactory.CreateLogger<AnthropicAiClient>();
+
+        var mockAutoStarter = new Mock<LocalAiAutoStarter>(autoStarterLogger);
+        var mockAiDbFactory = new Mock<IDbContextFactory<AIDbContext>>();
+        var mockCache = new Mock<Microsoft.Extensions.Caching.Distributed.IDistributedCache>();
+
+        var metricsService = new AiMetricsService();
+        var httpClient = new HttpClient();
+        var anthropicClient = new AnthropicAiClient(httpClient, anthropicLogger);
+
+        return new AiClientService(
+            aiSettings,
+            mockAutoStarter.Object,
+            mockAiDbFactory.Object,
+            metricsService,
+            mockCache.Object,
+            anthropicClient,
+            aiClientLogger);
+    }
+
+    // ===================== Unit Tests: ExtractJsonArray =====================
+
+    [Fact]
+    public void ExtractJsonArray_WithJsonMarkdownBlock_ExtractsArray()
+    {
+        var input = """
+            Here is the result:
+            ```json
+            [{"front":"Q1","back":"A1"},{"front":"Q2","back":"A2"}]
+            ```
+            """;
+
+        var result = InvokeExtractJsonArray(input);
+
+        Assert.Equal(@"[{""front"":""Q1"",""back"":""A1""},{""front"":""Q2"",""back"":""A2""}]", result);
+    }
+
+    [Fact]
+    public void ExtractJsonArray_WithBareArray_ReturnsArray()
+    {
+        var input = """[{"front":"Q1","back":"A1"}]""";
+
+        var result = InvokeExtractJsonArray(input);
+
+        Assert.Equal(input, result);
+    }
+
+    [Fact]
+    public void ExtractJsonArray_WithTextBeforeAndAfter_ExtractsArray()
+    {
+        var input = """
+            Some text before
+            [{"front":"Q1","back":"A1"}]
+            Some text after
+            """;
+
+        var result = InvokeExtractJsonArray(input);
+
+        Assert.Equal(@"[{""front"":""Q1"",""back"":""A1""}]", result);
+    }
+
+    [Fact]
+    public void ExtractJsonArray_NoArray_ReturnsOriginal()
+    {
+        var input = "Just plain text without any array";
+
+        var result = InvokeExtractJsonArray(input);
+
+        Assert.Equal(input, result);
+    }
+
+    [Fact]
+    public void ExtractJsonArray_WithCodeBlockOnly_StripsMarkers()
+    {
+        var input = """
+            ```json
+            [{"front":"Q","back":"A"}]
+            ```
+            """;
+
+        var result = InvokeExtractJsonArray(input);
+
+        Assert.Equal(@"[{""front"":""Q"",""back"":""A""}]", result);
+    }
+
+    // ===================== Unit Tests: ExtractTitle =====================
+
+    [Fact]
+    public void ExtractTitle_WithMarkdownHeading_ReturnsTitle()
+    {
+        var content = """
+            # 桂枝汤
+            ## 组成
+            桂枝三两
+            """;
+
+        var result = InvokeExtractTitle(content);
+
+        Assert.Equal("桂枝汤", result);
+    }
+
+    [Fact]
+    public void ExtractTitle_NoHeading_ReturnsEmpty()
+    {
+        var content = "Just some text without heading.\nAnother line.";
+
+        var result = InvokeExtractTitle(content);
+
+        Assert.Equal("", result);
+    }
+
+    [Fact]
+    public void ExtractTitle_HeadingNotFirst_ReturnsFirstHeading()
+    {
+        var content = """
+            Some preamble text
+            # The Real Title
+            Content here
+            """;
+
+        var result = InvokeExtractTitle(content);
+
+        Assert.Equal("The Real Title", result);
+    }
+
+    [Fact]
+    public void ExtractTitle_WithWeirdSpacing_TrimsCorrectly()
+    {
+        var content = "#     Spaced Title   ";
+
+        var result = InvokeExtractTitle(content);
+
+        Assert.Equal("Spaced Title", result);
+    }
+
+    // ===================== Integration Tests: GenerateWithAiAsync =====================
+
+    [Fact]
+    public async Task GenerateWithAiAsync_NoteNotFound_ReturnsError()
+    {
+        var generator = CreateGenerator();
+
+        var result = await generator.GenerateWithAiAsync(
+            "nonexistent-note",
+            notesBasePath: _tempDir);
+
+        Assert.False(result.Success);
+        Assert.Contains("不存在", result.Message);
+        Assert.Equal(0, result.CardCount);
+    }
+
+    [Fact]
+    public async Task GenerateWithAiAsync_NoBasePath_ReturnsError()
+    {
+        // VaultSettingsService with empty DB so NotesPath returns ""
+        var loggerFactory = LoggerFactory.Create(b => b.AddConsole());
+        var logger = loggerFactory.CreateLogger<AnkiCardGenerator>();
+
+        var options = new DbContextOptionsBuilder<VaultDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        var factory = new InMemoryDbContextFactory<VaultDbContext>(options);
+        var vaultLogger = loggerFactory.CreateLogger<VaultSettingsService>();
+        var vaultSettings = new VaultSettingsService(factory, vaultLogger);
+
+        var aiSettings = CreateEmptyAiSettingsService();
+        var aiClient = CreateAiClientService(aiSettings);
+
+        var mockTaskDbContextFactory = new Mock<IDbContextFactory<FamilyDbContext>>();
+        var taskManager = new TaskManager(mockTaskDbContextFactory.Object);
+
+        var generator = new AnkiCardGenerator(vaultSettings, aiClient, aiSettings, taskManager, logger);
+
+        var result = await generator.GenerateWithAiAsync("any-note");
+
+        Assert.False(result.Success);
+        Assert.Contains("未配置", result.Message);
+        Assert.Equal(0, result.CardCount);
+    }
+
+    [Fact]
+    public async Task GenerateWithAiAsync_NoteFound_AiReturnsEmpty_ReturnsZeroCards()
+    {
+        // Create a test note file
+        var notesPath = Path.Combine(_tempDir, "notes");
+        Directory.CreateDirectory(notesPath);
+        var noteContent = "# Test Note\nThis is a test note content for AI generation.";
+        var notePath = "test-note";
+        await File.WriteAllTextAsync(Path.Combine(notesPath, notePath + ".md"), noteContent);
+
+        var generator = CreateGenerator(configureAi: false);
+
+        // No AI providers configured → GetMainAiProvider returns null → AI returns empty
+        var result = await generator.GenerateWithAiAsync(
+            notePath,
+            notesBasePath: notesPath);
+
+        Assert.True(result.Success);
+        Assert.Equal(0, result.CardCount);
+        Assert.Contains("未从笔记生成卡片", result.Message);
+    }
+
+    [Fact]
+    public async Task GenerateWithAiAsync_WithProviderId_ThatReturnsNull()
+    {
+        // Create a test note file
+        var notesPath = Path.Combine(_tempDir, "notes");
+        Directory.CreateDirectory(notesPath);
+        await File.WriteAllTextAsync(Path.Combine(notesPath, "some-note.md"), "# Title\nContent.");
+
+        var generator = CreateGenerator(configureAi: true);
+
+        // Pass a providerId that doesn't exist → GetAiProvider returns null
+        var result = await generator.GenerateWithAiAsync(
+            "some-note",
+            notesBasePath: notesPath,
+            providerId: "non-existent-provider");
+
+        Assert.True(result.Success);
+        Assert.Equal(0, result.CardCount);
+        Assert.Contains("未从笔记生成卡片", result.Message);
+    }
+
+    [Fact]
+    public async Task GenerateWithAiAsync_WithEmptyFile_SucceedsWithZeroCards()
+    {
+        var notesPath = Path.Combine(_tempDir, "notes");
+        Directory.CreateDirectory(notesPath);
+        await File.WriteAllTextAsync(Path.Combine(notesPath, "empty-note.md"), "");
+
+        var generator = CreateGenerator(configureAi: false);
+
+        var result = await generator.GenerateWithAiAsync(
+            "empty-note",
+            notesBasePath: notesPath);
+
+        Assert.True(result.Success);
+        Assert.Equal(0, result.CardCount);
+    }
+
+    // ===================== Tests for ExportToCsv =====================
+
+    [Fact]
+    public async Task ExportToCsv_CardsPathDoesNotExist_ReturnsNull()
+    {
+        var generator = CreateGenerator();
+
+        var result = await generator.ExportToCsv(cardsPath: Path.Combine(_tempDir, "nonexistent_cards"));
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task ExportToCsv_WithValidCardFiles_ExportsCorrectly()
+    {
+        var cardsPath = Path.Combine(_tempDir, "cards");
+        Directory.CreateDirectory(cardsPath);
+        var generator = CreateGenerator();
+
+        // Write a mock JSON card file
+        var deckData = new JsonDeckData
+        {
+            Name = "经方::TestDeck",
+            Cards = new List<TaskRunner.Contracts.Anki.JsonCard>
+            {
+                new() { Front = "Q1", Back = "A1", Tags = new List<string> { "tag1" } },
+                new() { Front = "Q2", Back = "A2", Tags = new List<string> { "tag1", "tag2" } },
+            }
+        };
+        var json = System.Text.Json.JsonSerializer.Serialize(deckData);
+        await File.WriteAllTextAsync(Path.Combine(cardsPath, "test_note.json"), json);
+
+        var result = await generator.ExportToCsv(cardsPath: cardsPath);
+
+        Assert.NotNull(result);
+        Assert.Contains("Front,Back,Tags,Deck", result);
+        Assert.Contains("Q1", result);
+        Assert.Contains("A1", result);
+        Assert.Contains("Q2", result);
+        Assert.Contains("A2", result);
+        Assert.Contains("经方::TestDeck", result);
+        Assert.Contains("tag1", result);
+        Assert.Contains("tag2", result);
+    }
+
+    [Fact]
+    public async Task ExportToCsv_CsvEscaping_HandlesCommas()
+    {
+        var cardsPath = Path.Combine(_tempDir, "cards");
+        Directory.CreateDirectory(cardsPath);
+        var generator = CreateGenerator();
+
+        var deckData = new JsonDeckData
+        {
+            Name = "Deck",
+            Cards = new List<TaskRunner.Contracts.Anki.JsonCard>
+            {
+                new() { Front = "Value,with,commas", Back = "Also,commas", Tags = new List<string> { "a,b" } },
+            }
+        };
+        await File.WriteAllTextAsync(Path.Combine(cardsPath, "escape_test.json"),
+            System.Text.Json.JsonSerializer.Serialize(deckData));
+
+        var result = await generator.ExportToCsv(cardsPath: cardsPath);
+
+        Assert.NotNull(result);
+        // Should be quoted
+        Assert.Contains("\"Value,with,commas\"", result);
+        Assert.Contains("\"Also,commas\"", result);
+    }
+
+    [Fact]
+    public async Task ExportToCsv_MultipleFiles_CombinesAll()
+    {
+        var cardsPath = Path.Combine(_tempDir, "cards");
+        Directory.CreateDirectory(cardsPath);
+        var generator = CreateGenerator();
+
+        var deck1 = new JsonDeckData { Name = "Deck1", Cards = new List<TaskRunner.Contracts.Anki.JsonCard> { new() { Front = "F1", Back = "B1" } } };
+        var deck2 = new JsonDeckData { Name = "Deck2", Cards = new List<TaskRunner.Contracts.Anki.JsonCard> { new() { Front = "F2", Back = "B2" } } };
+        await File.WriteAllTextAsync(Path.Combine(cardsPath, "deck1.json"),
+            System.Text.Json.JsonSerializer.Serialize(deck1));
+        await File.WriteAllTextAsync(Path.Combine(cardsPath, "deck2.json"),
+            System.Text.Json.JsonSerializer.Serialize(deck2));
+
+        var result = await generator.ExportToCsv(cardsPath: cardsPath);
+
+        Assert.NotNull(result);
+        Assert.Contains("F1", result);
+        Assert.Contains("F2", result);
+        // Header should appear exactly once
+        Assert.Single(result.Split('\n', StringSplitOptions.RemoveEmptyEntries), l => l.StartsWith("Front"));
+    }
+
+    // ===================== Tests for GetTotalCardCount =====================
+
+    [Fact]
+    public void GetTotalCardCount_NoCardsPath_ReturnsZero()
+    {
+        var generator = CreateGenerator();
+
+        var count = generator.GetTotalCardCount(vaultId: "nonexistent-vault");
+
+        Assert.Equal(0, count);
+    }
+
+    [Fact]
+    public void GetTotalCardCount_WithCards_ReturnsCount()
+    {
+        var cardsPath = Path.Combine(_tempDir, "cards");
+        Directory.CreateDirectory(cardsPath);
+        var generator = CreateGenerator();
+
+        var deck1 = new JsonDeckData { Name = "D1", Cards = new List<TaskRunner.Contracts.Anki.JsonCard> { new() { Front = "F1", Back = "B1" } } };
+        var deck2 = new JsonDeckData { Name = "D2", Cards = new List<TaskRunner.Contracts.Anki.JsonCard> { new() { Front = "F2", Back = "B2" }, new() { Front = "F3", Back = "B3" } } };
+        File.WriteAllText(Path.Combine(cardsPath, "d1.json"), System.Text.Json.JsonSerializer.Serialize(deck1));
+        File.WriteAllText(Path.Combine(cardsPath, "d2.json"), System.Text.Json.JsonSerializer.Serialize(deck2));
+
+        var count = generator.GetTotalCardCount();
+
+        Assert.Equal(3, count);
+    }
+
+    [Fact]
+    public void GetTotalCardCount_EmptyDirectory_ReturnsZero()
+    {
+        var cardsPath = Path.Combine(_tempDir, "cards");
+        Directory.CreateDirectory(cardsPath);
+        var generator = CreateGenerator();
+
+        var count = generator.GetTotalCardCount();
+
+        Assert.Equal(0, count);
+    }
+
+    // ===================== Reflection Helpers =====================
+
+    private static string InvokeExtractJsonArray(string text)
+    {
+        var method = typeof(AnkiCardGenerator).GetMethod("ExtractJsonArray",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+        return (string)method!.Invoke(null, new object[] { text })!;
+    }
+
+    private static string InvokeExtractTitle(string content)
+    {
+        var method = typeof(AnkiCardGenerator).GetMethod("ExtractTitle",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+        return (string)method!.Invoke(null, new object[] { content })!;
     }
 
     private class InMemoryDbContextFactory<TContext> : IDbContextFactory<TContext>
         where TContext : DbContext
     {
         private readonly DbContextOptions<TContext> _options;
-
-        public InMemoryDbContextFactory(DbContextOptions<TContext> options)
-        {
-            _options = options;
-        }
-
+        public InMemoryDbContextFactory(DbContextOptions<TContext> options) => _options = options;
         public TContext CreateDbContext()
-        {
-            return Activator.CreateInstance(typeof(TContext), _options) as TContext ?? throw new InvalidOperationException();
-        }
+            => (TContext)Activator.CreateInstance(typeof(TContext), _options)!;
+        public Task<TContext> CreateDbContextAsync(CancellationToken ct = default)
+            => Task.FromResult(CreateDbContext());
     }
 }

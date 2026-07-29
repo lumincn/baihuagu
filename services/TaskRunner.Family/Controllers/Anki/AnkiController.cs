@@ -38,33 +38,5 @@ namespace TaskRunner.Controllers;
             _logger = logger;
         }
 
-        /// <summary>
-        /// 从单个笔记生成 Anki 卡片
-        /// </summary>
-        [HttpPost("generate")]
-        public async Task<ActionResult<GenerateResult>> GenerateFromNote([FromBody] GenerateRequest request)
-        {
-            if (string.IsNullOrWhiteSpace(request.NotePath))
-            {
-                return BadRequest(new GenerateResult { Success = false, Message = "笔记路径不能为空" });
-            }
 
-            var result = await _cardGenerator.GenerateFromNote(request.NotePath);
-            return Ok(result);
-        }
-
-        /// <summary>
-        /// 批量生成卡片（从目录）
-        /// </summary>
-        [HttpPost("generate-batch")]
-        public async Task<ActionResult<BatchGenerateResult>> GenerateFromDirectory([FromBody] BatchGenerateRequest request)
-        {
-            if (string.IsNullOrWhiteSpace(request.Directory))
-            {
-                return BadRequest(new BatchGenerateResult { Success = false, Message = "目录不能为空" });
-            }
-
-            var result = await _cardGenerator.GenerateFromDirectory(request.Directory, request.Recursive);
-            return Ok(result);
-        }
 }
