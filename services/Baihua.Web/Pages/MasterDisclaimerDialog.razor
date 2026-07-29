@@ -1,14 +1,16 @@
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
+
 <div class="modal-overlay" @onclick="OnCancel">
     <div class="modal-content disclaimer-modal" @onclick:stopPropagation>
-        <h4>⚠️ 免责声明</h4>
+        <h4>⚠️ @L["MasterDisclaimer_Title"]</h4>
 
         <div class="disclaimer-body">
-            <p><strong>虚拟师父是学习辅助工具，不能替代专业咨询。</strong></p>
+            <p><strong>@L["MasterDisclaimer_Subtitle"]</strong></p>
 
             <ul>
-                <li>虚拟师父仅用于<strong>学习考证知识</strong>，不提供真实的医疗诊断、处方或法律建议。</li>
-                <li>如有真实健康或法律问题，请咨询<strong>持证专业人士</strong>。</li>
-                <li>AI 生成的内容可能存在错误，请以官方教材和权威资料为准。</li>
+                <li>@L["MasterDisclaimer_Li1_Pre"]<strong>@L["MasterDisclaimer_Li1_Strong"]</strong>@L["MasterDisclaimer_Li1_Post"]</li>
+                <li>@L["MasterDisclaimer_Li2_Pre"]<strong>@L["MasterDisclaimer_Li2_Strong"]</strong>@L["MasterDisclaimer_Li2_Post"]</li>
+                <li>@L["MasterDisclaimer_Li3"]</li>
             </ul>
 
             @if (IsMedicalOrLegal)
@@ -16,16 +18,16 @@
                 <div class="age-confirm">
                     <label>
                         <input type="checkbox" @bind="confirmedAdult" />
-                        我已年满 18 周岁，理解本工具不提供真实诊疗或法律建议
+                        @L["MasterDisclaimer_AgeConfirmLabel"]
                     </label>
                 </div>
             }
         </div>
 
         <div class="modal-actions">
-            <button class="btn btn-secondary" @onclick="OnCancel">不同意</button>
+            <button class="btn btn-secondary" @onclick="OnCancel">@L["MasterDisclaimer_RejectBtn"]</button>
             <button class="btn btn-primary" @onclick="OnConfirm" disabled="@(!CanConfirm)">
-                我已阅读并同意
+                @L["MasterDisclaimer_AcceptBtn"]
             </button>
         </div>
     </div>

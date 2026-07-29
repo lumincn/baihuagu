@@ -3058,4 +3058,7 @@
   <data name="LogSettings_SaveFailed" xml:space="preserve">
     <value>Save failed: {0}</value>
   </data>
+  <data name="Home_PageTitle" xml:space="preserve">
+    <value>Home</value>
+  </data>
 </root>

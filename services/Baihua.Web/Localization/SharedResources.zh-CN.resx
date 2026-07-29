@@ -3058,4 +3058,7 @@
   <data name="NoteDetail_GenerateFailedWithError" xml:space="preserve">
     <value>生成失败：{0}</value>
   </data>
+  <data name="Home_PageTitle" xml:space="preserve">
+    <value>首页</value>
+  </data>
 </root>
