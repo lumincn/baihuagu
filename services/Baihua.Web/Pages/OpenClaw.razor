@@ -4,16 +4,17 @@
 @inject Baihua.Web.Services.CapabilityService CapabilityService
 @inject IJSRuntime JSRuntime
 @inject Microsoft.Extensions.Logging.ILogger<OpenClaw> Logger
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 @using Microsoft.JSInterop
 @using Baihua.Contracts.OpenClaw
 
-<PageTitle>OpenClaw 任务委派</PageTitle>
+<PageTitle>@L["OpenClaw_PageTitle"]</PageTitle>
 
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col-12">
-            <h2><i class="bi bi-robot"></i> OpenClaw 任务委派</h2>
-            <p class="text-muted">将复杂任务委派给 OpenClaw Agent 执行，自动生成 Markdown 报告。</p>
+            <h2><i class="bi bi-robot"></i> @L["OpenClaw_Title"]</h2>
+            <p class="text-muted">@L["OpenClaw_Subtitle"]</p>
         </div>
     </div>
 
@@ -25,7 +26,7 @@
             <div class="card">
                 <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center"
                      style="cursor: pointer;" @onclick="ToggleConfigPanel">
-                    <span><i class="bi bi-cpu"></i> 本地 AI 配置（Ollama / LM Studio / llama.cpp）</span>
+                    <span><i class="bi bi-cpu"></i> @L["OpenClaw_LocalAiConfig"]</span>
                     <i class="bi @(_showConfig ? "bi-chevron-up" : "bi-chevron-down")"></i>
                 </div>
                 @if (_showConfig)
@@ -49,7 +50,7 @@
                             <div class="form-check form-switch mb-3">
                                 <input class="form-check-input" type="checkbox" id="ollamaEnabled"
                                        checked="@_ollamaConfig.Enabled" @onchange="OnOllamaEnabledChanged">
-                                <label class="form-check-label fw-bold" for="ollamaEnabled">在 OpenClaw 中使用 Ollama</label>
+                                <label class="form-check-label fw-bold" for="ollamaEnabled">@L["OpenClaw_UseOllama"]</label>
                                 @if (_ollamaDetecting)
                                 {
                                     <span class="badge bg-info ms-2"><span class="spinner-border spinner-border-sm" style="width:0.7rem;height:0.7rem;"></span> 检测中</span>
@@ -58,11 +59,11 @@
                                 {
                                     @if (_ollamaStatusMessage.Contains("成功") || _ollamaStatusMessage.Contains("正在运行"))
                                     {
-                                        <span class="badge bg-success ms-2">● 运行中</span>
+                                        <span class="badge bg-success ms-2">@L["OpenClaw_Running"]</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-secondary ms-2">● 未运行</span>
+                                        <span class="badge bg-secondary ms-2">@L["OpenClaw_NotRunning"]</span>
                                     }
                                 }
                             </div>
@@ -84,7 +85,7 @@
                                     <label class="form-label">Base URL</label>
                                     <input type="text" class="form-control" @bind="_ollamaConfig.BaseUrl"
                                            placeholder="http://localhost:11434" />
-                                    <div class="form-text">Ollama 默认地址：http://localhost:11434</div>
+                                    <div class="form-text">@L["OpenClaw_OllamaDefaultAddr"]</div>
                                 </div>
                                 <div class="mb-3 d-flex gap-2">
                                     <button class="btn btn-outline-primary btn-sm" @onclick="ScanOllamaModels"
@@ -97,7 +98,7 @@
                                         {
                                             <i class="bi bi-search me-1"></i>
                                         }
-                                        扫描模型
+                                        @L["OpenClaw_ScanModels"]
                                     </button>
                                     <button class="btn btn-outline-success btn-sm" @onclick='() => SyncModelsAsync("ollama")'
                                             disabled="@(_isSyncingOllama || _ollamaModels.Count == 0)">
@@ -109,7 +110,7 @@
                                         {
                                             <i class="bi bi-cloud-arrow-up me-1"></i>
                                         }
-                                        同步到 OpenClaw
+                                        @L["OpenClaw_SyncToOpenClaw"]
                                     </button>
                                 </div>
                                 @if (_ollamaModels.Count > 0)
@@ -117,7 +118,7 @@
                                     <div class="table-responsive">
                                         <table class="table table-sm table-bordered">
                                             <thead class="table-light">
-                                                <tr><th>模型 ID</th><th>名称</th><th>Context</th><th>Max Tokens</th></tr>
+                                                <tr><th>@L["OpenClaw_Col_ModelId"]</th><th>@L["OpenClaw_Col_Name"]</th><th>@L["OpenClaw_Col_Context"]</th><th>@L["OpenClaw_Col_MaxTokens"]</th></tr>
                                             </thead>
                                             <tbody>
                                                 @foreach (var m in _ollamaModels)
@@ -135,7 +136,7 @@
                                 }
                                 else if (_ollamaScanned)
                                 {
-                                    <div class="alert alert-warning py-2">未扫描到模型，请确认 Ollama 已启动。</div>
+                                    <div class="alert alert-warning py-2">@L["OpenClaw_NoModelsOllama"]</div>
                                 }
                             }
                         </div>
@@ -145,7 +146,7 @@
                             <div class="form-check form-switch mb-3">
                                 <input class="form-check-input" type="checkbox" id="lmStudioEnabled"
                                        checked="@_lmStudioConfig.Enabled" @onchange="OnLmStudioEnabledChanged">
-                                <label class="form-check-label fw-bold" for="lmStudioEnabled">在 OpenClaw 中使用 LM Studio</label>
+                                <label class="form-check-label fw-bold" for="lmStudioEnabled">@L["OpenClaw_UseLmStudio"]</label>
                                 @if (_lmStudioDetecting)
                                 {
                                     <span class="badge bg-info ms-2"><span class="spinner-border spinner-border-sm" style="width:0.7rem;height:0.7rem;"></span> 检测中</span>
@@ -154,11 +155,11 @@
                                 {
                                     @if (_lmStudioStatusMessage.Contains("成功") || _lmStudioStatusMessage.Contains("正在运行"))
                                     {
-                                        <span class="badge bg-success ms-2">● 运行中</span>
+                                        <span class="badge bg-success ms-2">@L["OpenClaw_Running"]</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-secondary ms-2">● 未运行</span>
+                                        <span class="badge bg-secondary ms-2">@L["OpenClaw_NotRunning"]</span>
                                     }
                                 }
                             </div>
@@ -180,7 +181,7 @@
                                     <label class="form-label">Base URL</label>
                                     <input type="text" class="form-control" @bind="_lmStudioConfig.BaseUrl"
                                            placeholder="http://localhost:1234/v1" />
-                                    <div class="form-text">LM Studio 默认地址：http://localhost:1234/v1</div>
+                                    <div class="form-text">@L["OpenClaw_LmStudioDefaultAddr"]</div>
                                 </div>
                                 <div class="mb-3 d-flex gap-2">
                                     <button class="btn btn-outline-primary btn-sm" @onclick="ScanLmStudioModels"
@@ -193,7 +194,7 @@
                                         {
                                             <i class="bi bi-search me-1"></i>
                                         }
-                                        扫描模型
+                                        @L["OpenClaw_ScanModels"]
                                     </button>
                                     <button class="btn btn-outline-success btn-sm" @onclick='() => SyncModelsAsync("lmstudio")'
                                             disabled="@(_isSyncingLmStudio || _lmStudioModels.Count == 0)">
@@ -205,7 +206,7 @@
                                         {
                                             <i class="bi bi-cloud-arrow-up me-1"></i>
                                         }
-                                        同步到 OpenClaw
+                                        @L["OpenClaw_SyncToOpenClaw"]
                                     </button>
                                 </div>
                                 @if (_lmStudioModels.Count > 0)
@@ -213,7 +214,7 @@
                                     <div class="table-responsive">
                                         <table class="table table-sm table-bordered">
                                             <thead class="table-light">
-                                                <tr><th>模型 ID</th><th>名称</th><th>Context</th><th>Max Tokens</th></tr>
+                                                <tr><th>@L["OpenClaw_Col_ModelId"]</th><th>@L["OpenClaw_Col_Name"]</th><th>@L["OpenClaw_Col_Context"]</th><th>@L["OpenClaw_Col_MaxTokens"]</th></tr>
                                             </thead>
                                             <tbody>
                                                 @foreach (var m in _lmStudioModels)
@@ -231,7 +232,7 @@
                                 }
                                 else if (_lmStudioScanned)
                                 {
-                                    <div class="alert alert-warning py-2">未扫描到模型，请确认 LM Studio 已启动且服务器已开启。</div>
+                                    <div class="alert alert-warning py-2">@L["OpenClaw_NoModelsLmStudio"]</div>
                                 }
                             }
                         </div>
@@ -241,7 +242,7 @@
                             <div class="form-check form-switch mb-3">
                                 <input class="form-check-input" type="checkbox" id="llamaCppEnabled"
                                        checked="@_llamaCppConfig.Enabled" @onchange="OnLlamaCppEnabledChanged">
-                                <label class="form-check-label fw-bold" for="llamaCppEnabled">在 OpenClaw 中使用 llama.cpp（GPU 加速）</label>
+                                <label class="form-check-label fw-bold" for="llamaCppEnabled">@L["OpenClaw_UseLlamaCpp"]</label>
                                 @if (_llamaCppDetecting)
                                 {
                                     <span class="badge bg-info ms-2"><span class="spinner-border spinner-border-sm" style="width:0.7rem;height:0.7rem;"></span> 检测中</span>
@@ -250,11 +251,11 @@
                                 {
                                     @if (_llamaCppStatusMessage.Contains("成功") || _llamaCppStatusMessage.Contains("正在运行"))
                                     {
-                                        <span class="badge bg-success ms-2">● 运行中</span>
+                                        <span class="badge bg-success ms-2">@L["OpenClaw_Running"]</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-secondary ms-2">● 未运行</span>
+                                        <span class="badge bg-secondary ms-2">@L["OpenClaw_NotRunning"]</span>
                                     }
                                 }
                             </div>
@@ -274,8 +275,7 @@
                             {
                                 <div class="alert alert-light border mb-3">
                                     <i class="bi bi-info-circle me-1"></i>
-                                    llama.cpp 的详细配置（模型路径、GPU 层数、上下文大小、KV Cache 量化等）请在
-                                    <a href="local-models" target="_blank">本地模型页</a>中设置，配置会自动同步到 OpenClaw。
+                                    @L["OpenClaw_LlamaCppConfigNote"]
                                 </div>
                                 <div class="mb-3 d-flex gap-2">
                                     <button class="btn btn-outline-primary btn-sm" @onclick="ScanLlamaCppModels"
@@ -288,7 +288,7 @@
                                         {
                                             <i class="bi bi-search me-1"></i>
                                         }
-                                        扫描模型
+                                        @L["OpenClaw_ScanModels"]
                                     </button>
                                     <button class="btn btn-outline-success btn-sm" @onclick='() => SyncModelsAsync("llamacpp")'
                                             disabled="@(_isSyncingLlamaCpp || _llamaCppModels.Count == 0)">
@@ -300,7 +300,7 @@
                                         {
                                             <i class="bi bi-cloud-arrow-up me-1"></i>
                                         }
-                                        同步到 OpenClaw
+                                        @L["OpenClaw_SyncToOpenClaw"]
                                     </button>
                                 </div>
                                 @if (_llamaCppModels.Count > 0)
@@ -308,7 +308,7 @@
                                     <div class="table-responsive">
                                         <table class="table table-sm table-bordered">
                                             <thead class="table-light">
-                                                <tr><th>模型 ID</th><th>名称</th><th>Context</th></tr>
+                                                <tr><th>@L["OpenClaw_Col_ModelId"]</th><th>@L["OpenClaw_Col_Name"]</th><th>@L["OpenClaw_Col_Context"]</th></tr>
                                             </thead>
                                             <tbody>
                                                 @foreach (var m in _llamaCppModels)
@@ -325,7 +325,7 @@
                                 }
                                 else if (_llamaCppScanned)
                                 {
-                                    <div class="alert alert-warning py-2">未扫描到模型，请确认路径正确并点击「扫描模型」。</div>
+                                    <div class="alert alert-warning py-2">@L["OpenClaw_NoModelsLlamaCpp"]</div>
                                 }
                             }
                         </div>
@@ -333,7 +333,7 @@
                         <!-- 默认模型设置 -->
                         <!-- 模型配置文件 -->
                         <div class="mb-4">
-                            <h6 class="fw-bold mb-3"><i class="bi bi-layers-fill text-primary me-1"></i>模型配置文件</h6>
+                            <h6 class="fw-bold mb-3"><i class="bi bi-layers-fill text-primary me-1"></i>@L["OpenClaw_ModelConfigTitle"]</h6>
                             <div class="row g-3">
                                 @foreach (var profile in _modelProfiles)
                                 {
@@ -345,7 +345,7 @@
                                                     <h6 class="card-title mb-0">@profile.Name</h6>
                                                     @if (_currentProfile == profile.Id)
                                                     {
-                                                        <span class="badge bg-primary">当前</span>
+                                                        <span class="badge bg-primary">@L["OpenClaw_CurrentBadge"]</span>
                                                     }
                                                 </div>
                                                 <p class="card-text small text-muted">@profile.Description</p>
@@ -366,18 +366,18 @@
                         </div>
 
                         <div class="mb-4 p-3 border rounded bg-light">
-                            <h6 class="fw-bold mb-3"><i class="bi bi-star-fill text-warning me-1"></i>OpenClaw 默认模型</h6>
+                            <h6 class="fw-bold mb-3"><i class="bi bi-star-fill text-warning me-1"></i>@L["OpenClaw_DefaultModelTitle"]</h6>
                             <div class="row align-items-end">
                                 <div class="col-md-8">
-                                    <label class="form-label">当前默认模型</label>
+                                    <label class="form-label">@L["OpenClaw_CurrentDefaultModel"]</label>
                                     <select class="form-select" @bind="_selectedDefaultModel">
-                                        <option value="">-- 使用 OpenClaw 内置默认 --</option>
+                                        <option value="">@L["OpenClaw_UseBuiltinDefault"]</option>
                                         @foreach (var m in _availableModels)
                                         {
                                             <option value="@m">@m</option>
                                         }
                                     </select>
-                                    <div class="form-text">设置后 OpenClaw 会优先使用此模型执行任务</div>
+                                    <div class="form-text">@L["OpenClaw_DefaultModelHint"]</div>
                                 </div>
                                 <div class="col-md-4">
                                     <button class="btn btn-primary" @onclick="SaveDefaultModelAsync" disabled="@_isSavingDefaultModel">
@@ -385,7 +385,7 @@
                                         {
                                             <span class="spinner-border spinner-border-sm me-1"></span>
                                         }
-                                        <i class="bi bi-save me-1"></i>保存默认模型
+                                        <i class="bi bi-save me-1"></i>@L["OpenClaw_SaveDefaultModel"]
                                     </button>
                                 </div>
                             </div>
@@ -401,10 +401,10 @@
                                 {
                                     <span class="spinner-border spinner-border-sm me-1"></span>
                                 }
-                                <i class="bi bi-save me-1"></i> 保存配置
+                                <i class="bi bi-save me-1"></i> @L["OpenClaw_SaveConfig"]
                             </button>
                             <button class="btn btn-outline-secondary" @onclick="LoadConfigAsync">
-                                <i class="bi bi-arrow-clockwise"></i> 重置
+                                <i class="bi bi-arrow-clockwise"></i> @L["OpenClaw_Reset"]
                             </button>
                         </div>
                     </div>
@@ -419,29 +419,29 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header bg-primary text-white">
-                    <i class="bi bi-plus-circle"></i> 新建任务
+                    <i class="bi bi-plus-circle"></i> @L["OpenClaw_NewTask"]
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label for="promptInput" class="form-label">任务描述 / Prompt</label>
+                        <label for="promptInput" class="form-label">@L["OpenClaw_TaskPromptLabel"]</label>
                         <textarea id="promptInput" class="form-control" rows="4"
                                   @bind="_newPrompt"
                                   @bind:event="oninput"
-                                  placeholder="请输入需要 OpenClaw 执行的任务，例如：分析当前目录下的代码结构并给出优化建议..."
+                                  placeholder="@L["OpenClaw_PromptPlaceholder"]"
                                   disabled="@_isSubmitting"></textarea>
                     </div>
                     <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-muted small">@_newPrompt.Length 字符</span>
+                        <span class="text-muted small">@L["OpenClaw_CharCount", _newPrompt.Length]</span>
                         <button class="btn btn-primary" @onclick="SubmitTaskAsync" disabled="@(!CanSubmit)">
                             @if (_isSubmitting)
                             {
                                 <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                <span>提交中...</span>
+                                <span>@L["OpenClaw_Submitting"]</span>
                             }
                             else
                             {
                                 <i class="bi bi-send me-1"></i>
-                                <span>发送任务</span>
+                                <span>@L["OpenClaw_SendTask"]</span>
                             }
                         </button>
                     </div>
@@ -459,7 +459,7 @@
     <div class="row">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0"><i class="bi bi-list-check"></i> 任务历史</h5>
+                <h5 class="mb-0"><i class="bi bi-list-check"></i> @L["OpenClaw_TaskHistory"]</h5>
                 <button class="btn btn-sm btn-outline-secondary" @onclick="() => RefreshTasksAsync()" disabled="@_isLoading">
                     @if (_isLoading)
                     {
@@ -469,7 +469,7 @@
                     {
                         <i class="bi bi-arrow-clockwise"></i>
                     }
-                    <span class="ms-1">刷新</span>
+                    <span class="ms-1">@L["OpenClaw_Refresh"]</span>
                 </button>
             </div>
 
@@ -477,14 +477,14 @@
             {
                 <div class="text-center py-5">
                     <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">加载中...</span>
+                        <span class="visually-hidden">@L["OpenClaw_Loading"]</span>
                     </div>
                 </div>
             }
             else if (_tasks.Count == 0)
             {
                 <div class="alert alert-info">
-                    <i class="bi bi-info-circle"></i> 暂无任务，请在上方提交第一个任务。
+                    <i class="bi bi-info-circle"></i> @L["OpenClaw_NoTasks"]
                 </div>
             }
             else
@@ -495,10 +495,10 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Prompt</th>
-                                <th>状态</th>
-                                <th>创建时间</th>
-                                <th>完成时间</th>
-                                <th style="width: 180px;">操作</th>
+                                <th>@L["OpenClaw_Col_Status"]</th>
+                                <th>@L["OpenClaw_Col_CreatedAt"]</th>
+                                <th>@L["OpenClaw_Col_CompletedAt"]</th>
+                                <th style="width: 180px;">@L["OpenClaw_Col_Actions"]</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -524,25 +524,25 @@
                                         @if (task.Status == "running")
                                         {
                                             <button class="btn btn-sm btn-outline-warning me-1" @onclick="() => CancelTaskAsync(task.Id)">
-                                                <i class="bi bi-x-circle"></i> 取消
+                                                <i class="bi bi-x-circle"></i> @L["OpenClaw_Cancel"]
                                             </button>
                                         }
                                         else if (task.Status == "completed" && !string.IsNullOrEmpty(task.ReportPath))
                                         {
                                             <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => ViewReportAsync(task.Id)">
-                                                <i class="bi bi-file-earmark-text"></i> 查看报告
+                                                <i class="bi bi-file-earmark-text"></i> @L["OpenClaw_ViewReport"]
                                             </button>
                                         }
                                         else if (task.Status == "failed" && !string.IsNullOrEmpty(task.ErrorMessage))
                                         {
                                             <button class="btn btn-sm btn-outline-danger me-1" @onclick="() => ViewErrorAsync(task.Id)">
-                                                <i class="bi bi-bug"></i> 查看错误
+                                                <i class="bi bi-bug"></i> @L["OpenClaw_ViewError"]
                                             </button>
                                         }
                                         else
                                         {
                                             <button class="btn btn-sm btn-outline-primary me-1" disabled>
-                                                <i class="bi bi-file-earmark-text"></i> 查看报告
+                                                <i class="bi bi-file-earmark-text"></i> @L["OpenClaw_ViewReport"]
                                             </button>
                                         }
                                         <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteTaskAsync(task.Id)">
@@ -568,11 +568,11 @@
                 <div class="modal-header">
                     @if (_selectedTask?.Status == "failed")
                     {
-                        <h5 class="modal-title"><i class="bi bi-bug"></i> 错误详情 - @_selectedTask?.TaskId</h5>
+                        <h5 class="modal-title"><i class="bi bi-bug"></i> @L["OpenClaw_ErrorDetailTitle", _selectedTask!.TaskId]</h5>
                     }
                     else
                     {
-                        <h5 class="modal-title"><i class="bi bi-file-earmark-text"></i> 执行报告 - @_selectedTask?.TaskId</h5>
+                        <h5 class="modal-title"><i class="bi bi-file-earmark-text"></i> @L["OpenClaw_ReportTitle", _selectedTask!.TaskId]</h5>
                     }
                     <button type="button" class="btn-close" @onclick="CloseReportModal"></button>
                 </div>
@@ -586,12 +586,12 @@
                     else if (_selectedTask?.Status == "failed" && !string.IsNullOrEmpty(_reportContent))
                     {
                         <div class="alert alert-danger">
-                            <h6>❌ 任务执行失败</h6>
+                            <h6>@L["OpenClaw_TaskFailed"]</h6>
                             <p class="mb-2"><strong>Prompt:</strong> @_selectedTask.Prompt</p>
-                            <p class="mb-2"><strong>失败时间:</strong> @_selectedTask.CompletedAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</p>
+                            <p class="mb-2"><strong>@L["OpenClaw_FailedAt"]</strong> @_selectedTask.CompletedAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</p>
                         </div>
                         <div class="error-detail">
-                            <h6>错误日志</h6>
+                            <h6>@L["OpenClaw_ErrorLog"]</h6>
                             <pre style="background:#1e1e1e;color:#c8d4dc;padding:1rem;border-radius:6px;max-height:500px;overflow:auto;font-size:0.82rem;line-height:1.5;">@_reportContent</pre>
                         </div>
                     }
@@ -603,15 +603,15 @@
                     }
                     else
                     {
-                        <div class="alert alert-warning">内容为空或无法加载。</div>
+                        <div class="alert alert-warning">@L["OpenClaw_ContentEmpty"]</div>
                     }
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="CloseReportModal">关闭</button>
+                    <button class="btn btn-secondary" @onclick="CloseReportModal">@L["OpenClaw_Close"]</button>
                     @if (!string.IsNullOrEmpty(_reportContent))
                     {
                         <button class="btn btn-outline-primary" @onclick="CopyReportAsync">
-                            <i class="bi bi-clipboard"></i> 复制
+                            <i class="bi bi-clipboard"></i> @L["OpenClaw_Copy"]
                         </button>
                     }
                 </div>

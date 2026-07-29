@@ -367,4 +367,169 @@
   <data name="MasterStage_CloseBtn" xml:space="preserve">
     <value>关闭</value>
   </data>
+  <data name="OpenClaw_PageTitle" xml:space="preserve">
+    <value>OpenClaw 任务委派</value>
+  </data>
+  <data name="OpenClaw_Title" xml:space="preserve">
+    <value>OpenClaw 任务委派</value>
+  </data>
+  <data name="OpenClaw_Subtitle" xml:space="preserve">
+    <value>将复杂任务委派给 OpenClaw Agent 执行，自动生成 Markdown 报告。</value>
+  </data>
+  <data name="OpenClaw_LocalAiConfig" xml:space="preserve">
+    <value>本地 AI 配置（Ollama / LM Studio / llama.cpp）</value>
+  </data>
+  <data name="OpenClaw_UseOllama" xml:space="preserve">
+    <value>在 OpenClaw 中使用 Ollama</value>
+  </data>
+  <data name="OpenClaw_UseLmStudio" xml:space="preserve">
+    <value>在 OpenClaw 中使用 LM Studio</value>
+  </data>
+  <data name="OpenClaw_UseLlamaCpp" xml:space="preserve">
+    <value>在 OpenClaw 中使用 llama.cpp（GPU 加速）</value>
+  </data>
+  <data name="OpenClaw_Running" xml:space="preserve">
+    <value>● 运行中</value>
+  </data>
+  <data name="OpenClaw_NotRunning" xml:space="preserve">
+    <value>● 未运行</value>
+  </data>
+  <data name="OpenClaw_OllamaDefaultAddr" xml:space="preserve">
+    <value>Ollama 默认地址：http://localhost:11434</value>
+  </data>
+  <data name="OpenClaw_LmStudioDefaultAddr" xml:space="preserve">
+    <value>LM Studio 默认地址：http://localhost:1234/v1</value>
+  </data>
+  <data name="OpenClaw_ScanModels" xml:space="preserve">
+    <value>扫描模型</value>
+  </data>
+  <data name="OpenClaw_SyncToOpenClaw" xml:space="preserve">
+    <value>同步到 OpenClaw</value>
+  </data>
+  <data name="OpenClaw_NoModelsOllama" xml:space="preserve">
+    <value>未扫描到模型，请确认 Ollama 已启动。</value>
+  </data>
+  <data name="OpenClaw_NoModelsLmStudio" xml:space="preserve">
+    <value>未扫描到模型，请确认 LM Studio 已启动且服务器已开启。</value>
+  </data>
+  <data name="OpenClaw_NoModelsLlamaCpp" xml:space="preserve">
+    <value>未扫描到模型，请确认路径正确并点击「扫描模型」。</value>
+  </data>
+  <data name="OpenClaw_LlamaCppConfigNote" xml:space="preserve">
+    <value>llama.cpp 的详细配置（模型路径、GPU 层数、上下文大小、KV Cache 量化等）请在本地模型页中设置，配置会自动同步到 OpenClaw。</value>
+  </data>
+  <data name="OpenClaw_ModelConfigTitle" xml:space="preserve">
+    <value>模型配置文件</value>
+  </data>
+  <data name="OpenClaw_CurrentBadge" xml:space="preserve">
+    <value>当前</value>
+  </data>
+  <data name="OpenClaw_DefaultModelTitle" xml:space="preserve">
+    <value>OpenClaw 默认模型</value>
+  </data>
+  <data name="OpenClaw_CurrentDefaultModel" xml:space="preserve">
+    <value>当前默认模型</value>
+  </data>
+  <data name="OpenClaw_UseBuiltinDefault" xml:space="preserve">
+    <value>-- 使用 OpenClaw 内置默认 --</value>
+  </data>
+  <data name="OpenClaw_DefaultModelHint" xml:space="preserve">
+    <value>设置后 OpenClaw 会优先使用此模型执行任务</value>
+  </data>
+  <data name="OpenClaw_SaveDefaultModel" xml:space="preserve">
+    <value>保存默认模型</value>
+  </data>
+  <data name="OpenClaw_SaveConfig" xml:space="preserve">
+    <value>保存配置</value>
+  </data>
+  <data name="OpenClaw_Reset" xml:space="preserve">
+    <value>重置</value>
+  </data>
+  <data name="OpenClaw_NewTask" xml:space="preserve">
+    <value>新建任务</value>
+  </data>
+  <data name="OpenClaw_TaskPromptLabel" xml:space="preserve">
+    <value>任务描述 / Prompt</value>
+  </data>
+  <data name="OpenClaw_PromptPlaceholder" xml:space="preserve">
+    <value>请输入需要 OpenClaw 执行的任务，例如：分析当前目录下的代码结构并给出优化建议...</value>
+  </data>
+  <data name="OpenClaw_Submitting" xml:space="preserve">
+    <value>提交中...</value>
+  </data>
+  <data name="OpenClaw_SendTask" xml:space="preserve">
+    <value>发送任务</value>
+  </data>
+  <data name="OpenClaw_TaskHistory" xml:space="preserve">
+    <value>任务历史</value>
+  </data>
+  <data name="OpenClaw_Refresh" xml:space="preserve">
+    <value>刷新</value>
+  </data>
+  <data name="OpenClaw_NoTasks" xml:space="preserve">
+    <value>暂无任务，请在上方提交第一个任务。</value>
+  </data>
+  <data name="OpenClaw_Col_Status" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="OpenClaw_Col_CreatedAt" xml:space="preserve">
+    <value>创建时间</value>
+  </data>
+  <data name="OpenClaw_Col_CompletedAt" xml:space="preserve">
+    <value>完成时间</value>
+  </data>
+  <data name="OpenClaw_Col_Actions" xml:space="preserve">
+    <value>操作</value>
+  </data>
+  <data name="OpenClaw_Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="OpenClaw_ViewReport" xml:space="preserve">
+    <value>查看报告</value>
+  </data>
+  <data name="OpenClaw_ViewError" xml:space="preserve">
+    <value>查看错误</value>
+  </data>
+  <data name="OpenClaw_ErrorDetailTitle" xml:space="preserve">
+    <value>错误详情 - {0}</value>
+  </data>
+  <data name="OpenClaw_ReportTitle" xml:space="preserve">
+    <value>执行报告 - {0}</value>
+  </data>
+  <data name="OpenClaw_TaskFailed" xml:space="preserve">
+    <value>任务执行失败</value>
+  </data>
+  <data name="OpenClaw_FailedAt" xml:space="preserve">
+    <value>失败时间:</value>
+  </data>
+  <data name="OpenClaw_ErrorLog" xml:space="preserve">
+    <value>错误日志</value>
+  </data>
+  <data name="OpenClaw_ContentEmpty" xml:space="preserve">
+    <value>内容为空或无法加载。</value>
+  </data>
+  <data name="OpenClaw_Close" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="OpenClaw_Copy" xml:space="preserve">
+    <value>复制</value>
+  </data>
+  <data name="OpenClaw_Col_ModelId" xml:space="preserve">
+    <value>模型 ID</value>
+  </data>
+  <data name="OpenClaw_Col_Name" xml:space="preserve">
+    <value>名称</value>
+  </data>
+  <data name="OpenClaw_Col_Context" xml:space="preserve">
+    <value>Context</value>
+  </data>
+  <data name="OpenClaw_Col_MaxTokens" xml:space="preserve">
+    <value>Max Tokens</value>
+  </data>
+  <data name="OpenClaw_CharCount" xml:space="preserve">
+    <value>{0} 字符</value>
+  </data>
+  <data name="OpenClaw_Loading" xml:space="preserve">
+    <value>加载中...</value>
+  </data>
 </root>
