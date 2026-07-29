@@ -4,7 +4,7 @@
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('osx'))">net9.0-android;net9.0-ios</TargetFrameworks>
     <TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('osx'))">net9.0-android</TargetFrameworks>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Baihua.Maui</RootNamespace>
+    <RootNamespace>Huapu</RootNamespace>
     <UseMaui>true</UseMaui>
     <MauiBlazor>true</MauiBlazor>
     <SingleProject>true</SingleProject>
@@ -47,4 +47,6 @@
     <RunAOTCompilation>false</RunAOTCompilation>
   </PropertyGroup>
 </Project>
+
+
 
