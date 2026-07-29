@@ -9,10 +9,11 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 @inject Microsoft.Extensions.Logging.ILogger<Settings> Logger
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
-<PageTitle>AI配置</PageTitle>
+<PageTitle>@L["Settings_PageTitle"]</PageTitle>
 
-<h1>🤖 AI配置</h1>
+<h1>🤖 @L["Settings_Title"]</h1>
 
 <div class="settings-form">
     
@@ -20,88 +21,88 @@
     {
         <!-- 编辑视图 -->
         <div class="ai-edit-form">
-            <h4>@(string.IsNullOrEmpty(editingProvider.Id) ? "添加 AI 提供商" : "编辑 AI 提供商")</h4>
+            <h4>@(string.IsNullOrEmpty(editingProvider.Id) ? L["Settings_AddProvider"] : L["Settings_EditProvider"])</h4>
             
             @if (string.IsNullOrEmpty(editingProvider.Id))
             {
                 <!-- 预设选择 - 仅新建时显示 -->
                 <div class="form-group">
-                    <label>选择预设提供商</label>
+                    <label>@L["Settings_SelectPreset"]</label>
                     <select class="form-control" @onchange="OnPresetSelected">
-                        <option value="">-- 手动输入（自定义）--</option>
+                        <option value="">-- @L["Settings_ManualInput"] --</option>
                         @foreach (var preset in providerPresets)
                         {
                             <option value="@preset.Id">@preset.Name</option>
                         }
                     </select>
-                    <small class="form-text">选择知名提供商可自动填充 API 地址和推荐模型</small>
+                    <small class="form-text">@L["Settings_PresetHint"]</small>
                 </div>
             }
 
             <div class="form-group">
-                <label>提供商 ID</label>
+                <label>@L["Settings_ProviderId"]</label>
                 <input type="text" class="form-control" @bind="editingProvider.Id" 
                        disabled="@(!string.IsNullOrEmpty(editingProvider.Id))" 
-                       placeholder="如：aliyun, zhipu, deepseek" />
-                <small class="form-text">唯一标识，创建后不可修改</small>
+                       placeholder="@L["Settings_ProviderIdPlaceholder"]" />
+                <small class="form-text">@L["Settings_ProviderIdHint"]</small>
             </div>
 
             <div class="form-group">
-                <label>显示名称</label>
+                <label>@L["Settings_DisplayName"]</label>
                 <input type="text" class="form-control" @bind="editingProvider.Name" 
-                       placeholder="如：智谱AI, DeepSeek" />
+                       placeholder="@L["Settings_DisplayNamePlaceholder"]" />
             </div>
 
             <div class="form-group">
-                <label>API 基础地址</label>
+                <label>@L["Settings_ApiBaseUrl"]</label>
                 <input type="text" class="form-control" @bind="editingProvider.BaseUrl" 
                        placeholder="https://api.example.com/v1" />
             </div>
 
             <div class="form-group">
-                <label>Anthropic 协议地址（可选，用于 DeepSeek 返回为空时 fallback）</label>
+                <label>@L["Settings_AnthropicUrl"]</label>
                 <input type="text" class="form-control" @bind="editingProvider.AnthropicBaseUrl" 
                        placeholder="https://api.anthropic.com" />
                 <small class="form-text text-muted">
-                    仅在当前提供商返回空响应时自动切换到 Anthropic 协议
+                    @L["Settings_AnthropicUrlHint"]
                 </small>
             </div>
 
             <div class="form-group">
-                <label>模型层级</label>
+                <label>@L["Settings_ModelTier"]</label>
                 <div class="btn-group btn-group-sm" role="group">
-                    <button type="button" class="btn @(editingProvider.Tier == AiModelTier.Unset ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => editingProvider.Tier = AiModelTier.Unset)">未设置</button>
-                    <button type="button" class="btn @(editingProvider.Tier == AiModelTier.Tier1_Embedding ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => editingProvider.Tier = AiModelTier.Tier1_Embedding)">固本</button>
-                    <button type="button" class="btn @(editingProvider.Tier == AiModelTier.Tier2_Local ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => editingProvider.Tier = AiModelTier.Tier2_Local)">问道</button>
-                    <button type="button" class="btn @(editingProvider.Tier == AiModelTier.Tier3_Cloud ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => editingProvider.Tier = AiModelTier.Tier3_Cloud)">通玄</button>
+                    <button type="button" class="btn @(editingProvider.Tier == AiModelTier.Unset ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => editingProvider.Tier = AiModelTier.Unset)">@L["Settings_TierUnset"]</button>
+                    <button type="button" class="btn @(editingProvider.Tier == AiModelTier.Tier1_Embedding ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => editingProvider.Tier = AiModelTier.Tier1_Embedding)">@L["Settings_Tier1"]</button>
+                    <button type="button" class="btn @(editingProvider.Tier == AiModelTier.Tier2_Local ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => editingProvider.Tier = AiModelTier.Tier2_Local)">@L["Settings_Tier2"]</button>
+                    <button type="button" class="btn @(editingProvider.Tier == AiModelTier.Tier3_Cloud ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => editingProvider.Tier = AiModelTier.Tier3_Cloud)">@L["Settings_Tier3"]</button>
                 </div>
                 <small class="form-text">
-                    固本 = Embedding 向量模型 / 问道 = 本地大模型 / 通玄 = 云端 API
+                    @L["Settings_TierHint"]
                 </small>
             </div>
 
             <div class="form-group">
-                <label>API Key</label>
+                <label>@L["Settings_ApiKey"]</label>
                 <input type="password" class="form-control" @bind="editingProvider.ApiKey" 
                        placeholder="sk-..." />
                 @if (!string.IsNullOrEmpty(editingProvider.ExistingKeyMask))
                 {
-                    <small class="form-text">留空保留现有密钥：@editingProvider.ExistingKeyMask</small>
+                    <small class="form-text">@L["Settings_ApiKeyKeepExisting"]@editingProvider.ExistingKeyMask</small>
                 }
                 
                 <small class="form-text text-muted">
-                    API Key 将加密后存储在本地
+                    @L["Settings_ApiKeyEncryptedHint"]
                 </small>
             </div>
 
             <div class="form-group checkbox-group">
                 <label class="checkbox-label">
                     <input type="checkbox" @bind="editingProvider.IsMain" />
-                    <span>设为主提供商</span>
+                    <span>@L["Settings_SetAsMainProvider"]</span>
                 </label>
             </div>
 
-            <h5>模型列表</h5>
+            <h5>@L["Settings_ModelList"]</h5>
             @if (IsLocalProviderUrl(editingProvider.BaseUrl))
             {
                 <div class="mb-2">
@@ -109,16 +110,16 @@
                         @if (isFetchingModels)
                         {
                             <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                            <span>获取中...</span>
+                            <span>@L["Common_Loading"]</span>
                         }
                         else
                         {
-                            <span>🔄 自动获取模型</span>
+                            <span>🔄 @L["Settings_AutoFetchModels"]</span>
                         }
                     </button>
                     @if (isFetchingModels)
                     {
-                        <button class="btn btn-outline-danger btn-sm ms-1" @onclick="StopFetchModels">取消</button>
+                        <button class="btn btn-outline-danger btn-sm ms-1" @onclick="StopFetchModels">@L["Common_Cancel"]</button>
                     }
                     @if (!string.IsNullOrEmpty(fetchModelsError))
                     {
@@ -131,27 +132,27 @@
                 {
                     <div class="model-edit-row">
                         <input type="text" class="form-control model-name" 
-                               @bind="model.Name" placeholder="模型名称" />
+                               @bind="model.Name" placeholder="@L["Settings_ModelNamePlaceholder"]" />
                         <label class="checkbox-label">
                             <input type="checkbox" @bind="model.IsPaid" />
-                            <span>付费</span>
+                            <span>@L["Settings_Paid"]</span>
                         </label>
                         <label class="checkbox-label">
                             <input type="checkbox" @bind="model.IsMain" 
                                    @onclick="() => SetMainModel(model)" />
-                            <span>默认</span>
+                            <span>@L["Settings_Default"]</span>
                         </label>
-                        <button class="btn btn-icon" @onclick="() => RemoveModel(model)">删除</button>
+                        <button class="btn btn-icon" @onclick="() => RemoveModel(model)">@L["Common_Delete"]</button>
                     </div>
                 }
-                <button class="btn btn-secondary" @onclick="AddModel">+ 添加模型</button>
+                <button class="btn btn-secondary" @onclick="AddModel">@L["Settings_AddModel"]</button>
             </div>
 
             <div class="form-actions">
                 <button class="btn btn-primary" @onclick="SaveProvider" disabled="@isSaving">
-                    @(isSaving ? "保存中..." : "保存")
+                    @(isSaving ? L["Common_Loading"] : L["Common_Save"])
                 </button>
-                <button class="btn btn-secondary" @onclick="CancelEdit" disabled="@isSaving">取消</button>
+                <button class="btn btn-secondary" @onclick="CancelEdit" disabled="@isSaving">@L["Common_Cancel"]</button>
             </div>
 
             @if (!string.IsNullOrEmpty(editErrorMessage))
@@ -167,7 +168,7 @@
         {
             <div class="alert alert-warning" style="margin-bottom: 1.5rem;">
                 <div style="font-weight: 600; margin-bottom: 0.5rem;">
-                    ⚠️ 以下配置的模型在本地工具中未找到：
+                    ⚠️ @L["Settings_MissingModelsWarning"]
                 </div>
                 <div style="margin-bottom: 0.75rem;">
                     @foreach (var group in missingModels.GroupBy(m => m.ProviderName))
@@ -183,22 +184,22 @@
                         @if (isRemovingMissingModels)
                         {
                             <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                            <span>处理中...</span>
+                            <span>@L["Common_Loading"]</span>
                         }
                         else
                         {
-                            <span>🗑️ 从配置中删除缺失模型</span>
+                            <span>🗑️ @L["Settings_RemoveMissingModels"]</span>
                         }
                     </button>
                     @if (isRemovingMissingModels)
                     {
-                        <button class="btn btn-outline-danger btn-sm ms-1" @onclick="StopRemoveMissingModels">取消</button>
+                        <button class="btn btn-outline-danger btn-sm ms-1" @onclick="StopRemoveMissingModels">@L["Common_Cancel"]</button>
                     }
                     <button class="btn btn-primary btn-sm" @onclick="GoToLocalModels">
-                        📦 前往下载模型
+                        @L["Settings_GoToDownloadModels"]
                     </button>
                     <button class="btn btn-secondary btn-sm" @onclick="DismissMissingModelsWarning">
-                        忽略
+                        @L["Settings_Dismiss"]
                     </button>
                 </div>
             </div>
@@ -208,7 +209,7 @@
         @if (aiProviders.Count == 0)
         {
             <div class="alert alert-warning">
-                暂无 AI 提供商配置，点击"添加提供商"创建一个。
+                @L["Settings_NoProviders"]一个。
             </div>
         }
         else
@@ -222,27 +223,27 @@
                                 <span class="provider-name">@provider.Name</span>
                                 @if (provider.IsMain)
                                 {
-                                    <span class="badge badge-primary">主</span>
+                                    <span class="badge badge-primary">@L["Settings_MainBadge"]</span>
                                 }
                                 @switch (provider.Tier)
                                 {
                                     case AiModelTier.Tier1_Embedding:
-                                        <span class="badge" style="background:#e8d5f2;color:#6b2c91;">固本</span>
+                                        <span class="badge" style="background:#e8d5f2;color:#6b2c91;">@L["Settings_Tier1"]</span>
                                         break;
                                     case AiModelTier.Tier2_Local:
-                                        <span class="badge" style="background:#e0f0e5;color:#3d6b45;">问道</span>
+                                        <span class="badge" style="background:#e0f0e5;color:#3d6b45;">@L["Settings_Tier2"]</span>
                                         break;
                                     case AiModelTier.Tier3_Cloud:
-                                        <span class="badge" style="background:#e0ecf4;color:#4a2a30;">通玄</span>
+                                        <span class="badge" style="background:#e0ecf4;color:#4a2a30;">@L["Settings_Tier3"]</span>
                                         break;
                                 }
                             </div>
                             <div class="provider-actions">
-                                <button class="btn btn-icon" @onclick="() => EditProvider(provider)" title="编辑">
-                                    编辑
+                                <button class="btn btn-icon" @onclick="() => EditProvider(provider)" title="@L["Settings_Edit"]">
+                                    @L["Settings_Edit"]
                                 </button>
-                                <button class="btn btn-icon btn-danger" @onclick="() => DeleteProvider(provider)" title="删除">
-                                    删除
+                                <button class="btn btn-icon btn-danger" @onclick="() => DeleteProvider(provider)" title="@L["Common_Delete"]">
+                                    @L["Common_Delete"]
                                 </button>
                             </div>
                         </div>
@@ -255,13 +256,13 @@
                         <div class="api-key-status">
                             @if (provider.HasApiKey)
                             {
-                                <span class="badge badge-success" title="已加密存储">
-                                    已配置：@(provider.KeyMask ?? "***")
+                                <span class="badge badge-success" title="@L["Settings_ApiKeyEncrypted"]">
+                                    @L["Settings_ApiKeyConfigured"]@(provider.KeyMask ?? "***")
                                 </span>
                             }
                             else
                             {
-                                <span class="badge badge-warning">未配置 API Key</span>
+                                <span class="badge badge-warning">@L["Settings_ApiKeyNotConfigured"]</span>
                             }
                         </div>
 
@@ -272,15 +273,15 @@
                                     <span class="model-name">@(model.Name.Split('/').LastOrDefault() ?? model.Name)</span>
                                     @if (model.IsMain)
                                     {
-                                        <span class="badge badge-secondary">默认</span>
+                                        <span class="badge badge-secondary">@L["Settings_DefaultModel"]</span>
                                     }
                                     @if (model.IsPaid)
                                     {
-                                        <span class="badge badge-paid">付费</span>
+                                        <span class="badge badge-paid">@L["Settings_PaidModel"]</span>
                                     }
                                     else
                                     {
-                                        <span class="badge badge-free">免费</span>
+                                        <span class="badge badge-free">@L["Settings_FreeModel"]</span>
                                     }
                                 </div>
                             }
@@ -291,56 +292,56 @@
         }
 
         <div class="list-actions">
-            <button class="btn btn-primary" @onclick="AddNewProvider">+ 添加AI提供商</button>
-            <button class="btn btn-secondary" @onclick="ReloadProviders">刷新</button>
+            <button class="btn btn-primary" @onclick="AddNewProvider">@L["Settings_AddProviderBtn"]</button>
+            <button class="btn btn-secondary" @onclick="ReloadProviders">@L["Common_Refresh"]</button>
         </div>
 
         <p class="config-note">
-            API Key 加密存储在本地。
+            @L["Settings_ApiKeyEncryptedNote"]
         </p>
     }
 
     <!-- Embedding 配置（一级·固本模型） -->
     <div class="embedding-config-section" style="margin-top: 2rem; padding-top: 1.5rem; border-color: var(--master-border, #2d3548);">
-        <h2>🔍 Embedding 配置（一级·固本）</h2>
+        <h2>🔍 @L["Settings_EmbeddingConfig"]</h2>
         <p style="color: var(--master-text-muted, #91a0b0);font-size:0.9rem;margin-bottom:1rem;">
-            配置 RAG 知识库检索所需的 Embedding 模型。纯 CPU 即可运行，推荐 nomic-embed-text 或 bge-small-zh-v1.5。
+            @L["Settings_EmbeddingDescription"]
         </p>
         <div class="form-group">
-            <label>提供商</label>
+            <label>@L["Settings_Provider"]</label>
             <div class="btn-group btn-group-sm" role="group">
-                <button type="button" class="btn @(embeddingConfig.ProviderId == "ollama" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => embeddingConfig.ProviderId = "ollama")">Ollama（本地）</button>
-                <button type="button" class="btn @(embeddingConfig.ProviderId == "openai" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => embeddingConfig.ProviderId = "openai")">OpenAI API</button>
-                <button type="button" class="btn @(embeddingConfig.ProviderId == "siliconflow" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => embeddingConfig.ProviderId = "siliconflow")">硅基流动</button>
-                <button type="button" class="btn @(embeddingConfig.ProviderId == "custom" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => embeddingConfig.ProviderId = "custom")">自定义</button>
+                <button type="button" class="btn @(embeddingConfig.ProviderId == "ollama" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => embeddingConfig.ProviderId = "ollama")">@L["Settings_EmbeddingOllama"]</button>
+                <button type="button" class="btn @(embeddingConfig.ProviderId == "openai" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => embeddingConfig.ProviderId = "openai")">@L["Settings_EmbeddingOpenai"]</button>
+                <button type="button" class="btn @(embeddingConfig.ProviderId == "siliconflow" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => embeddingConfig.ProviderId = "siliconflow")">@L["Settings_EmbeddingSiliconflow"]</button>
+                <button type="button" class="btn @(embeddingConfig.ProviderId == "custom" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => embeddingConfig.ProviderId = "custom")">@L["Settings_EmbeddingCustom"]</button>
             </div>
         </div>
         <div class="form-group">
-            <label>模型名称</label>
+            <label>@L["Settings_ModelName"]</label>
             <input type="text" class="form-control" @bind="embeddingConfig.Model" placeholder="nomic-embed-text" />
-            <small class="form-text">推荐：nomic-embed-text, bge-small-zh-v1.5, text-embedding-3-small</small>
+            <small class="form-text">@L["Settings_EmbeddingModelHint"]</small>
         </div>
         <div class="form-group">
-            <label>API 基础地址</label>
+            <label>@L["Settings_ApiBaseUrl"]</label>
             <input type="text" class="form-control" @bind="embeddingConfig.BaseUrl" placeholder="http://localhost:11434/v1" />
         </div>
         <div class="form-group">
-            <label>API Key（本地 Ollama 可留空）</label>
+            <label>@L["Settings_ApiKeyOptional"]</label>
             <input type="password" class="form-control" @bind="embeddingConfig.ApiKey" placeholder="sk-..." />
             @if (!string.IsNullOrEmpty(embeddingConfig.KeyMask))
             {
-                <small class="form-text">已配置：@embeddingConfig.KeyMask</small>
+                <small class="form-text">@L["Settings_ApiKeyConfigured"]@embeddingConfig.KeyMask</small>
             }
         </div>
         <div class="form-group checkbox-group">
             <label class="checkbox-label">
                 <input type="checkbox" @bind="embeddingConfig.IsEnabled" />
-                <span>启用 Embedding 检索</span>
+                <span>@L["Settings_EnableEmbedding"]</span>
             </label>
         </div>
         <div class="form-actions">
             <button class="btn btn-primary" @onclick="SaveEmbeddingConfig" disabled="@isSavingEmbedding">
-                @(isSavingEmbedding ? "保存中..." : "保存 Embedding 配置")
+                @(isSavingEmbedding ? L["Common_Loading"] : L["Settings_SaveEmbedding"])
             </button>
         </div>
         @if (!string.IsNullOrEmpty(embeddingConfigMessage))
@@ -355,39 +356,39 @@
     {
     <!-- 本地模型设置 -->
     <div class="local-model-settings" style="margin-top: 2rem; padding-top: 1.5rem; border-color: var(--master-border, #2d3548);">
-        <h2>🖥️ 本地模型设置</h2>
+        <h2>🖥️ @L["Settings_LocalModelSettings"]</h2>
         <div class="form-group">
-            <label>模型下载目录</label>
+            <label>@L["Settings_DownloadDir"]</label>
             <input type="text" class="form-control" @bind="localModelDownloadDir"
-                   placeholder="留空使用平台默认值" />
+                   placeholder="@L["Settings_DownloadDirPlaceholder"]" />
             <small class="form-text">
-                平台默认值: @platformDefaultDownloadDir
+                @L["Settings_DownloadDirDefault"]@platformDefaultDownloadDir
                 @if (!string.IsNullOrEmpty(localModelDownloadDir))
                 {
-                    <span> | 当前: @localModelDownloadDir</span>
+                    <span> | @L["Settings_DownloadDirCurrent"]@localModelDownloadDir</span>
                 }
             </small>
         </div>
         <div class="form-group">
-            <label>下载源偏好</label>
+            <label>@L["Settings_DownloadSource"]</label>
             <div class="btn-group btn-group-sm flex-wrap" role="group">
-                <button type="button" class="btn @(preferredDownloadSource == "auto" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => preferredDownloadSource = "auto")">自动</button>
+                <button type="button" class="btn @(preferredDownloadSource == "auto" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => preferredDownloadSource = "auto")">@L["Settings_SourceAuto"]</button>
                 <button type="button" class="btn @(preferredDownloadSource == "ollama" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => preferredDownloadSource = "ollama")">Ollama</button>
                 <button type="button" class="btn @(preferredDownloadSource == "lmstudio" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => preferredDownloadSource = "lmstudio")">LM Studio</button>
-                <button type="button" class="btn @(preferredDownloadSource == "huggingface" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => preferredDownloadSource = "huggingface")">HuggingFace</button>
-                <button type="button" class="btn @(preferredDownloadSource == "hf-mirror" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => preferredDownloadSource = "hf-mirror")">HF 镜像</button>
-                <button type="button" class="btn @(preferredDownloadSource == "modelscope" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => preferredDownloadSource = "modelscope")">魔搭</button>
+                <button type="button" class="btn @(preferredDownloadSource == "huggingface" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => preferredDownloadSource = "huggingface")">@L["Settings_SourceHuggingface"]</button>
+                <button type="button" class="btn @(preferredDownloadSource == "hf-mirror" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => preferredDownloadSource = "hf-mirror")">@L["Settings_SourceHfMirror"]</button>
+                <button type="button" class="btn @(preferredDownloadSource == "modelscope" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => preferredDownloadSource = "modelscope")">@L["Settings_SourceModelscope"]</button>
             </div>
         </div>
         <div class="form-group checkbox-group">
             <label class="checkbox-label">
                 <input type="checkbox" @bind="useChinaMirror" />
-                <span>优先使用国内镜像加速下载</span>
+                <span>@L["Settings_UseChinaMirror"]</span>
             </label>
         </div>
         <div class="form-actions">
             <button class="btn btn-primary" @onclick="SaveLocalModelConfig" disabled="@isSavingLocalConfig">
-                @(isSavingLocalConfig ? "保存中..." : "保存本地模型设置")
+                @(isSavingLocalConfig ? L["Common_Loading"] : L["Settings_SaveLocalConfig"])
             </button>
         </div>
         @if (!string.IsNullOrEmpty(localModelConfigMessage))
@@ -867,7 +868,7 @@
 
     private async Task RemoveMissingModelsAsync()
     {
-        if (!await JSRuntime.InvokeAsync<bool>("confirm", $"确定要从配置中删除 {missingModels.Count} 个缺失的模型吗？"))
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", string.Format(L["Settings_ConfirmRemoveMissing"], missingModels.Count)))
             return;
         isRemovingMissingModels = true;
         _removeCts = new CancellationTokenSource();
@@ -1020,7 +1021,7 @@
 
     private async Task DeleteProvider(AiConfigProvider provider)
     {
-        if (!await ConfirmDelete($"确定要删除 '{provider.Name}' 吗？"))
+        if (!await ConfirmDelete(string.Format(L["Settings_ConfirmDeleteProvider"], provider.Name)))
             return;
 
         if (await ApiService.DeleteAiConfigProviderAsync(provider.Id))
@@ -1046,19 +1047,19 @@
             // 验证
             if (string.IsNullOrWhiteSpace(editingProvider.Id))
             {
-                editErrorMessage = "提供商 ID 不能为空";
+                editErrorMessage = L["Settings_ErrorProviderIdEmpty"];
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(editingProvider.Name))
             {
-                editErrorMessage = "显示名称不能为空";
+                editErrorMessage = L["Settings_ErrorDisplayNameEmpty"];
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(editingProvider.BaseUrl))
             {
-                editErrorMessage = "API 基础地址不能为空";
+                editErrorMessage = L["Settings_ErrorBaseUrlEmpty"];
                 return;
             }
 
@@ -1091,7 +1092,7 @@
             }
             else
             {
-                editErrorMessage = $"保存提供商失败: {result.Message}";
+                editErrorMessage = string.Format(L["Settings_ErrorSaveProviderFailed"], result.Message);
             }
         }
         finally
@@ -1167,14 +1168,14 @@
 
             if (toolId == null)
             {
-                fetchModelsError = "无法识别本地工具类型";
+                fetchModelsError = L["Settings_ErrorUnknownToolType"];
                 return;
             }
 
             var models = await ApiService.GetAvailableModelsAsync(toolId, _fetchCts.Token);
             if (models.Count == 0)
             {
-                fetchModelsError = "未获取到模型，请检查工具是否运行";
+                fetchModelsError = L["Settings_ErrorNoModelsFetched"];
                 return;
             }
 
@@ -1195,16 +1196,16 @@
 
             if (added == 0)
             {
-                fetchModelsError = $"模型列表已是最新（共 {models.Count} 个）";
+                fetchModelsError = string.Format(L["Settings_ModelsUpToDate"], models.Count);
             }
         }
         catch (OperationCanceledException)
         {
-            fetchModelsError = "已取消获取";
+            fetchModelsError = L["Settings_FetchCancelled"];
         }
         catch (Exception ex)
         {
-            fetchModelsError = $"获取失败: {ex.Message}";
+            fetchModelsError = string.Format(L["Settings_FetchFailed"], ex.Message);
         }
         finally
         {
@@ -1284,7 +1285,7 @@
             };
             var result = await ApiService.SaveEmbeddingConfigAsync(request);
             embeddingConfigSuccess = result.Success;
-            embeddingConfigMessage = result.Success ? "✅ Embedding 配置已保存" : $"❌ 保存失败: {result.Message}";
+            embeddingConfigMessage = result.Success ? L["Settings_EmbeddingSavedSuccess"] : string.Format(L["Settings_SaveFailedWithMessage"], result.Message);
             if (result.Success)
             {
                 // 重新加载以更新 KeyMask
@@ -1294,7 +1295,7 @@
         catch (Exception ex)
         {
             embeddingConfigSuccess = false;
-            embeddingConfigMessage = $"保存失败: {ex.Message}";
+            embeddingConfigMessage = string.Format(L["Settings_SaveFailedWithMessage"], ex.Message);
         }
         finally
         {
@@ -1345,12 +1346,12 @@
 
             var success = await ApiService.SaveDownloadConfigAsync(config);
             localModelConfigSuccess = success;
-            localModelConfigMessage = success ? "✅ 本地模型设置已保存" : "❌ 保存失败";
+            localModelConfigMessage = success ? L["Settings_LocalConfigSavedSuccess"] : L["Settings_SaveFailed"];
         }
         catch (Exception ex)
         {
             localModelConfigSuccess = false;
-            localModelConfigMessage = $"保存失败: {ex.Message}";
+            localModelConfigMessage = string.Format(L["Settings_SaveFailedWithMessage"], ex.Message);
         }
         finally
         {
