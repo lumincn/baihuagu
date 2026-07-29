@@ -49,6 +49,46 @@
   <data name="Search_Placeholder" xml:space="preserve">
     <value>搜索笔记...</value>
   </data>
+  <!-- Dashboard keys -->
+  <data name="Dashboard_PageTitle" xml:space="preserve">
+    <value>家长看板</value>
+  </data>
+  <data name="Dashboard_Title" xml:space="preserve">
+    <value>家长看板</value>
+  </data>
+  <data name="Dashboard_Loading" xml:space="preserve">
+    <value>正在加载看板...</value>
+  </data>
+  <data name="Dashboard_WeeklyLearning" xml:space="preserve">
+    <value>本周学习</value>
+  </data>
+  <data name="Dashboard_WeeklyTrend" xml:space="preserve">
+    <value>每周趋势</value>
+  </data>
+  <data name="Dashboard_WeekTotal" xml:space="preserve">
+    <value>周总计</value>
+  </data>
+  <data name="Dashboard_Accuracy" xml:space="preserve">
+    <value>准确率</value>
+  </data>
+  <data name="Dashboard_Streak" xml:space="preserve">
+    <value>连胜</value>
+  </data>
+  <data name="Dashboard_AnswerDistribution" xml:space="preserve">
+    <value>答题分布</value>
+  </data>
+  <data name="Dashboard_Remembered" xml:space="preserve">
+    <value>记住的</value>
+  </data>
+  <data name="Dashboard_Hard" xml:space="preserve">
+    <value>较难</value>
+  </data>
+  <data name="Dashboard_Forgot" xml:space="preserve">
+    <value>遗忘</value>
+  </data>
+  <data name="Dashboard_RecentAchievements" xml:space="preserve">
+    <value>最近成就</value>
+  </data>
   <data name="Common_Save" xml:space="preserve">
     <value>保存</value>
   </data>

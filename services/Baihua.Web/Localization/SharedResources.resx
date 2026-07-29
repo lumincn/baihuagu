@@ -49,6 +49,46 @@
   <data name="Search_Placeholder" xml:space="preserve">
     <value>Search notes...</value>
   </data>
+  <!-- Dashboard keys -->
+  <data name="Dashboard_PageTitle" xml:space="preserve">
+    <value>Dashboard - Family</value>
+  </data>
+  <data name="Dashboard_Title" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Dashboard_Loading" xml:space="preserve">
+    <value>Loading dashboard...</value>
+  </data>
+  <data name="Dashboard_WeeklyLearning" xml:space="preserve">
+    <value>Weekly Learning</value>
+  </data>
+  <data name="Dashboard_WeeklyTrend" xml:space="preserve">
+    <value>Weekly Trend</value>
+  </data>
+  <data name="Dashboard_WeekTotal" xml:space="preserve">
+    <value>Week Total</value>
+  </data>
+  <data name="Dashboard_Accuracy" xml:space="preserve">
+    <value>Accuracy</value>
+  </data>
+  <data name="Dashboard_Streak" xml:space="preserve">
+    <value>Streak</value>
+  </data>
+  <data name="Dashboard_AnswerDistribution" xml:space="preserve">
+    <value>Answer Distribution</value>
+  </data>
+  <data name="Dashboard_Remembered" xml:space="preserve">
+    <value>Remembered</value>
+  </data>
+  <data name="Dashboard_Hard" xml:space="preserve">
+    <value>Hard</value>
+  </data>
+  <data name="Dashboard_Forgot" xml:space="preserve">
+    <value>Forgot</value>
+  </data>
+  <data name="Dashboard_RecentAchievements" xml:space="preserve">
+    <value>Recent Achievements</value>
+  </data>
   <data name="Common_Save" xml:space="preserve">
     <value>Save</value>
   </data>
