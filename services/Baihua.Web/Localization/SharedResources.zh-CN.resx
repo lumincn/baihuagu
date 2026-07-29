@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="LanguageName" xml:space="preserve"><value>中文</value></data>
+  <data name="Nav_Home" xml:space="preserve"><value>首页</value></data>
+  <data name="Nav_Search" xml:space="preserve"><value>搜索</value></data>
+  <data name="Nav_Tasks" xml:space="preserve"><value>任务</value></data>
+  <data name="Nav_Cards" xml:space="preserve"><value>卡片</value></data>
+  <data name="Nav_Vaults" xml:space="preserve"><value>知识库</value></data>
+  <data name="Nav_Settings" xml:space="preserve"><value>设置</value></data>
+  <data name="Nav_Login" xml:space="preserve"><value>登录</value></data>
+  <data name="Nav_Dashboard" xml:space="preserve"><value>仪表板</value></data>
+  <data name="Nav_Messages" xml:space="preserve"><value>消息</value></data>
+  <data name="Search_Placeholder" xml:space="preserve"><value>搜索笔记...</value></data>
+  <data name="Common_Save" xml:space="preserve"><value>保存</value></data>
+  <data name="Common_Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="Common_Delete" xml:space="preserve"><value>删除</value></data>
+  <data name="Common_Confirm" xml:space="preserve"><value>确认</value></data>
+  <data name="Common_Loading" xml:space="preserve"><value>加载中...</value></data>
+  <data name="Common_Error" xml:space="preserve"><value>发生错误</value></data>
+  <data name="Common_Retry" xml:space="preserve"><value>重试</value></data>
+  <data name="Common_Close" xml:space="preserve"><value>关闭</value></data>
+  <data name="Language" xml:space="preserve"><value>语言</value></data>
+</root>
+

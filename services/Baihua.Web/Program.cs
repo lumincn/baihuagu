@@ -17,6 +17,8 @@ using OpenTelemetry.Trace;
 using Serilog;
 using Baihua.Web.Logging;
 using Baihua.Web.Middleware;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
 
 // Initialize native SQLite provider early to avoid Microsoft.Data.Sqlite type initializer issues
 try
@@ -285,6 +287,10 @@ builder.Services.AddScoped<Baihua.Web.Services.DevicesService>();
 builder.Services.AddScoped<Baihua.Web.Services.OnboardingService>();
 builder.Services.AddSingleton<Baihua.Web.Services.CapabilityService>();
 
+// Add Localization services (i18n, default: zh-CN)
+builder.Services.AddLocalization();
+builder.Services.AddSingleton<Baihua.Web.Services.CultureService>();
+
 // Add HttpClient with API base address + Polly retry
 var retryPolicy = HttpPolicyExtensions
     .HandleTransientHttpError()
@@ -362,6 +368,15 @@ app.MapStaticAssets();
 app.UseAntiforgery();
 
 // 请求关联ID中间件（最早阶段添加，确保所有日志都有 CorrelationId）
+// 本地化中间件（默认中文 zh-CN，支持英文 en）
+var supportedCultureInfos = new[] { new CultureInfo("zh-CN"), new CultureInfo("en") };
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("zh-CN"),
+    SupportedCultures = supportedCultureInfos,
+    SupportedUICultures = supportedCultureInfos
+});
+
 app.UseCorrelationId();
 
 // 请求统计中间件（在 CorrelationId 之后）
