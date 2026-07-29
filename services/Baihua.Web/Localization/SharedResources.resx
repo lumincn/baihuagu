@@ -4,79 +4,367 @@
     <xsd:element name="root" msdata:IsDataSet="true">
     </xsd:element>
   </xsd:schema>
-  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
-  <resheader name="version"><value>2.0</value></resheader>
-  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <data name="LanguageName" xml:space="preserve"><value>English</value></data>
-  <data name="Nav_Home" xml:space="preserve"><value>Home</value></data>
-  <data name="Nav_Search" xml:space="preserve"><value>Search</value></data>
-  <data name="Nav_Tasks" xml:space="preserve"><value>Tasks</value></data>
-  <data name="Nav_Cards" xml:space="preserve"><value>Cards</value></data>
-  <data name="Nav_Vaults" xml:space="preserve"><value>Vaults</value></data>
-  <data name="Nav_Settings" xml:space="preserve"><value>Settings</value></data>
-  <data name="Nav_Login" xml:space="preserve"><value>Login</value></data>
-  <data name="Nav_Dashboard" xml:space="preserve"><value>Dashboard</value></data>
-  <data name="Nav_Messages" xml:space="preserve"><value>Messages</value></data>
-  <data name="Search_Placeholder" xml:space="preserve"><value>Search notes...</value></data>
-  <data name="Common_Save" xml:space="preserve"><value>Save</value></data>
-  <data name="Common_Cancel" xml:space="preserve"><value>Cancel</value></data>
-  <data name="Common_Delete" xml:space="preserve"><value>Delete</value></data>
-  <data name="Common_Confirm" xml:space="preserve"><value>Confirm</value></data>
-  <data name="Common_Loading" xml:space="preserve"><value>Loading...</value></data>
-  <data name="Common_Error" xml:space="preserve"><value>An error occurred</value></data>
-  <data name="Common_Retry" xml:space="preserve"><value>Retry</value></data>
-  <data name="Common_Close" xml:space="preserve"><value>Close</value></data>
-  <data name="Language" xml:space="preserve"><value>Language</value></data>
-<data name="HardwareBenchmark_PageTitle" xml:space="preserve"><value>Hardware Benchmark</value></data>
-    <data name="HardwareBenchmark_Title" xml:space="preserve"><value>Hardware Benchmark</value></data>
-    <data name="HardwareBenchmark_Description" xml:space="preserve"><value>Evaluate your machine AI compute capability, compare with mainstream AI platforms, and understand hardware performance positioning.</value></data>
-    <data name="HardwareBenchmark_Loading" xml:space="preserve"><value>Detecting hardware info...</value></data>
-    <data name="HardwareBenchmark_CurrentMachine" xml:space="preserve"><value>Current Machine</value></data>
-    <data name="HardwareBenchmark_CurrentMachineLabel" xml:space="preserve"><value>Current Machine</value></data>
-    <data name="HardwareBenchmark_Unknown" xml:space="preserve"><value>Unknown</value></data>
-    <data name="HardwareBenchmark_CoreCount" xml:space="preserve"><value>Cores</value></data>
-    <data name="HardwareBenchmark_Memory" xml:space="preserve"><value>Memory</value></data>
-    <data name="HardwareBenchmark_Gpu" xml:space="preserve"><value>GPU</value></data>
-    <data name="HardwareBenchmark_System" xml:space="preserve"><value>System</value></data>
-    <data name="HardwareBenchmark_DiskAvailable" xml:space="preserve"><value>Disk Free</value></data>
-    <data name="HardwareBenchmark_CpuInference" xml:space="preserve"><value>CPU Inference</value></data>
-    <data name="HardwareBenchmark_SharedMemory" xml:space="preserve"><value>Shared Memory</value></data>
-    <data name="HardwareBenchmark_DedicatedVram" xml:space="preserve"><value>Dedicated VRAM</value></data>
-    <data name="HardwareBenchmark_SystemMemory" xml:space="preserve"><value>System Memory</value></data>
-    <data name="HardwareBenchmark_NoGpu" xml:space="preserve"><value>No Discrete GPU</value></data>
-    <data name="HardwareBenchmark_NoGpuDetected" xml:space="preserve"><value>No GPU detected</value></data>
-    <data name="HardwareBenchmark_Tier_Cpu" xml:space="preserve"><value>CPU Inference</value></data>
-    <data name="HardwareBenchmark_Tier_Entry" xml:space="preserve"><value>Entry GPU</value></data>
-    <data name="HardwareBenchmark_Tier_Mid" xml:space="preserve"><value>Mid-Range GPU</value></data>
-    <data name="HardwareBenchmark_Tier_High" xml:space="preserve"><value>High-End GPU</value></data>
-    <data name="HardwareBenchmark_Tier_Top" xml:space="preserve"><value>Top-Tier GPU</value></data>
-    <data name="HardwareBenchmark_ComparisonTitle" xml:space="preserve"><value>AI Compute Comparison</value></data>
-    <data name="HardwareBenchmark_ComparisonDesc" xml:space="preserve"><value>Sorted by estimated Llama-3-8B Q4 inference speed. Data is theoretical/measured reference for positioning.</value></data>
-    <data name="HardwareBenchmark_Col_Rank" xml:space="preserve"><value>Rank</value></data>
-    <data name="HardwareBenchmark_Col_Platform" xml:space="preserve"><value>Platform</value></data>
-    <data name="HardwareBenchmark_Col_Gpu" xml:space="preserve"><value>GPU / NPU / Accelerator</value></data>
-    <data name="HardwareBenchmark_Col_Memory" xml:space="preserve"><value>VRAM / Unified Memory</value></data>
-    <data name="HardwareBenchmark_Col_Int8" xml:space="preserve"><value>INT8 TFLOPS</value></data>
-    <data name="HardwareBenchmark_Col_Int4" xml:space="preserve"><value>INT4 TFLOPS</value></data>
-    <data name="HardwareBenchmark_Col_Bandwidth" xml:space="preserve"><value>Memory Bandwidth</value></data>
-    <data name="HardwareBenchmark_Col_Speed" xml:space="preserve"><value>Llama3-8B Q4 Est.</value></data>
-    <data name="HardwareBenchmark_Col_Power" xml:space="preserve"><value>TDP</value></data>
-    <data name="HardwareBenchmark_Col_Price" xml:space="preserve"><value>Est. Price</value></data>
-    <data name="HardwareBenchmark_DataSourceTitle" xml:space="preserve"><value>Data Sources &amp; Methodology</value></data>
-    <data name="HardwareBenchmark_Tier_Title" xml:space="preserve"><value>Performance Tiers</value></data>
-    <data name="HardwareBenchmark_RecommendationTitle" xml:space="preserve"><value>Recommendations for Your Machine</value></data>
-    <data name="HardwareBenchmark_Analyzing" xml:space="preserve"><value>Analyzing hardware configuration...</value></data>
-    <data name="HardwareBenchmark_LoadError" xml:space="preserve"><value>Failed to load hardware info</value></data>
-    <data name="HardwareBenchmark_RefreshBtn" xml:space="preserve"><value>Refresh Hardware Info</value></data>
-    <data name="HardwareBenchmark_RefreshingBtn" xml:space="preserve"><value>Refreshing...</value></data>
-    <data name="HardwareBenchmark_Disclaimer" xml:space="preserve"><value>Data is for reference only. Actual performance varies by driver, cooling, model optimization, etc.</value></data>
-    <data name="HardwareBenchmark_Level_Limited" xml:space="preserve"><value>Limited</value></data>
-    <data name="HardwareBenchmark_Level_Adequate" xml:space="preserve"><value>Adequate</value></data>
-    <data name="HardwareBenchmark_Level_Good" xml:space="preserve"><value>Good</value></data>
-    <data name="HardwareBenchmark_Level_Great" xml:space="preserve"><value>Great</value></data>
-    <data name="HardwareBenchmark_Level_Excellent" xml:space="preserve"><value>Excellent</value></data>
-    <data name="HardwareBenchmark_Level_Unsupported" xml:space="preserve"><value>Unsupported</value></data>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="LanguageName" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="Nav_Home" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="Nav_Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Nav_Tasks" xml:space="preserve">
+    <value>Tasks</value>
+  </data>
+  <data name="Nav_Cards" xml:space="preserve">
+    <value>Cards</value>
+  </data>
+  <data name="Nav_Vaults" xml:space="preserve">
+    <value>Vaults</value>
+  </data>
+  <data name="Nav_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Nav_Login" xml:space="preserve">
+    <value>Login</value>
+  </data>
+  <data name="Nav_Dashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Nav_Messages" xml:space="preserve">
+    <value>Messages</value>
+  </data>
+  <data name="Search_Placeholder" xml:space="preserve">
+    <value>Search notes...</value>
+  </data>
+  <data name="Common_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Common_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Common_Confirm" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="Common_Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+  <data name="Common_Error" xml:space="preserve">
+    <value>An error occurred</value>
+  </data>
+  <data name="Common_Retry" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="Common_Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Language" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="HardwareBenchmark_PageTitle" xml:space="preserve">
+    <value>Hardware Benchmark</value>
+  </data>
+  <data name="HardwareBenchmark_Title" xml:space="preserve">
+    <value>Hardware Benchmark</value>
+  </data>
+  <data name="HardwareBenchmark_Description" xml:space="preserve">
+    <value>Evaluate your machine AI compute capability, compare with mainstream AI platforms, and understand hardware performance positioning.</value>
+  </data>
+  <data name="HardwareBenchmark_Loading" xml:space="preserve">
+    <value>Detecting hardware info...</value>
+  </data>
+  <data name="HardwareBenchmark_CurrentMachine" xml:space="preserve">
+    <value>Current Machine</value>
+  </data>
+  <data name="HardwareBenchmark_CurrentMachineLabel" xml:space="preserve">
+    <value>Current Machine</value>
+  </data>
+  <data name="HardwareBenchmark_Unknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="HardwareBenchmark_CoreCount" xml:space="preserve">
+    <value>Cores</value>
+  </data>
+  <data name="HardwareBenchmark_Memory" xml:space="preserve">
+    <value>Memory</value>
+  </data>
+  <data name="HardwareBenchmark_Gpu" xml:space="preserve">
+    <value>GPU</value>
+  </data>
+  <data name="HardwareBenchmark_System" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="HardwareBenchmark_DiskAvailable" xml:space="preserve">
+    <value>Disk Free</value>
+  </data>
+  <data name="HardwareBenchmark_CpuInference" xml:space="preserve">
+    <value>CPU Inference</value>
+  </data>
+  <data name="HardwareBenchmark_SharedMemory" xml:space="preserve">
+    <value>Shared Memory</value>
+  </data>
+  <data name="HardwareBenchmark_DedicatedVram" xml:space="preserve">
+    <value>Dedicated VRAM</value>
+  </data>
+  <data name="HardwareBenchmark_SystemMemory" xml:space="preserve">
+    <value>System Memory</value>
+  </data>
+  <data name="HardwareBenchmark_NoGpu" xml:space="preserve">
+    <value>No Discrete GPU</value>
+  </data>
+  <data name="HardwareBenchmark_NoGpuDetected" xml:space="preserve">
+    <value>No GPU detected</value>
+  </data>
+  <data name="HardwareBenchmark_Tier_Cpu" xml:space="preserve">
+    <value>CPU Inference</value>
+  </data>
+  <data name="HardwareBenchmark_Tier_Entry" xml:space="preserve">
+    <value>Entry GPU</value>
+  </data>
+  <data name="HardwareBenchmark_Tier_Mid" xml:space="preserve">
+    <value>Mid-Range GPU</value>
+  </data>
+  <data name="HardwareBenchmark_Tier_High" xml:space="preserve">
+    <value>High-End GPU</value>
+  </data>
+  <data name="HardwareBenchmark_Tier_Top" xml:space="preserve">
+    <value>Top-Tier GPU</value>
+  </data>
+  <data name="HardwareBenchmark_ComparisonTitle" xml:space="preserve">
+    <value>AI Compute Comparison</value>
+  </data>
+  <data name="HardwareBenchmark_ComparisonDesc" xml:space="preserve">
+    <value>Sorted by estimated Llama-3-8B Q4 inference speed. Data is theoretical/measured reference for positioning.</value>
+  </data>
+  <data name="HardwareBenchmark_Col_Rank" xml:space="preserve">
+    <value>Rank</value>
+  </data>
+  <data name="HardwareBenchmark_Col_Platform" xml:space="preserve">
+    <value>Platform</value>
+  </data>
+  <data name="HardwareBenchmark_Col_Gpu" xml:space="preserve">
+    <value>GPU / NPU / Accelerator</value>
+  </data>
+  <data name="HardwareBenchmark_Col_Memory" xml:space="preserve">
+    <value>VRAM / Unified Memory</value>
+  </data>
+  <data name="HardwareBenchmark_Col_Int8" xml:space="preserve">
+    <value>INT8 TFLOPS</value>
+  </data>
+  <data name="HardwareBenchmark_Col_Int4" xml:space="preserve">
+    <value>INT4 TFLOPS</value>
+  </data>
+  <data name="HardwareBenchmark_Col_Bandwidth" xml:space="preserve">
+    <value>Memory Bandwidth</value>
+  </data>
+  <data name="HardwareBenchmark_Col_Speed" xml:space="preserve">
+    <value>Llama3-8B Q4 Est.</value>
+  </data>
+  <data name="HardwareBenchmark_Col_Power" xml:space="preserve">
+    <value>TDP</value>
+  </data>
+  <data name="HardwareBenchmark_Col_Price" xml:space="preserve">
+    <value>Est. Price</value>
+  </data>
+  <data name="HardwareBenchmark_DataSourceTitle" xml:space="preserve">
+    <value>Data Sources &amp; Methodology</value>
+  </data>
+  <data name="HardwareBenchmark_Tier_Title" xml:space="preserve">
+    <value>Performance Tiers</value>
+  </data>
+  <data name="HardwareBenchmark_RecommendationTitle" xml:space="preserve">
+    <value>Recommendations for Your Machine</value>
+  </data>
+  <data name="HardwareBenchmark_Analyzing" xml:space="preserve">
+    <value>Analyzing hardware configuration...</value>
+  </data>
+  <data name="HardwareBenchmark_LoadError" xml:space="preserve">
+    <value>Failed to load hardware info</value>
+  </data>
+  <data name="HardwareBenchmark_RefreshBtn" xml:space="preserve">
+    <value>Refresh Hardware Info</value>
+  </data>
+  <data name="HardwareBenchmark_RefreshingBtn" xml:space="preserve">
+    <value>Refreshing...</value>
+  </data>
+  <data name="HardwareBenchmark_Disclaimer" xml:space="preserve">
+    <value>Data is for reference only. Actual performance varies by driver, cooling, model optimization, etc.</value>
+  </data>
+  <data name="HardwareBenchmark_Level_Limited" xml:space="preserve">
+    <value>Limited</value>
+  </data>
+  <data name="HardwareBenchmark_Level_Adequate" xml:space="preserve">
+    <value>Adequate</value>
+  </data>
+  <data name="HardwareBenchmark_Level_Good" xml:space="preserve">
+    <value>Good</value>
+  </data>
+  <data name="HardwareBenchmark_Level_Great" xml:space="preserve">
+    <value>Great</value>
+  </data>
+  <data name="HardwareBenchmark_Level_Excellent" xml:space="preserve">
+    <value>Excellent</value>
+  </data>
+  <data name="HardwareBenchmark_Level_Unsupported" xml:space="preserve">
+    <value>Unsupported</value>
+  </data>
+  <data name="MasterChat_PageTitle" xml:space="preserve">
+    <value>虚拟师父</value>
+  </data>
+  <data name="MasterChat_Title" xml:space="preserve">
+    <value>师父</value>
+  </data>
+  <data name="MasterChat_CreateMaster" xml:space="preserve">
+    <value>+ 拜师</value>
+  </data>
+  <data name="MasterChat_EmptyHint" xml:space="preserve">
+    <value>还没有师父，点击「拜师」创建</value>
+  </data>
+  <data name="MasterChat_EmptyDesc" xml:space="preserve">
+    <value>选择一位师父开始学习之旅</value>
+  </data>
+  <data name="MasterChat_ViewProfile" xml:space="preserve">
+    <value>画像查看</value>
+  </data>
+  <data name="MasterChat_StageProgress" xml:space="preserve">
+    <value>阶段进度</value>
+  </data>
+  <data name="MasterChat_EvictData" xml:space="preserve">
+    <value>清理旧数据</value>
+  </data>
+  <data name="MasterChat_DeleteMaster" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="MasterChat_QuickHint" xml:space="preserve">
+    <value>不知道该问什么？试试这些：</value>
+  </data>
+  <data name="MasterChat_InputPlaceholder" xml:space="preserve">
+    <value>向师父请教...</value>
+  </data>
+  <data name="MasterChat_StopBtn" xml:space="preserve">
+    <value>停止</value>
+  </data>
+  <data name="MasterChat_SendBtn" xml:space="preserve">
+    <value>发送</value>
+  </data>
+  <data name="MasterChat_AiNotConfigured" xml:space="preserve">
+    <value>AI 未配置</value>
+  </data>
+  <data name="MasterChat_AiConfigRequired" xml:space="preserve">
+    <value>虚拟师父需要 AI 服务支持，请在「设置 &gt; AI 服务」中配置</value>
+  </data>
+  <data name="MasterChat_AiConfigLater" xml:space="preserve">
+    <value>稍后再说</value>
+  </data>
+  <data name="MasterChat_AiConfigGo" xml:space="preserve">
+    <value>前往配置</value>
+  </data>
+  <data name="MasterChat_ModalTitle" xml:space="preserve">
+    <value>拜师学艺</value>
+  </data>
+  <data name="MasterChat_Industry" xml:space="preserve">
+    <value>行业</value>
+  </data>
+  <data name="MasterChat_LearningGoal" xml:space="preserve">
+    <value>学习目标</value>
+  </data>
+  <data name="MasterChat_GoalPlaceholder" xml:space="preserve">
+    <value>例如：通过执业医师考试</value>
+  </data>
+  <data name="MasterChat_Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="MasterChat_Creating" xml:space="preserve">
+    <value>正在拜师...</value>
+  </data>
+  <data name="MasterChat_ConfirmCreate" xml:space="preserve">
+    <value>确认拜师</value>
+  </data>
+  <data name="MasterStage_PageTitle" xml:space="preserve">
+    <value>阶段进度</value>
+  </data>
+  <data name="MasterStage_Title" xml:space="preserve">
+    <value>阶段进度</value>
+  </data>
+  <data name="MasterStage_NoMasterHint" xml:space="preserve">
+    <value>未选择师父，&lt;a href="master-chat"&gt;返回师父对话页&lt;/a&gt;</value>
+  </data>
+  <data name="MasterStage_Loading" xml:space="preserve">
+    <value>加载中...</value>
+  </data>
+  <data name="MasterStage_MasterLabel" xml:space="preserve">
+    <value>师父：</value>
+  </data>
+  <data name="MasterStage_GoBack" xml:space="preserve">
+    <value>返回对话</value>
+  </data>
+  <data name="MasterStage_ProgressText" xml:space="preserve">
+    <value>{0}/{1} 阶段完成</value>
+  </data>
+  <data name="MasterStage_CompleteBtn" xml:space="preserve">
+    <value>完成此阶段</value>
+  </data>
+  <data name="MasterStage_CompletingBtn" xml:space="preserve">
+    <value>处理中...</value>
+  </data>
+  <data name="MasterStage_StageSummary" xml:space="preserve">
+    <value>阶段摘要</value>
+  </data>
+  <data name="MasterStage_KeyCorrections" xml:space="preserve">
+    <value>关键纠正</value>
+  </data>
+  <data name="MasterStage_KnowledgeBase" xml:space="preserve">
+    <value>知识库关联</value>
+  </data>
+  <data name="MasterStage_LinkVaultBtn" xml:space="preserve">
+    <value>关联知识库</value>
+  </data>
+  <data name="MasterStage_LoadingVaults" xml:space="preserve">
+    <value>加载中...</value>
+  </data>
+  <data name="MasterStage_VaultEmpty" xml:space="preserve">
+    <value>尚未关联知识库，关联后师父将参考知识库内容教学</value>
+  </data>
+  <data name="MasterStage_RemoveVault" xml:space="preserve">
+    <value>解除关联</value>
+  </data>
+  <data name="MasterStage_DialogTitle" xml:space="preserve">
+    <value>阶段完成</value>
+  </data>
+  <data name="MasterStage_StageComplete" xml:space="preserve">
+    <value>「{0}」阶段完成！</value>
+  </data>
+  <data name="MasterStage_StageSummaryDesc" xml:space="preserve">
+    <value>阶段小结</value>
+  </data>
+  <data name="MasterStage_StageCorrections" xml:space="preserve">
+    <value>关键纠正</value>
+  </data>
+  <data name="MasterStage_ContinueBtn" xml:space="preserve">
+    <value>继续修行</value>
+  </data>
+  <data name="MasterStage_VaultPickerTitle" xml:space="preserve">
+    <value>选择知识库</value>
+  </data>
+  <data name="MasterStage_NoVaults" xml:space="preserve">
+    <value>暂无可用知识库</value>
+  </data>
+  <data name="MasterStage_CloseBtn" xml:space="preserve">
+    <value>关闭</value>
+  </data>
 </root>
-
-

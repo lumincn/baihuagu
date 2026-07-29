@@ -2,21 +2,23 @@
 @rendermode InteractiveServer
 @using Microsoft.AspNetCore.Components.Web
 @using Baihua.Web.Services
+@using Microsoft.Extensions.Localization
 @using Markdig
 @using Microsoft.JSInterop
 @using Baihua.Contracts.Master
 @inject Baihua.Web.Services.IApiService ApiService
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 @inject GlobalStateService GlobalStateService
 @inject IJSRuntime JSRuntime
 @implements IDisposable
 
-<PageTitle>虚拟师父</PageTitle>
+<PageTitle>@L["MasterChat_PageTitle"]</PageTitle>
 
 <div class="master-layout">
     <div class="master-sidebar">
         <div class="sidebar-header">
-            <h3>师父</h3>
-            <button class="btn btn-sm btn-primary" @onclick="ShowCreateModal">+ 拜师</button>
+            <h3>@L["MasterChat_Title"]</h3>
+            <button class="btn btn-sm btn-primary" @onclick="ShowCreateModal">@L["MasterChat_CreateMaster"]</button>
         </div>
         <div class="master-list">
             @foreach (var m in masters)
@@ -32,7 +34,7 @@
             }
             @if (masters.Count == 0)
             {
-                <div class="empty-hint">还没有师父，点击「拜师」创建</div>
+                <div class="empty-hint">@L["MasterChat_EmptyHint"]</div>
             }
         </div>
     </div>
@@ -42,7 +44,7 @@
         {
             <div class="master-empty">
                 <div class="empty-icon">🏛️</div>
-                <div class="empty-text">选择一位师父开始学习之旅</div>
+                <div class="empty-text">@L["MasterChat_EmptyDesc"]</div>
             </div>
         }
         else
@@ -53,10 +55,10 @@
                     <span class="stage-badge stage-@selectedMaster.CurrentStageOrder">@selectedMaster.CurrentStage</span>
                 </div>
                 <div class="master-actions">
-                    <button class="btn btn-sm btn-outline-secondary" @onclick="GoToProfile" title="画像">👤</button>
-                    <button class="btn btn-sm btn-outline-secondary" @onclick="GoToStage">阶段进度</button>
-                    <button class="btn btn-sm btn-outline-info" @onclick="RunEvictAsync" title="清理旧数据">🧹</button>
-                    <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteMasterAsync(selectedMaster.MasterId)">删除</button>
+                    <button class="btn btn-sm btn-outline-secondary" @onclick="GoToProfile" title="@L["MasterChat_ViewProfile"]">👤</button>
+                    <button class="btn btn-sm btn-outline-secondary" @onclick="GoToStage">@L["MasterChat_StageProgress"]</button>
+                    <button class="btn btn-sm btn-outline-info" @onclick="RunEvictAsync" title="@L["MasterChat_EvictData"]">🧹</button>
+                    <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteMasterAsync(selectedMaster.MasterId)">@L["MasterChat_DeleteMaster"]</button>
                 </div>
             </div>
 
@@ -68,7 +70,7 @@
                 @if (chatMessages.Count == 0 && !isThinking)
                 {
                     <div class="quick-questions">
-                        <div class="quick-hint">不知道该问什么？试试这些：</div>
+                        <div class="quick-hint">@L["MasterChat_QuickHint"]</div>
                         @foreach (var q in GetQuickQuestions())
                         {
                             <button class="quick-q-btn" @onclick="() => SetQuickQuestion(q)">@q</button>
@@ -115,17 +117,17 @@
                 <textarea @bind="inputMessage"
                           @bind:event="oninput"
                           @onkeydown="HandleKeyDown"
-                          placeholder="向师父请教...&#10;Shift+Enter 换行，Enter 发送"
+                          placeholder="@L["MasterChat_InputPlaceholder"]"
                           class="form-control chat-textarea"
                           rows="1"
                           disabled="@isThinking"></textarea>
                 @if (isThinking)
                 {
-                    <button @onclick="StopChat" class="btn btn-danger">⏹ 停止</button>
+                    <button @onclick="StopChat" class="btn btn-danger">⏹ @L["MasterChat_StopBtn"]</button>
                 }
                 else
                 {
-                    <button @onclick="SendMessage" class="btn btn-primary" disabled="@(!CanSend)">发送</button>
+                    <button @onclick="SendMessage" class="btn btn-primary" disabled="@(!CanSend)">@L["MasterChat_SendBtn"]</button>
                 }
             </div>
         }
@@ -144,11 +146,11 @@
 {
     <div class="modal-overlay" @onclick="DismissAiWarning">
         <div class="modal-content" @onclick:stopPropagation>
-            <h4>AI 未配置</h4>
-            <p style="color: var(--master-text-secondary); margin: 1rem 0;">虚拟师父需要 AI 服务支持，请先配置 API Key 和模型。</p>
+            <h4>@L["MasterChat_AiNotConfigured"]</h4>
+            <p style="color: var(--master-text-secondary); margin: 1rem 0;">@L["MasterChat_AiConfigRequired"]</p>
             <div class="modal-actions">
-                <button class="btn btn-secondary" @onclick="DismissAiWarning">稍后再说</button>
-                <button class="btn btn-primary" @onclick="GoToAiSettings">前往配置</button>
+                <button class="btn btn-secondary" @onclick="DismissAiWarning">@L["MasterChat_AiConfigLater"]</button>
+                <button class="btn btn-primary" @onclick="GoToAiSettings">@L["MasterChat_AiConfigGo"]</button>
             </div>
         </div>
     </div>
@@ -158,9 +160,9 @@
 {
     <div class="modal-overlay" @onclick="HideCreateModal">
         <div class="modal-content" @onclick:stopPropagation>
-            <h4>拜师学艺</h4>
+            <h4>@L["MasterChat_ModalTitle"]</h4>
             <div class="form-group">
-                <label>行业</label>
+                <label>@L["MasterChat_Industry"]</label>
                 <input type="text" class="form-control" @bind="createIndustry" list="industry-list" placeholder="输入或选择行业" />
                 <datalist id="industry-list">
                     <option value="中医" />
@@ -177,17 +179,17 @@
                 </datalist>
             </div>
             <div class="form-group">
-                <label>学习目标</label>
-                <input type="text" class="form-control" @bind="createGoal" placeholder="例如：通过执业医师资格考试" />
+                <label>@L["MasterChat_LearningGoal"]</label>
+                <input type="text" class="form-control" @bind="createGoal" placeholder="@L["MasterChat_GoalPlaceholder"]" />
             </div>
             @if (!string.IsNullOrEmpty(createError))
             {
                 <div class="create-error">@createError</div>
             }
             <div class="modal-actions">
-                <button class="btn btn-secondary" @onclick="HideCreateModal">取消</button>
+                <button class="btn btn-secondary" @onclick="HideCreateModal">@L["MasterChat_Cancel"]</button>
                 <button class="btn btn-primary" @onclick="CreateMasterAsync" disabled="@isCreating">
-                    @(isCreating ? "正在拜师..." : "确认拜师")
+                    @(isCreating ? L["MasterChat_Creating"] : L["MasterChat_ConfirmCreate"])
                 </button>
             </div>
         </div>
