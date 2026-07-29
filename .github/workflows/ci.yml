@@ -32,14 +32,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      - name: Run BaihuaSdk tests
-        run: dotnet test tests/BaihuaSdk.Tests/BaihuaSdk.Tests.csproj -c Release
+      - name: Run Baihua.Sdk tests
+        run: dotnet test tests/Baihua.Sdk.Tests/Baihua.Sdk.Tests.csproj -c Release
 
-      - name: Run MobileApp.Maui tests
-        run: dotnet test tests/MobileApp.Maui.Tests/MobileApp.Maui.Tests.csproj -c Release
+      - name: Run Huapu tests
+        run: dotnet test tests/Huapu.Tests/Huapu.Tests.csproj -c Release
 
-      - name: Run TaskRunner.Family tests
-        run: dotnet test tests/TaskRunner.Family.Tests/TaskRunner.Family.Tests.csproj -c Release
+      - name: Run Baihua.Family tests
+        run: dotnet test tests/Baihua.Family.Tests/Baihua.Family.Tests.csproj -c Release -r linux-x64
 
   # ── 服务端全方案编译（防止 Contract/适配器变更后编译失败） ──
   family-build:
@@ -96,4 +96,4 @@ jobs:
         run: dotnet workload install maui-android
 
       - name: Build Android
-        run: dotnet build clients/MobileApp.Maui/MobileApp.Maui.csproj -f net9.0-android -c Release
+        run: dotnet build clients/Huapu/Huapu.csproj -f net9.0-android -c Release
