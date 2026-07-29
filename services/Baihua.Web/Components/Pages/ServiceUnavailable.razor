@@ -3,17 +3,17 @@
 @inject NavigationManager Navigation
 @inject Baihua.Web.Services.IApiService ApiService
 @inject IWebHostEnvironment Environment
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 @rendermode InteractiveServer
 
-<PageTitle>后台服务不可用</PageTitle>
+<PageTitle>@L["ServiceUnavailable_PageTitle"]</PageTitle>
 
 <div class="service-unavailable-container">
     <div class="error-card">
         <div class="error-icon">⚠️</div>
-        <h1>后台服务连接失败</h1>
+        <h1>@L["ServiceUnavailable_Title"]</h1>
         <p class="error-description">
-            无法连接到 TaskRunner 后台服务（端口 8788）。<br/>
-            部分功能（任务管理、AI 对话、搜索等）暂时不可用。
+            @((MarkupString)L["ServiceUnavailable_Description"].Value)
         </p>
 
         @if (!string.IsNullOrWhiteSpace(errorMessage))
@@ -24,10 +24,10 @@
         }
 
         <div class="help-section">
-            <h3>请尝试以下步骤：</h3>
+            <h3>@L["ServiceUnavailable_HelpTitle"]</h3>
             <ol>
                 <li>
-                    <strong>启动后台服务</strong>
+                    <strong>@L["ServiceUnavailable_Step1_StartService"]</strong>
                     @if (Environment.IsDevelopment())
                     {
                         <div class="command-block">
@@ -40,12 +40,12 @@
                             <code>./TaskRunner --urls "http://localhost:8788"</code>
                         </div>
                         <p class="release-hint">
-                            请运行 TaskRunner 可执行文件，确保端口 8788 可用。
+                            @L["ServiceUnavailable_ReleaseHint"]
                         </p>
                     }
                 </li>
-                <li>等待后台服务启动完成（约 5-10 秒）</li>
-                <li>点击下方的"重试连接"按钮</li>
+                <li>@L["ServiceUnavailable_Step2"]</li>
+                <li>@L["ServiceUnavailable_Step3"]</li>
             </ol>
         </div>
 
@@ -54,16 +54,16 @@
                 @if (isRetrying)
                 {
                     <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                    <span>正在检测...</span>
+                    <span>@L["ServiceUnavailable_Checking"]</span>
                 }
                 else
                 {
-                    <span>🔄 重试连接</span>
+                    <span>@L["ServiceUnavailable_RetryButton"]</span>
                 }
             </button>
 
             <button class="btn btn-outline-secondary" @onclick="GoToHome">
-                返回首页
+                @L["ServiceUnavailable_GoHomeButton"]
             </button>
         </div>
 
@@ -199,7 +199,7 @@
 
     protected override void OnInitialized()
     {
-        // 从查询参数获取错误信息
+        // Get error info from query parameters
         var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
         if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("error", out var error))
         {
@@ -216,16 +216,16 @@
         {
             await ApiService.CheckHealthFastAsync();
             retrySuccess = true;
-            retryMessage = "✅ 连接成功！即将跳转到首页...";
+            retryMessage = L["ServiceUnavailable_RetrySuccess"];
 
-            // 延迟后跳转
+            // Delay before redirect
             await Task.Delay(1500);
             Navigation.NavigateTo("", forceLoad: true);
         }
         catch (Exception ex)
         {
             retrySuccess = false;
-            retryMessage = $"❌ 连接失败：{ex.Message}";
+            retryMessage = string.Format(L["ServiceUnavailable_RetryFailed"], ex.Message);
             errorMessage = ex.Message;
         }
         finally

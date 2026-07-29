@@ -3175,4 +3175,139 @@
   <data name="FamilyHome_DeviceManagementDesc" xml:space="preserve">
     <value>Manage mobile devices and scan QR codes to pair</value>
   </data>
+  <data name="ServiceUnavailable_PageTitle" xml:space="preserve">
+    <value>Service Unavailable</value>
+  </data>
+  <data name="ServiceUnavailable_Title" xml:space="preserve">
+    <value>Backend Service Connection Failed</value>
+  </data>
+  <data name="ServiceUnavailable_Description" xml:space="preserve">
+    <value>Cannot connect to the TaskRunner backend service (port 8788).&lt;br/&gt;Some features (task management, AI chat, search, etc.) are temporarily unavailable.</value>
+  </data>
+  <data name="ServiceUnavailable_HelpTitle" xml:space="preserve">
+    <value>Please try the following steps:</value>
+  </data>
+  <data name="ServiceUnavailable_Step1_StartService" xml:space="preserve">
+    <value>Start the backend service</value>
+  </data>
+  <data name="ServiceUnavailable_Step2" xml:space="preserve">
+    <value>Wait for the backend service to start (about 5-10 seconds)</value>
+  </data>
+  <data name="ServiceUnavailable_Step3" xml:space="preserve">
+    <value>Click the "Retry Connection" button below</value>
+  </data>
+  <data name="ServiceUnavailable_ReleaseHint" xml:space="preserve">
+    <value>Please run the TaskRunner executable and ensure port 8788 is available.</value>
+  </data>
+  <data name="ServiceUnavailable_Checking" xml:space="preserve">
+    <value>Checking...</value>
+  </data>
+  <data name="ServiceUnavailable_RetryButton" xml:space="preserve">
+    <value>🔄 Retry Connection</value>
+  </data>
+  <data name="ServiceUnavailable_GoHomeButton" xml:space="preserve">
+    <value>Go to Home</value>
+  </data>
+  <data name="ServiceUnavailable_RetrySuccess" xml:space="preserve">
+    <value>✅ Connection successful! Redirecting to home...</value>
+  </data>
+  <data name="ServiceUnavailable_RetryFailed" xml:space="preserve">
+    <value>❌ Connection failed: {0}</value>
+  </data>
+  <data name="Tasks_PageTitle" xml:space="preserve">
+    <value>Tasks</value>
+  </data>
+  <data name="Tasks_Title" xml:space="preserve">
+    <value>Task Management</value>
+  </data>
+  <data name="Tasks_WebSocketConnected" xml:space="preserve">
+    <value>WebSocket Connected</value>
+  </data>
+  <data name="Tasks_WebSocketDisconnected" xml:space="preserve">
+    <value>WebSocket Disconnected</value>
+  </data>
+  <data name="Tasks_ClearHistory" xml:space="preserve">
+    <value>Clear History</value>
+  </data>
+  <data name="Tasks_ConfirmClearTitle" xml:space="preserve">
+    <value>Confirm Clear</value>
+  </data>
+  <data name="Tasks_ConfirmClearMessage" xml:space="preserve">
+    <value>Are you sure you want to delete all task records? This action cannot be undone.</value>
+  </data>
+  <data name="Tasks_ConfirmClearButton" xml:space="preserve">
+    <value>Confirm Clear</value>
+  </data>
+  <data name="Tasks_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Tasks_Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+  <data name="Tasks_NoTasks" xml:space="preserve">
+    <value>No tasks</value>
+  </data>
+  <data name="Tasks_SuggestionHtml" xml:space="preserve">
+    <value>💡 &lt;strong&gt;Suggestion:&lt;/strong&gt; The current AI may not support this query. Click &amp;quot;🤖 Model&amp;quot; above to switch to another AI provider or model and try again.</value>
+  </data>
+  <data name="Tasks_PromptLabel" xml:space="preserve">
+    <value>Prompt:</value>
+  </data>
+  <data name="Tasks_Retry" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="Tasks_GeneratedNotes" xml:space="preserve">
+    <value>Generated Notes:</value>
+  </data>
+  <data name="Tasks_NoPathSuffix" xml:space="preserve">
+    <value> (no path)</value>
+  </data>
+  <data name="Tasks_SuccessNoNotes" xml:space="preserve">
+    <value>Task succeeded but no notes were generated</value>
+  </data>
+  <data name="Tasks_GeneratedCards" xml:space="preserve">
+    <value>✅ Generated {0} memory cards</value>
+  </data>
+  <data name="Tasks_UnparseableNotes" xml:space="preserve">
+    <value>Unable to parse generated notes data (type: {0})</value>
+  </data>
+  <data name="Tasks_RequestDetails" xml:space="preserve">
+    <value>Request Details:</value>
+  </data>
+  <data name="Tasks_SuccessDataNull" xml:space="preserve">
+    <value>Task succeeded but Data is null</value>
+  </data>
+  <data name="Tasks_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Tasks_TypeSplitAtomNotes" xml:space="preserve">
+    <value>Split Atom Notes (Legacy)</value>
+  </data>
+  <data name="Tasks_TypeAiQuery" xml:space="preserve">
+    <value>AI Query</value>
+  </data>
+  <data name="Tasks_TypeAiVaultGeneration" xml:space="preserve">
+    <value>🤖 AI Generate Knowledge Base</value>
+  </data>
+  <data name="Tasks_TypeSync" xml:space="preserve">
+    <value>Sync</value>
+  </data>
+  <data name="Tasks_TypeOpenClaw" xml:space="preserve">
+    <value>🦀 OpenClaw Analysis</value>
+  </data>
+  <data name="Tasks_UnnamedNote" xml:space="preserve">
+    <value>Unnamed Note</value>
+  </data>
+  <data name="Tasks_ConfirmDeleteMessage" xml:space="preserve">
+    <value>Are you sure you want to delete this task?</value>
+  </data>
+  <data name="Tasks_ConfirmCancelMessage" xml:space="preserve">
+    <value>Are you sure you want to cancel this task? The current operation will be interrupted.</value>
+  </data>
+  <data name="Tasks_RetryFailedTitle" xml:space="preserve">
+    <value>Retry failed</value>
+  </data>
+  <data name="Tasks_RetryFailedWithMessage" xml:space="preserve">
+    <value>Retry failed: {0}</value>
+  </data>
 </root>

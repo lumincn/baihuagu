@@ -3175,4 +3175,139 @@
   <data name="FamilyHome_DeviceManagementDesc" xml:space="preserve">
     <value>管理移动设备和扫码配对</value>
   </data>
+  <data name="ServiceUnavailable_PageTitle" xml:space="preserve">
+    <value>后台服务不可用</value>
+  </data>
+  <data name="ServiceUnavailable_Title" xml:space="preserve">
+    <value>后台服务连接失败</value>
+  </data>
+  <data name="ServiceUnavailable_Description" xml:space="preserve">
+    <value>无法连接到 TaskRunner 后台服务（端口 8788）。&lt;br/&gt;部分功能（任务管理、AI 对话、搜索等）暂时不可用。</value>
+  </data>
+  <data name="ServiceUnavailable_HelpTitle" xml:space="preserve">
+    <value>请尝试以下步骤：</value>
+  </data>
+  <data name="ServiceUnavailable_Step1_StartService" xml:space="preserve">
+    <value>启动后台服务</value>
+  </data>
+  <data name="ServiceUnavailable_Step2" xml:space="preserve">
+    <value>等待后台服务启动完成（约 5-10 秒）</value>
+  </data>
+  <data name="ServiceUnavailable_Step3" xml:space="preserve">
+    <value>点击下方的"重试连接"按钮</value>
+  </data>
+  <data name="ServiceUnavailable_ReleaseHint" xml:space="preserve">
+    <value>请运行 TaskRunner 可执行文件，确保端口 8788 可用。</value>
+  </data>
+  <data name="ServiceUnavailable_Checking" xml:space="preserve">
+    <value>正在检测...</value>
+  </data>
+  <data name="ServiceUnavailable_RetryButton" xml:space="preserve">
+    <value>🔄 重试连接</value>
+  </data>
+  <data name="ServiceUnavailable_GoHomeButton" xml:space="preserve">
+    <value>返回首页</value>
+  </data>
+  <data name="ServiceUnavailable_RetrySuccess" xml:space="preserve">
+    <value>✅ 连接成功！即将跳转到首页...</value>
+  </data>
+  <data name="ServiceUnavailable_RetryFailed" xml:space="preserve">
+    <value>❌ 连接失败：{0}</value>
+  </data>
+  <data name="Tasks_PageTitle" xml:space="preserve">
+    <value>任务</value>
+  </data>
+  <data name="Tasks_Title" xml:space="preserve">
+    <value>任务管理</value>
+  </data>
+  <data name="Tasks_WebSocketConnected" xml:space="preserve">
+    <value>WebSocket 已连接</value>
+  </data>
+  <data name="Tasks_WebSocketDisconnected" xml:space="preserve">
+    <value>WebSocket 未连接</value>
+  </data>
+  <data name="Tasks_ClearHistory" xml:space="preserve">
+    <value>清空历史</value>
+  </data>
+  <data name="Tasks_ConfirmClearTitle" xml:space="preserve">
+    <value>确认清空</value>
+  </data>
+  <data name="Tasks_ConfirmClearMessage" xml:space="preserve">
+    <value>确定要删除所有任务记录吗？此操作不可恢复。</value>
+  </data>
+  <data name="Tasks_ConfirmClearButton" xml:space="preserve">
+    <value>确认清空</value>
+  </data>
+  <data name="Tasks_Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="Tasks_Loading" xml:space="preserve">
+    <value>加载中...</value>
+  </data>
+  <data name="Tasks_NoTasks" xml:space="preserve">
+    <value>暂无任务</value>
+  </data>
+  <data name="Tasks_SuggestionHtml" xml:space="preserve">
+    <value>💡 &lt;strong&gt;建议：&lt;/strong&gt;当前 AI 可能不支持该问题，可点击上方&amp;quot;🤖 模型&amp;quot;切换其他 AI 提供商或模型后再试。</value>
+  </data>
+  <data name="Tasks_PromptLabel" xml:space="preserve">
+    <value>提示词：</value>
+  </data>
+  <data name="Tasks_Retry" xml:space="preserve">
+    <value>重试</value>
+  </data>
+  <data name="Tasks_GeneratedNotes" xml:space="preserve">
+    <value>生成的笔记：</value>
+  </data>
+  <data name="Tasks_NoPathSuffix" xml:space="preserve">
+    <value> (无路径)</value>
+  </data>
+  <data name="Tasks_SuccessNoNotes" xml:space="preserve">
+    <value>任务成功但未生成笔记</value>
+  </data>
+  <data name="Tasks_GeneratedCards" xml:space="preserve">
+    <value>✅ 生成 {0} 张记忆卡片</value>
+  </data>
+  <data name="Tasks_UnparseableNotes" xml:space="preserve">
+    <value>无法解析生成的笔记数据 (类型: {0})</value>
+  </data>
+  <data name="Tasks_RequestDetails" xml:space="preserve">
+    <value>请求详情：</value>
+  </data>
+  <data name="Tasks_SuccessDataNull" xml:space="preserve">
+    <value>任务成功但 Data 为 null</value>
+  </data>
+  <data name="Tasks_Delete" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="Tasks_TypeSplitAtomNotes" xml:space="preserve">
+    <value>拆分原子笔记（旧）</value>
+  </data>
+  <data name="Tasks_TypeAiQuery" xml:space="preserve">
+    <value>AI 查询</value>
+  </data>
+  <data name="Tasks_TypeAiVaultGeneration" xml:space="preserve">
+    <value>🤖 AI 生成知识库</value>
+  </data>
+  <data name="Tasks_TypeSync" xml:space="preserve">
+    <value>同步</value>
+  </data>
+  <data name="Tasks_TypeOpenClaw" xml:space="preserve">
+    <value>🦀 OpenClaw 分析</value>
+  </data>
+  <data name="Tasks_UnnamedNote" xml:space="preserve">
+    <value>未命名笔记</value>
+  </data>
+  <data name="Tasks_ConfirmDeleteMessage" xml:space="preserve">
+    <value>确定要删除这个任务吗？</value>
+  </data>
+  <data name="Tasks_ConfirmCancelMessage" xml:space="preserve">
+    <value>确定要取消这个任务吗？正在执行的操作将被中断。</value>
+  </data>
+  <data name="Tasks_RetryFailedTitle" xml:space="preserve">
+    <value>重试失败</value>
+  </data>
+  <data name="Tasks_RetryFailedWithMessage" xml:space="preserve">
+    <value>重试失败：{0}</value>
+  </data>
 </root>

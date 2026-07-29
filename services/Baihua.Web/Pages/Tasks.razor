@@ -3,6 +3,7 @@
 @using System.Net.Http
 @using System.Threading
 @using Microsoft.AspNetCore.Http.Connections
+@using Microsoft.Extensions.Localization
 @using Microsoft.AspNetCore.SignalR.Client
 @implements IAsyncDisposable
 @inject Baihua.Web.Services.IApiService ApiService
@@ -10,26 +11,27 @@
 @inject IJSRuntime JSRuntime
 @inject Baihua.Web.Services.SettingsService SettingsService
 @inject Microsoft.Extensions.Logging.ILogger<Tasks> Logger
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
-<PageTitle>任务</PageTitle>
+<PageTitle>@L["Tasks_PageTitle"]</PageTitle>
 
-<h1>📊 任务管理</h1>
+<h1>📊 @L["Tasks_Title"]</h1>
 
 <div class="task-controls">
     <span class="connection-status">
         @if (isHubConnected)
         {
-            <span>🟢 WebSocket 已连接</span>
+            <span>🟢 @L["Tasks_WebSocketConnected"]</span>
         }
         else
         {
-            <span>🔴 WebSocket 未连接</span>
+            <span>🔴 @L["Tasks_WebSocketDisconnected"]</span>
         }
     </span>
     @if (tasks.Any())
     {
         <button @onclick="ShowClearConfirm" class="btn btn-outline-danger btn-sm">
-            🗑️ 清空历史
+            🗑️ @L["Tasks_ClearHistory"]
         </button>
     }
 </div>
@@ -38,11 +40,11 @@
 {
     <div class="modal-overlay" @onclick="HideClearConfirm">
         <div class="modal-content" @onclick:stopPropagation="true">
-            <h3>⚠️ 确认清空</h3>
-            <p>确定要删除所有任务记录吗？此操作不可恢复。</p>
+            <h3>⚠️ @L["Tasks_ConfirmClearTitle"]</h3>
+            <p>@L["Tasks_ConfirmClearMessage"]</p>
             <div class="modal-actions">
-                <button @onclick="HideClearConfirm" class="btn btn-secondary">取消</button>
-                <button @onclick="ClearAllTasks" class="btn btn-danger">确认清空</button>
+                <button @onclick="HideClearConfirm" class="btn btn-secondary">@L["Tasks_Cancel"]</button>
+                <button @onclick="ClearAllTasks" class="btn btn-danger">@L["Tasks_ConfirmClearButton"]</button>
             </div>
         </div>
     </div>
@@ -52,14 +54,14 @@
 {
     <div class="loading">
         <div class="spinner"></div>
-        <span>加载中...</span>
+        <span>@L["Tasks_Loading"]</span>
     </div>
 }
 else if (!tasks.Any())
 {
     <div class="no-tasks">
         <span>📋</span>
-        <p>暂无任务</p>
+        <p>@L["Tasks_NoTasks"]</p>
     </div>
 }
 else
@@ -96,7 +98,7 @@ else
                     @if (task.Result.Error.Contains("返回内容为空") || task.Result.Error.Contains("不支持该问题"))
                     {
                         <div class="alert alert-warning mt-2 py-1 px-2" style="font-size: 0.85em;">
-                            💡 <strong>建议：</strong>当前 AI 可能不支持该问题，可点击上方"🤖 模型"切换其他 AI 提供商或模型后再试。
+                            @((MarkupString)L["Tasks_SuggestionHtml"].Value)
                         </div>
                     }
                 }
@@ -111,7 +113,7 @@ else
                             }
                             @if (task.Parameters.ContainsKey("query") && !string.IsNullOrEmpty(task.Parameters["query"]))
                             {
-                                <small class="text-muted d-block mt-1">提示词: @task.Parameters["query"]</small>
+                                <small class="text-muted d-block mt-1">@L["Tasks_PromptLabel"] @task.Parameters["query"]</small>
                             }
                         }
                     </div>
@@ -126,7 +128,7 @@ else
                             }
                             else
                             {
-                                <span>🔄 重试</span>
+                                <span>🔄 @L["Tasks_Retry"]</span>
                             }
                         </button>
                     </div>
@@ -138,11 +140,11 @@ else
                         if (notes.GetArrayLength() > 0)
                         {
                             <div class="task-notes-list">
-                                <strong>📝 生成的笔记：</strong>
+                                <strong>📝 @L["Tasks_GeneratedNotes"]</strong>
                                 <ul>
                                 @foreach (var note in notes.EnumerateArray())
                                 {
-                                    var noteTitle = GetJsonString(note, "title", "未命名笔记");
+                                    var noteTitle = GetJsonString(note, "title", L["Tasks_UnnamedNote"]);
                                     var notePath = GetJsonString(note, "path");
                                     var noteId = NormalizeNoteId(notePath);
                                     var displayName = BuildNoteDisplayName(noteTitle, notePath, noteId);
@@ -156,7 +158,7 @@ else
                                         }
                                         else
                                         {
-                                            <span>📄 @displayName (无路径)</span>
+                                            <span>📄 @displayName @L["Tasks_NoPathSuffix"]</span>
                                         }
                                     </li>
                                 }
@@ -166,7 +168,7 @@ else
                         else
                         {
                             <div class="task-notes-list">
-                                <small class="text-muted">任务成功但未生成笔记</small>
+                                <small class="text-muted">@L["Tasks_SuccessNoNotes"]</small>
                             </div>
                         }
                     }
@@ -175,7 +177,7 @@ else
                         <div class="task-notes-list">
                             @if (ankiData.TryGetProperty("totalCards", out var tc))
                             {
-                                <small class="text-success">✅ 生成 @tc 张记忆卡片</small>
+                                <small class="text-success">@(string.Format(L["Tasks_GeneratedCards"], tc))</small>
                             }
                             @if (ankiData.TryGetProperty("message", out var msg))
                             {
@@ -186,7 +188,7 @@ else
                     else
                     {
                         <div class="task-notes-list">
-                            <small class="text-muted">无法解析生成的笔记数据 (类型: @(task.Result.Data?.GetType().Name ?? "null"))</small>
+                            <small class="text-muted">@(string.Format(L["Tasks_UnparseableNotes"], task.Result.Data?.GetType().Name ?? "null"))</small>
                         </div>
                     }
                     // 显示 AI 请求详情
@@ -196,7 +198,7 @@ else
                         && requestsArr.ValueKind == System.Text.Json.JsonValueKind.Array)
                     {
                         <div class="task-request-info mt-1">
-                            <small class="text-muted">📋 请求详情：</small>
+                            <small class="text-muted">📋 @L["Tasks_RequestDetails"]</small>
                             @foreach (var req in requestsArr.EnumerateArray())
                             {
                                 var providerName = GetJsonString(req, "providerName", "");
@@ -219,7 +221,7 @@ else
                 else if (task.Result?.Success == true && task.Result?.Data == null)
                 {
                     <div class="task-notes-list">
-                        <small class="text-warning">任务成功但 Data 为 null</small>
+                        <small class="text-warning">@L["Tasks_SuccessDataNull"]</small>
                     </div>
                 }
                 <div class="task-time">
@@ -230,13 +232,13 @@ else
                             <button @onclick="(() => CancelTask(task.Id))"
                                     @onclick:stopPropagation="true"
                                     class="btn btn-sm btn-outline-secondary me-1">
-                                ⏹ 取消
+                                ⏹ @L["Tasks_Cancel"]
                             </button>
                         }
                         <button @onclick="(() => DeleteTask(task.Id))" 
                                 @onclick:stopPropagation="true"
                                 class="btn btn-sm btn-outline-danger">
-                            🗑️ 删除
+                            🗑️ @L["Tasks_Delete"]
                         </button>
                     </div>
                 </div>
@@ -585,7 +587,7 @@ else
         return fallback;
     }
 
-    private static string BuildNoteDisplayName(string title, string rawPath, string normalizedId)
+    private string BuildNoteDisplayName(string title, string rawPath, string normalizedId)
     {
         // 优先显示分类路径（如：病机/气血不通）；缺失时回退标题
         if (!string.IsNullOrWhiteSpace(normalizedId))
@@ -603,25 +605,25 @@ else
             return value.Trim('/');
         }
 
-        return string.IsNullOrWhiteSpace(title) ? "未命名笔记" : title;
+        return string.IsNullOrWhiteSpace(title) ? L["Tasks_UnnamedNote"] : title;
     }
 
     private string GetTaskTypeDisplayName(string type)
     {
         return type switch
         {
-            "split_atom_notes" => "拆分原子笔记（旧）",
-            "ai_query" => "AI 查询",
-            "ai_vault_generation" => "🤖 AI 生成知识库",
-            "sync" => "同步",
-            "openclaw" => "🦀 OpenClaw 分析",
+            "split_atom_notes" => L["Tasks_TypeSplitAtomNotes"],
+            "ai_query" => L["Tasks_TypeAiQuery"],
+            "ai_vault_generation" => L["Tasks_TypeAiVaultGeneration"],
+            "sync" => L["Tasks_TypeSync"],
+            "openclaw" => L["Tasks_TypeOpenClaw"],
             _ => type
         };
     }
 
     private async Task DeleteTask(string taskId)
     {
-        if (!await JSRuntime.InvokeAsync<bool>("confirm", "确定要删除这个任务吗？"))
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", L["Tasks_ConfirmDeleteMessage"]))
             return;
         var success = await ApiService.DeleteTaskAsync(taskId);
         if (success) await LoadTasks();
@@ -629,7 +631,7 @@ else
 
     private async Task CancelTask(string taskId)
     {
-        if (!await JSRuntime.InvokeAsync<bool>("confirm", "确定要取消这个任务吗？正在执行的操作将被中断。"))
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", L["Tasks_ConfirmCancelMessage"]))
             return;
         var success = await ApiService.CancelTaskAsync(taskId);
         if (success) await LoadTasks();
@@ -648,12 +650,12 @@ else
             }
             else
             {
-                await JSRuntime.InvokeVoidAsync("alert", string.IsNullOrWhiteSpace(response.Message) ? "重试失败" : response.Message);
+                await JSRuntime.InvokeVoidAsync("alert", string.IsNullOrWhiteSpace(response.Message) ? L["Tasks_RetryFailedTitle"] : response.Message);
             }
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"重试失败：{ex.Message}");
+            await JSRuntime.InvokeVoidAsync("alert", string.Format(L["Tasks_RetryFailedWithMessage"], ex.Message));
         }
         finally
         {
