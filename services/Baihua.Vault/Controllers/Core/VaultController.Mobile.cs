@@ -1,4 +1,3 @@
-using Baihua.Core.Services;
 using Baihua.Core;
 using Baihua.Core.Security;
 using Microsoft.AspNetCore.Mvc;
@@ -17,12 +16,12 @@ public partial class VaultController
     [HttpGet("cards")]
     public ActionResult<object> GetCards([FromQuery] string vaultId)
     {
-        // 绉诲姩绔?API 缁熶竴浣跨敤 HMAC 绛惧悕楠岃瘉锛堝湪 Program.cs 涓棿浠朵腑瀹屾垚锛?
-        // 涓嶅啀棰濆瑕佹眰 Bearer Token锛屼笌 GetManifest/GetFile 淇濇寔涓€鑷?
+        // 移动端 API 统一使用 HMAC 签名验证（在 Program.cs 中间件中完成）
+        // 不再额外要求 Bearer Token，与 GetManifest/GetFile 保持一致
         var targetVault = _vaultSettings.GetVaults().FirstOrDefault(v => v.Id == vaultId);
         if (targetVault == null || string.IsNullOrEmpty(targetVault.Path))
         {
-            return NotFound(new { error = "鐭ヨ瘑搴撲笉瀛樺湪" });
+            return NotFound(new { error = "知识库不存在" });
         }
 
         var cardsPath = System.IO.Path.Combine(targetVault.Path, "cards");
@@ -62,7 +61,7 @@ public partial class VaultController
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "瑙ｆ瀽鍗＄墖鏂囦欢澶辫触锛歿File}", file);
+                _logger.LogError(ex, "解析卡片文件失败：{File}", file);
             }
         }
 
@@ -70,9 +69,9 @@ public partial class VaultController
     }
 
     /// <summary>
-    /// 瑙ｆ瀽鍗＄墖 JSON 鏂囦欢锛屾敮鎸佷袱绉嶆牸寮忥細
-    /// 1. 鏃ф牸寮忥細鏂囦欢鏈韩鏄?MobileCardItem[] 鏁扮粍
-    /// 2. 鏍囧噯鏍煎紡锛歿 "Name": "...", "Cards": [ ... ] }
+    /// 解析卡片 JSON 文件，支持两种格式：
+    /// 1. 旧格式：文件本身是 MobileCardItem[] 数组
+    /// 2. 标准格式：{ "Name": "...", "Cards": [ ... ] }
     /// </summary>
     private static List<MobileCardItem> ParseCardFile(string json)
     {
@@ -106,7 +105,7 @@ public partial class VaultController
     }
 
     /// <summary>
-    /// 鎶婂崱鐗囧瓧娈电粺涓€杞垚瀛楃涓层€傚吋瀹瑰瓧娈典负 JSON 鏁扮粍锛堢┖鏁扮粍鍒欒烦杩囷級鎴栧瓧绗︿覆鐨勬儏鍐点€?
+    /// 把卡片字段统一转成字符串。兼容字段为 JSON 数组（空数组则跳过）或字符串的情况。
     /// </summary>
     private static string NormalizeCardField(JsonElement field, string fieldName, string filePath)
     {
@@ -115,7 +114,7 @@ public partial class VaultController
             case JsonValueKind.String:
                 return field.GetString() ?? "";
             case JsonValueKind.Array:
-                // 绌烘暟缁勮涓烘棤鏁堬紱闈炵┖鏁扮粍鎸夎鎷兼帴
+                // 空数组视为无效；非空数组按行拼接
                 var items = field.EnumerateArray()
                     .Where(e => e.ValueKind == JsonValueKind.String)
                     .Select(e => e.GetString())
@@ -128,7 +127,7 @@ public partial class VaultController
     }
 
     /// <summary>
-    /// 鏍囧噯鍗＄墖鏂囦欢鍖呰鏍煎紡
+    /// 标准卡片文件包装格式
     /// </summary>
     private class CardFileWrapper
     {
@@ -137,7 +136,7 @@ public partial class VaultController
     }
 
     /// <summary>
-    /// 鑾峰彇绉诲姩绔璇侀厤缃紙Family 鐗堣繑鍥炲疄闄?sharedSecret锛屼緵鑷姩鍙戠幇娴佺▼浣跨敤锛?
+    /// 获取移动端认证配置（Family 版返回实际 sharedSecret，供自动发现流程使用）
     /// </summary>
     [HttpPost("auth/config")]
     public ActionResult<object> GetMobileAuthConfig()
@@ -146,7 +145,7 @@ public partial class VaultController
     }
 
     /// <summary>
-    /// 鑾峰彇鐭ヨ瘑搴撶瑪璁版暟閲?
+    /// 获取知识库笔记数量
     /// </summary>
     [HttpGet("note-count")]
     public ActionResult<int> GetNoteCount([FromQuery] string vaultId)
@@ -154,17 +153,17 @@ public partial class VaultController
         var vault = _vaultSettings.GetVaults().FirstOrDefault(v => v.Id == vaultId);
         if (vault == null)
         {
-            return NotFound(new { error = "鐭ヨ瘑搴撲笉瀛樺湪", vaultId });
+            return NotFound(new { error = "知识库不存在", vaultId });
         }
         if (string.IsNullOrEmpty(vault.Path))
         {
-            return StatusCode(500, new { error = "鐭ヨ瘑搴撹矾寰勪负绌?, vaultId });
+            return StatusCode(500, new { error = "知识库路径为空", vaultId });
         }
 
         var notesPath = System.IO.Path.Combine(vault.Path, "notes");
         if (!System.IO.Directory.Exists(notesPath))
         {
-            _logger.LogWarning("鐭ヨ瘑搴?notes 鐩綍涓嶅瓨鍦細{Path}", notesPath);
+            _logger.LogWarning("知识库 notes 目录不存在：{Path}", notesPath);
             return Ok(0);
         }
 

@@ -1,65 +1,62 @@
 @using Baihua.Web.Services
 @using Microsoft.AspNetCore.Components.Web
-@using Microsoft.Extensions.Localization
 @inject AuthService AuthService
 @inject CapabilityService CapabilityService
 @inject GlobalStateService GlobalStateService
 @inject NavigationManager NavigationManager
 @inject UserTypeService UserTypeService
-@inject CultureService CultureService
-@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 @implements IDisposable
 
-<!-- 闂侀潻濡囬崕銈呪枍濞嗘挻鐒诲璺侯儏椤忋儵鏌?-->
+<!-- 场景选择器 -->
 <div class="scene-selector">
     <button class="scene-btn @(_activeScene == 0 ? "active" : "")" @onclick="() => _activeScene = 0">
-        <span class="scene-icon">濡絽鍟幉</span>
-        <span class="scene-label">闂佹椿鍘归崕鎾儊閹存繄姘</span>
+        <span class="scene-icon">📚</span>
+        <span class="scene-label">知识库</span>
     </button>
     <button class="scene-btn @(_activeScene == 1 ? "active" : "")" @onclick="() => _activeScene = 1">
-        <span class="scene-icon">濡絽鍟崳顖炴煃閵夈儳鈻嶉柣鎾崇墐閺備線鍩€椤掆偓缁嬪懘鎮℃禒</span>
-        <span class="scene-label">闁诲海顢婂▔娑樷槈娴</span>
+        <span class="scene-icon">👨‍👩‍👧</span>
+        <span class="scene-label">家庭</span>
     </button>
     <button class="scene-btn @(_activeScene == 2 ? "active" : "")" @onclick="() => _activeScene = 2">
-        <span class="scene-icon">濡絽鍠氬Ο</span>
-        <span class="scene-label">AI 闁诲骸婀遍崑銈夋偘濞嗘垟鍋撴禒</span>
+        <span class="scene-icon">🤖</span>
+        <span class="scene-label">AI 实验室</span>
     </button>
 </div>
 
-<!-- 濡絽鍟幉?闂佹椿鍘归崕鎾儊閹寸偞鍎?-->
+<!-- 📚 知识库 -->
 @if (_activeScene == 0)
 {
     <div class="nav-group">
         <NavLink href="" Match="NavLinkMatch.All">
             <span class="nav-icon bi bi-house-door"></span>
-            <span>婵☆偓绲鹃悧鐘诲Υ娴</span>
+            <span>首页</span>
         </NavLink>
         <NavLink href="browse">
             <span class="nav-icon bi bi-folder2-open"></span>
-            <span>闂佹椿鍘归崕鎾儊閹寸偞鍎熼柟鎯ь嚟閵堝鎮锋禒</span>
+            <span>知识库浏览</span>
         </NavLink>
         <NavLink href="search">
             <span class="nav-icon bi bi-search"></span>
-            <span>闂佺懓鍚嬬划搴ㄥ磼娴</span>
+            <span>搜索</span>
         </NavLink>
         <NavLink href="cards">
             <span class="nav-icon bi bi-layers"></span>
-            <span>闁荤姳鐒﹀妯兼崲閸岀偛纭€闁挎稑瀚。</span>
+            <span>记忆卡片</span>
         </NavLink>
         <NavLink href="vaults">
             <span class="nav-icon bi bi-folder2-open"></span>
-            <span>闂佹椿鍘归崕鎾儊閹寸偞鍎熼柟楣冾杺閸氣偓闂佽娆</span>
+            <span>知识库管理</span>
         </NavLink>
     </div>
 }
 
-<!-- 濡絽鍟崳顖炴煃閵夈儳鈻嶉柣鎾崇墐閺備線鍩€椤掆偓缁嬪懘鎮?闁诲海顢婂▔娑樷槈?-->
+<!-- 👨‍👩‍👧 家庭 -->
 @if (_activeScene == 1)
 {
     <div class="nav-group">
         <NavLink href="tasks">
             <span class="nav-icon bi bi-list-check"></span>
-            <span>婵炲濮鹃褎鎱ㄦ禒</span>
+            <span>任务</span>
         </NavLink>
         <NavLink href="openclaw">
             <span class="nav-icon bi bi-robot"></span>
@@ -67,105 +64,90 @@
         </NavLink>
         <NavLink href="daily-card">
             <span class="nav-icon bi bi-journal-bookmark"></span>
-            <span>濠殿噯绲界换鎴澪涢埡鍌溾枖闁逞屽墰閺侇喕娆</span>
+            <span>每日一帖</span>
         </NavLink>
         <NavLink href="achievements">
             <span class="nav-icon bi bi-trophy"></span>
-            <span>闂佺懓鐡ㄩ崝鏇烆潩閵婏附娅犳禒</span>
+            <span>成就墙</span>
         </NavLink>
         <NavLink href="leaderboard">
             <span class="nav-icon bi bi-joystick"></span>
-            <span>闁荤姍鍕灱闁搞劌鍢查～妞炬</span>
+            <span>赛舟榜</span>
         </NavLink>
         <NavLink href="dashboard">
             <span class="nav-icon bi bi-bar-chart-line"></span>
-            <span>闁诲海鎳撻悥濂稿汲闁秵鍎戦悗锝庡亝缁</span>
+            <span>家长看板</span>
         </NavLink>
     </div>
 }
 
-<!-- 濡絽鍠氬Ο?AI 闁诲骸婀遍崑銈夋偘濞嗘垟鍋?-->
+<!-- 🤖 AI 实验室 -->
 @if (_activeScene == 2)
 {
     <div class="nav-group">
-        <div class="nav-group-label">闁诲海鏁搁、濠囨儊</div>
+        <div class="nav-group-label">对话</div>
         <NavLink href="messages">
             <span class="nav-icon bi bi-chat-dots"></span>
-            <span>AI 闁诲海鏁搁、濠囨儊娴</span>
+            <span>AI 对话</span>
         </NavLink>
         <NavLink href="master-chat">
             <span class="nav-icon bi bi-mortarboard"></span>
-            <span>闂佹儳绻戠喊宥団偓姘懅閺侇噣宕奸姀鐘靛幀</span>
+            <span>虚拟师父</span>
         </NavLink>
     </div>
 
     @if (_isProfessional)
     {
         <div class="nav-group">
-            <div class="nav-group-label">闂佹椿鍠楀濠氬煘</div>
+            <div class="nav-group-label">研究</div>
             @if (_canShowLocalModels)
             {
                 <NavLink href="local-models">
                     <span class="nav-icon bi bi-cpu"></span>
-                    <span>闂佸搫鐗滈崜娆忥耿閺夋嚦鐔煎灳瀹曞洠鍋撴禒</span>
+                    <span>本地模型</span>
                 </NavLink>
             }
             @if (_canShowModelBenchmark)
             {
                 <NavLink href="model-benchmark">
                     <span class="nav-icon bi bi-speedometer2"></span>
-                    <span>濠碘槅鍨埀顒€纾埀顒勵棑閹风娀宕熼鍌樺仦</span>
+                    <span>模型评测</span>
                 </NavLink>
             }
             <NavLink href="ai-metrics">
                 <span class="nav-icon bi bi-graph-up-arrow"></span>
-                <span>AI 闂佽鍎搁崱妤€骞嬮梺鐑╂櫆閸ㄥ墎鏁禒</span>
+                <span>AI 性能监控</span>
             </NavLink>
             <NavLink href="hardware-benchmark">
                 <span class="nav-icon bi bi-motherboard"></span>
-                <span>缂佺虎鍙庨崗娑樷枎閵忋垺瀚氶柛鏇ㄥ墰閵</span>
+                <span>硬件评测</span>
             </NavLink>
         </div>
     }
     <div class="nav-group">
-        <div class="nav-group-label">闂備焦婢樼粔鍫曟偪</div>
+        <div class="nav-group-label">配置</div>
         <NavLink href="settings">
             <span class="nav-icon bi bi-gear"></span>
-            <span>AI 闁荤姳绀佹晶浠嬫偪娴</span>
+            <span>AI 设置</span>
         </NavLink>
         <NavLink href="prompt-templates">
             <span class="nav-icon bi bi-chat-square-text"></span>
-            <span>闂佸湱绮崝妤呭Φ濮樿鲸瀚氱€广儱鏋烘笟鈧鏈垫</span>
+            <span>提示词模板</span>
         </NavLink>
     </div>
 }
 
 <hr class="nav-divider" />
 
-<!-- 濠碘槅鍨埀顒€纾涵鈧梺鍛婂笒濞诧箑鐣?-->
+<!-- 模式切换 -->
 <div class="nav-group">
-    <div class="nav-group-label">濠碘槅鍨埀顒€纾涵鈧</div>
-    <div class="mode-switch" @onclick="ToggleUserType">
-        <span class="mode-label @(_isProfessional ? "active" : "muted")">濡絽鍟弳?婵炴垶鎸婚幐椋庣箔娴</span>
+    <div class="nav-group-label">模式</div>
+    <div class="mode-switch" @onclick="ToggleUserType" title="@(_isProfessional ? "当前：专业模式" : "当前：简易模式")">
+        <span class="mode-label @(_isProfessional ? "active" : "muted")">🔧 专业</span>
         <div class="switch-track @(_isProfessional ? "track-pro" : "track-easy")">
             <div class="switch-thumb @(_isProfessional ? "thumb-left" : "thumb-right")"></div>
         </div>
-        <span class="mode-label @(!_isProfessional ? "active" : "muted")">濡絽鍟崳?缂備胶濮崑鎾绘煛娴</span>
-    </div>
-</div>
-
-<!-- 闁荤姴娴傞崣鈧柍璇茬墦瀹曟岸宕堕妸銉ョ哎 -->
-<div class="nav-group">
-    <div class="nav-group-label">@L["Language"]</div>
-    <div class="language-switch">
-        @foreach (var (code, name) in CultureService.SupportedCultures)
-        {
-            <button class="lang-btn @(CultureService.GetCurrentCulture() == code ? "active" : "")"
-                    @onclick="() => CultureService.SwitchToAsync(code)"
-                    disabled="@(CultureService.GetCurrentCulture() == code)">
-                @name
-            </button>
-        }
+        <span class="mode-label @(!_isProfessional ? "active" : "muted")">👤 简易</span>
     </div>
 </div>
 
@@ -179,10 +161,10 @@
     {
         UserTypeService.UserTypeChanged += OnUserTypeChanged;
 
-        // 闂佸搫绉烽～澶婄暤娴ｅ浜归柟鎯у暱椤ゅ懘鎮规笟顖氱仯闁轰線浜堕獮鎺楀Ω閿旂晫鍔烽梺闈╁閸庛倕鈻?
+        // 根据当前路由推断场景
         var relativePath = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
 
-        // 闂佺厧鐤囧Λ鍕叏韫囨拹娑㈠焵椤掆偓闇?
+        // 能力检测
         try
         {
             _canShowLocalModels = await CapabilityService.CanShowAsync("LocalModelsPage");
@@ -194,7 +176,7 @@
             _canShowModelBenchmark = true;
         }
 
-        // 闁荤姳闄嶉崹钘壩ｉ崟顒傤洸閻庯絺鏅滈?
+        // 订阅事件
         NavigationManager.LocationChanged += OnLocationChanged;
     }
 
@@ -210,7 +192,7 @@
     private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
     {
         var relativePath = NavigationManager.ToBaseRelativePath(e.Location);
-        // URL 闂佽浜介崝宥夊蓟閸ヮ剙鎹堕柣鎴炆戦悵?
+        // URL 推断场景
         var inferred = relativePath switch
         {
             string p when p.StartsWith("tasks") || p.StartsWith("openclaw") || p.StartsWith("achievements") || p.StartsWith("leaderboard") || p.StartsWith("dashboard") || p.StartsWith("daily-card") => 1,
@@ -357,5 +339,3 @@
         opacity: 0.5;
     }
 </style>
-
-

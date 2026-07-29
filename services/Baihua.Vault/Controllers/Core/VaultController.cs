@@ -1,4 +1,3 @@
-using Baihua.Core.Services;
 using Baihua.Core;
 using Baihua.Core.Security;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +11,7 @@ using Baihua.Contracts.Vaults;
 
 namespace Baihua.Vault.Controllers;
     /// <summary>
-    /// 楠岃瘉 Token 璇锋眰
+    /// 验证 Token 请求
     /// </summary>
     public class VerifyTokenRequest
     {
@@ -25,7 +24,7 @@ namespace Baihua.Vault.Controllers;
     [Route("mg")]
     public partial class VaultController : ControllerBase
     {
-        private readonly Services.VaultSettingsService _vaultSettings;
+        private readonly VaultSettingsService _vaultSettings;
         private readonly DeviceService _deviceService;
         private readonly ILogger<VaultController> _logger;
         private readonly ISyncAuthorizationStrategy _syncAuthStrategy;
@@ -33,23 +32,23 @@ namespace Baihua.Vault.Controllers;
         private readonly RequestSignatureService _signatureService;
         private readonly IVaultNameResolver _vaultNameResolver;
 
-        // 鏀寔鐨勬枃浠舵墿灞曞悕
+        // 支持的文件扩展名
         private static readonly HashSet<string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase)
         {
             ".md",
-            ".json",  // Anki 鍗＄墖鏂囦欢
+            ".json",  // Anki 卡片文件
             ".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".bmp", ".ico"
         };
 
-        // 鎺掗櫎鐨勭洰褰?
+        // 排除的目录
         private static readonly HashSet<string> ExcludedDirs = new(StringComparer.OrdinalIgnoreCase)
         {
             ".git", ".obsidian", ".trash", "node_modules", ".DS_Store"
         };
 
         /// <summary>
-        /// 鏍规嵁vaultId瑙ｆ瀽鐭ヨ瘑搴撹矾寰勶紝涓嶄慨鏀瑰叏灞€娲昏穬鐘舵€併€?
-        /// 涓嶅啀鍥為€€鍒板綋鍓嶆椿璺冪煡璇嗗簱锛屽繀椤绘樉寮忔寚瀹?vaultId銆?
+        /// 根据vaultId解析知识库路径，不修改全局活跃状态。
+        /// 不再回退到当前活跃知识库，必须显式指定 vaultId。
         /// </summary>
         private string? ResolveVaultPath(string? vaultId)
         {
@@ -64,12 +63,12 @@ namespace Baihua.Vault.Controllers;
                 return targetVault.Path;
             }
 
-            _logger.LogWarning("鎸囧畾鐨勭煡璇嗗簱涓嶅瓨鍦ㄦ垨璺緞涓虹┖锛歿VaultId}", vaultId);
+            _logger.LogWarning("指定的知识库不存在或路径为空：{VaultId}", vaultId);
             return null;
         }
 
         public VaultController(
-            Services.VaultSettingsService vaultSettings,
+            VaultSettingsService vaultSettings,
             DeviceService deviceService,
             ILogger<VaultController> logger,
             ISyncAuthorizationStrategy syncAuthStrategy,
@@ -87,7 +86,7 @@ namespace Baihua.Vault.Controllers;
         }
 
         /// <summary>
-        /// 鑾峰彇鎵€鏈夌煡璇嗗簱鍒楄〃
+        /// 获取所有知识库列表
         /// </summary>
         [HttpGet("vaults")]
         public ActionResult<IEnumerable<object>> GetVaults()
@@ -106,12 +105,12 @@ namespace Baihua.Vault.Controllers;
                 pushedAt = v.PushedAt
             });
 
-            _logger.LogDebug("杩斿洖鐭ヨ瘑搴撳垪琛紝鍏?{Count} 涓?, vaults.Count);
+            _logger.LogDebug("返回知识库列表，共 {Count} 个", vaults.Count);
             return Ok(result);
         }
 
         /// <summary>
-        /// 楠岃瘉璇锋眰鐨勮澶囨槸鍚﹀凡鎺堟潈锛堟敮鎸佹柊鏃т袱绉?Token 楠岃瘉鏂瑰紡锛?
+        /// 验证请求的设备是否已授权（支持新旧两种 Token 验证方式）
         /// </summary>
         private bool ValidateDeviceAuthorization()
         {
@@ -123,8 +122,8 @@ namespace Baihua.Vault.Controllers;
 
             var token = authHeader.Substring("Bearer ".Length).Trim();
             
-            // 浼樺厛浣跨敤鏂扮殑 PairingService 楠岃瘉锛堟敮鎸?Token 杩囨湡妫€鏌ワ級
-            // 浣跨敤DeviceService楠岃瘉
+            // 优先使用新的 PairingService 验证（支持 Token 过期检查）
+            // 使用DeviceService验证
             return _deviceService.ValidateAccessToken(token);
         }
 

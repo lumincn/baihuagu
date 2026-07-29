@@ -1,8 +1,8 @@
-using Baihua.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Baihua.Contracts.Search;
 using System.Diagnostics;
 
+using Baihua.Family.Services;
 namespace Baihua.Vault.Controllers;
 
 public partial class SearchController
@@ -20,7 +20,7 @@ public partial class SearchController
                     {
                         VaultConfigured = false,
                         SearchMethod = "none",
-                        ErrorMessage = "蹇呴』鎸囧畾鏈夋晥鐨勭煡璇嗗簱"
+                        ErrorMessage = "必须指定有效的知识库"
                     }
                 });
             }
@@ -28,7 +28,7 @@ public partial class SearchController
             var vaultPath = _vaultSettings.GetVaults().FirstOrDefault(v => v.Id == vaultId)?.Path;
             if (string.IsNullOrEmpty(vaultPath) || !System.IO.Directory.Exists(vaultPath))
             {
-                _logger.LogWarning("鐭ヨ瘑搴撹矾寰勬棤鏁堬細VaultId={VaultId}, Path={Path}", vaultId, vaultPath);
+                _logger.LogWarning("知识库路径无效：VaultId={VaultId}, Path={Path}", vaultId, vaultPath);
                 return Ok(new
                 {
                     results = new List<SearchResult>(),
@@ -38,8 +38,8 @@ public partial class SearchController
                         VaultExists = !string.IsNullOrEmpty(vaultPath) && System.IO.Directory.Exists(vaultPath),
                         SearchMethod = "none",
                         ErrorMessage = string.IsNullOrEmpty(vaultPath)
-                            ? "鏈壘鍒版寚瀹氱殑鐭ヨ瘑搴?
-                            : $"鐭ヨ瘑搴撹矾寰勪笉瀛樺湪锛歿vaultPath}"
+                            ? "未找到指定的知识库"
+                            : $"知识库路径不存在：{vaultPath}"
                     }
                 });
             }
@@ -49,11 +49,11 @@ public partial class SearchController
                 return Ok(new { results = new List<SearchResult>(), status = new SearchStatusInfo { VaultConfigured = true, VaultExists = true } });
             }
 
-            _logger.LogInformation("鎼滅储鐭ヨ瘑搴擄細{Query}", q);
+            _logger.LogInformation("搜索知识库：{Query}", q);
 
             try
             {
-                var canUseCli = Services.ObsidianExecutableResolver.TryGetPath(out var obsidianExe);
+                var canUseCli = ObsidianExecutableResolver.TryGetPath(out var obsidianExe);
                 var obsidianRunning = Process.GetProcessesByName("Obsidian").Length > 0;
                 string searchMethod = "file-scan";
                 string? errorMessage = null;
@@ -65,7 +65,7 @@ public partial class SearchController
                     
                     if (cliResults != null && cliResults.Count > 0)
                     {
-                        _logger.LogInformation("obsidian-cli 鎼滅储鎴愬姛锛氭壘鍒?{Count} 鏉＄粨鏋?, cliResults.Count);
+                        _logger.LogInformation("obsidian-cli 搜索成功：找到 {Count} 条结果", cliResults.Count);
                         return Ok(new
                         {
                             results = cliResults,
@@ -82,28 +82,28 @@ public partial class SearchController
                     searchMethod = "file-scan";
                     if (cliResults == null)
                     {
-                        _logger.LogDebug("obsidian-cli 鎼滅储澶辫触鎴栬秴鏃讹紝鍥為€€鍒版枃浠舵壂鎻?);
+                        _logger.LogDebug("obsidian-cli 搜索失败或超时，回退到文件扫描");
                     }
                 }
                 else if (canUseCli && !obsidianRunning)
                 {
-                    _logger.LogDebug("Obsidian 鏈繍琛岋紝浣跨敤鏂囦欢鎵弿");
+                    _logger.LogDebug("Obsidian 未运行，使用文件扫描");
                     searchMethod = "file-scan";
                 }
                 else
                 {
-                    _logger.LogDebug("obsidian-cli 涓嶅彲鐢紝浣跨敤鏂囦欢鎵弿");
+                    _logger.LogDebug("obsidian-cli 不可用，使用文件扫描");
                     searchMethod = "file-scan";
                 }
 
-                // 灏濊瘯 FTS5 鍏ㄦ枃鎼滅储
+                // 尝试 FTS5 全文搜索
                 var ftsResults = await _vaultNoteIndexer.SearchAsync(vaultId, q, HttpContext.RequestAborted);
                 if (ftsResults.Count > 0)
                 {
-                    _logger.LogInformation("FTS5 鎼滅储鎴愬姛锛氭壘鍒?{Count} 鏉＄粨鏋?, ftsResults.Count);
+                    _logger.LogInformation("FTS5 搜索成功：找到 {Count} 条结果", ftsResults.Count);
                     searchMethod = "fts5";
 
-                    // 濡傛灉閰嶇疆浜嗚涔夋悳绱紝杩涜閲嶆帓
+                    // 如果配置了语义搜索，进行重排
                     if (_embeddingService.IsSemanticSearchEnabled())
                     {
                         var rerankedResults = await _embeddingService.RerankBySimilarityAsync(q, ftsResults);
@@ -134,11 +134,11 @@ public partial class SearchController
                     });
                 }
 
-                // 鍥為€€鍒扮洿鎺ユ壂鎻忔枃浠?
+                // 回退到直接扫描文件
                 var fileResults = await SearchByScanningFiles(vaultPath, q);
-                _logger.LogInformation("鏂囦欢鎵弿瀹屾垚锛氭壘鍒?{Count} 鏉＄粨鏋?, fileResults.Count);
+                _logger.LogInformation("文件扫描完成：找到 {Count} 条结果", fileResults.Count);
                 
-                // 濡傛灉閰嶇疆浜嗚涔夋悳绱紝杩涜閲嶆帓
+                // 如果配置了语义搜索，进行重排
                 if (_embeddingService.IsSemanticSearchEnabled() && fileResults.Count > 0)
                 {
                     var rerankedResults = await _embeddingService.RerankBySimilarityAsync(q, fileResults);
@@ -158,7 +158,7 @@ public partial class SearchController
                 
                 if (fileResults.Count == 0)
                 {
-                    errorMessage = "鏈湪鐭ヨ瘑搴撲腑鎵惧埌鍖归厤鍐呭";
+                    errorMessage = "未在知识库中找到匹配内容";
                 }
                 
                 return Ok(new
@@ -176,8 +176,8 @@ public partial class SearchController
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "鎼滅储澶辫触");
-                return StatusCode(500, new { error = "鎼滅储澶辫触", message = ex.Message });
+                _logger.LogError(ex, "搜索失败");
+                return StatusCode(500, new { error = "搜索失败", message = ex.Message });
             }
         }
 }

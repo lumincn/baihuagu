@@ -1,4 +1,3 @@
-using Baihua.Core.Services;
 using Baihua.Core;
 using Baihua.Core.Security;
 using Microsoft.AspNetCore.Mvc;
@@ -23,33 +22,33 @@ public partial class VaultController
             return authResult;
         }
 
-        _logger.LogInformation("GetFile璇锋眰: path={Path}, vaultId={VaultId}", path, vaultId);
+        _logger.LogInformation("GetFile请求: path={Path}, vaultId={VaultId}", path, vaultId);
         
         if (string.IsNullOrEmpty(path))
         {
-            return BadRequest(new { error = "璺緞涓嶈兘涓虹┖" });
+            return BadRequest(new { error = "路径不能为空" });
         }
 
         var baseVaultPath = ResolveVaultPath(vaultId);
         if (string.IsNullOrEmpty(baseVaultPath))
         {
-            return BadRequest(new { error = "蹇呴』鎸囧畾鏈夋晥鐨勭煡璇嗗簱" });
+            return BadRequest(new { error = "必须指定有效的知识库" });
         }
 
         try
         {
-            // 璺緞瀹夊叏妫€鏌ワ細闃绘鐩綍閬嶅巻
+            // 路径安全检查：阻止目录遍历
             path = path.Replace("\\", "/").TrimStart('/');
             if (path.Contains(".."))
             {
-                _logger.LogWarning("妫€娴嬪埌鐩綍閬嶅巻灏濊瘯: {Path}", path);
-                return BadRequest(new { error = "闈炴硶璺緞" });
+                _logger.LogWarning("检测到目录遍历尝试: {Path}", path);
+                return BadRequest(new { error = "非法路径" });
             }
 
             var ext = System.IO.Path.GetExtension(path);
             if (!AllowedExtensions.Contains(ext))
             {
-                return BadRequest(new { error = $"涓嶆敮鎸佺殑鏂囦欢绫诲瀷: {ext}" });
+                return BadRequest(new { error = $"不支持的文件类型: {ext}" });
             }
 
             string filePath;
@@ -67,17 +66,17 @@ public partial class VaultController
                 filePath = System.IO.Path.GetFullPath(System.IO.Path.Combine(notesPath, path));
             }
 
-            // 纭繚鏂囦欢璺緞鍦ㄧ煡璇嗗簱鐩綍鍐咃紙闃叉璺緞閬嶅巻锛?
+            // 确保文件路径在知识库目录内（防止路径遍历）
             var baseFullPath = System.IO.Path.GetFullPath(baseVaultPath);
             if (!filePath.StartsWith(baseFullPath, StringComparison.OrdinalIgnoreCase))
             {
-                _logger.LogWarning("璺緞閬嶅巻琚樆姝? {FilePath} 涓嶅湪 {BasePath} 鍐?, filePath, baseFullPath);
-                return BadRequest(new { error = "闈炴硶璺緞" });
+                _logger.LogWarning("路径遍历被阻止: {FilePath} 不在 {BasePath} 内", filePath, baseFullPath);
+                return BadRequest(new { error = "非法路径" });
             }
             
             if (!System.IO.File.Exists(filePath))
             {
-                _logger.LogWarning("鏂囦欢涓嶅瓨鍦細{Path}", path);
+                _logger.LogWarning("文件不存在：{Path}", path);
                 return NotFound();
             }
 
@@ -99,8 +98,8 @@ public partial class VaultController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "璇诲彇鏂囦欢澶辫触锛歿Path}", path);
-            return StatusCode(500, new { error = "璇诲彇澶辫触", message = ex.Message });
+            _logger.LogError(ex, "读取文件失败：{Path}", path);
+            return StatusCode(500, new { error = "读取失败", message = ex.Message });
         }
     }
 

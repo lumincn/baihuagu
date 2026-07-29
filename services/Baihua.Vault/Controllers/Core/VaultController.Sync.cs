@@ -1,4 +1,3 @@
-using Baihua.Core.Services;
 using Baihua.Core;
 using Baihua.Core.Security;
 using Microsoft.AspNetCore.Mvc;
@@ -19,23 +18,23 @@ public partial class VaultController
         {
             if (string.IsNullOrEmpty(request.Token))
             {
-                return BadRequest(new { valid = false, error = "Token 涓嶈兘涓虹┖" });
+                return BadRequest(new { valid = false, error = "Token 不能为空" });
             }
 
             var isValid = _deviceService.ValidateAccessToken(request.Token);
 
             if (!isValid)
             {
-                return Ok(new { valid = false, error = "Token 鏃犳晥鎴栧凡杩囨湡" });
+                return Ok(new { valid = false, error = "Token 无效或已过期" });
             }
 
             return Ok(new { valid = true, deviceId = "" });
         }
 
         /// <summary>
-        /// 鑾峰彇鐭ヨ瘑搴撴竻鍗曪紙澧為噺鍚屾锛?
-        /// cloud 妯″紡锛欻MAC绛惧悕 + deviceId + 閰嶉/棰戠巼妫€鏌?
-        /// 瀹跺涵鐗?鏈湴妯″紡锛氫粛闇€ Bearer Token 楠岃瘉
+        /// 获取知识库清单（增量同步）
+        /// cloud 模式：HMAC签名 + deviceId + 配额/频率检查
+        /// 家庭版/本地模式：仍需 Bearer Token 验证
         /// </summary>
         [HttpGet("manifest")]
         public ActionResult<VaultManifestResponse> GetManifest([FromQuery] string vaultId, [FromQuery] string? deviceId = null)
@@ -52,13 +51,13 @@ public partial class VaultController
 
             if (string.IsNullOrEmpty(baseVaultPath))
             {
-                return NotFound(new { error = "鐭ヨ瘑搴撲笉瀛樺湪鎴栧凡琚垹闄? });
+                return NotFound(new { error = "知识库不存在或已被删除" });
             }
 
             if (!System.IO.Directory.Exists(baseVaultPath))
             {
-                _logger.LogError("鐭ヨ瘑搴撹矾寰勬棤鏁堬細{Path}锛屾暟鎹簱璁板綍瀛樺湪浣嗙墿鐞嗙洰褰曞凡涓㈠け", baseVaultPath);
-                return StatusCode(410, new { error = "鐭ヨ瘑搴撴暟鎹笉涓€鑷达細鐗╃悊鐩綍宸蹭涪澶?, vaultId });
+                _logger.LogError("知识库路径无效：{Path}，数据库记录存在但物理目录已丢失", baseVaultPath);
+                return StatusCode(410, new { error = "知识库数据不一致：物理目录已丢失", vaultId });
             }
 
             try
@@ -66,21 +65,21 @@ public partial class VaultController
                 var files = new List<ManifestFile>();
                 long maxMtime = 0;
 
-                // 鍚屾 notes/ 鐩綍
+                // 同步 notes/ 目录
                 var notesPath = System.IO.Path.Combine(baseVaultPath, "notes");
                 if (System.IO.Directory.Exists(notesPath))
                 {
                     ScanDirectory(notesPath, notesPath, files, ref maxMtime, "");
                 }
 
-                // 鍚屾 cards/ 鐩綍
+                // 同步 cards/ 目录
                 var cardsPath = System.IO.Path.Combine(baseVaultPath, "cards");
                 if (System.IO.Directory.Exists(cardsPath))
                 {
                     ScanDirectory(cardsPath, cardsPath, files, ref maxMtime, "cards/");
                 }
 
-                // 鍥為€€锛氬鏋?notes/ 鍜?cards/ 閮戒笉瀛樺湪锛屾壂鎻忔牴鐩綍涓嬬殑鐩存帴鏂囦欢
+                // 回退：如果 notes/ 和 cards/ 都不存在，扫描根目录下的直接文件
                 if (files.Count == 0 && !System.IO.Directory.Exists(notesPath) && !System.IO.Directory.Exists(cardsPath))
                 {
                     ScanDirectory(baseVaultPath, baseVaultPath, files, ref maxMtime, "");
@@ -90,23 +89,23 @@ public partial class VaultController
 
                 var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
                 var syncDeviceId = !string.IsNullOrWhiteSpace(deviceId) ? deviceId : "ip-" + ipAddress.GetHashCode().ToString("x");
-                var syncDeviceName = !string.IsNullOrWhiteSpace(deviceId) ? deviceId : "绉诲姩绔?" + ipAddress + ")";
+                var syncDeviceName = !string.IsNullOrWhiteSpace(deviceId) ? deviceId : "移动端(" + ipAddress + ")";
                 _deviceService.RecordSyncActivity(syncDeviceId, syncDeviceName, vaultId, files.Count, "manifest", ipAddress);
 
-                _logger.LogInformation("杩斿洖鍏ㄩ噺娓呭崟锛歿Count} 涓枃浠讹紝cursor={Cursor}, vaultId={VaultId}", files.Count, cursor, vaultId);
+                _logger.LogInformation("返回全量清单：{Count} 个文件，cursor={Cursor}, vaultId={VaultId}", files.Count, cursor, vaultId);
 
                 return Ok(new VaultManifestResponse
                 {
                     VaultId = vaultId,
-                    VaultName = targetVault?.Name ?? "鎸囧畾鐭ヨ瘑搴?,
+                    VaultName = targetVault?.Name ?? "指定知识库",
                     Cursor = cursor,
                     Files = files
                 });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "鑾峰彇娓呭崟澶辫触");
-                return StatusCode(500, new { error = "鑾峰彇澶辫触", message = ex.Message });
+                _logger.LogError(ex, "获取清单失败");
+                return StatusCode(500, new { error = "获取失败", message = ex.Message });
             }
         }
 
@@ -117,7 +116,7 @@ public partial class VaultController
                 var dirName = System.IO.Path.GetFileName(dir);
                 if (ExcludedDirs.Contains(dirName))
                 {
-                    _logger.LogDebug("ScanDirectory 璺宠繃鎺掗櫎鐩綍: {DirName}", dirName);
+                    _logger.LogDebug("ScanDirectory 跳过排除目录: {DirName}", dirName);
                     continue;
                 }
                 ScanDirectory(rootPath, dir, files, ref maxMtime, pathPrefix);
@@ -128,7 +127,7 @@ public partial class VaultController
                 var ext = System.IO.Path.GetExtension(file);
                 if (!AllowedExtensions.Contains(ext))
                 {
-                    _logger.LogDebug("ScanDirectory 璺宠繃涓嶆敮鎸佺殑鏂囦欢绫诲瀷: {File} ({Ext})", file, ext);
+                    _logger.LogDebug("ScanDirectory 跳过不支持的文件类型: {File} ({Ext})", file, ext);
                     continue;
                 }
 
@@ -144,14 +143,14 @@ public partial class VaultController
                 
                 if (string.IsNullOrWhiteSpace(relativePath))
                 {
-                    _logger.LogWarning("ScanDirectory 璁＄畻鍑虹┖鐨勭浉瀵硅矾寰? {File}", file);
+                    _logger.LogWarning("ScanDirectory 计算出空的相对路径: {File}", file);
                     continue;
                 }
 
                 var fileInfo = new System.IO.FileInfo(file);
                 if (fileInfo.Length == 0)
                 {
-                    _logger.LogWarning("ScanDirectory 璺宠繃绌烘枃浠? {File}", file);
+                    _logger.LogWarning("ScanDirectory 跳过空文件: {File}", file);
                     continue;
                 }
 

@@ -1,4 +1,3 @@
-using Baihua.Core.Services;
 using Baihua.Core;
 using Baihua.Core.Security;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +14,7 @@ namespace Baihua.Vault.Controllers;
 public partial class VaultController
 {
     /// <summary>
-    /// 绉诲姩绔帹閫?AI 鐢熸垚鐨勭煡璇嗗簱锛堟帴鏀舵潵鑷墜鏈虹鐨?DeepSeek 鐢熸垚鍐呭锛?
+    /// 移动端推送 AI 生成的知识库（接收来自手机端的 DeepSeek 生成内容）
     /// </summary>
     [HttpPost("/mobile-vaults/push")]
     public async Task<ActionResult> PushMobileVault([FromBody] MobileVaultPushRequest request)
@@ -25,21 +24,21 @@ public partial class VaultController
 
         if (string.IsNullOrWhiteSpace(request.VaultName) || request.Notes == null || request.Notes.Count == 0)
         {
-            return BadRequest(new { error = "鐭ヨ瘑搴撳悕绉板拰绗旇鍒楄〃涓嶈兘涓虹┖" });
+            return BadRequest(new { error = "知识库名称和笔记列表不能为空" });
         }
 
         try
         {
             var vaultRoot = _vaultSettings.VaultRootPathPreference;
             var mobileDir = Path.Combine(vaultRoot, "mobile");
-            var industry = string.IsNullOrWhiteSpace(request.Industry) ? "绉诲姩绔敓鎴? : request.Industry.Trim();
+            var industry = string.IsNullOrWhiteSpace(request.Industry) ? "移动端生成" : request.Industry.Trim();
             var safeVaultName = _vaultNameResolver.ToSafeDirectoryName(request.VaultName.Trim());
             var industryDir = Path.Combine(mobileDir, industry);
             Directory.CreateDirectory(industryDir);
 
             using var dbContext = _dbContextFactory.CreateDbContext();
 
-            // 鏌ユ壘鏄惁宸叉湁鍚屽悕鍚岃涓氱殑 mobile 鐭ヨ瘑搴?
+            // 查找是否已有同名同行业的 mobile 知识库
             var existingVault = dbContext.Vaults
                 .FirstOrDefault(v => !v.IsDeleted
                     && v.Source == "mobile"
@@ -55,20 +54,20 @@ public partial class VaultController
             {
                 vaultId = existingVault.VaultId;
 
-                // 妫€鏌ョ幇鏈夎矾寰勬槸鍚︾鍚堟柊鐨勪笁绾х粨鏋?mobile/{琛屼笟}/{鍚嶇О}/
+                // 检查现有路径是否符合新的三级结构 mobile/{行业}/{名称}/
                 var expectedPath = Path.Combine(industryDir, safeVaultName);
                 var isOldGuidStructure = !existingVault.Path.Equals(expectedPath, StringComparison.OrdinalIgnoreCase)
                     && !existingVault.Path.StartsWith(expectedPath + "_", StringComparison.OrdinalIgnoreCase);
 
                 if (isOldGuidStructure && Directory.Exists(existingVault.Path))
                 {
-                    // 鏃?GUID 缁撴瀯闇€瑕佽縼绉诲埌涓夌骇鐩綍缁撴瀯
-                    _logger.LogWarning("绉诲姩绔煡璇嗗簱璺緞缁撴瀯杩囨椂: {OldPath}锛岃縼绉诲埌: {NewPath}",
+                    // 旧 GUID 结构需要迁移到三级目录结构
+                    _logger.LogWarning("移动端知识库路径结构过时: {OldPath}，迁移到: {NewPath}",
                         existingVault.Path, expectedPath);
 
                     if (Directory.Exists(expectedPath))
                     {
-                        // 鐩爣鐩綍宸插瓨鍦紙涓嶅お鍙兘锛屼絾闃插尽锛?
+                        // 目标目录已存在（不太可能，但防御）
                         vaultDir = _vaultNameResolver.GetUniqueDirectoryPath(industryDir, safeVaultName);
                     }
                     else
@@ -79,7 +78,7 @@ public partial class VaultController
                     Directory.Move(existingVault.Path, vaultDir);
                     existingVault.Path = vaultDir;
                     migrated = true;
-                    _logger.LogInformation("鐭ヨ瘑搴撹矾寰勮縼绉诲畬鎴? {VaultId} -> {NewPath}", vaultId, vaultDir);
+                    _logger.LogInformation("知识库路径迁移完成: {VaultId} -> {NewPath}", vaultId, vaultDir);
                 }
                 else if (Directory.Exists(existingVault.Path))
                 {
@@ -87,14 +86,14 @@ public partial class VaultController
                 }
                 else
                 {
-                    // 鏁版嵁搴撹褰曞瓨鍦ㄤ絾鐗╃悊鐩綍宸蹭涪澶憋紝鎶ラ敊鑰屼笉鏄潤榛樺垱寤烘柊鐨?
-                    _logger.LogError("鐭ヨ瘑搴撴暟鎹簱璁板綍瀛樺湪浣嗙墿鐞嗙洰褰曚涪澶? {VaultId} {Path}",
+                    // 数据库记录存在但物理目录已丢失，报错而不是静默创建新的
+                    _logger.LogError("知识库数据库记录存在但物理目录丢失: {VaultId} {Path}",
                         existingVault.VaultId, existingVault.Path);
-                    return StatusCode(500, new { error = "鐭ヨ瘑搴撴暟鎹笉涓€鑷达細鏁版嵁搴撹褰曞瓨鍦ㄤ絾鐗╃悊鐩綍宸蹭涪澶憋紝璇疯仈绯荤鐞嗗憳" });
+                    return StatusCode(500, new { error = "知识库数据不一致：数据库记录存在但物理目录已丢失，请联系管理员" });
                 }
 
-                _logger.LogInformation("澶嶇敤宸叉湁绉诲姩绔煡璇嗗簱: {VaultId} {VaultName}{MigrationNote}锛岃拷鍔犵瑪璁?,
-                    vaultId, request.VaultName, migrated ? "锛堝凡杩佺Щ璺緞锛? : "");
+                _logger.LogInformation("复用已有移动端知识库: {VaultId} {VaultName}{MigrationNote}，追加笔记",
+                    vaultId, request.VaultName, migrated ? "（已迁移路径）" : "");
             }
             else
             {
@@ -106,17 +105,17 @@ public partial class VaultController
             var notesDir = Path.Combine(vaultDir, "notes");
             Directory.CreateDirectory(notesDir);
 
-            // 鍐欏叆绗旇鏂囦欢
+            // 写入笔记文件
             foreach (var note in request.Notes)
             {
                 var safeRelPath = string.IsNullOrWhiteSpace(note.RelPath)
                     ? $"{note.Title}.md"
                     : note.RelPath;
-                // 闃叉璺緞绌胯秺锛氭嫆缁濆寘鍚?.. 鐨勮矾寰?
+                // 防止路径穿越：拒绝包含 .. 的路径
                 if (safeRelPath.Contains(".."))
                 {
-                    _logger.LogWarning("妫€娴嬪埌璺緞绌胯秺灏濊瘯锛屽凡鎷掔粷: {RelPath}", safeRelPath);
-                    return BadRequest(new { error = $"闈炴硶鏂囦欢璺緞: {safeRelPath}" });
+                    _logger.LogWarning("检测到路径穿越尝试，已拒绝: {RelPath}", safeRelPath);
+                    return BadRequest(new { error = $"非法文件路径: {safeRelPath}" });
                 }
                 safeRelPath = safeRelPath.TrimStart('/', '\\');
                 var notePath = Path.Combine(notesDir, safeRelPath);
@@ -128,7 +127,7 @@ public partial class VaultController
                 await System.IO.File.WriteAllTextAsync(notePath, note.Content ?? "");
             }
 
-            // 娉ㄥ唽鍒版暟鎹簱锛堜粎褰撴槸鏂扮煡璇嗗簱鏃讹級
+            // 注册到数据库（仅当是新知识库时）
             var pushedByDeviceId = request.DeviceId ?? "";
             var pushedByDeviceName = request.DeviceName ?? "";
             var pushedAt = DateTime.UtcNow;
@@ -164,15 +163,15 @@ public partial class VaultController
                 await dbContext.SaveChangesAsync();
             }
 
-            _logger.LogInformation("绉诲姩绔煡璇嗗簱鎺ㄩ€佹垚鍔? {VaultId} {VaultName}锛屽叡 {NoteCount} 鏉＄瑪璁?,
+            _logger.LogInformation("移动端知识库推送成功: {VaultId} {VaultName}，共 {NoteCount} 条笔记",
                 vaultId, request.VaultName, request.Notes.Count);
 
-            return Ok(new { success = true, vaultId, message = migrated ? "鐭ヨ瘑搴撴帹閫佹垚鍔燂紙宸茶縼绉昏矾寰勭粨鏋勶級" : "鐭ヨ瘑搴撴帹閫佹垚鍔? });
+            return Ok(new { success = true, vaultId, message = migrated ? "知识库推送成功（已迁移路径结构）" : "知识库推送成功" });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "绉诲姩绔煡璇嗗簱鎺ㄩ€佸け璐? {VaultName}", request.VaultName);
-            return StatusCode(500, new { error = $"鎺ㄩ€佸け璐? {ex.Message}" });
+            _logger.LogError(ex, "移动端知识库推送失败: {VaultName}", request.VaultName);
+            return StatusCode(500, new { error = $"推送失败: {ex.Message}" });
         }
     }
 

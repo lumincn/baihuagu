@@ -1,4 +1,3 @@
-using Baihua.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -18,17 +17,17 @@ using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 鏄惧紡璁剧疆鐩戝惉鍦板潃锛岀‘淇濆懡浠よ --urls 鍜岀幆澧冨彉閲?ASPNETCORE_URLS 瑕嗙洊 appsettings 榛樿鍊?
+// 显式设置监听地址，确保命令行 --urls 和环境变量 ASPNETCORE_URLS 覆盖 appsettings 默认值
 var urls = builder.Configuration["urls"]
     ?? Environment.GetEnvironmentVariable("ASPNETCORE_URLS")
     ?? builder.Configuration["Kestrel:Endpoints:Http:Url"]
     ?? "http://0.0.0.0:8790";
 builder.WebHost.UseUrls(urls);
 
-// 鐧捐姳缁熶竴鏁版嵁鏍圭洰褰?BAIHUA_HOME 鐢?Core.Shared.BaihuaPaths 绠＄悊
-// 宸茶縼绉昏嚦 BAIHUA_HOME锛岃瑙?services/Baihua.Contracts/BaihuaPaths.cs
+// 百花统一数据根目录 BAIHUA_HOME 由 Core.Shared.BaihuaPaths 管理
+// 已迁移至 BAIHUA_HOME，详见 services/TaskRunner.Contracts/BaihuaPaths.cs
 
-// 娣诲姞鎺у埗鍣ㄤ笌 JSON 搴忓垪鍖?
+// 添加控制器与 JSON 序列化
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -42,26 +41,26 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "TaskRunner Vault API",
         Version = "v1",
-        Description = "鐧捐姳鐭ヨ瘑搴撴湇鍔?- Vault銆佸悓姝ャ€佹悳绱?
+        Description = "百花知识库服务 - Vault、同步、搜索"
     });
 });
 
-// Vault 鏁版嵁搴撲笂涓嬫枃
+// Vault 数据库上下文
 builder.Services.AddDbContext<Baihua.Data.VaultDbContext>(options =>
 {
     var dbPath = Baihua.Data.VaultDbContext.GetDbPath();
-    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;", sqlite => sqlite.MigrationsAssembly("Baihua.Data"))
+    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;", sqlite => sqlite.MigrationsAssembly("TaskRunner.Data"))
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Scoped, ServiceLifetime.Singleton);
 
 builder.Services.AddDbContextFactory<Baihua.Data.VaultDbContext>(options =>
 {
     var dbPath = Baihua.Data.VaultDbContext.GetDbPath();
-    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;", sqlite => sqlite.MigrationsAssembly("Baihua.Data"))
+    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;", sqlite => sqlite.MigrationsAssembly("TaskRunner.Data"))
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Singleton);
 
-// Family 鍜?AI 鍩熸暟鎹簱涓婁笅鏂囷紙Core.Shared 涓殑 TaskManager/AiClientService 渚濊禆锛?
+// Family 和 AI 域数据库上下文（Core.Shared 中的 TaskManager/AiClientService 依赖）
 builder.Services.AddDbContext<Baihua.Data.FamilyDbContext>(options =>
 {
     var dbPath = Baihua.Data.FamilyDbContext.GetDbPath();
@@ -94,7 +93,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
 
-// 鏍稿績鐭ヨ瘑搴撴湇鍔?
+// 核心知识库服务
 builder.Services.AddSingleton<IVaultNameResolver, VaultNameResolver>();
 builder.Services.AddSingleton<VaultSettingsService>();
 builder.Services.AddSingleton<VaultNoteIndexer>();
@@ -108,14 +107,14 @@ builder.Services.AddSingleton<AiSettingsService>();
 builder.Services.AddAiClientServices();
 builder.Services.AddHostedService<VaultIndexSchedulerService>();
 
-// 鍚屾鎺堟潈绛栫暐锛堝搴増锛?
+// 同步授权策略（家庭版）
 builder.Services.AddSingleton<Baihua.Family.Services.Strategies.ISyncAuthorizationStrategy, Baihua.Family.Services.Strategies.FamilySyncAuthorizationStrategy>();
 
-// 鍋ュ悍妫€鏌?
+// 健康检查
 builder.Services.AddHealthChecks()
     .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy());
 
-// CORS锛堜粎鏈湴/鍐呯綉锛?
+// CORS（仅本地/内网）
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -134,7 +133,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-// 鏃ュ織
+// 日志
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
@@ -158,7 +157,7 @@ builder.Logging.AddFilter("System.Net.Http", LogLevel.Warning);
 builder.Logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
 builder.Logging.AddFilter("TaskRunner.Vault", LogLevel.Information);
 
-// OpenTelemetry 瀵煎嚭鍒?OpenObserve
+// OpenTelemetry 导出到 OpenObserve
 var openobserveEnabled = builder.Configuration.GetValue<bool?>("OpenObserve:Enabled") ?? true;
 var openobserveUrl = builder.Configuration["OpenObserve:WebUrl"] ?? "";
 var openobserveUser = builder.Configuration["OpenObserve:User"] ?? "";
@@ -222,11 +221,11 @@ var openobservePass = builder.Configuration["OpenObserve:Password"] ?? "";
     }
 }
 
-// API Key 鍔犲瘑淇濇姢锛圗mbeddingService 渚濊禆锛?
+// API Key 加密保护（EmbeddingService 依赖）
 builder.Services.AddDataProtection();
 builder.Services.AddSingleton<Baihua.Core.Security.ApiKeyProtectionService>();
 
-// 鍙嶅悜浠ｇ悊澶撮儴杞彂
+// 反向代理头部转发
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
@@ -252,7 +251,7 @@ app.UseForwardedHeaders();
 app.UseHealthChecks("/health");
 app.UseCors("AllowAll");
 
-// 璁块棶鎺у埗锛氶潪鍏紑璺緞浠呭厑璁?loopback
+// 访问控制：非公开路径仅允许 loopback
 app.Use(async (context, next) =>
 {
     var path = context.Request.Path.Value?.ToLowerInvariant() ?? "";
@@ -275,13 +274,13 @@ app.Use(async (context, next) =>
     logger.LogWarning("[AccessControl] Blocked non-loopback request to Vault API from {RemoteIP}: {Path}",
         remoteIp?.ToString(), path);
     context.Response.StatusCode = 403;
-    await context.Response.WriteAsJsonAsync(new { error = "Vault API 浠呭厑璁告湰鏈鸿闂€? });
+    await context.Response.WriteAsJsonAsync(new { error = "Vault API 仅允许本机访问。" });
 });
 
 app.UseAuthorization();
 app.MapControllers();
 
-// 鎵ц鏍稿績鏁版嵁搴撹縼绉?
+// 执行核心数据库迁移
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 try
 {
@@ -313,11 +312,11 @@ try
         cmd.ExecuteNonQuery();
     }
     conn.Close();
-    logger.LogInformation("Vault 鏁版嵁搴撹縼绉诲畬鎴?);
+    logger.LogInformation("Vault 数据库迁移完成");
 }
 catch (Exception ex)
 {
-    logger.LogError(ex, "鏍稿績鏁版嵁搴撹縼绉诲け璐?);
+    logger.LogError(ex, "核心数据库迁移失败");
 }
 
 logger.LogInformation("===========================================");
