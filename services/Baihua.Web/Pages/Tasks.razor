@@ -5,10 +5,10 @@
 @using Microsoft.AspNetCore.Http.Connections
 @using Microsoft.AspNetCore.SignalR.Client
 @implements IAsyncDisposable
-@inject WebUI.Services.IApiService ApiService
+@inject Baihua.Web.Services.IApiService ApiService
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
-@inject WebUI.Services.SettingsService SettingsService
+@inject Baihua.Web.Services.SettingsService SettingsService
 @inject Microsoft.Extensions.Logging.ILogger<Tasks> Logger
 
 <PageTitle>任务</PageTitle>

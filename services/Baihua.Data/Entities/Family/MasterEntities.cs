@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace TaskRunner.Data.Entities;
+namespace Baihua.Data.Entities;
 
 public class Master
 {

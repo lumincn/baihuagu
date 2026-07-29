@@ -1,4 +1,4 @@
-namespace TaskRunner.Contracts.Tasks;
+namespace Baihua.Contracts.Tasks;
 
 public class TasksResponse
 {

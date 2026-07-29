@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
-namespace TaskRunner.Filters
+namespace Baihua.Family.Filters
 {
     public class GlobalExceptionFilter : IExceptionFilter
     {

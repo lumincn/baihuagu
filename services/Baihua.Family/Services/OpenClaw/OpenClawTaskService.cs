@@ -1,13 +1,13 @@
-using TaskRunner.Core.Shared;
+using Baihua.Core;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.EntityFrameworkCore;
-using TaskRunner.Contracts.OpenClaw;
-using TaskRunner.Data;
-using TaskRunner.Data.Entities;
+using Baihua.Contracts.OpenClaw;
+using Baihua.Data;
+using Baihua.Data.Entities;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 public interface IOpenClawTaskService
 {
@@ -23,20 +23,20 @@ public class OpenClawTaskService : IOpenClawTaskService
 {
     private readonly IDbContextFactory<FamilyDbContext> _dbFactory;
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly TaskRunner.Services.TaskManager? _taskManager;
+    private readonly Baihua.Family.Services.TaskManager? _taskManager;
     private readonly ILogger<OpenClawTaskService> _logger;
     private readonly string _reportsDir;
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<int, Process> _runningProcesses = new();
     // OpenClaw TaskId -> TaskManager TaskId 映射
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<int, string> _openClawToTaskManagerMap = new();
 
-    public OpenClawTaskService(IDbContextFactory<FamilyDbContext> dbFactory, IHttpClientFactory httpClientFactory, TaskRunner.Services.TaskManager? taskManager, ILogger<OpenClawTaskService> logger)
+    public OpenClawTaskService(IDbContextFactory<FamilyDbContext> dbFactory, IHttpClientFactory httpClientFactory, Baihua.Family.Services.TaskManager? taskManager, ILogger<OpenClawTaskService> logger)
     {
         _dbFactory = dbFactory;
         _httpClientFactory = httpClientFactory;
         _taskManager = taskManager;
         _logger = logger;
-        var dataDir = TaskRunner.Contracts.BaihuaPaths.Db;
+        var dataDir = Baihua.Contracts.BaihuaPaths.Db;
         _reportsDir = Path.Combine(dataDir, "openclaw-reports");
         Directory.CreateDirectory(_reportsDir);
     }
@@ -63,7 +63,7 @@ public class OpenClawTaskService : IOpenClawTaskService
                 ["openclawId"] = task.Id.ToString()
             });
             _openClawToTaskManagerMap[task.Id] = tmTaskId;
-            _ = _taskManager.UpdateStatus(tmTaskId, TaskRunner.Core.Shared.RunnerTaskStatus.Running);
+            _ = _taskManager.UpdateStatus(tmTaskId, Baihua.Core.RunnerTaskStatus.Running);
         }
 
         _ = RunOpenClawAsync(task.Id, prompt, tmTaskId);
@@ -196,7 +196,7 @@ public class OpenClawTaskService : IOpenClawTaskService
         // 同步更新 TaskManager 任务状态
         if (_openClawToTaskManagerMap.TryRemove(id, out var tmTaskId) && _taskManager != null)
         {
-            await _taskManager.UpdateStatus(tmTaskId, TaskRunner.Core.Shared.RunnerTaskStatus.Cancelled, "用户已取消");
+            await _taskManager.UpdateStatus(tmTaskId, Baihua.Core.RunnerTaskStatus.Cancelled, "用户已取消");
         }
 
         return true;

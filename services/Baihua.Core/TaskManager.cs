@@ -1,13 +1,13 @@
 using Microsoft.Extensions.Logging;
-using TaskRunner.Core.Shared;
+using Baihua.Core;
 using System.Collections.Concurrent;
 using System.Text.Json;
 using Microsoft.AspNetCore.SignalR;
-using TaskRunner.Core.Shared.Hubs;
+using Baihua.Core.Hubs;
 using Microsoft.EntityFrameworkCore;
-using TaskRunner.Data;
+using Baihua.Data;
 
-namespace TaskRunner.Services
+namespace Baihua.Family.Services
 {
     /// <summary>
     /// 任务管理器——统筹任务的生命周期管理

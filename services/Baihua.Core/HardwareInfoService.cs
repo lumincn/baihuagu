@@ -3,9 +3,9 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using TaskRunner.Contracts.LocalModels;
+using Baihua.Contracts.LocalModels;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 /// <summary>
 /// 硬件信息检测服务

@@ -1,7 +1,7 @@
-using TaskRunner.Contracts.Ai;
-using TaskRunner.Models;
+using Baihua.Contracts.Ai;
+using Baihua.Family.Models;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 /// <summary>
 /// 记忆上下文：摘要 + 最近完整对话

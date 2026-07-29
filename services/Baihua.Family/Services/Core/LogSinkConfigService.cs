@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 /// <summary>
 /// OpenObserve 日志后端配置

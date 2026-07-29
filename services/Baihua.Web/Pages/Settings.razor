@@ -1,11 +1,11 @@
 @page "/settings"
 @rendermode InteractiveServer
-@using TaskRunner.Contracts.LocalModels
-@inject WebUI.Services.SettingsService SettingsService
-@inject WebUI.Services.IApiService ApiService
-@inject WebUI.Services.AIStatusService AIStatusService
-@inject WebUI.Hubs.StatusUpdateService StatusUpdateService
-@inject WebUI.Services.CapabilityService CapabilityService
+@using Baihua.Contracts.LocalModels
+@inject Baihua.Web.Services.SettingsService SettingsService
+@inject Baihua.Web.Services.IApiService ApiService
+@inject Baihua.Web.Services.AIStatusService AIStatusService
+@inject Baihua.Web.Hubs.StatusUpdateService StatusUpdateService
+@inject Baihua.Web.Services.CapabilityService CapabilityService
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 @inject Microsoft.Extensions.Logging.ILogger<Settings> Logger

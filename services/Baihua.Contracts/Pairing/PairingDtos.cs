@@ -1,4 +1,4 @@
-namespace TaskRunner.Contracts.Pairing;
+namespace Baihua.Contracts.Pairing;
 
 public class ServerQRResponse
 {

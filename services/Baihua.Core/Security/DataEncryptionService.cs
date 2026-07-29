@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Logging;
-using TaskRunner.Core.Shared.Security;
+using Baihua.Core.Security;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace TaskRunner.Core.Shared.Security;
+namespace Baihua.Core.Security;
 
 /// <summary>
 /// 数据加密服务 - 用于加密和解密笔记内容

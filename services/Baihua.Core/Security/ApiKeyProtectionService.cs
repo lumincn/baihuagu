@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace TaskRunner.Core.Shared.Security;
+namespace Baihua.Core.Security;
 
 /// <summary>
 /// API Key 保护服务 - AES-256-GCM 加密方案

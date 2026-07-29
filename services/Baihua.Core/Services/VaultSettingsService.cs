@@ -1,10 +1,10 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
-using TaskRunner.Data;
-using TaskRunner.Data.Entities;
-using TaskRunner.Contracts.Vaults;
+using Baihua.Data;
+using Baihua.Data.Entities;
+using Baihua.Contracts.Vaults;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 /// <summary>
 /// 知识库配置服务 - 从 SettingsService 中提取，专注管理 Vault 配置
@@ -27,7 +27,7 @@ public partial class VaultSettingsService
     {
         get
         {
-            var dir = TaskRunner.Contracts.BaihuaPaths.Vaults;
+            var dir = Baihua.Contracts.BaihuaPaths.Vaults;
             Directory.CreateDirectory(dir);
             return dir;
         }

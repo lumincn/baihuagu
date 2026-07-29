@@ -1,4 +1,4 @@
-namespace TaskRunner.Data.Entities;
+namespace Baihua.Data.Entities;
 
 /// <summary>
 /// 设备同步活动日志

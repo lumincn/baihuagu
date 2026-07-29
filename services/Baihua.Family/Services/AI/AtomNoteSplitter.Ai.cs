@@ -1,20 +1,20 @@
-using TaskRunner.Core.Shared;
+using Baihua.Core;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Text.Json;
 using System.Security.Cryptography;
-using TaskRunner.Helpers;
+using Baihua.Family.Helpers;
 using System.Collections.Generic;
 using Microsoft.Extensions.AI;
-using TaskRunner.Models;
-using TaskRunner.Contracts.Scene;
+using Baihua.Family.Models;
+using Baihua.Contracts.Scene;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 public partial class AtomNoteSplitter
 {
 
-        private async Task<string> SendRequestWithRetryAsync(string providerId, string model, string userPrompt, bool isSupplement, CancellationToken cancellationToken, TaskRunner.Contracts.Scene.AppScene? scene = null)
+        private async Task<string> SendRequestWithRetryAsync(string providerId, string model, string userPrompt, bool isSupplement, CancellationToken cancellationToken, Baihua.Contracts.Scene.AppScene? scene = null)
         {
             _logger.LogDebug("发送 AI 请求到 provider {ProviderId} model {Model} (补充={IsSupplement})", providerId, model, isSupplement);
 

@@ -1,9 +1,9 @@
 @page "/cards"
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
-@using TaskRunner.Contracts.Anki
-@using TaskRunner.Contracts.Vaults
-@inject WebUI.Services.IApiService ApiService
-@inject WebUI.Services.VaultsService VaultsService
+@using Baihua.Contracts.Anki
+@using Baihua.Contracts.Vaults
+@inject Baihua.Web.Services.IApiService ApiService
+@inject Baihua.Web.Services.VaultsService VaultsService
 @inject ILogger<Cards> Logger
 
 <PageTitle>记忆卡片</PageTitle>

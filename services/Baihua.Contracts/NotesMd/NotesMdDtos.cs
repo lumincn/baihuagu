@@ -1,4 +1,4 @@
-namespace TaskRunner.Contracts.NotesMd;
+namespace Baihua.Contracts.NotesMd;
 
 public class NotesMdCliStatus
 {

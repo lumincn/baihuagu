@@ -1,14 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
-using TaskRunner.Contracts.Ai;
-using TaskRunner.Contracts.Master;
-using TaskRunner.Controllers.AI.Stages;
-using TaskRunner.Data;
-using TaskRunner.Data.Entities;
-using TaskRunner.Services;
+using Baihua.Contracts.Ai;
+using Baihua.Contracts.Master;
+using Baihua.Family.Controllers.AI.Stages;
+using Baihua.Data;
+using Baihua.Data.Entities;
+using Baihua.Family.Services;
 
-namespace TaskRunner.Controllers;
+namespace Baihua.Family.Controllers;
 
 /// <summary>
 /// 师父阶段推进逻辑

@@ -1,4 +1,4 @@
-using TaskRunner.Core.Shared;
+using Baihua.Core;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -11,7 +11,7 @@ using Makaretu.Dns;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace TaskRunner.Services
+namespace Baihua.Family.Services
 {
     /// <summary>
     /// mDNS服务实现

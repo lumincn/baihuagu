@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace TaskRunner.Data.Entities;
+namespace Baihua.Data.Entities;
 
 /// <summary>
 /// AI 提供商配置（存储在 SQLite 中，ApiKey 加密存储）

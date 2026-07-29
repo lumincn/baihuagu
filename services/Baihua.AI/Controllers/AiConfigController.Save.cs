@@ -1,13 +1,13 @@
-using TaskRunner.Core.Shared.Notifications;
+using Baihua.Core.Notifications;
 using Microsoft.AspNetCore.Mvc;
-using TaskRunner.Data.Entities;
-using TaskRunner.Models;
-using TaskRunner.Services;
-using TaskRunner.Core.Shared.Security;
-using TaskRunner.Contracts.Ai;
-using TaskRunner.Contracts.Pairing;
+using Baihua.Data.Entities;
+using Baihua.Family.Models;
+using Baihua.Family.Services;
+using Baihua.Core.Security;
+using Baihua.Contracts.Ai;
+using Baihua.Contracts.Pairing;
 
-namespace TaskRunner.Controllers;
+namespace Baihua.Family.Controllers;
 
 public partial class AiConfigController
 {

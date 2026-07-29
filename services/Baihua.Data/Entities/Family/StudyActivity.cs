@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace TaskRunner.Data.Entities;
+namespace Baihua.Data.Entities;
 
 /// <summary>
 /// 学习活动记录（用于成就统计和赛舟榜）

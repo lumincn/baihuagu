@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using TaskRunner.Data;
+using Baihua.Data;
 
 #nullable disable
 
-namespace TaskRunner.Data.Migrations.Family
+namespace Baihua.Data.Migrations.Family
 {
     [DbContext(typeof(FamilyDbContext))]
     [Migration("20260609062523_FamilyInitialCreate")]
@@ -20,7 +20,7 @@ namespace TaskRunner.Data.Migrations.Family
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
 
-            modelBuilder.Entity("TaskRunner.Data.Entities.Achievement", b =>
+            modelBuilder.Entity("Baihua.Data.Entities.Achievement", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -72,7 +72,7 @@ namespace TaskRunner.Data.Migrations.Family
                     b.ToTable("Achievements", (string)null);
                 });
 
-            modelBuilder.Entity("TaskRunner.Data.Entities.CardReviewState", b =>
+            modelBuilder.Entity("Baihua.Data.Entities.CardReviewState", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -127,7 +127,7 @@ namespace TaskRunner.Data.Migrations.Family
                     b.ToTable("CardReviewStates", (string)null);
                 });
 
-            modelBuilder.Entity("TaskRunner.Data.Entities.InitTaskProgress", b =>
+            modelBuilder.Entity("Baihua.Data.Entities.InitTaskProgress", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -174,7 +174,7 @@ namespace TaskRunner.Data.Migrations.Family
                     b.ToTable("InitTaskProgresses", (string)null);
                 });
 
-            modelBuilder.Entity("TaskRunner.Data.Entities.LearnerProfile", b =>
+            modelBuilder.Entity("Baihua.Data.Entities.LearnerProfile", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -210,7 +210,7 @@ namespace TaskRunner.Data.Migrations.Family
                     b.ToTable("LearnerProfiles", (string)null);
                 });
 
-            modelBuilder.Entity("TaskRunner.Data.Entities.OnboardingState", b =>
+            modelBuilder.Entity("Baihua.Data.Entities.OnboardingState", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -239,7 +239,7 @@ namespace TaskRunner.Data.Migrations.Family
                     b.ToTable("OnboardingStates", (string)null);
                 });
 
-            modelBuilder.Entity("TaskRunner.Data.Entities.OpenClawTask", b =>
+            modelBuilder.Entity("Baihua.Data.Entities.OpenClawTask", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -291,7 +291,7 @@ namespace TaskRunner.Data.Migrations.Family
                     b.ToTable("OpenClawTasks", (string)null);
                 });
 
-            modelBuilder.Entity("TaskRunner.Data.Entities.StudyActivity", b =>
+            modelBuilder.Entity("Baihua.Data.Entities.StudyActivity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -332,7 +332,7 @@ namespace TaskRunner.Data.Migrations.Family
                     b.ToTable("StudyActivities", (string)null);
                 });
 
-            modelBuilder.Entity("TaskRunner.Data.Entities.TaskEntity", b =>
+            modelBuilder.Entity("Baihua.Data.Entities.TaskEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

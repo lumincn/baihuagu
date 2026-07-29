@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 
-namespace TaskRunner.Logging;
+namespace Baihua.Family.Logging;
 
 /// <summary>
 /// 按日期轮转的日志记录器

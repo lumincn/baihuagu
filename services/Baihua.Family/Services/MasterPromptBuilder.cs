@@ -1,10 +1,10 @@
 using Microsoft.Extensions.AI;
-using TaskRunner.Contracts.Ai;
-using TaskRunner.Contracts.Master;
+using Baihua.Contracts.Ai;
+using Baihua.Contracts.Master;
 using System.Reflection;
 using System.Text.Json;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 public class MasterPromptBuilder
 {
@@ -217,7 +217,7 @@ public class MasterPromptBuilder
     {
         var result = new List<ExamOutline>();
         var assembly = Assembly.GetExecutingAssembly();
-        var prefix = "TaskRunner.Data.ExamOutlines.";
+        var prefix = "Baihua.Data.ExamOutlines.";
 
         foreach (var name in assembly.GetManifestResourceNames())
         {

@@ -1,11 +1,11 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using TaskRunner.Core.Shared.Security;
-using TaskRunner.Services;
+using Baihua.Core.Security;
+using Baihua.Family.Services;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace TaskRunner.Core.Shared.Security;
+namespace Baihua.Core.Security;
 
 public class RequestSignatureService
 {

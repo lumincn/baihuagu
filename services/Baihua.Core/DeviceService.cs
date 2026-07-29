@@ -7,11 +7,11 @@ using System.Net.WebSockets;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using TaskRunner.Data;
-using TaskRunner.Data.Entities;
-using TaskRunner.Contracts.Devices;
+using Baihua.Data;
+using Baihua.Data.Entities;
+using Baihua.Contracts.Devices;
 
-namespace TaskRunner.Core.Shared;
+namespace Baihua.Core;
     /// <summary>
     /// 设备状态
     /// </summary>

@@ -3,11 +3,11 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using TaskRunner.Data;
+using Baihua.Data;
 
 #nullable disable
 
-namespace TaskRunner.Data.Migrations.Vault
+namespace Baihua.Data.Migrations.Vault
 {
     [DbContext(typeof(VaultDbContext))]
     partial class VaultDbContextModelSnapshot : ModelSnapshot
@@ -17,7 +17,7 @@ namespace TaskRunner.Data.Migrations.Vault
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
 
-            modelBuilder.Entity("TaskRunner.Data.Entities.NoteEmbedding", b =>
+            modelBuilder.Entity("Baihua.Data.Entities.NoteEmbedding", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -58,7 +58,7 @@ namespace TaskRunner.Data.Migrations.Vault
                     b.ToTable("NoteEmbeddings", (string)null);
                 });
 
-            modelBuilder.Entity("TaskRunner.Data.Entities.Vault", b =>
+            modelBuilder.Entity("Baihua.Data.Entities.Vault", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

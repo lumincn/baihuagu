@@ -1,8 +1,8 @@
 @page "/health"
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
-@inherits WebUI.Components.PerformanceComponentBase
-@using TaskRunner.Contracts.Health
-@using WebUI.Services
+@inherits Baihua.Web.Components.PerformanceComponentBase
+@using Baihua.Contracts.Health
+@using Baihua.Web.Services
 @inject IApiService ApiService
 @inject RequestMetricsService MetricsService
 @inject ErrorLogService ErrorLogService
@@ -544,7 +544,7 @@
             // 插入 WebUI→TaskRunner 连通性检查结果到报告开头
             if (report?.Components != null)
             {
-                var connectivityStatus = new TaskRunner.Contracts.Health.ComponentStatusDto
+                var connectivityStatus = new Baihua.Contracts.Health.ComponentStatusDto
                 {
                     Name = "WebUI→TaskRunner",
                     Status = "healthy",
@@ -560,14 +560,14 @@
             errorMessage = ex.Message;
             
             // 如果连健康报告都获取失败，创建一个包含连通性错误的报告
-            report = new TaskRunner.Contracts.Health.SystemHealthReportDto
+            report = new Baihua.Contracts.Health.SystemHealthReportDto
             {
                 Timestamp = DateTime.UtcNow,
                 Status = "critical",
                 HealthScore = 0,
-                Components = new List<TaskRunner.Contracts.Health.ComponentStatusDto>
+                Components = new List<Baihua.Contracts.Health.ComponentStatusDto>
                 {
-                    new TaskRunner.Contracts.Health.ComponentStatusDto
+                    new Baihua.Contracts.Health.ComponentStatusDto
                     {
                         Name = "WebUI→TaskRunner",
                         Status = "critical",

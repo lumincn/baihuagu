@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text.Json;
 
-namespace WebUI.Services;
+namespace Baihua.Web.Services;
 
 /// <summary>
 /// 认证服务 - 管理用户认证状态

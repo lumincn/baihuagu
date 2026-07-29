@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using Microsoft.Extensions.AI;
-using TaskRunner.Contracts.Benchmark;
-using TaskRunner.Models;
+using Baihua.Contracts.Benchmark;
+using Baihua.Family.Models;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 /// <summary>
 /// 模型基准测试服务：执行标准化测试、评分、状态管理

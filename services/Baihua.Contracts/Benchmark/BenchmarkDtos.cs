@@ -1,4 +1,4 @@
-namespace TaskRunner.Contracts.Benchmark;
+namespace Baihua.Contracts.Benchmark;
 
 /// <summary>
 /// 模型基准测试配置（前端选择要测的模型）

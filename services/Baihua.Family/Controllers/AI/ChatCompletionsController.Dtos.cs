@@ -1,10 +1,10 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
-using TaskRunner.Models;
-using TaskRunner.Services;
+using Baihua.Family.Models;
+using Baihua.Family.Services;
 
-namespace TaskRunner.Controllers;
+namespace Baihua.Family.Controllers;
 
     #region OpenAI 兼容 DTO
 

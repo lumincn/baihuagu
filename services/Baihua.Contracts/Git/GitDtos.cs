@@ -1,4 +1,4 @@
-namespace TaskRunner.Contracts.Git;
+namespace Baihua.Contracts.Git;
 
 public class GitStatusResponse
 {

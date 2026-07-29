@@ -1,10 +1,10 @@
 using System.Text.Json;
-using TaskRunner.Core.Shared;
-using TaskRunner.Data.Entities;
-using TaskRunner.Services;
+using Baihua.Core;
+using Baihua.Data.Entities;
+using Baihua.Family.Services;
 using Xunit;
 
-namespace TaskRunner.Family.Tests.Services;
+namespace Baihua.Family.Tests.Services;
 
 /// <summary>
 /// TaskEntityMapper 单元测试

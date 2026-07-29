@@ -1,9 +1,9 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using TaskRunner.Contracts.Ai;
-using TaskRunner.Services.LocalAI;
+using Baihua.Contracts.Ai;
+using Baihua.Family.Services.LocalAI;
 
-namespace TaskRunner.Controllers;
+namespace Baihua.Family.Controllers;
 
 /// <summary>
 /// 本地模型 AI 对话（GGUF / ONNX）

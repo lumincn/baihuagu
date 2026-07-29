@@ -1,4 +1,4 @@
-namespace TaskRunner.Controllers.AI.Stages;
+namespace Baihua.Family.Controllers.AI.Stages;
 
 /// <summary>
 /// 「入道」阶段策略 — 引路人：温和引导，了解基础，建立学习方向。

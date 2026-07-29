@@ -1,8 +1,8 @@
 using System.Security.Cryptography;
-using TaskRunner.Core.Shared.Security;
+using Baihua.Core.Security;
 using Xunit;
 
-namespace TaskRunner.Family.Tests.Services.Security;
+namespace Baihua.Family.Tests.Services.Security;
 
 /// <summary>
 /// DataEncryptionService 单元测试 — 覆盖 GCM 加密/解密、CBC 向后兼容、篡改检测

@@ -1,4 +1,4 @@
-namespace TaskRunner.Contracts.Anki;
+namespace Baihua.Contracts.Anki;
 
 public class CardItemDto
 {

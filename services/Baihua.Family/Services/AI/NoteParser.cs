@@ -1,9 +1,9 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using TaskRunner.Helpers;
+using Baihua.Family.Helpers;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 /// <summary>
 /// 原子笔记解析器：从 AI 返回中提取并解析 JSON 笔记数组

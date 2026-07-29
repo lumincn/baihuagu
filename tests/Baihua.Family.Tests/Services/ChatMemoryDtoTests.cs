@@ -1,7 +1,7 @@
-using TaskRunner.Services;
+using Baihua.Family.Services;
 using Xunit;
 
-namespace TaskRunner.Family.Tests.Services;
+namespace Baihua.Family.Tests.Services;
 
 public class ChatMemoryDtoTests
 {
@@ -21,7 +21,7 @@ public class ChatMemoryDtoTests
         var ctx = new MemoryContext
         {
             Summary = "用户讨论了中医方剂",
-            RecentHistory = new List<TaskRunner.Contracts.Ai.ChatHistoryItem>
+            RecentHistory = new List<Baihua.Contracts.Ai.ChatHistoryItem>
             {
                 new() { Role = "user", Content = "你好" },
                 new() { Role = "assistant", Content = "你好！" }

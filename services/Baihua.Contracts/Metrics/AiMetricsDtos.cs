@@ -1,4 +1,4 @@
-namespace TaskRunner.Contracts.Metrics;
+namespace Baihua.Contracts.Metrics;
 
 /// <summary>
 /// AI 调用指标总览

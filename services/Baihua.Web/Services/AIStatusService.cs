@@ -1,4 +1,4 @@
-namespace WebUI.Services;
+namespace Baihua.Web.Services;
 
 /// <summary>
 /// AI 状态服务 - 检测和跟踪 API Key 配置状态（从 SQLite 读取）

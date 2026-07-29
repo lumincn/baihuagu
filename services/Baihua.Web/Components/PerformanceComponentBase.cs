@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components;
-using WebUI.Services;
+using Baihua.Web.Services;
 
-namespace WebUI.Components;
+namespace Baihua.Web.Components;
 
 /// <summary>
 /// 性能监控组件基类 - 自动记录组件渲染时间

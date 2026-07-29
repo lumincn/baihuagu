@@ -1,6 +1,6 @@
-using WebUI.Services;
+using Baihua.Web.Services;
 
-namespace WebUI.Middleware;
+namespace Baihua.Web.Middleware;
 
 /// <summary>
 /// WebUI 认证中间件

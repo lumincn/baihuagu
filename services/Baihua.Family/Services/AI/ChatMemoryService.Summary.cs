@@ -1,12 +1,12 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
-using TaskRunner.Contracts.Ai;
-using TaskRunner.Controllers;
-using TaskRunner.Data;
-using TaskRunner.Data.Entities;
+using Baihua.Contracts.Ai;
+using Baihua.Family.Controllers;
+using Baihua.Data;
+using Baihua.Data.Entities;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 public partial class ChatMemoryService
 {

@@ -1,9 +1,9 @@
 using System.Diagnostics;
-using TaskRunner.Models;
-using TaskRunner.Services;
+using Baihua.Family.Models;
+using Baihua.Family.Services;
 using Xunit;
 
-namespace TaskRunner.Family.Tests.Services;
+namespace Baihua.Family.Tests.Services;
 
 public class HealthCheckHelperTests
 {
@@ -126,7 +126,7 @@ public class HealthCheckHelperTests
     [Fact]
     public async Task WithCheckDurationAsync_SetsDuration()
     {
-        var status = new TaskRunner.Contracts.Health.ComponentStatusDto
+        var status = new Baihua.Contracts.Health.ComponentStatusDto
         {
             Name = "Test",
             Status = "healthy"
@@ -140,7 +140,7 @@ public class HealthCheckHelperTests
     [Fact]
     public async Task WithCheckDurationAsync_ReturnsOriginalStatus()
     {
-        var status = new TaskRunner.Contracts.Health.ComponentStatusDto
+        var status = new Baihua.Contracts.Health.ComponentStatusDto
         {
             Name = "Test",
             Status = "healthy",

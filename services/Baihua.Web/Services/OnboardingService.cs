@@ -1,7 +1,7 @@
 using System.Net.Http.Json;
-using TaskRunner.Contracts.Onboarding;
+using Baihua.Contracts.Onboarding;
 
-namespace WebUI.Services;
+namespace Baihua.Web.Services;
 
 /// <summary>
 /// Onboarding 服务 - 管理首次使用引导和初始化任务

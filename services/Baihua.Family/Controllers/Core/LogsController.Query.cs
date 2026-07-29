@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
-namespace TaskRunner.Controllers;
+namespace Baihua.Family.Controllers;
 
 public partial class LogsController : ControllerBase
 {

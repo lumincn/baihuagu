@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Text.Json;
 
-namespace TaskRunner.Services
+namespace Baihua.Family.Services
 {
     /// <summary>
     /// notesmd-cli 集成服务，用于检测和管理 Obsidian vault 注册。

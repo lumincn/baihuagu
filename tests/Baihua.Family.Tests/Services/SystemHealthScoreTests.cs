@@ -1,7 +1,7 @@
 using Xunit;
-using TaskRunner.Contracts.Health;
+using Baihua.Contracts.Health;
 
-namespace TaskRunner.Family.Tests.Services;
+namespace Baihua.Family.Tests.Services;
 
 public class SystemHealthScoreTests
 {

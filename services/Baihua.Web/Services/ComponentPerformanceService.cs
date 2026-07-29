@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 
-namespace WebUI.Services;
+namespace Baihua.Web.Services;
 
 /// <summary>
 /// 组件性能监控服务 - 记录各组件渲染时间

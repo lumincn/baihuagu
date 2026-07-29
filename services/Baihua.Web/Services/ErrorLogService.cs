@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace WebUI.Services;
+namespace Baihua.Web.Services;
 
 /// <summary>
 /// 错误日志条目

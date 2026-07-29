@@ -1,7 +1,7 @@
-using TaskRunner.Core.Shared;
-using TaskRunner.Data.Entities;
+using Baihua.Core;
+using Baihua.Data.Entities;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 /// <summary>
 /// 任务持久化仓库接口——从 TaskManager 中提取的数据库关注点

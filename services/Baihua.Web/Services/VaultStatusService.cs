@@ -1,7 +1,7 @@
 using System.Text.Json;
-using TaskRunner.Contracts.Vaults;
+using Baihua.Contracts.Vaults;
 
-namespace WebUI.Services;
+namespace Baihua.Web.Services;
 
 /// <summary>
 /// 知识库状态服务 - 检测和跟踪知识库配置状态

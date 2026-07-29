@@ -1,4 +1,4 @@
-namespace TaskRunner.Controllers.AI.Stages;
+namespace Baihua.Family.Controllers.AI.Stages;
 
 /// <summary>
 /// 「筑基」阶段策略 — 严师：严格要求，打牢基础。

@@ -1,4 +1,4 @@
-namespace TaskRunner.Contracts.LocalModels;
+namespace Baihua.Contracts.LocalModels;
 
 /// <summary>
 /// 本地可部署模型数据库。静态数据，随版本发布更新。

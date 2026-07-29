@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using Microsoft.Extensions.AI;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 /// <summary>
 /// AI Function Calling 服务：为 AI 聊天提供可调用工具

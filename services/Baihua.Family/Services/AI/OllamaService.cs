@@ -1,10 +1,10 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using TaskRunner.Contracts.LocalModels;
-using TaskRunner.Helpers;
-using TaskRunner.Models;
+using Baihua.Contracts.LocalModels;
+using Baihua.Family.Helpers;
+using Baihua.Family.Models;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
     /// <summary>
     /// Ollama 本地模型服务：处理 Ollama 的检测、部署、运行、模型管理
     /// </summary>

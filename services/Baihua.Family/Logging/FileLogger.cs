@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using Microsoft.Extensions.Logging;
 
-namespace TaskRunner.Logging
+namespace Baihua.Family.Logging
 {
     public class FileLogger : ILogger
     {

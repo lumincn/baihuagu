@@ -1,10 +1,10 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
-using TaskRunner.Models;
-using TaskRunner.Services;
+using Baihua.Family.Models;
+using Baihua.Family.Services;
 
-namespace TaskRunner.Controllers;
+namespace Baihua.Family.Controllers;
     /// <summary>
     /// OpenAI 兼容 Chat Completions API Facade
     /// 让 Cursor/Claude Code/Windsurf 等工具可以直接使用 百花 AI 服务

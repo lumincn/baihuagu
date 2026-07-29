@@ -1,8 +1,8 @@
 using System.Text.Json;
-using TaskRunner.Core.Shared;
-using TaskRunner.Data.Entities;
+using Baihua.Core;
+using Baihua.Data.Entities;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 /// <summary>
 /// 任务实体映射器——从 TaskManager 中提取的 TaskEntity→TaskInfo 转换关注点

@@ -1,11 +1,11 @@
 using System.Diagnostics;
 using System.Net.Http;
 using System.Runtime.InteropServices;
-using TaskRunner.Core.Shared.Security;
-using ComponentStatus = TaskRunner.Contracts.Health.ComponentStatusDto;
-using SystemHealthReport = TaskRunner.Contracts.Health.SystemHealthReportDto;
+using Baihua.Core.Security;
+using ComponentStatus = Baihua.Contracts.Health.ComponentStatusDto;
+using SystemHealthReport = Baihua.Contracts.Health.SystemHealthReportDto;
 
-namespace TaskRunner.Services
+namespace Baihua.Family.Services
 {
     /// <summary>
     /// 系统健康检查服务：检测所需组件和依赖

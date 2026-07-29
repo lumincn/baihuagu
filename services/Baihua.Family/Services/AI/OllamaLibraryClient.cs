@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
-using TaskRunner.Contracts.LocalModels;
+using Baihua.Contracts.LocalModels;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 /// <summary>
 /// 从 Ollama Library (ollama.com/library) 抓取最新模型列表，补充静态模型库。

@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TaskRunner.Contracts.Metrics;
-using TaskRunner.Data;
+using Baihua.Contracts.Metrics;
+using Baihua.Data;
 
-namespace TaskRunner.Controllers;
+namespace Baihua.Family.Controllers;
 
 /// <summary>
 /// AI 调用性能指标 API

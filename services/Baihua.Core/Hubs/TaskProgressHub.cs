@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.SignalR;
 
-namespace TaskRunner.Core.Shared.Hubs
+namespace Baihua.Core.Hubs
 {
     /// <summary>
     /// 任务进度推送 Hub

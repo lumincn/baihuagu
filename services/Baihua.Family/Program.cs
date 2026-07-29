@@ -1,11 +1,11 @@
-using TaskRunner.Core.Shared;
-using TaskRunner.Core.Shared.Security;
-using TaskRunner.Services;
-using TaskRunner.Core.Shared.Notifications;
-using TaskRunner.Data;
+using Baihua.Core;
+using Baihua.Core.Security;
+using Baihua.Family.Services;
+using Baihua.Core.Notifications;
+using Baihua.Data;
 
-using TaskRunner.Core.Shared.Hubs;
-using TaskRunner.Filters;
+using Baihua.Core.Hubs;
+using Baihua.Family.Filters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
@@ -24,9 +24,9 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Exporter;
 using OpenTelemetry;
 using OpenTelemetry.Resources;
-using TaskRunner.OpenTelemetry;
-using TaskRunner.Contracts.Metrics;
-using TaskRunner.Middleware;
+using Baihua.Family.OpenTelemetry;
+using Baihua.Contracts.Metrics;
+using Baihua.Family.Middleware;
 
 
 // Initialize native SQLite provider early to avoid Microsoft.Data.Sqlite type initializer issues
@@ -77,7 +77,7 @@ if (!skipMutex)
 // 无需额外调用 AddEnvironmentVariables()，CreateBuilder 已默认加载。
 
 // 百花统一数据根目录 BAIHUA_HOME 由 Core.Shared.BaihuaPaths 管理
-// 已迁移至 BAIHUA_HOME，详见 services/TaskRunner.Contracts/BaihuaPaths.cs
+// 已迁移至 BAIHUA_HOME，详见 services/Baihua.Contracts/BaihuaPaths.cs
 
 // Family 版不自动生成分享密钥：未配置时回退到 Bearer Token / IP 白名单验证
 // 仅在显式配置了 MobileAuth:SharedSecret 时才启用 HMAC 签名
@@ -90,7 +90,7 @@ if (!string.IsNullOrEmpty(mobileAuthSecret))
 builder.Services.AddControllers(options =>
 {
     // 添加全局异常过滤器
-    options.Filters.Add<TaskRunner.Filters.GlobalExceptionFilter>();
+    options.Filters.Add<Baihua.Family.Filters.GlobalExceptionFilter>();
 })
     .AddJsonOptions(options =>
     {
@@ -117,46 +117,46 @@ builder.Services.AddSignalR()
 
 // 注册核心服务
 // Family 数据库上下文
-builder.Services.AddDbContext<TaskRunner.Data.FamilyDbContext>(options =>
+builder.Services.AddDbContext<Baihua.Data.FamilyDbContext>(options =>
 {
-    var dbPath = TaskRunner.Data.FamilyDbContext.GetDbPath();
-    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;", sqlite => sqlite.MigrationsAssembly("TaskRunner.Data"))
+    var dbPath = Baihua.Data.FamilyDbContext.GetDbPath();
+    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;", sqlite => sqlite.MigrationsAssembly("Baihua.Data"))
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Scoped, ServiceLifetime.Singleton);
 
-builder.Services.AddDbContextFactory<TaskRunner.Data.FamilyDbContext>(options =>
+builder.Services.AddDbContextFactory<Baihua.Data.FamilyDbContext>(options =>
 {
-    var dbPath = TaskRunner.Data.FamilyDbContext.GetDbPath();
-    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;", sqlite => sqlite.MigrationsAssembly("TaskRunner.Data"))
+    var dbPath = Baihua.Data.FamilyDbContext.GetDbPath();
+    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;", sqlite => sqlite.MigrationsAssembly("Baihua.Data"))
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Singleton);
 
 // Vault 数据库上下文（Family 需要读取知识库信息）
-builder.Services.AddDbContext<TaskRunner.Data.VaultDbContext>(options =>
+builder.Services.AddDbContext<Baihua.Data.VaultDbContext>(options =>
 {
-    var dbPath = TaskRunner.Data.VaultDbContext.GetDbPath();
-    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;", sqlite => sqlite.MigrationsAssembly("TaskRunner.Data"))
+    var dbPath = Baihua.Data.VaultDbContext.GetDbPath();
+    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;", sqlite => sqlite.MigrationsAssembly("Baihua.Data"))
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Scoped, ServiceLifetime.Singleton);
 
-builder.Services.AddDbContextFactory<TaskRunner.Data.VaultDbContext>(options =>
+builder.Services.AddDbContextFactory<Baihua.Data.VaultDbContext>(options =>
 {
-    var dbPath = TaskRunner.Data.VaultDbContext.GetDbPath();
-    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;", sqlite => sqlite.MigrationsAssembly("TaskRunner.Data"))
+    var dbPath = Baihua.Data.VaultDbContext.GetDbPath();
+    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;", sqlite => sqlite.MigrationsAssembly("Baihua.Data"))
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Singleton);
 
 // AI 域数据库上下文
-builder.Services.AddDbContext<TaskRunner.Data.AIDbContext>(options =>
+builder.Services.AddDbContext<Baihua.Data.AIDbContext>(options =>
 {
-    var dbPath = TaskRunner.Data.AIDbContext.GetDbPath();
+    var dbPath = Baihua.Data.AIDbContext.GetDbPath();
     options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;")
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Scoped, ServiceLifetime.Singleton);
 
-builder.Services.AddDbContextFactory<TaskRunner.Data.AIDbContext>(options =>
+builder.Services.AddDbContextFactory<Baihua.Data.AIDbContext>(options =>
 {
-    var dbPath = TaskRunner.Data.AIDbContext.GetDbPath();
+    var dbPath = Baihua.Data.AIDbContext.GetDbPath();
     options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;")
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Singleton);
@@ -189,24 +189,24 @@ builder.Services.AddSingleton<LearnerService>();
 builder.Services.AddSingleton<AchievementEngine>();
 builder.Services.AddSingleton<LeaderboardService>();
 builder.Services.AddHostedService<StudyRecordMigrationService>();
-builder.Services.AddSingleton<TaskRunner.Core.Shared.WebSocket.DeviceWebSocketHub>();
+builder.Services.AddSingleton<Baihua.Core.WebSocket.DeviceWebSocketHub>();
 builder.Services.AddSingleton<DeviceService>();
 builder.Services.AddSingleton<PairingService>();
 
 // Family 版固定使用 Family 配对和同步授权策略
-builder.Services.AddSingleton<TaskRunner.Services.Strategies.IPairingStrategy, TaskRunner.Services.Strategies.FamilyPairingStrategy>();
-builder.Services.AddSingleton<TaskRunner.Services.Strategies.ISyncAuthorizationStrategy, TaskRunner.Services.Strategies.FamilySyncAuthorizationStrategy>();
+builder.Services.AddSingleton<Baihua.Family.Services.Strategies.IPairingStrategy, Baihua.Family.Services.Strategies.FamilyPairingStrategy>();
+builder.Services.AddSingleton<Baihua.Family.Services.Strategies.ISyncAuthorizationStrategy, Baihua.Family.Services.Strategies.FamilySyncAuthorizationStrategy>();
 builder.Services.AddSingleton<ServerAddressService>();
 builder.Services.AddSingleton<WebUINotificationService>();
 builder.Services.AddSingleton<RequestSignatureService>();
 
 // MobileContract 接口适配器
 // 移动端接口
-builder.Services.AddSingleton<MobileContract.Services.IPairingService, TaskRunner.Services.Adapters.MobileDeviceServiceAdapter>();
+builder.Services.AddSingleton<MobileContract.Services.IPairingService, Baihua.Family.Services.Adapters.MobileDeviceServiceAdapter>();
 // 管理后台接口
-builder.Services.AddSingleton<MobileContract.Admin.IDeviceAdminService, TaskRunner.Services.Adapters.MobileDeviceServiceAdapter>();
-builder.Services.AddSingleton<MobileContract.Admin.IPushAdminService, TaskRunner.Services.Adapters.MobileDeviceServiceAdapter>();
-builder.Services.AddSingleton<MobileContract.Admin.IOneHopAdminService, TaskRunner.Services.Adapters.OneHopAdminServiceAdapter>();
+builder.Services.AddSingleton<MobileContract.Admin.IDeviceAdminService, Baihua.Family.Services.Adapters.MobileDeviceServiceAdapter>();
+builder.Services.AddSingleton<MobileContract.Admin.IPushAdminService, Baihua.Family.Services.Adapters.MobileDeviceServiceAdapter>();
+builder.Services.AddSingleton<MobileContract.Admin.IOneHopAdminService, Baihua.Family.Services.Adapters.OneHopAdminServiceAdapter>();
 
 // 注册OneHop服务（基于TCP的局域网设备连接）
 builder.Services.AddSingleton<IOneHopService, OneHopService>();
@@ -218,15 +218,15 @@ builder.Services.AddHostedService(provider => provider.GetRequiredService<MDnsSe
 
 // 注册 AI 配置服务（Data Protection + SQLite）
 builder.Services.AddDataProtection();
-builder.Services.AddSingleton<TaskRunner.Core.Shared.Security.ApiKeyProtectionService>();
-builder.Services.AddSingleton<TaskRunner.Core.Shared.Security.DataEncryptionService>();
+builder.Services.AddSingleton<Baihua.Core.Security.ApiKeyProtectionService>();
+builder.Services.AddSingleton<Baihua.Core.Security.DataEncryptionService>();
 
-builder.Services.AddSingleton<TaskRunner.Services.RestoreService>();
-builder.Services.AddSingleton<TaskRunner.Services.BackupService>();
-builder.Services.AddSingleton<TaskRunner.Services.NotesMdCliService>();
+builder.Services.AddSingleton<Baihua.Family.Services.RestoreService>();
+builder.Services.AddSingleton<Baihua.Family.Services.BackupService>();
+builder.Services.AddSingleton<Baihua.Family.Services.NotesMdCliService>();
 
 // 注册全局异常过滤器
-builder.Services.AddScoped<TaskRunner.Filters.GlobalExceptionFilter>();
+builder.Services.AddScoped<Baihua.Family.Filters.GlobalExceptionFilter>();
 
 // 注册系统健康检查服务
 
@@ -321,7 +321,7 @@ builder.Logging.AddDebug();
 // 结构化JSON Lines文件日志（所有类别共享Writer，异步批量写入，避免多Writer冲突）
 var logsDir = Path.Combine(builder.Environment.ContentRootPath ?? AppContext.BaseDirectory, "logs");
 var fileLogMinLevel = builder.Environment.IsDevelopment() ? LogLevel.Debug : LogLevel.Information;
-builder.Logging.AddProvider(new TaskRunner.Logging.JsonLineLoggerProvider(
+builder.Logging.AddProvider(new Baihua.Family.Logging.JsonLineLoggerProvider(
     logsDir, "taskrunner", retentionDays: 7,
     globalMinimumLevel: fileLogMinLevel,
     categoryFilters: new Dictionary<string, LogLevel>
@@ -692,7 +692,7 @@ app.MapControllers();
 
 
 // 根路径健康检查（快速响应，供外部探活使用）
-app.MapGet("/health", (TaskRunner.Services.ServerAddressService sas) =>
+app.MapGet("/health", (Baihua.Family.Services.ServerAddressService sas) =>
 {
     var settings = sas.GetSettings();
     return Results.Ok(new
@@ -709,7 +709,7 @@ app.MapHub<TaskProgressHub>("/hubs/task-progress");
 app.MapHub<DeviceHub>("/hubs/devices");
 
 // 纯 WebSocket 端点（供移动端使用，无需 SignalR 协议）
-app.Map("/ws/devices", async (HttpContext context, TaskRunner.Core.Shared.WebSocket.DeviceWebSocketHub hub) =>
+app.Map("/ws/devices", async (HttpContext context, Baihua.Core.WebSocket.DeviceWebSocketHub hub) =>
 {
     if (!context.WebSockets.IsWebSocketRequest)
     {
@@ -748,7 +748,7 @@ TaskScheduler.UnobservedTaskException += (s, e) =>
 };
 
 // 记录启动
-var startupMonitor = TaskRunner.Services.StartupMonitor.Instance;
+var startupMonitor = Baihua.Family.Services.StartupMonitor.Instance;
 startupMonitor.RecordStartup();
 
 logger.LogInformation("===========================================");

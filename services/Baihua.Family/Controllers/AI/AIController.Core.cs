@@ -1,11 +1,11 @@
-using TaskRunner.Core.Shared;
-using TaskRunner.Services;
+using Baihua.Core;
+using Baihua.Family.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
-using TaskRunner.Models;
-using TaskRunner.Contracts.Ai;
+using Baihua.Family.Models;
+using Baihua.Contracts.Ai;
 
-namespace TaskRunner.Controllers
+namespace Baihua.Family.Controllers
 {
     public partial class AIController
     {

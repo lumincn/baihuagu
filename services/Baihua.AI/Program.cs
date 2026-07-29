@@ -5,8 +5,8 @@ using System.Text.Encodings.Web;
 using System.Text.Unicode;
 using System.Text;
 using Serilog;
-using TaskRunner.Core.Shared;
-using TaskRunner.Services;
+using Baihua.Core;
+using Baihua.Family.Services;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Logs;
@@ -23,7 +23,7 @@ var urls = builder.Configuration["urls"]                                   // do
 builder.WebHost.UseUrls(urls);
 
 // 百花统一数据根目录 BAIHUA_HOME 由 Core.Shared.BaihuaPaths 管理
-// 已迁移至 BAIHUA_HOME，详见 services/TaskRunner.Contracts/BaihuaPaths.cs
+// 已迁移至 BAIHUA_HOME，详见 services/Baihua.Contracts/BaihuaPaths.cs
 
 
 // 添加控制器与 JSON 序列化
@@ -45,16 +45,16 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // AI 域数据库上下文
-builder.Services.AddDbContext<TaskRunner.Data.AIDbContext>(options =>
+builder.Services.AddDbContext<Baihua.Data.AIDbContext>(options =>
 {
-    var dbPath = TaskRunner.Data.AIDbContext.GetDbPath();
+    var dbPath = Baihua.Data.AIDbContext.GetDbPath();
     options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;")
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Scoped, ServiceLifetime.Singleton);
 
-builder.Services.AddDbContextFactory<TaskRunner.Data.AIDbContext>(options =>
+builder.Services.AddDbContextFactory<Baihua.Data.AIDbContext>(options =>
 {
-    var dbPath = TaskRunner.Data.AIDbContext.GetDbPath();
+    var dbPath = Baihua.Data.AIDbContext.GetDbPath();
     options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;")
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Singleton);
@@ -67,14 +67,14 @@ builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSingleton<AiSettingsService>();
 builder.Services.AddSingleton<AiConfigService>();
 builder.Services.AddSingleton<MigrationService>();
-builder.Services.AddSingleton<TaskRunner.Core.Shared.Notifications.WebUINotificationService>();
-builder.Services.AddSingleton<TaskRunner.Services.HardwareInfoService>();
-builder.Services.AddSingleton<TaskRunner.Services.CapabilityService>();
+builder.Services.AddSingleton<Baihua.Core.Notifications.WebUINotificationService>();
+builder.Services.AddSingleton<Baihua.Family.Services.HardwareInfoService>();
+builder.Services.AddSingleton<Baihua.Family.Services.CapabilityService>();
 builder.Services.AddAiClientServices();
 
 // 本地模型推理后端（GGUF / ONNX）
-builder.Services.AddSingleton<TaskRunner.Services.LocalAI.ILocalModelInference, TaskRunner.Services.LocalAI.LlamaSharpInference>();
-builder.Services.AddSingleton<TaskRunner.Services.LocalAI.ILocalModelInference, TaskRunner.Services.LocalAI.OnnxRuntimeGenAIInference>();
+builder.Services.AddSingleton<Baihua.Family.Services.LocalAI.ILocalModelInference, Baihua.Family.Services.LocalAI.LlamaSharpInference>();
+builder.Services.AddSingleton<Baihua.Family.Services.LocalAI.ILocalModelInference, Baihua.Family.Services.LocalAI.OnnxRuntimeGenAIInference>();
 
 
 
@@ -187,7 +187,7 @@ var openobservePass = builder.Configuration["OpenObserve:Password"] ?? "";
 
 // AI 配置服务依赖（ApiKey 加密）
 builder.Services.AddDataProtection();
-builder.Services.AddSingleton<TaskRunner.Core.Shared.Security.ApiKeyProtectionService>();
+builder.Services.AddSingleton<Baihua.Core.Security.ApiKeyProtectionService>();
 
 // 反向代理头部转发
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -251,7 +251,7 @@ var logger = app.Services.GetRequiredService<ILogger<Program>>();
 try
 {
     using var scope = app.Services.CreateScope();
-    var aiDb = scope.ServiceProvider.GetRequiredService<TaskRunner.Data.AIDbContext>();
+    var aiDb = scope.ServiceProvider.GetRequiredService<Baihua.Data.AIDbContext>();
     var migrationService = scope.ServiceProvider.GetRequiredService<MigrationService>();
     migrationService.MigrateApiKeysIfNeeded(aiDb);
 }
@@ -264,7 +264,7 @@ catch (Exception ex)
 try
 {
     using var scope = app.Services.CreateScope();
-    var aiDb = scope.ServiceProvider.GetRequiredService<TaskRunner.Data.AIDbContext>();
+    var aiDb = scope.ServiceProvider.GetRequiredService<Baihua.Data.AIDbContext>();
     aiDb.Database.Migrate();
     logger.LogInformation("AI 数据库迁移完成");
 }

@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace WebUI.Services;
+namespace Baihua.Web.Services;
 
 /// <summary>
 /// 临时存储服务（用于拆分页面等大内容传递）

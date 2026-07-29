@@ -1,11 +1,11 @@
-using TaskRunner.Core.Shared;
+using Baihua.Core;
 using MobileContract.Admin;
 using MobileContract.Devices;
 using MobileContract.Pairing;
 using MobileContract.Services;
 using MPushSyncRequest = MobileContract.Devices.PushSyncRequest;
 
-namespace TaskRunner.Services.Adapters;
+namespace Baihua.Family.Services.Adapters;
 
 /// <summary>
 /// 设备服务适配器 — 将 MobileGateway 的 DeviceService 适配到 MobileContract 接口
@@ -164,7 +164,7 @@ public class MobileDeviceServiceAdapter :
     public Task<MobileStats> GetStatsAsync(CancellationToken cancellationToken = default)
     {
         var stats = _deviceService.GetMobileStats();
-        // MobileStats 类型来自 TaskRunner.Contracts.Devices，与 MobileContract.Devices.MobileStats 同名不同命名空间
+        // MobileStats 类型来自 Baihua.Contracts.Devices，与 MobileContract.Devices.MobileStats 同名不同命名空间
         // 需要显式映射到 MobileContract 的类型
         var result = new MobileStats
         {

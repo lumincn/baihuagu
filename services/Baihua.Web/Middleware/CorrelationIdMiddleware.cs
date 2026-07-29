@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace WebUI.Middleware;
+namespace Baihua.Web.Middleware;
 
 /// <summary>
 /// 请求关联ID中间件 - 用于追踪请求全链路

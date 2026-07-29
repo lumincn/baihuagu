@@ -1,4 +1,4 @@
-namespace TaskRunner.Contracts.Health;
+namespace Baihua.Contracts.Health;
 
 public interface ITaskRunnerHealthApi
 {

@@ -1,7 +1,8 @@
+using Baihua.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
-namespace TaskRunner.Vault.Controllers;
+namespace Baihua.Vault.Controllers;
     [ApiController]
     [Route("api/[controller]")]
     public partial class SearchController : ControllerBase

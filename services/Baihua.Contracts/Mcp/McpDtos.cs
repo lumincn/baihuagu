@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace TaskRunner.Contracts.Mcp;
+namespace Baihua.Contracts.Mcp;
 
 // =================== JSON-RPC Base ===================
 

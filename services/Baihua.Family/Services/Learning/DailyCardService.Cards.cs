@@ -1,12 +1,12 @@
 using System.Security.Cryptography;
 using System.Text.Json;
-using TaskRunner.Contracts.Anki;
-using TaskRunner.Helpers;
+using Baihua.Contracts.Anki;
+using Baihua.Family.Helpers;
 using Microsoft.EntityFrameworkCore;
-using TaskRunner.Data;
-using TaskRunner.Data.Entities;
+using Baihua.Data;
+using Baihua.Data.Entities;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 public partial class DailyCardService
 {

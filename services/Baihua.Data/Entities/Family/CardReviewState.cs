@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace TaskRunner.Data.Entities;
+namespace Baihua.Data.Entities;
 
 /// <summary>
 /// 卡片复习状态（艾宾浩斯遗忘曲线调度）

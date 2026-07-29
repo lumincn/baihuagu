@@ -1,4 +1,4 @@
-namespace TaskRunner.Contracts.Search;
+namespace Baihua.Contracts.Search;
 
 public class SearchResult
 {

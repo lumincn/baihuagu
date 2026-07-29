@@ -4,10 +4,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
-using TaskRunner.Data;
-using TaskRunner.Services;
+using Baihua.Data;
+using Baihua.Family.Services;
 
-namespace TaskRunner.Family.Tests.Services;
+namespace Baihua.Family.Tests.Services;
 
 public class PairingServiceTests
 {

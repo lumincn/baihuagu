@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <CompressionEnabled>false</CompressionEnabled>
-    <RootNamespace>WebUI</RootNamespace>
+    <RootNamespace>Baihua.Web</RootNamespace>
     <UserSecretsId>baihua-family-webui-2026</UserSecretsId>
   </PropertyGroup>
 
@@ -28,4 +28,5 @@
   </ItemGroup>
 
 </Project>
+
 

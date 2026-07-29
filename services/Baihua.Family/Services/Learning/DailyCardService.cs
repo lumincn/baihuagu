@@ -1,12 +1,12 @@
 using System.Security.Cryptography;
 using System.Text.Json;
-using TaskRunner.Contracts.Anki;
-using TaskRunner.Helpers;
+using Baihua.Contracts.Anki;
+using Baihua.Family.Helpers;
 using Microsoft.EntityFrameworkCore;
-using TaskRunner.Data;
-using TaskRunner.Data.Entities;
+using Baihua.Data;
+using Baihua.Data.Entities;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 /// <summary>
 /// 每日一帖服务：每日卡片推送、学习进度跟踪、家长出题

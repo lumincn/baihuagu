@@ -1,4 +1,4 @@
-namespace WebUI.Services;
+namespace Baihua.Web.Services;
 
 /// <summary>AI 模型信息</summary>
 public class AiModelInfo

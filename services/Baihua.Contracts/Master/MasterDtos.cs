@@ -1,6 +1,6 @@
-using TaskRunner.Contracts.Ai;
+using Baihua.Contracts.Ai;
 
-namespace TaskRunner.Contracts.Master;
+namespace Baihua.Contracts.Master;
 
 public class CreateMasterRequest
 {

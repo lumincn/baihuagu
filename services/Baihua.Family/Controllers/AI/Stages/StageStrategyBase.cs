@@ -1,4 +1,4 @@
-namespace TaskRunner.Controllers.AI.Stages;
+namespace Baihua.Family.Controllers.AI.Stages;
 
 /// <summary>
 /// 阶段策略基类，提供祝福语生成的公共逻辑。

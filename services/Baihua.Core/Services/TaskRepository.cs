@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using TaskRunner.Core.Shared;
-using TaskRunner.Data;
-using TaskRunner.Data.Entities;
+using Baihua.Core;
+using Baihua.Data;
+using Baihua.Data.Entities;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 /// <summary>
 /// 基于 EF Core + SQLite 的任务持久化实现

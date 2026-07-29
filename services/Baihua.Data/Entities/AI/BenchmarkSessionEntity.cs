@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace TaskRunner.Data.Entities;
+namespace Baihua.Data.Entities;
 
 /// <summary>
 /// Benchmark 测试结果（SQLite 持久化）

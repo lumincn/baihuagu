@@ -1,4 +1,4 @@
-namespace TaskRunner.Contracts.Onboarding;
+namespace Baihua.Contracts.Onboarding;
 
 /// <summary>
 /// Onboarding 状态响应

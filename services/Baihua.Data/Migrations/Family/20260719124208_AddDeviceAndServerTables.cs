@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace TaskRunner.Data.Migrations.Family
+namespace Baihua.Data.Migrations.Family
 {
     /// <inheritdoc />
     public partial class AddDeviceAndServerTables : Migration

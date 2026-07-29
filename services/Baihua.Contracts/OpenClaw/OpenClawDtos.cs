@@ -1,4 +1,4 @@
-namespace TaskRunner.Contracts.OpenClaw;
+namespace Baihua.Contracts.OpenClaw;
 
 public class CreateOpenClawTaskRequest
 {

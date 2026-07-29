@@ -1,10 +1,10 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
-using TaskRunner.Data;
-using TaskRunner.Data.Entities;
-using TaskRunner.Contracts.Vaults;
+using Baihua.Data;
+using Baihua.Data.Entities;
+using Baihua.Contracts.Vaults;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 
 public partial class VaultSettingsService

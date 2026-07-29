@@ -1,9 +1,9 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using TaskRunner.Contracts.Mcp;
-using TaskRunner.Services;
+using Baihua.Contracts.Mcp;
+using Baihua.Family.Services;
 
-namespace TaskRunner.Controllers;
+namespace Baihua.Family.Controllers;
 
 /// <summary>
 /// MCP (Model Context Protocol) Server 端点

@@ -1,4 +1,4 @@
-namespace TaskRunner.Contracts.Metrics;
+namespace Baihua.Contracts.Metrics;
 
 public class RequestMetric
 {

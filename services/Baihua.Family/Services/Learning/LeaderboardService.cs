@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using TaskRunner.Data;
+using Baihua.Data;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 /// <summary>
 /// 家庭赛舟榜服务

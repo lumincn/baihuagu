@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
-namespace TaskRunner.Vault.Controllers;
+namespace Baihua.Vault.Controllers;
 
     public class ReindexRequest
     {

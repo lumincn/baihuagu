@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Hosting;
-namespace TaskRunner.Services
+namespace Baihua.Family.Services
 {
     /// <summary>
     /// 后端启动时预热 Obsidian：避免用户首次搜索时才触发「启动+关闭」。

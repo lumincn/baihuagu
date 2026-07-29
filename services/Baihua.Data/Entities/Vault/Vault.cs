@@ -1,4 +1,4 @@
-namespace TaskRunner.Data.Entities;
+namespace Baihua.Data.Entities;
 
 /// <summary>
 /// 知识库配置（存储在 SQLite 中）

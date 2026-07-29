@@ -1,13 +1,13 @@
 using System.Text;
 using System.Text.Json;
-using TaskRunner.Contracts.Anki;
-using TaskRunner.Helpers;
+using Baihua.Contracts.Anki;
+using Baihua.Family.Helpers;
 using AnkiGen.Core;
 using Microsoft.Extensions.AI;
-using TaskRunner.Models;
-using TaskRunner.Core.Shared;
+using Baihua.Family.Models;
+using Baihua.Core;
 
-namespace TaskRunner.Services
+namespace Baihua.Family.Services
 {
     /// <summary>
     /// Anki 卡片生成服务：将知识库笔记转换为 Anki 记忆卡片（支持 AI 生成）
@@ -207,7 +207,7 @@ namespace TaskRunner.Services
         /// <summary>
         /// 调用 AI 大模型生成卡片内容
         /// </summary>
-        private async Task<List<TaskRunner.Contracts.Anki.JsonCard>> CallAiForCardsAsync(
+        private async Task<List<Baihua.Contracts.Anki.JsonCard>> CallAiForCardsAsync(
             string title, string content,
             string? providerId, string? model)
         {
@@ -218,7 +218,7 @@ namespace TaskRunner.Services
             if (provider == null)
             {
                 _logger.LogWarning("未找到 AI Provider 配置");
-                return new List<TaskRunner.Contracts.Anki.JsonCard>();
+                return new List<Baihua.Contracts.Anki.JsonCard>();
             }
 
             var modelName = string.IsNullOrWhiteSpace(model)
@@ -241,13 +241,13 @@ namespace TaskRunner.Services
                 var rawText = response.Text?.Trim() ?? "";
 
                 rawText = ExtractJsonArray(rawText);
-                var cards = JsonSerializer.Deserialize<List<TaskRunner.Contracts.Anki.JsonCard>>(rawText,
+                var cards = JsonSerializer.Deserialize<List<Baihua.Contracts.Anki.JsonCard>>(rawText,
                     JsonHelper.CaseInsensitive);
 
                 if (cards == null || cards.Count == 0)
                 {
                     _logger.LogWarning("AI 返回了空的卡片列表");
-                    return new List<TaskRunner.Contracts.Anki.JsonCard>();
+                    return new List<Baihua.Contracts.Anki.JsonCard>();
                 }
 
                 foreach (var card in cards)
@@ -264,7 +264,7 @@ namespace TaskRunner.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "AI 调用失败生成卡片");
-                return new List<TaskRunner.Contracts.Anki.JsonCard>();
+                return new List<Baihua.Contracts.Anki.JsonCard>();
             }
         }
 

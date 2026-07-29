@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace TaskRunner.Services.Strategies;
+namespace Baihua.Family.Services.Strategies;
 
 /// <summary>
 /// 同步授权策略接口

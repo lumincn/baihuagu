@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace TaskRunner.Data.Entities
+namespace Baihua.Data.Entities
 {
     /// <summary>
     /// 服务器地址配置 - 用于移动端连接

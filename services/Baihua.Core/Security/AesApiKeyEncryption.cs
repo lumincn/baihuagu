@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace TaskRunner.Core.Shared.Security;
+namespace Baihua.Core.Security;
 
 /// <summary>
 /// AES-256-GCM 加密方案 - 用于 API Key 的加密
@@ -31,7 +31,7 @@ public static class AesApiKeyEncryption
     /// <summary>
     /// 密钥文件路径（挂载到宿主机，容器重建后仍然存在）
     /// </summary>
-    public static string KeyFilePath => TaskRunner.Contracts.BaihuaPaths.KeyFile;
+    public static string KeyFilePath => Baihua.Contracts.BaihuaPaths.KeyFile;
 
     /// <summary>
     /// <summary>

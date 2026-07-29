@@ -1,12 +1,12 @@
 @page "/onboarding"
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
-@inject WebUI.Services.OnboardingService OnboardingService
-@inject WebUI.Services.IApiService ApiService
-@inject WebUI.Services.AIStatusService AIStatusService
+@inject Baihua.Web.Services.OnboardingService OnboardingService
+@inject Baihua.Web.Services.IApiService ApiService
+@inject Baihua.Web.Services.AIStatusService AIStatusService
 @inject NavigationManager Navigation
 @inject Microsoft.Extensions.Logging.ILogger<Onboarding> Logger
 
-@using TaskRunner.Contracts.Ai
+@using Baihua.Contracts.Ai
 @using Microsoft.JSInterop
 
 <PageTitle>欢迎使用</PageTitle>

@@ -4,17 +4,17 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
-using TaskRunner.Contracts.Ai;
-using TaskRunner.Contracts.Master;
-using TaskRunner.Controllers;
-using TaskRunner.Controllers.AI.Stages;
-using TaskRunner.Data;
-using TaskRunner.Data.Entities;
-using TaskRunner.Models;
-using TaskRunner.Services;
+using Baihua.Contracts.Ai;
+using Baihua.Contracts.Master;
+using Baihua.Family.Controllers;
+using Baihua.Family.Controllers.AI.Stages;
+using Baihua.Data;
+using Baihua.Data.Entities;
+using Baihua.Family.Models;
+using Baihua.Family.Services;
 using Xunit;
 
-namespace TaskRunner.Family.Tests.Services;
+namespace Baihua.Family.Tests.Services;
 
 /// <summary>
 /// MasterController 测试：参数校验、数据库操作、List/Delete/Profile、异常展开

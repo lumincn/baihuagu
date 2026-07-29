@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
-using TaskRunner.Contracts.LocalModels;
-using TaskRunner.Contracts.OpenClaw;
-using TaskRunner.Services;
+using Baihua.Contracts.LocalModels;
+using Baihua.Contracts.OpenClaw;
+using Baihua.Family.Services;
 
-namespace TaskRunner.Controllers;
+namespace Baihua.Family.Controllers;
     /// <summary>
     /// 本地模型部署 API：硬件检测、模型推荐、部署管理
     /// </summary>

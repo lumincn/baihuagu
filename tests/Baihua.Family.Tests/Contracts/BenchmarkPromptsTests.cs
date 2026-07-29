@@ -1,7 +1,7 @@
-using TaskRunner.Contracts.Benchmark;
+using Baihua.Contracts.Benchmark;
 using Xunit;
 
-namespace TaskRunner.Family.Tests.Contracts;
+namespace Baihua.Family.Tests.Contracts;
 
 public class BenchmarkPromptsTests
 {

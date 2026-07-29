@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
-namespace WebUI.Services;
+namespace Baihua.Web.Services;
 
 /// <summary>
 /// 请求统计服务：记录请求耗时和频率，同时通过 OpenTelemetry Metrics 导出到 OpenObserve

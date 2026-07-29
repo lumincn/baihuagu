@@ -2,12 +2,12 @@ using System.Collections.Concurrent;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
-using TaskRunner.Core.Shared;
-using TaskRunner.Data.Entities;
-using TaskRunner.Services;
+using Baihua.Core;
+using Baihua.Data.Entities;
+using Baihua.Family.Services;
 using Xunit;
 
-namespace TaskRunner.Family.Tests.Services;
+namespace Baihua.Family.Tests.Services;
 
 /// <summary>
 /// TaskManager 综合测试

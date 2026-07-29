@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 
-namespace TaskRunner.Services
+namespace Baihua.Family.Services
 {
     /// <summary>
     /// 配对服务 - 简化版，只负责生成二维码

@@ -1,15 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
-using TaskRunner.Contracts.Ai;
-using TaskRunner.Models;
-using TaskRunner.Services;
+using Baihua.Contracts.Ai;
+using Baihua.Family.Models;
+using Baihua.Family.Services;
 
-namespace TaskRunner.Controllers
+namespace Baihua.Family.Controllers
 {
     public partial class AIController
     {
         [HttpPost("chat")]
-        public async Task<ActionResult<TaskRunner.Contracts.Ai.ChatResponse>> Chat([FromBody] ChatRequest request)
+        public async Task<ActionResult<Baihua.Contracts.Ai.ChatResponse>> Chat([FromBody] ChatRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.Message))
             {
@@ -36,7 +36,7 @@ namespace TaskRunner.Controllers
                     $"> ⏰ **时间**: {DateTime.Now:yyyy-MM-dd HH:mm:ss}  \n" +
                     $"> ⏱️ **耗时**: {stopwatch.ElapsedMilliseconds}ms  \n\n";
 
-                return Ok(new TaskRunner.Contracts.Ai.ChatResponse
+                return Ok(new Baihua.Contracts.Ai.ChatResponse
                 {
                     Success = true,
                     Message = "回复成功",
@@ -46,7 +46,7 @@ namespace TaskRunner.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "AI 聊天失败");
-                return Ok(new TaskRunner.Contracts.Ai.ChatResponse
+                return Ok(new Baihua.Contracts.Ai.ChatResponse
                 {
                     Success = false,
                     Message = $"聊天失败：{ex.Message}"

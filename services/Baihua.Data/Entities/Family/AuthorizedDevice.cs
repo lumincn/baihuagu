@@ -1,4 +1,4 @@
-namespace TaskRunner.Data.Entities;
+namespace Baihua.Data.Entities;
 
 /// <summary>
 /// 已授权设备（存储在 SQLite 中）

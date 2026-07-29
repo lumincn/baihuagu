@@ -1,4 +1,4 @@
-namespace TaskRunner.Models
+namespace Baihua.Family.Models
 {
     /// <summary>
     /// AI 模型信息（返回给前端）

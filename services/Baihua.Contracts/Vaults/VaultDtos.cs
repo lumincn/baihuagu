@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace TaskRunner.Contracts.Vaults;
+namespace Baihua.Contracts.Vaults;
 
 public class VaultConfig
 {

@@ -15,8 +15,8 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
 using Serilog;
-using WebUI.Logging;
-using WebUI.Middleware;
+using Baihua.Web.Logging;
+using Baihua.Web.Middleware;
 
 // Initialize native SQLite provider early to avoid Microsoft.Data.Sqlite type initializer issues
 try
@@ -108,56 +108,56 @@ builder.Services.AddSignalR(options =>
 });
 
 // Add API service
-builder.Services.AddSingleton<WebUI.Services.IApiService, WebUI.Services.ApiService>();
-builder.Services.AddSingleton<TaskRunner.Contracts.Health.ITaskRunnerHealthApi>(sp => sp.GetRequiredService<WebUI.Services.IApiService>());
+builder.Services.AddSingleton<Baihua.Web.Services.IApiService, Baihua.Web.Services.ApiService>();
+builder.Services.AddSingleton<Baihua.Contracts.Health.ITaskRunnerHealthApi>(sp => sp.GetRequiredService<Baihua.Web.Services.IApiService>());
 
 // Add Settings service
-builder.Services.AddSingleton<WebUI.Services.SettingsService>();
+builder.Services.AddSingleton<Baihua.Web.Services.SettingsService>();
 
 // Add SignalR Status Update service
-builder.Services.AddSingleton<WebUI.Hubs.StatusUpdateService>();
+builder.Services.AddSingleton<Baihua.Web.Hubs.StatusUpdateService>();
 
 // Add Authentication service (must be scoped for per-user state)
-builder.Services.AddSingleton<WebUI.Services.AuthService>();
-builder.Services.AddScoped<WebUI.Services.UserTypeService>();
+builder.Services.AddSingleton<Baihua.Web.Services.AuthService>();
+builder.Services.AddScoped<Baihua.Web.Services.UserTypeService>();
 
 // Add AI Status service
-builder.Services.AddSingleton<WebUI.Services.AIStatusService>(sp => 
-    new WebUI.Services.AIStatusService(
-        sp.GetRequiredService<WebUI.Services.IApiService>()));
+builder.Services.AddSingleton<Baihua.Web.Services.AIStatusService>(sp => 
+    new Baihua.Web.Services.AIStatusService(
+        sp.GetRequiredService<Baihua.Web.Services.IApiService>()));
 
 // Add Temporary Storage service
-builder.Services.AddSingleton<WebUI.Services.TemporaryStorageService>();
+builder.Services.AddSingleton<Baihua.Web.Services.TemporaryStorageService>();
 
 // Add Recent Notes service
-builder.Services.AddSingleton<WebUI.Services.IRecentNotesService, WebUI.Services.RecentNotesService>();
+builder.Services.AddSingleton<Baihua.Web.Services.IRecentNotesService, Baihua.Web.Services.RecentNotesService>();
 
 // Add Search History service
-builder.Services.AddSingleton<WebUI.Services.ISearchHistoryService, WebUI.Services.SearchHistoryService>();
+builder.Services.AddSingleton<Baihua.Web.Services.ISearchHistoryService, Baihua.Web.Services.SearchHistoryService>();
 
 // Add Favorites service
-builder.Services.AddSingleton<WebUI.Services.IFavoritesService, WebUI.Services.FavoritesService>();
+builder.Services.AddSingleton<Baihua.Web.Services.IFavoritesService, Baihua.Web.Services.FavoritesService>();
 
 // Add User Preferences service
-builder.Services.AddSingleton<WebUI.Services.IUserPreferencesService, WebUI.Services.UserPreferencesService>();
+builder.Services.AddSingleton<Baihua.Web.Services.IUserPreferencesService, Baihua.Web.Services.UserPreferencesService>();
 
 // Add Search State service (for preserving search results across navigation)
-builder.Services.AddSingleton<WebUI.Services.SearchStateService>();
+builder.Services.AddSingleton<Baihua.Web.Services.SearchStateService>();
 
 // Add Vaults service (for managing multiple vaults)
-builder.Services.AddScoped<WebUI.Services.VaultsService>();
+builder.Services.AddScoped<Baihua.Web.Services.VaultsService>();
 
 // Add Backup service
-builder.Services.AddScoped<WebUI.Services.BackupService>();
+builder.Services.AddScoped<Baihua.Web.Services.BackupService>();
 
 // Add Vault Status service (Singleton 确保所有组件共享同一实例和事件)
-builder.Services.AddSingleton<WebUI.Services.VaultStatusService>();
+builder.Services.AddSingleton<Baihua.Web.Services.VaultStatusService>();
 
 // Add Global State service (Scoped，绑定到用户会话，通过 SignalR 实时更新)
-builder.Services.AddScoped<WebUI.Services.GlobalStateService>();
+builder.Services.AddScoped<Baihua.Web.Services.GlobalStateService>();
 
 // Add Simple Status service (简单状态服务，直接从API获取)
-builder.Services.AddScoped<WebUI.Services.SimpleStatusService>();
+builder.Services.AddScoped<Baihua.Web.Services.SimpleStatusService>();
 
 // OpenTelemetry Metrics 导出到 OpenObserve（仅在明确启用时配置 exporter）
 // 使用与 TaskRunner 相同的安全保护：先构建基础的 OpenTelemetry builder，若未启用或 WebUrl 为空则直接返回，不配置导出器。
@@ -259,31 +259,31 @@ builder.Services.AddScoped<WebUI.Services.SimpleStatusService>();
 }
 
 // Add Request Metrics service (WebUI incoming requests)
-builder.Services.AddSingleton<WebUI.Services.RequestMetricsService>();
+builder.Services.AddSingleton<Baihua.Web.Services.RequestMetricsService>();
 
 // Add API Call Metrics service (WebUI → TaskRunner calls)
-builder.Services.AddSingleton<WebUI.Services.ApiCallMetricsService>();
+builder.Services.AddSingleton<Baihua.Web.Services.ApiCallMetricsService>();
 
 // Add End-to-End Performance Monitoring service
-builder.Services.AddSingleton<WebUI.Services.EndToEndPerformanceService>();
+builder.Services.AddSingleton<Baihua.Web.Services.EndToEndPerformanceService>();
 
 // Add Component Performance Monitoring service
-builder.Services.AddSingleton<WebUI.Services.ComponentPerformanceService>();
+builder.Services.AddSingleton<Baihua.Web.Services.ComponentPerformanceService>();
 
 // Add Error Log service (内存中保留最近的错误日志)
-builder.Services.AddSingleton<WebUI.Services.ErrorLogService>();
+builder.Services.AddSingleton<Baihua.Web.Services.ErrorLogService>();
 
 // Add Obsidian Status service
-builder.Services.AddScoped<WebUI.Services.ObsidianStatusService>();
+builder.Services.AddScoped<Baihua.Web.Services.ObsidianStatusService>();
 
 // Add Devices service (for device authorization management)
-builder.Services.AddScoped<WebUI.Services.DevicesService>();
+builder.Services.AddScoped<Baihua.Web.Services.DevicesService>();
 
 // Add Pairing service (for QR code pairing)
 
 // Add Onboarding service (for first-time setup and initialization tasks)
-builder.Services.AddScoped<WebUI.Services.OnboardingService>();
-builder.Services.AddSingleton<WebUI.Services.CapabilityService>();
+builder.Services.AddScoped<Baihua.Web.Services.OnboardingService>();
+builder.Services.AddSingleton<Baihua.Web.Services.CapabilityService>();
 
 // Add HttpClient with API base address + Polly retry
 var retryPolicy = HttpPolicyExtensions
@@ -369,17 +369,17 @@ app.UseRequestMetrics();
 
 app.UseWebUIAuthentication();
 
-app.MapRazorComponents<WebUI.Components.App>()
+app.MapRazorComponents<Baihua.Web.Components.App>()
     .AddInteractiveServerRenderMode();
 
 // Map API Controllers
 app.MapControllers();
 
 // Map SignalR Hub
-app.MapHub<WebUI.Hubs.StatusHub>("/hubs/status");
+app.MapHub<Baihua.Web.Hubs.StatusHub>("/hubs/status");
 
 // CLI 一次性令牌端点：仅供本机 loopback 调用，用于命令行一键授权
-app.MapPost("/api/auth/cli-token", (HttpContext context, WebUI.Services.AuthService authService) =>
+app.MapPost("/api/auth/cli-token", (HttpContext context, Baihua.Web.Services.AuthService authService) =>
 {
     var remoteIp = context.Connection.RemoteIpAddress;
     if (remoteIp != null && !System.Net.IPAddress.IsLoopback(remoteIp))
@@ -390,43 +390,43 @@ app.MapPost("/api/auth/cli-token", (HttpContext context, WebUI.Services.AuthServ
     return Results.Ok(new { token });
 });
 
-app.MapPost("/api/auth/logout", (HttpContext context, WebUI.Services.AuthService authService) =>
+app.MapPost("/api/auth/logout", (HttpContext context, Baihua.Web.Services.AuthService authService) =>
 {
-    var cookieVal = context.Request.Cookies[WebUI.Services.AuthService.AuthCookieName];
+    var cookieVal = context.Request.Cookies[Baihua.Web.Services.AuthService.AuthCookieName];
     if (!string.IsNullOrEmpty(cookieVal))
     {
         authService.RevokeToken(cookieVal);
     }
-    context.Response.Cookies.Delete(WebUI.Services.AuthService.AuthCookieName, new CookieOptions { Path = "/" });
+    context.Response.Cookies.Delete(Baihua.Web.Services.AuthService.AuthCookieName, new CookieOptions { Path = "/" });
     return Results.Ok(new { success = true });
 });
 
 // 请求统计 API
-app.MapGet("/api/metrics/summary", (WebUI.Services.RequestMetricsService metrics) =>
+app.MapGet("/api/metrics/summary", (Baihua.Web.Services.RequestMetricsService metrics) =>
 {
     var summary = metrics.GetSummary();
     return Results.Ok(summary);
 });
 
-app.MapGet("/api/metrics/slowest", (WebUI.Services.RequestMetricsService metrics, int count = 10) =>
+app.MapGet("/api/metrics/slowest", (Baihua.Web.Services.RequestMetricsService metrics, int count = 10) =>
 {
     var requests = metrics.GetSlowestRequests(count);
     return Results.Ok(requests);
 });
 
-app.MapGet("/api/metrics/frequent", (WebUI.Services.RequestMetricsService metrics, int count = 10) =>
+app.MapGet("/api/metrics/frequent", (Baihua.Web.Services.RequestMetricsService metrics, int count = 10) =>
 {
     var paths = metrics.GetMostFrequentPaths(count);
     return Results.Ok(paths);
 });
 
-app.MapGet("/api/metrics/errors", (WebUI.Services.RequestMetricsService metrics, int count = 10) =>
+app.MapGet("/api/metrics/errors", (Baihua.Web.Services.RequestMetricsService metrics, int count = 10) =>
 {
     var errors = metrics.GetRecentErrors(count);
     return Results.Ok(errors);
 });
 
-app.MapPost("/api/metrics/clear", (WebUI.Services.RequestMetricsService metrics) =>
+app.MapPost("/api/metrics/clear", (Baihua.Web.Services.RequestMetricsService metrics) =>
 {
     metrics.Clear();
     return Results.Ok(new { message = "统计数据已清空" });
@@ -434,7 +434,7 @@ app.MapPost("/api/metrics/clear", (WebUI.Services.RequestMetricsService metrics)
 
 // 内部通知回调：供 TaskRunner 在状态变化时主动推送
 // 仅允许 loopback 访问，防止外部滥用
-app.MapPost("/api/internal/notify-state-change", (HttpContext context, WebUI.Hubs.StatusUpdateService status, [Microsoft.AspNetCore.Mvc.FromBody] NotifyStateChangeRequest request) =>
+app.MapPost("/api/internal/notify-state-change", (HttpContext context, Baihua.Web.Hubs.StatusUpdateService status, [Microsoft.AspNetCore.Mvc.FromBody] NotifyStateChangeRequest request) =>
 {
     var remoteIp = context.Connection.RemoteIpAddress;
     if (remoteIp != null && !System.Net.IPAddress.IsLoopback(remoteIp))

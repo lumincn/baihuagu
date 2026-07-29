@@ -1,4 +1,4 @@
-namespace TaskRunner.Data.Entities;
+namespace Baihua.Data.Entities;
 
 /// <summary>
 /// AI 调用性能指标记录

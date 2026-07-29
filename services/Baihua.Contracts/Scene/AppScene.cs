@@ -1,4 +1,4 @@
-namespace TaskRunner.Contracts.Scene;
+namespace Baihua.Contracts.Scene;
 
 /// <summary>
 /// 应用场景枚举

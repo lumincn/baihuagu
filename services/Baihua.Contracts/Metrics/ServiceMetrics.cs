@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
-namespace TaskRunner.Contracts.Metrics;
+namespace Baihua.Contracts.Metrics;
 
 /// <summary>
 /// 服务业务指标 — 所有关键操作的观测点。

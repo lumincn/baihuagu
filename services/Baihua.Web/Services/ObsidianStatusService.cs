@@ -1,4 +1,4 @@
-namespace WebUI.Services;
+namespace Baihua.Web.Services;
 
 /// <summary>
 /// Obsidian 状态服务 - 检测 Obsidian 桌面客户端运行状态

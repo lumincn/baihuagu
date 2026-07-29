@@ -1,9 +1,9 @@
-using TaskRunner.Core.Shared;
+using Baihua.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
-namespace TaskRunner.Services.Strategies;
+namespace Baihua.Family.Services.Strategies;
 
 /// <summary>
 /// 家庭版同步授权策略：Bearer Token + 设备授权验证

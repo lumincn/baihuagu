@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
-using TaskRunner.Services;
+using Baihua.Family.Services;
 
-namespace TaskRunner.Core.Shared;
+namespace Baihua.Core;
 
 /// <summary>
 /// Core.Shared 服务的 IServiceCollection 扩展方法

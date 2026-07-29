@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using TaskRunner.Data;
+using Baihua.Data;
 
 #nullable disable
 
-namespace TaskRunner.Data.Migrations.AI
+namespace Baihua.Data.Migrations.AI
 {
     [DbContext(typeof(AIDbContext))]
     [Migration("20260609062536_AIInitialCreate")]
@@ -20,7 +20,7 @@ namespace TaskRunner.Data.Migrations.AI
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
 
-            modelBuilder.Entity("TaskRunner.Data.Entities.AiProviderSetting", b =>
+            modelBuilder.Entity("Baihua.Data.Entities.AiProviderSetting", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -95,7 +95,7 @@ namespace TaskRunner.Data.Migrations.AI
                     b.ToTable("AiProviderSettings", (string)null);
                 });
 
-            modelBuilder.Entity("TaskRunner.Data.Entities.AiUsageMetric", b =>
+            modelBuilder.Entity("Baihua.Data.Entities.AiUsageMetric", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -161,7 +161,7 @@ namespace TaskRunner.Data.Migrations.AI
                     b.ToTable("AiUsageMetrics", (string)null);
                 });
 
-            modelBuilder.Entity("TaskRunner.Data.Entities.BenchmarkSessionEntity", b =>
+            modelBuilder.Entity("Baihua.Data.Entities.BenchmarkSessionEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -227,7 +227,7 @@ namespace TaskRunner.Data.Migrations.AI
                     b.ToTable("BenchmarkSessions", (string)null);
                 });
 
-            modelBuilder.Entity("TaskRunner.Data.Entities.ChatMemoryEntry", b =>
+            modelBuilder.Entity("Baihua.Data.Entities.ChatMemoryEntry", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -278,7 +278,7 @@ namespace TaskRunner.Data.Migrations.AI
                     b.ToTable("ChatMemoryEntries", (string)null);
                 });
 
-            modelBuilder.Entity("TaskRunner.Data.Entities.EmbeddingConfig", b =>
+            modelBuilder.Entity("Baihua.Data.Entities.EmbeddingConfig", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -328,7 +328,7 @@ namespace TaskRunner.Data.Migrations.AI
                     b.ToTable("EmbeddingConfigs", (string)null);
                 });
 
-            modelBuilder.Entity("TaskRunner.Data.Entities.NoteEmbedding", b =>
+            modelBuilder.Entity("Baihua.Data.Entities.NoteEmbedding", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

@@ -1,4 +1,4 @@
-namespace WebUI.Services;
+namespace Baihua.Web.Services;
 
 /// <summary>
 /// 配对请求信息

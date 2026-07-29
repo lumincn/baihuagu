@@ -1,7 +1,7 @@
 using Microsoft.Extensions.AI;
-using TaskRunner.Controllers;
+using Baihua.Family.Controllers;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 /// <summary>
 /// 统一 RAG（检索增强生成）服务：为所有 AI 入口提供知识库上下文增强

@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
-using TaskRunner.Data;
+using Baihua.Data;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 /// <summary>
 /// API Key 加密迁移服务：处理因加密密钥变化导致无法解密的 API Key 迁移。
@@ -34,32 +34,32 @@ public class MigrationService
                 .Where(p => !string.IsNullOrEmpty(p.EncryptedApiKey))
                 .ToList();
 
-            var keyFileExists = File.Exists(TaskRunner.Core.Shared.Security.AesApiKeyEncryption.KeyFilePath);
+            var keyFileExists = File.Exists(Baihua.Core.Security.AesApiKeyEncryption.KeyFilePath);
 
             if (!keyFileExists && providers.Count == 0)
             {
                 // 没有旧数据，直接生成固定密钥文件，确保后续加密稳定
-                TaskRunner.Core.Shared.Security.AesApiKeyEncryption.GenerateKeyFile();
-                _logger.LogInformation("已自动生成固定加密密钥文件：{KeyFile}", TaskRunner.Core.Shared.Security.AesApiKeyEncryption.KeyFilePath);
+                Baihua.Core.Security.AesApiKeyEncryption.GenerateKeyFile();
+                _logger.LogInformation("已自动生成固定加密密钥文件：{KeyFile}", Baihua.Core.Security.AesApiKeyEncryption.KeyFilePath);
                 return;
             }
 
             if (providers.Count == 0)
                 return;
 
-            var legacyFingerprint = TaskRunner.Core.Shared.Security.AesApiKeyEncryption.GetLegacyMachineFingerprint();
+            var legacyFingerprint = Baihua.Core.Security.AesApiKeyEncryption.GetLegacyMachineFingerprint();
             var migratedCount = 0;
             var needsKeyFile = !keyFileExists;
 
             foreach (var provider in providers)
             {
                 // 先用当前密钥尝试解密
-                var currentDecrypted = TaskRunner.Core.Shared.Security.AesApiKeyEncryption.Decrypt(provider.EncryptedApiKey!);
+                var currentDecrypted = Baihua.Core.Security.AesApiKeyEncryption.Decrypt(provider.EncryptedApiKey!);
                 if (!string.IsNullOrEmpty(currentDecrypted))
                     continue; // 当前密钥能解密，无需迁移
 
                 // 当前密钥无法解密，尝试用旧版机器指纹解密
-                var legacyDecrypted = TaskRunner.Core.Shared.Security.AesApiKeyEncryption.DecryptWithFingerprint(
+                var legacyDecrypted = Baihua.Core.Security.AesApiKeyEncryption.DecryptWithFingerprint(
                     provider.EncryptedApiKey!, legacyFingerprint);
 
                 if (string.IsNullOrEmpty(legacyDecrypted))
@@ -71,13 +71,13 @@ public class MigrationService
                 // 旧密钥能解密，需要生成固定密钥文件（如果还没有）
                 if (needsKeyFile)
                 {
-                    TaskRunner.Core.Shared.Security.AesApiKeyEncryption.GenerateKeyFile();
+                    Baihua.Core.Security.AesApiKeyEncryption.GenerateKeyFile();
                     needsKeyFile = false;
                     _logger.LogInformation("已生成固定加密密钥文件，准备迁移 API Key");
                 }
 
                 // 用新密钥重新加密
-                var reEncrypted = TaskRunner.Core.Shared.Security.AesApiKeyEncryption.Encrypt(legacyDecrypted);
+                var reEncrypted = Baihua.Core.Security.AesApiKeyEncryption.Encrypt(legacyDecrypted);
                 provider.EncryptedApiKey = reEncrypted;
                 migratedCount++;
                 _logger.LogInformation("API Key 已自动迁移：Provider={ProviderId}（加密密钥从机器指纹升级到固定密钥）", provider.ProviderId);
@@ -90,14 +90,14 @@ public class MigrationService
                 var envKey = Environment.GetEnvironmentVariable("BAIHUA_ENCRYPTION_KEY");
                 if (!string.IsNullOrWhiteSpace(envKey))
                 {
-                    TaskRunner.Core.Shared.Security.AesApiKeyEncryption.GenerateKeyFile();
+                    Baihua.Core.Security.AesApiKeyEncryption.GenerateKeyFile();
                     // 重新加密所有 Key（从环境变量密钥迁移到文件密钥）
                     foreach (var provider in providers)
                     {
-                        var decrypted = TaskRunner.Core.Shared.Security.AesApiKeyEncryption.Decrypt(provider.EncryptedApiKey!);
+                        var decrypted = Baihua.Core.Security.AesApiKeyEncryption.Decrypt(provider.EncryptedApiKey!);
                         if (!string.IsNullOrEmpty(decrypted))
                         {
-                            provider.EncryptedApiKey = TaskRunner.Core.Shared.Security.AesApiKeyEncryption.Encrypt(decrypted);
+                            provider.EncryptedApiKey = Baihua.Core.Security.AesApiKeyEncryption.Encrypt(decrypted);
                             migratedCount++;
                         }
                     }
@@ -107,13 +107,13 @@ public class MigrationService
                 {
                     // 当前用的是机器指纹，直接生成 .baihua-key（但机器指纹会变化，这是个问题）
                     // 为了稳定性，生成 .baihua-key 并重新加密
-                    TaskRunner.Core.Shared.Security.AesApiKeyEncryption.GenerateKeyFile();
+                    Baihua.Core.Security.AesApiKeyEncryption.GenerateKeyFile();
                     foreach (var provider in providers)
                     {
-                        var decrypted = TaskRunner.Core.Shared.Security.AesApiKeyEncryption.Decrypt(provider.EncryptedApiKey!);
+                        var decrypted = Baihua.Core.Security.AesApiKeyEncryption.Decrypt(provider.EncryptedApiKey!);
                         if (!string.IsNullOrEmpty(decrypted))
                         {
-                            provider.EncryptedApiKey = TaskRunner.Core.Shared.Security.AesApiKeyEncryption.Encrypt(decrypted);
+                            provider.EncryptedApiKey = Baihua.Core.Security.AesApiKeyEncryption.Encrypt(decrypted);
                             migratedCount++;
                         }
                     }

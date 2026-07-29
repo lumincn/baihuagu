@@ -1,4 +1,4 @@
-namespace TaskRunner.Contracts.Capability;
+namespace Baihua.Contracts.Capability;
 
 /// <summary>
 /// 机器能力等级

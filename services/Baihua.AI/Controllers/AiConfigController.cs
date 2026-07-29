@@ -1,12 +1,12 @@
-using TaskRunner.Core.Shared.Notifications;
+using Baihua.Core.Notifications;
 using Microsoft.AspNetCore.Mvc;
-using TaskRunner.Data.Entities;
-using TaskRunner.Models;
-using TaskRunner.Services;
-using TaskRunner.Core.Shared.Security;
-using TaskRunner.Contracts.Ai;
+using Baihua.Data.Entities;
+using Baihua.Family.Models;
+using Baihua.Family.Services;
+using Baihua.Core.Security;
+using Baihua.Contracts.Ai;
 
-namespace TaskRunner.Controllers;
+namespace Baihua.Family.Controllers;
 
 /// <summary>
 /// AI 配置管理 API - SQLite 加密存储
@@ -18,14 +18,14 @@ public partial class AiConfigController : ControllerBase
     private readonly AiConfigService _aiConfigService;
     private readonly AiSettingsService _aiSettings;
     private readonly WebUINotificationService _webUINotification;
-    private readonly TaskRunner.Services.CapabilityService _capabilityService;
+    private readonly Baihua.Family.Services.CapabilityService _capabilityService;
     private readonly ILogger<AiConfigController> _logger;
 
     public AiConfigController(
         AiConfigService aiConfigService,
         AiSettingsService aiSettings,
         WebUINotificationService webUINotification,
-        TaskRunner.Services.CapabilityService capabilityService,
+        Baihua.Family.Services.CapabilityService capabilityService,
         ILogger<AiConfigController> logger)
     {
         _aiConfigService = aiConfigService;

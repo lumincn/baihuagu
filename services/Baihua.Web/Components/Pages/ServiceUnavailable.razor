@@ -1,7 +1,7 @@
 @page "/service-unavailable"
 @using Microsoft.AspNetCore.Hosting
 @inject NavigationManager Navigation
-@inject WebUI.Services.IApiService ApiService
+@inject Baihua.Web.Services.IApiService ApiService
 @inject IWebHostEnvironment Environment
 @rendermode InteractiveServer
 
@@ -31,7 +31,7 @@
                     @if (Environment.IsDevelopment())
                     {
                         <div class="command-block">
-                            <code>cd services/TaskRunner.Family && dotnet run --urls "http://localhost:8788"</code>
+                            <code>cd services/Baihua.Family && dotnet run --urls "http://localhost:8788"</code>
                         </div>
                     }
                     else

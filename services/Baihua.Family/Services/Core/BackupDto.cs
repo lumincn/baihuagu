@@ -1,6 +1,6 @@
-using TaskRunner.Contracts.Backup;
+using Baihua.Contracts.Backup;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 /// <summary>
 /// 备份清单
@@ -61,4 +61,4 @@ public class BackupValidationResult
 /// <summary>
 /// 备份文件信息
 /// </summary>
-public class BackupFileInfo : TaskRunner.Contracts.Backup.BackupFileInfo { }
+public class BackupFileInfo : Baihua.Contracts.Backup.BackupFileInfo { }

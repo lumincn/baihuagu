@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Logging;
-using TaskRunner.Services;
+using Baihua.Family.Services;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace TaskRunner.Family.Tests.Services;
+namespace Baihua.Family.Tests.Services;
 
 public class NoteParserTests(ITestOutputHelper output)
 {

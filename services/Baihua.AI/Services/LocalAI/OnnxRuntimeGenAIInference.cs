@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.ML.OnnxRuntimeGenAI;
 
-namespace TaskRunner.Services.LocalAI;
+namespace Baihua.Family.Services.LocalAI;
 
 /// <summary>
 /// ONNX 本地模型推理（基于 Microsoft.ML.OnnxRuntimeGenAI）

@@ -1,11 +1,11 @@
 @page "/local-models"
 @rendermode InteractiveServer
-@using TaskRunner.Contracts.LocalModels
-@using TaskRunner.Contracts.OpenClaw
-@using TaskRunner.Contracts.Benchmark
-@inject WebUI.Services.IApiService ApiService
-@inject WebUI.Services.AIStatusService AIStatusService
-@inject WebUI.Hubs.StatusUpdateService StatusUpdateService
+@using Baihua.Contracts.LocalModels
+@using Baihua.Contracts.OpenClaw
+@using Baihua.Contracts.Benchmark
+@inject Baihua.Web.Services.IApiService ApiService
+@inject Baihua.Web.Services.AIStatusService AIStatusService
+@inject Baihua.Web.Hubs.StatusUpdateService StatusUpdateService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject Microsoft.Extensions.Logging.ILogger<LocalModels> Logger

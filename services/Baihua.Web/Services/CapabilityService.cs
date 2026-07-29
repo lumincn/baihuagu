@@ -1,7 +1,7 @@
 using System.Net.Http.Json;
-using TaskRunner.Contracts.Capability;
+using Baihua.Contracts.Capability;
 
-namespace WebUI.Services;
+namespace Baihua.Web.Services;
 
 /// <summary>
 /// 前端能力评估服务：从后端获取机器能力信息，控制功能可见性

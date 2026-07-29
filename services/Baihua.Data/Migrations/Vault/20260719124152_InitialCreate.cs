@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace TaskRunner.Data.Migrations.Vault
+namespace Baihua.Data.Migrations.Vault
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration

@@ -1,10 +1,10 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using TaskRunner.Contracts.LocalModels;
-using TaskRunner.Helpers;
-using TaskRunner.Models;
+using Baihua.Contracts.LocalModels;
+using Baihua.Family.Helpers;
+using Baihua.Family.Models;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 /// <summary>
 /// LM Studio 模型下载服务

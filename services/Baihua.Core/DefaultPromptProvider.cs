@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 public class DefaultPromptProvider
 {
@@ -103,7 +103,7 @@ public class DefaultPromptProvider
 
     private string ResolveTemplatePath()
     {
-        var baseDir = TaskRunner.Contracts.BaihuaPaths.Db;
+        var baseDir = Baihua.Contracts.BaihuaPaths.Db;
         var binDebug = Path.Combine("bin", "Debug");
         var binRelease = Path.Combine("bin", "Release");
         if (baseDir.Contains(binDebug) || baseDir.Contains(binRelease))

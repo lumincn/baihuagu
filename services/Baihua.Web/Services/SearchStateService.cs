@@ -1,4 +1,4 @@
-namespace WebUI.Services;
+namespace Baihua.Web.Services;
 
 /// <summary>
 /// 搜索状态（用于页面导航后恢复搜索结果）

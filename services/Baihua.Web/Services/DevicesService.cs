@@ -1,6 +1,6 @@
-using TaskRunner.Contracts.Devices;
+using Baihua.Contracts.Devices;
 
-namespace WebUI.Services;
+namespace Baihua.Web.Services;
 
 /// <summary>
 /// 设备管理服务

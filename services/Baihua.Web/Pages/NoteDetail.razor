@@ -2,13 +2,13 @@
 @rendermode InteractiveServer
 @inject NavigationManager Navigation
 @inject Microsoft.Extensions.Logging.ILogger<NoteDetail> Logger
-@inject WebUI.Services.IRecentNotesService RecentNotesService
-@inject WebUI.Services.IFavoritesService FavoritesService
-@inject WebUI.Services.IUserPreferencesService UserPreferencesService
-@inject WebUI.Services.SearchStateService SearchStateService
-@using WebUI.Services
+@inject Baihua.Web.Services.IRecentNotesService RecentNotesService
+@inject Baihua.Web.Services.IFavoritesService FavoritesService
+@inject Baihua.Web.Services.IUserPreferencesService UserPreferencesService
+@inject Baihua.Web.Services.SearchStateService SearchStateService
+@using Baihua.Web.Services
 @inject IApiService ApiService
-@inject WebUI.Services.VaultsService VaultsService
+@inject Baihua.Web.Services.VaultsService VaultsService
 @inject Microsoft.JSInterop.IJSRuntime JS
 @using Markdig
 @using Microsoft.JSInterop

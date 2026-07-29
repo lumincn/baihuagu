@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using TaskRunner.Contracts.Capability;
-using TaskRunner.Services;
+using Baihua.Contracts.Capability;
+using Baihua.Family.Services;
 
-namespace TaskRunner.Controllers;
+namespace Baihua.Family.Controllers;
 
 /// <summary>
 /// 机器能力评估 API：返回当前硬件能支持的功能范围

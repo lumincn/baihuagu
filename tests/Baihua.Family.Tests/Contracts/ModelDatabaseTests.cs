@@ -1,7 +1,7 @@
-using TaskRunner.Contracts.LocalModels;
+using Baihua.Contracts.LocalModels;
 using Xunit;
 
-namespace TaskRunner.Family.Tests.Contracts;
+namespace Baihua.Family.Tests.Contracts;
 
 public class ModelDatabaseTests
 {

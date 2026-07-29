@@ -1,11 +1,11 @@
 @page "/master-chat"
 @rendermode InteractiveServer
 @using Microsoft.AspNetCore.Components.Web
-@using WebUI.Services
+@using Baihua.Web.Services
 @using Markdig
 @using Microsoft.JSInterop
-@using TaskRunner.Contracts.Master
-@inject WebUI.Services.IApiService ApiService
+@using Baihua.Contracts.Master
+@inject Baihua.Web.Services.IApiService ApiService
 @inject GlobalStateService GlobalStateService
 @inject IJSRuntime JSRuntime
 @implements IDisposable

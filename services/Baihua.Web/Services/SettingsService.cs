@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace WebUI.Services;
+namespace Baihua.Web.Services;
 
 public class SettingsService
 {

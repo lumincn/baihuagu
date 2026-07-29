@@ -1,4 +1,4 @@
-namespace TaskRunner.Contracts.Backup;
+namespace Baihua.Contracts.Backup;
 
 public class FullBackupRequest
 {

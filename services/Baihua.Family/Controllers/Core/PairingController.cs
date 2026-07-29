@@ -1,9 +1,9 @@
-using TaskRunner.Core.Shared;
+using Baihua.Core;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using TaskRunner.Services;
+using Baihua.Family.Services;
 
-namespace TaskRunner.Controllers
+namespace Baihua.Family.Controllers
 {
     /// <summary>
     /// 配对控制器 - 简化版，只提供二维码

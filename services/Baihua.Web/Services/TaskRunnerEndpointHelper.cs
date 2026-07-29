@@ -1,4 +1,4 @@
-namespace WebUI.Services;
+namespace Baihua.Web.Services;
 
 /// <summary>
 /// 出站连接 Task Runner 时的基址处理。Windows 上 <c>localhost</c> 常优先解析为 <c>::1</c>，

@@ -1,11 +1,11 @@
 using Moq;
 using Moq.Protected;
-using TaskRunner.Contracts.LocalModels;
-using TaskRunner.Services;
+using Baihua.Contracts.LocalModels;
+using Baihua.Family.Services;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
-namespace TaskRunner.Family.Tests.Services;
+namespace Baihua.Family.Tests.Services;
 
 public class OllamaLibraryClientTests
 {

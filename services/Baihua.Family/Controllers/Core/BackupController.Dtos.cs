@@ -1,18 +1,18 @@
-using TaskRunner.Contracts.Backup;
+using Baihua.Contracts.Backup;
 
-namespace TaskRunner.Controllers
+namespace Baihua.Family.Controllers
 {
-    public class FullBackupRequest : TaskRunner.Contracts.Backup.FullBackupRequest { }
+    public class FullBackupRequest : Baihua.Contracts.Backup.FullBackupRequest { }
 
-    public class FullBackupResponse : TaskRunner.Contracts.Backup.FullBackupResponse { }
+    public class FullBackupResponse : Baihua.Contracts.Backup.FullBackupResponse { }
 
-    public class FullRestoreRequest : TaskRunner.Contracts.Backup.FullRestoreRequest { }
+    public class FullRestoreRequest : Baihua.Contracts.Backup.FullRestoreRequest { }
 
-    public class FullRestoreResponse : TaskRunner.Contracts.Backup.FullRestoreResponse { }
+    public class FullRestoreResponse : Baihua.Contracts.Backup.FullRestoreResponse { }
 
-    public class ValidateBackupRequest : TaskRunner.Contracts.Backup.ValidateBackupRequest { }
+    public class ValidateBackupRequest : Baihua.Contracts.Backup.ValidateBackupRequest { }
 
-    public class ValidateBackupResponse : TaskRunner.Contracts.Backup.ValidateBackupResponse { }
+    public class ValidateBackupResponse : Baihua.Contracts.Backup.ValidateBackupResponse { }
 
-    public class BackupListResponse : TaskRunner.Contracts.Backup.BackupListResponse { }
+    public class BackupListResponse : Baihua.Contracts.Backup.BackupListResponse { }
 }

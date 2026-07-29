@@ -2,10 +2,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using TaskRunner.Data;
-using TaskRunner.Data.Entities;
+using Baihua.Data;
+using Baihua.Data.Entities;
 
-namespace TaskRunner.Services
+namespace Baihua.Family.Services
 {
     /// <summary>
     /// 服务器地址配置服务

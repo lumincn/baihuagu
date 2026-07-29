@@ -1,12 +1,12 @@
-using TaskRunner.Core.Shared.Notifications;
+using Baihua.Core.Notifications;
 using Microsoft.AspNetCore.Mvc;
-using TaskRunner.Data.Entities;
-using TaskRunner.Models;
-using TaskRunner.Services;
-using TaskRunner.Core.Shared.Security;
-using TaskRunner.Contracts.Ai;
+using Baihua.Data.Entities;
+using Baihua.Family.Models;
+using Baihua.Family.Services;
+using Baihua.Core.Security;
+using Baihua.Contracts.Ai;
 
-namespace TaskRunner.Controllers;
+namespace Baihua.Family.Controllers;
 
 public partial class AiConfigController
 {
@@ -109,7 +109,7 @@ public partial class AiConfigController
         };
 
         // 根据机器能力过滤本地 Provider 预设
-        if (!_capabilityService.CanUse(TaskRunner.Services.LocalComputeFeature.AiConfigLocalProviderPresets))
+        if (!_capabilityService.CanUse(Baihua.Family.Services.LocalComputeFeature.AiConfigLocalProviderPresets))
         {
             presets = presets.Where(p =>
                 !p.Id.Equals("ollama", StringComparison.OrdinalIgnoreCase) &&
@@ -132,7 +132,7 @@ public class AiProviderViewModel
     public List<AiModelViewModel> Models { get; set; } = new();
     public bool HasApiKey { get; set; }
     public string? KeyMask { get; set; }
-    public TaskRunner.Contracts.Ai.AiModelTier Tier { get; set; }
+    public Baihua.Contracts.Ai.AiModelTier Tier { get; set; }
 }
 
 public class AiModelViewModel

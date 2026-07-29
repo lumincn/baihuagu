@@ -1,4 +1,4 @@
-namespace TaskRunner.Data.Entities;
+namespace Baihua.Data.Entities;
 
 /// <summary>
 /// 任务记录（存储在 SQLite 中）

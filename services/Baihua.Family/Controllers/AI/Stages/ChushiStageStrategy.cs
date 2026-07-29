@@ -1,4 +1,4 @@
-namespace TaskRunner.Controllers.AI.Stages;
+namespace Baihua.Family.Controllers.AI.Stages;
 
 /// <summary>
 /// 「出师」阶段策略 — 前辈：实战建议、考前冲刺。

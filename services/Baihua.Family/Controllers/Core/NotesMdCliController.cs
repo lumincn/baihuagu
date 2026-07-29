@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
-using TaskRunner.Contracts.Vaults;
-using TaskRunner.Services;
-using TaskRunner.Contracts.Core;
+using Baihua.Contracts.Vaults;
+using Baihua.Family.Services;
+using Baihua.Contracts.Core;
 
-namespace TaskRunner.Controllers
+namespace Baihua.Family.Controllers
 {
     [ApiController]
     [Route("api/notesmd-cli")]
@@ -36,7 +36,7 @@ namespace TaskRunner.Controllers
         /// 添加单个 vault 到 notesmd-cli。
         /// </summary>
         [HttpPost("add-vault")]
-        public IActionResult AddVault([FromBody] TaskRunner.Contracts.Vaults.AddVaultRequest request)
+        public IActionResult AddVault([FromBody] Baihua.Contracts.Vaults.AddVaultRequest request)
         {
             if (string.IsNullOrWhiteSpace(request?.Path))
             {

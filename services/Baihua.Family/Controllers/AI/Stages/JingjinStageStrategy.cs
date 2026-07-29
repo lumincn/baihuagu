@@ -1,4 +1,4 @@
-namespace TaskRunner.Controllers.AI.Stages;
+namespace Baihua.Family.Controllers.AI.Stages;
 
 /// <summary>
 /// 「精进」阶段策略 — 匠人：精益求精，不放过任何细节。

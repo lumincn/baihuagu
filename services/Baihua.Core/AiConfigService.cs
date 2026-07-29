@@ -1,12 +1,12 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
-using TaskRunner.Data;
-using TaskRunner.Data.Entities;
-using TaskRunner.Models;
-using TaskRunner.Core.Shared.Security;
+using Baihua.Data;
+using Baihua.Data.Entities;
+using Baihua.Family.Models;
+using Baihua.Core.Security;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 /// <summary>
 /// AI 配置管理服务 - 使用 SQLite + EF Core 加密存储 API Key
@@ -281,7 +281,7 @@ public class AiConfigService
             AnthropicBaseUrl = anthropicBaseUrl,
             IsMain = setting.IsMain,
             Models = ParseModels(setting.ModelsJson),
-            Tier = (TaskRunner.Contracts.Ai.AiModelTier)setting.Tier
+            Tier = (Baihua.Contracts.Ai.AiModelTier)setting.Tier
         };
     }
 

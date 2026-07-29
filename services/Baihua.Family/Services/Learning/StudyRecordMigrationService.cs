@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using TaskRunner.Data;
-using TaskRunner.Data.Entities;
+using Baihua.Data;
+using Baihua.Data.Entities;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 /// <summary>
 /// 学习记录迁移服务：将旧文件系统记录（.study/daily-*.json）迁移到 SQLite StudyActivities

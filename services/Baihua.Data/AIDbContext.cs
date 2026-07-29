@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using TaskRunner.Data.Entities;
+using Baihua.Data.Entities;
 
-namespace TaskRunner.Data;
+namespace Baihua.Data;
 
 /// <summary>
 /// AI 研究域数据库上下文
@@ -46,7 +46,7 @@ public class AIDbContext : DbContext
 
     internal static string ResolveDataDir()
     {
-        var dbDir = TaskRunner.Contracts.BaihuaPaths.Db;
+        var dbDir = Baihua.Contracts.BaihuaPaths.Db;
         Directory.CreateDirectory(dbDir);
         return dbDir;
     }

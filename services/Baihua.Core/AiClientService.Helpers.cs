@@ -5,11 +5,11 @@ using Microsoft.Extensions.Caching.Distributed;
 using OpenAI;
 using System.ClientModel;
 using Microsoft.Extensions.Logging;
-using TaskRunner.Data;
-using TaskRunner.Data.Entities;
-using TaskRunner.Models;
+using Baihua.Data;
+using Baihua.Data.Entities;
+using Baihua.Family.Models;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 public partial class AiClientService
 {

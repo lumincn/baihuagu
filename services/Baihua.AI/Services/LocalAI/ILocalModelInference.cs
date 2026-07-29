@@ -1,4 +1,4 @@
-namespace TaskRunner.Services.LocalAI;
+namespace Baihua.Family.Services.LocalAI;
 
 /// <summary>
 /// 本地模型推理接口（GGUF / ONNX 等格式）

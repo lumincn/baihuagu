@@ -1,4 +1,4 @@
-namespace TaskRunner.Contracts.Ai;
+namespace Baihua.Contracts.Ai;
 
 public class AskRequest
 {

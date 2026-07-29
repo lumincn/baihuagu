@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
-namespace TaskRunner.Core.Shared.WebSocket;
+namespace Baihua.Core.WebSocket;
 
 public class DeviceWebSocketHub
 {

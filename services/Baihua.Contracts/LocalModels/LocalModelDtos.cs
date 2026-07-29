@@ -1,4 +1,4 @@
-namespace TaskRunner.Contracts.LocalModels;
+namespace Baihua.Contracts.LocalModels;
 
 /// <summary>
 /// 硬件信息 DTO

@@ -1,4 +1,4 @@
-namespace TaskRunner.Contracts.Benchmark;
+namespace Baihua.Contracts.Benchmark;
 
 /// <summary>
 /// 内置基准测试数据：推荐模型 + 测试提示词

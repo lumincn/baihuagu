@@ -1,15 +1,15 @@
-using TaskRunner.Core.Shared;
+using Baihua.Core;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Text.Json;
 using System.Security.Cryptography;
-using TaskRunner.Helpers;
+using Baihua.Family.Helpers;
 using System.Collections.Generic;
 using Microsoft.Extensions.AI;
-using TaskRunner.Models;
-using TaskRunner.Contracts.Scene;
+using Baihua.Family.Models;
+using Baihua.Contracts.Scene;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 public partial class AtomNoteSplitter
 {
@@ -88,7 +88,7 @@ public partial class AtomNoteSplitter
             bool isSupplement = false,
             List<Note>? existingNotes = null,
             CancellationToken cancellationToken = default,
-            TaskRunner.Contracts.Scene.AppScene? scene = null)
+            Baihua.Contracts.Scene.AppScene? scene = null)
         {
             string userPrompt = BuildUserPrompt(title, content, isSupplement, existingNotes);
             _logger.LogDebug("调用 AI API: provider={ProviderId}, model={Model}, 模式：{Mode}", providerId, model, isSupplement ? "补充" : "拆分");
@@ -105,7 +105,7 @@ public partial class AtomNoteSplitter
             List<Note>? existingNotes,
             List<string>? missingTargets,
             CancellationToken cancellationToken = default,
-            TaskRunner.Contracts.Scene.AppScene? scene = null)
+            Baihua.Contracts.Scene.AppScene? scene = null)
         {
             if (missingTargets == null || missingTargets.Count == 0)
                 return await CallAiApiAsync(title, content, model, providerId, isSupplement, existingNotes, cancellationToken, scene);
@@ -213,7 +213,7 @@ public partial class AtomNoteSplitter
             return savedNotes;
         }
 
-        private string GetSystemPrompt(TaskRunner.Contracts.Scene.AppScene? scene = null)
+        private string GetSystemPrompt(Baihua.Contracts.Scene.AppScene? scene = null)
         {
             return _scenePromptService.GetTemplate(scene).SplitSystemPrompt;
         }

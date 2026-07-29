@@ -1,15 +1,15 @@
-using TaskRunner.Core.Shared;
+using Baihua.Core;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Text.Json;
 using System.Security.Cryptography;
-using TaskRunner.Helpers;
+using Baihua.Family.Helpers;
 using System.Collections.Generic;
 using Microsoft.Extensions.AI;
-using TaskRunner.Models;
-using TaskRunner.Contracts.Scene;
+using Baihua.Family.Models;
+using Baihua.Contracts.Scene;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 public partial class AtomNoteSplitter
 {
@@ -23,7 +23,7 @@ public partial class AtomNoteSplitter
             IReadOnlyDictionary<string, List<string>>? aiModels = null,
             string? vaultPath = null,
             CancellationToken cancellationToken = default,
-            TaskRunner.Contracts.Scene.AppScene? scene = null)
+            Baihua.Contracts.Scene.AppScene? scene = null)
         {
             try
             {

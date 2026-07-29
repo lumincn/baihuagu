@@ -1,9 +1,9 @@
-using TaskRunner.Core.Shared.Notifications;
+using Baihua.Core.Notifications;
 using Microsoft.AspNetCore.Mvc;
-using TaskRunner.Services;
-using TaskRunner.Contracts.Vaults;
+using Baihua.Family.Services;
+using Baihua.Contracts.Vaults;
 
-namespace TaskRunner.Vault.Controllers
+namespace Baihua.Vault.Controllers
 {
     [ApiController]
     [Route("api/settings")]

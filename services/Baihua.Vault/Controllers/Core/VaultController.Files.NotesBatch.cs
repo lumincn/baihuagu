@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using TaskRunner.Contracts.Vaults;
+using Baihua.Contracts.Vaults;
 
-namespace TaskRunner.Vault.Controllers;
+namespace Baihua.Vault.Controllers;
 
 public partial class VaultController
 {

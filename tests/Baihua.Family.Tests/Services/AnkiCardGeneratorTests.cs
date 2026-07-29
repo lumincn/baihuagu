@@ -1,8 +1,8 @@
 using AnkiGen.Core;
-using TaskRunner.Services;
-using TaskRunner.Data;
-using TaskRunner.Models;
-using TaskRunner.Contracts.Anki;
+using Baihua.Family.Services;
+using Baihua.Data;
+using Baihua.Family.Models;
+using Baihua.Contracts.Anki;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
@@ -10,7 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Xunit;
 using Moq;
 
-namespace TaskRunner.Family.Tests.Services;
+namespace Baihua.Family.Tests.Services;
 
 public class AnkiCardGeneratorTests : IDisposable
 {
@@ -63,7 +63,7 @@ public class AnkiCardGeneratorTests : IDisposable
         // Seed a vault record
         using (var db = new VaultDbContext(options))
         {
-            db.Vaults.Add(new TaskRunner.Data.Entities.Vault
+            db.Vaults.Add(new Baihua.Data.Entities.Vault
             {
                 VaultId = Guid.NewGuid().ToString("N"),
                 Name = "TestVault",
@@ -393,7 +393,7 @@ public class AnkiCardGeneratorTests : IDisposable
         var deckData = new JsonDeckData
         {
             Name = "经方::TestDeck",
-            Cards = new List<TaskRunner.Contracts.Anki.JsonCard>
+            Cards = new List<Baihua.Contracts.Anki.JsonCard>
             {
                 new() { Front = "Q1", Back = "A1", Tags = new List<string> { "tag1" } },
                 new() { Front = "Q2", Back = "A2", Tags = new List<string> { "tag1", "tag2" } },
@@ -425,7 +425,7 @@ public class AnkiCardGeneratorTests : IDisposable
         var deckData = new JsonDeckData
         {
             Name = "Deck",
-            Cards = new List<TaskRunner.Contracts.Anki.JsonCard>
+            Cards = new List<Baihua.Contracts.Anki.JsonCard>
             {
                 new() { Front = "Value,with,commas", Back = "Also,commas", Tags = new List<string> { "a,b" } },
             }
@@ -448,8 +448,8 @@ public class AnkiCardGeneratorTests : IDisposable
         Directory.CreateDirectory(cardsPath);
         var generator = CreateGenerator();
 
-        var deck1 = new JsonDeckData { Name = "Deck1", Cards = new List<TaskRunner.Contracts.Anki.JsonCard> { new() { Front = "F1", Back = "B1" } } };
-        var deck2 = new JsonDeckData { Name = "Deck2", Cards = new List<TaskRunner.Contracts.Anki.JsonCard> { new() { Front = "F2", Back = "B2" } } };
+        var deck1 = new JsonDeckData { Name = "Deck1", Cards = new List<Baihua.Contracts.Anki.JsonCard> { new() { Front = "F1", Back = "B1" } } };
+        var deck2 = new JsonDeckData { Name = "Deck2", Cards = new List<Baihua.Contracts.Anki.JsonCard> { new() { Front = "F2", Back = "B2" } } };
         await File.WriteAllTextAsync(Path.Combine(cardsPath, "deck1.json"),
             System.Text.Json.JsonSerializer.Serialize(deck1));
         await File.WriteAllTextAsync(Path.Combine(cardsPath, "deck2.json"),
@@ -483,8 +483,8 @@ public class AnkiCardGeneratorTests : IDisposable
         Directory.CreateDirectory(cardsPath);
         var generator = CreateGenerator();
 
-        var deck1 = new JsonDeckData { Name = "D1", Cards = new List<TaskRunner.Contracts.Anki.JsonCard> { new() { Front = "F1", Back = "B1" } } };
-        var deck2 = new JsonDeckData { Name = "D2", Cards = new List<TaskRunner.Contracts.Anki.JsonCard> { new() { Front = "F2", Back = "B2" }, new() { Front = "F3", Back = "B3" } } };
+        var deck1 = new JsonDeckData { Name = "D1", Cards = new List<Baihua.Contracts.Anki.JsonCard> { new() { Front = "F1", Back = "B1" } } };
+        var deck2 = new JsonDeckData { Name = "D2", Cards = new List<Baihua.Contracts.Anki.JsonCard> { new() { Front = "F2", Back = "B2" }, new() { Front = "F3", Back = "B3" } } };
         File.WriteAllText(Path.Combine(cardsPath, "d1.json"), System.Text.Json.JsonSerializer.Serialize(deck1));
         File.WriteAllText(Path.Combine(cardsPath, "d2.json"), System.Text.Json.JsonSerializer.Serialize(deck2));
 

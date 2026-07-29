@@ -3,7 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
-namespace TaskRunner.Logging;
+namespace Baihua.Family.Logging;
 
 /// <summary>
 /// 结构化JSON Lines日志记录器。

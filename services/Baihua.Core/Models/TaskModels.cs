@@ -1,4 +1,4 @@
-namespace TaskRunner.Core.Shared;
+namespace Baihua.Core;
 
 public enum RunnerTaskStatus { Pending, Running, Success, Failed, Timeout, Cancelled }
 

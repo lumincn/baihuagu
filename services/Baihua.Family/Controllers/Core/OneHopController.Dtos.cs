@@ -1,14 +1,14 @@
-using TaskRunner.Contracts.OneHop;
+using Baihua.Contracts.OneHop;
 
-namespace TaskRunner.Controllers
+namespace Baihua.Family.Controllers
 {
-    public class OneHopDeviceResponse : TaskRunner.Contracts.OneHop.OneHopDeviceResponse { }
+    public class OneHopDeviceResponse : Baihua.Contracts.OneHop.OneHopDeviceResponse { }
 
-    public class OneHopConnectionResponse : TaskRunner.Contracts.OneHop.OneHopConnectionResponse { }
+    public class OneHopConnectionResponse : Baihua.Contracts.OneHop.OneHopConnectionResponse { }
 
-    public class OneHopConnectRequest : TaskRunner.Contracts.OneHop.OneHopConnectRequest { }
+    public class OneHopConnectRequest : Baihua.Contracts.OneHop.OneHopConnectRequest { }
 
-    public class OneHopStatusResponse : TaskRunner.Contracts.OneHop.OneHopStatusResponse { }
+    public class OneHopStatusResponse : Baihua.Contracts.OneHop.OneHopStatusResponse { }
 
-    public class OneHopRegisterDeviceRequest : TaskRunner.Contracts.OneHop.OneHopRegisterDeviceRequest { }
+    public class OneHopRegisterDeviceRequest : Baihua.Contracts.OneHop.OneHopRegisterDeviceRequest { }
 }

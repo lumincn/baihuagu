@@ -1,14 +1,14 @@
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject NavigationManager Navigation
-@inject WebUI.Services.IRecentNotesService RecentNotesService
-@inject WebUI.Services.ISearchHistoryService SearchHistoryService
-@inject WebUI.Services.AIStatusService AIStatusService
-@inject WebUI.Services.VaultStatusService VaultStatusService
+@inject Baihua.Web.Services.IRecentNotesService RecentNotesService
+@inject Baihua.Web.Services.ISearchHistoryService SearchHistoryService
+@inject Baihua.Web.Services.AIStatusService AIStatusService
+@inject Baihua.Web.Services.VaultStatusService VaultStatusService
 @inject UserTypeService UserTypeService
 @inject Microsoft.Extensions.Logging.ILogger<FamilyHome> Logger
 
-@using WebUI.Services
-@using WebUI.Components
+@using Baihua.Web.Services
+@using Baihua.Web.Components
 @using System.Net
 @using System.Linq
 @using Microsoft.JSInterop

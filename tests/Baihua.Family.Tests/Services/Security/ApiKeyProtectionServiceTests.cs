@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging;
-using TaskRunner.Core.Shared.Security;
+using Baihua.Core.Security;
 using Xunit;
 
-namespace TaskRunner.Family.Tests.Services.Security;
+namespace Baihua.Family.Tests.Services.Security;
 
 public class ApiKeyProtectionServiceTests
 {

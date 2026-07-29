@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using TaskRunner.Services;
+using Baihua.Family.Services;
 
-namespace TaskRunner.Controllers;
+namespace Baihua.Family.Controllers;
 
 /// <summary>
 /// OpenObserve 日志后端配置 API

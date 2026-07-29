@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace TaskRunner.Contracts.Devices;
+namespace Baihua.Contracts.Devices;
 
 /// <summary>
 /// 设备完整信息（含状态）

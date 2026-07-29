@@ -1,4 +1,4 @@
-namespace TaskRunner.Services
+namespace Baihua.Family.Services
 {
     /// <summary>
     /// 应用启动时预热本地模型相关缓存（硬件信息 + 模型推荐）

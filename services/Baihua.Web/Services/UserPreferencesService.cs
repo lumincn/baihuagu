@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace WebUI.Services;
+namespace Baihua.Web.Services;
 
 public interface IUserPreferencesService
 {

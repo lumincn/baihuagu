@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
-namespace TaskRunner.Middleware;
+namespace Baihua.Family.Middleware;
 
 /// <summary>
 /// 请求关联 ID 中间件 — 为每个 HTTP 请求分配唯一 correlationId，

@@ -1,4 +1,4 @@
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 /// <summary>
 /// 任务更新通知接口——从 TaskManager 中提取的 SignalR 推送关注点

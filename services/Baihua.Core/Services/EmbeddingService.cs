@@ -1,14 +1,14 @@
-using TaskRunner.Contracts.Search;
+using Baihua.Contracts.Search;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 
-using TaskRunner.Data;
-using TaskRunner.Data.Entities;
+using Baihua.Data;
+using Baihua.Data.Entities;
 
-namespace TaskRunner.Services
+namespace Baihua.Family.Services
 {
     /// <summary>
     /// 语义向量服务：基于 SQLite BLOB 缓存 + IEmbeddingGenerator 抽象，对关键词搜索结果按相似度重排
@@ -20,7 +20,7 @@ namespace TaskRunner.Services
         private readonly VaultSettingsService _vaultSettings;
         private readonly IDbContextFactory<VaultDbContext> _vaultDbFactory;
         private readonly IDbContextFactory<AIDbContext> _aiDbFactory;
-        private readonly TaskRunner.Core.Shared.Security.ApiKeyProtectionService _protectionService;
+        private readonly Baihua.Core.Security.ApiKeyProtectionService _protectionService;
         private readonly ILogger<EmbeddingService> _logger;
 
         private const int MaxNotesToRerank = 50;
@@ -31,7 +31,7 @@ namespace TaskRunner.Services
             VaultSettingsService vaultSettings,
             IDbContextFactory<VaultDbContext> vaultDbFactory,
             IDbContextFactory<AIDbContext> aiDbFactory,
-            TaskRunner.Core.Shared.Security.ApiKeyProtectionService protectionService,
+            Baihua.Core.Security.ApiKeyProtectionService protectionService,
             ILogger<EmbeddingService> logger)
         {
             _aiClientService = aiClientService;

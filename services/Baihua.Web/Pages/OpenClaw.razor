@@ -1,11 +1,11 @@
 @page "/openclaw"
 @rendermode InteractiveServer
-@inject WebUI.Services.IApiService ApiService
-@inject WebUI.Services.CapabilityService CapabilityService
+@inject Baihua.Web.Services.IApiService ApiService
+@inject Baihua.Web.Services.CapabilityService CapabilityService
 @inject IJSRuntime JSRuntime
 @inject Microsoft.Extensions.Logging.ILogger<OpenClaw> Logger
 @using Microsoft.JSInterop
-@using TaskRunner.Contracts.OpenClaw
+@using Baihua.Contracts.OpenClaw
 
 <PageTitle>OpenClaw 任务委派</PageTitle>
 
@@ -598,7 +598,7 @@
                     else if (!string.IsNullOrEmpty(_reportContent))
                     {
                         <div class="markdown-body">
-                            <WebUI.Components.MarkdownView Content="@_reportContent" />
+                            <Baihua.Web.Components.MarkdownView Content="@_reportContent" />
                         </div>
                     }
                     else

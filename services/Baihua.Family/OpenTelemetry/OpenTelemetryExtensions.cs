@@ -8,7 +8,7 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
-namespace TaskRunner.OpenTelemetry;
+namespace Baihua.Family.OpenTelemetry;
 
 /// <summary>
 /// OpenTelemetry 扩展方法，支持向 OpenObserve 推送 Metrics、Logs 和 Traces。

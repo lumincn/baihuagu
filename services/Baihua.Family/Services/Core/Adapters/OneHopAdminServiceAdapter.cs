@@ -1,13 +1,13 @@
-using TaskRunner.Services;
+using Baihua.Family.Services;
 using MobileContract.Admin;
 using MobileContract.OneHop;
 using MCDeviceInfo = MobileContract.OneHop.OneHopDeviceInfo;
 using MCConnectionResult = MobileContract.OneHop.OneHopConnectionResult;
 
-namespace TaskRunner.Services.Adapters;
+namespace Baihua.Family.Services.Adapters;
 
 /// <summary>
-/// OneHop 管理服务适配器 —— 将 TaskRunner.Services.IOneHopService 适配到 MobileContract.Admin.IOneHopAdminService。
+/// OneHop 管理服务适配器 —— 将 Baihua.Family.Services.IOneHopService 适配到 MobileContract.Admin.IOneHopAdminService。
 /// 仅由服务端管理后台调用。
 /// </summary>
 public class OneHopAdminServiceAdapter : IOneHopAdminService

@@ -4,18 +4,18 @@ using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using TaskRunner.Contracts.Ai;
-using TaskRunner.Contracts.Anki;
-using TaskRunner.Contracts.Achievements;
-using TaskRunner.Contracts.Benchmark;
-using TaskRunner.Contracts.Health;
-using TaskRunner.Contracts.LocalModels;
-using TaskRunner.Contracts.Metrics;
-using TaskRunner.Contracts.OpenClaw;
-using TaskRunner.Contracts.Scene;
-using TaskRunner.Contracts.Master;
+using Baihua.Contracts.Ai;
+using Baihua.Contracts.Anki;
+using Baihua.Contracts.Achievements;
+using Baihua.Contracts.Benchmark;
+using Baihua.Contracts.Health;
+using Baihua.Contracts.LocalModels;
+using Baihua.Contracts.Metrics;
+using Baihua.Contracts.OpenClaw;
+using Baihua.Contracts.Scene;
+using Baihua.Contracts.Master;
 
-namespace WebUI.Services
+namespace Baihua.Web.Services
 {
     /// <summary>
     /// AI 流式响应事件
@@ -183,7 +183,7 @@ namespace WebUI.Services
         Task<List<AiUsageMetricDto>> GetAiRecentMetricsAsync(int limit = 50, int days = 7, CancellationToken cancellationToken = default);
 
         // 场景管理
-        Task SetSceneAsync(TaskRunner.Contracts.Scene.AppScene scene, CancellationToken cancellationToken = default);
+        Task SetSceneAsync(Baihua.Contracts.Scene.AppScene scene, CancellationToken cancellationToken = default);
 
         // 虚拟师父
         Task<CreateMasterResponse> CreateMasterAsync(string goal, string industry, CancellationToken cancellationToken = default);
@@ -2866,7 +2866,7 @@ namespace WebUI.Services
             }
         }
 
-        public async Task SetSceneAsync(TaskRunner.Contracts.Scene.AppScene scene, CancellationToken cancellationToken = default)
+        public async Task SetSceneAsync(Baihua.Contracts.Scene.AppScene scene, CancellationToken cancellationToken = default)
         {
             var payload = new { scene = (int)scene };
             var response = await _httpClient.PostAsJsonAsync("/api/scene", payload, cancellationToken);

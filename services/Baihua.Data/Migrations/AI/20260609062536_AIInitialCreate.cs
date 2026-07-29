@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace TaskRunner.Data.Migrations.AI
+namespace Baihua.Data.Migrations.AI
 {
     /// <inheritdoc />
     public partial class AIInitialCreate : Migration

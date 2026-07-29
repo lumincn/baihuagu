@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using TaskRunner.Core.Shared.Security;
-using ComponentStatus = TaskRunner.Contracts.Health.ComponentStatusDto;
+using Baihua.Core.Security;
+using ComponentStatus = Baihua.Contracts.Health.ComponentStatusDto;
 
-namespace TaskRunner.Services
+namespace Baihua.Family.Services
 {
     public partial class SystemHealthService
     {

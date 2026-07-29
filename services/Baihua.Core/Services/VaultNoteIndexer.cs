@@ -1,10 +1,10 @@
-using TaskRunner.Contracts.Search;
+using Baihua.Contracts.Search;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
-using TaskRunner.Data;
+using Baihua.Data;
 
 
-namespace TaskRunner.Services
+namespace Baihua.Family.Services
 {
     /// <summary>
     /// 知识库笔记 FTS5 全文索引服务

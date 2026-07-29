@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging;
-using TaskRunner.Contracts.Capability;
-using TaskRunner.Contracts.LocalModels;
+using Baihua.Contracts.Capability;
+using Baihua.Contracts.LocalModels;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 /// <summary>
 /// 需要本地算力的功能标识

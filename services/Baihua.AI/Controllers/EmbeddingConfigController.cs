@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TaskRunner.Contracts.Ai;
-using TaskRunner.Data;
-using TaskRunner.Data.Entities;
-using TaskRunner.Core.Shared.Security;
+using Baihua.Contracts.Ai;
+using Baihua.Data;
+using Baihua.Data.Entities;
+using Baihua.Core.Security;
 
-namespace TaskRunner.Controllers;
+namespace Baihua.Family.Controllers;
 
 /// <summary>
 /// Embedding 模型配置 API（一级·固本模型，用于 RAG 向量检索）

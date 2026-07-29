@@ -1,13 +1,13 @@
-using TaskRunner.Core.Shared;
+using Baihua.Core;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.AI;
-using TaskRunner.Contracts.Mcp;
-using TaskRunner.Contracts.OpenClaw;
-using TaskRunner.Helpers;
-using TaskRunner.Models;
+using Baihua.Contracts.Mcp;
+using Baihua.Contracts.OpenClaw;
+using Baihua.Family.Helpers;
+using Baihua.Family.Models;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 public partial class McpServerService
 {
@@ -201,7 +201,7 @@ public partial class McpServerService
         var limit = GetInt(args, "limit", 20);
         var status = GetString(args, "status");
 
-        List<TaskRunner.Core.Shared.TaskInfo> tasks;
+        List<Baihua.Core.TaskInfo> tasks;
         if (!string.IsNullOrWhiteSpace(status))
         {
             tasks = _taskManager.GetTasksByStatus(status, limit);

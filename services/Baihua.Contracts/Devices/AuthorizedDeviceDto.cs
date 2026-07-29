@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace TaskRunner.Contracts.Devices;
+namespace Baihua.Contracts.Devices;
 
 /// <summary>
 /// 已授权设备信息

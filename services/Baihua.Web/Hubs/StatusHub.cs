@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 
-namespace WebUI.Hubs;
+namespace Baihua.Web.Hubs;
 
 /// <summary>
 /// SignalR Hub 用于实时推送状态更新

@@ -1,7 +1,7 @@
 using System.Diagnostics;
-using WebUI.Services;
+using Baihua.Web.Services;
 
-namespace WebUI.Middleware;
+namespace Baihua.Web.Middleware;
 
 /// <summary>
 /// 请求统计中间件：记录每个请求的耗时和路径

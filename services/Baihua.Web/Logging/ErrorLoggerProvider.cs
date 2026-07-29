@@ -1,6 +1,6 @@
-using WebUI.Services;
+using Baihua.Web.Services;
 
-namespace WebUI.Logging;
+namespace Baihua.Web.Logging;
 
 /// <summary>
 /// 错误日志 LoggerProvider - 将 Error/Critical 级别的日志存入内存

@@ -1,10 +1,10 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
-using TaskRunner.Models;
-using TaskRunner.Services;
+using Baihua.Family.Models;
+using Baihua.Family.Services;
 
-namespace TaskRunner.Controllers;
+namespace Baihua.Family.Controllers;
 
 public partial class ChatCompletionsController
 {
@@ -58,7 +58,7 @@ public partial class ChatCompletionsController
 
                 // 执行 MCP 工具
                 var toolResult = await _mcpServerService.CallToolAsync(
-                    new TaskRunner.Contracts.Mcp.McpToolCallRequest
+                    new Baihua.Contracts.Mcp.McpToolCallRequest
                     {
                         Name = toolName,
                         Arguments = arguments

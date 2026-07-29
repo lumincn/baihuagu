@@ -1,10 +1,10 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
-using TaskRunner.Contracts.Benchmark;
-using TaskRunner.Data;
-using TaskRunner.Data.Entities;
+using Baihua.Contracts.Benchmark;
+using Baihua.Data;
+using Baihua.Data.Entities;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 /// <summary>
 /// Benchmark 历史记录仓库：持久化与查询

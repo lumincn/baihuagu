@@ -1,8 +1,8 @@
-using TaskRunner.Core.Shared;
+using Baihua.Core;
 using Microsoft.AspNetCore.Mvc;
-using TaskRunner.Contracts.Pairing;
+using Baihua.Contracts.Pairing;
 
-namespace TaskRunner.Services.Strategies;
+namespace Baihua.Family.Services.Strategies;
 
 /// <summary>
 /// 家庭版配对策略：提交配对请求，等待 WebUI 审批

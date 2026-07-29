@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using System.Diagnostics;
-using TaskRunner.Contracts.Metrics;
+using Baihua.Contracts.Metrics;
 
-namespace TaskRunner.Middleware;
+namespace Baihua.Family.Middleware;
 
 public class ServiceMetricsMiddleware
 {

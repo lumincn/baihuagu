@@ -1,9 +1,9 @@
 using System.Security.Cryptography;
 using System.Text;
-using TaskRunner.Core.Shared.Security;
+using Baihua.Core.Security;
 using Xunit;
 
-namespace TaskRunner.Family.Tests.Security;
+namespace Baihua.Family.Tests.Security;
 
 // 定义测试集合，禁止并发运行（避免环境变量冲突）
 [Collection("AesApiKeyEncryption")]

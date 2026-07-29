@@ -1,10 +1,10 @@
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using TaskRunner.Contracts.OpenClaw;
-using TaskRunner.Helpers;
+using Baihua.Contracts.OpenClaw;
+using Baihua.Family.Helpers;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 /// <summary>
 /// OpenClaw 配置服务：读写 openclaw.json 和 llamacpp-config.json

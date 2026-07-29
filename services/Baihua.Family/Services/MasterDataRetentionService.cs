@@ -1,7 +1,7 @@
-using TaskRunner.Data;
+using Baihua.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 public class MasterDataRetentionService : BackgroundService
 {

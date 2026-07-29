@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using TaskRunner.Contracts.Search;
+using Baihua.Contracts.Search;
 using System.Diagnostics;
 
-namespace TaskRunner.Vault.Controllers;
+namespace Baihua.Vault.Controllers;
 
 public partial class SearchController
 {

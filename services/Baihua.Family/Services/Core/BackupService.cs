@@ -1,12 +1,12 @@
-using TaskRunner.Core.Shared.Security;
+using Baihua.Core.Security;
 using System.IO.Compression;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
-using TaskRunner.Data;
-using TaskRunner.Data.Entities;
-using TaskRunner.Contracts.Backup;
+using Baihua.Data;
+using Baihua.Data.Entities;
+using Baihua.Contracts.Backup;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 /// <summary>
 /// 全量备份恢复服务 - 备份所有配置与数据，支持跨平台恢复
@@ -396,7 +396,7 @@ public class BackupService
     /// <summary>
     /// 获取备份列表
     /// </summary>
-    public List<TaskRunner.Contracts.Backup.BackupFileInfo> GetBackupList(string? backupPath = null)
+    public List<Baihua.Contracts.Backup.BackupFileInfo> GetBackupList(string? backupPath = null)
     {
         var backupDir = string.IsNullOrEmpty(backupPath)
             ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "HuajiBackups")
@@ -404,13 +404,13 @@ public class BackupService
 
         if (!Directory.Exists(backupDir))
         {
-            return new List<TaskRunner.Contracts.Backup.BackupFileInfo>();
+            return new List<Baihua.Contracts.Backup.BackupFileInfo>();
         }
 
         return Directory.GetFiles(backupDir, "huaji_backup_*.zip")
             .Concat(Directory.GetFiles(backupDir, "backup_*.zip"))
             .OrderByDescending(f => File.GetLastWriteTime(f))
-            .Select(f => new TaskRunner.Contracts.Backup.BackupFileInfo
+            .Select(f => new Baihua.Contracts.Backup.BackupFileInfo
             {
                 Path = f,
                 FileName = Path.GetFileName(f),

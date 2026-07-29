@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Caching.Memory;
-using TaskRunner.Contracts.LocalModels;
+using Baihua.Contracts.LocalModels;
 
-namespace TaskRunner.Services
+namespace Baihua.Family.Services
 {
     /// <summary>
     /// 根据硬件信息推荐可本地运行的模型

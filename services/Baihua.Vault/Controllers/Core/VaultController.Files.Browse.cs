@@ -1,20 +1,21 @@
-using TaskRunner.Core.Shared;
-using TaskRunner.Core.Shared.Security;
+using Baihua.Core.Services;
+using Baihua.Core;
+using Baihua.Core.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using TaskRunner.Data;
-using TaskRunner.Services;
-using TaskRunner.Services.Strategies;
-using TaskRunner.Contracts.Vaults;
+using Baihua.Data;
+using Baihua.Family.Services;
+using Baihua.Family.Services.Strategies;
+using Baihua.Contracts.Vaults;
 
-namespace TaskRunner.Vault.Controllers;
+namespace Baihua.Vault.Controllers;
 
 public partial class VaultController
 {
     /// <summary>
-    /// 浏览知识库目录结构（WebUI 使用）
+    /// 娴忚鐭ヨ瘑搴撶洰褰曠粨鏋勶紙WebUI 浣跨敤锛?
     /// </summary>
     [HttpGet("vaults/{vaultId}/browse")]
     public ActionResult<VaultBrowseResponse> BrowseVault(string vaultId, [FromQuery] string? path = "")
@@ -22,10 +23,10 @@ public partial class VaultController
         var baseVaultPath = ResolveVaultPath(vaultId);
         if (string.IsNullOrEmpty(baseVaultPath))
         {
-            return NotFound(new { error = "知识库不存在" });
+            return NotFound(new { error = "鐭ヨ瘑搴撲笉瀛樺湪" });
         }
 
-        // 使用 notes/ 子目录作为知识库内容根目录
+        // 浣跨敤 notes/ 瀛愮洰褰曚綔涓虹煡璇嗗簱鍐呭鏍圭洰褰?
         var notesPath = System.IO.Path.Combine(baseVaultPath, "notes");
         var effectiveRoot = System.IO.Directory.Exists(notesPath) ? notesPath : baseVaultPath;
 
@@ -37,12 +38,12 @@ public partial class VaultController
         var fullTargetPath = System.IO.Path.GetFullPath(targetPath);
         if (!fullTargetPath.StartsWith(fullRootPath, StringComparison.OrdinalIgnoreCase))
         {
-            return BadRequest(new { error = "非法路径" });
+            return BadRequest(new { error = "闈炴硶璺緞" });
         }
 
         if (!System.IO.Directory.Exists(targetPath))
         {
-            return NotFound(new { error = "目录不存在" });
+            return NotFound(new { error = "鐩綍涓嶅瓨鍦? });
         }
 
         var items = new List<VaultBrowseItem>();

@@ -1,4 +1,4 @@
-namespace TaskRunner.Contracts;
+namespace Baihua.Contracts;
 
 /// <summary>
 /// 百花数据根目录 — 由 BAIHUA_HOME 环境变量指定

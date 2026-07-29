@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
-using TaskRunner.Core.Shared;
-using TaskRunner.Core.Shared.Hubs;
+using Baihua.Core;
+using Baihua.Core.Hubs;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 /// <summary>
 /// 通过 SignalR Hub 推送任务状态/进度更新

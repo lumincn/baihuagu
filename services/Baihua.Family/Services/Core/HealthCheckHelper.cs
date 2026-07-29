@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using ComponentStatus = TaskRunner.Contracts.Health.ComponentStatusDto;
-using TaskRunner.Models;
+using ComponentStatus = Baihua.Contracts.Health.ComponentStatusDto;
+using Baihua.Family.Models;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 /// <summary>
 /// 健康检查辅助方法

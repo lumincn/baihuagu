@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using TaskRunner.Data.Entities;
+using Baihua.Data.Entities;
 
-namespace TaskRunner.Data;
+namespace Baihua.Data;
 
 public class FamilyDbContext : DbContext
 {
@@ -75,7 +75,7 @@ public class FamilyDbContext : DbContext
 
     internal static string ResolveDataDir()
     {
-        var dbDir = TaskRunner.Contracts.BaihuaPaths.Db;
+        var dbDir = Baihua.Contracts.BaihuaPaths.Db;
         Directory.CreateDirectory(dbDir);
         return dbDir;
     }

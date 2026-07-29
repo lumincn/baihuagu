@@ -1,11 +1,11 @@
-using TaskRunner.Core.Shared;
+using Baihua.Core;
 using Microsoft.AspNetCore.Mvc;
-using TaskRunner.Services;
-using TaskRunner.Core.Shared.Hubs;
+using Baihua.Family.Services;
+using Baihua.Core.Hubs;
 using Microsoft.AspNetCore.SignalR;
-using TaskRunner.Contracts.Devices;
+using Baihua.Contracts.Devices;
 
-namespace TaskRunner.Controllers
+namespace Baihua.Family.Controllers
 {
     [ApiController]
     [Route("api/devices")]

@@ -1,10 +1,10 @@
 using Microsoft.Extensions.AI;
-using TaskRunner.Contracts.Ai;
-using TaskRunner.Contracts.Master;
-using TaskRunner.Services;
+using Baihua.Contracts.Ai;
+using Baihua.Contracts.Master;
+using Baihua.Family.Services;
 using Xunit;
 
-namespace TaskRunner.Family.Tests.Services;
+namespace Baihua.Family.Tests.Services;
 
 /// <summary>
 /// MasterPromptBuilder 单元测试：师父名称解析、阶段系统、安全过滤、大纲匹配

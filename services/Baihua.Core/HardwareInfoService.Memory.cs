@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using System.Runtime.InteropServices;
-using TaskRunner.Contracts.LocalModels;
+using Baihua.Contracts.LocalModels;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
 
 public partial class HardwareInfoService
 {

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using TaskRunner.Contracts.Pairing;
+using Baihua.Contracts.Pairing;
 
-namespace TaskRunner.Services.Strategies;
+namespace Baihua.Family.Services.Strategies;
 
 /// <summary>
 /// 设备配对策略接口

@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
-using TaskRunner.Data;
-using TaskRunner.Data.Entities;
-using TaskRunner.Services;
+using Baihua.Data;
+using Baihua.Data.Entities;
+using Baihua.Family.Services;
 using Xunit;
 
-namespace TaskRunner.Family.Tests.Services;
+namespace Baihua.Family.Tests.Services;
 
 public class LearnerServiceTests
 {

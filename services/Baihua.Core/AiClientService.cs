@@ -6,11 +6,11 @@ using Microsoft.Extensions.Caching.Distributed;
 using OpenAI;
 using System.ClientModel;
 using Microsoft.Extensions.Logging;
-using TaskRunner.Data;
-using TaskRunner.Data.Entities;
-using TaskRunner.Models;
+using Baihua.Data;
+using Baihua.Data.Entities;
+using Baihua.Family.Models;
 
-namespace TaskRunner.Services;
+namespace Baihua.Family.Services;
     /// <summary>
     /// 统一的 AI 客户端服务：基于 Microsoft.Extensions.AI 抽象层，
     /// 为任意 OpenAI 兼容提供商创建 IChatClient 和 IEmbeddingGenerator。

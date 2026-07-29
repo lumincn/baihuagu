@@ -1,4 +1,4 @@
-namespace TaskRunner.Contracts.Platform;
+namespace Baihua.Contracts.Platform;
 
 public class PlatformInfoResponse
 {

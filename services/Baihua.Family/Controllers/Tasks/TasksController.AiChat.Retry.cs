@@ -1,15 +1,15 @@
-using TaskRunner.Core.Shared;
-using TaskRunner.Services;
+using Baihua.Core;
+using Baihua.Family.Services;
 using System.Text.Json;
-using TaskRunner.Helpers;
+using Baihua.Family.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
-using TaskRunner.Models;
-using TaskRunner.Contracts.Scene;
-using TaskRunner.Contracts.Tasks;
-using TaskRunner.Contracts.Vaults;
+using Baihua.Family.Models;
+using Baihua.Contracts.Scene;
+using Baihua.Contracts.Tasks;
+using Baihua.Contracts.Vaults;
 
-namespace TaskRunner.Controllers
+namespace Baihua.Family.Controllers
 {
     public partial class TasksController : ControllerBase
     {
@@ -233,7 +233,7 @@ namespace TaskRunner.Controllers
             });
         }
 
-        private async Task<ActionResult<AiTaskResponse>> HandleRetryAnkiGenerateTaskAsync(Core.Shared.TaskInfo task)
+        private async Task<ActionResult<AiTaskResponse>> HandleRetryAnkiGenerateTaskAsync(Baihua.Core.TaskInfo task)
         {
             var vaultId = task.Parameters?.GetValueOrDefault("vaultId") ?? "";
             if (string.IsNullOrWhiteSpace(vaultId))
@@ -275,7 +275,7 @@ namespace TaskRunner.Controllers
             return Ok(new AiTaskResponse { Success = true, Message = "AI 卡片生成重试任务已创建", TaskId = newTaskId });
         }
 
-        private async Task<ActionResult<AiTaskResponse>> HandleRetryVaultGenerationTaskAsync(Core.Shared.TaskInfo task, RetryAiTaskRequest? retryRequest)
+        private async Task<ActionResult<AiTaskResponse>> HandleRetryVaultGenerationTaskAsync(Baihua.Core.TaskInfo task, RetryAiTaskRequest? retryRequest)
         {
             var industry = task.Parameters?.GetValueOrDefault("industry") ?? "";
             var keyword = task.Parameters?.GetValueOrDefault("keyword") ?? "";

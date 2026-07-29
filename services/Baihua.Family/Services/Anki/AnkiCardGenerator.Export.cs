@@ -1,10 +1,10 @@
 using System.Text;
 using System.Text.Json;
-using TaskRunner.Contracts.Anki;
-using TaskRunner.Helpers;
+using Baihua.Contracts.Anki;
+using Baihua.Family.Helpers;
 using AnkiGen.Core;
 
-namespace TaskRunner.Services
+namespace Baihua.Family.Services
 {
 
     public partial class AnkiCardGenerator

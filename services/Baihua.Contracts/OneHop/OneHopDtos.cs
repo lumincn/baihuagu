@@ -1,4 +1,4 @@
-namespace TaskRunner.Contracts.OneHop;
+namespace Baihua.Contracts.OneHop;
 
 public class OneHopDeviceResponse
 {

@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace TaskRunner.Services
+namespace Baihua.Family.Services
 {
     /// <summary>
     /// 服务启动监控：记录启动时间和重启次数
@@ -21,7 +21,7 @@ namespace TaskRunner.Services
             RestartCount = 0;
             RestartHistory = new List<DateTime>();
             // 使用 BaihuaPaths.Logs 作为日志目录
-            var logDir = TaskRunner.Contracts.BaihuaPaths.Logs;
+            var logDir = Baihua.Contracts.BaihuaPaths.Logs;
             Directory.CreateDirectory(logDir);
             LogFilePath = Path.Combine(logDir, "startup.log");
         }

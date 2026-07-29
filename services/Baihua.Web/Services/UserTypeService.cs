@@ -1,6 +1,6 @@
 using Microsoft.JSInterop;
 
-namespace WebUI.Services;
+namespace Baihua.Web.Services;
 
 /// <summary>
 /// 用户类型服务 - 管理专业人员/非专业人员模式

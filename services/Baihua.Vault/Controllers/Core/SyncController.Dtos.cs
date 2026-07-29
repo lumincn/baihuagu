@@ -1,6 +1,6 @@
-using TaskRunner.Core.Shared;
+using Baihua.Core;
 
-namespace TaskRunner.Vault.Controllers
+namespace Baihua.Vault.Controllers
 {
     public class NoteMetadata
     {

@@ -1,4 +1,4 @@
-namespace TaskRunner.Contracts.Core;
+namespace Baihua.Contracts.Core;
 
 public class OpenVaultRequest
 {
