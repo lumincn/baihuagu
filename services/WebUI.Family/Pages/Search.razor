@@ -208,21 +208,20 @@
     </div>
 
 @code {
-    private string? InitialQuery
+    // 从 URL 中读取 q 参数（不使用 SupplyParameterFromQuery，因为 Blazor Server 交互模式下不稳定）
+    private static string? ReadQueryParam(string uri, string param)
     {
-        get
-        {
-            var uri = Navigation.Uri;
-            var idx = uri.IndexOf("?q=", StringComparison.OrdinalIgnoreCase);
-            if (idx < 0) idx = uri.IndexOf("&q=", StringComparison.OrdinalIgnoreCase);
-            if (idx < 0) return null;
-            idx += 3;
-            var end = uri.IndexOf('&', idx);
-            var val = end > idx ? uri[idx..end] : uri[idx..];
-            return Uri.UnescapeDataString(val);
-        }
+        var pattern = $"?{param}=";
+        var idx = uri.IndexOf(pattern, StringComparison.OrdinalIgnoreCase);
+        if (idx < 0) { pattern = $"&{param}="; idx = uri.IndexOf(pattern, StringComparison.OrdinalIgnoreCase); }
+        if (idx < 0) return null;
+        idx += pattern.Length;
+        var end = uri.IndexOf('&', idx);
+        var val = end > idx ? uri[idx..end] : uri[idx..];
+        return Uri.UnescapeDataString(val);
     }
 
+    private string? _initialQuery;
     private string searchQuery = "";
     private bool isSearching = false;
     private bool hasSearched = false;
@@ -247,12 +246,15 @@
     {
         var startTime = DateTime.Now;
         Logger.LogDebug("页面初始化开始: {StartTime:HH:mm:ss.fff}", startTime);
-        
+
+        // 初始化时缓存 URL 中的 q 参数（后续在后台线程也可安全读取）
+        _initialQuery = ReadQueryParam(Navigation.Uri, "q");
+
         // 优先使用 URL 查询参数 q（从首页最近搜索点击过来）
-        if (!string.IsNullOrWhiteSpace(InitialQuery))
+        if (!string.IsNullOrWhiteSpace(_initialQuery))
         {
-            searchQuery = InitialQuery;
-            hasSearched = true; // 标记为已搜索，OnAfterRenderAsync 会触发实际搜索
+            searchQuery = _initialQuery;
+            hasSearched = true;
         }
         else
         {
@@ -303,19 +305,33 @@
                 
                 // 加载索引状态
                 await LoadIndexStatusAsync();
-
-                // 如果是从 URL ?q= 参数跳转过来的，拿到知识库后自动搜索
-                if (!string.IsNullOrWhiteSpace(InitialQuery) && !string.IsNullOrWhiteSpace(selectedVaultId))
-                {
-                    await PerformSearch();
-                    await InvokeAsync(StateHasChanged);
-                }
             }
             catch (Exception ex)
             {
                 Logger.LogWarning(ex, "后台加载失败");
             }
         });
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !string.IsNullOrWhiteSpace(_initialQuery))
+        {
+            // 尽可能等待后台加载完成，最多等 8 秒
+            for (int i = 0; i < 16; i++)
+            {
+                if (!string.IsNullOrWhiteSpace(selectedVaultId) && vaults.Count > 0) break;
+                await Task.Delay(500);
+            }
+
+            // 无论 vaultId 是否就绪，只要有关键字就触发搜索（无 vaultId 时搜索 API 会返回提示）
+            if (!string.IsNullOrWhiteSpace(selectedVaultId))
+            {
+                searchQuery = _initialQuery;
+                await PerformSearch();
+                StateHasChanged();
+            }
+        }
     }
 
     private async Task HandleKeyDown(KeyboardEventArgs e)

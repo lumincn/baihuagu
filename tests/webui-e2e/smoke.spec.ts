@@ -171,8 +171,9 @@ test.describe('冒烟测试 - Family 版', () => {
     // 搜索框应显示关键字的初始值
     const searchInput = page.locator('input[placeholder*="搜索"]');
     await expect(searchInput).toHaveValue('鼻渊', { timeout: 15000 });
-    // 应自动触发搜索（显示搜索状态或结果区域）
-    await expect(page.locator('main')).toBeVisible({ timeout: 15000 });
+    // 等待片刻后检查关键字仍保留（表示无意外刷新丢失状态）
+    await page.waitForTimeout(2000);
+    await expect(searchInput).toHaveValue('鼻渊', { timeout: 5000 });
   });
 
   test('OpenClaw 页面加载', async ({ page }) => {
