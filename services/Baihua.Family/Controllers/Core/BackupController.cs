@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Baihua.Core.Localization;
 using Baihua.Family.Services;
+using Microsoft.Extensions.Localization;
 
 namespace Baihua.Family.Controllers;
 
@@ -9,11 +11,13 @@ public partial class BackupController : ControllerBase
 {
     private readonly BackupService _backupService;
     private readonly ILogger<BackupController> _logger;
+    private readonly IStringLocalizer<SharedResources> _loc;
 
-    public BackupController(BackupService backupService, ILogger<BackupController> logger)
+    public BackupController(BackupService backupService, ILogger<BackupController> logger, IStringLocalizer<SharedResources> loc)
     {
         _backupService = backupService;
         _logger = logger;
+        _loc = loc;
     }
 
     [HttpPost("full")]
@@ -26,7 +30,7 @@ public partial class BackupController : ControllerBase
             return Ok(new FullBackupResponse
             {
                 Success = result.Success,
-                Message = result.Success ? "全量备份创建成功" : $"备份失败：{result.Error}",
+                Message = result.Success ? _loc["Backup_FullBackupCreated"] : string.Format(_loc["Backup_Failed"], result.Error),
                 BackupPath = result.BackupPath,
                 BackupTime = result.BackupTime,
                 FileSize = result.FileSize
@@ -35,7 +39,7 @@ public partial class BackupController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "创建全量备份失败");
-            return Ok(new FullBackupResponse { Success = false, Message = $"备份失败：{ex.Message}" });
+            return Ok(new FullBackupResponse { Success = false, Message = string.Format(_loc["Backup_Failed"], ex.Message) });
         }
     }
 
@@ -50,7 +54,7 @@ public partial class BackupController : ControllerBase
             return Ok(new FullRestoreResponse
             {
                 Success = result.Success,
-                Message = result.Success ? "备份恢复成功" : $"恢复失败：{result.Error}",
+                Message = result.Success ? _loc["Backup_RestoreSuccess"] : string.Format(_loc["Backup_RestoreFailed"], result.Error),
                 SourcePlatform = result.SourcePlatform,
                 SourceOS = result.SourceOS,
                 RestoredAt = result.RestoredAt
@@ -59,7 +63,7 @@ public partial class BackupController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "恢复全量备份失败");
-            return Ok(new FullRestoreResponse { Success = false, Message = $"恢复失败：{ex.Message}" });
+            return Ok(new FullRestoreResponse { Success = false, Message = string.Format(_loc["Backup_RestoreFailed"], ex.Message) });
         }
     }
 
@@ -83,13 +87,13 @@ public partial class BackupController : ControllerBase
                 HasConfig = result.HasConfig,
                 HasVaults = result.HasVaults,
                 VaultCount = result.VaultCount,
-                Message = result.IsValid ? "备份文件有效" : $"无效：{result.Error}"
+                Message = result.IsValid ? _loc["Backup_FileValid"] : string.Format(_loc["Backup_Invalid"], result.Error)
             });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "验证备份文件失败");
-            return Ok(new ValidateBackupResponse { Success = false, IsValid = false, Message = $"验证失败：{ex.Message}" });
+            return Ok(new ValidateBackupResponse { Success = false, IsValid = false, Message = string.Format(_loc["Backup_ValidateFailed"], ex.Message) });
         }
     }
 
@@ -104,7 +108,7 @@ public partial class BackupController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取备份列表失败");
-            return Ok(new BackupListResponse { Success = false, Message = $"获取备份列表失败：{ex.Message}" });
+            return Ok(new BackupListResponse { Success = false, Message = string.Format(_loc["Backup_ListFailedDetail"], ex.Message) });
         }
     }
 }

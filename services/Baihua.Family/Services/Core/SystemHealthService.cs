@@ -1,7 +1,9 @@
 using System.Diagnostics;
 using System.Net.Http;
 using System.Runtime.InteropServices;
+using Baihua.Core.Localization;
 using Baihua.Core.Security;
+using Microsoft.Extensions.Localization;
 using ComponentStatus = Baihua.Contracts.Health.ComponentStatusDto;
 using SystemHealthReport = Baihua.Contracts.Health.SystemHealthReportDto;
 
@@ -17,19 +19,22 @@ namespace Baihua.Family.Services
         private readonly AiConfigService _aiConfigService;
         private readonly VaultSettingsService _vaultSettings;
         private readonly AiMetricsService _metrics;
+        private readonly IStringLocalizer<SharedResources> _loc;
 
         public SystemHealthService(
             IHttpClientFactory httpClientFactory,
             ILogger<SystemHealthService> logger,
             AiConfigService aiConfigService,
             VaultSettingsService vaultSettings,
-            AiMetricsService metrics)
+            AiMetricsService metrics,
+            IStringLocalizer<SharedResources> loc)
         {
             _httpClientFactory = httpClientFactory;
             _logger = logger;
             _aiConfigService = aiConfigService;
             _vaultSettings = vaultSettings;
             _metrics = metrics;
+            _loc = loc;
         }
 
         /// <summary>

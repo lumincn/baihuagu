@@ -1,4 +1,6 @@
 using Baihua.Core;
+using Baihua.Core.Localization;
+using Microsoft.Extensions.Localization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Text.Json;
@@ -27,12 +29,12 @@ public partial class AtomNoteSplitter
         {
             try
             {
-                await _taskManager.UpdateProgress(taskId, 0, 1, "准备 AI 配置...");
+                await _taskManager.UpdateProgress(taskId, 0, 1, _loc["AtomNote_PrepareAiConfig"]);
                 _logger.LogInformation("SplitAtomNotes 开始: taskId={TaskId}, vaultPath={VaultPath}, useChain={UseChain}, scene={Scene}", taskId, vaultPath ?? "(null)", useChain, scene?.ToString() ?? "默认");
 
                 var orderedProviders = ResolveProviders(aiProviderIds);
                 if (orderedProviders.Count == 0)
-                    throw new Exception("未配置可用的 AI 提供方（请检查 appsettings.json 中 Ai 数组）");
+                    throw new Exception(_loc["AtomNote_NoProviderConfigured"]);
 
                 var steps = BuildSteps(orderedProviders, aiModels);
 
@@ -51,9 +53,9 @@ public partial class AtomNoteSplitter
                     var (provider, model, isSplitStep) = steps[i];
                     var displayName = string.IsNullOrWhiteSpace(provider.Name) ? provider.Id : provider.Name;
 
-                    var phase = isSplitStep ? "拆分笔记" : "补充完善";
+                    var phase = isSplitStep ? _loc["AtomNote_SplitPhase"] : _loc["AtomNote_SupplementPhase"];
                     await _taskManager.UpdateProgress(taskId, i + 1, totalSteps,
-                        $"步骤 {i + 1}/{totalSteps}：{phase}（{displayName} / {model}）...");
+                        _loc["AtomNote_StepProgress", i + 1, totalSteps, phase, displayName, model]);
 
                     _logger.LogInformation("调用 {Provider} 模型 {Index}/{Total}: {Model} (模式：{Mode})",
                         provider.Id, i + 1, steps.Count, model, isSplitStep ? "拆分" : "补充");
@@ -99,7 +101,7 @@ public partial class AtomNoteSplitter
                             providerId = provider.Id,
                             providerName = displayName,
                             model,
-                            phase = isSplitStep ? "拆分" : "补充",
+                            phase = isSplitStep ? _loc["AtomNote_Split"] : _loc["AtomNote_Supplement"],
                             elapsedMs = stepStopwatch.ElapsedMilliseconds,
                             success = true,
                             timestamp = DateTime.Now
@@ -107,8 +109,8 @@ public partial class AtomNoteSplitter
                     }
                     catch (Exception ex)
                     {
-                        var mode = isSplitStep ? "拆分" : "补充";
-                        var err = $"{displayName} / {model} ({mode}) 失败：{ex.Message}";
+                        var mode = isSplitStep ? _loc["AtomNote_Split"] : _loc["AtomNote_Supplement"];
+                        var err = _loc["AtomNote_StepFailed", displayName, model, mode, ex.Message];
                         modelErrors.Add(err);
                         _logger.LogWarning(ex, err);
                         requestRecords.Add(new
@@ -129,14 +131,14 @@ public partial class AtomNoteSplitter
                 if (allNotes.Count == 0)
                 {
                     var errorText = modelErrors.Count > 0
-                        ? $"所有模型均失败：{string.Join(" | ", modelErrors.Take(3))}"
-                        : "所有模型均未产出可用笔记";
+                        ? _loc["AtomNote_AllModelsFailed", string.Join(" | ", modelErrors.Take(3))]
+                        : _loc["AtomNote_NoNotesProduced"];
                     throw new Exception(errorText);
                 }
 
-                await _taskManager.UpdateProgress(taskId, steps.Count + 1, totalSteps, "解析结果...");
+                await _taskManager.UpdateProgress(taskId, steps.Count + 1, totalSteps, _loc["AtomNote_ParsingResults"]);
 
-                await _taskManager.UpdateProgress(taskId, steps.Count + 2, totalSteps, $"保存 {allNotes.Count} 条笔记...");
+                await _taskManager.UpdateProgress(taskId, steps.Count + 2, totalSteps, _loc["AtomNote_SavingNotes", allNotes.Count]);
 
                 // 拆分完成后：修复 Obsidian wikilink 在 AI 拆分后丢失分类目录的问题。
                 // 规则：若 wikilink 形如 [[桂枝汤]]（target 不包含 '/'），且 target 与某条生成笔记的 title 唯一匹配，
@@ -201,7 +203,7 @@ public partial class AtomNoteSplitter
 
                     // 把补充次数计入总进度，确保前端进度条能显示真实进度
                     totalSteps += 1;
-                    await _taskManager.UpdateProgress(taskId, steps.Count + 1 + round, totalSteps, $"第 {round} 轮补充：{needToFill.Count} 个缺失目标...");
+                    await _taskManager.UpdateProgress(taskId, steps.Count + 1 + round, totalSteps, _loc["AtomNote_SupplementRound", round, needToFill.Count]);
                     _logger.LogInformation("发现 {Count} 个缺失的 wikilink 目标，开始第 {Round} 轮补充", needToFill.Count, round);
 
                     try
@@ -252,7 +254,7 @@ public partial class AtomNoteSplitter
                                 providerId = suppProvider.Id,
                                 providerName = suppDisplayName,
                                 model = suppModel,
-                                phase = $"循环补充(轮{round})",
+                                phase = _loc["AtomNote_SupplementRoundLabel", round],
                                 elapsedMs = suppStopwatch.ElapsedMilliseconds,
                                 success = true,
                                 timestamp = DateTime.Now
@@ -267,7 +269,7 @@ public partial class AtomNoteSplitter
                                 providerId = suppProvider.Id,
                                 providerName = suppDisplayName,
                                 model = suppModel,
-                                phase = $"循环补充(轮{round})",
+                                phase = _loc["AtomNote_SupplementRoundLabel", round],
                                 elapsedMs = 0,
                                 success = false,
                                 error = ex.Message,
@@ -308,7 +310,7 @@ public partial class AtomNoteSplitter
 
                         var added = allNotes.Count - beforeCount;
                         // 更新当前轮次进度并通知前端
-                        await _taskManager.UpdateProgress(taskId, steps.Count + 1 + round, totalSteps, $"第 {round} 轮补充完成，新增 {added} 条笔记");
+                        await _taskManager.UpdateProgress(taskId, steps.Count + 1 + round, totalSteps, _loc["AtomNote_SupplementRoundDone", round, added]);
 
                         // 通知前端：补充完成
                         try { await _taskManager.NotifySupplementEventAsync(taskId, "SupplementFinished", new { round, added = added }); } catch { /* SignalR 推送失败不影响主流程 */ }
@@ -346,7 +348,7 @@ public partial class AtomNoteSplitter
                 if (savedNotes.Count == 0)
                 {
                     _logger.LogWarning("任务 {TaskId} 没有成功保存任何笔记", taskId);
-                    await _taskManager.UpdateStatus(taskId, RunnerTaskStatus.Failed, "没有成功保存任何笔记，请检查知识库路径配置");
+                    await _taskManager.UpdateStatus(taskId, RunnerTaskStatus.Failed, _loc["AtomNote_NoSavedNotes"]);
                     return;
                 }
 

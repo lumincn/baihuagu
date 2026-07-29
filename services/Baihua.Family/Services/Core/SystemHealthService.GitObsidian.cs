@@ -22,20 +22,20 @@ namespace Baihua.Family.Services
                 });
 
                 if (process is null)
-                    return new ComponentStatus { Name = "Git", Status = "critical", Message = "Git 未安装" };
+                    return new ComponentStatus { Name = "Git", Status = "critical", Message = _loc["Health_GitNotInstalled"] };
 
                 var (ok, exitCode, output) = await WaitForProcessAsync(process, 4000, cancellationToken);
                 if (!ok)
-                    return new ComponentStatus { Name = "Git", Status = "critical", Message = "Git 检测超时" };
+                    return new ComponentStatus { Name = "Git", Status = "critical", Message = _loc["Health_GitTimeout"] };
                 if (exitCode != 0)
-                    return new ComponentStatus { Name = "Git", Status = "critical", Message = "Git 检测失败" };
+                    return new ComponentStatus { Name = "Git", Status = "critical", Message = _loc["Health_GitCheckFailed"] };
 
                 return new ComponentStatus
                 {
                     Name = "Git",
                     Status = "healthy",
                     Version = HealthCheckHelper.ExtractVersion(output),
-                    Message = "Git 已安装"
+                    Message = _loc["Health_GitInstalled"]
                 };
             }
             catch (OperationCanceledException)
@@ -45,7 +45,7 @@ namespace Baihua.Family.Services
             catch (Exception ex)
             {
                 _logger.LogDebug(ex, "Git 检测失败");
-                return new ComponentStatus { Name = "Git", Status = "critical", Message = "Git 检测异常" };
+                return new ComponentStatus { Name = "Git", Status = "critical", Message = _loc["Health_GitCheckError"] };
             }
         }
 
@@ -62,7 +62,7 @@ namespace Baihua.Family.Services
                     {
                         Name = "Obsidian",
                         Status = "healthy",
-                        Message = "Obsidian 桌面客户端运行中"
+                        Message = _loc["Health_ObsidianRunning"]
                     });
                 }
 
@@ -73,7 +73,7 @@ namespace Baihua.Family.Services
                     {
                         Name = "Obsidian",
                         Status = "healthy",
-                        Message = "Obsidian 桌面客户端未运行（Linux 上 FTS5 搜索已替代 CLI 功能）"
+                        Message = _loc["Health_ObsidianNotRunningLinux"]
                     });
                 }
 
@@ -81,7 +81,7 @@ namespace Baihua.Family.Services
                 {
                     Name = "Obsidian",
                     Status = "warning",
-                    Message = "Obsidian 桌面客户端未运行（CLI 功能需要桌面客户端）"
+                    Message = _loc["Health_ObsidianNotRunningWindows"]
                 });
             }
             catch (Exception ex)
@@ -91,7 +91,7 @@ namespace Baihua.Family.Services
                 {
                     Name = "Obsidian",
                     Status = "warning",
-                    Message = "Obsidian 检测异常"
+                    Message = _loc["Health_ObsidianCheckError"]
                 });
             }
         }

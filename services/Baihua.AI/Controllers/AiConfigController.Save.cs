@@ -22,7 +22,7 @@ public partial class AiConfigController
             // 验证 API Key 格式
             if (!string.IsNullOrEmpty(request.ApiKey) && !_aiConfigService.ValidateApiKeyFormat(request.ApiKey))
             {
-                return BadRequest(new { error = "API Key 格式无效" });
+                return BadRequest(new { error = _loc["AiConfig_InvalidApiKeyFormat"] });
             }
 
             // 构建模型 JSON
@@ -56,12 +56,12 @@ public partial class AiConfigController
             _ = _webUINotification.NotifyAIStatusChangedAsync();
             
             _logger.LogInformation("已保存 AI 提供商配置: {ProviderId}", request.Id);
-            return Ok(new { success = true, message = "配置已保存" });
+            return Ok(new { success = true, message = _loc["AiConfig_Saved"] });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "保存 AI 配置失败");
-            return StatusCode(500, new { error = $"保存失败: {ex.Message}" });
+            return StatusCode(500, new { error = string.Format(_loc["AiConfig_SaveFailedDetail"], ex.Message) });
         }
     }
 
@@ -75,7 +75,7 @@ public partial class AiConfigController
         {
             if (!_aiConfigService.ValidateApiKeyFormat(request.ApiKey))
             {
-                return BadRequest(new { error = "API Key 格式无效" });
+                return BadRequest(new { error = _loc["AiConfig_InvalidApiKeyFormat"] });
             }
 
             // 获取现有配置
@@ -104,12 +104,12 @@ public partial class AiConfigController
             _ = _webUINotification.NotifyAIStatusChangedAsync();
 
             _logger.LogInformation("已更新 API Key: {ProviderId}", providerId);
-            return Ok(new { success = true, message = "API Key 已更新" });
+            return Ok(new { success = true, message = _loc["AiConfig_ApiKeyUpdated"] });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "更新 API Key 失败");
-            return StatusCode(500, new { error = $"更新失败: {ex.Message}" });
+            return StatusCode(500, new { error = string.Format(_loc["AiConfig_UpdateFailedDetail"], ex.Message) });
         }
     }
 
@@ -130,14 +130,14 @@ public partial class AiConfigController
                 _ = _webUINotification.NotifyAIStatusChangedAsync();
                 
                 _logger.LogInformation("已删除 AI 提供商配置: {ProviderId}", providerId);
-                return Ok(new { success = true, message = "配置已删除" });
+                return Ok(new { success = true, message = _loc["AiConfig_Deleted"] });
             }
             return NotFound(new { error = $"Provider '{providerId}' not found" });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "删除 AI 配置失败");
-            return StatusCode(500, new { error = $"删除失败: {ex.Message}" });
+            return StatusCode(500, new { error = string.Format(_loc["AiConfig_DeleteFailedDetail"], ex.Message) });
         }
     }
 
@@ -152,13 +152,13 @@ public partial class AiConfigController
             var mainProvider = _aiConfigService.GetMainProvider();
             if (mainProvider == null)
             {
-                return NotFound(new { error = "未配置主 AI 提供商" });
+                return NotFound(new { error = _loc["AiConfig_NoMainProvider"] });
             }
 
             var apiKey = _aiConfigService.GetApiKey(mainProvider.Id);
             if (string.IsNullOrEmpty(apiKey))
             {
-                return NotFound(new { error = "主 AI 提供商未设置 API Key" });
+                return NotFound(new { error = _loc["AiConfig_MainProviderNoApiKey"] });
             }
 
             return Ok(new AiKeyQRResponse
@@ -171,7 +171,7 @@ public partial class AiConfigController
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取主 AI API Key 失败");
-            return StatusCode(500, new { error = $"获取失败: {ex.Message}" });
+            return StatusCode(500, new { error = string.Format(_loc["AiConfig_GetFailedDetail"], ex.Message) });
         }
     }
 }

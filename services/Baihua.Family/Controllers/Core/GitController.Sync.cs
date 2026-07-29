@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using System.Diagnostics;
 using System.Text;
+using Baihua.Core.Localization;
 using Baihua.Family.Services;
 using Baihua.Contracts.Git;
 
@@ -15,19 +17,19 @@ public partial class GitController
                 var vaultPath = _vaultSettings.GetVaults().FirstOrDefault(v => v.Id == vaultId)?.Path;
                 if (string.IsNullOrEmpty(vaultPath))
                 {
-                    return BadRequest(new GitResultResponse { Success = false, Message = "必须指定有效的知识库" });
+                    return BadRequest(new GitResultResponse { Success = false, Message = _loc["Vault_Required"] });
                 }
 
                 if (string.IsNullOrWhiteSpace(request.Message))
                 {
-                    return BadRequest(new GitResultResponse { Success = false, Message = "提交信息不能为空" });
+                    return BadRequest(new GitResultResponse { Success = false, Message = _loc["Git_CommitMessageRequired"] });
                 }
 
                 // 先检查是否有变更
                 var status = await RunGitCommand(vaultPath, "status --porcelain");
                 if (string.IsNullOrWhiteSpace(status))
                 {
-                    return Ok(new GitResultResponse { Success = true, Message = "没有需要提交的变更" });
+                    return Ok(new GitResultResponse { Success = true, Message = _loc["Git_NoChanges"] });
                 }
 
                 // 添加所有变更
@@ -40,7 +42,7 @@ public partial class GitController
                 return Ok(new GitResultResponse
                 {
                     Success = true,
-                    Message = "提交成功",
+                    Message = _loc["Git_CommitSuccess"],
                     Output = commitResult
                 });
             }
@@ -50,7 +52,7 @@ public partial class GitController
                 return Ok(new GitResultResponse
                 {
                     Success = false,
-                    Message = $"提交失败: {ex.Message}"
+                    Message = string.Format(_loc["Git_CommitFailed"], ex.Message)
                 });
             }
         }
@@ -66,14 +68,14 @@ public partial class GitController
                 var vaultPath = _vaultSettings.GetVaults().FirstOrDefault(v => v.Id == vaultId)?.Path;
                 if (string.IsNullOrEmpty(vaultPath))
                 {
-                    return BadRequest(new GitResultResponse { Success = false, Message = "必须指定有效的知识库" });
+                    return BadRequest(new GitResultResponse { Success = false, Message = _loc["Vault_Required"] });
                 }
 
                 // 检查远程配置
                 var remote = await RunGitCommand(vaultPath, "remote -v");
                 if (string.IsNullOrWhiteSpace(remote))
                 {
-                    return Ok(new GitResultResponse { Success = false, Message = "未配置远程仓库" });
+                    return Ok(new GitResultResponse { Success = false, Message = _loc["Git_NoRemote"] });
                 }
 
                 // 获取当前分支
@@ -85,7 +87,7 @@ public partial class GitController
                 return Ok(new GitResultResponse
                 {
                     Success = true,
-                    Message = "推送成功",
+                    Message = _loc["Git_PushSuccess"],
                     Output = pushResult
                 });
             }
@@ -95,7 +97,7 @@ public partial class GitController
                 return Ok(new GitResultResponse
                 {
                     Success = false,
-                    Message = $"推送失败: {ex.Message}"
+                    Message = string.Format(_loc["Git_PushFailed"], ex.Message)
                 });
             }
         }
@@ -111,7 +113,7 @@ public partial class GitController
                 var vaultPath = _vaultSettings.GetVaults().FirstOrDefault(v => v.Id == vaultId)?.Path;
                 if (string.IsNullOrEmpty(vaultPath))
                 {
-                    return BadRequest(new GitResultResponse { Success = false, Message = "必须指定有效的知识库" });
+                    return BadRequest(new GitResultResponse { Success = false, Message = _loc["Vault_Required"] });
                 }
 
                 var pullResult = await RunGitCommand(vaultPath, "pull", timeoutMs: 60000);
@@ -119,7 +121,7 @@ public partial class GitController
                 return Ok(new GitResultResponse
                 {
                     Success = true,
-                    Message = "拉取成功",
+                    Message = _loc["Git_PullSuccess"],
                     Output = pullResult
                 });
             }
@@ -129,7 +131,7 @@ public partial class GitController
                 return Ok(new GitResultResponse
                 {
                     Success = false,
-                    Message = $"拉取失败: {ex.Message}"
+                    Message = string.Format(_loc["Git_PullFailed"], ex.Message)
                 });
             }
         }

@@ -12,7 +12,7 @@ public partial class LocalModelDeploymentController
             try
             {
                 if (string.IsNullOrWhiteSpace(request.ModelId))
-                    return BadRequest(new { error = "ModelId 不能为空" });
+                    return BadRequest(new { error = _loc["LocalModel_ModelIdRequired"] });
 
                 var result = await _deploymentService.DeployAsync(request);
                 if (!result.Success)
@@ -23,7 +23,7 @@ public partial class LocalModelDeploymentController
             catch (Exception ex)
             {
                 _logger.LogError(ex, "启动部署失败");
-                return StatusCode(500, new { error = "启动部署失败", message = ex.Message });
+                return StatusCode(500, new { error = _loc["LocalModel_StartDeployFailed"], message = ex.Message });
             }
         }
 
@@ -35,7 +35,7 @@ public partial class LocalModelDeploymentController
         {
             var status = _deploymentService.GetRunnerTaskStatus(taskId);
             if (status == null)
-                return NotFound(new { error = "任务不存在", taskId });
+                return NotFound(new { error = _loc["LocalModel_TaskNotFound"], taskId });
 
             return Ok(status);
         }
@@ -48,9 +48,9 @@ public partial class LocalModelDeploymentController
         {
             var cancelled = _deploymentService.CancelTask(taskId);
             if (!cancelled)
-                return NotFound(new { error = "任务不存在或已完成", taskId });
+                return NotFound(new { error = _loc["LocalModel_TaskNotFoundOrDone"], taskId });
 
-            return Ok(new { success = true, message = "任务已取消" });
+            return Ok(new { success = true, message = _loc["LocalModel_TaskCancelled"] });
         }
 
         /// <summary>
@@ -67,7 +67,7 @@ public partial class LocalModelDeploymentController
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取本地工具信息失败");
-                return StatusCode(500, new { error = "获取本地工具信息失败", message = ex.Message });
+                return StatusCode(500, new { error = _loc["LocalModel_GetToolsFailed"], message = ex.Message });
             }
         }
 
@@ -116,12 +116,12 @@ public partial class LocalModelDeploymentController
 
                 _localModelSettings.UseChinaMirror = config.UseChinaMirror;
 
-                return Ok(new { success = true, message = "配置已保存" });
+                return Ok(new { success = true, message = _loc["LocalModel_ConfigSaved"] });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "保存下载目录配置失败");
-                return StatusCode(500, new { error = "保存失败", message = ex.Message });
+                return StatusCode(500, new { error = _loc["LocalModel_SaveFailed"], message = ex.Message });
             }
         }
 

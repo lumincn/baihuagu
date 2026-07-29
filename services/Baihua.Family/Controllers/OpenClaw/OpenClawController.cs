@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Baihua.Contracts.OpenClaw;
+using Baihua.Core.Localization;
 using Baihua.Family.Services;
+using Microsoft.Extensions.Localization;
 
 namespace Baihua.Family.Controllers;
 
@@ -11,19 +13,21 @@ public partial class OpenClawController : ControllerBase
     private readonly IOpenClawTaskService _taskService;
     private readonly ILocalAiConfigService _localAiConfig;
     private readonly IOpenClawModelProfileService _modelProfile;
+    private readonly IStringLocalizer<SharedResources> _loc;
 
-    public OpenClawController(IOpenClawTaskService taskService, ILocalAiConfigService localAiConfig, IOpenClawModelProfileService modelProfile)
+    public OpenClawController(IOpenClawTaskService taskService, ILocalAiConfigService localAiConfig, IOpenClawModelProfileService modelProfile, IStringLocalizer<SharedResources> loc)
     {
         _taskService = taskService;
         _localAiConfig = localAiConfig;
         _modelProfile = modelProfile;
+        _loc = loc;
     }
 
     [HttpPost("tasks")]
     public async Task<ActionResult<OpenClawTaskDto>> CreateTask([FromBody] CreateOpenClawTaskRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Prompt))
-            return BadRequest(new { error = "Prompt 不能为空" });
+            return BadRequest(new { error = _loc["OpenClaw_PromptRequired"] });
         return await HandleCreateTaskAsync(request);
     }
 
@@ -65,7 +69,7 @@ public partial class OpenClawController : ControllerBase
     public async Task<ActionResult<List<OpenClawLocalModelDto>>> ScanLocalModels([FromQuery] string provider)
     {
         if (string.IsNullOrWhiteSpace(provider))
-            return BadRequest(new { error = "provider 参数不能为空" });
+            return BadRequest(new { error = _loc["OpenClaw_ProviderParamRequired"] });
         return await HandleScanLocalModelsAsync(provider);
     }
 
@@ -73,7 +77,7 @@ public partial class OpenClawController : ControllerBase
     public async Task<ActionResult<LocalAiServiceStatusDto>> DetectAndStartLocalAi([FromBody] DetectLocalAiRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Provider))
-            return BadRequest(new { error = "provider 不能为空" });
+            return BadRequest(new { error = _loc["OpenClaw_ProviderRequired"] });
         return await HandleDetectAndStartLocalAiAsync(request.Provider);
     }
 
@@ -92,7 +96,7 @@ public partial class OpenClawController : ControllerBase
     public async Task<IActionResult> SyncLocalModels([FromBody] SyncLocalModelsRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Provider))
-            return BadRequest(new { error = "provider 不能为空" });
+            return BadRequest(new { error = _loc["OpenClaw_ProviderRequired"] });
         return await HandleSyncLocalModelsAsync(request.Provider);
     }
 
@@ -107,7 +111,7 @@ public partial class OpenClawController : ControllerBase
     public async Task<IActionResult> SetModelProfile([FromBody] SetModelProfileRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Profile))
-            return BadRequest(new { error = "profile 不能为空" });
+            return BadRequest(new { error = _loc["OpenClaw_ProfileRequired"] });
         return await HandleSetModelProfileAsync(request.Profile);
     }
 }

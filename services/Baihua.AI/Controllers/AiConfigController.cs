@@ -1,5 +1,7 @@
+using Baihua.Core.Localization;
 using Baihua.Core.Notifications;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using Baihua.Data.Entities;
 using Baihua.Family.Models;
 using Baihua.Family.Services;
@@ -20,19 +22,22 @@ public partial class AiConfigController : ControllerBase
     private readonly WebUINotificationService _webUINotification;
     private readonly Baihua.Family.Services.CapabilityService _capabilityService;
     private readonly ILogger<AiConfigController> _logger;
+    private readonly IStringLocalizer<SharedResources> _loc;
 
     public AiConfigController(
         AiConfigService aiConfigService,
         AiSettingsService aiSettings,
         WebUINotificationService webUINotification,
         Baihua.Family.Services.CapabilityService capabilityService,
-        ILogger<AiConfigController> logger)
+        ILogger<AiConfigController> logger,
+        IStringLocalizer<SharedResources> loc)
     {
         _aiConfigService = aiConfigService;
         _aiSettings = aiSettings;
         _webUINotification = webUINotification;
         _capabilityService = capabilityService;
         _logger = logger;
+        _loc = loc;
     }
 
     /// <summary>

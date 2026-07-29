@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using Baihua.Contracts.Health;
+using Baihua.Core.Localization;
 using Baihua.Family.Services;
 
 namespace Baihua.Family.Controllers;
@@ -15,15 +17,18 @@ namespace Baihua.Family.Controllers;
         private readonly Services.LocalAiAutoStarter _localAiAutoStarter;
         private readonly Services.ILocalAiConfigService _localAiConfig;
         private readonly ILogger<HealthController> _logger;
+        private readonly IStringLocalizer<SharedResources> _loc;
 
         public HealthController(
             Services.SystemHealthService healthService,
             Services.AiSettingsService aiSettings,
             Services.LocalAiAutoStarter localAiAutoStarter,
             Services.ILocalAiConfigService localAiConfig,
-            ILogger<HealthController> logger)
+            ILogger<HealthController> logger,
+            IStringLocalizer<SharedResources> loc)
         {
             _healthService = healthService;
+            _loc = loc;
             _aiSettings = aiSettings;
             _localAiAutoStarter = localAiAutoStarter;
             _localAiConfig = localAiConfig;
@@ -48,14 +53,14 @@ namespace Baihua.Family.Controllers;
                 _logger.LogWarning("健康检查在时限内未完成（可能机器较慢），建议使用 /api/health/simple");
                 return StatusCode(StatusCodes.Status504GatewayTimeout, new
                 {
-                    error = "健康检查超时",
-                    message = "完整自检超过 25 秒未完成。请稍后重试，或使用 GET /api/health/simple、GET /health。"
+                    error = _loc["Health_CheckTimeout"],
+                    message = _loc["Health_CheckTimeoutMessage"]
                 });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "健康检查失败");
-                return StatusCode(500, new { error = "健康检查失败", message = ex.Message });
+                return StatusCode(500, new { error = _loc["Health_CheckFailed"], message = ex.Message });
             }
         }
 
@@ -88,7 +93,7 @@ namespace Baihua.Family.Controllers;
                 if (componentStatus == null)
                 {
                     return NotFound(new { 
-                        error = $"组件不存在: {component}",
+                        error = _loc["Health_ComponentNotFound", component],
                         available = string.Join(", ", report.Components.Select(c => c.Name))
                     });
                 }
@@ -104,7 +109,7 @@ namespace Baihua.Family.Controllers;
             catch (Exception ex)
             {
                 _logger.LogError(ex, "组件检查失败");
-                return StatusCode(500, new { error = "组件检查失败", message = ex.Message });
+                return StatusCode(500, new { error = _loc["Health_ComponentCheckFailed"], message = ex.Message });
             }
         }
 
@@ -122,7 +127,7 @@ namespace Baihua.Family.Controllers;
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取组件列表失败");
-                return StatusCode(500, new { error = "获取组件列表失败", message = ex.Message });
+                return StatusCode(500, new { error = _loc["Health_GetComponentsFailed"], message = ex.Message });
             }
         }
 }

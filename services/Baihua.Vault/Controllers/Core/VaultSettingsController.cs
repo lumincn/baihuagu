@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
 using Baihua.Core.Notifications;
 using Microsoft.AspNetCore.Mvc;
 using Baihua.Family.Services;
@@ -12,12 +14,14 @@ namespace Baihua.Vault.Controllers
         private readonly VaultSettingsService _vaultSettings;
         private readonly WebUINotificationService _webUINotification;
         private readonly ILogger<VaultSettingsController> _logger;
+        private readonly IStringLocalizer<SharedResources> _loc;
 
-        public VaultSettingsController(VaultSettingsService vaultSettings, WebUINotificationService webUINotification, ILogger<VaultSettingsController> logger)
+        public VaultSettingsController(VaultSettingsService vaultSettings, WebUINotificationService webUINotification, ILogger<VaultSettingsController> logger, IStringLocalizer<SharedResources> loc)
         {
             _vaultSettings = vaultSettings;
             _webUINotification = webUINotification;
             _logger = logger;
+            _loc = loc;
         }
 
         [HttpGet("vault-root")]

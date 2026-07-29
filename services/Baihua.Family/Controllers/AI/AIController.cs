@@ -1,7 +1,9 @@
 using Baihua.Core;
+using Baihua.Core.Localization;
 using Baihua.Family.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Localization;
 using Baihua.Family.Models;
 using Baihua.Contracts.Ai;
 using Path = System.IO.Path;
@@ -26,6 +28,7 @@ namespace Baihua.Family.Controllers
         private readonly Services.AnkiCardGenerator _cardGenerator;
         private readonly TaskManager _taskManager;
         private readonly ILogger<AIController> _logger;
+        private readonly IStringLocalizer<SharedResources> _loc;
 
         public AIController(
             Services.AiSettingsService aiSettings,
@@ -38,9 +41,11 @@ namespace Baihua.Family.Controllers
             Services.ChatMemoryService chatMemoryService,
             Services.AnkiCardGenerator cardGenerator,
             TaskManager taskManager,
-            ILogger<AIController> logger)
+            ILogger<AIController> logger,
+            IStringLocalizer<SharedResources> loc)
         {
             _aiSettings = aiSettings;
+            _loc = loc;
             _vaultSettings = vaultSettings;
             _aiClientService = aiClientService;
             _localDeployment = localDeployment;

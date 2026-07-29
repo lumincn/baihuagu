@@ -1,7 +1,9 @@
 using Baihua.Core;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Baihua.Contracts.Onboarding;
+using Baihua.Core.Localization;
 using Baihua.Data;
 using Baihua.Data.Entities;
 using Baihua.Family.Services;
@@ -30,8 +32,8 @@ public partial class OnboardingController
             {
                 TaskId = "add-family-member",
                 TaskType = InitTaskType.AddFamilyMember,
-                Title = "添加家庭成员",
-                Description = "让家庭成员用手机扫码连接，您在设备管理页面批准即可",
+                Title = _loc["Onboarding_TitleAddFamilyMember"],
+                Description = _loc["Onboarding_DescAddFamilyMember"],
                 Icon = "👨‍👩‍👧‍👦",
                 IsCompleted = (progresses.FirstOrDefault(p => p.TaskId == "add-family-member")?.IsCompleted ?? false)
                              || hasAuthorizedDevices
@@ -40,8 +42,8 @@ public partial class OnboardingController
             {
                 TaskId = "create-computer-vault",
                 TaskType = InitTaskType.CreateComputerVault,
-                Title = "创建计算机知识库",
-                Description = "建立「计算机」知识库，包含 AI 技术入门笔记",
+                Title = _loc["Onboarding_TitleCreateComputerVault"],
+                Description = _loc["Onboarding_DescCreateComputerVault"],
                 Icon = "💻",
                 IsCompleted = (progresses.FirstOrDefault(p => p.TaskId == "create-computer-vault")?.IsCompleted ?? false)
                              || hasComputerVault
@@ -50,8 +52,8 @@ public partial class OnboardingController
             {
                 TaskId = "create-tcm-vault",
                 TaskType = InitTaskType.CreateTcmVault,
-                Title = "创建中医知识库",
-                Description = "建立「中医」知识库，包含脾胃病知识笔记",
+                Title = _loc["Onboarding_TitleCreateTcmVault"],
+                Description = _loc["Onboarding_DescCreateTcmVault"],
                 Icon = "🌿",
                 IsCompleted = (progresses.FirstOrDefault(p => p.TaskId == "create-tcm-vault")?.IsCompleted ?? false)
                              || hasTcmVault
@@ -80,7 +82,7 @@ public partial class OnboardingController
             .FirstOrDefaultAsync(p => p.TaskId == taskId);
 
         if (progress == null)
-            return NotFound(new { error = "任务不存在" });
+            return NotFound(new { error = _loc["Onboarding_TaskNotFound"] });
 
         progress.IsCompleted = true;
         progress.IsSkipped = false;
@@ -102,7 +104,7 @@ public partial class OnboardingController
             .FirstOrDefaultAsync(p => p.TaskId == taskId);
 
         if (progress == null)
-            return NotFound(new { error = "任务不存在" });
+            return NotFound(new { error = _loc["Onboarding_TaskNotFound"] });
 
         progress.IsSkipped = true;
         progress.CompletedAt = DateTime.UtcNow;

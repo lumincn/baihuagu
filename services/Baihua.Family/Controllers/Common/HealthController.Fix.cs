@@ -1,4 +1,6 @@
+using Baihua.Core.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using Baihua.Contracts.Health;
 using Baihua.Family.Services;
 
@@ -25,7 +27,7 @@ public partial class HealthController
                         {
                             Component = component.Name,
                             Status = "skipped",
-                            Message = "状态正常，无需修复"
+                            Message = _loc["Health_Fix_StatusNormal"]
                         });
                         continue;
                     }
@@ -43,7 +45,7 @@ public partial class HealthController
                                 {
                                     Component = component.Name,
                                     Status = started ? "fixed" : "failed",
-                                    Message = started ? "Ollama 服务已启动" : "Ollama 启动失败，请手动安装并启动"
+                                    Message = started ? _loc["Health_Fix_OllamaStarted"] : _loc["Health_Fix_OllamaFailed"]
                                 });
                             }
                             catch (Exception ex)
@@ -52,7 +54,7 @@ public partial class HealthController
                                 {
                                     Component = component.Name,
                                     Status = "failed",
-                                    Message = $"启动失败: {ex.Message}"
+                                    Message = _loc["Health_Fix_StartFailed", ex.Message]
                                 });
                             }
                             break;
@@ -62,7 +64,7 @@ public partial class HealthController
                             {
                                 Component = component.Name,
                                 Status = "manual_required",
-                                Message = "请安装 Git: sudo apt-get install git (Linux) 或访问 git-scm.com (Windows/macOS)"
+                                Message = _loc["Health_Fix_Git"]
                             });
                             break;
 
@@ -71,7 +73,7 @@ public partial class HealthController
                             {
                                 Component = component.Name,
                                 Status = "manual_required",
-                                Message = "请安装 Python: sudo apt-get install python3 (Linux) 或访问 python.org"
+                                Message = _loc["Health_Fix_Python"]
                             });
                             break;
 
@@ -80,7 +82,7 @@ public partial class HealthController
                             {
                                 Component = component.Name,
                                 Status = "manual_required",
-                                Message = "请安装 Node.js: 访问 nodejs.org 下载安装包"
+                                Message = _loc["Health_Fix_NodeJs"]
                             });
                             break;
 
@@ -89,7 +91,7 @@ public partial class HealthController
                             {
                                 Component = component.Name,
                                 Status = "manual_required",
-                                Message = "PIP 通常随 Python 一起安装。如缺失请运行: python3 -m ensurepip"
+                                Message = _loc["Health_Fix_Pip"]
                             });
                             break;
 
@@ -98,7 +100,7 @@ public partial class HealthController
                             {
                                 Component = component.Name,
                                 Status = "manual_required",
-                                Message = "请前往 WebUI → AI设置 页面配置 API Key"
+                                Message = _loc["Health_Fix_ApiKey"]
                             });
                             break;
 
@@ -107,7 +109,7 @@ public partial class HealthController
                             {
                                 Component = component.Name,
                                 Status = "manual_required",
-                                Message = "请前往 WebUI → 知识库 页面配置 Obsidian 知识库路径"
+                                Message = _loc["Health_Fix_Vault"]
                             });
                             break;
 
@@ -116,7 +118,7 @@ public partial class HealthController
                             {
                                 Component = component.Name,
                                 Status = "manual_required",
-                                Message = "请启动 Obsidian 桌面客户端"
+                                Message = _loc["Health_Fix_Obsidian"]
                             });
                             break;
 
@@ -125,7 +127,7 @@ public partial class HealthController
                             {
                                 Component = component.Name,
                                 Status = "skipped",
-                                Message = "暂不支持自动修复"
+                                Message = _loc["Health_Fix_NotSupported"]
                             });
                             break;
                     }
@@ -134,7 +136,7 @@ public partial class HealthController
                 // 重新检测
                 var newReport = await _healthService.GetHealthReportAsync(cancellationToken);
                 result.Success = newReport.Status != "critical";
-                result.Message = $"修复完成。健康度: {newReport.HealthScore}%。需手动处理: {fixes.Count(f => f.Status == "manual_required")} 项";
+                result.Message = _loc["Health_Fix_Completed", newReport.HealthScore, fixes.Count(f => f.Status == "manual_required")];
                 result.Fixes = fixes;
                 result.NewReport = newReport;
 
@@ -146,7 +148,7 @@ public partial class HealthController
                 return StatusCode(500, new HealthFixResultDto
                 {
                     Success = false,
-                    Message = $"修复失败: {ex.Message}",
+                    Message = _loc["Health_Fix_Failed", ex.Message],
                     Fixes = fixes
                 });
             }

@@ -1,4 +1,6 @@
+using Baihua.Core.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using Baihua.Contracts.Health;
 using Baihua.Family.Services;
 
@@ -28,7 +30,7 @@ public partial class HealthController
                     return BadRequest(new
                     {
                         success = false,
-                        message = "OpenClaw 未安装。请运行: npm install -g openclaw"
+                        message = _loc["Health_Setup_OpenClawNotInstalled"]
                     });
                 }
 
@@ -38,7 +40,7 @@ public partial class HealthController
                     return BadRequest(new
                     {
                         success = false,
-                        message = "OpenClaw 安装异常，无法执行配置"
+                        message = _loc["Health_Setup_OpenClawBroken"]
                     });
                 }
 
@@ -58,7 +60,7 @@ public partial class HealthController
                 var doctorProcess = System.Diagnostics.Process.Start(doctorPsi);
                 if (doctorProcess == null)
                 {
-                    return StatusCode(500, new { success = false, message = "无法启动 openclaw doctor" });
+                    return StatusCode(500, new { success = false, message = _loc["Health_Setup_DoctorStartFailed"] });
                 }
 
                 // 异步读取输出，不等待进程退出（doctor 可能需要较长时间）
@@ -111,18 +113,18 @@ public partial class HealthController
                     doctorErrors = doctorStderr.Trim(),
                     modelsJson = modelsJson.Trim(),
                     message = doctorCompleted
-                        ? (exitCode == 0 ? "OpenClaw 配置修复完成" : "OpenClaw doctor 返回非零退出码")
-                        : "OpenClaw 配置修复已在后台启动（可能需要 30-60 秒完成）"
+                        ? (exitCode == 0 ? _loc["Health_Setup_FixCompleted"] : _loc["Health_Setup_DoctorNonZeroExit"])
+                        : _loc["Health_Setup_DoctorBackground"]
                 });
             }
             catch (OperationCanceledException)
             {
-                return StatusCode(504, new { success = false, message = "OpenClaw 配置超时（超过 60 秒）" });
+                return StatusCode(504, new { success = false, message = _loc["Health_Setup_Timeout"] });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "OpenClaw 配置失败");
-                return StatusCode(500, new { success = false, message = $"配置失败: {ex.Message}" });
+                return StatusCode(500, new { success = false, message = _loc["Health_Setup_Failed", ex.Message] });
             }
         }
 }

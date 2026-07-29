@@ -1,9 +1,11 @@
 using System.Text;
 using System.Text.Json;
 using Baihua.Contracts.Anki;
+using Baihua.Core.Localization;
 using Baihua.Family.Helpers;
 using AnkiGen.Core;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Localization;
 using Baihua.Family.Models;
 using Baihua.Core;
 
@@ -19,14 +21,16 @@ namespace Baihua.Family.Services
         private readonly AiSettingsService _aiSettings;
         private readonly TaskManager _taskManager;
         private readonly ILogger<AnkiCardGenerator> _logger;
+        private readonly IStringLocalizer<SharedResources> _loc;
 
-        public AnkiCardGenerator(VaultSettingsService vaultSettings, AiClientService aiClient, AiSettingsService aiSettings, TaskManager taskManager, ILogger<AnkiCardGenerator> logger)
+        public AnkiCardGenerator(VaultSettingsService vaultSettings, AiClientService aiClient, AiSettingsService aiSettings, TaskManager taskManager, ILogger<AnkiCardGenerator> logger, IStringLocalizer<SharedResources> loc)
         {
             _vaultSettings = vaultSettings;
             _aiClient = aiClient;
             _aiSettings = aiSettings;
             _taskManager = taskManager;
             _logger = logger;
+            _loc = loc;
         }
 
 
@@ -119,7 +123,7 @@ namespace Baihua.Family.Services
                 return new GenerateResult
                 {
                     Success = true,
-                    Message = $"AI 成功生成 {deck.Notes.Count} 张卡片: {title}",
+                    Message = string.Format(_loc["Anki_AiSuccess"], deck.Notes.Count, title),
                     CardCount = deck.Notes.Count
                 };
             }
@@ -129,7 +133,7 @@ namespace Baihua.Family.Services
                 return new GenerateResult
                 {
                     Success = false,
-                    Message = $"AI 生成失败: {ex.Message}",
+                    Message = string.Format(_loc["Anki_AiFailed"], ex.Message),
                     CardCount = 0
                 };
             }
@@ -198,7 +202,7 @@ namespace Baihua.Family.Services
             return new BatchGenerateResult
             {
                 Success = true,
-                Message = $"AI 批量生成完成: {totalCards} 张卡片，来自 {totalFiles} 篇笔记",
+                Message = string.Format(_loc["Anki_BatchComplete"], totalCards, totalFiles),
                 TotalCards = totalCards,
                 Results = results
             };

@@ -20,7 +20,7 @@ public partial class LocalModelDeploymentService
                 return new DeployLocalModelResult
                 {
                     Success = false,
-                    Message = $"未找到模型: {request.ModelId}"
+                    Message = string.Format(_loc["LocalModel_ModelNotFound"], request.ModelId)
                 };
             }
 
@@ -35,9 +35,9 @@ public partial class LocalModelDeploymentService
                 ModelName = model.Name,
                 Status = "pending",
                 ProgressPercent = 0,
-                CurrentStep = "准备部署",
+                CurrentStep = _loc["LocalModel_PreparingDeploy"],
                 CreatedAt = DateTime.Now,
-                Logs = new List<string> { $"[{DateTime.Now:HH:mm:ss}] 开始部署: {model.Name} ({model.OllamaModelName})" }
+                Logs = new List<string> { $"[{DateTime.Now:HH:mm:ss}] {string.Format(_loc["LocalModel_DeployStarted"], model.Name, model.OllamaModelName)}" }
             };
             _tasks[taskId] = taskStatus;
 
@@ -55,21 +55,21 @@ public partial class LocalModelDeploymentService
                     }
                     else
                     {
-                        throw new NotSupportedException($"不支持的部署工具: {request.TargetTool}");
+                        throw new NotSupportedException(string.Format(_loc["LocalModel_UnsupportedTool"], request.TargetTool));
                     }
                 }
                 catch (OperationCanceledException)
                 {
                     taskStatus.Status = "failed";
-                    taskStatus.ErrorMessage = "部署已取消";
-                    taskStatus.Logs.Add($"[{DateTime.Now:HH:mm:ss}] 部署已取消");
+                    taskStatus.ErrorMessage = _loc["LocalModel_DeployCancelled"];
+                    taskStatus.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {_loc["LocalModel_DeployCancelled"]}");
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "模型部署失败: {ModelId}", model.Id);
                     taskStatus.Status = "failed";
                     taskStatus.ErrorMessage = ex.Message;
-                    taskStatus.Logs.Add($"[{DateTime.Now:HH:mm:ss}] 错误: {ex.Message}");
+                    taskStatus.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {string.Format(_loc["LocalModel_Error"], ex.Message)}");
                 }
                 finally
                 {
@@ -82,7 +82,7 @@ public partial class LocalModelDeploymentService
             {
                 Success = true,
                 TaskId = taskId,
-                Message = "部署任务已启动"
+                Message = _loc["LocalModel_DeployTaskStarted"]
             };
         }
 
@@ -90,118 +90,118 @@ public partial class LocalModelDeploymentService
         {
             task.Status = "running";
 
-            task.CurrentStep = "检查 Ollama 安装";
-            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] 检查 Ollama 安装...");
+            task.CurrentStep = _loc["LocalModel_CheckOllama"];
+            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {_loc["LocalModel_CheckOllamaEllipsis"]}");
             var ollamaVersion = await _ollama.GetVersionAsync(ct);
             if (string.IsNullOrEmpty(ollamaVersion))
             {
                 throw new InvalidOperationException(
-                    "Ollama 未安装。请访问 https://ollama.com 下载安装。");
+                    _loc["LocalModel_OllamaNotInstalled"]);
             }
-            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] Ollama 版本: {ollamaVersion}");
+            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {string.Format(_loc["LocalModel_OllamaVersion"], ollamaVersion)}");
 
-            task.CurrentStep = "启动 Ollama 服务";
-            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] 检查 Ollama 服务状态...");
+            task.CurrentStep = _loc["LocalModel_StartOllama"];
+            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {_loc["LocalModel_CheckOllamaStatus"]}");
             var running = await _autoStarter.TryEnsureRunningAsync("ollama", "http://localhost:11434/v1");
             if (!running)
             {
-                throw new InvalidOperationException("Ollama 服务启动失败，请手动启动后重试。");
+                throw new InvalidOperationException(_loc["LocalModel_OllamaStartFailed"]);
             }
-            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] Ollama 服务已就绪");
+            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {_loc["LocalModel_OllamaReady"]}");
 
             var requiredBytes = (long)(model.SizeGiB * 1.2 * 1024 * 1024 * 1024);
             var availableBytes = _ollama.GetModelsDirFreeSpace();
             if (availableBytes > 0 && availableBytes < requiredBytes)
             {
                 throw new InvalidOperationException(
-                    $"磁盘空间不足。模型需要约 {model.SizeGiB * 1.2:F1} GB，可用空间仅 {availableBytes / (1024.0 * 1024 * 1024):F1} GB。");
+                    string.Format(_loc["LocalModel_DiskSpaceInsufficient"], (model.SizeGiB * 1.2), (availableBytes / (1024.0 * 1024 * 1024))));
             }
 
-            task.CurrentStep = "下载模型";
-            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] 开始下载: ollama pull {model.OllamaModelName}");
+            task.CurrentStep = _loc["LocalModel_DownloadModel"];
+            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {string.Format(_loc["LocalModel_OllamaPullStarting"], model.OllamaModelName)}");
             await _ollama.PullModelAsync(task, model.OllamaModelName, ct);
 
-            task.CurrentStep = "验证部署";
-            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] 验证模型...");
+            task.CurrentStep = _loc["LocalModel_VerifyDeploy"];
+            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {_loc["LocalModel_VerifyingModel"]}");
             var verified = await _ollama.VerifyModelAsync(model.OllamaModelName, ct);
             if (!verified)
             {
-                throw new InvalidOperationException("模型下载完成但验证失败，请检查 Ollama 日志。");
+                throw new InvalidOperationException(_loc["LocalModel_OllamaVerifyFailed"]);
             }
-            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] 模型验证通过");
+            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {_loc["LocalModel_ModelVerified"]}");
 
-            task.CurrentStep = "配置 AI Provider";
-            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] 添加到 AI 服务商配置...");
+            task.CurrentStep = _loc["LocalModel_ConfigureAiProvider"];
+            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {_loc["LocalModel_AddingProvider"]}");
             ConfigureOllamaProvider(model);
             task.AutoConfiguredProvider = true;
-            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] AI Provider 配置完成");
+            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {_loc["LocalModel_ProviderConfigured"]}");
 
             task.Status = "completed";
             task.ProgressPercent = 100;
-            task.CurrentStep = "部署完成";
-            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] ✅ 部署成功！模型已可用。");
+            task.CurrentStep = _loc["LocalModel_DeployComplete"];
+            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {_loc["LocalModel_DeploySuccess"]}");
         }
 
         private async Task DeployToLmStudioAsync(DeployTaskStatusDto task, ModelEntry model, CancellationToken ct)
         {
             task.Status = "running";
 
-            task.CurrentStep = "检查 LM Studio";
-            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] 检查 LM Studio 安装...");
+            task.CurrentStep = _loc["LocalModel_CheckLmStudio"];
+            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {_loc["LocalModel_CheckLmStudioEllipsis"]}");
             var lmsVersion = await _lmStudio.GetVersionAsync(ct);
             if (string.IsNullOrEmpty(lmsVersion))
             {
                 throw new InvalidOperationException(
-                    "LM Studio CLI (lms) 未安装。请访问 https://lmstudio.ai 下载安装，并确保 lms 命令在 PATH 中。");
+                    _loc["LocalModel_LmStudioNotInstalled"]);
             }
-            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] LM Studio CLI: {lmsVersion}");
+            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {string.Format(_loc["LocalModel_LmStudioVersion"], lmsVersion)}");
 
-            task.CurrentStep = "启动 LM Studio 服务";
-            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] 检查 LM Studio 服务状态...");
+            task.CurrentStep = _loc["LocalModel_StartLmStudio"];
+            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {_loc["LocalModel_CheckLmStudioStatus"]}");
             var running = await _autoStarter.TryEnsureRunningAsync("lmstudio", "http://localhost:1234/v1");
             if (!running)
             {
-                throw new InvalidOperationException("LM Studio 服务启动失败，请手动启动后重试。");
+                throw new InvalidOperationException(_loc["LocalModel_LmStudioStartFailed"]);
             }
-            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] LM Studio 服务已就绪");
+            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {_loc["LocalModel_LmStudioReady"]}");
 
             var requiredBytes = (long)(model.SizeGiB * 1.2 * 1024 * 1024 * 1024);
             var availableBytes = _lmStudio.GetModelsDirFreeSpace();
             if (availableBytes > 0 && availableBytes < requiredBytes)
             {
                 throw new InvalidOperationException(
-                    $"磁盘空间不足。模型需要约 {model.SizeGiB * 1.2:F1} GB，可用空间仅 {availableBytes / (1024.0 * 1024 * 1024):F1} GB。");
+                    string.Format(_loc["LocalModel_DiskSpaceInsufficient"], (model.SizeGiB * 1.2), (availableBytes / (1024.0 * 1024 * 1024))));
             }
 
             var searchName = model.LmStudioSearchName ?? model.Id;
             var preferredSource = _localModelSettings.PreferredDownloadSource;
-            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] 搜索名称: {searchName}, 下载源偏好: {preferredSource}");
+            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {string.Format(_loc["LocalModel_SearchNameSource"], searchName, preferredSource)}");
 
-            task.CurrentStep = "下载模型";
+            task.CurrentStep = _loc["LocalModel_DownloadModel"];
             await _lmStudioDownload.PullModelAsync(task, model, preferredSource, ct);
 
-            task.CurrentStep = "验证部署";
-            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] 验证模型...");
+            task.CurrentStep = _loc["LocalModel_VerifyDeploy"];
+            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {_loc["LocalModel_VerifyingModel"]}");
             var verified = await _lmStudioDownload.VerifyModelAsync(searchName, ct);
             if (!verified)
             {
-                task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] ⚠️ 无法自动验证模型是否下载成功，请检查 LM Studio 界面。");
+                task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {_loc["LocalModel_LmStudioVerifyWarning"]}");
             }
             else
             {
-                task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] 模型验证通过");
+                task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {_loc["LocalModel_ModelVerified"]}");
             }
 
-            task.CurrentStep = "配置 AI Provider";
-            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] 添加到 AI 服务商配置...");
+            task.CurrentStep = _loc["LocalModel_ConfigureAiProvider"];
+            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {_loc["LocalModel_AddingProvider"]}");
             ConfigureLmStudioProvider(model);
             task.AutoConfiguredProvider = true;
-            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] AI Provider 配置完成");
+            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {_loc["LocalModel_ProviderConfigured"]}");
 
             task.Status = "completed";
             task.ProgressPercent = 100;
-            task.CurrentStep = "部署完成";
-            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] ✅ 部署成功！模型已可用。");
+            task.CurrentStep = _loc["LocalModel_DeployComplete"];
+            task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {_loc["LocalModel_DeploySuccess"]}");
         }
 
         #endregion

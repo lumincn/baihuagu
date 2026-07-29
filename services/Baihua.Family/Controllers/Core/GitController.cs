@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using System.Diagnostics;
 using System.Text;
+using Baihua.Core.Localization;
 using Baihua.Family.Services;
 using Baihua.Contracts.Git;
 
@@ -14,11 +16,13 @@ namespace Baihua.Family.Controllers;
     {
         private readonly ILogger<GitController> _logger;
         private readonly VaultSettingsService _vaultSettings;
+        private readonly IStringLocalizer<SharedResources> _loc;
 
-        public GitController(ILogger<GitController> logger, VaultSettingsService vaultSettings)
+        public GitController(ILogger<GitController> logger, VaultSettingsService vaultSettings, IStringLocalizer<SharedResources> loc)
         {
             _logger = logger;
             _vaultSettings = vaultSettings;
+            _loc = loc;
         }
 
         /// <summary>

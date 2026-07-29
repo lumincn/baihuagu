@@ -1,5 +1,7 @@
 using Baihua.Core;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
 using Baihua.Family.Services;
 using Baihua.Core.Hubs;
 using Microsoft.AspNetCore.SignalR;
@@ -16,13 +18,15 @@ namespace Baihua.Family.Controllers
         private readonly IHubContext<DeviceHub> _hubContext;
         private readonly Services.VaultSettingsService _vaultSettings;
         private readonly ILogger<DevicesController> _logger;
+        private readonly IStringLocalizer<SharedResources> _loc;
 
-        public DevicesController(DeviceService deviceService, IHubContext<DeviceHub> hubContext, Services.VaultSettingsService vaultSettings, ILogger<DevicesController> logger)
+        public DevicesController(DeviceService deviceService, IHubContext<DeviceHub> hubContext, Services.VaultSettingsService vaultSettings, ILogger<DevicesController> logger, IStringLocalizer<SharedResources> loc)
         {
             _deviceService = deviceService;
             _hubContext = hubContext;
             _vaultSettings = vaultSettings;
             _logger = logger;
+            _loc = loc;
         }
 
         [HttpGet("pending")]
@@ -81,42 +85,42 @@ namespace Baihua.Family.Controllers
         public IActionResult AuthorizeDevice([FromBody] AuthorizeDeviceRequest request)
         {
             if (string.IsNullOrWhiteSpace(request?.RequestId))
-                return BadRequest(new { error = "请求ID不能为空" });
+                return BadRequest(new { error = _loc["Devices_RequestIdRequired"] });
 
             var (success, accessToken, error) = _deviceService.AuthorizeDevice(request.RequestId);
             if (!success)
                 return BadRequest(new { error });
 
             _logger.LogInformation("设备已授权，请求ID: {RequestId}", request.RequestId);
-            return Ok(new { success = true, message = "设备已授权", accessToken });
+            return Ok(new { success = true, message = _loc["Devices_DeviceAuthorized"], accessToken });
         }
 
         [HttpPost("reject")]
         public IActionResult RejectDevice([FromBody] RejectDeviceRequest request)
         {
             if (string.IsNullOrWhiteSpace(request?.RequestId))
-                return BadRequest(new { error = "请求ID不能为空" });
+                return BadRequest(new { error = _loc["Devices_RequestIdRequired"] });
 
             var success = _deviceService.RejectRequest(request.RequestId);
             if (!success)
-                return BadRequest(new { error = "请求不存在或已处理" });
+                return BadRequest(new { error = _loc["Devices_RequestNotFound"] });
 
             _logger.LogInformation("设备配对已拒绝，请求ID: {RequestId}", request.RequestId);
-            return Ok(new { success = true, message = "已拒绝设备配对" });
+            return Ok(new { success = true, message = _loc["Devices_RequestRejected"] });
         }
 
         [HttpPost("revoke")]
         public IActionResult RevokeDevice([FromBody] RevokeDeviceRequest request)
         {
             if (string.IsNullOrWhiteSpace(request?.DeviceId))
-                return BadRequest(new { error = "设备ID不能为空" });
+                return BadRequest(new { error = _loc["Devices_DeviceIdRequired"] });
 
             var success = _deviceService.RevokeDevice(request.DeviceId);
             if (!success)
-                return BadRequest(new { error = "设备不存在" });
+                return BadRequest(new { error = _loc["Devices_DeviceNotFound"] });
 
             _logger.LogInformation("设备授权已撤销，设备ID: {DeviceId}", request.DeviceId);
-            return Ok(new { success = true, message = "已撤销设备授权" });
+            return Ok(new { success = true, message = _loc["Devices_DeviceRevoked"] });
         }
 
         [HttpGet("stats")]

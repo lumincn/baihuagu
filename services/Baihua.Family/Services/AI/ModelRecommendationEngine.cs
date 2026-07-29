@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Localization;
 using Baihua.Contracts.LocalModels;
+using Baihua.Core.Localization;
 
 namespace Baihua.Family.Services
 {
@@ -11,13 +13,16 @@ namespace Baihua.Family.Services
         private readonly ILogger<ModelRecommendationEngine> _logger;
         private readonly OllamaLibraryClient? _ollamaLibrary;
         private readonly IMemoryCache _cache;
+        private readonly IStringLocalizer<SharedResources> _loc;
 
         public ModelRecommendationEngine(
             ILogger<ModelRecommendationEngine> logger,
+            IStringLocalizer<SharedResources> loc,
             OllamaLibraryClient? ollamaLibrary = null,
             IMemoryCache? cache = null)
         {
             _logger = logger;
+            _loc = loc;
             _ollamaLibrary = ollamaLibrary;
             _cache = cache ?? new MemoryCache(new MemoryCacheOptions());
         }
@@ -160,7 +165,7 @@ namespace Baihua.Family.Services
             if (totalRam < model.MinRamGiB * 0.8)
             {
                 dto.MatchScore = 0;
-                dto.Suitability = "内存不足";
+                dto.Suitability = _loc["ModelRec_InsufficientMemory"];
                 return dto;
             }
 
@@ -182,7 +187,7 @@ namespace Baihua.Family.Services
                 else
                     dto.MatchScore = 70;  // 略紧张
 
-                dto.Suitability = "GPU 加速运行";
+                dto.Suitability = _loc["ModelRec_GpuAccelerated"];
             }
             else if (hasVram && maxVram > 0)
             {
@@ -191,12 +196,12 @@ namespace Baihua.Family.Services
                 if (vramRatio >= 0.5)
                 {
                     dto.MatchScore = 55;
-                    dto.Suitability = "显存不足，混合运行（较慢）";
+                    dto.Suitability = _loc["ModelRec_InsufficientVramHybrid"];
                 }
                 else
                 {
                     dto.MatchScore = 40;
-                    dto.Suitability = "显存不足，主要使用 CPU（慢）";
+                    dto.Suitability = _loc["ModelRec_InsufficientVramCpu"];
                 }
             }
             else if (maxVram == 0)
@@ -205,24 +210,24 @@ namespace Baihua.Family.Services
                 if (model.MinRamGiB <= 4 && model.SizeGiB <= 2)
                 {
                     dto.MatchScore = 50;
-                    dto.Suitability = "纯 CPU 运行（可接受）";
+                    dto.Suitability = _loc["ModelRec_CpuOnlyAcceptable"];
                 }
                 else if (model.MinRamGiB <= 8 && model.SizeGiB <= 5)
                 {
                     dto.MatchScore = 35;
-                    dto.Suitability = "纯 CPU 运行（较慢）";
+                    dto.Suitability = _loc["ModelRec_CpuOnlySlow"];
                 }
                 else
                 {
                     dto.MatchScore = 20;
-                    dto.Suitability = "纯 CPU 运行（很慢，仅应急）";
+                    dto.Suitability = _loc["ModelRec_CpuOnlyVerySlow"];
                 }
             }
             else
             {
                 // 模型不需要显存（小模型）
                 dto.MatchScore = 60;
-                dto.Suitability = "可直接运行";
+                dto.Suitability = _loc["ModelRec_DirectRun"];
             }
 
             // 根据硬件等级进行额外调整
@@ -233,7 +238,7 @@ namespace Baihua.Family.Services
             {
                 dto.MatchScore = Math.Max(0, dto.MatchScore - 10);
                 if (dto.MatchScore > 0 && !dto.Suitability.Contains("内存"))
-                    dto.Suitability += "，内存紧张";
+                    dto.Suitability += _loc["ModelRec_MemoryTight"];
             }
 
             // 估算在当前硬件上的输出速度

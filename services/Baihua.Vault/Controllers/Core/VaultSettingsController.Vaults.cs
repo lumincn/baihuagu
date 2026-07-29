@@ -39,15 +39,15 @@ namespace Baihua.Vault.Controllers
         public IActionResult AddVault([FromBody] AddVaultRequest request)
         {
             if (request == null)
-                return BadRequest(new { error = "请求不能为空" });
+                return BadRequest(new { error = _loc["Vault_RequestCannotBeEmpty"] });
 
             if (string.IsNullOrWhiteSpace(request.Name))
-                return BadRequest(new { error = "知识库名称不能为空" });
+                return BadRequest(new { error = _loc["Vault_NameCannotBeEmpty"] });
 
             if (string.IsNullOrWhiteSpace(request.Path))
-                return BadRequest(new { error = "知识库路径不能为空" });
+                return BadRequest(new { error = _loc["Vault_PathCannotBeEmpty"] });
 
-            var industry = string.IsNullOrWhiteSpace(request.Industry) ? "笔记" : request.Industry.Trim();
+            var industry = string.IsNullOrWhiteSpace(request.Industry) ? _loc["Vault_DefaultIndustry"] : request.Industry.Trim();
             var vault = _vaultSettings.AddVault(request.Name.Trim(), request.Path.Trim(), industry);
 
             if (!Directory.Exists(request.Path.Trim()))
@@ -84,16 +84,16 @@ namespace Baihua.Vault.Controllers
         public IActionResult UpdateVault(string vaultId, [FromBody] UpdateVaultRequest request)
         {
             if (string.IsNullOrWhiteSpace(vaultId))
-                return BadRequest(new { error = "知识库 ID 不能为空" });
+                return BadRequest(new { error = _loc["Vault_IdCannotBeEmpty"] });
 
             if (request == null)
-                return BadRequest(new { error = "请求不能为空" });
+                return BadRequest(new { error = _loc["Vault_RequestCannotBeEmpty"] });
 
             if (!string.IsNullOrWhiteSpace(request.Name))
             {
                 var success = _vaultSettings.UpdateVaultName(vaultId, request.Name.Trim());
                 if (!success)
-                    return NotFound(new { error = "知识库不存在" });
+                    return NotFound(new { error = _loc["Vault_NotFound"] });
                 _logger.LogInformation("更新知识库名称: {VaultId} -> {Name}", vaultId, request.Name);
             }
 
@@ -101,7 +101,7 @@ namespace Baihua.Vault.Controllers
             {
                 var success = _vaultSettings.UpdateVaultTags(vaultId, request.Tags.Trim());
                 if (!success)
-                    return NotFound(new { error = "知识库不存在" });
+                    return NotFound(new { error = _loc["Vault_NotFound"] });
                 _logger.LogInformation("更新知识库标签: {VaultId} -> {Tags}", vaultId, request.Tags);
             }
 
@@ -109,7 +109,7 @@ namespace Baihua.Vault.Controllers
             {
                 var success = _vaultSettings.UpdateVaultIndustry(vaultId, request.Industry.Trim());
                 if (!success)
-                    return NotFound(new { error = "知识库不存在" });
+                    return NotFound(new { error = _loc["Vault_NotFound"] });
                 _logger.LogInformation("更新知识库行业: {VaultId} -> {Industry}", vaultId, request.Industry);
             }
 
@@ -123,11 +123,11 @@ namespace Baihua.Vault.Controllers
         public IActionResult RemoveVault(string vaultId)
         {
             if (string.IsNullOrWhiteSpace(vaultId))
-                return BadRequest(new { error = "知识库 ID 不能为空" });
+                return BadRequest(new { error = _loc["Vault_IdCannotBeEmpty"] });
 
             var success = _vaultSettings.RemoveVault(vaultId);
             if (!success)
-                return NotFound(new { error = "知识库不存在" });
+                return NotFound(new { error = _loc["Vault_NotFound"] });
 
             _ = _webUINotification.NotifyVaultStatusChangedAsync();
 
@@ -163,11 +163,11 @@ namespace Baihua.Vault.Controllers
         public IActionResult RestoreVault(string vaultId)
         {
             if (string.IsNullOrWhiteSpace(vaultId))
-                return BadRequest(new { error = "知识库 ID 不能为空" });
+                return BadRequest(new { error = _loc["Vault_IdCannotBeEmpty"] });
 
             var success = _vaultSettings.RestoreVault(vaultId);
             if (!success)
-                return BadRequest(new { error = "恢复失败，知识库不存在或原始路径已被占用" });
+                return BadRequest(new { error = _loc["Vault_RestoreFailed"] });
 
             _ = _webUINotification.NotifyVaultStatusChangedAsync();
             _logger.LogInformation("恢复知识库: {VaultId}", vaultId);

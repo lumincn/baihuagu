@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Baihua.Contracts.LocalModels;
 using Baihua.Contracts.OpenClaw;
+using Baihua.Core.Localization;
 using Baihua.Family.Services;
+using Microsoft.Extensions.Localization;
 
 namespace Baihua.Family.Controllers;
     /// <summary>
@@ -17,6 +19,7 @@ namespace Baihua.Family.Controllers;
         private readonly LocalModelSettingsService _localModelSettings;
         private readonly OllamaLibraryClient? _ollamaLibrary;
         private readonly ILogger<LocalModelDeploymentController> _logger;
+        private readonly IStringLocalizer<SharedResources> _loc;
 
         public LocalModelDeploymentController(
             HardwareInfoService hardwareInfoService,
@@ -24,7 +27,8 @@ namespace Baihua.Family.Controllers;
             LocalModelDeploymentService deploymentService,
             LocalModelSettingsService localModelSettings,
             OllamaLibraryClient? ollamaLibrary,
-            ILogger<LocalModelDeploymentController> logger)
+            ILogger<LocalModelDeploymentController> logger,
+            IStringLocalizer<SharedResources> loc)
         {
             _hardwareInfoService = hardwareInfoService;
             _recommendationEngine = recommendationEngine;
@@ -32,6 +36,7 @@ namespace Baihua.Family.Controllers;
             _localModelSettings = localModelSettings;
             _ollamaLibrary = ollamaLibrary;
             _logger = logger;
+            _loc = loc;
         }
 
         /// <summary>
@@ -41,17 +46,17 @@ namespace Baihua.Family.Controllers;
         public async Task<ActionResult> RefreshLibrary()
         {
             if (_ollamaLibrary == null)
-                return BadRequest(new { error = "Ollama Library 客户端未启用" });
+                return BadRequest(new { error = _loc["LocalModel_OllamaLibraryDisabled"] });
 
             try
             {
                 await _ollamaLibrary.RefreshAsync(HttpContext.RequestAborted);
-                return Ok(new { success = true, message = "模型库已刷新" });
+                return Ok(new { success = true, message = _loc["LocalModel_LibraryRefreshed"] });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "刷新 Ollama Library 失败");
-                return StatusCode(500, new { error = "刷新失败", message = ex.Message });
+                return StatusCode(500, new { error = _loc["LocalModel_RefreshFailed"], message = ex.Message });
             }
         }
 
@@ -71,7 +76,7 @@ namespace Baihua.Family.Controllers;
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取硬件信息失败");
-                return StatusCode(500, new { error = "获取硬件信息失败", message = ex.Message });
+                return StatusCode(500, new { error = _loc["LocalModel_GetHardwareFailed"], message = ex.Message });
             }
         }
 
@@ -114,7 +119,7 @@ namespace Baihua.Family.Controllers;
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取模型推荐失败");
-                return StatusCode(500, new { error = "获取模型推荐失败", message = ex.Message });
+                return StatusCode(500, new { error = _loc["LocalModel_GetRecommendationsFailed"], message = ex.Message });
             }
         }
 }

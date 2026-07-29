@@ -1,6 +1,8 @@
 using Baihua.Core;
+using Baihua.Core.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Baihua.Contracts.Onboarding;
 using Baihua.Data;
 using Baihua.Data.Entities;
@@ -20,19 +22,22 @@ public partial class OnboardingController : ControllerBase
     private readonly DeviceService _deviceService;
     private readonly AiConfigService _aiConfigService;
     private readonly ILogger<OnboardingController> _logger;
+    private readonly IStringLocalizer<SharedResources> _loc;
 
     public OnboardingController(
         FamilyDbContext dbContext,
         VaultSettingsService vaultSettings,
         DeviceService deviceService,
         AiConfigService aiConfigService,
-        ILogger<OnboardingController> logger)
+        ILogger<OnboardingController> logger,
+        IStringLocalizer<SharedResources> loc)
     {
         _dbContext = dbContext;
         _vaultSettings = vaultSettings;
         _deviceService = deviceService;
         _aiConfigService = aiConfigService;
         _logger = logger;
+        _loc = loc;
     }
 
     /// <summary>

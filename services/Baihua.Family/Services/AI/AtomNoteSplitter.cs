@@ -1,4 +1,6 @@
 using Baihua.Core;
+using Baihua.Core.Localization;
+using Microsoft.Extensions.Localization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Text.Json;
@@ -25,6 +27,7 @@ namespace Baihua.Family.Services;
         private readonly AnkiCardGenerator _cardGenerator;
         private readonly NoteParser _noteParser;
         private readonly ILogger<AtomNoteSplitter> _logger;
+        private readonly IStringLocalizer<SharedResources> _loc;
 
         public AtomNoteSplitter(
             AiClientService aiClientService,
@@ -35,9 +38,11 @@ namespace Baihua.Family.Services;
             DefaultPromptProvider scenePromptService,
             AnkiCardGenerator cardGenerator,
             NoteParser noteParser,
-            ILogger<AtomNoteSplitter> logger)
+            ILogger<AtomNoteSplitter> logger,
+            IStringLocalizer<SharedResources> loc)
         {
             _aiClientService = aiClientService;
+            _loc = loc;
             _taskManager = taskManager;
             _aiSettings = aiSettings;
             _vaultSettings = vaultSettings;

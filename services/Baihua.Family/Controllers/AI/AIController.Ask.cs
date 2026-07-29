@@ -1,6 +1,8 @@
 using Baihua.Core;
+using Baihua.Core.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Localization;
 using Baihua.Contracts.Ai;
 using Baihua.Family.Models;
 using Baihua.Family.Services;
@@ -17,7 +19,7 @@ namespace Baihua.Family.Controllers
         {
             if (string.IsNullOrWhiteSpace(request.Query))
             {
-                return BadRequest(new { error = "问题不能为空" });
+                return BadRequest(new { error = _loc["Ai_Ask_QueryEmpty"] });
             }
 
             try
@@ -39,11 +41,7 @@ namespace Baihua.Family.Controllers
                 var note = ParseNote(result, request.Query);
                 
                 // 添加来源信息到笔记开头
-                var sourceInfo = $"> 📌 **来源**: AI 生成  \n" +
-                    $"> 🤖 **模型**: {model}  \n" +
-                    $"> 🏢 **提供商**: {provider.Name}  \n" +
-                    $"> ⏰ **时间**: {DateTime.Now:yyyy-MM-dd HH:mm:ss}  \n" +
-                    $"> ⏱️ **耗时**: {stopwatch.ElapsedMilliseconds}ms  \n\n";
+                var sourceInfo = _loc["Ai_Ask_SourceInfo", model, provider.Name, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), stopwatch.ElapsedMilliseconds] + "\n\n";
                 
                 note.Content = sourceInfo + note.Content;
 
@@ -98,7 +96,7 @@ namespace Baihua.Family.Controllers
                 return Ok(new AiNoteResponse
                 {
                     Success = true,
-                    Message = "生成成功",
+                    Message = _loc["Ai_Ask_Success"],
                     Title = note.Title,
                     Content = note.Content,
                     NoteId = GenerateNoteId(note.Title)
@@ -110,7 +108,7 @@ namespace Baihua.Family.Controllers
                 return Ok(new AiNoteResponse
                 {
                     Success = false,
-                    Message = $"生成失败：{ex.Message}"
+                    Message = _loc["Ai_Ask_Failed", ex.Message]
                 });
             }
         }

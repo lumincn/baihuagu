@@ -1,7 +1,9 @@
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.Localization;
 using Baihua.Contracts.OpenClaw;
+using Baihua.Core.Localization;
 using Baihua.Family.Helpers;
 
 namespace Baihua.Family.Services;
@@ -29,7 +31,7 @@ public partial class LocalAiConfigService
 
         if (checkUrl == null)
         {
-            result.Message = $"不支持的 provider: {provider}";
+            result.Message = string.Format(_loc["LocalAi_UnsupportedProvider"], provider);
             return result;
         }
 
@@ -42,7 +44,7 @@ public partial class LocalAiConfigService
             if (response.IsSuccessStatusCode)
             {
                 result.IsRunning = true;
-                result.Message = $"{displayName} 服务正在运行";
+                result.Message = string.Format(_loc["LocalAi_ServiceRunning"], displayName);
                 return result;
             }
         }
@@ -66,7 +68,7 @@ public partial class LocalAiConfigService
             var process = Process.Start(startInfo);
             if (process == null)
             {
-                result.Message = $"启动 {displayName} 失败：无法创建进程";
+                result.Message = string.Format(_loc["LocalAi_StartFailedCannotCreateProcess"], displayName);
                 return result;
             }
 
@@ -83,20 +85,20 @@ public partial class LocalAiConfigService
                     {
                         result.IsRunning = true;
                         result.StartSuccess = true;
-                        result.Message = $"{displayName} 启动成功";
+                        result.Message = string.Format(_loc["LocalAi_StartSuccess"], displayName);
                         return result;
                     }
                 }
                 catch (Exception ex) { logger.LogDebug(ex, "探测 {DisplayName} 启动状态失败", displayName); }
             }
 
-            result.Message = $"{displayName} 已尝试启动，但服务未在预期时间内就绪，请检查日志";
+            result.Message = string.Format(_loc["LocalAi_StartTimeout"], displayName);
             logger.LogWarning("{DisplayName} 启动后未就绪", displayName);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "启动 {DisplayName} 失败", displayName);
-            result.Message = $"启动 {displayName} 失败: {ex.Message}";
+            result.Message = string.Format(_loc["LocalAi_StartFailedDetail"], displayName, ex.Message);
         }
 
         return result;
@@ -110,19 +112,19 @@ public partial class LocalAiConfigService
 
         if (llamaCpp == null || !llamaCpp.Enabled)
         {
-            result.Message = "llama.cpp 未启用";
+            result.Message = _loc["LocalAi_LlamaCppNotEnabled"];
             return result;
         }
 
         if (string.IsNullOrWhiteSpace(llamaCpp.BinaryPath) || !File.Exists(llamaCpp.BinaryPath))
         {
-            result.Message = $"llama-server 路径无效: {llamaCpp.BinaryPath}";
+            result.Message = string.Format(_loc["LocalAi_BinaryPathInvalid"], llamaCpp.BinaryPath);
             return result;
         }
 
         if (string.IsNullOrWhiteSpace(llamaCpp.ModelPath) || !File.Exists(llamaCpp.ModelPath))
         {
-            result.Message = $"模型文件不存在: {llamaCpp.ModelPath}";
+            result.Message = string.Format(_loc["LocalAi_ModelFileNotFound"], llamaCpp.ModelPath);
             return result;
         }
 
@@ -137,7 +139,7 @@ public partial class LocalAiConfigService
             if (response.IsSuccessStatusCode)
             {
                 result.IsRunning = true;
-                result.Message = "llama.cpp 服务正在运行";
+                result.Message = _loc["LocalAi_LlamaCppRunning"];
                 return result;
             }
         }
@@ -182,7 +184,7 @@ public partial class LocalAiConfigService
             var process = Process.Start(startInfo);
             if (process == null)
             {
-                result.Message = "启动 llama.cpp 失败：无法创建进程";
+                result.Message = _loc["LocalAi_StartLlamaCppProcessFailed"];
                 return result;
             }
 
@@ -202,20 +204,20 @@ public partial class LocalAiConfigService
                     {
                         result.IsRunning = true;
                         result.StartSuccess = true;
-                        result.Message = "llama.cpp 启动成功（GPU 加速已启用）";
+                        result.Message = _loc["LocalAi_LlamaCppStartSuccessGpu"];
                         return result;
                     }
                 }
                 catch (Exception ex) { logger.LogDebug(ex, "探测 llama.cpp 启动状态失败"); }
             }
 
-            result.Message = "llama.cpp 已尝试启动，但服务未在预期时间内就绪，请检查日志";
+            result.Message = _loc["LocalAi_LlamaCppStartTimeout"];
             logger.LogWarning("llama.cpp 启动后未就绪");
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "启动 llama.cpp 失败");
-            result.Message = $"启动 llama.cpp 失败: {ex.Message}";
+            result.Message = string.Format(_loc["LocalAi_StartLlamaCppFailedDetail"], ex.Message);
         }
 
         return result;

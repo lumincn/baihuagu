@@ -3,8 +3,10 @@ using System.Diagnostics;
 using Microsoft.Extensions.Caching.Memory;
 using Baihua.Contracts.LocalModels;
 using Baihua.Contracts.OpenClaw;
+using Baihua.Core.Localization;
 using Baihua.Data.Entities;
 using Baihua.Family.Models;
+using Microsoft.Extensions.Localization;
 
 namespace Baihua.Family.Services;
     /// <summary>
@@ -19,6 +21,7 @@ namespace Baihua.Family.Services;
         private readonly LocalModelSettingsService _localModelSettings;
         private readonly AiSettingsService _aiSettings;
         private readonly IMemoryCache _cache;
+        private readonly IStringLocalizer<SharedResources> _loc;
 
         private readonly OllamaService _ollama;
         private readonly LmStudioService _lmStudio;
@@ -44,7 +47,8 @@ namespace Baihua.Family.Services;
             OllamaService ollama,
             LmStudioService lmStudio,
             LmStudioDownloadService lmStudioDownload,
-            LlamaCppService llamaCpp)
+            LlamaCppService llamaCpp,
+            IStringLocalizer<SharedResources> loc)
         {
             _logger = logger;
             _httpClientFactory = httpClientFactory;
@@ -57,6 +61,7 @@ namespace Baihua.Family.Services;
             _lmStudio = lmStudio;
             _lmStudioDownload = lmStudioDownload;
             _llamaCpp = llamaCpp;
+            _loc = loc;
         }
 
         #region Task Management

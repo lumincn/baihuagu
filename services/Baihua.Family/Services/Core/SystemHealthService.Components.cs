@@ -89,16 +89,16 @@ namespace Baihua.Family.Services
 
                 var (ok, exitCode, output) = await WaitForProcessAsync(process, 4000, cancellationToken);
                 if (!ok)
-                    return new ComponentStatus { Name = "Node.js", Status = "critical", Message = "Node.js 检测超时" };
+                    return new ComponentStatus { Name = "Node.js", Status = "critical", Message = _loc["Health_NodeTimeout"] };
                 if (exitCode != 0)
-                    return new ComponentStatus { Name = "Node.js", Status = "critical", Message = "Node.js 检测失败" };
+                    return new ComponentStatus { Name = "Node.js", Status = "critical", Message = _loc["Health_NodeCheckFailed"] };
 
                 return new ComponentStatus
                 {
                     Name = "Node.js",
                     Status = "healthy",
                     Version = HealthCheckHelper.ExtractVersion(output),
-                    Message = "Node.js 已安装"
+                    Message = _loc["Health_NodeInstalled"]
                 };
             }
             catch (OperationCanceledException)
@@ -112,7 +112,7 @@ namespace Baihua.Family.Services
                 {
                     Name = "Node.js",
                     Status = "warning",
-                    Message = "Node.js 检测异常"
+                    Message = _loc["Health_NodeCheckError"]
                 };
             }
         }
@@ -300,8 +300,8 @@ namespace Baihua.Family.Services
                     Name = "知识库",
                     Status = "healthy",
                     Message = hasObsidianDir 
-                        ? $"知识库已配置: {Path.GetFileName(vaultPath)} ({mdFiles.Length} 个文档)"
-                        : $"知识库路径已配置: {Path.GetFileName(vaultPath)}。点击[在 Obsidian 中打开]按钮初始化"
+                        ? string.Format(_loc["Health_VaultConfigured"], Path.GetFileName(vaultPath), mdFiles.Length)
+                        : string.Format(_loc["Health_VaultPathConfigured"], Path.GetFileName(vaultPath))
                 });
             }
             catch (OperationCanceledException)

@@ -16,7 +16,7 @@ public partial class OpenClawController : ControllerBase
     {
         var task = await _taskService.GetTaskAsync(id);
         if (task == null)
-            return NotFound(new { error = "任务不存在" });
+            return NotFound(new { error = _loc["OpenClaw_TaskNotFound"] });
         return Ok(task);
     }
 
@@ -24,7 +24,7 @@ public partial class OpenClawController : ControllerBase
     {
         var content = await _taskService.GetReportContentAsync(id);
         if (content == null)
-            return NotFound(new { error = "报告不存在或尚未生成" });
+            return NotFound(new { error = _loc["OpenClaw_ReportNotExists"] });
         return Ok(content);
     }
 
@@ -32,7 +32,7 @@ public partial class OpenClawController : ControllerBase
     {
         var result = await _taskService.DeleteTaskAsync(id);
         if (!result)
-            return NotFound(new { error = "任务不存在" });
+            return NotFound(new { error = _loc["OpenClaw_TaskNotFound"] });
         return NoContent();
     }
 
@@ -40,15 +40,15 @@ public partial class OpenClawController : ControllerBase
     {
         var result = await _taskService.CancelTaskAsync(id);
         if (!result)
-            return BadRequest(new { error = "任务不存在或已结束" });
-        return Ok(new { success = true, message = "任务已取消" });
+            return BadRequest(new { error = _loc["OpenClaw_TaskNotFoundOrDone"] });
+        return Ok(new { success = true, message = _loc["OpenClaw_TaskCancelled"] });
     }
 
     private async Task<IActionResult> HandleSaveLocalAiConfigAsync(SaveOpenClawLocalAiConfigRequest request)
     {
         var success = await _localAiConfig.SaveLocalAiConfigAsync(request);
         if (!success)
-            return BadRequest(new { error = "保存配置失败" });
+            return BadRequest(new { error = _loc["OpenClaw_SaveConfigFailed"] });
         return Ok(new { success = true });
     }
 
@@ -68,7 +68,7 @@ public partial class OpenClawController : ControllerBase
     {
         var success = await _modelProfile.SetDefaultModelAsync(model);
         if (!success)
-            return BadRequest(new { error = "设置默认模型失败" });
+            return BadRequest(new { error = _loc["OpenClaw_SetDefaultModelFailed"] });
         return Ok(new { success = true });
     }
 
@@ -76,15 +76,15 @@ public partial class OpenClawController : ControllerBase
     {
         var success = await _localAiConfig.SyncLocalModelsToOpenClawAsync(provider);
         if (!success)
-            return BadRequest(new { error = $"同步 {provider} 模型到 OpenClaw 失败" });
-        return Ok(new { success = true, message = $"{provider} 模型已同步到 OpenClaw" });
+            return BadRequest(new { error = string.Format(_loc["OpenClaw_SyncFailed"], provider) });
+        return Ok(new { success = true, message = string.Format(_loc["OpenClaw_SyncSuccess"], provider) });
     }
 
     private async Task<IActionResult> HandleSetModelProfileAsync(string profile)
     {
         var success = await _modelProfile.SetModelProfileAsync(profile);
         if (!success)
-            return BadRequest(new { error = $"设置模型配置 {profile} 失败" });
-        return Ok(new { success = true, message = $"已切换到 {profile} 配置" });
+            return BadRequest(new { error = string.Format(_loc["OpenClaw_SetProfileFailed"], profile) });
+        return Ok(new { success = true, message = string.Format(_loc["OpenClaw_ProfileSwitched"], profile) });
     }
 }

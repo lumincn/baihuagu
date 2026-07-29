@@ -1,7 +1,9 @@
 using Baihua.Core;
+using Baihua.Core.Localization;
 using Baihua.Family.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Localization;
 using Baihua.Contracts.Ai;
 using Baihua.Family.Models;
 
@@ -12,7 +14,7 @@ namespace Baihua.Family.Controllers
         private async Task<ActionResult<GenerateMissingNoteResponse>> HandleGenerateMissingNoteAsync(GenerateMissingNoteRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.LinkPath))
-                return BadRequest(new { error = "链接路径不能为空" });
+                return BadRequest(new { error = _loc["Ai_MissingNote_LinkPathEmpty"] });
 
             try
             {
@@ -24,7 +26,7 @@ namespace Baihua.Family.Controllers
                     : _vaultSettings.GetActiveVault();
                 var vaultPath = vault?.Path;
                 if (string.IsNullOrEmpty(vaultPath))
-                    return BadRequest(new { error = "未找到有效的知识库" });
+                    return BadRequest(new { error = _loc["Ai_MissingNote_VaultNotFound"] });
 
                 var notesPath = System.IO.Path.Combine(vaultPath, "notes");
 
@@ -35,12 +37,7 @@ namespace Baihua.Family.Controllers
                 var industry = vault?.Industry ?? "";
                 var template = _scenePromptService.GetTemplateByName(industry);
                 var systemPrompt = template.ChatSystemPrompt;
-                var userPrompt = $"请生成一篇关于「{linkTitle}」的笔记，要求：\n" +
-                    $"- 使用 Markdown 格式\n" +
-                    $"- 内容准确、专业、有深度\n" +
-                    $"- 如果是相关内容，请引用经典原文\n" +
-                    $"- 使用 [[wikilink]] 链接到相关概念\n" +
-                    $"- 在开头用一级标题标注笔记名称";
+                var userPrompt = _loc["Ai_MissingNote_GeneratePrompt", linkTitle];
 
                 var messages = new List<ChatMessage>
                 {
@@ -57,14 +54,11 @@ namespace Baihua.Family.Controllers
                 if (!string.IsNullOrEmpty(firstLine))
                     title = firstLine;
 
-                var content = $"> 📌 **来源**: AI 生成（补充缺失链接）  \n" +
-                    $"> 🤖 **模型**: {model}  \n" +
-                    $"> ⏰ **时间**: {DateTime.Now:yyyy-MM-dd HH:mm:ss}  \n\n" +
-                    aiResult;
+                var content = _loc["Ai_MissingNote_SourceInfo", model, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")] + "\n\n" + aiResult;
 
                 // 3. 确定保存路径：如果链接已包含分类则直接用，否则搜索知识库推断分类
                 var notePath = request.LinkPath;
-                var linkDir = System.IO.Path.GetDirectoryName(request.LinkPath) ?? throw new InvalidOperationException($"无法获取目录：{request.LinkPath}");
+                var linkDir = System.IO.Path.GetDirectoryName(request.LinkPath) ?? throw new InvalidOperationException(_loc["Ai_MissingNote_NoDirectory", request.LinkPath]);
                 if (!request.LinkPath.Contains('/') || !System.IO.Directory.Exists(System.IO.Path.Combine(notesPath, linkDir)))
                 {
                     // 链接没有分类或分类目录不存在，尝试推断
@@ -75,7 +69,7 @@ namespace Baihua.Family.Controllers
 
                 // 4. 保存笔记
                 var fullPath = System.IO.Path.Combine(notesPath, notePath + ".md");
-                var fullDir = System.IO.Path.GetDirectoryName(fullPath) ?? throw new InvalidOperationException($"无法获取目录：{fullPath}");
+                var fullDir = System.IO.Path.GetDirectoryName(fullPath) ?? throw new InvalidOperationException(_loc["Ai_MissingNote_NoDirectory", fullPath]);
                 System.IO.Directory.CreateDirectory(fullDir);
                 await System.IO.File.WriteAllTextAsync(fullPath, content);
 
@@ -117,7 +111,7 @@ namespace Baihua.Family.Controllers
                 return Ok(new GenerateMissingNoteResponse
                 {
                     Success = true,
-                    Message = $"笔记已生成并保存到 {notePath}",
+                    Message = _loc["Ai_MissingNote_Saved", notePath],
                     NotePath = notePath,
                     Title = title,
                     Content = content,
@@ -130,7 +124,7 @@ namespace Baihua.Family.Controllers
                 return Ok(new GenerateMissingNoteResponse
                 {
                     Success = false,
-                    Message = $"生成失败：{ex.Message}"
+                    Message = _loc["Ai_MissingNote_Failed", ex.Message]
                 });
             }
         }

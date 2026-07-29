@@ -1,5 +1,7 @@
+using Baihua.Core.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Localization;
 using Baihua.Contracts.Ai;
 using Baihua.Family.Models;
 using Baihua.Family.Services;
@@ -13,7 +15,7 @@ namespace Baihua.Family.Controllers
         {
             if (string.IsNullOrWhiteSpace(request.Message))
             {
-                return BadRequest(new { error = "消息不能为空" });
+                return BadRequest(new { error = _loc["AiChat_MessageEmpty"] });
             }
 
             try
@@ -30,16 +32,12 @@ namespace Baihua.Family.Controllers
                 var result = await CallAiApiAsync(messages, model, provider.Id, enableTools: request.EnableTools ?? true, ct: HttpContext.RequestAborted);
                 stopwatch.Stop();
 
-                var sourceInfo = $"> 📌 **来源**: AI 对话  \n" +
-                    $"> 🤖 **模型**: {model}  \n" +
-                    $"> 🏢 **提供商**: {provider.Name}  \n" +
-                    $"> ⏰ **时间**: {DateTime.Now:yyyy-MM-dd HH:mm:ss}  \n" +
-                    $"> ⏱️ **耗时**: {stopwatch.ElapsedMilliseconds}ms  \n\n";
+                var sourceInfo = _loc["Ai_Chat_SourceInfo", model, provider.Name, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), stopwatch.ElapsedMilliseconds] + "\n\n";
 
                 return Ok(new Baihua.Contracts.Ai.ChatResponse
                 {
                     Success = true,
-                    Message = "回复成功",
+                    Message = _loc["Ai_Chat_ReplySuccess"],
                     Reply = sourceInfo + result
                 });
             }
@@ -49,7 +47,7 @@ namespace Baihua.Family.Controllers
                 return Ok(new Baihua.Contracts.Ai.ChatResponse
                 {
                     Success = false,
-                    Message = $"聊天失败：{ex.Message}"
+                    Message = _loc["Ai_Chat_Failed", ex.Message]
                 });
             }
         }

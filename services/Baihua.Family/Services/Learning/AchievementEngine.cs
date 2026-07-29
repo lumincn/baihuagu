@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
 using Baihua.Data;
 using Baihua.Data.Entities;
 
@@ -11,32 +13,36 @@ public class AchievementEngine
 {
     private readonly IDbContextFactory<FamilyDbContext> _dbFactory;
     private readonly ILogger<AchievementEngine> _logger;
+    private readonly IStringLocalizer<SharedResources> _loc;
 
-    public AchievementEngine(IDbContextFactory<FamilyDbContext> dbFactory, ILogger<AchievementEngine> logger)
+    public AchievementEngine(IDbContextFactory<FamilyDbContext> dbFactory, ILogger<AchievementEngine> logger, IStringLocalizer<SharedResources> loc)
     {
         _dbFactory = dbFactory;
         _logger = logger;
+        _loc = loc;
     }
+
+    private List<AchievementDef>? _definitions;
 
     /// <summary>
     /// 成就定义列表
     /// </summary>
-    public static readonly List<AchievementDef> Definitions = new()
+    public List<AchievementDef> Definitions => _definitions ??= new()
     {
-        new("first_step", "👶", "第一步", "完成首次卡片学习", "bronze", "study"),
-        new("streak_3", "🔥", "三日不断", "连续学习 3 天", "bronze", "study"),
-        new("streak_7", "🔥", "周周坚持", "连续学习 7 天", "silver", "study"),
-        new("streak_30", "🔥", "月月不辍", "连续学习 30 天", "gold", "study"),
-        new("cards_10", "📚", "十题小试", "累计学习 10 张卡片", "bronze", "study"),
-        new("cards_50", "📚", "半百精进", "累计学习 50 张卡片", "silver", "study"),
-        new("cards_100", "📚", "百题大关", "累计学习 100 张卡片", "gold", "study"),
-        new("cards_500", "📚", "学富五车", "累计学习 500 张卡片", "diamond", "study"),
-        new("creator_1", "✏️", "初出茅庐", "首次家长出题", "bronze", "creation"),
-        new("creator_10", "✏️", "出题能手", "累计出题 10 道", "silver", "creation"),
-        new("explorer_1", "🤖", "初识岐黄", "首次使用 AI 对话", "bronze", "exploration"),
-        new("explorer_10", "🤖", "问道十次", "累计使用 AI 对话 10 次", "silver", "exploration"),
-        new("accuracy_80", "🎯", "百发百中", "单日正确率达到 80%", "gold", "study"),
-        new("early_bird", "🌅", "闻鸡起舞", "早上 6 点前完成学习", "bronze", "study"),
+        new("first_step", "👶", _loc["Achievement_FirstStep_Title"], _loc["Achievement_FirstStep_Desc"], "bronze", "study"),
+        new("streak_3", "🔥", _loc["Achievement_Streak3_Title"], _loc["Achievement_Streak3_Desc"], "bronze", "study"),
+        new("streak_7", "🔥", _loc["Achievement_Streak7_Title"], _loc["Achievement_Streak7_Desc"], "silver", "study"),
+        new("streak_30", "🔥", _loc["Achievement_Streak30_Title"], _loc["Achievement_Streak30_Desc"], "gold", "study"),
+        new("cards_10", "📚", _loc["Achievement_Cards10_Title"], _loc["Achievement_Cards10_Desc"], "bronze", "study"),
+        new("cards_50", "📚", _loc["Achievement_Cards50_Title"], _loc["Achievement_Cards50_Desc"], "silver", "study"),
+        new("cards_100", "📚", _loc["Achievement_Cards100_Title"], _loc["Achievement_Cards100_Desc"], "gold", "study"),
+        new("cards_500", "📚", _loc["Achievement_Cards500_Title"], _loc["Achievement_Cards500_Desc"], "diamond", "study"),
+        new("creator_1", "✏️", _loc["Achievement_Creator1_Title"], _loc["Achievement_Creator1_Desc"], "bronze", "creation"),
+        new("creator_10", "✏️", _loc["Achievement_Creator10_Title"], _loc["Achievement_Creator10_Desc"], "silver", "creation"),
+        new("explorer_1", "🤖", _loc["Achievement_Explorer1_Title"], _loc["Achievement_Explorer1_Desc"], "bronze", "exploration"),
+        new("explorer_10", "🤖", _loc["Achievement_Explorer10_Title"], _loc["Achievement_Explorer10_Desc"], "silver", "exploration"),
+        new("accuracy_80", "🎯", _loc["Achievement_Accuracy80_Title"], _loc["Achievement_Accuracy80_Desc"], "gold", "study"),
+        new("early_bird", "🌅", _loc["Achievement_EarlyBird_Title"], _loc["Achievement_EarlyBird_Desc"], "bronze", "study"),
     };
 
     /// <summary>

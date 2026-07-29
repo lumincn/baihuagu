@@ -1,7 +1,9 @@
 using Baihua.Core;
+using Baihua.Core.Localization;
 using Baihua.Family.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Localization;
 using Baihua.Family.Models;
 using Baihua.Contracts.Ai;
 
@@ -26,7 +28,7 @@ namespace Baihua.Family.Controllers
                 : providers.FirstOrDefault(p => p.Id == providerId);
 
             if (provider == null)
-                throw new Exception("未找到可用的AI提供商");
+                throw new Exception(_loc["AiProvider_NotFound"]);
 
             var apiEndpoint = provider.AiBaseUrl.TrimEnd('/') + "/chat/completions";
 
@@ -81,13 +83,13 @@ namespace Baihua.Family.Controllers
                                 {
                                     _logger.LogWarning(ex, "函数 {Name} 执行失败", fc.Name);
                                     messages.Add(new ChatMessage(ChatRole.Tool,
-                                        new[] { new FunctionResultContent(fc.CallId, $"执行失败：{ex.Message}") }));
+                                        new[] { new FunctionResultContent(fc.CallId, _loc["Ai_Core_FuncExecuteFailed", ex.Message]) }));
                                 }
                             }
                             else
                             {
                                 messages.Add(new ChatMessage(ChatRole.Tool,
-                                    new[] { new FunctionResultContent(fc.CallId, $"未找到函数：{fc.Name}") }));
+                                    new[] { new FunctionResultContent(fc.CallId, _loc["Ai_Core_FuncNotFound", fc.Name]) }));
                             }
                         }
 
@@ -113,7 +115,7 @@ namespace Baihua.Family.Controllers
                 }
 
                 if (string.IsNullOrWhiteSpace(content))
-                    throw new Exception("AI 返回内容为空");
+                    throw new Exception(_loc["Ai_Core_EmptyResponse"]);
 
                 return content;
             }
@@ -134,19 +136,19 @@ namespace Baihua.Family.Controllers
 
             // OpenAI SDK 会将 HTTP 错误包装在 ClientResultException 中
             if (msg.Contains("Model disabled", StringComparison.OrdinalIgnoreCase))
-                return $"模型不可用。请前往【设置】→【AI 配置】更换其他模型";
+                return _loc["Ai_Core_ModelDisabled"];
 
             if (msg.Contains("api key", StringComparison.OrdinalIgnoreCase) ||
                 msg.Contains("apikey", StringComparison.OrdinalIgnoreCase) ||
                 msg.Contains("authentication", StringComparison.OrdinalIgnoreCase))
-                return $"API Key 无效或已过期。请检查【设置】→【AI 配置】中的 API Key 设置";
+                return _loc["Ai_Core_ApiKeyInvalid"];
 
             if (msg.Contains("balance", StringComparison.OrdinalIgnoreCase) ||
                 msg.Contains("quota", StringComparison.OrdinalIgnoreCase) ||
                 msg.Contains("insufficient", StringComparison.OrdinalIgnoreCase))
-                return $"账户余额不足或配额已用完";
+                return _loc["Ai_Core_BalanceInsufficient"];
 
-            return $"AI API 请求失败：{msg}";
+            return _loc["Ai_Core_RequestFailed", msg];
         }
 
         private static bool IsLocalProvider(AiProviderConfig provider)
@@ -173,7 +175,7 @@ namespace Baihua.Family.Controllers
                 : providers.FirstOrDefault(p => p.Id == providerId);
 
             if (provider == null)
-                throw new Exception("未找到指定的AI提供商");
+                throw new Exception(_loc["Ai_Core_ProviderNotFound"]);
 
             var modelOptions = provider.GetModelOptions();
             var resolvedModel = !string.IsNullOrEmpty(model)

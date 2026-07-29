@@ -21,7 +21,7 @@ public partial class AiConfigController
             new()
             {
                 Id = "zhipu",
-                Name = "智谱 AI (GLM)",
+                Name = _loc["AiConfig_PresetZhipu"],
                 BaseUrl = "https://open.bigmodel.cn/api/paas/v4",
                 Models = new()
                 {
@@ -34,7 +34,7 @@ public partial class AiConfigController
             new()
             {
                 Id = "volcano",
-                Name = "火山引擎方舟 (Volcano Ark)",
+                Name = _loc["AiConfig_PresetVolcano"],
                 BaseUrl = "https://ark.cn-beijing.volces.com/api/v3",
                 Models = new()
                 {
@@ -47,7 +47,7 @@ public partial class AiConfigController
             new()
             {
                 Id = "aliyun",
-                Name = "阿里云百炼 (Aliyun Bailian)",
+                Name = _loc["AiConfig_PresetAliyun"],
                 BaseUrl = "https://dashscope.aliyuncs.com/compatible-mode/v1",
                 Models = new()
                 {
@@ -61,7 +61,7 @@ public partial class AiConfigController
             new()
             {
                 Id = "deepseek",
-                Name = "DeepSeek (官方)",
+                Name = _loc["AiConfig_PresetDeepSeek"],
                 BaseUrl = "https://api.deepseek.com",
                 AnthropicBaseUrl = "https://api.deepseek.com/anthropic",
                 Models = new()
@@ -73,7 +73,7 @@ public partial class AiConfigController
             new()
             {
                 Id = "kimi",
-                Name = "Kimi (月之暗面)",
+                Name = _loc["AiConfig_PresetKimi"],
                 BaseUrl = "https://api.moonshot.cn/v1",
                 Models = new()
                 {
@@ -85,7 +85,7 @@ public partial class AiConfigController
             new()
             {
                 Id = "ollama",
-                Name = "本地 Ollama",
+                Name = _loc["AiConfig_PresetLocalOllama"],
                 BaseUrl = "http://localhost:11434/v1",
                 Tier = AiModelTier.Tier2_Local,
                 Models = new()
@@ -98,7 +98,7 @@ public partial class AiConfigController
             new()
             {
                 Id = "lmstudio",
-                Name = "本地 LM Studio",
+                Name = _loc["AiConfig_PresetLocalLmStudio"],
                 BaseUrl = "http://localhost:1234/v1",
                 Tier = AiModelTier.Tier2_Local,
                 Models = new()

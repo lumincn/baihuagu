@@ -23,7 +23,7 @@ public partial class LocalModelDeploymentController
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取运行中模型失败");
-            return StatusCode(500, new { error = "获取运行中模型失败", message = ex.Message });
+            return StatusCode(500, new { error = _loc["LocalModel_GetRunningFailed"], message = ex.Message });
         }
     }
 
@@ -36,7 +36,7 @@ public partial class LocalModelDeploymentController
         try
         {
             if (string.IsNullOrWhiteSpace(toolId))
-                return BadRequest(new { error = "toolId 不能为空" });
+                return BadRequest(new { error = _loc["LocalModel_ToolIdRequired"] });
 
             var models = await _deploymentService.GetAvailableModelsAsync(toolId, cancellationToken);
             return Ok(models);
@@ -44,7 +44,7 @@ public partial class LocalModelDeploymentController
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取可用模型列表失败");
-            return StatusCode(500, new { error = "获取可用模型列表失败", message = ex.Message });
+            return StatusCode(500, new { error = _loc["LocalModel_GetAvailableFailed"], message = ex.Message });
         }
     }
 
@@ -57,13 +57,13 @@ public partial class LocalModelDeploymentController
         try
         {
             if (string.IsNullOrWhiteSpace(request.ToolId) || string.IsNullOrWhiteSpace(request.ModelName))
-                return BadRequest(new { error = "ToolId 和 ModelName 不能为空" });
+                return BadRequest(new { error = _loc["LocalModel_ToolIdModelNameRequired"] });
 
             var success = await _deploymentService.LoadModelAsync(request.ToolId, request.ModelName, request.KeepAliveMinutes, cancellationToken);
             if (success)
-                return Ok(new { success = true, message = $"模型 {request.ModelName} 已加载" });
+                return Ok(new { success = true, message = string.Format(_loc["LocalModel_ModelLoaded"], request.ModelName) });
 
-            return StatusCode(500, new { error = "加载失败", message = "请检查工具是否运行" });
+            return StatusCode(500, new { error = _loc["LocalModel_LoadFailed"], message = _loc["LocalModel_CheckToolRunning"] });
         }
         catch (Exception ex)
         {
@@ -81,13 +81,13 @@ public partial class LocalModelDeploymentController
         try
         {
             if (string.IsNullOrWhiteSpace(request.ToolId) || string.IsNullOrWhiteSpace(request.ModelName))
-                return BadRequest(new { error = "ToolId 和 ModelName 不能为空" });
+                return BadRequest(new { error = _loc["LocalModel_ToolIdModelNameRequired"] });
 
             var success = await _deploymentService.UnloadModelAsync(request.ToolId, request.ModelName, cancellationToken);
             if (success)
-                return Ok(new { success = true, message = $"模型 {request.ModelName} 已卸载" });
+                return Ok(new { success = true, message = string.Format(_loc["LocalModel_ModelUnloaded"], request.ModelName) });
 
-            return StatusCode(500, new { error = "卸载失败", message = "请检查工具是否运行" });
+            return StatusCode(500, new { error = _loc["LocalModel_UnloadFailed"], message = _loc["LocalModel_CheckToolRunning"] });
         }
         catch (Exception ex)
         {
@@ -126,8 +126,8 @@ public partial class LocalModelDeploymentController
         {
             var success = await _deploymentService.StopLlamaCppAsync(cancellationToken);
             if (success)
-                return Ok(new { success = true, message = "llama.cpp 已停止" });
-            return StatusCode(500, new { error = "停止失败", message = "请检查进程是否存活" });
+                return Ok(new { success = true, message = _loc["LocalModel_LlamaCppStopped"] });
+            return StatusCode(500, new { error = _loc["LocalModel_StopFailed"], message = _loc["LocalModel_CheckProcessAlive"] });
         }
         catch (Exception ex)
         {
@@ -150,7 +150,7 @@ public partial class LocalModelDeploymentController
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取已下载模型列表失败");
-            return StatusCode(500, new { error = "获取已下载模型列表失败", message = ex.Message });
+            return StatusCode(500, new { error = _loc["LocalModel_GetDownloadedFailed"], message = ex.Message });
         }
     }
 
@@ -163,13 +163,13 @@ public partial class LocalModelDeploymentController
         try
         {
             if (string.IsNullOrWhiteSpace(request.ToolId) || string.IsNullOrWhiteSpace(request.ModelName))
-                return BadRequest(new { error = "ToolId 和 ModelName 不能为空" });
+                return BadRequest(new { error = _loc["LocalModel_ToolIdModelNameRequired"] });
 
             var success = await _deploymentService.DeleteModelAsync(request.ToolId, request.ModelName, cancellationToken);
             if (success)
-                return Ok(new { success = true, message = $"模型 {request.ModelName} 已删除" });
+                return Ok(new { success = true, message = string.Format(_loc["LocalModel_ModelDeleted"], request.ModelName) });
 
-            return StatusCode(500, new { error = "删除失败", message = "请检查工具是否运行或模型是否存在" });
+            return StatusCode(500, new { error = _loc["LocalModel_DeleteFailed"], message = _loc["LocalModel_CheckToolOrModel"] });
         }
         catch (Exception ex)
         {
@@ -187,18 +187,18 @@ public partial class LocalModelDeploymentController
         try
         {
             if (string.IsNullOrWhiteSpace(request.ToolId) || string.IsNullOrWhiteSpace(request.ModelName))
-                return BadRequest(new { error = "ToolId 和 ModelName 不能为空" });
+                return BadRequest(new { error = _loc["LocalModel_ToolIdModelNameRequired"] });
 
             var details = await _deploymentService.GetModelDetailsAsync(request.ToolId, request.ModelName, cancellationToken);
             if (details != null)
                 return Ok(details);
 
-            return NotFound(new { error = "模型详情未找到", message = "该工具暂不支持查看模型详情" });
+            return NotFound(new { error = _loc["LocalModel_DetailsNotFound"], message = _loc["LocalModel_DetailsNotSupported"] });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取模型详情失败");
-            return StatusCode(500, new { error = "获取模型详情失败", message = ex.Message });
+            return StatusCode(500, new { error = _loc["LocalModel_GetDetailsFailed"], message = ex.Message });
         }
     }
 
