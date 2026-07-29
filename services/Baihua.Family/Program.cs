@@ -27,7 +27,8 @@ using OpenTelemetry.Resources;
 using Baihua.Family.OpenTelemetry;
 using Baihua.Contracts.Metrics;
 using Baihua.Family.Middleware;
-
+using Microsoft.AspNetCore.Localization;
+using System.Globalization;
 
 // Initialize native SQLite provider early to avoid Microsoft.Data.Sqlite type initializer issues
 try
@@ -85,6 +86,9 @@ var mobileAuthSecret = builder.Configuration["MobileAuth:SharedSecret"];
 if (!string.IsNullOrEmpty(mobileAuthSecret))
 {
 }
+
+// Add Localization services (i18n, default: zh-CN)
+builder.Services.AddLocalization();
 
 // 添加服务 - 配置 JSON 序列化不转义中文
 builder.Services.AddControllers(options =>
@@ -426,6 +430,13 @@ app.UseServiceMetrics();
 app.UseHealthChecks("/health");
 app.UseRateLimiter();
 app.UseCors("AllowAll");
+
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("zh-CN"),
+    SupportedCultures = new[] { new CultureInfo("zh-CN"), new CultureInfo("en") },
+    SupportedUICultures = new[] { new CultureInfo("zh-CN"), new CultureInfo("en") }
+});
 
 // 移动端请求签名验证中间件
 app.Use(async (context, next) =>

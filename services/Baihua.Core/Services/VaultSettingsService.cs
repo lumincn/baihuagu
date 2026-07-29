@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Localization;
 using Microsoft.EntityFrameworkCore;
+using Baihua.Core.Localization;
 using Baihua.Data;
 using Baihua.Data.Entities;
 using Baihua.Contracts.Vaults;
@@ -13,14 +15,17 @@ public partial class VaultSettingsService
 {
     private readonly IDbContextFactory<VaultDbContext> _dbContextFactory;
     private readonly ILogger<VaultSettingsService> _logger;
+    private readonly IStringLocalizer<SharedResources> _loc;
     private readonly object _vaultPathLock = new();
 
     public VaultSettingsService(
         IDbContextFactory<VaultDbContext> dbContextFactory,
-        ILogger<VaultSettingsService> logger)
+        ILogger<VaultSettingsService> logger,
+        IStringLocalizer<SharedResources> loc)
     {
         _dbContextFactory = dbContextFactory;
         _logger = logger;
+        _loc = loc;
     }
 
     public string VaultRootPathPreference
@@ -125,14 +130,14 @@ public partial class VaultSettingsService
                 .FirstOrDefault(v => v.Name == trimmedName && !v.IsDeleted);
             if (existingByName != null)
             {
-                throw new InvalidOperationException($"知识库名称 '{trimmedName}' 已存在，请勿重复创建。");
+                throw new InvalidOperationException(_loc["Vault_NameExists", trimmedName]);
             }
 
             var existingByPath = dbContext.Vaults
                 .FirstOrDefault(v => v.Path == normalizedPath && !v.IsDeleted);
             if (existingByPath != null)
             {
-                throw new InvalidOperationException($"知识库路径 '{normalizedPath}' 已被 '{existingByPath.Name}' 占用，请勿重复创建。");
+                throw new InvalidOperationException(_loc["Vault_PathOccupied", normalizedPath, existingByPath.Name]);
             }
 
             var vault = new Vault

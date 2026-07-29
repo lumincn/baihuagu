@@ -1,7 +1,9 @@
 using Baihua.Core;
+using Baihua.Core.Localization;
 using Baihua.Core.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Baihua.Data;
@@ -19,13 +21,15 @@ namespace Baihua.Family.Controllers
         private readonly ILogger<PairController> _logger;
         private readonly IOneHopService _oneHopService;
         private readonly IPairingStrategy _pairingStrategy;
+        private readonly IStringLocalizer<SharedResources> _loc;
 
-        public PairController(DeviceService deviceService, ILogger<PairController> logger, IOneHopService oneHopService, IPairingStrategy pairingStrategy)
+        public PairController(DeviceService deviceService, ILogger<PairController> logger, IOneHopService oneHopService, IPairingStrategy pairingStrategy, IStringLocalizer<SharedResources> loc)
         {
             _deviceService = deviceService;
             _logger = logger;
             _oneHopService = oneHopService;
             _pairingStrategy = pairingStrategy;
+            _loc = loc;
         }
 
         [HttpPost("/vault/pair")]
@@ -36,15 +40,15 @@ namespace Baihua.Family.Controllers
         {
             if (string.IsNullOrEmpty(request?.PairCode))
             {
-                return BadRequest(new { error = "配对码不能为空" });
+                return BadRequest(new { error = _loc["Pair_CodeEmpty"] });
             }
 
             if (!_deviceService.ValidatePairCode(request.PairCode))
             {
-                return BadRequest(new { error = "配对码错误" });
+                return BadRequest(new { error = _loc["Pair_CodeInvalid"] });
             }
 
-            var deviceName = request.DeviceName ?? "未知设备";
+            var deviceName = request.DeviceName ?? _loc["Pair_UnknownDevice"];
             var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
 
             var existingDevice = _deviceService.GetAuthorizedDeviceByName(deviceName);
@@ -56,7 +60,7 @@ namespace Baihua.Family.Controllers
                     AccessToken = existingDevice.AccessToken,
                     ExpiresIn = 3600 * 24 * 365,
                     Status = "authorized",
-                    Message = "设备已授权"
+                    Message = _loc["Device_AlreadyAuthorized"]
                 });
             }
 
@@ -80,7 +84,7 @@ namespace Baihua.Family.Controllers
         public IActionResult RefreshPairCode()
         {
             var newCode = _deviceService.RefreshPairCode();
-            return Ok(new { pairCode = newCode, message = "配对码已刷新" });
+            return Ok(new { pairCode = newCode, message = _loc["Pair_CodeRefreshed"] });
         }
     }
 }

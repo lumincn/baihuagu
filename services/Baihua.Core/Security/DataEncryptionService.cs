@@ -1,4 +1,6 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
 using Baihua.Core.Security;
 using System.Security.Cryptography;
 using System.Text;
@@ -23,10 +25,12 @@ public class DataEncryptionService
     private const int LegacyIvSize = 16; // CBC IV
 
     private readonly ILogger<DataEncryptionService> _logger;
+    private readonly IStringLocalizer<SharedResources> _loc;
 
-    public DataEncryptionService(ILogger<DataEncryptionService> logger)
+    public DataEncryptionService(ILogger<DataEncryptionService> logger, IStringLocalizer<SharedResources> loc)
     {
         _logger = logger;
+        _loc = loc;
     }
 
     /// <summary>
@@ -38,7 +42,7 @@ public class DataEncryptionService
             return "";
 
         if (string.IsNullOrEmpty(password))
-            throw new ArgumentException("密码不能为空", nameof(password));
+            throw new ArgumentException(_loc["Encryption_PasswordEmpty"], nameof(password));
 
         try
         {
@@ -69,7 +73,7 @@ public class DataEncryptionService
         catch (Exception ex)
         {
             _logger.LogError(ex, "数据加密失败");
-            throw new InvalidOperationException("无法加密数据", ex);
+            throw new InvalidOperationException(_loc["Encryption_EncryptFailed"], ex);
         }
     }
 
@@ -82,7 +86,7 @@ public class DataEncryptionService
             return "";
 
         if (string.IsNullOrEmpty(password))
-            throw new ArgumentException("密码不能为空", nameof(password));
+            throw new ArgumentException(_loc["Encryption_PasswordEmpty"], nameof(password));
 
         try
         {
@@ -98,7 +102,7 @@ public class DataEncryptionService
         catch (Exception ex)
         {
             _logger.LogError(ex, "数据解密失败");
-            throw new InvalidOperationException("无法解密数据，请检查密码是否正确", ex);
+            throw new InvalidOperationException(_loc["Encryption_DecryptFailed"], ex);
         }
     }
 
@@ -110,7 +114,7 @@ public class DataEncryptionService
         var data = Convert.FromBase64String(base64Data);
 
         if (data.Length < SaltSize + IvSize + TagSize)
-            throw new ArgumentException("无效的 GCM 加密数据");
+            throw new ArgumentException(_loc["Encryption_GcmDataInvalid"]);
 
         var salt = new byte[SaltSize];
         var nonce = new byte[IvSize];
@@ -139,7 +143,7 @@ public class DataEncryptionService
         var encryptedData = Convert.FromBase64String(base64Data);
 
         if (encryptedData.Length < SaltSize + LegacyIvSize)
-            throw new ArgumentException("无效的 CBC 加密数据");
+            throw new ArgumentException(_loc["Encryption_CbcDataInvalid"]);
 
         var salt = new byte[SaltSize];
         var iv = new byte[LegacyIvSize];

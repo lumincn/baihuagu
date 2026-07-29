@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute name="xml:space" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- zh-CN: Same as neutral (Chinese is default language) -->
+  <data name="AiChat_MessageEmpty" xml:space="preserve">
+    <value>消息不能为空</value>
+  </data>
+  <data name="AiProvider_NotConfigured" xml:space="preserve">
+    <value>未配置 AI 提供商</value>
+  </data>
+  <data name="AiProvider_NotFound" xml:space="preserve">
+    <value>未找到可用的AI提供商</value>
+  </data>
+  <data name="ApiKey_InvalidFormat" xml:space="preserve">
+    <value>API Key 格式无效</value>
+  </data>
+  <data name="Auth_SignatureInvalid" xml:space="preserve">
+    <value>无效的请求签名</value>
+  </data>
+  <data name="Auth_TokenInvalid" xml:space="preserve">
+    <value>无效的访问令牌</value>
+  </data>
+  <data name="Auth_TokenRequired" xml:space="preserve">
+    <value>需要 Bearer Token 认证</value>
+  </data>
+  <data name="Capability_Insufficient" xml:space="preserve">
+    <value>当前机器配置不足以使用该功能。</value>
+  </data>
+  <data name="Capability_MemoryInsufficient" xml:space="preserve">
+    <value>当前机器内存不足（&lt; 8GB），无法使用本地模型功能。建议使用云端 AI 服务。</value>
+  </data>
+  <data name="Capability_NoGpu" xml:space="preserve">
+    <value>当前机器无独立显卡，本地大模型功能已隐藏。您可以继续使用云端 AI 服务。</value>
+  </data>
+  <data name="Common_DeleteFailed" xml:space="preserve">
+    <value>删除失败</value>
+  </data>
+  <data name="Common_DeleteSuccess" xml:space="preserve">
+    <value>配置已删除</value>
+  </data>
+  <data name="Common_NotConfigured" xml:space="preserve">
+    <value>未配置</value>
+  </data>
+  <data name="Common_NotFound" xml:space="preserve">
+    <value>未找到</value>
+  </data>
+  <data name="Common_SaveFailed" xml:space="preserve">
+    <value>保存失败</value>
+  </data>
+  <data name="Common_SaveSuccess" xml:space="preserve">
+    <value>配置已保存</value>
+  </data>
+  <data name="Device_AlreadyAuthorized" xml:space="preserve">
+    <value>设备已授权</value>
+  </data>
+  <data name="Device_NotAuthorized" xml:space="preserve">
+    <value>设备未授权，请先完成配对</value>
+  </data>
+  <data name="Encryption_CbcDataInvalid" xml:space="preserve">
+    <value>无效的 CBC 加密数据</value>
+  </data>
+  <data name="Encryption_DecryptFailed" xml:space="preserve">
+    <value>无法解密数据，请检查密码是否正确</value>
+  </data>
+  <data name="Encryption_EncryptFailed" xml:space="preserve">
+    <value>无法加密数据</value>
+  </data>
+  <data name="Encryption_GcmDataInvalid" xml:space="preserve">
+    <value>无效的 GCM 加密数据</value>
+  </data>
+  <data name="Encryption_PasswordEmpty" xml:space="preserve">
+    <value>密码不能为空</value>
+  </data>
+  <data name="LocalModel_NotRunning" xml:space="preserve">
+    <value>本地 AI 服务未运行且自动启动失败，请手动启动后重试。</value>
+  </data>
+  <data name="Pair_CodeEmpty" xml:space="preserve">
+    <value>配对码不能为空</value>
+  </data>
+  <data name="Pair_CodeInvalid" xml:space="preserve">
+    <value>配对码错误</value>
+  </data>
+  <data name="Pair_CodeRefreshed" xml:space="preserve">
+    <value>配对码已刷新</value>
+  </data>
+  <data name="Pair_UnknownDevice" xml:space="preserve">
+    <value>未知设备</value>
+  </data>
+  <data name="Task_CancelOnlyRunning" xml:space="preserve">
+    <value>只能取消运行中或待执行的任务</value>
+  </data>
+  <data name="Task_CancelSuccess" xml:space="preserve">
+    <value>任务已取消</value>
+  </data>
+  <data name="Task_NotFound" xml:space="preserve">
+    <value>任务不存在</value>
+  </data>
+  <data name="Task_RetryOnly" xml:space="preserve">
+    <value>只能重试失败、超时或已取消的任务</value>
+  </data>
+  <data name="Vault_NameExists" xml:space="preserve">
+    <value>知识库名称 '{0}' 已存在，请勿重复创建。</value>
+  </data>
+  <data name="Vault_NotConfigured" xml:space="preserve">
+    <value>没有配置知识库</value>
+  </data>
+  <data name="Vault_NotFound" xml:space="preserve">
+    <value>知识库不存在</value>
+  </data>
+  <data name="Vault_NotesDirMissing" xml:space="preserve">
+    <value>笔记目录不存在</value>
+  </data>
+  <data name="Vault_PathInvalid" xml:space="preserve">
+    <value>知识库路径无效</value>
+  </data>
+  <data name="Vault_PathNotExists" xml:space="preserve">
+    <value>知识库路径不存在</value>
+  </data>
+  <data name="Vault_PathOccupied" xml:space="preserve">
+    <value>知识库路径 '{0}' 已被 '{1}' 占用，请勿重复创建。</value>
+  </data>
+  <data name="Vault_Required" xml:space="preserve">
+    <value>必须指定有效的知识库</value>
+  </data>
+</root>

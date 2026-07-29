@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Localization;
 using Baihua.Contracts.Capability;
 using Baihua.Contracts.LocalModels;
+using Baihua.Core.Localization;
 
 namespace Baihua.Family.Services;
 
@@ -27,15 +29,18 @@ public class CapabilityService
 {
     private readonly HardwareInfoService _hardwareInfo;
     private readonly ILogger<CapabilityService> _logger;
+    private readonly IStringLocalizer<SharedResources> _loc;
     private MachineCapability? _cachedCapability;
     private readonly object _lock = new();
 
     public CapabilityService(
         HardwareInfoService hardwareInfo,
-        ILogger<CapabilityService> logger)
+        ILogger<CapabilityService> logger,
+        IStringLocalizer<SharedResources> loc)
     {
         _hardwareInfo = hardwareInfo;
         _logger = logger;
+        _loc = loc;
     }
 
     /// <summary>
@@ -100,9 +105,9 @@ public class CapabilityService
         var cap = GetCapability();
         return cap switch
         {
-            MachineCapability.Insufficient => "当前机器内存不足（< 8GB），无法使用本地模型功能。建议使用云端 AI 服务。",
-            MachineCapability.CpuOnly => "当前机器无独立显卡，本地大模型功能已隐藏。您可以继续使用云端 AI 服务。",
-            _ => "当前机器配置不足以使用该功能。"
+            MachineCapability.Insufficient => _loc["Capability_MemoryInsufficient"],
+            MachineCapability.CpuOnly => _loc["Capability_NoGpu"],
+            _ => _loc["Capability_Insufficient"]
         };
     }
 

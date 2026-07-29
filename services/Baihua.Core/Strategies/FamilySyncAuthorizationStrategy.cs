@@ -1,6 +1,8 @@
 using Baihua.Core;
+using Baihua.Core.Localization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using System.Net;
 
 namespace Baihua.Family.Services.Strategies;
@@ -11,17 +13,19 @@ namespace Baihua.Family.Services.Strategies;
 public class FamilySyncAuthorizationStrategy : ISyncAuthorizationStrategy
 {
     private readonly DeviceService _deviceService;
+    private readonly IStringLocalizer<SharedResources> _loc;
 
-    public FamilySyncAuthorizationStrategy(DeviceService deviceService)
+    public FamilySyncAuthorizationStrategy(DeviceService deviceService, IStringLocalizer<SharedResources> loc)
     {
         _deviceService = deviceService;
+        _loc = loc;
     }
 
     public ActionResult? ValidateManifest(HttpContext httpContext, string vaultId, string? deviceId)
     {
         if (!ValidateDeviceAuthorization(httpContext))
         {
-            return new UnauthorizedObjectResult(new { error = "设备未授权，请先完成配对" });
+            return new UnauthorizedObjectResult(new { error = _loc["Device_NotAuthorized"] });
         }
 
         return null;
@@ -31,7 +35,7 @@ public class FamilySyncAuthorizationStrategy : ISyncAuthorizationStrategy
     {
         if (!ValidateDeviceAuthorization(httpContext))
         {
-            return new UnauthorizedObjectResult(new { error = "设备未授权，请先完成配对" });
+            return new UnauthorizedObjectResult(new { error = _loc["Device_NotAuthorized"] });
         }
 
         return null;

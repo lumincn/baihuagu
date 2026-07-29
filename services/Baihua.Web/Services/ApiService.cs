@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using Baihua.Contracts.Ai;
+using Microsoft.Extensions.Localization;
 using Baihua.Contracts.Anki;
 using Baihua.Contracts.Achievements;
 using Baihua.Contracts.Benchmark;
@@ -215,14 +216,16 @@ namespace Baihua.Web.Services
         private readonly HttpClient _vaultHttpClient;
         private readonly SettingsService _settingsService;
         private readonly ILogger<ApiService> _logger;
+        private readonly IStringLocalizer<Baihua.Web.Localization.SharedResources> _loc;
         private readonly ApiCallMetricsService? _metricsService;
         private readonly EndToEndPerformanceService? _e2eService;
         private readonly string _fallbackBaseUrl = "http://127.0.0.1:8788";
 
-        public ApiService(IHttpClientFactory httpClientFactory, SettingsService settingsService, ILogger<ApiService> logger, IServiceProvider serviceProvider)
+        public ApiService(IHttpClientFactory httpClientFactory, SettingsService settingsService, ILogger<ApiService> logger, IStringLocalizer<Baihua.Web.Localization.SharedResources> loc, IServiceProvider serviceProvider)
         {
             _settingsService = settingsService;
             _logger = logger;
+            _loc = loc;
             _httpClient = httpClientFactory.CreateClient("TaskRunnerApi");
             _aiHttpClient = httpClientFactory.CreateClient("TaskRunnerAiApi");
             _vaultHttpClient = httpClientFactory.CreateClient("TaskRunnerVaultApi");
@@ -391,12 +394,12 @@ namespace Baihua.Web.Services
                 var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
                 var response = await PostWithMetricsAsync("/api/tasks/vault-generation", httpContent);
                 response.EnsureSuccessStatusCode();
-                return await response.Content.ReadFromJsonAsync<VaultGenerationResponse>() ?? new VaultGenerationResponse { Success = false, Message = "创建任务失败" };
+                return await response.Content.ReadFromJsonAsync<VaultGenerationResponse>() ?? new VaultGenerationResponse { Success = false, Message = _loc["Api_TaskCreateFailed"] };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "创建知识库生成任务失败，行业: {Industry}, 关键词: {Keyword}", industry, keyword);
-                return new VaultGenerationResponse { Success = false, Message = $"创建失败：{ex.Message}" };
+                return new VaultGenerationResponse { Success = false, Message = _loc["Api_CreateFailedWithError", ex.Message] };
             }
         }
 
@@ -492,12 +495,12 @@ namespace Baihua.Web.Services
             catch (OperationCanceledException)
             {
                 _logger.LogWarning("搜索超时，查询: {Query}", query);
-                return new SearchResponse { Status = new SearchStatusInfo { ErrorMessage = "搜索超时，请稍后重试" } };
+                return new SearchResponse { Status = new SearchStatusInfo { ErrorMessage = _loc["Api_SearchTimeout"] } }; 
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "搜索失败，查询: {Query}", query);
-                return new SearchResponse { Status = new SearchStatusInfo { ErrorMessage = "搜索服务不可用" } };
+                return new SearchResponse { Status = new SearchStatusInfo { ErrorMessage = _loc["Api_SearchUnavailable"] } }; 
             }
         }
 

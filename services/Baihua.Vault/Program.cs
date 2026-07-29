@@ -14,6 +14,8 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Microsoft.AspNetCore.Localization;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +30,8 @@ builder.WebHost.UseUrls(urls);
 // 已迁移至 BAIHUA_HOME，详见 services/TaskRunner.Contracts/BaihuaPaths.cs
 
 // 添加控制器与 JSON 序列化
+builder.Services.AddLocalization();
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -249,6 +253,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseForwardedHeaders();
 app.UseHealthChecks("/health");
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("zh-CN"),
+    SupportedCultures = new[] { new CultureInfo("zh-CN"), new CultureInfo("en") },
+    SupportedUICultures = new[] { new CultureInfo("zh-CN"), new CultureInfo("en") }
+});
+
 app.UseCors("AllowAll");
 
 // 访问控制：非公开路径仅允许 loopback

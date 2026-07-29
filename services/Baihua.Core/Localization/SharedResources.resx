@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute name="xml:space" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AiChat_MessageEmpty" xml:space="preserve">
+    <value>Message cannot be empty</value>
+  </data>
+  <data name="AiProvider_NotConfigured" xml:space="preserve">
+    <value>No AI provider configured</value>
+  </data>
+  <data name="AiProvider_NotFound" xml:space="preserve">
+    <value>No available AI provider found</value>
+  </data>
+  <data name="ApiKey_InvalidFormat" xml:space="preserve">
+    <value>Invalid API key format</value>
+  </data>
+  <data name="Auth_SignatureInvalid" xml:space="preserve">
+    <value>Invalid request signature</value>
+  </data>
+  <data name="Auth_TokenInvalid" xml:space="preserve">
+    <value>Invalid access token</value>
+  </data>
+  <data name="Auth_TokenRequired" xml:space="preserve">
+    <value>Bearer Token authentication required</value>
+  </data>
+  <data name="Capability_Insufficient" xml:space="preserve">
+    <value>Current machine configuration is insufficient for this feature.</value>
+  </data>
+  <data name="Capability_MemoryInsufficient" xml:space="preserve">
+    <value>Insufficient memory (&lt; 8GB), unable to use local model features. Please use cloud AI services.</value>
+  </data>
+  <data name="Capability_NoGpu" xml:space="preserve">
+    <value>No dedicated GPU found. Local model features are hidden. You can continue using cloud AI services.</value>
+  </data>
+  <data name="Common_DeleteFailed" xml:space="preserve">
+    <value>Delete failed</value>
+  </data>
+  <data name="Common_DeleteSuccess" xml:space="preserve">
+    <value>Configuration deleted</value>
+  </data>
+  <data name="Common_NotConfigured" xml:space="preserve">
+    <value>Not configured</value>
+  </data>
+  <data name="Common_NotFound" xml:space="preserve">
+    <value>Not found</value>
+  </data>
+  <data name="Common_SaveFailed" xml:space="preserve">
+    <value>Save failed</value>
+  </data>
+  <data name="Common_SaveSuccess" xml:space="preserve">
+    <value>Configuration saved</value>
+  </data>
+  <data name="Device_AlreadyAuthorized" xml:space="preserve">
+    <value>Device already authorized</value>
+  </data>
+  <data name="Device_NotAuthorized" xml:space="preserve">
+    <value>Device not authorized. Please complete pairing first.</value>
+  </data>
+  <data name="Encryption_CbcDataInvalid" xml:space="preserve">
+    <value>Invalid CBC encrypted data</value>
+  </data>
+  <data name="Encryption_DecryptFailed" xml:space="preserve">
+    <value>Unable to decrypt data. Please check your password.</value>
+  </data>
+  <data name="Encryption_EncryptFailed" xml:space="preserve">
+    <value>Unable to encrypt data</value>
+  </data>
+  <data name="Encryption_GcmDataInvalid" xml:space="preserve">
+    <value>Invalid GCM encrypted data</value>
+  </data>
+  <data name="Encryption_PasswordEmpty" xml:space="preserve">
+    <value>Password cannot be empty</value>
+  </data>
+  <data name="LocalModel_NotRunning" xml:space="preserve">
+    <value>Local AI service is not running and auto-start failed. Please start manually and retry.</value>
+  </data>
+  <data name="Pair_CodeEmpty" xml:space="preserve">
+    <value>Pairing code cannot be empty</value>
+  </data>
+  <data name="Pair_CodeInvalid" xml:space="preserve">
+    <value>Invalid pairing code</value>
+  </data>
+  <data name="Pair_CodeRefreshed" xml:space="preserve">
+    <value>Pairing code refreshed</value>
+  </data>
+  <data name="Pair_UnknownDevice" xml:space="preserve">
+    <value>Unknown device</value>
+  </data>
+  <data name="Task_CancelOnlyRunning" xml:space="preserve">
+    <value>Only running or pending tasks can be cancelled</value>
+  </data>
+  <data name="Task_CancelSuccess" xml:space="preserve">
+    <value>Task cancelled</value>
+  </data>
+  <data name="Task_NotFound" xml:space="preserve">
+    <value>Task not found</value>
+  </data>
+  <data name="Task_RetryOnly" xml:space="preserve">
+    <value>Only failed, timed out, or cancelled tasks can be retried</value>
+  </data>
+  <data name="Vault_NameExists" xml:space="preserve">
+    <value>Vault name '{0}' already exists. Please use a different name.</value>
+  </data>
+  <data name="Vault_NotConfigured" xml:space="preserve">
+    <value>No vault configured</value>
+  </data>
+  <data name="Vault_NotFound" xml:space="preserve">
+    <value>Vault not found</value>
+  </data>
+  <data name="Vault_NotesDirMissing" xml:space="preserve">
+    <value>Notes directory does not exist</value>
+  </data>
+  <data name="Vault_PathInvalid" xml:space="preserve">
+    <value>Invalid vault path</value>
+  </data>
+  <data name="Vault_PathNotExists" xml:space="preserve">
+    <value>Vault path does not exist</value>
+  </data>
+  <data name="Vault_PathOccupied" xml:space="preserve">
+    <value>Path '{0}' is already used by '{1}'. Please use a different path.</value>
+  </data>
+  <data name="Vault_Required" xml:space="preserve">
+    <value>A valid vault must be specified</value>
+  </data>
+</root>
