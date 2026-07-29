@@ -103,7 +103,7 @@ public partial class LocalModelDeploymentService
                 new()
                 {
                     Id = "hf-mirror",
-                    Name = "Hugging Face 镜像 (hf-mirror.com)",
+                    Name = "Hugging Face Mirror (hf-mirror.com)",
                     BaseUrl = "https://hf-mirror.com",
                     IsChinaMirror = true,
                     IsAvailable = true
@@ -111,7 +111,7 @@ public partial class LocalModelDeploymentService
                 new()
                 {
                     Id = "modelscope",
-                    Name = "魔搭社区 (ModelScope)",
+                    Name = "ModelScope Community",
                     BaseUrl = "https://modelscope.cn",
                     IsChinaMirror = true,
                     IsAvailable = true

@@ -93,7 +93,7 @@ public partial class VaultController
                 }
 
                 _logger.LogInformation("复用已有移动端知识库: {VaultId} {VaultName}{MigrationNote}，追加笔记",
-                    vaultId, request.VaultName, migrated ? "（已迁移路径）" : "");
+                    vaultId, request.VaultName, migrated ? " (path migrated)" : "");
             }
             else
             {

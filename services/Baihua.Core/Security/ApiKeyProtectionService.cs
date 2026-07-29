@@ -38,7 +38,7 @@ public class ApiKeyProtectionService
         catch (Exception ex)
         {
             _logger.LogError(ex, "API Key AES 加密失败");
-            throw new InvalidOperationException("无法加密 API Key", ex);
+            throw new InvalidOperationException("Unable to encrypt API Key", ex);
         }
     }
 

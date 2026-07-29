@@ -1,4 +1,6 @@
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
 using Baihua.Contracts.LocalModels;
 
 namespace Baihua.Family.Services;
@@ -9,13 +11,16 @@ namespace Baihua.Family.Services;
 public class OllamaLibraryClient
 {
     private readonly ILogger<OllamaLibraryClient> _logger;
+    private readonly IStringLocalizer<SharedResources> _loc;
     private readonly IHttpClientFactory _httpClientFactory;
     private List<ModelEntry> _cachedModels = new();
     private readonly object _lock = new();
 
-    public OllamaLibraryClient(IHttpClientFactory httpClientFactory, ILogger<OllamaLibraryClient> logger)
+    public OllamaLibraryClient(IHttpClientFactory httpClientFactory, IStringLocalizer<SharedResources> loc,
+        ILogger<OllamaLibraryClient> logger)
     {
         _httpClientFactory = httpClientFactory;
+        _loc = loc;
         _logger = logger;
     }
 
@@ -140,7 +145,7 @@ public class OllamaLibraryClient
             Id = $"ollama-{name.Replace('.', '-').Replace('_', '-').ToLowerInvariant()}",
             Name = CapitalizeName(name),
             OllamaModelName = $"{name}:latest",
-            Description = string.IsNullOrEmpty(description) ? $"Ollama Library 官方模型: {name}" : description,
+            Description = string.IsNullOrEmpty(description) ? string.Format(_loc["OllamaLibrary_DefaultDesc"], name) : description,
             ParameterSize = paramSize,
             Quantization = quantization,
             SizeGiB = Math.Round(sizeGiB, 1),

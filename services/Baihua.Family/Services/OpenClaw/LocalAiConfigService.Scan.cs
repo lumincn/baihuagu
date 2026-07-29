@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
 using Baihua.Contracts.OpenClaw;
 using Baihua.Family.Helpers;
 
@@ -154,7 +156,7 @@ public partial class LocalAiConfigService
                 new OpenClawLocalModelDto
                 {
                     Id = modelId,
-                    Name = $"{modelName} (需启动服务)",
+                    Name = string.Format(_loc["LocalModel_NeedsStart"], modelName),
                     ApiType = config.ApiType,
                     ContextWindow = config.ContextSize,
                 }

@@ -15,7 +15,7 @@ public partial class LocalModelDeploymentService
         private void ConfigureOllamaProvider(ModelEntry model)
         {
             const string providerId = "ollama";
-            const string defaultProviderName = "本地 Ollama";
+            const string defaultProviderName = "Local Ollama";
             const string baseUrl = "http://localhost:11434/v1";
 
             var existing = _aiConfigService.GetProvider(providerId);
@@ -77,7 +77,7 @@ public partial class LocalModelDeploymentService
         private void ConfigureLmStudioProvider(ModelEntry model)
         {
             const string providerId = "lmstudio";
-            const string defaultProviderName = "本地 LM Studio";
+            const string defaultProviderName = "Local LM Studio";
             const string baseUrl = "http://localhost:1234/v1";
 
             var existing = _aiConfigService.GetProvider(providerId);

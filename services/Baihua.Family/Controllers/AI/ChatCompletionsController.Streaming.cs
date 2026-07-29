@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
 using Microsoft.Extensions.AI;
 using Baihua.Family.Models;
 using Baihua.Family.Services;

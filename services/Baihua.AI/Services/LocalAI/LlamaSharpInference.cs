@@ -35,7 +35,7 @@ public class LlamaSharpInference : ILocalModelInference, IDisposable
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (!File.Exists(modelPath))
-            throw new FileNotFoundException("GGUF 模型文件不存在", modelPath);
+            throw new FileNotFoundException("GGUF model file not found", modelPath);
 
         var weights = _weightsCache.GetOrAdd(modelPath, path =>
         {

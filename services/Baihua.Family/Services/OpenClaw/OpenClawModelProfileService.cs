@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
 using Baihua.Contracts.OpenClaw;
 
 namespace Baihua.Family.Services;
@@ -15,45 +17,49 @@ public class OpenClawModelProfileService : IOpenClawModelProfileService
 {
     private readonly ILocalAiConfigService _localAiConfig;
     private readonly ILogger<OpenClawModelProfileService> _logger;
+    private readonly IStringLocalizer<SharedResources> _loc;
 
-    private static readonly List<ModelProfileDto> BuiltInProfiles = new()
-    {
-        new()
-        {
-            Id = "fast",
-            Name = "快速",
-            Description = "671MB 超轻量模型，响应极快，适合简单问答和日常查询",
-            Model = "ollama/qwen2.5:0.5b",
-            Provider = "ollama",
-            SizeInfo = "671MB",
-            SpeedLabel = "⚡ 极快"
-        },
-        new()
-        {
-            Id = "balanced",
-            Name = "平衡",
-            Description = "4.7GB 量化模型，在知识库内容上表现均衡，推荐日常使用",
-            Model = "ollama/biancang:latest",
-            Provider = "ollama",
-            SizeInfo = "4.7GB Q4_K_M",
-            SpeedLabel = "🚀 快"
-        },
-        new()
-        {
-            Id = "powerful",
-            Name = "强力",
-            Description = "27B 大参数模型，推理能力强，适合复杂辨证分析和深度问答",
-            Model = "ollama/qwen3.6:27b",
-            Provider = "ollama",
-            SizeInfo = "~17GB",
-            SpeedLabel = "🐢 较慢"
-        }
-    };
+    private List<ModelProfileDto> BuiltInProfiles = new();
 
-    public OpenClawModelProfileService(ILocalAiConfigService localAiConfig, ILogger<OpenClawModelProfileService> logger)
+    public OpenClawModelProfileService(ILocalAiConfigService localAiConfig, IStringLocalizer<SharedResources> loc,
+        ILogger<OpenClawModelProfileService> logger)
     {
         _localAiConfig = localAiConfig;
+        _loc = loc;
         _logger = logger;
+        BuiltInProfiles = new()
+        {
+            new()
+            {
+                Id = "fast",
+                Name = _loc["OpenClaw_Profile_Quick_Name"],
+                Description = _loc["OpenClaw_Profile_Quick_Desc"],
+                Model = "ollama/qwen2.5:0.5b",
+                Provider = "ollama",
+                SizeInfo = "671MB",
+                SpeedLabel = _loc["OpenClaw_Profile_Quick_Speed"]
+            },
+            new()
+            {
+                Id = "balanced",
+                Name = _loc["OpenClaw_Profile_Balanced_Name"],
+                Description = _loc["OpenClaw_Profile_Balanced_Desc"],
+                Model = "ollama/biancang:latest",
+                Provider = "ollama",
+                SizeInfo = "4.7GB Q4_K_M",
+                SpeedLabel = _loc["OpenClaw_Profile_Balanced_Speed"]
+            },
+            new()
+            {
+                Id = "powerful",
+                Name = _loc["OpenClaw_Profile_Powerful_Name"],
+                Description = _loc["OpenClaw_Profile_Powerful_Desc"],
+                Model = "ollama/qwen3.6:27b",
+                Provider = "ollama",
+                SizeInfo = "~17GB",
+                SpeedLabel = _loc["OpenClaw_Profile_Powerful_Speed"]
+            }
+        };
     }
 
     public async Task<OpenClawDefaultModelDto> GetDefaultModelAsync()

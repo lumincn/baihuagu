@@ -112,14 +112,14 @@ public class EndToEndPerformanceService
         if (totalElapsedMs > 1000)
         {
             _logger.LogWarning("[E2E-Trace-{TraceId}] 慢操作: {Operation} 总耗时 {TotalMs}ms " +
-                "(网络: {NetworkMs}ms, 渲染: {RenderMs}ms)",
+                "(Network: {NetworkMs}ms, Render: {RenderMs}ms)",
                 traceId, trace.OperationName, totalElapsedMs, 
                 record.NetworkTimeMs, record.RenderingTimeMs);
         }
         else
         {
             _logger.LogDebug("[E2E-Trace-{TraceId}] 完成: {Operation} 总耗时 {TotalMs}ms " +
-                "(网络: {NetworkMs}ms, 渲染: {RenderMs}ms)",
+                "(Network: {NetworkMs}ms, Render: {RenderMs}ms)",
                 traceId, trace.OperationName, totalElapsedMs,
                 record.NetworkTimeMs, record.RenderingTimeMs);
         }

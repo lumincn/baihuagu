@@ -65,7 +65,7 @@ public partial class DailyCardService
             if (learnerId == 0)
             {
                 // 没有学习者时自动创建一个默认学习者
-                var newLearner = await _learnerService.CreateAsync("默认学习者");
+                var newLearner = await _learnerService.CreateAsync(_loc["Default_Learner"]);
                 learnerId = newLearner.Id;
             }
 

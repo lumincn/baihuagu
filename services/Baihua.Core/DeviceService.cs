@@ -240,7 +240,7 @@ namespace Baihua.Core;
             using var dbContext = _dbContextFactory.CreateDbContext();
             if (!_pendingRequests.TryRemove(requestId, out var request))
             {
-                return (false, null, "请求不存在或已处理");
+                return (false, null, "Request not found or already processed");
             }
 
             // 清除同名设备的其他待授权请求，防止授权后仍然显示在待授权列表中

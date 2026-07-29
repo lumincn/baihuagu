@@ -23,7 +23,7 @@ public partial class OnboardingController
 
             if (string.IsNullOrWhiteSpace(vaultName))
             {
-                vaultName = vaultType == "tcm" ? "中医" : "计算机";
+                vaultName = vaultType == "tcm" ? _loc["Onboarding_DefaultTcmIndustry"] : _loc["Onboarding_DefaultComputerIndustry"];
             }
 
             // 使用 VaultRootPathPreference 作为父目录，如果没有则使用默认路径
@@ -33,7 +33,7 @@ public partial class OnboardingController
                 rootPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "vaults");
             }
 
-            var industry = vaultType == "tcm" ? "中医" : "计算机";
+            var industry = vaultType == "tcm" ? _loc["Onboarding_DefaultTcmIndustry"] : _loc["Onboarding_DefaultComputerIndustry"];
             var vaultPath = Path.Combine(rootPath, "local", industry, vaultName);
             Directory.CreateDirectory(vaultPath);
 

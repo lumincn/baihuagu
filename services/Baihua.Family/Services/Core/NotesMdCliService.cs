@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
 using System.Diagnostics;
 using System.Text.Json;
 
@@ -9,10 +11,13 @@ namespace Baihua.Family.Services
     public class NotesMdCliService
     {
         private readonly ILogger<NotesMdCliService> _logger;
+    private readonly IStringLocalizer<SharedResources> _loc;
 
-        public NotesMdCliService(ILogger<NotesMdCliService> logger)
+        public NotesMdCliService(IStringLocalizer<SharedResources> loc,
+        ILogger<NotesMdCliService> logger)
         {
-            _logger = logger;
+            _loc = loc;
+        _logger = logger;
         }
 
         /// <summary>

@@ -37,7 +37,7 @@ public class OnnxRuntimeGenAIInference : ILocalModelInference, IDisposable
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (!Directory.Exists(modelPath))
-            throw new DirectoryNotFoundException($"ONNX 模型目录不存在: {modelPath}");
+            throw new DirectoryNotFoundException($"ONNX model directory not found: {modelPath}");
 
         var cached = _modelCache.GetOrAdd(modelPath, path =>
         {

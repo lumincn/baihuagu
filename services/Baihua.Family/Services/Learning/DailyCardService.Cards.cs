@@ -22,7 +22,7 @@ public partial class DailyCardService
 
             var deck = new JsonDeckData
             {
-                Name = request.Deck ?? "家长出题",
+                Name = request.Deck ?? _loc["DailyCard_DefaultDeck"],
                 Cards = new List<JsonCard>()
             };
 
@@ -38,7 +38,7 @@ public partial class DailyCardService
 
             deck ??= new JsonDeckData
             {
-                Name = request.Deck ?? "家长出题",
+                Name = request.Deck ?? _loc["DailyCard_DefaultDeck"],
                 Cards = new List<JsonCard>()
             };
 

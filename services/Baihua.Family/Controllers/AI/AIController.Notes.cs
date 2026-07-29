@@ -20,7 +20,7 @@ namespace Baihua.Family.Controllers
             return new Note
             {
                 Title = title,
-                FilePath = $"AI 生成/{GenerateSafeFileName(title)}",
+                FilePath = $"{_loc["AiGeneratedDir"]}/{GenerateSafeFileName(title)}",
                 Content = aiContent,
                 Summary = aiContent.Length > 100 ? aiContent.Substring(0, 100) + "..." : aiContent
             };

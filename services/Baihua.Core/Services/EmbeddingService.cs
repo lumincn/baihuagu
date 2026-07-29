@@ -131,7 +131,7 @@ namespace Baihua.Family.Services
                 }
 
                 sw.Stop();
-                await RecordEmbeddingMetricAsync(providerId, modelName, sw.ElapsedMilliseconds, false, "返回空结果");
+                await RecordEmbeddingMetricAsync(providerId, modelName, sw.ElapsedMilliseconds, false, "Empty result");
                 return null;
             }
             catch (Exception ex)

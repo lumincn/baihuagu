@@ -119,7 +119,7 @@ public class AiFunctionService
 
             var safeTitle = GenerateSafeFileName(title);
             var notesRoot = Path.Combine(activeVault.Path, "notes");
-            var notePath = Path.Combine(notesRoot, $"AI 生成/{safeTitle}.md");
+            var notePath = Path.Combine(notesRoot, _loc["AiGeneratedDir"], $"{safeTitle}.md");
             var noteDir = Path.GetDirectoryName(notePath) ?? throw new InvalidOperationException($"Cannot get directory: {notePath}");
             Directory.CreateDirectory(noteDir);
 

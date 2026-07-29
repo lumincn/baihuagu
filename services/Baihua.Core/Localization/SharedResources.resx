@@ -1886,9 +1886,7 @@ Duration: {1}</value>
   <data name="Vault_ContentRequired" xml:space="preserve">
     <value>Content cannot be empty</value>
   </data>
-  <data name="Vault_IllegalPath" xml:space="preserve">
-    <value>Illegal path</value>
-  </data>
+  
   <data name="Vault_TokenRequired" xml:space="preserve">
     <value>Token cannot be empty</value>
   </data>
@@ -2529,15 +2527,9 @@ Duration: {1}</value>
   <data name="Task_OutlineParsedEmpty" xml:space="preserve">
     <value>Parsed outline is empty</value>
   </data>
-  <data name="Common_ReadFailed" xml:space="preserve">
-    <value>Failed to read</value>
-  </data>
-  <data name="Common_WriteFailed" xml:space="preserve">
-    <value>Failed to write</value>
-  </data>
-  <data name="Common_SearchFailed" xml:space="preserve">
-    <value>Search failed</value>
-  </data>
+  
+  
+  
   <data name="Common_ReadFailed" xml:space="preserve">
     <value>Failed to read</value>
   </data>
@@ -2705,5 +2697,8 @@ Then on a new line, give your normal response.</value>
 ---
 
 User question: {query}</value>
+  </data>
+  <data name="OpenClaw_Profile_Balanced_Speed" xml:space="preserve">
+    <value>🚀 Fast</value>
   </data>
 </root>

@@ -1891,9 +1891,7 @@ Status: {2}
   <data name="Vault_ContentRequired" xml:space="preserve">
     <value>内容不能为空</value>
   </data>
-  <data name="Vault_IllegalPath" xml:space="preserve">
-    <value>非法路径</value>
-  </data>
+  
   <data name="Vault_TokenRequired" xml:space="preserve">
     <value>Token 不能为空</value>
   </data>
@@ -2701,5 +2699,8 @@ TOOL_CALL: {{&quot;tool&quot;:&quot;工具名&quot;,&quot;arguments&quot;:{{{arg
 ---
 
 用户问题：{query}</value>
+  </data>
+  <data name="OpenClaw_Profile_Balanced_Speed" xml:space="preserve">
+    <value>🚀 快</value>
   </data>
 </root>

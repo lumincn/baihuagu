@@ -109,13 +109,13 @@ namespace Baihua.Family.Controllers
                             }
 
                             var notesRoot = System.IO.Path.Combine(vaultPath, "notes");
-                            var aiDir = System.IO.Path.Combine(notesRoot, "AI 生成");
+                            var aiDir = System.IO.Path.Combine(notesRoot, _loc["AiGeneratedDir"]);
                             System.IO.Directory.CreateDirectory(aiDir);
 
                             var fileName = $"{title}.md";
                             fullPath = System.IO.Path.Combine(aiDir, fileName);
                             await System.IO.File.WriteAllTextAsync(fullPath, content);
-                            notePath = $"AI 生成/{Path.GetFileNameWithoutExtension(fileName)}";
+                            notePath = $"{_loc["AiGeneratedDir"]}/{Path.GetFileNameWithoutExtension(fileName)}";
 
                             // 自动为该笔记生成 Anki 记忆卡片
                             try
