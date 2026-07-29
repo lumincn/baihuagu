@@ -1,10 +1,11 @@
 @page "/qr-tool"
 @rendermode InteractiveServer
 @using Baihua.Web.Components
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
-<PageTitle>二维码工具</PageTitle>
+<PageTitle>@L["QRTool_PageTitle"]</PageTitle>
 
-<h1>📱 二维码工具</h1>
-<p class="text-muted">生成二维码供移动端扫描，快速添加服务器</p>
+<h1>📱 @L["QRTool_Title"]</h1>
+<p class="text-muted">@L["QRTool_Description"]</p>
 
 <QRToolPanel />

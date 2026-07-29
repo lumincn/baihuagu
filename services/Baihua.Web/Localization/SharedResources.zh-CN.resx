@@ -3310,4 +3310,13 @@
   <data name="Tasks_RetryFailedWithMessage" xml:space="preserve">
     <value>重试失败：{0}</value>
   </data>
+  <data name="QRTool_PageTitle" xml:space="preserve">
+    <value>二维码工具</value>
+  </data>
+  <data name="QRTool_Title" xml:space="preserve">
+    <value>二维码工具</value>
+  </data>
+  <data name="QRTool_Description" xml:space="preserve">
+    <value>生成二维码供移动端扫描，快速添加服务器</value>
+  </data>
 </root>
