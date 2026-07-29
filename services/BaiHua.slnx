@@ -1,10 +1,10 @@
 <Solution>
-  <Project Path="TaskRunner.Contracts/TaskRunner.Contracts.csproj" />
-  <Project Path="TaskRunner.Data/TaskRunner.Data.csproj" />
+  <Project Path="Baihua.Contracts/Baihua.Contracts.csproj" />
+  <Project Path="Baihua.Data/Baihua.Data.csproj" />
   <Project Path="../libs/MobileContract/MobileContract.csproj" />
-  <Project Path="Core.Shared/TaskRunner.Core.Shared.csproj" />
-  <Project Path="TaskRunner.Family/TaskRunner.Family.csproj" />
-  <Project Path="TaskRunner.AI/TaskRunner.AI.csproj" />
-  <Project Path="TaskRunner.Vault/TaskRunner.Vault.csproj" />
-  <Project Path="WebUI.Family/WebUI.Family.csproj" />
+  <Project Path="Baihua.Core/Baihua.Core.csproj" />
+  <Project Path="Baihua.Family/Baihua.Family.csproj" />
+  <Project Path="Baihua.AI/Baihua.AI.csproj" />
+  <Project Path="Baihua.Vault/Baihua.Vault.csproj" />
+  <Project Path="Baihua.Web/Baihua.Web.csproj" />
 </Solution>

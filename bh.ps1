@@ -75,10 +75,10 @@ $ServiceOrder = @('ai', 'vault', 'taskrunner', 'webui')
 # 停止顺序：依赖别人的先停止（WebUI → TaskRunner → Vault → AI）
 $StopOrder = @('webui', 'taskrunner', 'vault', 'ai')
 $Services = @{ 
-	ai         = "services/TaskRunner.AI";
-	vault      = "services/TaskRunner.Vault";
-	taskrunner = "services/TaskRunner.Family";
-	webui      = "services/WebUI.Family";
+	ai         = "services/Baihua.AI";
+	vault      = "services/Baihua.Vault";
+	taskrunner = "services/Baihua.Family";
+	webui      = "services/Baihua.Web";
 }
 
 # 服务健康检查 URL（用轻量端点，避免认证拦截）

@@ -23,8 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../services/TaskRunner.Family/TaskRunner.Family.csproj" />
-    <ProjectReference Include="../../services/Core.Shared/TaskRunner.Core.Shared.csproj" />
+    <ProjectReference Include="../../services/Baihua.Family/Baihua.Family.csproj" />
+    <ProjectReference Include="../../services/Baihua.Core/Baihua.Core.csproj" />
   </ItemGroup>
 
 </Project>

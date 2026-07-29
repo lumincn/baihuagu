@@ -17,6 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../TaskRunner.Contracts/TaskRunner.Contracts.csproj" />
+    <ProjectReference Include="../Baihua.Contracts/Baihua.Contracts.csproj" />
   </ItemGroup>
 </Project>

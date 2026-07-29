@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <AssemblyName>bh-taskrunner</AssemblyName>
+    <AssemblyName>bh-ai</AssemblyName>
     <UseAppHost>true</UseAppHost>
     <RuntimeIdentifier Condition="'$(Configuration)' == 'Release'">linux-x64</RuntimeIdentifier>
     <Nullable>enable</Nullable>
@@ -11,43 +11,37 @@
     <NoWarn>$(NoWarn);1591</NoWarn>
     <GenerateResource>false</GenerateResource>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
-    <RootNamespace>TaskRunner</RootNamespace>
-    <UserSecretsId>baihua-family-taskrunner-2026</UserSecretsId>
+    <RootNamespace>TaskRunner.AI</RootNamespace>
+    <UserSecretsId>baihua-family-taskrunner-ai-2026</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="LLamaSharp" Version="0.26.0" />
-    <PackageReference Include="Makaretu.Dns.Multicast.New" Version="0.38.0" />
     <PackageReference Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.13.1" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-    <PackageReference Include="OpenTelemetry" Version="1.11.2" />
-    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.11.2" />
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.11.2" />
-    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.10" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-
     <PackageReference Include="OpenAI" Version="2.10.0" />
     <PackageReference Include="Microsoft.Extensions.AI" Version="10.5.0" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.5.0" />
+    <PackageReference Include="OpenTelemetry" Version="1.11.2" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.11.2" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.11.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AnkiGen.Core" Version="1.0.0" />
-    <ProjectReference Include="..\TaskRunner.Data\TaskRunner.Data.csproj" />
-    <ProjectReference Include="..\Core.Shared\TaskRunner.Core.Shared.csproj" />
-    <ProjectReference Include="..\TaskRunner.Contracts\TaskRunner.Contracts.csproj" />
-    <ProjectReference Include="..\..\libs\MobileContract\MobileContract.csproj" />
+    <ProjectReference Include="..\Baihua.Data\Baihua.Data.csproj" />
+    <ProjectReference Include="..\Baihua.Core\Baihua.Core.csproj" />
+    <ProjectReference Include="..\Baihua.Contracts\Baihua.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Remove="**/*.resx" />
-    <EmbeddedResource Include="Data/ExamOutlines/*.json" />
   </ItemGroup>
 
 </Project>
