@@ -28,5 +28,55 @@
   <data name="Common_Retry" xml:space="preserve"><value>重试</value></data>
   <data name="Common_Close" xml:space="preserve"><value>关闭</value></data>
   <data name="Language" xml:space="preserve"><value>语言</value></data>
+<data name="HardwareBenchmark_PageTitle" xml:space="preserve"><value>硬件评测</value></data>
+    <data name="HardwareBenchmark_Title" xml:space="preserve"><value>硬件评测</value></data>
+    <data name="HardwareBenchmark_Description" xml:space="preserve"><value>评估当前机器的 AI 算力水平，与主流 AI 计算平台进行对比，帮助您了解硬件性能定位。</value></data>
+    <data name="HardwareBenchmark_Loading" xml:space="preserve"><value>正在检测硬件信息...</value></data>
+    <data name="HardwareBenchmark_CurrentMachine" xml:space="preserve"><value>本机配置</value></data>
+    <data name="HardwareBenchmark_CurrentMachineLabel" xml:space="preserve"><value>当前机器</value></data>
+    <data name="HardwareBenchmark_Unknown" xml:space="preserve"><value>未知</value></data>
+    <data name="HardwareBenchmark_CoreCount" xml:space="preserve"><value>核心数</value></data>
+    <data name="HardwareBenchmark_Memory" xml:space="preserve"><value>内存</value></data>
+    <data name="HardwareBenchmark_Gpu" xml:space="preserve"><value>显卡</value></data>
+    <data name="HardwareBenchmark_System" xml:space="preserve"><value>系统</value></data>
+    <data name="HardwareBenchmark_DiskAvailable" xml:space="preserve"><value>磁盘可用</value></data>
+    <data name="HardwareBenchmark_CpuInference" xml:space="preserve"><value>CPU 推理</value></data>
+    <data name="HardwareBenchmark_SharedMemory" xml:space="preserve"><value>共享内存</value></data>
+    <data name="HardwareBenchmark_DedicatedVram" xml:space="preserve"><value>专用显存</value></data>
+    <data name="HardwareBenchmark_SystemMemory" xml:space="preserve"><value>系统内存</value></data>
+    <data name="HardwareBenchmark_NoGpu" xml:space="preserve"><value>无独立 GPU</value></data>
+    <data name="HardwareBenchmark_NoGpuDetected" xml:space="preserve"><value>未检测到独立 GPU</value></data>
+    <data name="HardwareBenchmark_Tier_Cpu" xml:space="preserve"><value>CPU 推理</value></data>
+    <data name="HardwareBenchmark_Tier_Entry" xml:space="preserve"><value>入门 GPU</value></data>
+    <data name="HardwareBenchmark_Tier_Mid" xml:space="preserve"><value>中端 GPU</value></data>
+    <data name="HardwareBenchmark_Tier_High" xml:space="preserve"><value>高端 GPU</value></data>
+    <data name="HardwareBenchmark_Tier_Top" xml:space="preserve"><value>顶级 GPU</value></data>
+    <data name="HardwareBenchmark_ComparisonTitle" xml:space="preserve"><value>⚡ AI 算力对比表</value></data>
+    <data name="HardwareBenchmark_ComparisonDesc" xml:space="preserve"><value>按 Llama-3-8B Q4 估算推理速度排序。数据为理论/实测参考值，供性能定位参考。</value></data>
+    <data name="HardwareBenchmark_Col_Rank" xml:space="preserve"><value>排名</value></data>
+    <data name="HardwareBenchmark_Col_Platform" xml:space="preserve"><value>平台</value></data>
+    <data name="HardwareBenchmark_Col_Gpu" xml:space="preserve"><value>GPU / NPU / 加速器</value></data>
+    <data name="HardwareBenchmark_Col_Memory" xml:space="preserve"><value>显存 / 统一内存</value></data>
+    <data name="HardwareBenchmark_Col_Int8" xml:space="preserve"><value>INT8 算力</value></data>
+    <data name="HardwareBenchmark_Col_Int4" xml:space="preserve"><value>INT4 算力</value></data>
+    <data name="HardwareBenchmark_Col_Bandwidth" xml:space="preserve"><value>显存带宽</value></data>
+    <data name="HardwareBenchmark_Col_Speed" xml:space="preserve"><value>Llama3-8B Q4 估速</value></data>
+    <data name="HardwareBenchmark_Col_Power" xml:space="preserve"><value>典型功耗</value></data>
+    <data name="HardwareBenchmark_Col_Price" xml:space="preserve"><value>参考价格</value></data>
+    <data name="HardwareBenchmark_DataSourceTitle" xml:space="preserve"><value>📋 数据来源与估算说明</value></data>
+    <data name="HardwareBenchmark_Tier_Title" xml:space="preserve"><value>📊 性能等级说明</value></data>
+    <data name="HardwareBenchmark_RecommendationTitle" xml:space="preserve"><value>🎯 本机适用场景建议</value></data>
+    <data name="HardwareBenchmark_Analyzing" xml:space="preserve"><value>正在分析硬件配置...</value></data>
+    <data name="HardwareBenchmark_LoadError" xml:space="preserve"><value>获取硬件信息失败</value></data>
+    <data name="HardwareBenchmark_RefreshBtn" xml:space="preserve"><value>🔄 刷新硬件信息</value></data>
+    <data name="HardwareBenchmark_RefreshingBtn" xml:space="preserve"><value>🔄 刷新中...</value></data>
+    <data name="HardwareBenchmark_Disclaimer" xml:space="preserve"><value>数据仅供参考，实际性能受驱动、散热、模型优化等因素影响。</value></data>
+    <data name="HardwareBenchmark_Level_Limited" xml:space="preserve"><value>受限</value></data>
+    <data name="HardwareBenchmark_Level_Adequate" xml:space="preserve"><value>可用</value></data>
+    <data name="HardwareBenchmark_Level_Good" xml:space="preserve"><value>良好</value></data>
+    <data name="HardwareBenchmark_Level_Great" xml:space="preserve"><value>优秀</value></data>
+    <data name="HardwareBenchmark_Level_Excellent" xml:space="preserve"><value>顶级</value></data>
+    <data name="HardwareBenchmark_Level_Unsupported" xml:space="preserve"><value>不支持</value></data>
 </root>
+
 

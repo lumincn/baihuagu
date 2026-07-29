@@ -28,5 +28,55 @@
   <data name="Common_Retry" xml:space="preserve"><value>Retry</value></data>
   <data name="Common_Close" xml:space="preserve"><value>Close</value></data>
   <data name="Language" xml:space="preserve"><value>Language</value></data>
+<data name="HardwareBenchmark_PageTitle" xml:space="preserve"><value>Hardware Benchmark</value></data>
+    <data name="HardwareBenchmark_Title" xml:space="preserve"><value>Hardware Benchmark</value></data>
+    <data name="HardwareBenchmark_Description" xml:space="preserve"><value>Evaluate your machine AI compute capability, compare with mainstream AI platforms, and understand hardware performance positioning.</value></data>
+    <data name="HardwareBenchmark_Loading" xml:space="preserve"><value>Detecting hardware info...</value></data>
+    <data name="HardwareBenchmark_CurrentMachine" xml:space="preserve"><value>Current Machine</value></data>
+    <data name="HardwareBenchmark_CurrentMachineLabel" xml:space="preserve"><value>Current Machine</value></data>
+    <data name="HardwareBenchmark_Unknown" xml:space="preserve"><value>Unknown</value></data>
+    <data name="HardwareBenchmark_CoreCount" xml:space="preserve"><value>Cores</value></data>
+    <data name="HardwareBenchmark_Memory" xml:space="preserve"><value>Memory</value></data>
+    <data name="HardwareBenchmark_Gpu" xml:space="preserve"><value>GPU</value></data>
+    <data name="HardwareBenchmark_System" xml:space="preserve"><value>System</value></data>
+    <data name="HardwareBenchmark_DiskAvailable" xml:space="preserve"><value>Disk Free</value></data>
+    <data name="HardwareBenchmark_CpuInference" xml:space="preserve"><value>CPU Inference</value></data>
+    <data name="HardwareBenchmark_SharedMemory" xml:space="preserve"><value>Shared Memory</value></data>
+    <data name="HardwareBenchmark_DedicatedVram" xml:space="preserve"><value>Dedicated VRAM</value></data>
+    <data name="HardwareBenchmark_SystemMemory" xml:space="preserve"><value>System Memory</value></data>
+    <data name="HardwareBenchmark_NoGpu" xml:space="preserve"><value>No Discrete GPU</value></data>
+    <data name="HardwareBenchmark_NoGpuDetected" xml:space="preserve"><value>No GPU detected</value></data>
+    <data name="HardwareBenchmark_Tier_Cpu" xml:space="preserve"><value>CPU Inference</value></data>
+    <data name="HardwareBenchmark_Tier_Entry" xml:space="preserve"><value>Entry GPU</value></data>
+    <data name="HardwareBenchmark_Tier_Mid" xml:space="preserve"><value>Mid-Range GPU</value></data>
+    <data name="HardwareBenchmark_Tier_High" xml:space="preserve"><value>High-End GPU</value></data>
+    <data name="HardwareBenchmark_Tier_Top" xml:space="preserve"><value>Top-Tier GPU</value></data>
+    <data name="HardwareBenchmark_ComparisonTitle" xml:space="preserve"><value>AI Compute Comparison</value></data>
+    <data name="HardwareBenchmark_ComparisonDesc" xml:space="preserve"><value>Sorted by estimated Llama-3-8B Q4 inference speed. Data is theoretical/measured reference for positioning.</value></data>
+    <data name="HardwareBenchmark_Col_Rank" xml:space="preserve"><value>Rank</value></data>
+    <data name="HardwareBenchmark_Col_Platform" xml:space="preserve"><value>Platform</value></data>
+    <data name="HardwareBenchmark_Col_Gpu" xml:space="preserve"><value>GPU / NPU / Accelerator</value></data>
+    <data name="HardwareBenchmark_Col_Memory" xml:space="preserve"><value>VRAM / Unified Memory</value></data>
+    <data name="HardwareBenchmark_Col_Int8" xml:space="preserve"><value>INT8 TFLOPS</value></data>
+    <data name="HardwareBenchmark_Col_Int4" xml:space="preserve"><value>INT4 TFLOPS</value></data>
+    <data name="HardwareBenchmark_Col_Bandwidth" xml:space="preserve"><value>Memory Bandwidth</value></data>
+    <data name="HardwareBenchmark_Col_Speed" xml:space="preserve"><value>Llama3-8B Q4 Est.</value></data>
+    <data name="HardwareBenchmark_Col_Power" xml:space="preserve"><value>TDP</value></data>
+    <data name="HardwareBenchmark_Col_Price" xml:space="preserve"><value>Est. Price</value></data>
+    <data name="HardwareBenchmark_DataSourceTitle" xml:space="preserve"><value>Data Sources &amp; Methodology</value></data>
+    <data name="HardwareBenchmark_Tier_Title" xml:space="preserve"><value>Performance Tiers</value></data>
+    <data name="HardwareBenchmark_RecommendationTitle" xml:space="preserve"><value>Recommendations for Your Machine</value></data>
+    <data name="HardwareBenchmark_Analyzing" xml:space="preserve"><value>Analyzing hardware configuration...</value></data>
+    <data name="HardwareBenchmark_LoadError" xml:space="preserve"><value>Failed to load hardware info</value></data>
+    <data name="HardwareBenchmark_RefreshBtn" xml:space="preserve"><value>Refresh Hardware Info</value></data>
+    <data name="HardwareBenchmark_RefreshingBtn" xml:space="preserve"><value>Refreshing...</value></data>
+    <data name="HardwareBenchmark_Disclaimer" xml:space="preserve"><value>Data is for reference only. Actual performance varies by driver, cooling, model optimization, etc.</value></data>
+    <data name="HardwareBenchmark_Level_Limited" xml:space="preserve"><value>Limited</value></data>
+    <data name="HardwareBenchmark_Level_Adequate" xml:space="preserve"><value>Adequate</value></data>
+    <data name="HardwareBenchmark_Level_Good" xml:space="preserve"><value>Good</value></data>
+    <data name="HardwareBenchmark_Level_Great" xml:space="preserve"><value>Great</value></data>
+    <data name="HardwareBenchmark_Level_Excellent" xml:space="preserve"><value>Excellent</value></data>
+    <data name="HardwareBenchmark_Level_Unsupported" xml:space="preserve"><value>Unsupported</value></data>
 </root>
+
 
