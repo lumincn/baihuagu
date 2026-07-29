@@ -5732,4 +5732,182 @@
   <data name="Vaults_CreatedAtLabel" xml:space="preserve">
     <value>创建时间：</value>
   </data>
+
+  <data name="Health_ArchDesc1_Mid" xml:space="preserve">
+    <value>，在服务端</value>
+  </data>
+  <data name="Health_ArchDesc1_Post" xml:space="preserve">
+    <value>探测本机工具链。</value>
+  </data>
+  <data name="Health_ArchDesc1_Pre" xml:space="preserve">
+    <value>本页向 Task Runner 请求</value>
+  </data>
+  <data name="Health_ArchDesc1_Strong" xml:space="preserve">
+    <value>并行</value>
+  </data>
+  <data name="Health_ArchitectureDesc2" xml:space="preserve">
+    <value>健康检查的意义是：在跑笔记同步、脚本任务或本地 AI 之前，早发现「缺装、未启动或不可用」的依赖，避免任务跑到一半才失败。</value>
+  </data>
+  <data name="Health_ArchitectureTitle" xml:space="preserve">
+    <value>运行环境架构</value>
+  </data>
+  <data name="Health_AvgElapsed" xml:space="preserve">
+    <value>平均耗时</value>
+  </data>
+  <data name="Health_CheckTimeLabel" xml:space="preserve">
+    <value>检测时间：</value>
+  </data>
+  <data name="Health_CheckingServices" xml:space="preserve">
+    <value>正在检测各项服务，请稍候…</value>
+  </data>
+  <data name="Health_ClearAll" xml:space="preserve">
+    <value>清空全部</value>
+  </data>
+  <data name="Health_ClearLogs" xml:space="preserve">
+    <value>清空日志</value>
+  </data>
+  <data name="Health_ClearMetrics" xml:space="preserve">
+    <value>清空统计</value>
+  </data>
+  <data name="Health_ClickRefreshToLoadLogs" xml:space="preserve">
+    <value>点击刷新按钮加载错误日志</value>
+  </data>
+  <data name="Health_ClickRefreshToLoadMetrics" xml:space="preserve">
+    <value>点击刷新按钮加载请求指标</value>
+  </data>
+  <data name="Health_Component" xml:space="preserve">
+    <value>组件</value>
+  </data>
+  <data name="Health_Count" xml:space="preserve">
+    <value>次数</value>
+  </data>
+  <data name="Health_Elapsed" xml:space="preserve">
+    <value>耗时</value>
+  </data>
+  <data name="Health_ErrorCount" xml:space="preserve">
+    <value>错误数</value>
+  </data>
+  <data name="Health_ErrorLogsTitle" xml:space="preserve">
+    <value>错误日志 (Warning/Error/Critical)</value>
+  </data>
+  <data name="Health_FixRequestFailed" xml:space="preserve">
+    <value>修复请求失败: {0}</value>
+  </data>
+  <data name="Health_FixResults" xml:space="preserve">
+    <value>修复结果</value>
+  </data>
+  <data name="Health_FixStatus_Failed" xml:space="preserve">
+    <value>修复失败</value>
+  </data>
+  <data name="Health_FixStatus_Fixed" xml:space="preserve">
+    <value>已修复</value>
+  </data>
+  <data name="Health_FixStatus_ManualRequired" xml:space="preserve">
+    <value>需手动处理</value>
+  </data>
+  <data name="Health_FixStatus_Skipped" xml:space="preserve">
+    <value>已跳过</value>
+  </data>
+  <data name="Health_FrequentPaths" xml:space="preserve">
+    <value>高频调用路径 (Top 10)</value>
+  </data>
+  <data name="Health_HealthScoreLabel" xml:space="preserve">
+    <value>健康度：</value>
+  </data>
+  <data name="Health_Level" xml:space="preserve">
+    <value>级别</value>
+  </data>
+  <data name="Health_Loading" xml:space="preserve">
+    <value>加载中...</value>
+  </data>
+  <data name="Health_MaxElapsed" xml:space="preserve">
+    <value>最大耗时</value>
+  </data>
+  <data name="Health_Message" xml:space="preserve">
+    <value>消息</value>
+  </data>
+  <data name="Health_NoData" xml:space="preserve">
+    <value>暂无数据</value>
+  </data>
+  <data name="Health_NoErrorLogs" xml:space="preserve">
+    <value>暂无错误日志 🎉</value>
+  </data>
+  <data name="Health_NoHealthReport" xml:space="preserve">
+    <value>未获取到健康报告</value>
+  </data>
+  <data name="Health_OneClickFix" xml:space="preserve">
+    <value>一键修复</value>
+  </data>
+  <data name="Health_OpenClawSetupResult" xml:space="preserve">
+    <value>OpenClaw 配置结果</value>
+  </data>
+  <data name="Health_PageTitle" xml:space="preserve">
+    <value>系统健康检查</value>
+  </data>
+  <data name="Health_ParallelWallClockLabel" xml:space="preserve">
+    <value>· 并行墙钟</value>
+  </data>
+  <data name="Health_Path" xml:space="preserve">
+    <value>路径</value>
+  </data>
+  <data name="Health_RecentLogs" xml:space="preserve">
+    <value>最近10条日志</value>
+  </data>
+  <data name="Health_Refresh" xml:space="preserve">
+    <value>刷新</value>
+  </data>
+  <data name="Health_RefreshPerfData" xml:space="preserve">
+    <value>刷新性能数据</value>
+  </data>
+  <data name="Health_RequestMetricsTitle" xml:space="preserve">
+    <value>请求性能指标</value>
+  </data>
+  <data name="Health_SetupFailed" xml:space="preserve">
+    <value>配置失败: {0}</value>
+  </data>
+  <data name="Health_SetupOpenClaw" xml:space="preserve">
+    <value>配置 OpenClaw</value>
+  </data>
+  <data name="Health_SlowestRequests" xml:space="preserve">
+    <value>最慢请求 (Top 10)</value>
+  </data>
+  <data name="Health_Source" xml:space="preserve">
+    <value>来源</value>
+  </data>
+  <data name="Health_Status" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="Health_SystemHealthCheck" xml:space="preserve">
+    <value>系统健康检查</value>
+  </data>
+  <data name="Health_TabApi" xml:space="preserve">
+    <value>API 调用性能</value>
+  </data>
+  <data name="Health_TabComponent" xml:space="preserve">
+    <value>组件渲染性能</value>
+  </data>
+  <data name="Health_TabE2E" xml:space="preserve">
+    <value>端到端性能</value>
+  </data>
+  <data name="Health_TabHealth" xml:space="preserve">
+    <value>健康检查</value>
+  </data>
+  <data name="Health_TabPerformance" xml:space="preserve">
+    <value>性能监控</value>
+  </data>
+  <data name="Health_Timestamp" xml:space="preserve">
+    <value>时间</value>
+  </data>
+  <data name="Health_TotalErrors" xml:space="preserve">
+    <value>总错误数</value>
+  </data>
+  <data name="Health_TotalRequests" xml:space="preserve">
+    <value>总请求数</value>
+  </data>
+  <data name="Health_WebuiConnectivityFailed" xml:space="preserve">
+    <value>WebUI 无法访问 Task Runner: {0}</value>
+  </data>
+  <data name="Health_WebuiConnectivityOk" xml:space="preserve">
+    <value>WebUI 可正常访问 Task Runner（{0}ms）</value>
+  </data>
 </root>

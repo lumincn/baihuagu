@@ -5732,4 +5732,182 @@
   <data name="Vaults_CreatedAtLabel" xml:space="preserve">
     <value>Created At:</value>
   </data>
+
+  <data name="Health_ArchDesc1_Mid" xml:space="preserve">
+    <value> from Task Runner, and probes toolchains on the server in</value>
+  </data>
+  <data name="Health_ArchDesc1_Post" xml:space="preserve">
+    <value>.</value>
+  </data>
+  <data name="Health_ArchDesc1_Pre" xml:space="preserve">
+    <value>This page requests</value>
+  </data>
+  <data name="Health_ArchDesc1_Strong" xml:space="preserve">
+    <value>parallel</value>
+  </data>
+  <data name="Health_ArchitectureDesc2" xml:space="preserve">
+    <value>The purpose of health checks: before running note sync, scripts, or local AI tasks, early detection of missing, not started, or unavailable dependencies to prevent task failures mid-execution.</value>
+  </data>
+  <data name="Health_ArchitectureTitle" xml:space="preserve">
+    <value>Runtime Environment Architecture</value>
+  </data>
+  <data name="Health_AvgElapsed" xml:space="preserve">
+    <value>Avg Elapsed</value>
+  </data>
+  <data name="Health_CheckTimeLabel" xml:space="preserve">
+    <value>Check time:</value>
+  </data>
+  <data name="Health_CheckingServices" xml:space="preserve">
+    <value>Checking services, please wait…</value>
+  </data>
+  <data name="Health_ClearAll" xml:space="preserve">
+    <value>Clear All</value>
+  </data>
+  <data name="Health_ClearLogs" xml:space="preserve">
+    <value>Clear Logs</value>
+  </data>
+  <data name="Health_ClearMetrics" xml:space="preserve">
+    <value>Clear Statistics</value>
+  </data>
+  <data name="Health_ClickRefreshToLoadLogs" xml:space="preserve">
+    <value>Click Refresh to load error logs</value>
+  </data>
+  <data name="Health_ClickRefreshToLoadMetrics" xml:space="preserve">
+    <value>Click Refresh to load request metrics</value>
+  </data>
+  <data name="Health_Component" xml:space="preserve">
+    <value>Component</value>
+  </data>
+  <data name="Health_Count" xml:space="preserve">
+    <value>Count</value>
+  </data>
+  <data name="Health_Elapsed" xml:space="preserve">
+    <value>Elapsed</value>
+  </data>
+  <data name="Health_ErrorCount" xml:space="preserve">
+    <value>Errors</value>
+  </data>
+  <data name="Health_ErrorLogsTitle" xml:space="preserve">
+    <value>Error Log (Warning/Error/Critical)</value>
+  </data>
+  <data name="Health_FixRequestFailed" xml:space="preserve">
+    <value>Fix request failed: {0}</value>
+  </data>
+  <data name="Health_FixResults" xml:space="preserve">
+    <value>Fix Results</value>
+  </data>
+  <data name="Health_FixStatus_Failed" xml:space="preserve">
+    <value>Fix Failed</value>
+  </data>
+  <data name="Health_FixStatus_Fixed" xml:space="preserve">
+    <value>Fixed</value>
+  </data>
+  <data name="Health_FixStatus_ManualRequired" xml:space="preserve">
+    <value>Manual Action Needed</value>
+  </data>
+  <data name="Health_FixStatus_Skipped" xml:space="preserve">
+    <value>Skipped</value>
+  </data>
+  <data name="Health_FrequentPaths" xml:space="preserve">
+    <value>Frequent Paths (Top 10)</value>
+  </data>
+  <data name="Health_HealthScoreLabel" xml:space="preserve">
+    <value>Health Score:</value>
+  </data>
+  <data name="Health_Level" xml:space="preserve">
+    <value>Level</value>
+  </data>
+  <data name="Health_Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+  <data name="Health_MaxElapsed" xml:space="preserve">
+    <value>Max Elapsed</value>
+  </data>
+  <data name="Health_Message" xml:space="preserve">
+    <value>Message</value>
+  </data>
+  <data name="Health_NoData" xml:space="preserve">
+    <value>No data</value>
+  </data>
+  <data name="Health_NoErrorLogs" xml:space="preserve">
+    <value>No error logs 🎉</value>
+  </data>
+  <data name="Health_NoHealthReport" xml:space="preserve">
+    <value>No health report available</value>
+  </data>
+  <data name="Health_OneClickFix" xml:space="preserve">
+    <value>One-Click Fix</value>
+  </data>
+  <data name="Health_OpenClawSetupResult" xml:space="preserve">
+    <value>OpenClaw Setup Result</value>
+  </data>
+  <data name="Health_PageTitle" xml:space="preserve">
+    <value>System Health Check</value>
+  </data>
+  <data name="Health_ParallelWallClockLabel" xml:space="preserve">
+    <value>· Parallel wall clock</value>
+  </data>
+  <data name="Health_Path" xml:space="preserve">
+    <value>Path</value>
+  </data>
+  <data name="Health_RecentLogs" xml:space="preserve">
+    <value>Recent 10 Logs</value>
+  </data>
+  <data name="Health_Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="Health_RefreshPerfData" xml:space="preserve">
+    <value>Refresh Performance Data</value>
+  </data>
+  <data name="Health_RequestMetricsTitle" xml:space="preserve">
+    <value>Request Performance Metrics</value>
+  </data>
+  <data name="Health_SetupFailed" xml:space="preserve">
+    <value>Setup failed: {0}</value>
+  </data>
+  <data name="Health_SetupOpenClaw" xml:space="preserve">
+    <value>Setup OpenClaw</value>
+  </data>
+  <data name="Health_SlowestRequests" xml:space="preserve">
+    <value>Slowest Requests (Top 10)</value>
+  </data>
+  <data name="Health_Source" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="Health_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Health_SystemHealthCheck" xml:space="preserve">
+    <value>System Health Check</value>
+  </data>
+  <data name="Health_TabApi" xml:space="preserve">
+    <value>API Call Performance</value>
+  </data>
+  <data name="Health_TabComponent" xml:space="preserve">
+    <value>Component Render Performance</value>
+  </data>
+  <data name="Health_TabE2E" xml:space="preserve">
+    <value>E2E Performance</value>
+  </data>
+  <data name="Health_TabHealth" xml:space="preserve">
+    <value>Health Check</value>
+  </data>
+  <data name="Health_TabPerformance" xml:space="preserve">
+    <value>Performance Monitor</value>
+  </data>
+  <data name="Health_Timestamp" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="Health_TotalErrors" xml:space="preserve">
+    <value>Total Errors</value>
+  </data>
+  <data name="Health_TotalRequests" xml:space="preserve">
+    <value>Total Requests</value>
+  </data>
+  <data name="Health_WebuiConnectivityFailed" xml:space="preserve">
+    <value>WebUI cannot reach Task Runner: {0}</value>
+  </data>
+  <data name="Health_WebuiConnectivityOk" xml:space="preserve">
+    <value>WebUI can reach Task Runner ({0}ms)</value>
+  </data>
 </root>

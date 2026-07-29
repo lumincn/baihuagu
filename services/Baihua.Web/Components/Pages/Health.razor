@@ -3,6 +3,7 @@
 @inherits Baihua.Web.Components.PerformanceComponentBase
 @using Baihua.Contracts.Health
 @using Baihua.Web.Services
+@using Microsoft.Extensions.Localization
 @inject IApiService ApiService
 @inject RequestMetricsService MetricsService
 @inject ErrorLogService ErrorLogService
@@ -10,17 +11,18 @@
 @inject ApiCallMetricsService ApiMetricsService
 @inject ILogger<Health> Logger
 @inject NavigationManager Navigation
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
-<PageTitle>系统健康检查</PageTitle>
+<PageTitle>@L["Health_PageTitle"]</PageTitle>
 
 <div class="container-fluid mt-4">
     <!-- 主标签页 -->
     <ul class="nav nav-tabs mb-4">
         <li class="nav-item">
-            <a class="nav-link @(activeTab == "health" ? "active" : "")" @onclick='() => activeTab = "health"' href="javascript:void(0)">❤️ 健康检查</a>
+            <a class="nav-link @(activeTab == "health" ? "active" : "")" @onclick='() => activeTab = "health"' href="javascript:void(0)">❤️ @L["Health_TabHealth"]</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link @(activeTab == "performance" ? "active" : "")" @onclick='() => activeTab = "performance"' href="javascript:void(0)">🔍 性能监控</a>
+            <a class="nav-link @(activeTab == "performance" ? "active" : "")" @onclick='() => activeTab = "performance"' href="javascript:void(0)">🔍 @L["Health_TabPerformance"]</a>
         </li>
     </ul>
 
@@ -28,7 +30,7 @@
     {
     <div class="card">
         <div class="card-header d-flex align-items-center justify-content-between">
-            <h2 class="mb-0">系统健康检查</h2>
+            <h2 class="mb-0">@L["Health_SystemHealthCheck"]</h2>
             <div class="d-flex gap-2">
                 <button class="btn btn-sm btn-outline-success" @onclick="FixIssuesAsync" disabled="@isFixing">
                     @if (isFixing)
@@ -39,7 +41,7 @@
                     {
                         <span>🔧</span>
                     }
-                    一键修复
+                    @L["Health_OneClickFix"]
                 </button>
                 <button class="btn btn-sm btn-outline-info" @onclick="SetupOpenClawAsync" disabled="@isSettingUpOpenClaw">
                     @if (isSettingUpOpenClaw)
@@ -50,9 +52,9 @@
                     {
                         <span>🦞</span>
                     }
-                    配置 OpenClaw
+                    @L["Health_SetupOpenClaw"]
                 </button>
-                <button class="btn btn-sm btn-outline-primary" @onclick="ReloadAsync" disabled="@isLoading">刷新</button>
+                <button class="btn btn-sm btn-outline-primary" @onclick="ReloadAsync" disabled="@isLoading">@L["Health_Refresh"]</button>
             </div>
         </div>
 
@@ -60,7 +62,7 @@
             @if (isLoading)
             {
                 <div>
-                    <div class="text-muted small mb-2">正在检测各项服务，请稍候…</div>
+                    <div class="text-muted small mb-2">@L["Health_CheckingServices"]</div>
                     <div class="progress" style="height: 10px;" role="progressbar" aria-label="检测进行中">
                         <div class="progress-bar progress-bar-striped progress-bar-animated w-100"></div>
                     </div>
@@ -74,7 +76,7 @@
             {
                 <div class="mb-4">
                     <div class="d-flex align-items-center flex-wrap gap-2">
-                        <h3 class="mb-0">健康度：@report.HealthScore%</h3>
+                        <h3 class="mb-0">@L["Health_HealthScoreLabel"] @report.HealthScore%</h3>
                         <span class="@GetBadgeClass(report.Status)">@report.Status</span>
                     </div>
 
@@ -87,8 +89,8 @@
                     </div>
 
                     <div class="small text-muted mt-2">
-                        检测时间：@report.Timestamp.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")
-                        <span class="ms-2" title="各分项并行执行时，从发起到全部结束的墙钟时间">· 并行墙钟 @report.TotalWallClockMs ms</span>
+                        @L["Health_CheckTimeLabel"] @report.Timestamp.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")
+                        <span class="ms-2" title="各分项并行执行时，从发起到全部结束的墙钟时间">@L["Health_ParallelWallClockLabel"] @report.TotalWallClockMs ms</span>
                     </div>
                 </div>
 
@@ -117,7 +119,7 @@
                 @if (!string.IsNullOrWhiteSpace(openClawSetupMessage))
                 {
                     <div class="mt-4">
-                        <h5 class="h6 mb-3">🦞 OpenClaw 配置结果</h5>
+                        <h5 class="h6 mb-3">🦞 @L["Health_OpenClawSetupResult"]</h5>
                         <div class="alert alert-info">
                             @openClawSetupMessage
                         </div>
@@ -127,7 +129,7 @@
                 @if (fixResult != null)
                 {
                     <div class="mt-4">
-                        <h5 class="h6 mb-3">🔧 修复结果</h5>
+                        <h5 class="h6 mb-3">🔧 @L["Health_FixResults"]</h5>
                         <div class="alert @(fixResult.Success ? "alert-success" : "alert-info")">
                             @fixResult.Message
                         </div>
@@ -137,9 +139,9 @@
                                 <table class="table table-sm">
                                     <thead class="table-light">
                                         <tr>
-                                            <th>组件</th>
-                                            <th>状态</th>
-                                            <th>消息</th>
+                                            <th>@L["Health_Component"]</th>
+                                            <th>@L["Health_Status"]</th>
+                                            <th>@L["Health_Message"]</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -164,7 +166,7 @@
             }
             else
             {
-                <div class="alert alert-warning">未获取到健康报告</div>
+                <div class="alert alert-warning">@L["Health_NoHealthReport"]</div>
             }
         </div>
     </div>
@@ -172,13 +174,13 @@
     <!-- 请求性能指标 -->
     <div class="card mt-4">
         <div class="card-header d-flex align-items-center justify-content-between">
-            <h2 class="h5 mb-0">📊 请求性能指标</h2>
+            <h2 class="h5 mb-0">📊 @L["Health_RequestMetricsTitle"]</h2>
             <div class="d-flex gap-2">
                 <button class="btn btn-sm btn-outline-danger" @onclick="ClearMetricsAsync" disabled="@metricsLoading">
-                    清空统计
+                    @L["Health_ClearMetrics"]
                 </button>
                 <button class="btn btn-sm btn-outline-primary" @onclick="LoadMetricsAsync" disabled="@metricsLoading">
-                    刷新
+                    @L["Health_Refresh"]
                 </button>
             </div>
         </div>
@@ -187,7 +189,7 @@
             {
                 <div class="text-center py-3">
                     <div class="spinner-border spinner-border-sm" role="status"></div>
-                    <span class="ms-2 text-muted">加载中...</span>
+                    <span class="ms-2 text-muted">@L["Health_Loading"]</span>
                 </div>
             }
             else if (metricsSummary != null)
@@ -196,25 +198,25 @@
                 <div class="row g-3 mb-4">
                     <div class="col-6 col-md-3">
                         <div class="p-3 bg-light rounded text-center">
-                            <div class="text-muted small">总请求数</div>
+                            <div class="text-muted small">@L["Health_TotalRequests"]</div>
                             <div class="h4 mb-0">@metricsSummary.TotalRequests</div>
                         </div>
                     </div>
                     <div class="col-6 col-md-3">
                         <div class="p-3 bg-light rounded text-center">
-                            <div class="text-muted small">平均耗时</div>
+                            <div class="text-muted small">@L["Health_AvgElapsed"]</div>
                             <div class="h4 mb-0">@metricsSummary.AvgElapsedMs<span class="small text-muted">ms</span></div>
                         </div>
                     </div>
                     <div class="col-6 col-md-3">
                         <div class="p-3 bg-light rounded text-center">
-                            <div class="text-muted small">最大耗时</div>
+                            <div class="text-muted small">@L["Health_MaxElapsed"]</div>
                             <div class="h4 mb-0">@metricsSummary.MaxElapsedMs<span class="small text-muted">ms</span></div>
                         </div>
                     </div>
                     <div class="col-6 col-md-3">
                         <div class="p-3 bg-light rounded text-center">
-                            <div class="text-muted small">错误数</div>
+                            <div class="text-muted small">@L["Health_ErrorCount"]</div>
                             <div class="h4 mb-0 @(metricsSummary.ErrorCount > 0 ? "text-danger" : "")">@metricsSummary.ErrorCount</div>
                         </div>
                     </div>
@@ -223,16 +225,16 @@
                 <div class="row g-4">
                     <!-- 慢请求列表 -->
                     <div class="col-12 col-lg-6">
-                        <h5 class="h6 mb-3">🐌 最慢请求 (Top 10)</h5>
+                        <h5 class="h6 mb-3">🐌 @L["Health_SlowestRequests"]</h5>
                         @if (slowestRequests?.Any() == true)
                         {
                             <div class="table-responsive">
                                 <table class="table table-sm table-hover">
                                     <thead class="table-light">
                                         <tr>
-                                            <th>路径</th>
-                                            <th class="text-end">耗时</th>
-                                            <th class="text-center">状态</th>
+                                            <th>@L["Health_Path"]</th>
+                                            <th class="text-end">@L["Health_Elapsed"]</th>
+                                            <th class="text-center">@L["Health_Status"]</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -255,22 +257,22 @@
                         }
                         else
                         {
-                            <div class="text-muted small">暂无数据</div>
+                            <div class="text-muted small">@L["Health_NoData"]</div>
                         }
                     </div>
 
                     <!-- 高频请求路径 -->
                     <div class="col-12 col-lg-6">
-                        <h5 class="h6 mb-3">🚀 高频调用路径 (Top 10)</h5>
+                        <h5 class="h6 mb-3">🚀 @L["Health_FrequentPaths"]</h5>
                         @if (frequentPaths?.Any() == true)
                         {
                             <div class="table-responsive">
                                 <table class="table table-sm table-hover">
                                     <thead class="table-light">
                                         <tr>
-                                            <th>路径</th>
-                                            <th class="text-end">次数</th>
-                                            <th class="text-end">平均耗时</th>
+                                            <th>@L["Health_Path"]</th>
+                                            <th class="text-end">@L["Health_Count"]</th>
+                                            <th class="text-end">@L["Health_AvgElapsed"]</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -291,7 +293,7 @@
                         }
                         else
                         {
-                            <div class="text-muted small">暂无数据</div>
+                            <div class="text-muted small">@L["Health_NoData"]</div>
                         }
                     </div>
                 </div>
@@ -299,7 +301,7 @@
             }
             else
             {
-                <div class="alert alert-info">点击刷新按钮加载请求指标</div>
+                <div class="alert alert-info">@L["Health_ClickRefreshToLoadMetrics"]</div>
             }
         </div>
     </div>
@@ -307,13 +309,13 @@
     <!-- 错误日志 -->
     <div class="card mt-4">
         <div class="card-header d-flex align-items-center justify-content-between">
-            <h2 class="h5 mb-0">🐛 错误日志 (Warning/Error/Critical)</h2>
+            <h2 class="h5 mb-0">🐛 @L["Health_ErrorLogsTitle"]</h2>
             <div class="d-flex gap-2">
                 <button class="btn btn-sm btn-outline-danger" @onclick="ClearErrorLogsAsync" disabled="@errorLogsLoading">
-                    清空日志
+                    @L["Health_ClearLogs"]
                 </button>
                 <button class="btn btn-sm btn-outline-primary" @onclick="LoadErrorLogsAsync" disabled="@errorLogsLoading">
-                    刷新
+                    @L["Health_Refresh"]
                 </button>
             </div>
         </div>
@@ -322,7 +324,7 @@
             {
                 <div class="text-center py-3">
                     <div class="spinner-border spinner-border-sm" role="status"></div>
-                    <span class="ms-2 text-muted">加载中...</span>
+                    <span class="ms-2 text-muted">@L["Health_Loading"]</span>
                 </div>
             }
             else if (errorLogSummary != null)
@@ -331,7 +333,7 @@
                 <div class="row g-3 mb-4">
                     <div class="col-6 col-md-3">
                         <div class="p-3 bg-light rounded text-center">
-                            <div class="text-muted small">总错误数</div>
+                            <div class="text-muted small">@L["Health_TotalErrors"]</div>
                             <div class="h4 mb-0 @(errorLogSummary.TotalErrors > 0 ? "text-danger" : "")">@errorLogSummary.TotalErrors</div>
                         </div>
                     </div>
@@ -356,17 +358,17 @@
                 </div>
 
                 <!-- 最近的错误日志 -->
-                <h5 class="h6 mb-3">最近10条日志</h5>
+                <h5 class="h6 mb-3">@L["Health_RecentLogs"]</h5>
                 @if (recentErrorLogs?.Any() == true)
                 {
                     <div class="table-responsive">
                         <table class="table table-sm table-hover">
                             <thead class="table-light">
                                 <tr>
-                                    <th>时间</th>
-                                    <th>级别</th>
-                                    <th>来源</th>
-                                    <th>消息</th>
+                                    <th>@L["Health_Timestamp"]</th>
+                                    <th>@L["Health_Level"]</th>
+                                    <th>@L["Health_Source"]</th>
+                                    <th>@L["Health_Message"]</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -393,22 +395,22 @@
                 }
                 else
                 {
-                    <div class="text-muted small">暂无错误日志 🎉</div>
+                    <div class="text-muted small">@L["Health_NoErrorLogs"]</div>
                 }
             }
             else
             {
-                <div class="alert alert-info">点击刷新按钮加载错误日志</div>
+                <div class="alert alert-info">@L["Health_ClickRefreshToLoadLogs"]</div>
             }
         </div>
     </div>
 
     <div class="card mt-4 border-0 shadow-sm">
         <div class="card-header bg-body-secondary border-bottom-0">
-            <h2 class="h5 mb-0">运行环境架构</h2>
+            <h2 class="h5 mb-0">@L["Health_ArchitectureTitle"]</h2>
             <p class="small text-muted mb-0 mt-2">
-                本页向 Task Runner 请求<code class="mx-1">/api/health/full</code>，在服务端<strong>并行</strong>探测本机工具链。
-                健康检查的意义是：在跑笔记同步、脚本任务或本地 AI 之前，早发现「缺装、未启动或不可用」的依赖，避免任务跑到一半才失败。
+                @L["Health_ArchDesc1_Pre"]<code class="mx-1">/api/health/full</code>@L["Health_ArchDesc1_Mid"]<strong>@L["Health_ArchDesc1_Strong"]</strong>@L["Health_ArchDesc1_Post"]
+                @L["Health_ArchitectureDesc2"]
             </p>
         </div>
         <div class="card-body pt-0">
@@ -428,13 +430,13 @@
         <!-- 性能监控标签页 -->
         <ul class="nav nav-tabs mb-4">
             <li class="nav-item">
-                <a class="nav-link @(perfTab == "e2e" ? "active" : "")" @onclick='() => perfTab = "e2e"' href="javascript:void(0)">🔗 端到端性能</a>
+                <a class="nav-link @(perfTab == "e2e" ? "active" : "")" @onclick='() => perfTab = "e2e"' href="javascript:void(0)">🔗 @L["Health_TabE2E"]</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link @(perfTab == "api" ? "active" : "")" @onclick='() => perfTab = "api"' href="javascript:void(0)">📡 API 调用性能</a>
+                <a class="nav-link @(perfTab == "api" ? "active" : "")" @onclick='() => perfTab = "api"' href="javascript:void(0)">📡 @L["Health_TabApi"]</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link @(perfTab == "component" ? "active" : "")" @onclick='() => perfTab = "component"' href="javascript:void(0)">🧩 组件渲染性能</a>
+                <a class="nav-link @(perfTab == "component" ? "active" : "")" @onclick='() => perfTab = "component"' href="javascript:void(0)">🧩 @L["Health_TabComponent"]</a>
             </li>
         </ul>
 
@@ -452,8 +454,8 @@
         }
 
         <div class="mt-3 d-flex gap-2">
-            <button class="btn btn-outline-primary" @onclick="RefreshPerfData">🔄 刷新性能数据</button>
-            <button class="btn btn-outline-danger" @onclick="ClearAllPerfData">🗑️ 清空全部</button>
+            <button class="btn btn-outline-primary" @onclick="RefreshPerfData">🔄 @L["Health_RefreshPerfData"]</button>
+            <button class="btn btn-outline-danger" @onclick="ClearAllPerfData">🗑️ @L["Health_ClearAll"]</button>
         </div>
     }
 </div>
@@ -548,7 +550,7 @@
                 {
                     Name = "WebUI→TaskRunner",
                     Status = "healthy",
-                    Message = $"WebUI 可正常访问 Task Runner（{connectivityCheckSw.ElapsedMilliseconds}ms）",
+                    Message = string.Format(L["Health_WebuiConnectivityOk"], connectivityCheckSw.ElapsedMilliseconds),
                     CheckDurationMs = connectivityCheckSw.ElapsedMilliseconds
                 };
                 report.Components.Insert(0, connectivityStatus);
@@ -571,7 +573,7 @@
                     {
                         Name = "WebUI→TaskRunner",
                         Status = "critical",
-                        Message = $"WebUI 无法访问 Task Runner: {ex.Message}",
+                        Message = string.Format(L["Health_WebuiConnectivityFailed"], ex.Message),
                         CheckDurationMs = connectivityCheckSw.ElapsedMilliseconds
                     }
                 }
@@ -600,7 +602,7 @@
             fixResult = new HealthFixResultDto
             {
                 Success = false,
-                Message = $"修复请求失败: {ex.Message}"
+                Message = string.Format(L["Health_FixRequestFailed"], ex.Message)
             };
         }
         finally
@@ -625,7 +627,7 @@
         }
         catch (Exception ex)
         {
-            openClawSetupMessage = $"❌ 配置失败: {ex.Message}";
+            openClawSetupMessage = $"❌ {string.Format(L["Health_SetupFailed"], ex.Message)}";
         }
         finally
         {
@@ -786,14 +788,14 @@
         };
     }
 
-    private static string GetFixStatusLabel(string status)
+    private string GetFixStatusLabel(string status)
     {
         return status switch
         {
-            "fixed" => "已修复",
-            "manual_required" => "需手动处理",
-            "failed" => "修复失败",
-            "skipped" => "已跳过",
+            "fixed" => L["Health_FixStatus_Fixed"],
+            "manual_required" => L["Health_FixStatus_ManualRequired"],
+            "failed" => L["Health_FixStatus_Failed"],
+            "skipped" => L["Health_FixStatus_Skipped"],
             _ => status
         };
     }
