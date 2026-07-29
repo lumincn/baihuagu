@@ -1,34 +1,36 @@
 @page "/master-stage"
 @rendermode InteractiveServer
 @using Baihua.Web.Services
+@using Microsoft.Extensions.Localization
 @using Baihua.Contracts.Master
 @using Baihua.Contracts.Vaults
 @inject Baihua.Web.Services.IApiService ApiService
 @inject VaultsService VaultsService
 @inject NavigationManager NavigationManager
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
-<PageTitle>阶段进度</PageTitle>
+<PageTitle>@L["MasterStage_PageTitle"]</PageTitle>
 
-<h1>阶段进度</h1>
+<h1>@L["MasterStage_Title"]</h1>
 
 @if (masterId == null)
 {
     <div class="empty-state">
-        <p>未选择师父，<a href="master-chat">返回师父对话页</a></p>
+        <p>@(new MarkupString(L["MasterStage_NoMasterHint"].Value))</p>
     </div>
 }
 else if (isLoading)
 {
-    <div class="loading">加载中...</div>
+    <div class="loading">@L["MasterStage_Loading"]</div>
 }
 else
 {
     <div class="stage-header">
         <div class="stage-master-info">
-            <span class="master-label">师父：</span>
+            <span class="master-label">@L["MasterStage_MasterLabel"]</span>
             <span class="master-value">@masterName</span>
         </div>
-        <button class="btn btn-sm btn-outline-secondary" @onclick="GoBack">返回对话</button>
+        <button class="btn btn-sm btn-outline-secondary" @onclick="GoBack">@L["MasterStage_GoBack"]</button>
     </div>
 
     <div class="timeline">
@@ -62,23 +64,23 @@ else
                             <div class="progress-bar">
                                 <div class="progress-fill" style="width: @GetProgressWidth(stage.Name)"></div>
                             </div>
-                            <span class="progress-text">@graduatedStages.Count/5 阶段完成</span>
+                            <span class="progress-text">@string.Format(L["MasterStage_ProgressText"], graduatedStages.Count, 5)</span>
                         </div>
                         <button class="btn btn-sm btn-primary" @onclick="() => CompleteStageAsync(stage.Name)" disabled="@isCompleting">
-                            @(isCompleting ? "处理中..." : "完成此阶段")
+                            @(isCompleting ? L["MasterStage_CompletingBtn"] : L["MasterStage_CompleteBtn"])
                         </button>
                     }
                     @if (status == "Completed" && stageSummaries.ContainsKey(stage.Name))
                     {
                         <div class="stage-summary">
-                            <div class="summary-label">📖 阶段摘要</div>
+                            <div class="summary-label">📖 @L["MasterStage_StageSummary"]</div>
                             <div class="summary-text">@stageSummaries[stage.Name]</div>
                         </div>
                     }
                     @if (status == "Completed" && stageCorrections.ContainsKey(stage.Name) && stageCorrections[stage.Name] != "无")
                     {
                         <div class="stage-corrections">
-                            <div class="corrections-label">⚠️ 关键纠正</div>
+                            <div class="corrections-label">⚠️ @L["MasterStage_KeyCorrections"]</div>
                             <div class="corrections-text">@stageCorrections[stage.Name]</div>
                         </div>
                     }
@@ -89,14 +91,14 @@ else
 
     <div class="vault-focus-section">
         <div class="section-header">
-            <span class="section-title">📚 知识库关联</span>
+            <span class="section-title">📚 @L["MasterStage_KnowledgeBase"]</span>
             <button class="btn btn-sm btn-outline" @onclick="ShowVaultPicker" disabled="@isLoadingVaults">
-                @(isLoadingVaults ? "加载中..." : "关联知识库")
+                @(isLoadingVaults ? L["MasterStage_LoadingVaults"] : L["MasterStage_LinkVaultBtn"])
             </button>
         </div>
         @if (focusedVaults.Count == 0)
         {
-            <div class="vault-empty">尚未关联知识库，关联后师父将参考知识库内容教学</div>
+            <div class="vault-empty">@L["MasterStage_VaultEmpty"]</div>
         }
         else
         {
@@ -106,7 +108,7 @@ else
                     <div class="vault-item">
                         <span class="vault-name">@v.VaultName</span>
                         <span class="vault-state">@v.State</span>
-                        <button class="btn btn-xs btn-outline-danger" @onclick="() => RemoveVaultFocusAsync(v.VaultId)">移除</button>
+                        <button class="btn btn-xs btn-outline-danger" @onclick="() => RemoveVaultFocusAsync(v.VaultId)">@L["MasterStage_RemoveVault"]</button>
                     </div>
                 }
             </div>
@@ -119,7 +121,7 @@ else
     <div class="dialog-overlay" @onclick="CloseStageCompleteDialog">
         <div class="dialog-content" @onclick:stopPropagation>
             <div class="dialog-header">
-                <span class="dialog-title">🎉 阶段完成</span>
+                <span class="dialog-title">🎉 @L["MasterStage_DialogTitle"]</span>
                 <button class="dialog-close" @onclick="CloseStageCompleteDialog">✕</button>
             </div>
             <div class="dialog-body">
@@ -129,24 +131,24 @@ else
                         <div class="blessing-text">@completedBlessing</div>
                     </div>
                 }
-                <div class="completed-stage-name">「@completedStageName」阶段完成！</div>
+                <div class="completed-stage-name">@string.Format(L["MasterStage_StageComplete"], completedStageName)</div>
                 @if (!string.IsNullOrEmpty(completedSummary))
                 {
                     <div class="completed-summary">
-                        <div class="completed-label">📖 阶段小结</div>
+                        <div class="completed-label">📖 @L["MasterStage_StageSummaryDesc"]</div>
                         <div class="completed-text">@completedSummary</div>
                     </div>
                 }
                 @if (!string.IsNullOrEmpty(completedCorrections) && completedCorrections != "无")
                 {
                     <div class="completed-corrections">
-                        <div class="completed-corrections-label">⚠️ 关键纠正</div>
+                        <div class="completed-corrections-label">⚠️ @L["MasterStage_StageCorrections"]</div>
                         <div class="completed-corrections-text">@completedCorrections</div>
                     </div>
                 }
             </div>
             <div class="dialog-footer">
-                <button class="btn btn-primary" @onclick="CloseStageCompleteDialog">继续修行</button>
+                <button class="btn btn-primary" @onclick="CloseStageCompleteDialog">@L["MasterStage_ContinueBtn"]</button>
             </div>
         </div>
     </div>
@@ -157,13 +159,13 @@ else
     <div class="dialog-overlay" @onclick="CloseVaultPicker">
         <div class="dialog-content dialog-wide" @onclick:stopPropagation>
             <div class="dialog-header">
-                <span class="dialog-title">选择知识库</span>
+                <span class="dialog-title">@L["MasterStage_VaultPickerTitle"]</span>
                 <button class="dialog-close" @onclick="CloseVaultPicker">✕</button>
             </div>
             <div class="dialog-body">
                 @if (allVaults.Count == 0)
                 {
-                    <div class="vault-empty">暂无可用知识库</div>
+                    <div class="vault-empty">@L["MasterStage_NoVaults"]</div>
                 }
                 else
                 {
@@ -179,7 +181,7 @@ else
                 }
             </div>
             <div class="dialog-footer">
-                <button class="btn btn-outline-secondary" @onclick="CloseVaultPicker">关闭</button>
+                <button class="btn btn-outline-secondary" @onclick="CloseVaultPicker">@L["MasterStage_CloseBtn"]</button>
             </div>
         </div>
     </div>
