@@ -3061,4 +3061,103 @@
   <data name="Home_PageTitle" xml:space="preserve">
     <value>首页</value>
   </data>
+  <data name="MasterDisclaimer_Title" xml:space="preserve">
+    <value>免责声明</value>
+  </data>
+  <data name="MasterDisclaimer_Subtitle" xml:space="preserve">
+    <value>虚拟师父是学习辅助工具，不能替代专业咨询。</value>
+  </data>
+  <data name="MasterDisclaimer_Li1_Pre" xml:space="preserve">
+    <value>虚拟师父仅用于</value>
+  </data>
+  <data name="MasterDisclaimer_Li1_Strong" xml:space="preserve">
+    <value>学习考证知识</value>
+  </data>
+  <data name="MasterDisclaimer_Li1_Post" xml:space="preserve">
+    <value>，不提供真实的医疗诊断、处方或法律建议。</value>
+  </data>
+  <data name="MasterDisclaimer_Li2_Pre" xml:space="preserve">
+    <value>如有真实健康或法律问题，请咨询</value>
+  </data>
+  <data name="MasterDisclaimer_Li2_Strong" xml:space="preserve">
+    <value>持证专业人士</value>
+  </data>
+  <data name="MasterDisclaimer_Li2_Post" xml:space="preserve">
+    <value>。</value>
+  </data>
+  <data name="MasterDisclaimer_Li3" xml:space="preserve">
+    <value>AI 生成的内容可能存在错误，请以官方教材和权威资料为准。</value>
+  </data>
+  <data name="MasterDisclaimer_AgeConfirmLabel" xml:space="preserve">
+    <value>我已年满 18 周岁，理解本工具不提供真实诊疗或法律建议</value>
+  </data>
+  <data name="MasterDisclaimer_RejectBtn" xml:space="preserve">
+    <value>不同意</value>
+  </data>
+  <data name="MasterDisclaimer_AcceptBtn" xml:space="preserve">
+    <value>我已阅读并同意</value>
+  </data>
+  <data name="FamilyHome_PageTitle" xml:space="preserve">
+    <value>首页</value>
+  </data>
+  <data name="FamilyHome_CoreValue" xml:space="preserve">
+    <value>少就是多，把知识装进脑子</value>
+  </data>
+  <data name="FamilyHome_WelcomeTitle" xml:space="preserve">
+    <value>👋 欢迎使用百花</value>
+  </data>
+  <data name="FamilyHome_UserTypePrompt" xml:space="preserve">
+    <value>请选择适合您的使用模式，您可以随时在顶部栏切换。</value>
+  </data>
+  <data name="FamilyHome_BeginnerUserType" xml:space="preserve">
+    <value>非专业人员</value>
+  </data>
+  <data name="FamilyHome_BeginnerDescription" xml:space="preserve">
+    <value>简化界面，隐藏复杂功能，专注核心体验</value>
+  </data>
+  <data name="FamilyHome_ProfessionalUserType" xml:space="preserve">
+    <value>专业人员</value>
+  </data>
+  <data name="FamilyHome_ProfessionalDescription" xml:space="preserve">
+    <value>完整功能，性能监控、日志调试等高级工具</value>
+  </data>
+  <data name="FamilyHome_ApiKeyNotConfigured" xml:space="preserve">
+    <value>AI API Key 未配置</value>
+  </data>
+  <data name="FamilyHome_ApiKeyNotConfiguredDesc" xml:space="preserve">
+    <value>您尚未配置 AI API Key，无法使用 AI 功能。</value>
+  </data>
+  <data name="FamilyHome_ConfigureNow" xml:space="preserve">
+    <value>立即配置 →</value>
+  </data>
+  <data name="FamilyHome_VaultNotConfigured" xml:space="preserve">
+    <value>知识库未配置</value>
+  </data>
+  <data name="FamilyHome_VaultNotConfiguredDesc" xml:space="preserve">
+    <value>您尚未配置知识库路径，无法保存和管理笔记。</value>
+  </data>
+  <data name="FamilyHome_RecentNotes" xml:space="preserve">
+    <value>📖 最近浏览</value>
+  </data>
+  <data name="FamilyHome_ViewMore" xml:space="preserve">
+    <value>查看更多 →</value>
+  </data>
+  <data name="FamilyHome_NoRecentNotes" xml:space="preserve">
+    <value>暂无最近浏览记录</value>
+  </data>
+  <data name="FamilyHome_RecentSearches" xml:space="preserve">
+    <value>🔍 最近搜索</value>
+  </data>
+  <data name="FamilyHome_NoRecentSearches" xml:space="preserve">
+    <value>暂无搜索记录</value>
+  </data>
+  <data name="FamilyHome_MobileSync" xml:space="preserve">
+    <value>📱 移动端同步</value>
+  </data>
+  <data name="FamilyHome_DeviceManagement" xml:space="preserve">
+    <value>📱 设备管理</value>
+  </data>
+  <data name="FamilyHome_DeviceManagementDesc" xml:space="preserve">
+    <value>管理移动设备和扫码配对</value>
+  </data>
 </root>

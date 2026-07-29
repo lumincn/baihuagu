@@ -6,6 +6,7 @@
 @inject Baihua.Web.Services.VaultStatusService VaultStatusService
 @inject UserTypeService UserTypeService
 @inject Microsoft.Extensions.Logging.ILogger<FamilyHome> Logger
+@inject Microsoft.Extensions.Localization.IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
 @using Baihua.Web.Services
 @using Baihua.Web.Components
@@ -13,12 +14,12 @@
 @using System.Linq
 @using Microsoft.JSInterop
 
-<PageTitle>首页</PageTitle>
+<PageTitle>@L["FamilyHome_PageTitle"]</PageTitle>
 
 <div class="home-container">
     <!-- 核心价值宣传语 -->
     <div class="core-value-banner">
-        <span class="core-value-text">少就是多，把知识装进脑子</span>
+        <span class="core-value-text">@L["FamilyHome_CoreValue"]</span>
     </div>
 
     @if (_showUserTypeDialog)
@@ -27,17 +28,17 @@
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">👋 欢迎使用百花</h5>
+                        <h5 class="modal-title">@L["FamilyHome_WelcomeTitle"]</h5>
                     </div>
                     <div class="modal-body">
-                        <p class="text-muted mb-3">请选择适合您的使用模式，您可以随时在顶部栏切换。</p>
+                        <p class="text-muted mb-3">@L["FamilyHome_UserTypePrompt"]</p>
                         <div class="d-grid gap-3">
                             <button class="btn btn-outline-success btn-lg text-start p-3" @onclick="() => SelectUserType(UserType.Beginner)">
                                 <div class="d-flex align-items-center gap-3">
                                     <span style="font-size: 2rem;">👤</span>
                                     <div>
-                                        <div class="fw-bold">非专业人员</div>
-                                        <div class="small text-muted">简化界面，隐藏复杂功能，专注核心体验</div>
+                                        <div class="fw-bold">@L["FamilyHome_BeginnerUserType"]</div>
+                                        <div class="small text-muted">@L["FamilyHome_BeginnerDescription"]</div>
                                     </div>
                                 </div>
                             </button>
@@ -45,8 +46,8 @@
                                 <div class="d-flex align-items-center gap-3">
                                     <span style="font-size: 2rem;">🔧</span>
                                     <div>
-                                        <div class="fw-bold">专业人员</div>
-                                        <div class="small text-muted">完整功能，性能监控、日志调试等高级工具</div>
+                                        <div class="fw-bold">@L["FamilyHome_ProfessionalUserType"]</div>
+                                        <div class="small text-muted">@L["FamilyHome_ProfessionalDescription"]</div>
                                     </div>
                                 </div>
                             </button>
@@ -68,15 +69,15 @@
             <div class="config-alert api-alert">
                 <div class="alert-header">
                     <span class="alert-icon">⚠️</span>
-                    <span class="alert-title">AI API Key 未配置</span>
+                    <span class="alert-title">@L["FamilyHome_ApiKeyNotConfigured"]</span>
                 </div>
                 <div class="alert-content">
-                    <p>您尚未配置 AI API Key，无法使用 AI 功能。</p>
+                    <p>@L["FamilyHome_ApiKeyNotConfiguredDesc"]</p>
                     <div class="alert-advice">
                         @((MarkupString)GetConfigurationAdviceHtml())
                     </div>
                     <button class="alert-button" @onclick="NavigateToSettings">
-                        立即配置 →
+                        @L["FamilyHome_ConfigureNow"]
                     </button>
                 </div>
             </div>
@@ -88,15 +89,15 @@
             <div class="config-alert vault-alert">
                 <div class="alert-header">
                     <span class="alert-icon">📁</span>
-                    <span class="alert-title">知识库未配置</span>
+                    <span class="alert-title">@L["FamilyHome_VaultNotConfigured"]</span>
                 </div>
                 <div class="alert-content">
-                    <p>您尚未配置知识库路径，无法保存和管理笔记。</p>
+                    <p>@L["FamilyHome_VaultNotConfiguredDesc"]</p>
                     <div class="alert-advice">
                         @((MarkupString)GetVaultConfigurationAdviceHtml())
                     </div>
                     <button class="alert-button" @onclick="NavigateToVaults">
-                        立即配置 →
+                        @L["FamilyHome_ConfigureNow"]
                     </button>
                 </div>
             </div>
@@ -106,10 +107,10 @@
     <!-- 最近浏览 -->
     <div class="section">
         <div class="section-header">
-            <h2>📖 最近浏览</h2>
+            <h2>@L["FamilyHome_RecentNotes"]</h2>
             @if (!isLoadingNotes)
             {
-                <a href="search" class="section-link">查看更多 →</a>
+                <a href="search" class="section-link">@L["FamilyHome_ViewMore"]</a>
             }
         </div>
         @if (isLoadingNotes)
@@ -138,7 +139,7 @@
         else
         {
             <div class="section-empty">
-                <p>暂无最近浏览记录</p>
+                <p>@L["FamilyHome_NoRecentNotes"]</p>
             </div>
         }
     </div>
@@ -146,7 +147,7 @@
     <!-- 最近搜索 -->
     <div class="section">
         <div class="section-header">
-            <h2>🔍 最近搜索</h2>
+            <h2>@L["FamilyHome_RecentSearches"]</h2>
         </div>
         @if (isLoadingSearches)
         {
@@ -173,7 +174,7 @@
         else
         {
             <div class="section-empty">
-                <p>暂无搜索记录</p>
+                <p>@L["FamilyHome_NoRecentSearches"]</p>
             </div>
         }
     </div>
@@ -181,12 +182,12 @@
     <!-- 移动端同步入口 -->
     <div class="section">
         <div class="section-header">
-            <h2>📱 移动端同步</h2>
+            <h2>@L["FamilyHome_MobileSync"]</h2>
         </div>
         <div class="dashboard">
             <div class="card" @onclick="@(() => Navigation.NavigateTo("devices"))">
-                <h3>📱 设备管理</h3>
-                <p>管理移动设备和扫码配对</p>
+                <h3>@L["FamilyHome_DeviceManagement"]</h3>
+                <p>@L["FamilyHome_DeviceManagementDesc"]</p>
             </div>
         </div>
     </div>
