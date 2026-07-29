@@ -28,32 +28,32 @@ else
             <div class="machine-card @(GetMachineTierClass())">
                 <div class="card-header">
                     <span class="platform-icon">💻</span>
-                    <span class="platform-name">当前机器</span>
+                    <span class="platform-name">@L["HardwareBenchmark_CurrentMachineLabel"]</span>
                     <span class="tier-badge">@GetMachineTierLabel()</span>
                 </div>
                 <div class="spec-grid">
                     <div class="spec-item">
                         <span class="spec-label">CPU</span>
-                        <span class="spec-value">@(hardwareInfo?.Cpu.Name ?? "未知")</span>
+                        <span class="spec-value">@(hardwareInfo?.Cpu.Name ?? L["HardwareBenchmark_Unknown"])</span>
                     </div>
                     <div class="spec-item">
-                        <span class="spec-label">核心数</span>
-                        <span class="spec-value">@(hardwareInfo?.Cpu.LogicalProcessorCount ?? 0) 核</span>
+                        <span class="spec-label">@L["HardwareBenchmark_CoreCount"]</span>
+                        <span class="spec-value">@(hardwareInfo?.Cpu.LogicalProcessorCount ?? 0) ></span>
                     </div>
                     <div class="spec-item">
-                        <span class="spec-label">内存</span>
+                        <span class="spec-label">@L["HardwareBenchmark_Memory"]</span>
                         <span class="spec-value">@(hardwareInfo?.Memory.TotalGiB.ToString("F1") ?? "-") GB</span>
                     </div>
                     <div class="spec-item">
-                        <span class="spec-label">显卡</span>
+                        <span class="spec-label">@L["HardwareBenchmark_Gpu"]</span>
                         <span class="spec-value">@(GetGpuSummary())</span>
                     </div>
                     <div class="spec-item">
-                        <span class="spec-label">系统</span>
+                        <span class="spec-label">@L["HardwareBenchmark_System"]</span>
                         <span class="spec-value">@(hardwareInfo?.OsPlatform ?? "-") @(hardwareInfo?.IsWsl == true ? "(WSL)" : "")</span>
                     </div>
                     <div class="spec-item">
-                        <span class="spec-label">磁盘可用</span>
+                        <span class="spec-label">@L["HardwareBenchmark_DiskAvailable"]</span>
                         <span class="spec-value">@GetDiskGiB(hardwareInfo?.AvailableDiskSpaceBytes) GB</span>
                     </div>
                 </div>
@@ -70,16 +70,16 @@ else
             <table class="comparison-table">
                 <thead>
                     <tr>
-                        <th class="col-rank">排名</th>
-                        <th class="col-platform">平台</th>
-                        <th class="col-gpu">GPU / NPU / 加速器</th>
-                        <th class="col-memory">显存 / 统一内存</th>
-                        <th class="col-tops">INT8 算力</th>
-                        <th class="col-tops">INT4 算力</th>
-                        <th class="col-bandwidth">显存带宽</th>
-                        <th class="col-speed">Llama3-8B Q4 估速</th>
-                        <th class="col-power">典型功耗</th>
-                        <th class="col-price">参考价格</th>
+                        <th class="col-rank">@L["HardwareBenchmark_Col_Rank"]</th>
+                        <th class="col-platform">@L["HardwareBenchmark_Col_Platform"]</th>
+                        <th class="col-gpu">@L["HardwareBenchmark_Col_Gpu"]</th>
+                        <th class="col-memory">@L["HardwareBenchmark_Col_Memory"]</th>
+                        <th class="col-tops">@L["HardwareBenchmark_Col_Int8"]</th>
+                        <th class="col-tops">@L["HardwareBenchmark_Col_Int4"]</th>
+                        <th class="col-bandwidth">@L["HardwareBenchmark_Col_Bandwidth"]</th>
+                        <th class="col-speed">@L["HardwareBenchmark_Col_Speed"]</th>
+                        <th class="col-power">@L["HardwareBenchmark_Col_Power"]</th>
+                        <th class="col-price">@L["HardwareBenchmark_Col_Price"]</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -276,7 +276,7 @@ else
             currentSpeed = hardwareInfo.EstimatedCpuTokensPerSecond.Value;
 
         var currentComputeUnits = currentGpu?.ComputeUnits.HasValue == true
-            ? $"{currentGpu.ComputeUnits} {(currentGpu.Vendor == "NVIDIA" ? "CUDA" : currentGpu.Vendor == "AMD" ? "CU" : currentGpu.Vendor == "Intel" ? "Xe" : "核")}"
+            ? $"{currentGpu.ComputeUnits} {(currentGpu.Vendor == "NVIDIA" ? "CUDA" : currentGpu.Vendor == "AMD" ? "CU" : currentGpu.Vendor == "Intel" ? "Xe" : ">")}"
             : (currentGpu != null ? "未知" : "-");
 
         platforms.Add(new PlatformComparisonItem
@@ -324,7 +324,7 @@ else
             new()
             {
                 Vendor = "NVIDIA", VendorEmoji = "🟢", BadgeClass = "nvidia", ModelName = "RTX 5090",
-                GpuInfo = "Blackwell GB202<br><span class=\"sub-text\">21760 CUDA 核心</span>",
+                GpuInfo = "Blackwell GB202<br><span class=\"sub-text\">21760 CUDA >心</span>",
                 MemoryInfo = "32 GB GDDR7<br><span class=\"sub-text\">专用显存</span>",
                 TflopsInt8Info = "~900 TFLOPS", TflopsInt4Info = "~1800 TFLOPS", BandwidthInfo = "~1792 GB/s",
                 SpeedInfo = "~230 tok/s", EstimatedTokensPerSecond = 230,
@@ -333,7 +333,7 @@ else
             new()
             {
                 Vendor = "NVIDIA", VendorEmoji = "🟢", BadgeClass = "nvidia", ModelName = "RTX 4090",
-                GpuInfo = "Ada Lovelace AD102<br><span class=\"sub-text\">16384 CUDA 核心</span>",
+                GpuInfo = "Ada Lovelace AD102<br><span class=\"sub-text\">16384 CUDA >心</span>",
                 MemoryInfo = "24 GB GDDR6X<br><span class=\"sub-text\">专用显存</span>",
                 TflopsInt8Info = "~660 TFLOPS", TflopsInt4Info = "~1320 TFLOPS", BandwidthInfo = "~1008 GB/s",
                 SpeedInfo = "~130 tok/s", EstimatedTokensPerSecond = 130,
@@ -342,7 +342,7 @@ else
             new()
             {
                 Vendor = "NVIDIA", VendorEmoji = "🟢", BadgeClass = "nvidia", ModelName = "RTX 5080",
-                GpuInfo = "Blackwell GB203<br><span class=\"sub-text\">10752 CUDA 核心</span>",
+                GpuInfo = "Blackwell GB203<br><span class=\"sub-text\">10752 CUDA >心</span>",
                 MemoryInfo = "16 GB GDDR7<br><span class=\"sub-text\">专用显存</span>",
                 TflopsInt8Info = "~440 TFLOPS", TflopsInt4Info = "~880 TFLOPS", BandwidthInfo = "~960 GB/s",
                 SpeedInfo = "~125 tok/s", EstimatedTokensPerSecond = 125,
@@ -360,7 +360,7 @@ else
             new()
             {
                 Vendor = "NVIDIA", VendorEmoji = "🟢", BadgeClass = "nvidia", ModelName = "RTX 4080",
-                GpuInfo = "Ada Lovelace AD103<br><span class=\"sub-text\">9728 CUDA 核心</span>",
+                GpuInfo = "Ada Lovelace AD103<br><span class=\"sub-text\">9728 CUDA >心</span>",
                 MemoryInfo = "16 GB GDDR6X<br><span class=\"sub-text\">专用显存</span>",
                 TflopsInt8Info = "~460 TFLOPS", TflopsInt4Info = "~920 TFLOPS", BandwidthInfo = "~717 GB/s",
                 SpeedInfo = "~93 tok/s", EstimatedTokensPerSecond = 93,
@@ -369,7 +369,7 @@ else
             new()
             {
                 Vendor = "NVIDIA", VendorEmoji = "🟢", BadgeClass = "nvidia", ModelName = "RTX 5070 Ti",
-                GpuInfo = "Blackwell GB203<br><span class=\"sub-text\">8960 CUDA 核心</span>",
+                GpuInfo = "Blackwell GB203<br><span class=\"sub-text\">8960 CUDA >心</span>",
                 MemoryInfo = "16 GB GDDR7<br><span class=\"sub-text\">专用显存</span>",
                 TflopsInt8Info = "~360 TFLOPS", TflopsInt4Info = "~720 TFLOPS", BandwidthInfo = "~896 GB/s",
                 SpeedInfo = "~117 tok/s", EstimatedTokensPerSecond = 117,
@@ -378,7 +378,7 @@ else
             new()
             {
                 Vendor = "NVIDIA", VendorEmoji = "🟢", BadgeClass = "nvidia", ModelName = "RTX 5070",
-                GpuInfo = "Blackwell GB205<br><span class=\"sub-text\">6144 CUDA 核心</span>",
+                GpuInfo = "Blackwell GB205<br><span class=\"sub-text\">6144 CUDA >心</span>",
                 MemoryInfo = "12 GB GDDR7<br><span class=\"sub-text\">专用显存</span>",
                 TflopsInt8Info = "~280 TFLOPS", TflopsInt4Info = "~560 TFLOPS", BandwidthInfo = "~672 GB/s",
                 SpeedInfo = "~87 tok/s", EstimatedTokensPerSecond = 87,
@@ -387,7 +387,7 @@ else
             new()
             {
                 Vendor = "Apple", VendorEmoji = "⚪", BadgeClass = "apple", ModelName = "Mac Studio M3 Ultra",
-                GpuInfo = "80 核 GPU + 32 核 NPU<br><span class=\"sub-text\">Apple Silicon</span>",
+                GpuInfo = "80 > GPU + 32 > NPU<br><span class=\"sub-text\">Apple Silicon</span>",
                 MemoryInfo = "最高 512 GB<br><span class=\"sub-text\">统一内存</span>",
                 TflopsInt8Info = "~56 TFLOPS", TflopsInt4Info = "~112 TFLOPS", BandwidthInfo = "~819 GB/s",
                 SpeedInfo = "~131 tok/s", EstimatedTokensPerSecond = 131,
@@ -405,7 +405,7 @@ else
             new()
             {
                 Vendor = "NVIDIA", VendorEmoji = "🟢", BadgeClass = "nvidia", ModelName = "RTX 4070",
-                GpuInfo = "Ada Lovelace AD104<br><span class=\"sub-text\">5888 CUDA 核心</span>",
+                GpuInfo = "Ada Lovelace AD104<br><span class=\"sub-text\">5888 CUDA >心</span>",
                 MemoryInfo = "12 GB GDDR6X<br><span class=\"sub-text\">专用显存</span>",
                 TflopsInt8Info = "~240 TFLOPS", TflopsInt4Info = "~480 TFLOPS", BandwidthInfo = "~504 GB/s",
                 SpeedInfo = "~65 tok/s", EstimatedTokensPerSecond = 65,
@@ -423,7 +423,7 @@ else
             new()
             {
                 Vendor = "Apple", VendorEmoji = "⚪", BadgeClass = "apple", ModelName = "MacBook Pro M4 Max",
-                GpuInfo = "40 核 GPU + 16 核 NPU<br><span class=\"sub-text\">Apple Silicon</span>",
+                GpuInfo = "40 > GPU + 16 > NPU<br><span class=\"sub-text\">Apple Silicon</span>",
                 MemoryInfo = "最高 128 GB<br><span class=\"sub-text\">统一内存</span>",
                 TflopsInt8Info = "~32 TFLOPS", TflopsInt4Info = "~64 TFLOPS", BandwidthInfo = "~546 GB/s",
                 SpeedInfo = "~87 tok/s", EstimatedTokensPerSecond = 87,
@@ -432,7 +432,7 @@ else
             new()
             {
                 Vendor = "Intel", VendorEmoji = "🔵", BadgeClass = "intel", ModelName = "Arc A770",
-                GpuInfo = "Alchemist ACM-G10<br><span class=\"sub-text\">32 Xe 核心 / 512 XMX</span>",
+                GpuInfo = "Alchemist ACM-G10<br><span class=\"sub-text\">32 Xe >心 / 512 XMX</span>",
                 MemoryInfo = "16 GB GDDR6<br><span class=\"sub-text\">专用显存</span>",
                 TflopsInt8Info = "~34 TFLOPS", TflopsInt4Info = "~68 TFLOPS", BandwidthInfo = "~560 GB/s",
                 SpeedInfo = "~73 tok/s", EstimatedTokensPerSecond = 73,
@@ -441,7 +441,7 @@ else
             new()
             {
                 Vendor = "NVIDIA", VendorEmoji = "🟢", BadgeClass = "nvidia", ModelName = "RTX 4060",
-                GpuInfo = "Ada Lovelace AD107<br><span class=\"sub-text\">3072 CUDA 核心</span>",
+                GpuInfo = "Ada Lovelace AD107<br><span class=\"sub-text\">3072 CUDA >心</span>",
                 MemoryInfo = "8 GB GDDR6<br><span class=\"sub-text\">专用显存</span>",
                 TflopsInt8Info = "~130 TFLOPS", TflopsInt4Info = "~260 TFLOPS", BandwidthInfo = "~272 GB/s",
                 SpeedInfo = "~35 tok/s", EstimatedTokensPerSecond = 35,
@@ -450,7 +450,7 @@ else
             new()
             {
                 Vendor = "Intel", VendorEmoji = "🔵", BadgeClass = "intel", ModelName = "Arc Pro B70",
-                GpuInfo = "Xe2 Battlemage BMG-G31<br><span class=\"sub-text\">32 Xe2 核心 / 256 XMX</span>",
+                GpuInfo = "Xe2 Battlemage BMG-G31<br><span class=\"sub-text\">32 Xe2 >心 / 256 XMX</span>",
                 MemoryInfo = "32 GB GDDR6<br><span class=\"sub-text\">专用显存</span>",
                 TflopsInt8Info = "~46 TFLOPS", TflopsInt4Info = "~92 TFLOPS", BandwidthInfo = "~608 GB/s",
                 SpeedInfo = "~79 tok/s", EstimatedTokensPerSecond = 79,
@@ -468,7 +468,7 @@ else
             new()
             {
                 Vendor = "Apple", VendorEmoji = "⚪", BadgeClass = "apple", ModelName = "MacBook Pro M3",
-                GpuInfo = "10 核 GPU + 16 核 NPU<br><span class=\"sub-text\">Apple Silicon</span>",
+                GpuInfo = "10 > GPU + 16 > NPU<br><span class=\"sub-text\">Apple Silicon</span>",
                 MemoryInfo = "最高 24 GB<br><span class=\"sub-text\">统一内存</span>",
                 TflopsInt8Info = "~8 TFLOPS", TflopsInt4Info = "~16 TFLOPS", BandwidthInfo = "~102 GB/s",
                 SpeedInfo = "~10 tok/s", EstimatedTokensPerSecond = 10,
@@ -484,7 +484,7 @@ else
         var gpu = hardwareInfo.Gpus[0];
         var parts = new List<string> { gpu.Name };
         if (gpu.ComputeUnits.HasValue)
-            parts.Add($"({gpu.ComputeUnits} {(gpu.Vendor == "NVIDIA" ? "CUDA" : gpu.Vendor == "AMD" ? "CU" : gpu.Vendor == "Intel" ? "Xe" : "核")})");
+            parts.Add($"({gpu.ComputeUnits} {(gpu.Vendor == "NVIDIA" ? "CUDA" : gpu.Vendor == "AMD" ? "CU" : gpu.Vendor == "Intel" ? "Xe" : ">")})");
         if (gpu.EstimatedTokensPerSecond.HasValue)
             parts.Add($"~{gpu.EstimatedTokensPerSecond:F0} tok/s");
         return string.Join(" ", parts);
