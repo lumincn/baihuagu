@@ -20,7 +20,7 @@ namespace Baihua.Family.Services
                     {
                         Name = "Ollama",
                         Status = "warning",
-                        Message = "Ollama 服务未运行（可选，用于本地 AI 模型）"
+                        Message = _loc["Health_OllamaNotRunning"]
                     };
                 }
 
@@ -28,7 +28,7 @@ namespace Baihua.Family.Services
                 {
                     Name = "Ollama",
                     Status = "healthy",
-                    Message = "Ollama 服务正在运行"
+                    Message = _loc["Health_OllamaRunning"]
                 };
             }
             catch (OperationCanceledException)
@@ -42,7 +42,7 @@ namespace Baihua.Family.Services
                 {
                     Name = "Ollama",
                     Status = "warning",
-                    Message = "Ollama 检测异常"
+                    Message = _loc["Health_OllamaCheckError"]
                 };
             }
         }

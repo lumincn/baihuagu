@@ -21,7 +21,7 @@ public partial class VaultController
         var targetVault = _vaultSettings.GetVaults().FirstOrDefault(v => v.Id == vaultId);
         if (targetVault == null || string.IsNullOrEmpty(targetVault.Path))
         {
-            return NotFound(new { error = "知识库不存在" });
+            return NotFound(new { error = _loc["Vault_NotFound"] });
         }
 
         var cardsPath = System.IO.Path.Combine(targetVault.Path, "cards");
@@ -153,11 +153,11 @@ public partial class VaultController
         var vault = _vaultSettings.GetVaults().FirstOrDefault(v => v.Id == vaultId);
         if (vault == null)
         {
-            return NotFound(new { error = "知识库不存在", vaultId });
+            return NotFound(new { error = _loc["Vault_NotFound"], vaultId });
         }
         if (string.IsNullOrEmpty(vault.Path))
         {
-            return StatusCode(500, new { error = "知识库路径为空", vaultId });
+            return StatusCode(500, new { error = _loc["Vault_PathEmpty"], vaultId });
         }
 
         var notesPath = System.IO.Path.Combine(vault.Path, "notes");

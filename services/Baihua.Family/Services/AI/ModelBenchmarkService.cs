@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
 using Baihua.Contracts.Benchmark;
 using Baihua.Family.Models;
 
@@ -15,6 +17,7 @@ public class ModelBenchmarkService
     private readonly LocalModelDeploymentService _localDeployment;
     private readonly BenchmarkRepository _repo;
     private readonly AiMetricsService _metrics;
+    private readonly IStringLocalizer<SharedResources> _loc;
     private readonly ILogger<ModelBenchmarkService> _logger;
     private readonly object _statusLock = new();
     private BenchmarkStatusDto _status = new();
@@ -26,7 +29,7 @@ public class ModelBenchmarkService
         LocalModelDeploymentService localDeployment,
         BenchmarkRepository repo,
         AiMetricsService metrics,
-        ILogger<ModelBenchmarkService> logger)
+        ILogger<ModelBenchmarkService> logger, IStringLocalizer<SharedResources> loc)
     {
         _aiClient = aiClient;
         _aiSettings = aiSettings;
@@ -34,6 +37,7 @@ public class ModelBenchmarkService
         _repo = repo;
         _metrics = metrics;
         _logger = logger;
+        _loc = loc;
     }
 
     /// <summary>
@@ -88,7 +92,7 @@ public class ModelBenchmarkService
         try
         {
             var provider = _aiSettings.GetAiProvider(model.ProviderId)
-                ?? throw new Exception($"未找到 AI 提供商：{model.ProviderId}");
+                ?? throw new Exception(_loc["AiClient_ProviderNotFound", model.ProviderId]);
 
             var allPrompts = BenchmarkPrompts.GetPromptsByCategory(model.Category);
             var prompts = promptIds?.Length > 0
@@ -96,7 +100,7 @@ public class ModelBenchmarkService
                 : allPrompts;
 
             if (prompts.Count == 0)
-                throw new Exception("没有可运行的测试提示词");
+                throw new Exception(_loc["ModelBench_NoPrompts"]);
 
             lock (_statusLock) _status.TotalCount = prompts.Count;
 
@@ -129,7 +133,7 @@ public class ModelBenchmarkService
             lock (_statusLock)
             {
                 _status.Status = "failed";
-                _status.Error = "测试已取消";
+                _status.Error = _loc["ModelBench_TestCancelled"];
             }
 
             // 取消后卸载本地模型释放资源

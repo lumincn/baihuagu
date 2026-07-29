@@ -14,7 +14,7 @@ public partial class AnkiController
             var statsPath = ResolveCardsPath(vaultId);
             if (string.IsNullOrEmpty(statsPath)) 
             {
-                return BadRequest(new { error = "必须指定有效的知识库" });
+                return BadRequest(new { error = _loc["Vault_Required"] });
             }
 
             var studyDir = System.IO.Path.Combine(statsPath, ".study");
@@ -157,14 +157,14 @@ public partial class AnkiController
             var cardsPath = ResolveCardsPath(vaultId);
             if (string.IsNullOrEmpty(cardsPath))
             {
-                return BadRequest(new { error = "必须指定有效的知识库" });
+                return BadRequest(new { error = _loc["Vault_Required"] });
             }
 
             var csv = await _cardGenerator.ExportToCsv(cardsPath);
             
             if (string.IsNullOrEmpty(csv))
             {
-                return NotFound(new { error = "没有可导出的卡片" });
+                return NotFound(new { error = _loc["Anki_NoCardsToExport"] });
             }
 
             return File(System.Text.Encoding.UTF8.GetBytes(csv), "text/csv", "anki_cards.csv");

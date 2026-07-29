@@ -3,6 +3,8 @@ using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
 using OpenAI;
 using System.ClientModel;
 using Microsoft.Extensions.Logging;
@@ -24,6 +26,7 @@ namespace Baihua.Family.Services;
         private readonly IDistributedCache _cache;
         private readonly AnthropicAiClient _anthropicClient;
         private readonly ILogger<AiClientService> _logger;
+        private readonly IStringLocalizer<SharedResources> _loc;
         private readonly ConcurrentDictionary<string, IChatClient> _chatClientCache = new();
 
         public AiClientService(
@@ -33,7 +36,8 @@ namespace Baihua.Family.Services;
             AiMetricsService metrics,
             IDistributedCache cache,
             AnthropicAiClient anthropicClient,
-            ILogger<AiClientService> logger)
+            ILogger<AiClientService> logger,
+            IStringLocalizer<SharedResources> loc)
         {
             _aiSettings = aiSettings;
             _autoStarter = autoStarter;
@@ -42,5 +46,6 @@ namespace Baihua.Family.Services;
             _cache = cache;
             _anthropicClient = anthropicClient;
             _logger = logger;
+            _loc = loc;
         }
 }

@@ -1,3 +1,6 @@
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
+
 namespace Baihua.Family.Controllers.AI.Stages;
 
 /// <summary>
@@ -5,14 +8,21 @@ namespace Baihua.Family.Controllers.AI.Stages;
 /// </summary>
 public class MoliStageStrategy : StageStrategyBase
 {
+    private readonly IStringLocalizer<SharedResources> _loc;
+
+    public MoliStageStrategy(IStringLocalizer<SharedResources> loc)
+    {
+        _loc = loc;
+    }
+
     public override string StageName => "磨砺";
     public override int Order => 4;
     public override string RoleName => "考官";
 
     public override string[] BlessingTemplates =>
     [
-        "{name}严肃道：百炼成钢，你已堪一战。",
-        "{name}点头道：模拟虽苦，实战方从容。",
-        "{name}正色道：考场如战场，你已备甲胄。"
+        _loc["AiStage_Blessing_Moli_1"],
+        _loc["AiStage_Blessing_Moli_2"],
+        _loc["AiStage_Blessing_Moli_3"]
     ];
 }

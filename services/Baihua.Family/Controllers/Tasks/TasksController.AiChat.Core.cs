@@ -51,7 +51,7 @@ namespace Baihua.Family.Controllers
                 ?? providers.FirstOrDefault();
 
             if (provider == null)
-                throw new Exception("未找到可用的AI提供商");
+                throw new Exception(_loc["AiProvider_NotFound"]);
 
             var apiEndpoint = provider.AiBaseUrl.TrimEnd('/') + "/chat/completions";
 
@@ -95,13 +95,13 @@ namespace Baihua.Family.Controllers
             {
                 // OpenAI SDK 在解析阿里云内容审核响应时（choices为空）会崩溃
                 _logger.LogWarning(ex, "AI 返回内容审核失败响应（choices为空），可能是敏感内容触发阿里云拦截");
-                throw new Exception("AI 内容审核未通过：输入内容可能包含敏感信息，请修改后重试。", ex);
+                throw new Exception(_loc["Task_ContentReviewFailed"], ex);
             }
             var content = response.Text;
 
             return new AiCallResult
             {
-                Content = content ?? throw new Exception("AI 返回内容为空。有可能是当前所用的 AI 模型不支持该问题，建议换一个 AI 提供商或模型再试试。"),
+                Content = content ?? throw new Exception(_loc["Tasks_AiEmptyResponse"]),
                 ProviderId = provider.Id,
                 ProviderName = provider.Name,
                 Model = model,

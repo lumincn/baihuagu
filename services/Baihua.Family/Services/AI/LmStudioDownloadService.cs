@@ -29,7 +29,7 @@ public class LmStudioDownloadService(ILogger<LmStudioDownloadService> logger)
 
         using var process = Process.Start(psi);
         if (process == null)
-            throw new InvalidOperationException("无法启动 lms get 进程");
+            throw new InvalidOperationException("Unable to start lms get process");
 
         var stdoutReader = Task.Run(async () =>
         {
@@ -59,7 +59,7 @@ public class LmStudioDownloadService(ILogger<LmStudioDownloadService> logger)
 
         if (process.ExitCode != 0)
         {
-            throw new InvalidOperationException($"lms get 退出码 {process.ExitCode}。可能模型名称未找到或 LM Studio GUI 未运行。");
+            throw new InvalidOperationException($"lms get exit code {process.ExitCode}. The model name may not be found or LM Studio GUI may not be running.");
         }
     }
 

@@ -30,7 +30,7 @@ public partial class OllamaService
 
             using var process = Process.Start(psi);
             if (process == null)
-                throw new InvalidOperationException("无法启动 ollama pull 进程");
+                throw new InvalidOperationException("Unable to start ollama pull process");
 
             var stdoutReader = Task.Run(async () =>
             {
@@ -60,7 +60,7 @@ public partial class OllamaService
 
             if (process.ExitCode != 0)
             {
-                throw new InvalidOperationException($"ollama pull 退出码 {process.ExitCode}");
+                throw new InvalidOperationException($"ollama pull exit code {process.ExitCode}");
             }
         }
 

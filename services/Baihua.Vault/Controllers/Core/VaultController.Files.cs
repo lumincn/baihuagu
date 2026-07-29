@@ -26,13 +26,13 @@ public partial class VaultController
         
         if (string.IsNullOrEmpty(path))
         {
-            return BadRequest(new { error = "路径不能为空" });
+            return BadRequest(new { error = _loc["Vault_PathEmpty"] });
         }
 
         var baseVaultPath = ResolveVaultPath(vaultId);
         if (string.IsNullOrEmpty(baseVaultPath))
         {
-            return BadRequest(new { error = "必须指定有效的知识库" });
+            return BadRequest(new { error = _loc["Vault_Required"] });
         }
 
         try
@@ -42,13 +42,13 @@ public partial class VaultController
             if (path.Contains(".."))
             {
                 _logger.LogWarning("检测到目录遍历尝试: {Path}", path);
-                return BadRequest(new { error = "非法路径" });
+                return BadRequest(new { error = _loc["Vault_IllegalPath"] });
             }
 
             var ext = System.IO.Path.GetExtension(path);
             if (!AllowedExtensions.Contains(ext))
             {
-                return BadRequest(new { error = $"不支持的文件类型: {ext}" });
+                return BadRequest(new { error = _loc["Vault_UnsupportedFileType", ext] });
             }
 
             string filePath;
@@ -71,7 +71,7 @@ public partial class VaultController
             if (!filePath.StartsWith(baseFullPath, StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogWarning("路径遍历被阻止: {FilePath} 不在 {BasePath} 内", filePath, baseFullPath);
-                return BadRequest(new { error = "非法路径" });
+                return BadRequest(new { error = _loc["Vault_IllegalPath"] });
             }
             
             if (!System.IO.File.Exists(filePath))
@@ -99,7 +99,7 @@ public partial class VaultController
         catch (Exception ex)
         {
             _logger.LogError(ex, "读取文件失败：{Path}", path);
-            return StatusCode(500, new { error = "读取失败", message = ex.Message });
+            return StatusCode(500, new { error = _loc["Vault_ReadFailed"], message = ex.Message });
         }
     }
 

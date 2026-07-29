@@ -268,7 +268,7 @@ public static class AesApiKeyEncryption
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException("API Key AES 加密失败", ex);
+            throw new InvalidOperationException("API Key AES encryption failed", ex);
         }
     }
 
@@ -288,11 +288,11 @@ public static class AesApiKeyEncryption
             var data = Convert.FromBase64String(cipherText[2..]);
 
             if (data.Length < 1 + NonceSize + TagSize)
-                throw new FormatException("密文格式错误：长度不足");
+                throw new FormatException("Invalid ciphertext format: insufficient length");
 
             var version = data[0];
             if (version != Version)
-                throw new NotSupportedException($"不支持的加密版本: {version}");
+                throw new NotSupportedException($"Unsupported encryption version: {version}");
 
             var nonce = new byte[NonceSize];
             var tag = new byte[TagSize];

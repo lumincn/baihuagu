@@ -5,6 +5,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
 
 namespace Baihua.Family.Services;
 
@@ -16,11 +18,13 @@ public class AnthropicAiClient
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<AnthropicAiClient> _logger;
+    private readonly IStringLocalizer<SharedResources> _loc;
 
-    public AnthropicAiClient(HttpClient httpClient, ILogger<AnthropicAiClient> logger)
+    public AnthropicAiClient(HttpClient httpClient, ILogger<AnthropicAiClient> logger, IStringLocalizer<SharedResources> loc)
     {
         _httpClient = httpClient;
         _logger = logger;
+        _loc = loc;
     }
 
     /// <summary>
@@ -47,11 +51,11 @@ public class AnthropicAiClient
         if (!response.IsSuccessStatusCode)
         {
             _logger.LogWarning("Anthropic API 请求失败: {StatusCode} {Body}", (int)response.StatusCode, responseJson);
-            throw new Exception($"Anthropic API 错误: {responseJson}");
+            throw new Exception(_loc["Anthropic_ApiError", responseJson]);
         }
 
         var anthropicResponse = JsonSerializer.Deserialize(responseJson, AnthropicJsonContext.Default.AnthropicResponse)
-            ?? throw new Exception("Anthropic 响应解析失败");
+            ?? throw new Exception(_loc["Anthropic_ParseFailed"]);
 
         var text = anthropicResponse.Content?.FirstOrDefault(c => c.Type == "text")?.Text ?? "";
         var chatMessage = new ChatMessage(ChatRole.Assistant, text);
@@ -93,7 +97,7 @@ public class AnthropicAiClient
         {
             var errorBody = await response.Content.ReadAsStringAsync(ct);
             _logger.LogWarning("Anthropic streaming API 请求失败: {StatusCode} {Body}", (int)response.StatusCode, errorBody);
-            throw new Exception($"Anthropic API 错误: {errorBody}");
+            throw new Exception(_loc["Anthropic_ApiError", errorBody]);
         }
 
         var stream = await response.Content.ReadAsStreamAsync(ct);

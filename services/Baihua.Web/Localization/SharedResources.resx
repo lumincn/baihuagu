@@ -3826,4 +3826,14 @@ Shift+Enter new line, Enter to send</value>
   <data name="Devices_DeviceRevoked" xml:space="preserve">
     <value>Device authorization revoked</value>
   </data>
+  <!-- === Phase 4 Batch 13: ObsidianStatusService keys === -->
+  <data name="ObsidianStatus_Unknown" xml:space="preserve">
+    <value>Obsidian status unknown</value>
+  </data>
+  <data name="ObsidianStatus_Timeout" xml:space="preserve">
+    <value>Check timed out, Obsidian may not be running</value>
+  </data>
+  <data name="ObsidianStatus_CheckFailed" xml:space="preserve">
+    <value>Failed to check Obsidian status</value>
+  </data>
 </root>

@@ -49,7 +49,7 @@ public partial class AiClientService
                     _logger.LogWarning("本地 AI 服务连接失败，尝试自动启动: {Provider}", provider.Id);
                     var started = await _autoStarter.TryEnsureRunningAsync(provider.Id, provider.AiBaseUrl);
                     if (!started)
-                        throw new Exception($"本地 AI 服务 {provider.Name} 未运行且自动启动失败，请手动启动后重试。");
+                        throw new Exception(_loc["AiClient_LocalServiceStartFailed", provider.Name]);
 
                     client = CreateChatClientWithCache(provider, model);
                     // 克隆消息列表，避免外界修改导致重试使用脏上下文
@@ -157,13 +157,13 @@ public partial class AiClientService
                         catch (Exception ex)
                         {
                             messages.Add(new ChatMessage(ChatRole.Tool,
-                                new[] { new FunctionResultContent(fc.CallId, $"执行失败：{ex.Message}") }));
+                                new[] { new FunctionResultContent(fc.CallId, _loc["Ai_Core_FuncExecuteFailed", ex.Message]) }));
                         }
                     }
                     else
                     {
                         messages.Add(new ChatMessage(ChatRole.Tool,
-                            new[] { new FunctionResultContent(fc.CallId, $"未找到函数：{fc.Name}") }));
+                            new[] { new FunctionResultContent(fc.CallId, _loc["Ai_Core_FuncNotFound", fc.Name]) }));
                     }
                 }
 

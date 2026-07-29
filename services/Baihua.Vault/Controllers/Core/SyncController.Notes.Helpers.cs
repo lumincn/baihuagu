@@ -122,7 +122,7 @@ namespace Baihua.Vault.Controllers
                             {
                                 Path = request.Path,
                                 Status = "conflict",
-                                Message = "文件已被其他设备修改",
+                                Message = _loc["Sync_FileModifiedByOther"],
                                 ServerModified = serverModified,
                                 ClientModified = request.Modified
                             };
@@ -137,7 +137,7 @@ namespace Baihua.Vault.Controllers
                 {
                     Path = request.Path,
                     Status = "success",
-                    Message = "笔记更新成功"
+                    Message = _loc["Sync_NoteUpdateSuccess"]
                 };
             }
             catch (Exception ex)
@@ -147,7 +147,7 @@ namespace Baihua.Vault.Controllers
                 {
                     Path = request.Path,
                     Status = "error",
-                    Message = $"更新失败：{ex.Message}"
+                    Message = _loc["Sync_UpdateFailed", ex.Message]
                 };
             }
         }

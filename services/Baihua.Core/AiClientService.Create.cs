@@ -25,7 +25,7 @@ public partial class AiClientService
         public IChatClient CreateChatClient(string providerId, string model, IList<AITool>? tools)
         {
             var provider = _aiSettings.GetAiProvider(providerId)
-                ?? throw new Exception($"未找到 AI 提供商：{providerId}");
+                ?? throw new Exception(_loc["AiClient_ProviderNotFound", providerId]);
 
             var cacheKey = $"{providerId}:{model}";
             return _chatClientCache.GetOrAdd(cacheKey, _ =>
@@ -93,7 +93,7 @@ public partial class AiClientService
             var model = _aiSettings.SemanticEmbeddingModel;
 
             if (string.IsNullOrWhiteSpace(url) || string.IsNullOrWhiteSpace(model))
-                throw new Exception("未配置 Embedding URL 或模型");
+                throw new Exception(_loc["AiClient_EmbeddingNotConfigured"]);
 
             // Embedding 可能使用与 Chat 不同的提供商
             // 尝试从 AI 提供商中匹配 Embedding URL
@@ -121,7 +121,7 @@ public partial class AiClientService
         public IEmbeddingGenerator<string, Embedding<float>> CreateEmbeddingGenerator(string url, string model, string? apiKey)
         {
             if (string.IsNullOrWhiteSpace(url) || string.IsNullOrWhiteSpace(model))
-                throw new Exception("未配置 Embedding URL 或模型");
+                throw new Exception(_loc["AiClient_EmbeddingNotConfigured"]);
 
             var endpoint = new Uri(url.TrimEnd('/'));
             var clientOptions = new OpenAIClientOptions { Endpoint = endpoint };

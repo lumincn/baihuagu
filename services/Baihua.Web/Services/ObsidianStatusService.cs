@@ -1,3 +1,6 @@
+using Baihua.Web.Localization;
+using Microsoft.Extensions.Localization;
+
 namespace Baihua.Web.Services;
 
 /// <summary>
@@ -6,10 +9,12 @@ namespace Baihua.Web.Services;
 public class ObsidianStatusService
 {
     private readonly IApiService _apiService;
+    private readonly IStringLocalizer<SharedResources> _loc;
 
-    public ObsidianStatusService(IApiService apiService)
+    public ObsidianStatusService(IApiService apiService, IStringLocalizer<SharedResources> loc)
     {
         _apiService = apiService;
+        _loc = loc;
     }
 
     /// <summary>
@@ -30,7 +35,7 @@ public class ObsidianStatusService
             {
                 IsRunning = isRunning,
                 Status = isRunning ? ObsidianStatus.Running : ObsidianStatus.NotRunning,
-                Message = obsidianComponent?.Message ?? "Obsidian 状态未知"
+                Message = obsidianComponent?.Message ?? _loc["ObsidianStatus_Unknown"]
             };
         }
         catch (OperationCanceledException)
@@ -40,7 +45,7 @@ public class ObsidianStatusService
             {
                 IsRunning = false,
                 Status = ObsidianStatus.NotRunning,
-                Message = "检测超时，Obsidian 可能未运行"
+                Message = _loc["ObsidianStatus_Timeout"]
             };
         }
         catch (Exception)
@@ -49,7 +54,7 @@ public class ObsidianStatusService
             {
                 IsRunning = false,
                 Status = ObsidianStatus.NotRunning,
-                Message = "检测 Obsidian 状态失败"
+                Message = _loc["ObsidianStatus_CheckFailed"]
             };
         }
     }

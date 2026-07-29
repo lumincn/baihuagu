@@ -2258,4 +2258,164 @@ Duration: {1}</value>
   <data name="LocalModel_Lifecycle_LmStudioNotRunning" xml:space="preserve">
     <value>LM Studio service not running and auto-start failed, please start manually and retry.</value>
   </data>
+
+  <!-- === Phase 4 Batch 12: AI Controllers remaining strings === -->
+  <data name="AiChat_LocalServiceNotRunning" xml:space="preserve">
+    <value>Local AI service {0} is not running and auto-start failed. Please start manually and retry.</value>
+  </data>
+  <data name="AiChat_TimeoutOrCancelled" xml:space="preserve">
+    <value>AI call timed out or was cancelled</value>
+  </data>
+  <data name="AiChat_Failed" xml:space="preserve">
+    <value>Chat failed: {0}</value>
+  </data>
+  <data name="AiChat_PromptNameEmpty" xml:space="preserve">
+    <value>Name cannot be empty</value>
+  </data>
+  <data name="AiChat_DefaultTemplateProtected" xml:space="preserve">
+    <value>Cannot delete the default template</value>
+  </data>
+  <data name="AiChat_TemplateNotFound" xml:space="preserve">
+    <value>Template not found</value>
+  </data>
+  <data name="Benchmark_Started" xml:space="preserve">
+    <value>Benchmark started</value>
+  </data>
+  <data name="Benchmark_Stopped" xml:space="preserve">
+    <value>Benchmark stopped</value>
+  </data>
+  <data name="AiStage_Blessing_Chushi_1" xml:space="preserve">
+    <value>{name} bows deeply: My disciple has matured, treasure the road ahead.</value>
+  </data>
+  <data name="AiStage_Blessing_Chushi_2" xml:space="preserve">
+    <value>{name} says tearfully: The student surpasses the master, exceeding all expectations.</value>
+  </data>
+  <data name="AiStage_Blessing_Chushi_3" xml:space="preserve">
+    <value>{name} smiles: The mountains are high and the road is long; may your future be bright.</value>
+  </data>
+  <data name="AiStage_Blessing_Jingjin_1" xml:space="preserve">
+    <value>{name} says with a smile: Skill refined, the artisan spirit is taking shape.</value>
+  </data>
+  <data name="AiStage_Blessing_Jingjin_2" xml:space="preserve">
+    <value>{name} nods: Details reveal true skill; you have entered the path.</value>
+  </data>
+  <data name="AiStage_Blessing_Jingjin_3" xml:space="preserve">
+    <value>{name} says with relief: Excellence is the hallmark of a true craftsman.</value>
+  </data>
+  <data name="AiStage_Blessing_Moli_1" xml:space="preserve">
+    <value>{name} says seriously: Steel tempered through a hundred fires, you are ready for battle.</value>
+  </data>
+  <data name="AiStage_Blessing_Moli_2" xml:space="preserve">
+    <value>{name} nods: Practice may be hard, but the real test will find you composed.</value>
+  </data>
+  <data name="AiStage_Blessing_Moli_3" xml:space="preserve">
+    <value>{name} says solemnly: The exam is like a battlefield, and you are armored.</value>
+  </data>
+  <data name="AiStage_Blessing_Rudao_1" xml:space="preserve">
+    <value>{name} smiles: You have taken the first step. The road is long, but those who walk shall reach.</value>
+  </data>
+  <data name="AiStage_Blessing_Rudao_2" xml:space="preserve">
+    <value>{name} nods: Foundation laid, the path ahead is promising.</value>
+  </data>
+  <data name="AiStage_Blessing_Rudao_3" xml:space="preserve">
+    <value>{name} whispers softly: Entering the path is easy, keeping it is hard. Persevere.</value>
+  </data>
+  <data name="AiStage_Blessing_Zhuji_1" xml:space="preserve">
+    <value>{name} says with relief: Foundation fortified, unshaken by wind and rain.</value>
+  </data>
+  <data name="AiStage_Blessing_Zhuji_2" xml:space="preserve">
+    <value>{name} says seriously: With a solid foundation, you can journey far.</value>
+  </data>
+  <data name="AiStage_Blessing_Zhuji_3" xml:space="preserve">
+    <value>{name} praises: Lessons unceasing, foundation deepens daily.</value>
+  </data>
+
+  <data name="Encryption_InvalidLength" xml:space="preserve">
+    <value>Invalid ciphertext format: insufficient length</value>
+  </data>
+  <data name="Encryption_UnsupportedVersion" xml:space="preserve">
+    <value>Unsupported encryption version: {0}</value>
+  </data>
+  <!-- === Phase 4 Batch 13: SyncController + VaultController + Misc === -->
+  <data name="Sync_FileModifiedByOther" xml:space="preserve">
+    <value>File has been modified by another device</value>
+  </data>
+  <data name="Sync_NoteUpdateSuccess" xml:space="preserve">
+    <value>Note updated successfully</value>
+  </data>
+  <data name="Sync_UpdateFailed" xml:space="preserve">
+    <value>Update failed: {0}</value>
+  </data>
+  <data name="Vault_IllegalPath" xml:space="preserve">
+    <value>Illegal path</value>
+  </data>
+  <data name="Vault_PathEmpty" xml:space="preserve">
+    <value>Vault path is empty</value>
+  </data>
+  <data name="ObsidianStatus_Unknown" xml:space="preserve">
+    <value>Obsidian status unknown</value>
+  </data>
+  <data name="ObsidianStatus_Timeout" xml:space="preserve">
+    <value>Check timed out, Obsidian may not be running</value>
+  </data>
+  <data name="ObsidianStatus_CheckFailed" xml:space="preserve">
+    <value>Failed to check Obsidian status</value>
+  </data>
+  <data name="AiClient_LocalServiceStartFailed" xml:space="preserve">
+    <value>Local AI service {0} is not running and auto-start failed. Please start manually and retry.</value>
+  </data>
+  <data name="AiClient_ProviderNotFound" xml:space="preserve">
+    <value>AI provider not found: {0}</value>
+  </data>
+  <data name="AiClient_EmbeddingNotConfigured" xml:space="preserve">
+    <value>Embedding URL or model not configured</value>
+  </data>
+  <data name="Anthropic_ApiError" xml:space="preserve">
+    <value>Anthropic API error: {0}</value>
+  </data>
+  <data name="Anthropic_ParseFailed" xml:space="preserve">
+    <value>Anthropic response parse failed</value>
+  </data>
+  <data name="Task_Progress_FailedNote" xml:space="preserve">
+    <value> (failed)</value>
+  </data>
+  <data name="Task_CancelledByUser" xml:space="preserve">
+    <value>Cancelled by user</value>
+  </data>
+  <data name="ModelBench_NoPrompts" xml:space="preserve">
+    <value>No runnable test prompts</value>
+  </data>
+  <data name="ModelBench_TestCancelled" xml:space="preserve">
+    <value>Test cancelled</value>
+  </data>
+  <data name="Health_OllamaNotRunning" xml:space="preserve">
+    <value>Ollama service is not running (optional, for local AI models)</value>
+  </data>
+  <data name="Health_OllamaRunning" xml:space="preserve">
+    <value>Ollama service is running</value>
+  </data>
+  <data name="Health_OllamaCheckError" xml:space="preserve">
+    <value>Ollama check error</value>
+  </data>
+  <data name="OpenClawModel_UnknownProfile" xml:space="preserve">
+    <value>Unknown model profile: {0}</value>
+  </data>
+  <data name="OpenClawModel_GetDefaultFailed" xml:space="preserve">
+    <value>Failed to get OpenClaw default model</value>
+  </data>
+  <data name="OpenClawModel_CollectFailed" xml:space="preserve">
+    <value>Failed to collect available models</value>
+  </data>
+  <data name="OpenClawModel_SetDefaultFailed" xml:space="preserve">
+    <value>Failed to set default model</value>
+  </data>
+  <data name="Anki_NoCardsToExport" xml:space="preserve">
+    <value>No cards to export</value>
+  </data>
+  <data name="Tasks_AiEmptyResponse" xml:space="preserve">
+    <value>AI returned empty content. The current AI model may not support this question. Try switching to another AI provider or model.</value>
+  </data>
+  <data name="Vault_UnsupportedFileType" xml:space="preserve">
+    <value>Unsupported file type: {0}</value>
+  </data>
 </root>

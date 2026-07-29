@@ -32,7 +32,7 @@ namespace Baihua.Family.Controllers
             {
                 if (string.IsNullOrWhiteSpace(request.Message))
                 {
-                    await SendSse("error", "消息不能为空");
+                    await SendSse("error", _loc["AiChat_MessageEmpty"]);
                     return;
                 }
 
@@ -42,7 +42,7 @@ namespace Baihua.Family.Controllers
                 var ready = await _aiClientService.EnsureProviderReadyAsync(provider);
                 if (!ready && IsLocalProvider(provider))
                 {
-                    await SendSse("error", $"本地 AI 服务 {provider.Name} 未运行且自动启动失败，请手动启动后重试。");
+                    await SendSse("error", _loc["AiChat_LocalServiceNotRunning", provider.Name]);
                     return;
                 }
 
@@ -131,7 +131,7 @@ namespace Baihua.Family.Controllers
             }
             catch (OperationCanceledException)
             {
-                await SendSse("error", "AI 调用超时或已被取消");
+                await SendSse("error", _loc["AiChat_TimeoutOrCancelled"]);
 
                 // 如果是本地 provider，主动卸载模型以释放 GPU/CPU 资源
                 if (IsLocalProvider(provider))
@@ -153,7 +153,7 @@ namespace Baihua.Family.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "AI 流式聊天失败");
-                await SendSse("error", $"聊天失败：{ex.Message}");
+                await SendSse("error", _loc["AiChat_Failed", ex.Message]);
             }
         }
     }

@@ -1,6 +1,8 @@
 using Baihua.Core;
 using Microsoft.AspNetCore.Mvc;
 using Baihua.Family.Services;
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
 
 namespace Baihua.Vault.Controllers
 {
@@ -11,15 +13,18 @@ namespace Baihua.Vault.Controllers
         private readonly VaultSettingsService _vaultSettings;
         private readonly TaskManager _taskManager;
         private readonly ILogger<SyncController> _logger;
+        private readonly IStringLocalizer<SharedResources> _loc;
 
         public SyncController(
             VaultSettingsService vaultSettings,
             TaskManager taskManager,
-            ILogger<SyncController> logger)
+            ILogger<SyncController> logger,
+            IStringLocalizer<SharedResources> loc)
         {
             _vaultSettings = vaultSettings;
             _taskManager = taskManager;
             _logger = logger;
+            _loc = loc;
         }
 
         /// <summary>
@@ -30,7 +35,7 @@ namespace Baihua.Vault.Controllers
         {
             var vaultPath = ResolveVaultPath(vaultId);
             if (string.IsNullOrEmpty(vaultPath))
-                return BadRequest(new { error = "必须指定有效的知识库" });
+                return BadRequest(new { error = _loc["Vault_Required"] });
 
             var notes = GetNotesInternal(vaultPath, null);
             return Ok(notes);
@@ -54,7 +59,7 @@ namespace Baihua.Vault.Controllers
         {
             var vaultPath = ResolveVaultPath(vaultId);
             if (string.IsNullOrEmpty(vaultPath))
-                return BadRequest(new { error = "必须指定有效的知识库" });
+                return BadRequest(new { error = _loc["Vault_Required"] });
 
             var notes = GetNotesInternal(vaultPath, null);
             var tasks = GetTasksInternal(null);
@@ -77,7 +82,7 @@ namespace Baihua.Vault.Controllers
         {
             var vaultPath = ResolveVaultPath(vaultId);
             if (string.IsNullOrEmpty(vaultPath))
-                return BadRequest(new { error = "必须指定有效的知识库" });
+                return BadRequest(new { error = _loc["Vault_Required"] });
 
             return Ok(new SystemInfo
             {

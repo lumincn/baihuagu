@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using Baihua.Contracts.Benchmark;
+using Baihua.Core.Localization;
 using Baihua.Family.Services;
 
 namespace Baihua.Family.Controllers;
@@ -15,17 +17,20 @@ public class ModelBenchmarkController : ControllerBase
     private readonly BenchmarkRepository _benchmarkRepo;
     private readonly HardwareInfoService _hardwareInfoService;
     private readonly ILogger<ModelBenchmarkController> _logger;
+    private readonly IStringLocalizer<SharedResources> _loc;
 
     public ModelBenchmarkController(
         ModelBenchmarkService benchmarkService,
         BenchmarkRepository benchmarkRepo,
         HardwareInfoService hardwareInfoService,
-        ILogger<ModelBenchmarkController> logger)
+        ILogger<ModelBenchmarkController> logger,
+        IStringLocalizer<SharedResources> loc)
     {
         _benchmarkService = benchmarkService;
         _benchmarkRepo = benchmarkRepo;
         _hardwareInfoService = hardwareInfoService;
         _logger = logger;
+        _loc = loc;
     }
 
     /// <summary>
@@ -99,7 +104,7 @@ public class ModelBenchmarkController : ControllerBase
             }
         });
 
-        return Accepted(new { message = "测试已启动" });
+        return Accepted(new { message = _loc["Benchmark_Started"] });
     }
 
     /// <summary>
@@ -109,7 +114,7 @@ public class ModelBenchmarkController : ControllerBase
     public IActionResult StopBenchmark()
     {
         _benchmarkService.StopBenchmark();
-        return Ok(new { message = "测试已停止" });
+        return Ok(new { message = _loc["Benchmark_Stopped"] });
     }
 
     /// <summary>

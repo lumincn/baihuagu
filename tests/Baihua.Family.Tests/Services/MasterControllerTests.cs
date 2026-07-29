@@ -58,14 +58,73 @@ public class MasterControllerTests
             Mock.Of<IDbContextFactory<VaultDbContext>>(),
             Mock.Of<ILogger<VaultNoteIndexer>>());
 
+        var mockLoc = new Mock<Microsoft.Extensions.Localization.IStringLocalizer<Baihua.Core.Localization.SharedResources>>();
+        mockLoc.Setup(l => l["AiProvider_NotFound"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("AiProvider_NotFound", "No available AI provider found"));
+        mockLoc.Setup(l => l["Master_IdRequired"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_IdRequired", "Master ID cannot be empty"));
+        mockLoc.Setup(l => l["Master_NotFound"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_NotFound", "Master not found"));
+        mockLoc.Setup(l => l["Master_StageUnknown"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_StageUnknown", "Unknown stage: {0}"));
+        mockLoc.Setup(l => l["Master_StageSummarySystem"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_StageSummarySystem", "Assessment expert"));
+        mockLoc.Setup(l => l["Master_StageSummaryPrompt"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_StageSummaryPrompt", "Summary: {0}"));
+        mockLoc.Setup(l => l["Master_StageCorrectionsSystem"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_StageCorrectionsSystem", "Supervisor"));
+        mockLoc.Setup(l => l["Master_StageCorrectionsPrompt"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_StageCorrectionsPrompt", "Corrections: {0}"));
+        mockLoc.Setup(l => l["Master_StageComplete"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_StageComplete", "Stage {0} completed"));
+        mockLoc.Setup(l => l["Master_StageCompleteFailed"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_StageCompleteFailed", "Failed: {0}"));
+        mockLoc.Setup(l => l["Master_ChatTimeout"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_ChatTimeout", "Timeout"));
+        mockLoc.Setup(l => l["Master_ChatFailed"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_ChatFailed", "Failed: {0}"));
+        mockLoc.Setup(l => l["Master_ChatMessageEmpty"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_ChatMessageEmpty", "Message empty"));
+        mockLoc.Setup(l => l["Master_ChatProfileTemplate"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_ChatProfileTemplate", "Profile: {0}"));
+        mockLoc.Setup(l => l["Master_Unknown"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_Unknown", "Unknown"));
+        mockLoc.Setup(l => l["Master_ConversationFetchSuccess"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_ConversationFetchSuccess", "Success"));
+        mockLoc.Setup(l => l["Master_ConversationFetchFailed"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_ConversationFetchFailed", "Failed: {0}"));
+        mockLoc.Setup(l => l["Master_ConversationSyncSuccess"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_ConversationSyncSuccess", "Sync: {0}"));
+        mockLoc.Setup(l => l["Master_ConversationSyncFailed"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_ConversationSyncFailed", "Sync failed: {0}"));
+        mockLoc.Setup(l => l["Master_CompressSystemPrompt"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_CompressSystemPrompt", "Compress"));
+        mockLoc.Setup(l => l["Master_CompressUserPrompt"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_CompressUserPrompt", "Compress: {0}"));
+        mockLoc.Setup(l => l["Master_CompressFailed"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_CompressFailed", "Failed: {0}"));
+        mockLoc.Setup(l => l["Master_EvictSystemPrompt"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_EvictSystemPrompt", "Evict"));
+        mockLoc.Setup(l => l["Master_EvictProfilePrompt"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_EvictProfilePrompt", "Evict: {0}"));
+        mockLoc.Setup(l => l["Master_EvictFailed"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_EvictFailed", "Failed: {0}"));
+        mockLoc.Setup(l => l["Master_EvictAllComplete"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_EvictAllComplete", "Evicted: {0}"));
+        mockLoc.Setup(l => l["Master_EvictAllFailed"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_EvictAllFailed", "Failed: {0}"));
+        mockLoc.Setup(l => l["Master_AssessDaily"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_AssessDaily", "Daily assess"));
+        mockLoc.Setup(l => l["Master_AssessWeekly"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_AssessWeekly", "Weekly assess"));
+        mockLoc.Setup(l => l["Master_AssessStage"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_AssessStage", "Stage assess"));
+        mockLoc.Setup(l => l["Master_AssessDefault"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_AssessDefault", "Assess"));
+        mockLoc.Setup(l => l["Master_AssessSystemPrompt"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_AssessSystemPrompt", "Assess prompt"));
+        mockLoc.Setup(l => l["Master_AssessComplete"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_AssessComplete", "Assess complete"));
+        mockLoc.Setup(l => l["Master_AssessFailed"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_AssessFailed", "Assess failed: {0}"));
+        mockLoc.Setup(l => l["Master_GoalRequired"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_GoalRequired", "Goal required"));
+        mockLoc.Setup(l => l["Master_IndustryRequired"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_IndustryRequired", "Industry required"));
+        mockLoc.Setup(l => l["Master_CreateGreetingTemplate"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_CreateGreetingTemplate", "I want to {0}"));
+        mockLoc.Setup(l => l["Master_CreateFallbackGreeting"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_CreateFallbackGreeting", "Welcome"));
+        mockLoc.Setup(l => l["Master_CreateFailed"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_CreateFailed", "Create failed"));
+        mockLoc.Setup(l => l["Master_CreateFailedDetail"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_CreateFailedDetail", "Create failed: {0}"));
+        mockLoc.Setup(l => l["Master_ProfileFetchSuccess"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_ProfileFetchSuccess", "Profile fetched"));
+        mockLoc.Setup(l => l["Master_ProfileUpdateSuccess"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_ProfileUpdateSuccess", "Profile updated"));
+        mockLoc.Setup(l => l["Master_VaultFocusFetchSuccess"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_VaultFocusFetchSuccess", "Fetched"));
+        mockLoc.Setup(l => l["Master_UnknownVault"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_UnknownVault", "Unknown vault"));
+        mockLoc.Setup(l => l["Master_VaultIdRequired"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_VaultIdRequired", "Vault ID required"));
+        mockLoc.Setup(l => l["Master_VaultFocused"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_VaultFocused", "Vault focused"));
+        mockLoc.Setup(l => l["Master_VaultUnfocused"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_VaultUnfocused", "Vault unfocused"));
+        mockLoc.Setup(l => l["Master_OperationFailed"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_OperationFailed", "Failed: {0}"));
+        mockLoc.Setup(l => l["Master_ParamsRequired"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_ParamsRequired", "Params required"));
+        mockLoc.Setup(l => l["Master_VaultFocusNotFound"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_VaultFocusNotFound", "Focus not found"));
+        mockLoc.Setup(l => l["Master_VaultFocusRemoved"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_VaultFocusRemoved", "Focus removed"));
+        mockLoc.Setup(l => l["Master_UpdateFailed"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_UpdateFailed", "Update failed: {0}"));
+        mockLoc.Setup(l => l["Master_EvictStageLabel"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_EvictStageLabel", "Stage:"));
+        mockLoc.Setup(l => l["Master_EvictSummaryLabel"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("Master_EvictSummaryLabel", "Summary:"));
+        var stageFactory = new Baihua.Family.Controllers.AI.Stages.StageStrategyFactory(mockLoc.Object);
+
         return new MasterController(
             null!, // AiClientService — 此类测试不会调用 AI
             aiSettings,
-            new MasterPromptBuilder(),
+            new MasterPromptBuilder(mockLoc.Object),
             new TestDbContextFactory(options),
             vaultSettingsMock.Object,
             vaultIndexerMock.Object,
-            Mock.Of<ILogger<MasterController>>()
+            mockLoc.Object,
+            Mock.Of<ILogger<MasterController>>(),
+            stageFactory
         );
     }
 
@@ -686,10 +745,32 @@ public class MasterControllerTests
 
     #region StageStrategyFactory
 
+    private static StageStrategyFactory CreateFactory()
+    {
+        var mockLoc = new Mock<Microsoft.Extensions.Localization.IStringLocalizer<Baihua.Core.Localization.SharedResources>>();
+        mockLoc.Setup(l => l["AiStage_Blessing_Rudao_1"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("AiStage_Blessing_Rudao_1", "{name} smiles: You have taken the first step."));
+        mockLoc.Setup(l => l["AiStage_Blessing_Rudao_2"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("AiStage_Blessing_Rudao_2", "{name} nods: Foundation laid."));
+        mockLoc.Setup(l => l["AiStage_Blessing_Rudao_3"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("AiStage_Blessing_Rudao_3", "{name} whispers softly: Keep it up."));
+        mockLoc.Setup(l => l["AiStage_Blessing_Zhuji_1"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("AiStage_Blessing_Zhuji_1", "{name} says with relief: unshaken."));
+        mockLoc.Setup(l => l["AiStage_Blessing_Zhuji_2"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("AiStage_Blessing_Zhuji_2", "{name} says: journey far."));
+        mockLoc.Setup(l => l["AiStage_Blessing_Zhuji_3"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("AiStage_Blessing_Zhuji_3", "{name} praises: lessons unceasing."));
+        mockLoc.Setup(l => l["AiStage_Blessing_Jingjin_1"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("AiStage_Blessing_Jingjin_1", "{name} says with a smile: artisan spirit."));
+        mockLoc.Setup(l => l["AiStage_Blessing_Jingjin_2"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("AiStage_Blessing_Jingjin_2", "{name} nods: entered the path."));
+        mockLoc.Setup(l => l["AiStage_Blessing_Jingjin_3"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("AiStage_Blessing_Jingjin_3", "{name} says with relief: hallmark of a craftsman."));
+        mockLoc.Setup(l => l["AiStage_Blessing_Moli_1"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("AiStage_Blessing_Moli_1", "{name} says seriously: ready for battle."));
+        mockLoc.Setup(l => l["AiStage_Blessing_Moli_2"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("AiStage_Blessing_Moli_2", "{name} nods: real test finds you composed."));
+        mockLoc.Setup(l => l["AiStage_Blessing_Moli_3"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("AiStage_Blessing_Moli_3", "{name} says: armored."));
+        mockLoc.Setup(l => l["AiStage_Blessing_Chushi_1"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("AiStage_Blessing_Chushi_1", "{name} bows: disciple matured."));
+        mockLoc.Setup(l => l["AiStage_Blessing_Chushi_2"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("AiStage_Blessing_Chushi_2", "{name} says tearfully: exceeded expectations."));
+        mockLoc.Setup(l => l["AiStage_Blessing_Chushi_3"]).Returns(new Microsoft.Extensions.Localization.LocalizedString("AiStage_Blessing_Chushi_3", "{name} smiles: future be bright."));
+        return new StageStrategyFactory(mockLoc.Object);
+    }
+
     [Fact]
     public void StageStrategyFactory_GetStrategy_ReturnsCorrectStrategy()
     {
-        var strategy = StageStrategyFactory.GetStrategy("入道");
+        var factory = CreateFactory();
+        var strategy = factory.GetStrategy("入道");
         Assert.NotNull(strategy);
         Assert.Equal("入道", strategy.StageName);
         Assert.Equal(1, strategy.Order);
@@ -700,12 +781,13 @@ public class MasterControllerTests
     [Fact]
     public void StageStrategyFactory_GetNextStrategy_ReturnsNextStage()
     {
-        var next = StageStrategyFactory.GetNextStrategy("入道");
+        var factory = CreateFactory();
+        var next = factory.GetNextStrategy("入道");
         Assert.NotNull(next);
         Assert.Equal("筑基", next.StageName);
         Assert.Equal(2, next.Order);
 
-        next = StageStrategyFactory.GetNextStrategy("筑基");
+        next = factory.GetNextStrategy("筑基");
         Assert.NotNull(next);
         Assert.Equal("精进", next.StageName);
     }
@@ -713,24 +795,27 @@ public class MasterControllerTests
     [Fact]
     public void StageStrategyFactory_GetNextStrategy_LastStageReturnsNull()
     {
-        var next = StageStrategyFactory.GetNextStrategy("出师");
+        var factory = CreateFactory();
+        var next = factory.GetNextStrategy("出师");
         Assert.Null(next);
     }
 
     [Fact]
     public void StageStrategyFactory_UnknownStage_ReturnsNull()
     {
-        var strategy = StageStrategyFactory.GetStrategy("未知阶段");
+        var factory = CreateFactory();
+        var strategy = factory.GetStrategy("未知阶段");
         Assert.Null(strategy);
 
-        var next = StageStrategyFactory.GetNextStrategy("未知阶段");
+        var next = factory.GetNextStrategy("未知阶段");
         Assert.Null(next);
     }
 
     [Fact]
     public void StageStrategyFactory_AllStrategies_HaveUniqueOrder()
     {
-        var all = StageStrategyFactory.GetAllStrategies();
+        var factory = CreateFactory();
+        var all = factory.GetAllStrategies();
         var orders = all.Select(s => s.Order).ToList();
         Assert.Equal(orders.Distinct().Count(), orders.Count);
         Assert.Equal(5, all.Count);
@@ -739,7 +824,8 @@ public class MasterControllerTests
     [Fact]
     public void StageStrategy_GetBlessing_ReturnsNonEmptyString()
     {
-        var strategy = StageStrategyFactory.GetStrategy("入道");
+        var factory = CreateFactory();
+        var strategy = factory.GetStrategy("入道");
         Assert.NotNull(strategy);
         var blessing = strategy.GetBlessing("岐伯");
         Assert.False(string.IsNullOrWhiteSpace(blessing));

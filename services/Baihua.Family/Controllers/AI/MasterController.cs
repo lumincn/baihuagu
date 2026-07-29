@@ -21,6 +21,7 @@ public partial class MasterController : ControllerBase
     private readonly VaultNoteIndexer _vaultNoteIndexer;
     private readonly IStringLocalizer<SharedResources> _loc;
     private readonly ILogger<MasterController> _logger;
+    private readonly StageStrategyFactory _stageStrategyFactory;
 
     public MasterController(
         AiClientService aiClientService,
@@ -30,7 +31,8 @@ public partial class MasterController : ControllerBase
         VaultSettingsService vaultSettings,
         VaultNoteIndexer vaultNoteIndexer,
         IStringLocalizer<SharedResources> loc,
-        ILogger<MasterController> logger)
+        ILogger<MasterController> logger,
+        StageStrategyFactory stageStrategyFactory)
     {
         _aiClientService = aiClientService;
         _aiSettings = aiSettings;
@@ -40,6 +42,7 @@ public partial class MasterController : ControllerBase
         _vaultNoteIndexer = vaultNoteIndexer;
         _loc = loc;
         _logger = logger;
+        _stageStrategyFactory = stageStrategyFactory;
     }
 
     /// <summary>
@@ -64,7 +67,7 @@ public partial class MasterController : ControllerBase
             : providers.FirstOrDefault(p => p.Id == providerId);
 
         if (provider == null)
-            throw new Exception("未找到可用的AI提供商");
+            throw new Exception(_loc["AiProvider_NotFound"]);
 
         var modelOptions = provider.GetModelOptions();
         var resolvedModel = !string.IsNullOrEmpty(model)

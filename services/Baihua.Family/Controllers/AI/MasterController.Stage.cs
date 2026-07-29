@@ -33,11 +33,11 @@ public partial class MasterController
                 return NotFound(new StageCompleteResponse { Success = false, Message = _loc["Master_NotFound"] });
 
             // 使用策略模式获取阶段信息
-            var stageStrategy = StageStrategyFactory.GetStrategy(request.StageName);
+            var stageStrategy = _stageStrategyFactory.GetStrategy(request.StageName);
             if (stageStrategy == null)
                 return BadRequest(new StageCompleteResponse { Success = false, Message = string.Format(_loc["Master_StageUnknown"], request.StageName) });
 
-            var nextStrategy = StageStrategyFactory.GetNextStrategy(request.StageName);
+            var nextStrategy = _stageStrategyFactory.GetNextStrategy(request.StageName);
             var nextStageName = nextStrategy?.StageName ?? "";
 
             var (provider, model) = ResolveProviderAndModel(null, null);

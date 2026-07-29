@@ -1,3 +1,6 @@
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
+
 namespace Baihua.Family.Controllers.AI.Stages;
 
 /// <summary>
@@ -5,14 +8,21 @@ namespace Baihua.Family.Controllers.AI.Stages;
 /// </summary>
 public class ChushiStageStrategy : StageStrategyBase
 {
+    private readonly IStringLocalizer<SharedResources> _loc;
+
+    public ChushiStageStrategy(IStringLocalizer<SharedResources> loc)
+    {
+        _loc = loc;
+    }
+
     public override string StageName => "出师";
     public override int Order => 5;
     public override string RoleName => "前辈";
 
     public override string[] BlessingTemplates =>
     [
-        "{name}长揖道：吾徒已成，前路珍重。",
-        "{name}含泪道：青出于蓝，不负所望。",
-        "{name}微笑道：山高路远，愿你前程似锦。"
+        _loc["AiStage_Blessing_Chushi_1"],
+        _loc["AiStage_Blessing_Chushi_2"],
+        _loc["AiStage_Blessing_Chushi_3"]
     ];
 }

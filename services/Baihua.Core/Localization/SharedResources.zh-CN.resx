@@ -2263,4 +2263,164 @@ Status: {2}
   <data name="LocalModel_Lifecycle_LmStudioNotRunning" xml:space="preserve">
     <value>LM Studio 服务未运行且自动启动失败，请手动启动后重试。</value>
   </data>
+
+  <!-- === Phase 4 Batch 12: AI Controllers remaining strings === -->
+  <data name="AiChat_LocalServiceNotRunning" xml:space="preserve">
+    <value>本地 AI 服务 {0} 未运行且自动启动失败，请手动启动后重试。</value>
+  </data>
+  <data name="AiChat_TimeoutOrCancelled" xml:space="preserve">
+    <value>AI 调用超时或已被取消</value>
+  </data>
+  <data name="AiChat_Failed" xml:space="preserve">
+    <value>聊天失败：{0}</value>
+  </data>
+  <data name="AiChat_PromptNameEmpty" xml:space="preserve">
+    <value>名称不能为空</value>
+  </data>
+  <data name="AiChat_DefaultTemplateProtected" xml:space="preserve">
+    <value>不能删除通用模板</value>
+  </data>
+  <data name="AiChat_TemplateNotFound" xml:space="preserve">
+    <value>模板不存在</value>
+  </data>
+  <data name="Benchmark_Started" xml:space="preserve">
+    <value>测试已启动</value>
+  </data>
+  <data name="Benchmark_Stopped" xml:space="preserve">
+    <value>测试已停止</value>
+  </data>
+  <data name="AiStage_Blessing_Chushi_1" xml:space="preserve">
+    <value>{name}长揖道：吾徒已成，前路珍重。</value>
+  </data>
+  <data name="AiStage_Blessing_Chushi_2" xml:space="preserve">
+    <value>{name}含泪道：青出于蓝，不负所望。</value>
+  </data>
+  <data name="AiStage_Blessing_Chushi_3" xml:space="preserve">
+    <value>{name}微笑道：山高路远，愿你前程似锦。</value>
+  </data>
+  <data name="AiStage_Blessing_Jingjin_1" xml:space="preserve">
+    <value>{name}含笑道：技艺渐精，已得匠心。</value>
+  </data>
+  <data name="AiStage_Blessing_Jingjin_2" xml:space="preserve">
+    <value>{name}颔首道：细节之处见真功，你已入门径。</value>
+  </data>
+  <data name="AiStage_Blessing_Jingjin_3" xml:space="preserve">
+    <value>{name}欣慰道：精益求精，方显匠人本色。</value>
+  </data>
+  <data name="AiStage_Blessing_Moli_1" xml:space="preserve">
+    <value>{name}严肃道：百炼成钢，你已堪一战。</value>
+  </data>
+  <data name="AiStage_Blessing_Moli_2" xml:space="preserve">
+    <value>{name}点头道：模拟虽苦，实战方从容。</value>
+  </data>
+  <data name="AiStage_Blessing_Moli_3" xml:space="preserve">
+    <value>{name}正色道：考场如战场，你已备甲胄。</value>
+  </data>
+  <data name="AiStage_Blessing_Rudao_1" xml:space="preserve">
+    <value>{name}微微一笑：你已迈出第一步，路虽远，行则将至。</value>
+  </data>
+  <data name="AiStage_Blessing_Rudao_2" xml:space="preserve">
+    <value>{name}点头道：基础已定，前路可期。</value>
+  </data>
+  <data name="AiStage_Blessing_Rudao_3" xml:space="preserve">
+    <value>{name}轻声道：入门虽易，守道方难，望你持之。</value>
+  </data>
+  <data name="AiStage_Blessing_Zhuji_1" xml:space="preserve">
+    <value>{name}欣慰道：根基已固，风雨不惧。</value>
+  </data>
+  <data name="AiStage_Blessing_Zhuji_2" xml:space="preserve">
+    <value>{name}正色道：基础扎实，方可远行。</value>
+  </data>
+  <data name="AiStage_Blessing_Zhuji_3" xml:space="preserve">
+    <value>{name}赞许道：功课不辍，根基日深。</value>
+  </data>
+
+  <data name="Encryption_InvalidLength" xml:space="preserve">
+    <value>密文格式错误：长度不足</value>
+  </data>
+  <data name="Encryption_UnsupportedVersion" xml:space="preserve">
+    <value>不支持的加密版本：{0}</value>
+  </data>
+  <!-- === Phase 4 Batch 13: SyncController + VaultController + Misc === -->
+  <data name="Sync_FileModifiedByOther" xml:space="preserve">
+    <value>文件已被其他设备修改</value>
+  </data>
+  <data name="Sync_NoteUpdateSuccess" xml:space="preserve">
+    <value>笔记更新成功</value>
+  </data>
+  <data name="Sync_UpdateFailed" xml:space="preserve">
+    <value>更新失败：{0}</value>
+  </data>
+  <data name="Vault_IllegalPath" xml:space="preserve">
+    <value>非法路径</value>
+  </data>
+  <data name="Vault_PathEmpty" xml:space="preserve">
+    <value>知识库路径为空</value>
+  </data>
+  <data name="ObsidianStatus_Unknown" xml:space="preserve">
+    <value>Obsidian 状态未知</value>
+  </data>
+  <data name="ObsidianStatus_Timeout" xml:space="preserve">
+    <value>检测超时，Obsidian 可能未运行</value>
+  </data>
+  <data name="ObsidianStatus_CheckFailed" xml:space="preserve">
+    <value>检测 Obsidian 状态失败</value>
+  </data>
+  <data name="AiClient_LocalServiceStartFailed" xml:space="preserve">
+    <value>本地 AI 服务 {0} 未运行且自动启动失败，请手动启动后重试。</value>
+  </data>
+  <data name="AiClient_ProviderNotFound" xml:space="preserve">
+    <value>未找到 AI 提供商：{0}</value>
+  </data>
+  <data name="AiClient_EmbeddingNotConfigured" xml:space="preserve">
+    <value>未配置 Embedding URL 或模型</value>
+  </data>
+  <data name="Anthropic_ApiError" xml:space="preserve">
+    <value>Anthropic API 错误：{0}</value>
+  </data>
+  <data name="Anthropic_ParseFailed" xml:space="preserve">
+    <value>Anthropic 响应解析失败</value>
+  </data>
+  <data name="Task_Progress_FailedNote" xml:space="preserve">
+    <value> (失败)</value>
+  </data>
+  <data name="Task_CancelledByUser" xml:space="preserve">
+    <value>用户已取消</value>
+  </data>
+  <data name="ModelBench_NoPrompts" xml:space="preserve">
+    <value>没有可运行的测试提示词</value>
+  </data>
+  <data name="ModelBench_TestCancelled" xml:space="preserve">
+    <value>测试已取消</value>
+  </data>
+  <data name="Health_OllamaNotRunning" xml:space="preserve">
+    <value>Ollama 服务未运行（可选，用于本地 AI 模型）</value>
+  </data>
+  <data name="Health_OllamaRunning" xml:space="preserve">
+    <value>Ollama 服务正在运行</value>
+  </data>
+  <data name="Health_OllamaCheckError" xml:space="preserve">
+    <value>Ollama 检测异常</value>
+  </data>
+  <data name="OpenClawModel_UnknownProfile" xml:space="preserve">
+    <value>未知模型配置：{0}</value>
+  </data>
+  <data name="OpenClawModel_GetDefaultFailed" xml:space="preserve">
+    <value>获取 OpenClaw 默认模型失败</value>
+  </data>
+  <data name="OpenClawModel_CollectFailed" xml:space="preserve">
+    <value>收集可用模型失败</value>
+  </data>
+  <data name="OpenClawModel_SetDefaultFailed" xml:space="preserve">
+    <value>设置默认模型失败</value>
+  </data>
+  <data name="Anki_NoCardsToExport" xml:space="preserve">
+    <value>没有可导出的卡片</value>
+  </data>
+  <data name="Tasks_AiEmptyResponse" xml:space="preserve">
+    <value>AI 返回内容为空。有可能是当前所用的 AI 模型不支持该问题，建议换一个 AI 提供商或模型再试试。</value>
+  </data>
+  <data name="Vault_UnsupportedFileType" xml:space="preserve">
+    <value>不支持的文件类型：{0}</value>
+  </data>
 </root>

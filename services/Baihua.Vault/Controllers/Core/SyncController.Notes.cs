@@ -14,7 +14,7 @@ namespace Baihua.Vault.Controllers
         {
             var vaultPath = ResolveVaultPath(vaultId);
             if (string.IsNullOrEmpty(vaultPath))
-                return BadRequest(new { error = "必须指定有效的知识库" });
+                return BadRequest(new { error = _loc["Vault_Required"] });
 
             if (!System.IO.Directory.Exists(vaultPath))
             {
@@ -22,7 +22,7 @@ namespace Baihua.Vault.Controllers
                 {
                     Path = request.Path,
                     Status = "error",
-                    Message = "知识库路径无效"
+                    Message = _loc["Vault_PathInvalid"]
                 });
             }
 
@@ -38,7 +38,7 @@ namespace Baihua.Vault.Controllers
         {
             var vaultPath = ResolveVaultPath(vaultId);
             if (string.IsNullOrEmpty(vaultPath))
-                return BadRequest(new { error = "必须指定有效的知识库" });
+                return BadRequest(new { error = _loc["Vault_Required"] });
 
             var results = new List<ConflictResolution>();
 

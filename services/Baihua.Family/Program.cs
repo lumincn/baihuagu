@@ -186,6 +186,7 @@ builder.Services.AddSingleton<VaultNoteIndexer>();
 builder.Services.AddSingleton<RagService>();
         builder.Services.AddSingleton<ChatMemoryService>();
         builder.Services.AddSingleton<MasterPromptBuilder>();
+builder.Services.AddSingleton<Baihua.Family.Controllers.AI.Stages.StageStrategyFactory>();
         builder.Services.AddHostedService<MasterDataRetentionService>();
 builder.Services.AddSingleton<AnkiCardGenerator>();
 builder.Services.AddSingleton<DailyCardService>();

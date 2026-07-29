@@ -3824,4 +3824,14 @@
   <data name="Devices_DeviceRevoked" xml:space="preserve">
     <value>已撤销设备授权</value>
   </data>
+  <!-- === Phase 4 Batch 13: ObsidianStatusService keys === -->
+  <data name="ObsidianStatus_Unknown" xml:space="preserve">
+    <value>Obsidian 状态未知</value>
+  </data>
+  <data name="ObsidianStatus_Timeout" xml:space="preserve">
+    <value>检测超时，Obsidian 可能未运行</value>
+  </data>
+  <data name="ObsidianStatus_CheckFailed" xml:space="preserve">
+    <value>检测 Obsidian 状态失败</value>
+  </data>
 </root>

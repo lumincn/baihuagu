@@ -28,7 +28,7 @@ namespace Baihua.Family.Controllers
         public IActionResult UpdatePromptTemplate(string displayName, [FromBody] PromptTemplateDto dto)
         {
             if (string.IsNullOrWhiteSpace(displayName))
-                return BadRequest(new { error = "名称不能为空" });
+                return BadRequest(new { error = _loc["AiChat_PromptNameEmpty"] });
 
             var template = new DefaultPromptProvider.PromptTemplate
             {
@@ -51,7 +51,7 @@ namespace Baihua.Family.Controllers
         public IActionResult CreatePromptTemplate([FromBody] PromptTemplateDto dto)
         {
             if (string.IsNullOrWhiteSpace(dto.DisplayName))
-                return BadRequest(new { error = "名称不能为空" });
+                return BadRequest(new { error = _loc["AiChat_PromptNameEmpty"] });
 
             var template = new DefaultPromptProvider.PromptTemplate
             {
@@ -74,10 +74,10 @@ namespace Baihua.Family.Controllers
         public IActionResult DeletePromptTemplate(string displayName)
         {
             if (string.Equals(displayName, "通用", StringComparison.OrdinalIgnoreCase))
-                return BadRequest(new { error = "不能删除通用模板" });
+                return BadRequest(new { error = _loc["AiChat_DefaultTemplateProtected"] });
 
             var deleted = _scenePromptService.DeleteTemplate(displayName);
-            return deleted ? Ok(new { success = true }) : NotFound(new { error = "模板不存在" });
+            return deleted ? Ok(new { success = true }) : NotFound(new { error = _loc["AiChat_TemplateNotFound"] });
         }
     }
 }

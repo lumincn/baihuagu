@@ -10,91 +10,91 @@ public partial class OnboardingController
     private static string GetComputerSampleNote()
     {
         return """
-# AI 知识入门
+# AI Knowledge Introduction
 
-## 什么是人工智能
+## What is Artificial Intelligence
 
-人工智能（Artificial Intelligence，AI）是计算机科学的一个分支，致力于创建能够执行通常需要人类智能的任务的系统。
+Artificial Intelligence (AI) is a branch of computer science focused on creating systems that can perform tasks requiring human intelligence.
 
-## 大语言模型（LLM）
+## Large Language Models (LLM)
 
-大语言模型是当前 AI 领域最热门的技术之一：
+Large Language Models are among the most popular AI technologies today:
 
-- **GPT 系列**：OpenAI 开发，广泛应用于对话、写作、编程辅助
-- **Claude**：Anthropic 开发，以长上下文和安全性著称
-- **DeepSeek**：国产大模型，推理能力强，性价比高
-- **通义千问（Qwen）**：阿里云开发，中文理解能力优秀
+- **GPT Series**: Developed by OpenAI, widely used for conversation, writing, and coding assistance
+- **Claude**: Developed by Anthropic, known for long context and safety
+- **DeepSeek**: Chinese-developed LLM, strong reasoning ability, high cost-effectiveness
+- **Qwen (Tongyi Qianwen)**: Developed by Alibaba Cloud, excellent Chinese comprehension
 
-## 如何使用 AI 辅助学习
+## How to Use AI for Learning
 
-1. **提问式学习**：把不懂的概念用自然语言描述给 AI，让它用通俗语言解释
-2. **笔记整理**：让 AI 帮助将零散知识点整理成结构化的学习笔记
-3. **知识检验**：让 AI 出题考你，检验学习效果
-4. **类比理解**：请 AI 用生活中的类比来解释抽象概念
+1. **Question-based learning**: Describe concepts you don't understand in natural language and ask AI to explain in simple terms
+2. **Note organization**: Let AI help organize scattered knowledge into structured learning notes
+3. **Knowledge testing**: Ask AI to quiz you to test learning outcomes
+4. **Analogy understanding**: Ask AI to explain abstract concepts using everyday analogies
 
-## 提示词技巧（Prompt Engineering）
+## Prompt Engineering Tips
 
-- 明确角色："你是一位经验丰富的中医老师"
-- 给出背景："我对编程完全不懂，请用简单语言解释"
-- 指定格式："请用 Markdown 列表形式输出"
-- 分步引导：复杂问题拆解成多个小问题逐一询问
+- **Set a role**: "You are an experienced teacher"
+- **Provide context**: "I have no programming background, please explain in simple terms"
+- **Specify format**: "Please output in Markdown list format"
+- **Step-by-step**: Break complex problems into smaller questions
 
 ---
 
-> 💡 **家庭学习小贴士**：家长可以把计算机知识库当作全家的技术资料中心，遇到电脑问题、想学习新软件、或者了解 AI 新闻，都可以在这里记录和查阅。
+> 💡 **Family Learning Tip**: Use the computer knowledge base as your family's tech reference center. Record and look up computer issues, new software tutorials, or AI news here.
 """;
     }
 
     private static string GetTcmSampleNote()
     {
         return """
-# 脾胃病知识笔记
+# Spleen-Stomach Disease Knowledge Notes
 
-## 对脾胃的认识
+## Understanding the Spleen and Stomach
 
-中医认为「脾胃为后天之本，气血生化之源」。脾胃功能正常，人体才能消化吸收食物中的营养，转化为气血津液。
+According to Traditional Chinese Medicine (TCM), the spleen and stomach are "the foundation of postnatal existence and the source of qi and blood production." When the spleen and stomach function properly, the body can digest and absorb nutrients from food, transforming them into qi, blood, and body fluids.
 
-## 常见脾胃病证型
+## Common Spleen-Stomach Pattern Types
 
-### 1. 脾胃气虚
-**表现**：食欲减退、腹胀、大便溏薄、乏力、面色萎黄
-**治法**：健脾益气
-**常用方药**：四君子汤、补中益气汤
+### 1. Spleen-Stomach Qi Deficiency
+**Symptoms**: Poor appetite, abdominal distension, loose stools, fatigue, sallow complexion
+**Treatment**: Fortify the spleen and boost qi
+**Common Formulas**: Four Gentlemen Decoction (Si Jun Zi Tang), Center-Supplementing Qi-Boosting Decoction (Bu Zhong Yi Qi Tang)
 
-### 2. 脾胃虚寒
-**表现**：胃脘冷痛、喜温喜按、畏寒肢冷、大便稀溏
-**治法**：温中健脾
-**常用方药**：理中丸、附子理中丸
+### 2. Spleen-Stomach Yang Deficiency with Cold
+**Symptoms**: Cold pain in the stomach, preference for warmth and pressure, fear of cold, cold extremities, loose stools
+**Treatment**: Warm the middle and fortify the spleen
+**Common Formulas**: Center-Rectifying Pill (Li Zhong Wan), Prepared Aconite Center-Rectifying Pill (Fu Zi Li Zhong Wan)
 
-### 3. 脾胃湿热
-**表现**：脘腹胀满、口苦口臭、大便黏滞、舌苔黄腻
-**治法**：清热利湿
-**常用方药**：三仁汤、连朴饮
+### 3. Spleen-Stomach Damp-Heat
+**Symptoms**: Epigastric fullness, bitter taste and bad breath, sticky stools, yellow greasy tongue coating
+**Treatment**: Clear heat and drain dampness
+**Common Formulas**: Three Kernels Decoction (San Ren Tang), Coptis and Officinalis Magnolia Bark Beverage (Lian Po Yin)
 
-### 4. 肝郁脾虚
-**表现**：胸胁胀满、情志不畅、腹痛即泻、泻后痛减
-**治法**：疏肝健脾
-**常用方药**：痛泻要方、逍遥散
+### 4. Liver Depression and Spleen Deficiency
+**Symptoms**: Chest and rib-side distension, emotional discomfort, abdominal pain leading to diarrhea, pain relief after diarrhea
+**Treatment**: Course the liver and fortify the spleen
+**Common Formulas**: Pain-Diarrhea Essential Formula (Tong Xie Yao Fang), Free and Easy Wanderer Powder (Xiao Yao San)
 
-## 日常养胃要点
+## Daily Stomach Care Tips
 
-| 宜 | 忌 |
+| Do | Don't |
 |---|---|
-| 定时定量进餐 | 暴饮暴食 |
-| 细嚼慢咽 | 狼吞虎咽 |
-| 温热饮食 | 过冷过热 |
-| 心情舒畅 | 忧思恼怒 |
-| 适度运动 | 久坐不动 |
+| Eat at regular times | Overeat or binge eat |
+| Chew thoroughly | Eat too quickly |
+| Eat warm foods | Eat extremely hot or cold foods |
+| Maintain emotional balance | Worry or get angry excessively |
+| Moderate exercise | Sedentary lifestyle |
 
-## 经典方剂速记
+## Classic Formula Quick Reference
 
-- **四君子汤**：人参、白术、茯苓、甘草 → 补气健脾基础方
-- **理中丸**：人参、干姜、白术、甘草 → 温中祛寒
-- **香砂六君子汤**：四君子 + 木香、砂仁、陈皮、半夏 → 健脾和胃、行气化痰
+- **Four Gentlemen Decoction**: Ginseng, Atractylodes, Poria, Licorice → Basic formula for supplementing qi and strengthening the spleen
+- **Center-Rectifying Pill**: Ginseng, Dried Ginger, Atractylodes, Licorice → Warms the middle and dispels cold
+- **Six Gentlemen Decoction with Aucklandia and Amomum**: Four Gentlemen + Costus Root, Amomum, Tangerine Peel, Pinellia → Fortifies the spleen, harmonizes the stomach, moves qi and transforms phlegm
 
 ---
 
-> 🌿 **家庭养生小贴士**：脾胃养护重在日常。早饭要吃好，午饭要吃饱，晚饭要吃少。饭后百步走，活到九十九。保持心情愉快，因为「思伤脾」，过度思虑会损伤脾胃功能。
+> 🌿 **Family Health Tip**: Spleen-stomach care starts with daily habits. Eat a good breakfast, a full lunch, and a light dinner. Walk a hundred steps after meals. Maintain a happy mood, as "worrying injures the spleen" — excessive thinking can impair spleen-stomach function.
 """;
     }
 }

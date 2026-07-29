@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Localization;
 using Baihua.Core;
+using Baihua.Core.Localization;
 using System.Collections.Concurrent;
 using System.Text.Json;
 using Microsoft.AspNetCore.SignalR;
@@ -20,6 +22,7 @@ namespace Baihua.Family.Services
         private readonly ITaskRepository _repository;
         private readonly ITaskNotifier _notifier;
         private readonly ITaskCancellationManager _cancellationManager;
+        private readonly IStringLocalizer<SharedResources> _loc;
         private readonly ILogger<TaskManager>? _logger;
 
         /// <summary>
@@ -29,12 +32,14 @@ namespace Baihua.Family.Services
             ITaskRepository repository,
             ITaskNotifier notifier,
             ITaskCancellationManager cancellationManager,
-            ILogger<TaskManager>? logger = null)
+            ILogger<TaskManager>? logger = null,
+            IStringLocalizer<SharedResources>? loc = null)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _notifier = notifier ?? throw new ArgumentNullException(nameof(notifier));
             _cancellationManager = cancellationManager ?? throw new ArgumentNullException(nameof(cancellationManager));
             _logger = logger;
+            _loc = loc!;
         }
 
         /// <summary>
@@ -51,6 +56,7 @@ namespace Baihua.Family.Services
 
             _repository = new TaskRepository(dbContextFactory, logger as ILogger<TaskRepository>);
             _cancellationManager = new TaskCancellationManager();
+            _loc = null!;
             _notifier = new TaskNotifier(hubContext, logger as ILogger<TaskNotifier>,
                 new Lazy<TaskManager>(() => this));
             _logger = logger;
@@ -80,7 +86,7 @@ namespace Baihua.Family.Services
                 Type = type,
                 Status = RunnerTaskStatus.Pending,
                 Parameters = parameters,
-                Progress = new TaskProgress { Current = 0, Total = 1, Message = "任务已创建" },
+                Progress = new TaskProgress { Current = 0, Total = 1, Message = _loc["Task_Created"] },
                 CreatedAt = now,
                 UpdatedAt = now
             };
@@ -227,7 +233,7 @@ namespace Baihua.Family.Services
                 return false;
 
             _cancellationManager.TryCancel(taskId);
-            await UpdateStatus(taskId, RunnerTaskStatus.Cancelled, "用户已取消");
+            await UpdateStatus(taskId, RunnerTaskStatus.Cancelled, _loc["Task_CancelledByUser"]);
             return true;
         }
 
@@ -258,14 +264,14 @@ namespace Baihua.Family.Services
             {
                 task.Progress.Current = task.Progress.Total;
                 task.Progress.Percentage = 100.0;
-                task.Progress.Message = "任务完成";
+                task.Progress.Message = _loc["Task_Progress_Done"];
             }
 
             if (status == RunnerTaskStatus.Failed && !string.IsNullOrEmpty(task.Progress.Message))
             {
                 if (!task.Progress.Message.Contains("(失败)") && !task.Progress.Message.Contains("失败") && !task.Progress.Message.StartsWith("❌"))
                 {
-                    task.Progress.Message += " (失败)";
+                    task.Progress.Message += _loc["Task_Progress_FailedNote"];
                 }
             }
 
