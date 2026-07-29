@@ -11,15 +11,16 @@
 @inject IApiService ApiService
 @inject ILogger<Vaults> Logger
 @inject BackupService BackupService
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
-<PageTitle>知识库管理</PageTitle>
+<PageTitle>@L["Vaults_PageTitle"]</PageTitle>
 
 <div class="container-fluid mt-4">
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h2 class="mb-0">📚 知识库管理</h2>
+            <h2 class="mb-0">📚 @L["Vaults_Title"]</h2>
             <div>
-                <button class="btn btn-sm btn-outline-secondary" @onclick="RefreshCurrentTab" disabled="@isLoading">🔄 刷新</button>
+                <button class="btn btn-sm btn-outline-secondary" @onclick="RefreshCurrentTab" disabled="@isLoading">🔄 @L["Vaults_Refresh"]</button>
             </div>
         </div>
         <div class="card-body">
@@ -27,22 +28,22 @@
             <ul class="nav nav-tabs mb-4">
                 <li class="nav-item">
                     <button class="nav-link @(activeTab == "vaults" ? "active" : "")" @onclick='() => SwitchTab("vaults")'>
-                        📁 知识库路径配置
+                        📁 @L["Vaults_TabPathConfig"]
                     </button>
                 </li>
                 <li class="nav-item">
                     <button class="nav-link @(activeTab == "git" ? "active" : "")" @onclick='() => SwitchTab("git")'>
-                        🌿 根路径 Git
+                        🌿 @L["Vaults_TabGit"]
                     </button>
                 </li>
                 <li class="nav-item">
                     <button class="nav-link @(activeTab == "backup" ? "active" : "")" @onclick='() => SwitchTab("backup")'>
-                        💾 备份恢复
+                        💾 @L["Vaults_TabBackup"]
                     </button>
                 </li>
                 <li class="nav-item">
                     <button class="nav-link @(activeTab == "trash" ? "active" : "")" @onclick='() => SwitchTab("trash")'>
-                        🗑️ 回收站
+                        🗑️ @L["Vaults_TabTrash"]
                         @if (trashVaults.Count > 0)
                         {
                             <span class="badge bg-danger ms-1">@trashVaults.Count</span>
@@ -57,7 +58,7 @@
                     @message
                     @if (success && !string.IsNullOrEmpty(lastCreatedTaskId))
                     {
-                        <a href="tasks" class="alert-link ms-2">→ 查看任务</a>
+                        <a href="tasks" class="alert-link ms-2">→ @L["Vaults_ViewTask"]</a>
                     }
                     <button type="button" class="btn-close" @onclick="() => { message = null; lastCreatedTaskId = null; }"></button>
                 </div>
@@ -72,9 +73,9 @@
                 {
                     <div class="text-center py-5">
                         <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">加载中...</span>
+                            <span class="visually-hidden">@L["Common_Loading"]</span>
                         </div>
-                        <p class="mt-3 text-muted">正在加载知识库数据...</p>
+                        <p class="mt-3 text-muted">@L["Vaults_LoadingVaultData"]</p>
                     </div>
                 }
                 else
@@ -82,12 +83,12 @@
                     <!-- 知识库根路径（约定的固定路径） -->
                     <div class="card mb-4">
                         <div class="card-header">
-                            <h5 class="mb-0">📂 知识库根路径</h5>
+                            <h5 class="mb-0">📂 @L["Vaults_RootPath"]</h5>
                         </div>
                         <div class="card-body">
-                            <p class="text-muted small mb-2">新建知识库时，将在此路径下创建子目录。</p>
+                            <p class="text-muted small mb-2">@L["Vaults_RootPathHint"]</p>
                             <div class="alert alert-info mb-2 py-2">
-                                <small>🔒 使用约定的固定路径，不可修改</small>
+                                <small>🔒 @L["Vaults_RootPathFixed"]</small>
                             </div>
                             <div class="row g-3">
                                 <div class="col-md-8">
@@ -99,11 +100,11 @@
                                 <small class="text-muted mt-2 d-block">
                                     @if (Directory.Exists(vaultRootPathPreference))
                                     {
-                                        <span class="text-success">✅ 路径存在</span>
+                                        <span class="text-success">✅ @L["Vaults_PathExists"]</span>
                                     }
                                     else
                                     {
-                                        <span class="text-warning">⚠️ 路径不存在，新建知识库时会自动创建</span>
+                                        <span class="text-warning">⚠️ @L["Vaults_PathNotExist"]</span>
                                     }
                                 </small>
                             }
@@ -114,14 +115,14 @@
                 @if (notesMdStatus == null)
                 {
                     <div class="alert alert-light border mb-3">
-                        <h6 class="alert-heading">💡 推荐安装 NotesMD CLI</h6>
+                        <h6 class="alert-heading">💡 @L["Vaults_NotesMdRecommend"]</h6>
                         <p class="mb-1 small">
                             <a href="https://github.com/Yakitrak/notesmd-cli" target="_blank">notesmd-cli</a> 
-                            是一个无需运行 Obsidian 即可管理 vault 的命令行工具，非常适合脚本化和自动化场景。
-                            安装后可将本系统的知识库一键注册到 Obsidian，实现无缝衔接。
+                            @L["Vaults_NotesMdDesc"]
+                            @L["Vaults_NotesMdRegisterHint"]
                         </p>
                         <p class="mb-0 small text-muted">
-                            安装命令（Windows: <code>scoop install notesmd-cli</code> | macOS/Linux: <code>brew install yakitrak/yakitrak/notesmd-cli</code>）
+                            @L["Vaults_NotesMdInstallCmd"]
                         </p>
                     </div>
                 }
@@ -131,12 +132,12 @@
                         <div class="card-body py-2">
                             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                                 <div class="small">
-                                    <span class="badge bg-success">✅ notesmd-cli 已就绪</span>
+                                    <span class="badge bg-success">✅ @L["Vaults_NotesMdReady"]</span>
                                     <span class="text-muted ms-2">
-                                        已注册 @(notesMdStatus.RegisteredPaths.Count) 个 Obsidian 知识库
+                                        @L["Vaults_RegisteredCountBefore"] @(notesMdStatus.RegisteredPaths.Count) @L["Vaults_RegisteredCountAfter"]
                                         @if (GetUnregisteredVaultCount() > 0)
                                         {
-                                            <span class="text-warning">，尚有 @(GetUnregisteredVaultCount()) 个未注册</span>
+                                            <span class="text-warning">@L["Vaults_UnregisteredCountBefore"] @(GetUnregisteredVaultCount()) @L["Vaults_UnregisteredCountAfter"]</span>
                                         }
                                     </span>
                                 </div>
@@ -147,7 +148,7 @@
                                         {
                                             <span class="spinner-border spinner-border-sm me-1"></span>
                                         }
-                                        📌 一键注册全部到 Obsidian
+                                        📌 @L["Vaults_RegisterAllToObsidian"]
                                     </button>
                                 }
                             </div>
@@ -157,14 +158,14 @@
                 else
                 {
                     <div class="alert alert-light border mb-3">
-                        <h6 class="alert-heading">💡 推荐安装 NotesMD CLI</h6>
+                        <h6 class="alert-heading">💡 @L["Vaults_NotesMdRecommend"]</h6>
                         <p class="mb-1 small">
                             <a href="https://github.com/Yakitrak/notesmd-cli" target="_blank">notesmd-cli</a> 
-                            是一个无需运行 Obsidian 即可管理 vault 的命令行工具，非常适合脚本化和自动化场景。
-                            安装后可将本系统的知识库一键注册到 Obsidian，实现无缝衔接。
+                            @L["Vaults_NotesMdDesc"]
+                            @L["Vaults_NotesMdRegisterHint"]
                         </p>
                         <p class="mb-0 small text-muted">
-                            安装命令（Windows: <code>scoop install notesmd-cli</code> | macOS/Linux: <code>brew install yakitrak/yakitrak/notesmd-cli</code>）
+                            @L["Vaults_NotesMdInstallCmd"]
                         </p>
                     </div>
                 }
@@ -172,38 +173,38 @@
                 <!-- 添加新知识库 -->
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h5 class="mb-0">➕ 添加新知识库</h5>
+                        <h5 class="mb-0">➕ @L["Vaults_AddVault"]</h5>
                     </div>
                     <div class="card-body">
                         <div class="row g-2 align-items-end">
                             <div class="col-md-3">
-                                <label class="form-label small mb-1">行业</label>
+                                <label class="form-label small mb-1">@L["Vaults_Industry"]</label>
                                 <select class="form-select form-select-sm" @bind="newVaultIndustry">
-                                    <option value="笔记">📝 笔记</option>
-                                    <option value="计算机">💻 计算机</option>
-                                    <option value="通用">📘 通用</option>
+                                    <option value="笔记">📝 @L["Vaults_IndustryNote"]</option>
+                                    <option value="计算机">💻 @L["Vaults_IndustryComputer"]</option>
+                                    <option value="通用">📘 @L["Vaults_IndustryGeneral"]</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small mb-1">知识库名称</label>
-                                <input type="text" class="form-control form-control-sm" @bind="newVaultName" placeholder="例如：脾胃病、Python入门..." />
+                                <label class="form-label small mb-1">@L["Vaults_VaultName"]</label>
+                                <input type="text" class="form-control form-control-sm" @bind="newVaultName" placeholder="@L["Vaults_VaultNamePlaceholder"]" />
                             </div>
                             <div class="col-md-3">
                                 <button class="btn btn-sm btn-primary w-100" @onclick="AddNewVault" disabled="@isLoading">
                                     @if (isLoading) { <span class="spinner-border spinner-border-sm me-1"></span> }
-                                    添加
+                                    @L["Vaults_Add"]
                                 </button>
                             </div>
                         </div>
                         @if (!string.IsNullOrEmpty(vaultRootPathPreference) && !string.IsNullOrEmpty(newVaultIndustry) && !string.IsNullOrEmpty(newVaultName))
                         {
                             <small class="text-muted d-block mt-2">
-                                将创建到：<code>@System.IO.Path.Combine(vaultRootPathPreference, "local", newVaultIndustry, newVaultName)</code>
+                                @L["Vaults_WillCreateAt"]<code>@System.IO.Path.Combine(vaultRootPathPreference, "local", newVaultIndustry, newVaultName)</code>
                             </small>
                         }
                         else if (string.IsNullOrEmpty(vaultRootPathPreference))
                         {
-                            <small class="text-warning d-block mt-2">⚠️ 请先设置知识库根路径</small>
+                            <small class="text-warning d-block mt-2">⚠️ @L["Vaults_SetRootPathFirst"]</small>
                         }
                     </div>
                 </div>
@@ -211,17 +212,17 @@
                 <!-- 知识库列表 -->
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">📋 所有知识库 (@vaults.Count)</h5>
+                        <h5 class="mb-0">📋 @L["Vaults_AllVaults"] (@vaults.Count)</h5>
                         <button class="btn btn-sm btn-outline-primary" @onclick="SyncVaults" disabled="@isLoading">
                             @if (isLoading) { <span class="spinner-border spinner-border-sm me-1"></span> }
-                            🔄 同步知识库
+                            🔄 @L["Vaults_SyncVaults"]
                         </button>
                     </div>
                     <div class="card-body p-0">
                         @if (vaults.Count == 0)
                         {
                             <div class="text-center py-4 text-muted">
-                                暂无知识库，请添加一个
+                                @L["Vaults_NoVaults"]
                             </div>
                         }
                         else
@@ -229,14 +230,14 @@
                             <table class="table table-hover mb-0">
                                 <thead>
                                     <tr>
-                                        <th>名称</th>
-                                        <th>路径</th>
-                                        <th>行业</th>
-                                        <th>创建时间</th>
-                                        <th>标签</th>
-                                        <th>笔记</th>
-                                        <th>记忆卡片</th>
-                                        <th>操作</th>
+                                        <th>@L["Vaults_TableName"]</th>
+                                        <th>@L["Vaults_TablePath"]</th>
+                                        <th>@L["Vaults_TableIndustry"]</th>
+                                        <th>@L["Vaults_TableCreatedAt"]</th>
+                                        <th>@L["Vaults_TableTags"]</th>
+                                        <th>@L["Vaults_TableNotes"]</th>
+                                        <th>@L["Vaults_TableCards"]</th>
+                                        <th>@L["Vaults_TableActions"]</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -263,9 +264,9 @@
                                                 {
                                                     <div class="input-group input-group-sm">
                                                         <select class="form-select form-select-sm" @bind="editingIndustry">
-                                                            <option value="笔记">📝 笔记</option>
-                                                            <option value="计算机">💻 计算机</option>
-                                                            <option value="通用">📘 通用</option>
+                                                            <option value="笔记">📝 @L["Vaults_IndustryNote"]</option>
+                                                            <option value="计算机">💻 @L["Vaults_IndustryComputer"]</option>
+                                                            <option value="通用">📘 @L["Vaults_IndustryGeneral"]</option>
                                                         </select>
                                                         <button class="btn btn-success" @onclick="SaveIndustryEdit">✓</button>
                                                         <button class="btn btn-secondary" @onclick="CancelIndustryEdit">✕</button>
@@ -274,7 +275,7 @@
                                                 else
                                                 {
                                                     <span class="badge bg-secondary" style="cursor: pointer;" @onclick="() => StartIndustryEdit(vault)" title="点击编辑行业">
-                                                        @(string.IsNullOrWhiteSpace(vault.Industry) ? "+ 设置行业" : vault.Industry)
+                                                        @(string.IsNullOrWhiteSpace(vault.Industry) ? "+ " + L["Vaults_SetIndustry"] : vault.Industry)
                                                     </span>
                                                 }
                                             </td>
@@ -283,7 +284,7 @@
                                                 @if (editingTagVaultId == vault.Id)
                                                 {
                                                     <div class="input-group input-group-sm">
-                                                        <input type="text" class="form-control" @bind="editingTags" placeholder="标签1, 标签2..." />
+                                                        <input type="text" class="form-control" @bind="editingTags" placeholder="@L["Vaults_TagsPlaceholder"]" />
                                                         <button class="btn btn-success" @onclick="SaveTagEdit">✓</button>
                                                         <button class="btn btn-secondary" @onclick="CancelTagEdit">✕</button>
                                                     </div>
@@ -300,7 +301,7 @@
                                                         }
                                                         else
                                                         {
-                                                            <span class="text-muted small">+ 添加标签</span>
+                                                            <span class="text-muted small">+ @L["Vaults_AddTag"]</span>
                                                         }
                                                     </div>
                                                 }
@@ -312,7 +313,7 @@
                                                 }
                                                 else
                                                 {
-                                                    <span class="badge bg-primary">📝 @vaultNoteCounts[vault.Id] 篇</span>
+                                                    <span class="badge bg-primary">📝 @vaultNoteCounts[vault.Id] @L["Vaults_NoteCountSuffix"]</span>
                                                 }
                                             </td>
                                             <td>
@@ -329,23 +330,23 @@
                                                         }
                                                         else
                                                         {
-                                                            <span>🃏 生成记忆卡片</span>
+                                                            <span>🃏 @L["Vaults_GenerateCards"]</span>
                                                         }
                                                     </button>
                                                 }
                                                 else
                                                 {
-                                                    <span class="badge bg-success">🃏 @vaultCardCounts[vault.Id] 张</span>
+                                                    <span class="badge bg-success">🃏 @vaultCardCounts[vault.Id] @L["Vaults_CardCountSuffix"]</span>
                                                 }
                                             </td>
                                             <td>
                                                 <div class="btn-group btn-group-sm">
-                                                    <button class="btn btn-outline-dark" @onclick="() => OpenInObsidian(vault)" title="用 Obsidian 打开">
+                                                    <button class="btn btn-outline-dark" @onclick="() => OpenInObsidian(vault)" title="@L["Vaults_OpenInObsidian"]">
                                                         🔮
                                                     </button>
                                                     @if (notesMdStatus?.Available == true && !IsVaultRegisteredInNotesMd(vault.Path))
                                                     {
-                                                        <button class="btn btn-outline-success" @onclick="() => AddVaultToNotesMd(vault)" disabled="@(notesMdAddingVaultId == vault.Id)" title="注册到 Obsidian (notesmd-cli)">
+                                                        <button class="btn btn-outline-success" @onclick="() => AddVaultToNotesMd(vault)" disabled="@(notesMdAddingVaultId == vault.Id)" title="@L["Vaults_RegisterToObsidian"]">
                                                             @if (notesMdAddingVaultId == vault.Id)
                                                             {
                                                                 <span class="spinner-border spinner-border-sm"></span>
@@ -358,15 +359,15 @@
                                                     }
                                                     else if (notesMdStatus?.Available == true && IsVaultRegisteredInNotesMd(vault.Path))
                                                     {
-                                                        <button class="btn btn-outline-success" disabled title="已注册到 Obsidian">
+                                                        <button class="btn btn-outline-success" disabled title="@L["Vaults_RegisteredToObsidian"]">
                                                             ✓
                                                         </button>
                                                     }
                                                     <button class="btn btn-outline-secondary" @onclick="() => StartEdit(vault)" title="重命名">
-                                                        重命名
+                                                        @L["Vaults_Rename"]
                                                     </button>
                                                     <button class="btn btn-outline-danger" @onclick="() => ConfirmDelete(vault)" title="删除">
-                                                        删除
+                                                        @L["Vaults_Delete"]
                                                     </button>
                                                 </div>
                                             </td>
@@ -385,28 +386,28 @@
                 {
                     <div class="text-center py-4">
                         <div class="spinner-border text-primary"></div>
-                        <p class="mt-2">正在加载...</p>
+                        <p class="mt-2">@L["Vaults_Loading"]</p>
                     </div>
                 }
                 else if (activeVault == null && string.IsNullOrEmpty(vaultRootPathPreference))
                 {
                     <div class="alert alert-info">
-                        <h5>📋 根路径 Git</h5>
-                        <p class="mb-0">此功能对<strong>知识库根路径</strong>进行 Git 版本管理。请先在"知识库路径配置"Tab 中设置知识库根路径。</p>
+                        <h5>📋 @L["Vaults_RootPathGit"]</h5>
+                        <p class="mb-0">@L["Vaults_GitRootPathHint"]</p>
                     </div>
                 }
                 else if (gitStatus == null)
                 {
                     <div class="alert alert-warning">
-                        <h5>⚠️ 加载失败</h5>
-                        <p class="mb-0">无法获取 Git 状态。请检查后端服务是否正常运行。</p>
+                        <h5>⚠️ @L["Vaults_LoadFailed"]</h5>
+                        <p class="mb-0">@L["Vaults_GitStatusFail"]</p>
                     </div>
                 }
                 else if (!gitStatus.IsGitRepo)
                 {
                     <div class="alert alert-warning">
                         <h5>⚠️ @gitStatus.Message</h5>
-                        <p class="mb-0">请在知识库目录中运行 <code>git init</code> 初始化仓库。</p>
+                        <p class="mb-0">@L["Vaults_GitInitHint"]</p>
                     </div>
                 }
                 else
@@ -416,16 +417,16 @@
                         <div class="col-md-6">
                             <div class="card bg-light">
                                 <div class="card-body">
-                                    <h5 class="card-title">📊 仓库状态</h5>
+                                    <h5 class="card-title">📊 @L["Vaults_RepoStatus"]</h5>
                                     <table class="table table-sm mb-0">
-                                        <tr><td width="100"><strong>分支</strong></td><td><code class="bg-white px-2 rounded">@gitStatus.Branch</code></td></tr>
-                                        <tr><td><strong>远程</strong></td><td>@(gitStatus.HasRemote ? "✅ 已配置" : "❌ 未配置")</td></tr>
-                                        <tr><td><strong>变更</strong></td><td><span class="badge bg-@(gitStatus.Changes.Count > 0 ? "warning" : "success")">@gitStatus.Changes.Count 个文件</span></td></tr>
+                                        <tr><td width="100"><strong>@L["Vaults_Branch"]</strong></td><td><code class="bg-white px-2 rounded">@gitStatus.Branch</code></td></tr>
+                                        <tr><td><strong>@L["Vaults_Remote"]</strong></td><td>@(gitStatus.HasRemote ? "✅ " + L["Vaults_Configured"] : "❌ " + L["Vaults_NotConfigured"])</td></tr>
+                                        <tr><td><strong>@L["Vaults_Changes"]</strong></td><td><span class="badge bg-@(gitStatus.Changes.Count > 0 ? "warning" : "success")">@gitStatus.Changes.Count  @L["Vaults_FileCount"]</span></td></tr>
                                         @if (gitStatus.Ahead > 0 || gitStatus.Behind > 0)
                                         {
-                                            <tr><td><strong>同步</strong></td><td>
-                                                @if (gitStatus.Ahead > 0) { <span class="badge bg-primary me-1">↑ @gitStatus.Ahead 待推送</span> }
-                                                @if (gitStatus.Behind > 0) { <span class="badge bg-secondary">↓ @gitStatus.Behind 待拉取</span> }
+                                            <tr><td><strong>@L["Vaults_Sync"]</strong></td><td>
+                                                @if (gitStatus.Ahead > 0) { <span class="badge bg-primary me-1">↑ @gitStatus.Ahead  @L["Vaults_PendingPush_Badge"]</span> }
+                                                @if (gitStatus.Behind > 0) { <span class="badge bg-secondary">↓ @gitStatus.Behind  @L["Vaults_PendingPull_Badge"]</span> }
                                             </td></tr>
                                         }
                                     </table>
@@ -435,10 +436,10 @@
                         <div class="col-md-6">
                             <div class="card">
                                 <div class="card-body">
-                                    <h5 class="card-title">⚡ 快捷操作</h5>
+                                    <h5 class="card-title">⚡ @L["Vaults_QuickActions"]</h5>
                                     <button class="btn btn-outline-primary w-100 mb-2" @onclick="DoPull" disabled="@isLoading">
                                         @if (isLoading && action == "pull") { <span class="spinner-border spinner-border-sm me-1"></span> }
-                                        ↓ 拉取远程变更
+                                        ↓ @L["Vaults_PullChanges"]
                                     </button>
                                 </div>
                             </div>
@@ -450,7 +451,7 @@
                     {
                         <div class="card mb-4">
                             <div class="card-header bg-warning bg-opacity-25">
-                                <h5 class="mb-0">📝 待提交的变更 (@gitStatus.Changes.Count)</h5>
+                                <h5 class="mb-0">📝 @L["Vaults_PendingChanges"] (@gitStatus.Changes.Count)</h5>
                             </div>
                             <div class="card-body" style="max-height: 250px; overflow-y: auto;">
                                 <ul class="list-group list-group-flush">
@@ -467,19 +468,19 @@
                                 <div class="row g-2">
                                     <div class="col">
                                         <div class="input-group">
-                                            <input type="text" class="form-control" placeholder="输入提交信息..." 
+                                            <input type="text" class="form-control" placeholder="@L["Vaults_CommitPlaceholder"]" 
                                                    @bind="commitMessage" @bind:event="oninput" />
                                             <button class="btn btn-success" @onclick="DoCommit" 
                                                     disabled="@(isLoading || string.IsNullOrWhiteSpace(commitMessage))">
                                                 @if (isLoading && action == "commit") { <span class="spinner-border spinner-border-sm me-1"></span> }
-                                                ✅ 提交
+                                                ✅ @L["Vaults_Commit"]
                                             </button>
                                         </div>
                                     </div>
                                     <div class="col-auto">
                                         <button class="btn btn-outline-danger" @onclick="ConfirmDiscard" disabled="@isLoading">
                                             @if (isLoading && action == "discard") { <span class="spinner-border spinner-border-sm me-1"></span> }
-                                            🗑️ 撤销更改
+                                            🗑️ @L["Vaults_DiscardChanges"]
                                         </button>
                                     </div>
                                 </div>
@@ -498,7 +499,7 @@
                     {
                         <div class="card mb-4 border-primary">
                             <div class="card-header bg-primary text-white">
-                                <h5 class="mb-0">🚀 待推送的提交 (@gitStatus.Ahead)</h5>
+                                <h5 class="mb-0">🚀 @L["Vaults_PendingPush"] (@gitStatus.Ahead)</h5>
                             </div>
                             <div class="card-body">
                                 @if (unpushedCommits.Count > 0)
@@ -522,7 +523,7 @@
                                 <div class="d-flex justify-content-end">
                                     <button class="btn btn-primary btn-lg" @onclick="DoPush" disabled="@isLoading">
                                         @if (isLoading && action == "push") { <span class="spinner-border spinner-border-sm me-1"></span> }
-                                        ↑ 推送到远程
+                                        ↑ @L["Vaults_PushToRemote"]
                                     </button>
                                 </div>
                             </div>
@@ -532,7 +533,7 @@
                     <!-- 提交历史 -->
                     <div class="card">
                         <div class="card-header">
-                            <h5 class="mb-0">📜 最近提交</h5>
+                            <h5 class="mb-0">📜 @L["Vaults_RecentCommits"]</h5>
                         </div>
                         <div class="card-body p-0" style="max-height: 300px; overflow-y: auto;">
                             @if (commits.Count > 0)
@@ -555,7 +556,7 @@
                             }
                             else
                             {
-                                <p class="text-muted text-center py-3 mb-0">暂无提交历史</p>
+                                <p class="text-muted text-center py-3 mb-0">@L["Vaults_NoCommits"]</p>
                             }
                         </div>
                     </div>
@@ -569,20 +570,20 @@
                     <div class="col-md-6">
                         <div class="card mb-4">
                             <div class="card-header">
-                                <h5 class="mb-0">💾 创建备份</h5>
+                                <h5 class="mb-0">💾 @L["Vaults_CreateBackup"]</h5>
                             </div>
                             <div class="card-body">
-                                <p class="text-muted small">全量备份包含：数据库、AI 配置、知识库文件、用户偏好。支持跨平台恢复。</p>
+                                <p class="text-muted small">@L["Vaults_BackupDescription"]</p>
 
                                 <div class="mb-3">
-                                    <label class="form-label">备份保存目录</label>
-                                    <input type="text" class="form-control form-control-sm" @bind="backupDir" placeholder="留空使用默认目录（文档/HuajiBackups）" />
+                                    <label class="form-label">@L["Vaults_BackupDir"]</label>
+                                    <input type="text" class="form-control form-control-sm" @bind="backupDir" placeholder="@L["Vaults_BackupDirPlaceholder"]" />
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label">备份密码（可选，用于保护 API Key）</label>
-                                    <input type="password" class="form-control form-control-sm" @bind="backupPassword" placeholder="不设密码则 API Key 明文存储" />
-                                    <small class="text-muted">设置密码后，API Key 将用此密码加密，恢复时需输入相同密码。</small>
+                                    <label class="form-label">@L["Vaults_BackupPassword"]</label>
+                                    <input type="password" class="form-control form-control-sm" @bind="backupPassword" placeholder="@L["Vaults_BackupPasswordPlaceholder"]" />
+                                    <small class="text-muted">@L["Vaults_BackupPasswordHint"]</small>
                                 </div>
 
                                 <button class="btn btn-primary btn-sm" @onclick="CreateBackup" disabled="@isBackupLoading">
@@ -590,7 +591,7 @@
                                     {
                                         <span class="spinner-border spinner-border-sm me-1"></span>
                                     }
-                                    创建全量备份
+                                    @L["Vaults_CreateFullBackup"]
                                 </button>
 
                                 @if (!string.IsNullOrEmpty(backupResultMessage))
@@ -603,59 +604,59 @@
                         </div>
                     </div>
 
-                    <!-- 恢复备份 -->
+                    <!-- L["Vaults_DoRestore"] -->
                     <div class="col-md-6">
                         <div class="card mb-4">
                             <div class="card-header">
-                                <h5 class="mb-0">📂 恢复备份</h5>
+                                <h5 class="mb-0">📂 @L["Vaults_RestoreBackup"]</h5>
                             </div>
                             <div class="card-body">
                                 <div class="mb-3">
-                                    <label class="form-label">备份文件路径</label>
-                                    <input type="text" class="form-control form-control-sm" @bind="restoreBackupPath" placeholder="选择 .zip 备份文件" />
+                                    <label class="form-label">@L["Vaults_BackupFilePath"]</label>
+                                    <input type="text" class="form-control form-control-sm" @bind="restoreBackupPath" placeholder="@L["Vaults_BackupFilePlaceholder"]" />
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label">备份密码</label>
-                                    <input type="password" class="form-control form-control-sm" @bind="restorePassword" placeholder="如果备份有密码保护则输入" />
+                                    <label class="form-label">@L["Vaults_RestorePassword"]</label>
+                                    <input type="password" class="form-control form-control-sm" @bind="restorePassword" placeholder="@L["Vaults_RestorePasswordPlaceholder"]" />
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label">知识库根路径覆盖（跨平台恢复时）</label>
-                                    <input type="text" class="form-control form-control-sm" @bind="restoreVaultRootOverride" placeholder="留空使用当前系统根路径" />
-                                    <small class="text-muted">从 Windows 恢复到 Linux 时，可在此指定新的知识库根路径。</small>
+                                    <label class="form-label">@L["Vaults_RootPathOverride"]</label>
+                                    <input type="text" class="form-control form-control-sm" @bind="restoreVaultRootOverride" placeholder="@L["Vaults_RootPathOverridePlaceholder"]" />
+                                    <small class="text-muted">@L["Vaults_RootPathOverrideHint"]</small>
                                 </div>
 
                                 <div class="form-check mb-3">
                                     <input class="form-check-input" type="checkbox" @bind="restoreOverwrite" id="restoreOverwrite" />
-                                    <label class="form-check-label" for="restoreOverwrite">覆盖现有数据</label>
+                                    <label class="form-check-label" for="restoreOverwrite">L["Vaults_OverwriteData"]</label>
                                 </div>
 
                                 @if (restoreValidation != null)
                                 {
                                     <div class="alert alert-info small mb-3">
-                                        <strong>备份信息：</strong><br />
-                                        版本：@restoreValidation.Version<br />
-                                        创建时间：@(restoreValidation.CreatedAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "未知")<br />
-                                        源平台：@restoreValidation.SourceOS<br />
+                                        <strong>@L["Vaults_BackupInfo"]</strong><br />
+                                        @L["Vaults_Version"]@restoreValidation.Version<br />
+                                        @L["Vaults_CreatedAtLabel"]@(restoreValidation.CreatedAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? @L["Vaults_Unknown"])<br />
+                                        L["Vaults_SourcePlatform"]@restoreValidation.SourceOS<br />
                                         @if (restoreValidation.HasPassword)
                                         {
-                                            <span class="text-warning">🔒 有密码保护</span><br />
+                                            <span class="text-warning">🔒 @L["Vaults_PasswordProtected"]</span><br />
                                         }
-                                        知识库数量：@restoreValidation.VaultCount
+                                        @L["Vaults_VaultCount"]@restoreValidation.VaultCount
                                     </div>
                                 }
 
                                 <div class="d-flex gap-2">
                                     <button class="btn btn-outline-secondary btn-sm" @onclick="ValidateBackup" disabled="@isRestoreLoading || string.IsNullOrEmpty(restoreBackupPath)">
-                                        验证备份
+                                        @L["Vaults_ValidateBackup"]
                                     </button>
                                     <button class="btn btn-warning btn-sm" @onclick="RestoreBackup" disabled="@isRestoreLoading || string.IsNullOrEmpty(restoreBackupPath)">
                                         @if (isRestoreLoading)
                                         {
                                             <span class="spinner-border spinner-border-sm me-1"></span>
                                         }
-                                        恢复备份
+                                        L["Vaults_DoRestore"]
                                     </button>
                                 </div>
 
@@ -673,21 +674,21 @@
                 <!-- 备份列表 -->
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0">📋 已有备份</h5>
+                        <h5 class="mb-0">📋 @L["Vaults_ExistingBackups"]</h5>
                     </div>
                     <div class="card-body">
                         @if (backupList.Count == 0)
                         {
-                            <p class="text-muted text-center py-3 mb-0">暂无备份文件</p>
+                            <p class="text-muted text-center py-3 mb-0">@L["Vaults_NoBackups"]</p>
                         }
                         else
                         {
                             <table class="table table-sm table-hover mb-0">
                                 <thead>
                                     <tr>
-                                        <th>文件名</th>
-                                        <th>大小</th>
-                                        <th>创建时间</th>
+                                        <th>@L["Vaults_TableFileName"]</th>
+                                        <th>@L["Vaults_TableSize"]</th>
+                                        <th>@L["Vaults_TableCreatedAt"]</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -709,11 +710,11 @@
             {
                 <!-- 回收站 Tab -->
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="mb-0">🗑️ 回收站 (@trashVaults.Count)</h5>
+                    <h5 class="mb-0">🗑️ @L["Vaults_TabTrash"] (@trashVaults.Count)</h5>
                     @if (trashVaults.Count > 0)
                     {
                         <button class="btn btn-sm btn-outline-danger" @onclick="ConfirmEmptyTrash" disabled="@isLoading">
-                            🧹 清空回收站
+                            🧹 @L["Vaults_EmptyTrash"]
                         </button>
                     }
                 </div>
@@ -721,8 +722,8 @@
                 @if (trashVaults.Count == 0)
                 {
                     <div class="text-center py-5 text-muted">
-                        <p class="mb-0">回收站为空</p>
-                        <small>删除的知识库会暂存在这里</small>
+                        <p class="mb-0">@L["Vaults_TrashEmpty"]</p>
+                        <small>@L["Vaults_TrashHint"]</small>
                     </div>
                 }
                 else
@@ -732,10 +733,10 @@
                             <table class="table table-hover mb-0">
                                 <thead>
                                     <tr>
-                                        <th>名称</th>
-                                        <th>路径</th>
-                                        <th>行业</th>
-                                        <th>操作</th>
+                                        <th>@L["Vaults_TableName"]</th>
+                                        <th>@L["Vaults_TablePath"]</th>
+                                        <th>@L["Vaults_TableIndustry"]</th>
+                                        <th>@L["Vaults_TableActions"]</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -747,7 +748,7 @@
                                             <td>@(string.IsNullOrWhiteSpace(vault.Industry) ? "-" : vault.Industry)</td>
                                             <td>
                                                 <button class="btn btn-sm btn-outline-success" @onclick="() => ConfirmRestore(vault)">
-                                                    ↩️ 恢复
+                                                    ↩️ @L["Vaults_Restore"]
                                                 </button>
                                             </td>
                                         </tr>
@@ -769,15 +770,15 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title">⚠️ 确认删除知识库</h5>
+                    <h5 class="modal-title">⚠️ @L["Vaults_ConfirmDeleteTitle"]</h5>
                 </div>
                 <div class="modal-body">
-                    <p>确定要删除知识库 <strong>"@vaultToDelete?.Name"</strong> 吗？</p>
-                    <p class="text-muted mb-0">知识库将移入回收站，可随时恢复。</p>
+                    <p>@L["Vaults_ConfirmDeleteBody"]</p>
+                    <p class="text-muted mb-0">@L["Vaults_DeleteHint"]</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="CancelDelete">取消</button>
-                    <button type="button" class="btn btn-danger" @onclick="DoDelete">确认删除</button>
+                    <button type="button" class="btn btn-secondary" @onclick="CancelDelete">@L["Common_Cancel"]</button>
+                    <button type="button" class="btn btn-danger" @onclick="DoDelete">@L["Vaults_ConfirmDelete"]</button>
                 </div>
             </div>
         </div>
@@ -791,15 +792,15 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title">↩️ 确认恢复知识库</h5>
+                    <h5 class="modal-title">↩️ @L["Vaults_ConfirmRestoreTitle"]</h5>
                 </div>
                 <div class="modal-body">
-                    <p>确定要恢复知识库 <strong>"@vaultToRestore?.Name"</strong> 吗？</p>
-                    <p class="text-muted mb-0">将移回原始路径：<code>@vaultToRestore?.Path</code></p>
+                    <p>@L["Vaults_ConfirmRestoreBody"]</p>
+                    <p class="text-muted mb-0">@L["Vaults_RestorePath"]<code>@vaultToRestore?.Path</code></p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="CancelRestore">取消</button>
-                    <button type="button" class="btn btn-success" @onclick="DoRestore">确认恢复</button>
+                    <button type="button" class="btn btn-secondary" @onclick="CancelRestore">@L["Common_Cancel"]</button>
+                    <button type="button" class="btn btn-success" @onclick="DoRestore">@L["Vaults_ConfirmRestore"]</button>
                 </div>
             </div>
         </div>
@@ -813,15 +814,15 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title">⚠️ 确认清空回收站</h5>
+                    <h5 class="modal-title">⚠️ @L["Vaults_ConfirmEmptyTrashTitle"]</h5>
                 </div>
                 <div class="modal-body">
-                    <p>确定要清空回收站吗？</p>
-                    <p class="text-muted mb-0"><strong>@trashVaults.Count</strong> 个知识库将被<strong>永久删除</strong>，无法恢复。</p>
+                    <p>@L["Vaults_ConfirmEmptyTrashBody"]</p>
+                    <p class="text-muted mb-0"><strong>@trashVaults.Count</strong> @L["Vaults_EmptyTrashWarning"]</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="CancelEmptyTrash">取消</button>
-                    <button type="button" class="btn btn-danger" @onclick="DoEmptyTrash">确认清空</button>
+                    <button type="button" class="btn btn-secondary" @onclick="CancelEmptyTrash">@L["Common_Cancel"]</button>
+                    <button type="button" class="btn btn-danger" @onclick="DoEmptyTrash">@L["Vaults_ConfirmEmptyTrash"]</button>
                 </div>
             </div>
         </div>
@@ -835,15 +836,15 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title">⚠️ 确认撤销更改</h5>
+                    <h5 class="modal-title">⚠️ @L["Vaults_ConfirmDiscardTitle"]</h5>
                 </div>
                 <div class="modal-body">
-                    <p class="mb-0">此操作将撤销所有未提交的工作区更改，<strong>无法恢复</strong>。</p>
-                    <p class="text-muted mt-2 mb-0">包括：已修改的文件、新增的文件、删除的文件。</p>
+                    <p class="mb-0">@L["Vaults_ConfirmDiscardBody"]</p>
+                    <p class="text-muted mt-2 mb-0">@L["Vaults_DiscardDetail"]</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="CancelDiscard">取消</button>
-                    <button type="button" class="btn btn-danger" @onclick="DoDiscard">确认撤销</button>
+                    <button type="button" class="btn btn-secondary" @onclick="CancelDiscard">@L["Common_Cancel"]</button>
+                    <button type="button" class="btn btn-danger" @onclick="DoDiscard">@L["Vaults_ConfirmDiscard"]</button>
                 </div>
             </div>
         </div>
@@ -1135,7 +1136,7 @@
             if (result)
             {
                 notesMdStatus = await ApiService.GetNotesMdCliStatusAsync();
-                message = $"知识库 \"{vault.Name}\" 已注册到 Obsidian";
+                message = $"知识库 \"{vault.Name}\" {L["Vaults_RegisteredToObsidian"]}";
                 success = true;
             }
             else
@@ -1284,7 +1285,7 @@
     private async Task RestoreBackup()
     {
         var warnMsg = restoreOverwrite
-            ? "⚠️ 将覆盖现有数据，此操作不可撤销！确定要继续恢复备份吗？"
+            ? $"⚠️ 将{L["Vaults_OverwriteData"]}，此操作不可撤销！确定要继续{L["Vaults_DoRestore"]}吗？"
             : "确定要从此备份恢复吗？";
         if (!await JS.InvokeAsync<bool>("confirm", warnMsg))
             return;
@@ -1301,7 +1302,7 @@
             restoreResultSuccess = result.Success;
             if (result.Success)
             {
-                restoreResultMessage = $"恢复成功！源平台：{result.SourcePlatform}，源系统：{result.SourceOS}";
+                restoreResultMessage = $"恢复成功！{L["Vaults_SourcePlatform"]}{result.SourcePlatform}，源系统：{result.SourceOS}";
                 // 刷新知识库列表
                 await LoadVaultsData();
             }
