@@ -741,7 +741,7 @@
 </style>
 
 @code {
-    private bool _canShowLocalModelSettings = true;
+    private bool _canShowLocalModelSettings = false;
     
     private List<AiConfigProvider> aiProviders = new();
 
@@ -776,7 +776,20 @@
         {
             try
             {
-                _canShowLocalModelSettings = await CapabilityService.CanShowAsync("SettingsLocalModelDownload");
+                var canShow = await CapabilityService.CanShowAsync("SettingsLocalModelDownload");
+                await InvokeAsync(() =>
+                {
+                    _canShowLocalModelSettings = canShow;
+                    StateHasChanged();
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, "检查本地模型设置权限失败");
+            }
+
+            try
+            {
                 await Task.WhenAll(
                     LoadAiProviders(),
                     LoadLocalModelConfigAsync(),
@@ -785,7 +798,7 @@
             }
             catch (Exception ex)
             {
-                Logger.LogWarning(ex, "后台加载失败");
+                Logger.LogWarning(ex, "后台加载设置数据失败");
             }
         });
     }

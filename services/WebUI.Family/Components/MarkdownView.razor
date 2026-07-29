@@ -24,7 +24,8 @@
         
         if (!string.IsNullOrEmpty(Content))
         {
-            _renderedContent = Markdown.ToHtml(Content);
+            var pipeline = new MarkdownPipelineBuilder().DisableHtml().Build();
+            _renderedContent = Markdown.ToHtml(Content, pipeline);
             Logger.LogInformation("Markdown 渲染完成，HTML 长度：{Length}", _renderedContent?.Length ?? 0);
         }
         else

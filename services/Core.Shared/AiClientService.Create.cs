@@ -20,27 +20,32 @@ public partial class AiClientService
 
         /// <summary>
         /// 为指定提供商+模型创建 IChatClient（支持 Function Calling）
+        /// 使用缓存避免每次创建新的 TCP 连接
         /// </summary>
         public IChatClient CreateChatClient(string providerId, string model, IList<AITool>? tools)
         {
             var provider = _aiSettings.GetAiProvider(providerId)
                 ?? throw new Exception($"未找到 AI 提供商：{providerId}");
 
-            var apiKey = _aiSettings.GetAiApiKey(providerId);
-            if (string.IsNullOrWhiteSpace(apiKey))
-                _logger.LogWarning("提供商 {ProviderId} 未配置 API Key，将以无鉴权方式请求", providerId);
+            var cacheKey = $"{providerId}:{model}";
+            return _chatClientCache.GetOrAdd(cacheKey, _ =>
+            {
+                var apiKey = _aiSettings.GetAiApiKey(providerId);
+                if (string.IsNullOrWhiteSpace(apiKey))
+                    _logger.LogWarning("提供商 {ProviderId} 未配置 API Key，将以无鉴权方式请求", providerId);
 
-            var endpoint = new Uri(provider.AiBaseUrl.TrimEnd('/') );
-            var clientOptions = new OpenAIClientOptions { Endpoint = endpoint };
+                var endpoint = new Uri(provider.AiBaseUrl.TrimEnd('/'));
+                var clientOptions = new OpenAIClientOptions { Endpoint = endpoint };
 
-            // 无 API Key 时使用占位符（Ollama/LMStudio 等本地服务不需要 Key）
-            var credential = string.IsNullOrWhiteSpace(apiKey)
-                ? new ApiKeyCredential("placeholder")
-                : new ApiKeyCredential(apiKey);
+                // 无 API Key 时使用占位符（Ollama/LMStudio 等本地服务不需要 Key）
+                var credential = string.IsNullOrWhiteSpace(apiKey)
+                    ? new ApiKeyCredential("placeholder")
+                    : new ApiKeyCredential(apiKey);
 
-            var openaiClient = new OpenAIClient(credential, clientOptions);
-            var client = openaiClient.GetChatClient(model).AsIChatClient();
-            return client;
+                var openaiClient = new OpenAIClient(credential, clientOptions);
+                var client = openaiClient.GetChatClient(model).AsIChatClient();
+                return client;
+            });
         }
 
         /// <summary>
@@ -61,6 +66,7 @@ public partial class AiClientService
 
         /// <summary>
         /// 创建带分布式缓存的 IChatClient（用于非流式请求）
+        /// 使用缓存避免每次创建新的 TCP 连接
         /// </summary>
         private IChatClient CreateChatClientWithCache(string providerId, string model)
         {

@@ -52,7 +52,9 @@ public partial class AiClientService
                         throw new Exception($"本地 AI 服务 {provider.Name} 未运行且自动启动失败，请手动启动后重试。");
 
                     client = CreateChatClientWithCache(provider, model);
-                    response = await client.GetResponseAsync(messages, options, ct);
+                    // 克隆消息列表，避免外界修改导致重试使用脏上下文
+                    var retryMessages = messages.Select(m => new ChatMessage(m.Role, m.Contents)).ToList();
+                    response = await client.GetResponseAsync(retryMessages, options, ct);
                 }
 
                 // Anthropic fallback：若返回为空，尝试 Anthropic 协议
@@ -117,7 +119,9 @@ public partial class AiClientService
                     MaxOutputTokens = options.MaxOutputTokens,
                     TopP = options.TopP
                 };
-                response = await client.GetResponseAsync(messages, retryOptions, ct);
+                // 克隆消息列表，避免外界修改导致重试使用脏上下文
+                var retryMessages = messages.Select(m => new ChatMessage(m.Role, m.Contents)).ToList();
+                response = await client.GetResponseAsync(retryMessages, retryOptions, ct);
                 functionCalls = response.Messages
                     .SelectMany(m => m.Contents)
                     .OfType<FunctionCallContent>()

@@ -340,13 +340,15 @@ namespace TaskRunner.Services
                     task.Status = RunnerTaskStatus.Running;
                 }
 
-                task.Progress = new TaskProgress
+                var newProgress = new TaskProgress
                 {
                     Current = current,
                     Total = total,
                     Message = message,
                     Percentage = total > 0 ? (double)current / total * 100 : 0
                 };
+                var oldProgress = task.Progress;
+                task.Progress = newProgress;
                 task.UpdatedAt = DateTime.UtcNow;
                 
                 // 更新 SQLite
@@ -369,6 +371,9 @@ namespace TaskRunner.Services
                 catch (Exception ex)
                 {
                     _logger?.LogError(ex, "更新任务进度到数据库失败");
+                    // DB 写入失败时回滚内存状态，保持与数据库一致
+                    task.Status = prevStatus;
+                    task.Progress = oldProgress;
                 }
                 
                 await NotifyTaskUpdateAsync(taskId);

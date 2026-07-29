@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
@@ -23,6 +24,7 @@ namespace TaskRunner.Services;
         private readonly IDistributedCache _cache;
         private readonly AnthropicAiClient _anthropicClient;
         private readonly ILogger<AiClientService> _logger;
+        private readonly ConcurrentDictionary<string, IChatClient> _chatClientCache = new();
 
         public AiClientService(
             AiSettingsService aiSettings,

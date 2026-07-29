@@ -168,34 +168,62 @@ builder.Services.AddScoped<WebUI.Services.SimpleStatusService>();
     if (openobserveEnabled && !string.IsNullOrWhiteSpace(openobserveUrl))
     {
         var baseUrl = openobserveUrl.TrimEnd('/');
-        var authValue = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{openobserveUser}:{openobservePass}"));
-        var authHeader = $"Authorization=Basic {authValue}";
         var isDevelopment = builder.Environment.IsDevelopment();
 
+        // 仅在配置了用户凭证时添加 Basic Auth 头，避免发送空的 "Basic :"
         otelBuilder.WithMetrics(metrics =>
         {
             metrics.AddMeter("TaskRunner.WebUI")
                    .AddView("http.request.duration_ms", new ExplicitBucketHistogramConfiguration
                    {
                        Boundaries = new double[] { 0, 10, 25, 50, 100, 200, 500, 1000, 2000, 5000, 10000 }
-                   })
-                   .AddOtlpExporter(options =>
-                   {
-                       options.Endpoint = new Uri($"{baseUrl}/api/default/v1/metrics");
-                       options.Protocol = OtlpExportProtocol.HttpProtobuf;
-                       options.TimeoutMilliseconds = 30000;
-                       options.Headers = authHeader;
                    });
+
+            if (!string.IsNullOrWhiteSpace(openobserveUser))
+            {
+                var authValue = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{openobserveUser}:{openobservePass}"));
+                var authHeader = $"Authorization=Basic {authValue}";
+                metrics.AddOtlpExporter(options =>
+                {
+                    options.Endpoint = new Uri($"{baseUrl}/api/default/v1/metrics");
+                    options.Protocol = OtlpExportProtocol.HttpProtobuf;
+                    options.TimeoutMilliseconds = 30000;
+                    options.Headers = authHeader;
+                });
+            }
+            else
+            {
+                metrics.AddOtlpExporter(options =>
+                {
+                    options.Endpoint = new Uri($"{baseUrl}/api/default/v1/metrics");
+                    options.Protocol = OtlpExportProtocol.HttpProtobuf;
+                    options.TimeoutMilliseconds = 30000;
+                });
+            }
         })
         .WithLogging(logging =>
         {
-            logging.AddOtlpExporter(options =>
+            if (!string.IsNullOrWhiteSpace(openobserveUser))
             {
-                options.Endpoint = new Uri($"{baseUrl}/api/default/v1/logs");
-                options.Protocol = OtlpExportProtocol.HttpProtobuf;
-                options.TimeoutMilliseconds = 30000;
-                options.Headers = authHeader;
-            });
+                var authValue = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{openobserveUser}:{openobservePass}"));
+                var authHeader = $"Authorization=Basic {authValue}";
+                logging.AddOtlpExporter(options =>
+                {
+                    options.Endpoint = new Uri($"{baseUrl}/api/default/v1/logs");
+                    options.Protocol = OtlpExportProtocol.HttpProtobuf;
+                    options.TimeoutMilliseconds = 30000;
+                    options.Headers = authHeader;
+                });
+            }
+            else
+            {
+                logging.AddOtlpExporter(options =>
+                {
+                    options.Endpoint = new Uri($"{baseUrl}/api/default/v1/logs");
+                    options.Protocol = OtlpExportProtocol.HttpProtobuf;
+                    options.TimeoutMilliseconds = 30000;
+                });
+            }
         })
         .WithTracing(tracing =>
         {
@@ -203,14 +231,29 @@ builder.Services.AddScoped<WebUI.Services.SimpleStatusService>();
                 .AddSource("WebUI")
                 .SetSampler(isDevelopment
                     ? new AlwaysOnSampler()
-                    : new ParentBasedSampler(new TraceIdRatioBasedSampler(0.1)))
-                .AddOtlpExporter(options =>
+                    : new ParentBasedSampler(new TraceIdRatioBasedSampler(0.1)));
+
+            if (!string.IsNullOrWhiteSpace(openobserveUser))
+            {
+                var authValue = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{openobserveUser}:{openobservePass}"));
+                var authHeader = $"Authorization=Basic {authValue}";
+                tracing.AddOtlpExporter(options =>
                 {
                     options.Endpoint = new Uri($"{baseUrl}/api/default/v1/traces");
                     options.Protocol = OtlpExportProtocol.HttpProtobuf;
                     options.TimeoutMilliseconds = 30000;
                     options.Headers = authHeader;
                 });
+            }
+            else
+            {
+                tracing.AddOtlpExporter(options =>
+                {
+                    options.Endpoint = new Uri($"{baseUrl}/api/default/v1/traces");
+                    options.Protocol = OtlpExportProtocol.HttpProtobuf;
+                    options.TimeoutMilliseconds = 30000;
+                });
+            }
         });
     }
 }
