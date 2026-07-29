@@ -290,7 +290,7 @@
                 Logger.LogDebug("后台数据加载完成，耗时: {ElapsedMs}ms", (loadEndTime - loadStartTime).TotalMilliseconds);
                 
                 // 更新UI（需要在UI线程执行）
-                await InvokeAsync(async () =>
+                await InvokeAsync(() =>
                 {
                     recentSearches = loadRecentSearchesTask.Result;
                     obsidianStatus = loadObsidianStatusTask.Result;
@@ -299,16 +299,17 @@
                     selectedVaultId = vaults.FirstOrDefault()?.Id ?? "";
                     StateHasChanged();
                     Logger.LogDebug("UI更新完成");
-
-                    // 如果是从 URL ?q= 参数跳转过来的，拿到知识库后自动搜索
-                    if (!string.IsNullOrWhiteSpace(InitialQuery) && !string.IsNullOrWhiteSpace(selectedVaultId))
-                    {
-                        await PerformSearch();
-                    }
                 });
                 
                 // 加载索引状态
                 await LoadIndexStatusAsync();
+
+                // 如果是从 URL ?q= 参数跳转过来的，拿到知识库后自动搜索
+                if (!string.IsNullOrWhiteSpace(InitialQuery) && !string.IsNullOrWhiteSpace(selectedVaultId))
+                {
+                    await PerformSearch();
+                    await InvokeAsync(StateHasChanged);
+                }
             }
             catch (Exception ex)
             {
