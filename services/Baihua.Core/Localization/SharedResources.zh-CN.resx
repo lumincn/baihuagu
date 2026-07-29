@@ -178,4 +178,754 @@
   <data name="Vault_Required" xml:space="preserve">
     <value>必须指定有效的知识库</value>
   </data>
+  <data name="Task_IndustryKeywordEmpty" xml:space="preserve">
+    <value>行业和关键词不能为空</value>
+  </data>
+  <data name="Task_VaultGenAiProviderMissing" xml:space="preserve">
+    <value>未找到可用的 AI 提供商，请检查模型配置</value>
+  </data>
+  <data name="Task_OutlineFailed" xml:space="preserve">
+    <value>笔记大纲生成失败，返回空列表</value>
+  </data>
+  <data name="Task_Created" xml:space="preserve">
+    <value>任务已创建</value>
+  </data>
+  <data name="Task_CreateFailed" xml:space="preserve">
+    <value>创建失败：{0}</value>
+  </data>
+  <data name="Task_Progress_VaultName" xml:space="preserve">
+    <value>生成知识库名称...</value>
+  </data>
+  <data name="Task_Progress_SystemPrompt" xml:space="preserve">
+    <value>生成系统提示词...</value>
+  </data>
+  <data name="Task_Progress_Outline" xml:space="preserve">
+    <value>生成笔记大纲...</value>
+  </data>
+  <data name="Task_Progress_CreatingVault" xml:space="preserve">
+    <value>创建知识库: {0}...</value>
+  </data>
+  <data name="Task_Progress_GeneratingNote" xml:space="preserve">
+    <value>生成笔记 ({0}/{1}): {2}</value>
+  </data>
+  <data name="Task_Progress_RebuildIndex" xml:space="preserve">
+    <value>重建搜索索引...</value>
+  </data>
+  <data name="Task_Progress_Done" xml:space="preserve">
+    <value>任务完成</value>
+  </data>
+  <data name="Task_Progress_StartCardGen" xml:space="preserve">
+    <value>开始为「{0}」使用 AI 生成记忆卡片...</value>
+  </data>
+  <data name="Task_Progress_RetryPreparing" xml:space="preserve">
+    <value>准备调用 AI（重试）...</value>
+  </data>
+  <data name="Task_Progress_RetryCallingModel" xml:space="preserve">
+    <value>调用 AI 模型：{0}（超时 {1} 分钟）...</value>
+  </data>
+  <data name="Task_Progress_RetryCardGen" xml:space="preserve">
+    <value>开始使用 AI 生成记忆卡片（重试）...</value>
+  </data>
+  <data name="Task_Progress_Preparing" xml:space="preserve">
+    <value>准备调用 AI...</value>
+  </data>
+  <data name="Task_Progress_CallingModel" xml:space="preserve">
+    <value>调用 AI 模型：{0}...</value>
+  </data>
+  <data name="Task_RetryTypeNotSupported" xml:space="preserve">
+    <value>目前仅支持重试 AI 查询、知识库生成或记忆卡片生成任务</value>
+  </data>
+  <data name="Task_RetryQueryMissing" xml:space="preserve">
+    <value>原任务缺少查询内容</value>
+  </data>
+  <data name="Task_RetryVaultMissing" xml:space="preserve">
+    <value>原任务对应的知识库已不存在，无法重试保存到知识库。请从AI生成页新建任务。</value>
+  </data>
+  <data name="Task_RetryCreated" xml:space="preserve">
+    <value>重试任务已创建</value>
+  </data>
+  <data name="Task_RetryAnkiVaultIdMissing" xml:space="preserve">
+    <value>原任务缺少知识库 ID</value>
+  </data>
+  <data name="Task_RetryCardCreated" xml:space="preserve">
+    <value>AI 卡片生成重试任务已创建</value>
+  </data>
+  <data name="Task_RetryParamsMissing" xml:space="preserve">
+    <value>原任务缺少行业或关键词参数</value>
+  </data>
+  <data name="Task_RetryFailed" xml:space="preserve">
+    <value>重试失败</value>
+  </data>
+  <data name="Task_ContentReviewFailed" xml:space="preserve">
+    <value>AI 内容审核未通过：输入内容可能包含敏感信息，请修改后重试。</value>
+  </data>
+  <data name="Task_QueryEmpty" xml:space="preserve">
+    <value>查询内容不能为空</value>
+  </data>
+  <data name="Task_VaultNotFoundForCreate" xml:space="preserve">
+    <value>指定的知识库不存在，请重新选择。</value>
+  </data>
+  <data name="Task_CancelFailed" xml:space="preserve">
+    <value>取消任务失败</value>
+  </data>
+  <data name="Task_HistoryError" xml:space="preserve">
+    <value>获取任务历史失败</value>
+  </data>
+  <data name="Task_CleanupError" xml:space="preserve">
+    <value>清理任务失败</value>
+  </data>
+  <data name="Task_AllDeleted" xml:space="preserve">
+    <value>所有任务已清空</value>
+  </data>
+  <data name="Task_DeleteAllError" xml:space="preserve">
+    <value>清空任务失败</value>
+  </data>
+  <data name="Task_StatsError" xml:space="preserve">
+    <value>获取任务统计失败</value>
+  </data>
+  <data name="Task_VaultGenTimeout" xml:space="preserve">
+    <value>AI 知识库生成超时（{0} 分钟）| 模型: {1}</value>
+  </data>
+  <data name="Task_QueryTimeout" xml:space="preserve">
+    <value>AI 调用超时（{0} 分钟）| 模型: {1} | 提示词: {2}</value>
+  </data>
+  <data name="Task_RetryTimeout" xml:space="preserve">
+    <value>AI 调用超时（{0} 分钟）| 模型: {1}</value>
+  </data>
+  <data name="Task_CategoryOther" xml:space="preserve">
+    <value>其他</value>
+  </data>
+  <data name="Task_FallbackPrompt" xml:space="preserve">
+    <value>你是{0}领域专家，请用专业、严谨、结构化的方式回答问题。</value>
+  </data>
+  <data name="AiMetrics_AiLatency" xml:space="preserve">
+    <value>AI 请求延迟</value>
+  </data>
+  <data name="AiMetrics_AiTps" xml:space="preserve">
+    <value>AI Token 生成速率</value>
+  </data>
+  <data name="AiMetrics_AiRequests" xml:space="preserve">
+    <value>AI 请求总次数</value>
+  </data>
+  <data name="AiMetrics_AiTokens" xml:space="preserve">
+    <value>AI Token 处理总量</value>
+  </data>
+  <data name="AiMetrics_BenchLatency" xml:space="preserve">
+    <value>Benchmark 单条提示词延迟</value>
+  </data>
+  <data name="AiMetrics_BenchTps" xml:space="preserve">
+    <value>Benchmark Token 生成速率</value>
+  </data>
+  <data name="AiMetrics_BenchQuality" xml:space="preserve">
+    <value>Benchmark 质量评分</value>
+  </data>
+  <data name="AiMetrics_BenchTimeouts" xml:space="preserve">
+    <value>Benchmark 超时次数</value>
+  </data>
+  <data name="AiMetrics_BenchErrors" xml:space="preserve">
+    <value>Benchmark 错误次数</value>
+  </data>
+  <data name="AiMetrics_BenchRuns" xml:space="preserve">
+    <value>Benchmark 提示词运行次数</value>
+  </data>
+  <data name="AiMetrics_HealthCheckDuration" xml:space="preserve">
+    <value>单个健康检查组件耗时</value>
+  </data>
+  <data name="AiMetrics_HealthWallClock" xml:space="preserve">
+    <value>健康检查整体耗时</value>
+  </data>
+  <data name="AiMetrics_HealthScore" xml:space="preserve">
+    <value>健康检查评分</value>
+  </data>
+  <data name="AiMetrics_HealthComponents" xml:space="preserve">
+    <value>健康检查组件状态统计</value>
+  </data>
+
+  <!-- Master Prompt Builder -->
+  <data name="Prompt_DefaultMasterName" xml:space="preserve">
+    <value>先生</value>
+  </data>
+  <data name="Prompt_SafetyRefusal" xml:space="preserve">
+    <value>抱歉，我无法提供真实的医疗诊断、处方或法律建议。我是学习辅助师父，只能帮助您学习考证知识。如有真实需求，请咨询持证专业人士。</value>
+  </data>
+  <data name="Prompt_StageNameRuDao" xml:space="preserve">
+    <value>入道</value>
+  </data>
+  <data name="Prompt_StageNameZhuJi" xml:space="preserve">
+    <value>筑基</value>
+  </data>
+  <data name="Prompt_StageNameJingJin" xml:space="preserve">
+    <value>精进</value>
+  </data>
+  <data name="Prompt_StageNameMoLi" xml:space="preserve">
+    <value>磨砺</value>
+  </data>
+  <data name="Prompt_StageNameChuShi" xml:space="preserve">
+    <value>出师</value>
+  </data>
+  <data name="Prompt_StageDescRuDao" xml:space="preserve">
+    <value>确定目标、评估基础、生成初始知识库和任务</value>
+  </data>
+  <data name="Prompt_StageDescZhuJi" xml:space="preserve">
+    <value>建立知识框架、每日任务、养成学习习惯</value>
+  </data>
+  <data name="Prompt_StageDescJingJin" xml:space="preserve">
+    <value>分科细化、攻克细节、消除薄弱环节</value>
+  </data>
+  <data name="Prompt_StageDescMoLi" xml:space="preserve">
+    <value>模拟考试、查漏补缺、强化高频考点</value>
+  </data>
+  <data name="Prompt_StageDescChuShi" xml:space="preserve">
+    <value>能力认证、报考指导、考前冲刺</value>
+  </data>
+  <data name="Prompt_SectionMasterRole" xml:space="preserve">
+    <value># 师父角色设定</value>
+  </data>
+  <data name="Prompt_YouAreTemplate" xml:space="preserve">
+    <value>你是「{0}」，一位{1}行业的{2}。</value>
+  </data>
+  <data name="Prompt_StyleTemplate" xml:space="preserve">
+    <value>你的教学风格：{0}。</value>
+  </data>
+  <data name="Prompt_SectionApprenticeGoal" xml:space="preserve">
+    <value># 学徒目标</value>
+  </data>
+  <data name="Prompt_GoalTemplate" xml:space="preserve">
+    <value>学徒的目标是：{0}</value>
+  </data>
+  <data name="Prompt_CurrentStageTemplate" xml:space="preserve">
+    <value>当前阶段：{0}</value>
+  </data>
+  <data name="Prompt_SectionCoreProfile" xml:space="preserve">
+    <value># 学徒核心画像</value>
+  </data>
+  <data name="Prompt_SectionStageSummary" xml:space="preserve">
+    <value># 当前阶段学习摘要</value>
+  </data>
+  <data name="Prompt_SectionTeachingPrinciples" xml:space="preserve">
+    <value># 教学原则</value>
+  </data>
+  <data name="Prompt_Principle1" xml:space="preserve">
+    <value>1. 因材施教：根据学徒基础调整教学节奏</value>
+  </data>
+  <data name="Prompt_Principle2" xml:space="preserve">
+    <value>2. 循序渐进：不跳过基础，不急于求成</value>
+  </data>
+  <data name="Prompt_Principle3" xml:space="preserve">
+    <value>3. 实战导向：所有知识都要联系实际应用</value>
+  </data>
+  <data name="Prompt_Principle4" xml:space="preserve">
+    <value>4. 及时反馈：指出错误并给予改进建议</value>
+  </data>
+  <data name="Prompt_Principle5" xml:space="preserve">
+    <value>5. 鼓励为主：肯定进步，激发学习动力</value>
+  </data>
+  <data name="Prompt_SectionSafety" xml:space="preserve">
+    <value># 安全边界</value>
+  </data>
+  <data name="Prompt_SafetyBoundary" xml:space="preserve">
+    <value>你只能辅助学习考证知识，不能提供真实的医疗诊断、处方、法律建议。遇到此类请求，必须明确拒绝并建议咨询持证专业人士。</value>
+  </data>
+  <!-- Master Controller -->
+  <data name="Master_GoalRequired" xml:space="preserve">
+    <value>目标不能为空</value>
+  </data>
+  <data name="Master_IndustryRequired" xml:space="preserve">
+    <value>行业不能为空</value>
+  </data>
+  <data name="Master_CreateGreetingTemplate" xml:space="preserve">
+    <value>我想{0}，请作为我的师父，先了解一下我的情况。</value>
+  </data>
+  <data name="Master_CreateFallbackGreeting" xml:space="preserve">
+    <value>欢迎，让我们开始你的学习之旅。</value>
+  </data>
+  <data name="Master_CreateFailed" xml:space="preserve">
+    <value>创建师父失败</value>
+  </data>
+  <data name="Master_CreateFailedDetail" xml:space="preserve">
+    <value>创建师父失败：{0}</value>
+  </data>
+  <data name="Master_IdRequired" xml:space="preserve">
+    <value>师父ID不能为空</value>
+  </data>
+  <data name="Master_NotFound" xml:space="preserve">
+    <value>师父不存在</value>
+  </data>
+  <data name="Master_ProfileFetchSuccess" xml:space="preserve">
+    <value>获取画像成功</value>
+  </data>
+  <data name="Master_ProfileUpdateSuccess" xml:space="preserve">
+    <value>画像更新成功</value>
+  </data>
+  <data name="Master_VaultFocusFetchSuccess" xml:space="preserve">
+    <value>获取知识库关联成功</value>
+  </data>
+  <data name="Master_UnknownVault" xml:space="preserve">
+    <value>未知知识库</value>
+  </data>
+  <data name="Master_VaultIdRequired" xml:space="preserve">
+    <value>知识库ID不能为空</value>
+  </data>
+  <data name="Master_VaultFocused" xml:space="preserve">
+    <value>知识库已关联</value>
+  </data>
+  <data name="Master_VaultUnfocused" xml:space="preserve">
+    <value>知识库已取消关联</value>
+  </data>
+  <data name="Master_OperationFailed" xml:space="preserve">
+    <value>操作失败：{0}</value>
+  </data>
+  <data name="Master_ParamsRequired" xml:space="preserve">
+    <value>参数不能为空</value>
+  </data>
+  <data name="Master_VaultFocusNotFound" xml:space="preserve">
+    <value>关联不存在</value>
+  </data>
+  <data name="Master_VaultFocusRemoved" xml:space="preserve">
+    <value>已取消关联</value>
+  </data>
+  <data name="Master_UpdateFailed" xml:space="preserve">
+    <value>更新失败：{0}</value>
+  </data>
+  <data name="Master_AssessDaily" xml:space="preserve">
+    <value>请出1-2道日常小测验题，评估学徒今日学习效果。</value>
+  </data>
+  <data name="Master_AssessWeekly" xml:space="preserve">
+    <value>请出10道综合题，评估学徒本周学习成果。</value>
+  </data>
+  <data name="Master_AssessStage" xml:space="preserve">
+    <value>请出一份完整的阶段考核试卷，评估学徒是否可以进入下一阶段。</value>
+  </data>
+  <data name="Master_AssessDefault" xml:space="preserve">
+    <value>请对学徒进行综合能力评估，给出通过概率、薄弱环节和改进建议。</value>
+  </data>
+  <data name="Master_AssessSystemPrompt" xml:space="preserve">
+    <value>你是一位严谨的考试评估专家。请客观评估学徒能力，给出具体的通过概率、薄弱环节和改进建议。以JSON格式返回：{"report": "...", "passProbability": 0.75, "weakPoints": [...], "advice": "..."}</value>
+  </data>
+  <data name="Master_AssessComplete" xml:space="preserve">
+    <value>评估完成</value>
+  </data>
+  <data name="Master_AssessFailed" xml:space="preserve">
+    <value>能力评估失败：{0}</value>
+  </data>
+  <data name="Master_ChatMessageEmpty" xml:space="preserve">
+    <value>消息不能为空</value>
+  </data>
+  <data name="Master_ChatProfileTemplate" xml:space="preserve">
+    <value>基础：{0}；学习风格：{1}；优势：{2}；薄弱：{3}</value>
+  </data>
+  <data name="Master_Unknown" xml:space="preserve">
+    <value>未知</value>
+  </data>
+  <data name="Master_ChatTimeout" xml:space="preserve">
+    <value>AI 调用超时或已被取消</value>
+  </data>
+  <data name="Master_ChatFailed" xml:space="preserve">
+    <value>对话失败：{0}</value>
+  </data>
+  <data name="Master_ConversationFetchSuccess" xml:space="preserve">
+    <value>获取对话历史成功</value>
+  </data>
+  <data name="Master_ConversationFetchFailed" xml:space="preserve">
+    <value>获取对话历史失败：{0}</value>
+  </data>
+  <data name="Master_ConversationSyncSuccess" xml:space="preserve">
+    <value>同步成功，新增 {0} 条对话</value>
+  </data>
+  <data name="Master_ConversationSyncFailed" xml:space="preserve">
+    <value>同步失败：{0}</value>
+  </data>
+  <data name="Master_CompressSystemPrompt" xml:space="preserve">
+    <value>你是一位学习记录整理专家，请简洁客观地总结对话内容。</value>
+  </data>
+  <data name="Master_CompressUserPrompt" xml:space="preserve">
+    <value>请为以下对话生成简洁摘要（200字以内），提取关键知识点和学习要点：</value>
+  </data>
+  <data name="Master_CompressFailed" xml:space="preserve">
+    <value>压缩失败：{0}</value>
+  </data>
+  <data name="Master_EvictSystemPrompt" xml:space="preserve">
+    <value>你是一位学习评估专家，请客观提取学徒能力画像。</value>
+  </data>
+  <data name="Master_EvictProfilePrompt" xml:space="preserve">
+    <value>根据以下阶段学习摘要，提取学徒的核心能力画像（基础、学习风格、优势、薄弱点），以JSON格式返回：{"foundation": "...", "learningStyle": "...", "strengths": "...", "weaknesses": "..."}</value>
+  </data>
+  <data name="Master_EvictFailed" xml:space="preserve">
+    <value>淘汰失败：{0}</value>
+  </data>
+  <data name="Master_EvictAllComplete" xml:space="preserve">
+    <value>数据驱逐完成：压缩 {0} 个阶段，淘汰 {1} 个阶段</value>
+  </data>
+  <data name="Master_EvictAllFailed" xml:space="preserve">
+    <value>驱逐失败：{0}</value>
+  </data>
+  <data name="Master_StageUnknown" xml:space="preserve">
+    <value>未知的阶段：{0}</value>
+  </data>
+  <data name="Master_StageSummaryPrompt" xml:space="preserve">
+    <value>请为学徒在「{0}」阶段的学习生成一份简洁摘要（200字以内），包括：已掌握的知识点、仍需加强的方面、对下一阶段的建议。</value>
+  </data>
+  <data name="Master_StageSummarySystem" xml:space="preserve">
+    <value>你是一位学习评估专家，请简洁客观地总结学习成果。</value>
+  </data>
+  <data name="Master_StageCorrectionsPrompt" xml:space="preserve">
+    <value>请指出学徒在「{0}」阶段学习中需要重点纠正的2-3个关键问题（100字以内），若无则回复'无'。</value>
+  </data>
+  <data name="Master_StageCorrectionsSystem" xml:space="preserve">
+    <value>你是一位严格的学习督导，只指出最关键的纠正点。</value>
+  </data>
+  <data name="Master_StageNoCorrections" xml:space="preserve">
+    <value>无</value>
+  </data>
+  <data name="Master_StageComplete" xml:space="preserve">
+    <value>阶段「{0}」已完成</value>
+  </data>
+  <data name="Master_StageCompleteFailed" xml:space="preserve">
+    <value>阶段完成处理失败：{0}</value>
+  </data>
+  <!-- AiFunctionService Keys -->
+  <data name="AiFunction_VaultNotConfiguredSearch" xml:space="preserve">
+    <value>当前未配置知识库，无法搜索。</value>
+  </data>
+  <data name="AiFunction_SearchNoResults" xml:space="preserve">
+    <value>未在知识库中找到相关内容。</value>
+  </data>
+  <data name="AiFunction_SearchResults" xml:space="preserve">
+    <value>在知识库中找到 {0} 条相关笔记（显示前 5 条）：
+
+</value>
+  </data>
+  <data name="AiFunction_SearchFailed" xml:space="preserve">
+    <value>搜索失败：{0}</value>
+  </data>
+  <data name="AiFunction_CurrentTime" xml:space="preserve">
+    <value>当前时间：{0}</value>
+  </data>
+  <data name="AiFunction_NoVaultsConfigured" xml:space="preserve">
+    <value>当前未配置任何知识库。</value>
+  </data>
+  <data name="AiFunction_VaultsList" xml:space="preserve">
+    <value>已配置的知识库：
+</value>
+  </data>
+  <data name="AiFunction_VaultNotConfiguredSave" xml:space="preserve">
+    <value>当前未配置知识库，无法保存笔记。请先配置知识库。</value>
+  </data>
+  <data name="AiFunction_ContentEmpty" xml:space="preserve">
+    <value>标题和内容不能为空。</value>
+  </data>
+  <data name="AiFunction_NoteSourceInfo" xml:space="preserve">
+    <value>&gt; 📌 **来源**: AI 生成  
+</value>
+  </data>
+  <data name="AiFunction_NoteTimeInfo" xml:space="preserve">
+    <value>&gt; ⏰ **时间**: {0}  
+
+</value>
+  </data>
+  <data name="AiFunction_NoteSaved" xml:space="preserve">
+    <value>笔记《{0}》已保存到知识库 [{1}]。</value>
+  </data>
+  <data name="AiFunction_SaveNoteFailed" xml:space="preserve">
+    <value>保存笔记失败：{0}</value>
+  </data>
+  <data name="AiFunction_StatusHealthy" xml:space="preserve">
+    <value>系统运行正常</value>
+  </data>
+  <data name="AiFunction_StatusWarning" xml:space="preserve">
+    <value>系统有警告项需要关注</value>
+  </data>
+  <data name="AiFunction_StatusCritical" xml:space="preserve">
+    <value>系统有严重问题需要处理</value>
+  </data>
+  <data name="AiFunction_StatusUnknown" xml:space="preserve">
+    <value>系统状态未知</value>
+  </data>
+  <data name="AiFunction_StatusWithScore" xml:space="preserve">
+    <value>{0}（健康评分：{1}/100）
+
+</value>
+  </data>
+  <data name="AiFunction_GetStatusFailed" xml:space="preserve">
+    <value>获取系统状态失败：{0}</value>
+  </data>
+  <data name="AiFunction_SearchVaultDesc" xml:space="preserve">
+    <value>搜索知识库中的相关笔记，返回笔记标题和内容预览。当用户询问笔记、知识库相关内容时使用。</value>
+  </data>
+  <data name="AiFunction_GetCurrentDateDesc" xml:space="preserve">
+    <value>获取当前日期和时间，格式为 yyyy-MM-dd HH:mm:ss。当用户询问时间、日期、今天几号等问题时使用。</value>
+  </data>
+  <data name="AiFunction_ListVaultsDesc" xml:space="preserve">
+    <value>列出当前已配置的所有知识库名称和路径。当用户询问有哪些知识库、知识库配置情况时使用。</value>
+  </data>
+  <data name="AiFunction_CreateNoteDesc" xml:space="preserve">
+    <value>创建一篇笔记并保存到知识库。当用户要求保存、记录、创建笔记时使用。</value>
+  </data>
+  <data name="AiFunction_GetSystemStatusDesc" xml:space="preserve">
+    <value>获取系统各组件的健康状态，包括 Git、Obsidian、Ollama、Python、Node、API Key、知识库路径等。当用户询问系统状态、是否正常运行、有哪些问题时使用。</value>
+  </data>
+  <!-- McpServerService Tool Descriptions -->
+  <data name="Mcp_QueryAi" xml:space="preserve">
+    <value>直接调用 AI 模型进行查询并返回结果。支持指定模型，否则使用默认模型。</value>
+  </data>
+  <data name="Mcp_QueryParam" xml:space="preserve">
+    <value>要查询的内容</value>
+  </data>
+  <data name="Mcp_ModelParam" xml:space="preserve">
+    <value>指定使用的 AI 模型，如 ollama/biancang:latest、Qwen/Qwen2.5-14B-Instruct。留空使用默认模型。</value>
+  </data>
+  <data name="Mcp_SystemPromptParam" xml:space="preserve">
+    <value>可选的 system prompt，覆盖默认的经方家助手角色</value>
+  </data>
+  <data name="Mcp_CreateAiQueryTask" xml:space="preserve">
+    <value>创建一个异步 AI 查询后台任务，返回 taskId 供后续轮询。适合需要长时间运行的查询。</value>
+  </data>
+  <data name="Mcp_ModelParamOptional" xml:space="preserve">
+    <value>指定使用的 AI 模型，留空使用默认模型</value>
+  </data>
+  <data name="Mcp_SaveToVaultParam" xml:space="preserve">
+    <value>是否将结果保存到知识库</value>
+  </data>
+  <data name="Mcp_VaultIdParam" xml:space="preserve">
+    <value>目标知识库 ID（save_to_vault 为 true 时必填）</value>
+  </data>
+  <data name="Mcp_CreateOpenClawTask" xml:space="preserve">
+    <value>使用 OpenClaw 运行一个 AI 任务（通过 openclaw agent）。适合复杂的知识库分析任务。</value>
+  </data>
+  <data name="Mcp_OpenClawPromptParam" xml:space="preserve">
+    <value>OpenClaw 任务提示词</value>
+  </data>
+  <data name="Mcp_GetTaskStatus" xml:space="preserve">
+    <value>获取指定后台任务（ai_query、split_atom_notes、openclaw 等）的当前状态和结果。</value>
+  </data>
+  <data name="Mcp_TaskIdParam" xml:space="preserve">
+    <value>任务 ID</value>
+  </data>
+  <data name="Mcp_ListTasks" xml:space="preserve">
+    <value>列出最近创建的后台任务，包括 AI 查询、笔记拆分、OpenClaw 任务等。</value>
+  </data>
+  <data name="Mcp_LimitParam" xml:space="preserve">
+    <value>返回数量上限</value>
+  </data>
+  <data name="Mcp_StatusFilterParam" xml:space="preserve">
+    <value>按状态过滤：Pending、Running、Success、Failed、Timeout</value>
+  </data>
+  <data name="Mcp_GetSystemHealth" xml:space="preserve">
+    <value>获取 TaskRunner 系统健康状态报告，包括 Git、Obsidian、Ollama、Python、Node.js、API Key、知识库等组件的状态。</value>
+  </data>
+  <data name="Mcp_ListLocalAiModels" xml:space="preserve">
+    <value>扫描并列出本地 AI 服务（Ollama、LM Studio、llama.cpp）上的可用模型。</value>
+  </data>
+  <data name="Mcp_ProviderParam" xml:space="preserve">
+    <value>指定 provider：ollama、lmstudio、llamacpp。留空扫描所有已配置的 provider。</value>
+  </data>
+  <data name="Mcp_ListOpenClawTasks" xml:space="preserve">
+    <value>列出 OpenClaw 任务历史。</value>
+  </data>
+  <data name="Mcp_GetOpenClawTaskReport" xml:space="preserve">
+    <value>获取指定 OpenClaw 任务的完整报告内容。</value>
+  </data>
+  <data name="Mcp_OpenClawTaskIdParam" xml:space="preserve">
+    <value>OpenClaw 任务的数据库 ID（不是 TaskId 字符串）</value>
+  </data>
+  <data name="Mcp_ListVaults" xml:space="preserve">
+    <value>列出所有已配置的知识库（Vault）。</value>
+  </data>
+  <data name="Mcp_ReadVaultNote" xml:space="preserve">
+    <value>读取知识库中的指定笔记内容。</value>
+  </data>
+  <data name="Mcp_NotePathParam" xml:space="preserve">
+    <value>笔记路径（不含 .md 后缀），如 症状/头痛</value>
+  </data>
+  <data name="Mcp_SearchVault" xml:space="preserve">
+    <value>在知识库中搜索关键词，返回匹配的笔记列表。</value>
+  </data>
+  <data name="Mcp_SearchQueryParam" xml:space="preserve">
+    <value>搜索关键词</value>
+  </data>
+  <!-- McpServerService Tool Handler Messages -->
+  <data name="Mcp_MissingArgs" xml:space="preserve">
+    <value>缺少参数</value>
+  </data>
+  <data name="Mcp_QueryRequired" xml:space="preserve">
+    <value>query 不能为空</value>
+  </data>
+  <data name="Mcp_NoAiProvider" xml:space="preserve">
+    <value>未找到可用的 AI 提供商</value>
+  </data>
+  <data name="Mcp_DefaultSystemPrompt" xml:space="preserve">
+    <value>你是一位知识库专家助手。</value>
+  </data>
+  <data name="Mcp_AiResponseEmpty" xml:space="preserve">
+    <value>（AI 返回空内容）</value>
+  </data>
+  <data name="Mcp_AiQueryFailed" xml:space="preserve">
+    <value>AI 查询失败: {0}</value>
+  </data>
+  <data name="Mcp_AiQueryTaskCreated" xml:space="preserve">
+    <value>AI 查询任务已创建，taskId: {0}
+注意：任务已创建但未自动执行。请通过 WebUI 触发执行，或联系开发者支持 MCP 自动执行。</value>
+  </data>
+  <data name="Mcp_PromptRequired" xml:space="preserve">
+    <value>prompt 不能为空</value>
+  </data>
+  <data name="Mcp_OpenClawTaskCreated" xml:space="preserve">
+    <value>OpenClaw 任务已创建
+Task ID: {0}
+数据库 ID: {1}
+Status: {2}
+创建时间: {3}</value>
+  </data>
+  <data name="Mcp_CreateOpenClawTaskFailed" xml:space="preserve">
+    <value>创建 OpenClaw 任务失败: {0}</value>
+  </data>
+  <data name="Mcp_TaskIdRequired" xml:space="preserve">
+    <value>task_id 不能为空</value>
+  </data>
+  <data name="Mcp_TaskNotFound" xml:space="preserve">
+    <value>任务不存在: {0}</value>
+  </data>
+  <data name="Mcp_VaultIdRequired" xml:space="preserve">
+    <value>vault_id 不能为空</value>
+  </data>
+  <data name="Mcp_PathRequired" xml:space="preserve">
+    <value>path 不能为空</value>
+  </data>
+  <data name="Mcp_VaultNotFound" xml:space="preserve">
+    <value>知识库不存在: {0}</value>
+  </data>
+  <data name="Mcp_VaultPathInvalid" xml:space="preserve">
+    <value>知识库路径无效: {0}</value>
+  </data>
+  <data name="Mcp_NoteNotFound" xml:space="preserve">
+    <value>笔记不存在: {0}</value>
+  </data>
+  <data name="Mcp_ReadNoteFailed" xml:space="preserve">
+    <value>读取笔记失败: {0}</value>
+  </data>
+  <data name="Mcp_SearchFailed" xml:space="preserve">
+    <value>搜索失败: {0}</value>
+  </data>
+  <data name="Mcp_HealthCheckFailed" xml:space="preserve">
+    <value>健康检查失败: {0}</value>
+  </data>
+  <data name="Mcp_ListOpenClawTasksFailed" xml:space="preserve">
+    <value>获取 OpenClaw 任务列表失败: {0}</value>
+  </data>
+  <data name="Mcp_TaskIdPositive" xml:space="preserve">
+    <value>task_id 必须是正整数</value>
+  </data>
+  <data name="Mcp_ReportNotFound" xml:space="preserve">
+    <value>报告不存在或尚未生成</value>
+  </data>
+  <data name="Mcp_GetReportFailed" xml:space="preserve">
+    <value>获取报告失败: {0}</value>
+  </data>
+  <!-- McpServerService.Api Keys -->
+  <data name="Mcp_UnknownTool" xml:space="preserve">
+    <value>未知工具: {0}</value>
+  </data>
+  <data name="Mcp_ToolCallFailed" xml:space="preserve">
+    <value>工具调用失败: {0}</value>
+  </data>
+  <data name="Mcp_DiagnoseSymptoms" xml:space="preserve">
+    <value>症状诊断：根据症状描述进行辨证分析</value>
+  </data>
+  <data name="Mcp_SymptomsParam" xml:space="preserve">
+    <value>患者症状描述</value>
+  </data>
+  <data name="Mcp_DurationParam" xml:space="preserve">
+    <value>症状持续时间</value>
+  </data>
+  <data name="Mcp_AnalyzeFormula" xml:space="preserve">
+    <value>方剂分析：分析经方的组成、功效、适应症和方解</value>
+  </data>
+  <data name="Mcp_FormulaParam" xml:space="preserve">
+    <value>方剂名称，如桂枝汤、麻黄汤</value>
+  </data>
+  <data name="Mcp_StudyClassic" xml:space="preserve">
+    <value>经典学习：解读《伤寒论》《金匮要略》条文</value>
+  </data>
+  <data name="Mcp_ClassicTextParam" xml:space="preserve">
+    <value>经典条文内容</value>
+  </data>
+  <data name="Mcp_SourceParam" xml:space="preserve">
+    <value>出处，如伤寒论、金匮要略</value>
+  </data>
+  <data name="Mcp_CaseAnalysis" xml:space="preserve">
+    <value>医案分析：分析医案的辨证思路、处方用药和疗效</value>
+  </data>
+  <data name="Mcp_CaseTextParam" xml:space="preserve">
+    <value>医案内容</value>
+  </data>
+  <data name="Mcp_DiagnoseSymptomsTitle" xml:space="preserve">
+    <value>症状诊断</value>
+  </data>
+  <data name="Mcp_DiagnoseSymptomsSystemPrompt" xml:space="preserve">
+    <value>你是一位知识库专家。请根据患者症状进行六经辨证，分析病机、给出治法建议，并推荐可能的经方。分析时请引用原文依据。</value>
+  </data>
+  <data name="Mcp_PatientSymptoms" xml:space="preserve">
+    <value>患者症状：{0}</value>
+  </data>
+  <data name="Mcp_PatientSymptomsWithDuration" xml:space="preserve">
+    <value>患者症状：{0}
+持续时间：{1}</value>
+  </data>
+  <data name="Mcp_AnalyzeFormulaTitle" xml:space="preserve">
+    <value>方剂分析</value>
+  </data>
+  <data name="Mcp_AnalyzeFormulaSystemPrompt" xml:space="preserve">
+    <value>你是一位知识库专家。请详细分析以下方剂的组成、配伍意义、功效主治、适用证候，并说明其在《伤寒论》或《金匮要略》中的出处和方解。</value>
+  </data>
+  <data name="Mcp_AnalyzeFormulaRequest" xml:space="preserve">
+    <value>请分析方剂：{0}</value>
+  </data>
+  <data name="Mcp_StudyClassicTitle" xml:space="preserve">
+    <value>经典学习</value>
+  </data>
+  <data name="Mcp_StudyClassicSystemPrompt" xml:space="preserve">
+    <value>你是一位经典研究专家。请解读以下经典条文，包括字词解释、病机分析、临床意义，以及相关的方证对应关系。</value>
+  </data>
+  <data name="Mcp_StudyClassicRequest" xml:space="preserve">
+    <value>请解读以下条文：
+{0}</value>
+  </data>
+  <data name="Mcp_StudyClassicRequestWithSource" xml:space="preserve">
+    <value>请解读《{0}》条文：
+{1}</value>
+  </data>
+  <data name="Mcp_CaseAnalysisTitle" xml:space="preserve">
+    <value>医案分析</value>
+  </data>
+  <data name="Mcp_CaseAnalysisSystemPrompt" xml:space="preserve">
+    <value>你是一位经验丰富的临床医师。请分析以下医案，梳理辨证思路、处方用药依据，并评价疗效。如有可改进之处也请指出。</value>
+  </data>
+  <data name="Mcp_CaseAnalysisRequest" xml:space="preserve">
+    <value>请分析以下医案：
+{0}</value>
+  </data>
+  <data name="Mcp_UnknownPrompt" xml:space="preserve">
+    <value>未知提示词: {0}</value>
+  </data>
+  <data name="Mcp_ResourceNoteDesc" xml:space="preserve">
+    <value>知识库 '{0}' 中的笔记</value>
+  </data>
+  <data name="Mcp_UnsupportedUri" xml:space="preserve">
+    <value>不支持的资源 URI: {0}</value>
+  </data>
+  <data name="Mcp_InvalidUri" xml:space="preserve">
+    <value>无效的 URI: {0}</value>
+  </data>
+  <data name="Mcp_InvalidPath" xml:space="preserve">
+    <value>非法路径</value>
+  </data>
+  <data name="Mcp_ResourceNotFound" xml:space="preserve">
+    <value>资源不存在: {0}</value>
+  </data>
+  <data name="Master_EvictStageLabel" xml:space="preserve">
+    <value>阶段：</value>
+  </data>
+  <data name="Master_EvictSummaryLabel" xml:space="preserve">
+    <value>摘要：</value>
+  </data>
 </root>

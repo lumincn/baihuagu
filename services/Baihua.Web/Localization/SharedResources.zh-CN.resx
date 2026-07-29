@@ -3709,4 +3709,112 @@
   <data name="Nav_ModeEasy" xml:space="preserve">
     <value>👤 简易</value>
   </data>
+  <data name="Api_TaskCreateFailed" xml:space="preserve">
+    <value>创建任务失败</value>
+  </data>
+  <data name="Api_CreateFailedWithError" xml:space="preserve">
+    <value>创建失败：{0}</value>
+  </data>
+  <data name="Api_SearchTimeout" xml:space="preserve">
+    <value>搜索超时，请稍后重试</value>
+  </data>
+  <data name="Api_SearchUnavailable" xml:space="preserve">
+    <value>搜索服务不可用</value>
+  </data>
+  <data name="Api_AiQueryFailed" xml:space="preserve">
+    <value>AI 查询失败</value>
+  </data>
+  <data name="Api_QueryFailedWithError" xml:space="preserve">
+    <value>查询失败：{0}</value>
+  </data>
+  <data name="Api_LocalStreamError" xml:space="preserve">
+    <value>本地模型流式响应错误：{0}</value>
+  </data>
+  <data name="Api_ChatFailedWithError" xml:space="preserve">
+    <value>聊天失败：{0}</value>
+  </data>
+  <data name="Api_StreamError" xml:space="preserve">
+    <value>AI 流式响应错误：{0}</value>
+  </data>
+  <data name="Api_RetryFailed" xml:space="preserve">
+    <value>重试失败</value>
+  </data>
+  <data name="Api_RetryFailedWithError" xml:space="preserve">
+    <value>重试失败：{0}</value>
+  </data>
+  <data name="Api_RequestFailedWithError" xml:space="preserve">
+    <value>请求失败：{0}</value>
+  </data>
+  <data name="Api_ResponseParseFailed" xml:space="preserve">
+    <value>响应解析失败</value>
+  </data>
+  <data name="Api_StartFailedWithError" xml:space="preserve">
+    <value>启动失败：{0}</value>
+  </data>
+  <data name="Api_SaveSuccess" xml:space="preserve">
+    <value>配置已保存</value>
+  </data>
+  <data name="Api_SaveFailedWithError" xml:space="preserve">
+    <value>保存失败：{0}</value>
+  </data>
+  <data name="Api_UnknownError" xml:space="preserve">
+    <value>未知错误</value>
+  </data>
+  <data name="Api_FetchFailed" xml:space="preserve">
+    <value>获取失败</value>
+  </data>
+  <data name="Api_DetectFailed" xml:space="preserve">
+    <value>检测失败</value>
+  </data>
+  <data name="Api_DetectFailedWithError" xml:space="preserve">
+    <value>检测失败：{0}</value>
+  </data>
+  <data name="Api_MasterCreateFailed" xml:space="preserve">
+    <value>创建师父失败（HTTP {0}）</value>
+  </data>
+  <data name="Api_CreateFailed" xml:space="preserve">
+    <value>创建失败</value>
+  </data>
+  <data name="Api_MasterChatFailed" xml:space="preserve">
+    <value>师父对话失败（HTTP {0}）</value>
+  </data>
+  <data name="Api_MasterChatError" xml:space="preserve">
+    <value>师父对话错误：{0}</value>
+  </data>
+  <data name="Api_StageCompleteFailed" xml:space="preserve">
+    <value>阶段完成失败（HTTP {0}）</value>
+  </data>
+  <data name="Api_OperationFailed" xml:space="preserve">
+    <value>操作失败</value>
+  </data>
+  <data name="Api_ProfileFetchFailed" xml:space="preserve">
+    <value>获取画像失败（HTTP {0}）</value>
+  </data>
+  <data name="Api_AssessFailed" xml:space="preserve">
+    <value>评估失败</value>
+  </data>
+  <data name="Api_AssessFailedWithHttp" xml:space="preserve">
+    <value>评估失败（HTTP {0}）</value>
+  </data>
+  <data name="Api_MastersListFailed" xml:space="preserve">
+    <value>获取师父列表失败（HTTP {0}）</value>
+  </data>
+  <data name="Api_CleanupFailed" xml:space="preserve">
+    <value>清理失败</value>
+  </data>
+  <data name="Api_CleanupFailedWithError" xml:space="preserve">
+    <value>清理失败：{0}</value>
+  </data>
+  <data name="Api_UpdateFailed" xml:space="preserve">
+    <value>更新失败</value>
+  </data>
+  <data name="Api_UpdateFailedWithError" xml:space="preserve">
+    <value>更新失败：{0}</value>
+  </data>
+  <data name="Api_FetchFailedWithError" xml:space="preserve">
+    <value>获取失败：{0}</value>
+  </data>
+  <data name="Api_OperationFailedWithError" xml:space="preserve">
+    <value>操作失败：{0}</value>
+  </data>
 </root>

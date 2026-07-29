@@ -1,9 +1,11 @@
 using Baihua.Core;
+using Baihua.Core.Localization;
 using Baihua.Family.Services;
 using System.Text.Json;
 using Baihua.Family.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Localization;
 using Baihua.Family.Models;
 using Baihua.Contracts.Scene;
 using Baihua.Contracts.Tasks;
@@ -17,7 +19,7 @@ namespace Baihua.Family.Controllers
         {
             if (string.IsNullOrWhiteSpace(request.Query))
             {
-                return BadRequest(new { error = "查询内容不能为空" });
+                return BadRequest(new { error = _loc["Task_QueryEmpty"] });
             }
 
             try
@@ -44,7 +46,7 @@ namespace Baihua.Family.Controllers
                 if (request.SaveToVault && vault == null)
                 {
                     _logger.LogWarning("创建 AI 任务失败：知识库不存在，vaultId={VaultId}", request.VaultId ?? "(null)");
-                    return BadRequest(new { error = "指定的知识库不存在，请重新选择。" });
+                    return BadRequest(new { error = _loc["Task_VaultNotFoundForCreate"] });
                 }
                 
                 var parameters = new Dictionary<string, string>
@@ -73,11 +75,11 @@ namespace Baihua.Family.Controllers
                     try
                     {
                         await _taskManager.UpdateStatus(taskId, RunnerTaskStatus.Running);
-                        await _taskManager.UpdateProgress(taskId, 1, 3, "准备调用 AI...");
+                        await _taskManager.UpdateProgress(taskId, 1, 3, _loc["Task_Progress_Preparing"]);
 
                         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
                         var requestTime = DateTime.Now;
-                        await _taskManager.UpdateProgress(taskId, 2, 3, $"调用 AI 模型：{modelName}...");
+                        await _taskManager.UpdateProgress(taskId, 2, 3, _loc["Task_Progress_CallingModel", modelName]);
 
                         var aiResult = await CallAiApiAsync(request.Query, modelName, cts.Token, request.SystemPrompt, scene, request.Industry);
                         stopwatch.Stop();
@@ -102,7 +104,7 @@ namespace Baihua.Family.Controllers
                             {
                                 _logger.LogError("AI 任务找不到知识库: VaultId={VaultId}, 可用知识库 IDs={AvailableVaultIds}",
                                     request.VaultId ?? "(null)", string.Join(", ", _vaultSettings.GetVaults().Select(v => v.Id)));
-                                await _taskManager.UpdateStatus(taskId, RunnerTaskStatus.Failed, "必须指定有效的知识库");
+                                await _taskManager.UpdateStatus(taskId, RunnerTaskStatus.Failed, _loc["Vault_Required"]);
                                 return;
                             }
 
@@ -146,7 +148,7 @@ namespace Baihua.Family.Controllers
                             }
                         }
 
-                        await _taskManager.UpdateProgress(taskId, 3, 3, "任务完成");
+                        await _taskManager.UpdateProgress(taskId, 3, 3, _loc["Task_Progress_Done"]);
                         await _taskManager.UpdateStatus(taskId, RunnerTaskStatus.Success, data: new
                         {
                             notes = new[] { new { title = title, path = notePath ?? "" } },
@@ -178,7 +180,7 @@ namespace Baihua.Family.Controllers
                             _logger.LogWarning("AI 查询任务超时：{TaskId}", taskId);
                             var timeoutMin = _aiSettings.AiRequestTimeoutMinutes;
                             await _taskManager.UpdateStatus(taskId, RunnerTaskStatus.Timeout,
-                                $"AI 调用超时（{timeoutMin} 分钟）| 模型: {modelName} | 提示词: {TruncateForError(request.Query, 100)}");
+                                _loc["Task_QueryTimeout", timeoutMin, modelName, TruncateForError(request.Query, 100)]);
                         }
                     }
                     catch (ArgumentOutOfRangeException ex) when (ex.Message.Contains("index"))
@@ -186,7 +188,7 @@ namespace Baihua.Family.Controllers
                         // OpenAI SDK 在解析阿里云内容审核响应时（choices为空）会崩溃
                         _logger.LogWarning(ex, "AI 查询任务触发内容审核：{TaskId}", taskId);
                         await _taskManager.UpdateStatus(taskId, RunnerTaskStatus.Failed,
-                            "AI 内容审核未通过：输入内容可能包含敏感信息，请修改后重试。");
+                            _loc["Task_ContentReviewFailed"]);
                     }
                     catch (Exception ex)
                     {
@@ -202,7 +204,7 @@ namespace Baihua.Family.Controllers
                 return Ok(new AiTaskResponse
                 {
                     Success = true,
-                    Message = "任务已创建",
+                    Message = _loc["Task_Created"],
                     TaskId = taskId
                 });
             }
@@ -212,7 +214,7 @@ namespace Baihua.Family.Controllers
                 return Ok(new AiTaskResponse
                 {
                     Success = false,
-                    Message = $"创建失败：{ex.Message}"
+                    Message = _loc["Task_CreateFailed", ex.Message]
                 });
             }
         }

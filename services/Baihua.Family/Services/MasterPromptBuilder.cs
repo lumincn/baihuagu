@@ -1,6 +1,8 @@
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Localization;
 using Baihua.Contracts.Ai;
 using Baihua.Contracts.Master;
+using Baihua.Core.Localization;
 using System.Reflection;
 using System.Text.Json;
 
@@ -8,6 +10,13 @@ namespace Baihua.Family.Services;
 
 public class MasterPromptBuilder
 {
+    private readonly IStringLocalizer<SharedResources> _loc;
+
+    public MasterPromptBuilder(IStringLocalizer<SharedResources> loc)
+    {
+        _loc = loc;
+    }
+
     private static readonly Dictionary<string, string> IndustryMasterNames = new(StringComparer.OrdinalIgnoreCase)
     {
         ["中医"] = "岐伯",
@@ -44,7 +53,7 @@ public class MasterPromptBuilder
             if (industry.Contains(key, StringComparison.OrdinalIgnoreCase))
                 return name;
         }
-        return "先生";
+        return _loc["Prompt_DefaultMasterName"];
     }
 
     public List<ChatMessage> BuildMessages(
@@ -83,7 +92,7 @@ public class MasterPromptBuilder
 
     public string BuildSafetyRefusal()
     {
-        return "抱歉，我无法提供真实的医疗诊断、处方或法律建议。我是学习辅助师父，只能帮助您学习考证知识。如有真实需求，请咨询持证专业人士。";
+        return _loc["Prompt_SafetyRefusal"];
     }
 
     public string BuildSystemPrompt(
@@ -99,53 +108,53 @@ public class MasterPromptBuilder
 
         var sb = new System.Text.StringBuilder();
 
-        sb.AppendLine($"# 师父角色设定");
-        sb.AppendLine($"你是「{masterName}」，一位{industry}行业的{persona.RoleName}。");
-        sb.AppendLine($"你的教学风格：{persona.Style}。");
+        sb.AppendLine(_loc["Prompt_SectionMasterRole"]);
+        sb.AppendLine(string.Format(_loc["Prompt_YouAreTemplate"], masterName, industry, persona.RoleName));
+        sb.AppendLine(string.Format(_loc["Prompt_StyleTemplate"], persona.Style));
         sb.AppendLine();
         sb.AppendLine(persona.Prompt);
         sb.AppendLine();
-        sb.AppendLine($"# 学徒目标");
-        sb.AppendLine($"学徒的目标是：{goal}");
-        sb.AppendLine($"当前阶段：{currentStage}");
+        sb.AppendLine(_loc["Prompt_SectionApprenticeGoal"]);
+        sb.AppendLine(string.Format(_loc["Prompt_GoalTemplate"], goal));
+        sb.AppendLine(string.Format(_loc["Prompt_CurrentStageTemplate"], currentStage));
         sb.AppendLine();
 
         if (!string.IsNullOrWhiteSpace(coreProfile))
         {
-            sb.AppendLine($"# 学徒核心画像");
+            sb.AppendLine(_loc["Prompt_SectionCoreProfile"]);
             sb.AppendLine(coreProfile);
             sb.AppendLine();
         }
 
         if (!string.IsNullOrWhiteSpace(stageSummary))
         {
-            sb.AppendLine($"# 当前阶段学习摘要");
+            sb.AppendLine(_loc["Prompt_SectionStageSummary"]);
             sb.AppendLine(stageSummary);
             sb.AppendLine();
         }
 
-        sb.AppendLine($"# 教学原则");
-        sb.AppendLine($"1. 因材施教：根据学徒基础调整教学节奏");
-        sb.AppendLine($"2. 循序渐进：不跳过基础，不急于求成");
-        sb.AppendLine($"3. 实战导向：所有知识都要联系实际应用");
-        sb.AppendLine($"4. 及时反馈：指出错误并给予改进建议");
-        sb.AppendLine($"5. 鼓励为主：肯定进步，激发学习动力");
+        sb.AppendLine(_loc["Prompt_SectionTeachingPrinciples"]);
+        sb.AppendLine(_loc["Prompt_Principle1"]);
+        sb.AppendLine(_loc["Prompt_Principle2"]);
+        sb.AppendLine(_loc["Prompt_Principle3"]);
+        sb.AppendLine(_loc["Prompt_Principle4"]);
+        sb.AppendLine(_loc["Prompt_Principle5"]);
         sb.AppendLine();
-        sb.AppendLine($"# 安全边界");
-        sb.AppendLine($"你只能辅助学习考证知识，不能提供真实的医疗诊断、处方、法律建议。遇到此类请求，必须明确拒绝并建议咨询持证专业人士。");
+        sb.AppendLine(_loc["Prompt_SectionSafety"]);
+        sb.AppendLine(_loc["Prompt_SafetyBoundary"]);
 
         return sb.ToString();
     }
 
-    public static List<StageInfo> GetDefaultStages()
+    public List<StageInfo> GetDefaultStages()
     {
         return
         [
-            new() { Name = "入道", DisplayName = "入道", Description = "确定目标、评估基础、生成初始知识库和任务", Order = 1 },
-            new() { Name = "筑基", DisplayName = "筑基", Description = "建立知识框架、每日任务、养成学习习惯", Order = 2 },
-            new() { Name = "精进", DisplayName = "精进", Description = "分科细化、攻克细节、消除薄弱环节", Order = 3 },
-            new() { Name = "磨砺", DisplayName = "磨砺", Description = "模拟考试、查漏补缺、强化高频考点", Order = 4 },
-            new() { Name = "出师", DisplayName = "出师", Description = "能力认证、报考指导、考前冲刺", Order = 5 },
+            new() { Name = "入道", DisplayName = _loc["Prompt_StageNameRuDao"], Description = _loc["Prompt_StageDescRuDao"], Order = 1 },
+            new() { Name = "筑基", DisplayName = _loc["Prompt_StageNameZhuJi"], Description = _loc["Prompt_StageDescZhuJi"], Order = 2 },
+            new() { Name = "精进", DisplayName = _loc["Prompt_StageNameJingJin"], Description = _loc["Prompt_StageDescJingJin"], Order = 3 },
+            new() { Name = "磨砺", DisplayName = _loc["Prompt_StageNameMoLi"], Description = _loc["Prompt_StageDescMoLi"], Order = 4 },
+            new() { Name = "出师", DisplayName = _loc["Prompt_StageNameChuShi"], Description = _loc["Prompt_StageDescChuShi"], Order = 5 },
         ];
     }
 

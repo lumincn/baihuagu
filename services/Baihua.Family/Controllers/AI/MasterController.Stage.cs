@@ -23,19 +23,19 @@ public partial class MasterController
     public async Task<ActionResult<StageCompleteResponse>> StageComplete(string id, [FromBody] StageCompleteRequest request)
     {
         if (string.IsNullOrWhiteSpace(id))
-            return BadRequest(new StageCompleteResponse { Success = false, Message = "师父ID不能为空" });
+            return BadRequest(new StageCompleteResponse { Success = false, Message = _loc["Master_IdRequired"] });
 
         try
         {
             await using var db = await _dbFactory.CreateDbContextAsync();
             var master = await db.Masters.FirstOrDefaultAsync(m => m.MasterId == id);
             if (master == null)
-                return NotFound(new StageCompleteResponse { Success = false, Message = "师父不存在" });
+                return NotFound(new StageCompleteResponse { Success = false, Message = _loc["Master_NotFound"] });
 
             // 使用策略模式获取阶段信息
             var stageStrategy = StageStrategyFactory.GetStrategy(request.StageName);
             if (stageStrategy == null)
-                return BadRequest(new StageCompleteResponse { Success = false, Message = $"未知的阶段：{request.StageName}" });
+                return BadRequest(new StageCompleteResponse { Success = false, Message = string.Format(_loc["Master_StageUnknown"], request.StageName) });
 
             var nextStrategy = StageStrategyFactory.GetNextStrategy(request.StageName);
             var nextStageName = nextStrategy?.StageName ?? "";
@@ -43,10 +43,10 @@ public partial class MasterController
             var (provider, model) = ResolveProviderAndModel(null, null);
 
             // AI 生成阶段摘要
-            var summaryPrompt = $"请为学徒在「{request.StageName}」阶段的学习生成一份简洁摘要（200字以内），包括：已掌握的知识点、仍需加强的方面、对下一阶段的建议。";
+            var summaryPrompt = string.Format(_loc["Master_StageSummaryPrompt"], request.StageName);
             var summaryMessages = new List<ChatMessage>
             {
-                new(ChatRole.System, "你是一位学习评估专家，请简洁客观地总结学习成果。"),
+                new(ChatRole.System, _loc["Master_StageSummarySystem"]),
                 new(ChatRole.User, summaryPrompt)
             };
 
@@ -60,10 +60,10 @@ public partial class MasterController
             var blessing = stageStrategy.GetBlessing(master.MasterName);
 
             // AI 生成纠正点
-            var correctionsPrompt = $"请指出学徒在「{request.StageName}」阶段学习中需要重点纠正的2-3个关键问题（100字以内），若无则回复'无'。";
+            var correctionsPrompt = string.Format(_loc["Master_StageCorrectionsPrompt"], request.StageName);
             var correctionsMessages = new List<ChatMessage>
             {
-                new(ChatRole.System, "你是一位严格的学习督导，只指出最关键的纠正点。"),
+                new(ChatRole.System, _loc["Master_StageCorrectionsSystem"]),
                 new(ChatRole.User, correctionsPrompt)
             };
             var correctionsResponse = await _aiClientService.GetChatResponseWithAutoStartAsync(
@@ -113,7 +113,7 @@ public partial class MasterController
             return Ok(new StageCompleteResponse
             {
                 Success = true,
-                Message = $"阶段「{request.StageName}」已完成",
+                Message = string.Format(_loc["Master_StageComplete"], request.StageName),
                 NextStage = nextStageName,
                 Summary = summary,
                 Blessing = blessing,
@@ -123,7 +123,7 @@ public partial class MasterController
         catch (Exception ex)
         {
             _logger.LogError(ex, "阶段完成处理失败");
-            return StatusCode(500, new StageCompleteResponse { Success = false, Message = $"阶段完成处理失败：{ex.Message}" });
+            return StatusCode(500, new StageCompleteResponse { Success = false, Message = string.Format(_loc["Master_StageCompleteFailed"], ex.Message) });
         }
     }
 }

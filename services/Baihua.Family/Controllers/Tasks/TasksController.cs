@@ -1,9 +1,11 @@
 using Baihua.Core;
+using Baihua.Core.Localization;
 using Baihua.Family.Services;
 using System.Text.Json;
 using Baihua.Family.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Localization;
 using Baihua.Family.Models;
 using Baihua.Contracts.Scene;
 using Baihua.Contracts.Tasks;
@@ -29,6 +31,7 @@ namespace Baihua.Family.Controllers
         private readonly Services.VaultNoteIndexer _vaultNoteIndexer;
         private readonly ILogger<TasksController> _logger;
         private readonly IHostApplicationLifetime _appLifetime;
+        private readonly IStringLocalizer<SharedResources> _loc;
 
         public TasksController(
             Services.TaskManager taskManager,
@@ -43,7 +46,8 @@ namespace Baihua.Family.Controllers
             Services.AnkiCardGenerator cardGenerator,
             Services.VaultNoteIndexer vaultNoteIndexer,
             ILogger<TasksController> logger,
-            IHostApplicationLifetime appLifetime)
+            IHostApplicationLifetime appLifetime,
+            IStringLocalizer<SharedResources> loc)
         {
             _taskManager = taskManager;
             _aiSettings = aiSettings;
@@ -58,6 +62,7 @@ namespace Baihua.Family.Controllers
             _vaultNoteIndexer = vaultNoteIndexer;
             _logger = logger;
             _appLifetime = appLifetime;
+            _loc = loc;
         }
 
         private AiProviderConfig? ResolveProvider(string modelName)

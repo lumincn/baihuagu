@@ -1,6 +1,8 @@
 using Baihua.Core;
+using Baihua.Core.Localization;
 using Baihua.Family.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using Baihua.Contracts.Tasks;
 
 namespace Baihua.Family.Controllers
@@ -36,18 +38,18 @@ namespace Baihua.Family.Controllers
             var task = _taskManager.GetTask(taskId);
             if (task == null)
             {
-                return NotFound(new { error = "任务不存在" });
+                return NotFound(new { error = _loc["Task_NotFound"] });
             }
 
             if (task.Status != RunnerTaskStatus.Running && task.Status != RunnerTaskStatus.Pending)
             {
-                return BadRequest(new { error = "只能取消运行中或待执行的任务" });
+                return BadRequest(new { error = _loc["Task_CancelOnlyRunning"] });
             }
 
             var cancelled = await _taskManager.CancelTaskAsync(taskId);
             if (!cancelled)
             {
-                return BadRequest(new { error = "取消任务失败" });
+                return BadRequest(new { error = _loc["Task_CancelFailed"] });
             }
 
             // OpenClaw 任务需要额外杀掉进程
@@ -76,7 +78,7 @@ namespace Baihua.Family.Controllers
                 }
             }
 
-            return Ok(new { success = true, message = "任务已取消" });
+            return Ok(new { success = true, message = _loc["Task_CancelSuccess"] });
         }
 
         /// <summary>
@@ -109,7 +111,7 @@ namespace Baihua.Family.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取任务历史失败");
-                return StatusCode(500, new { error = "获取任务历史失败" });
+                return StatusCode(500, new { error = _loc["Task_HistoryError"] });
             }
         }
 
@@ -138,7 +140,7 @@ namespace Baihua.Family.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "清理任务失败");
-                return StatusCode(500, new { error = "清理任务失败" });
+                return StatusCode(500, new { error = _loc["Task_CleanupError"] });
             }
         }
 
@@ -151,12 +153,12 @@ namespace Baihua.Family.Controllers
             try
             {
                 _taskManager.DeleteAllTasks();
-                return Ok(new { success = true, message = "所有任务已清空" });
+                return Ok(new { success = true, message = _loc["Task_AllDeleted"] });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "清空所有任务失败");
-                return StatusCode(500, new { error = "清空任务失败" });
+                return StatusCode(500, new { error = _loc["Task_DeleteAllError"] });
             }
         }
 
@@ -187,7 +189,7 @@ namespace Baihua.Family.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取任务统计失败");
-                return StatusCode(500, new { error = "获取任务统计失败" });
+                return StatusCode(500, new { error = _loc["Task_StatsError"] });
             }
         }
     }

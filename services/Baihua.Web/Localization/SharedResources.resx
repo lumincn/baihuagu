@@ -1,4 +1,4 @@
-﻿<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:schema id="root">
     <xs:element name="root" ns1:IsDataSet="true">
@@ -251,148 +251,148 @@
     <value>Unsupported</value>
   </data>
   <data name="MasterChat_PageTitle" xml:space="preserve">
-    <value>虚拟师父</value>
+    <value>Virtual Master</value>
   </data>
   <data name="MasterChat_Title" xml:space="preserve">
-    <value>师父</value>
+    <value>Master</value>
   </data>
   <data name="MasterChat_CreateMaster" xml:space="preserve">
-    <value>+ 拜师</value>
+    <value>+ Create Master</value>
   </data>
   <data name="MasterChat_EmptyHint" xml:space="preserve">
-    <value>还没有师父，点击「拜师」创建</value>
+    <value>No master yet. Click "Create Master" to start.</value>
   </data>
   <data name="MasterChat_EmptyDesc" xml:space="preserve">
-    <value>选择一位师父开始学习之旅</value>
+    <value>Choose a master to begin your learning journey</value>
   </data>
   <data name="MasterChat_ViewProfile" xml:space="preserve">
-    <value>画像查看</value>
+    <value>View Profile</value>
   </data>
   <data name="MasterChat_StageProgress" xml:space="preserve">
-    <value>阶段进度</value>
+    <value>Stage Progress</value>
   </data>
   <data name="MasterChat_EvictData" xml:space="preserve">
-    <value>清理旧数据</value>
+    <value>Clear Old Data</value>
   </data>
   <data name="MasterChat_DeleteMaster" xml:space="preserve">
-    <value>删除</value>
+    <value>Delete</value>
   </data>
   <data name="MasterChat_QuickHint" xml:space="preserve">
-    <value>不知道该问什么？试试这些：</value>
+    <value>Not sure what to ask? Try these:</value>
   </data>
   <data name="MasterChat_InputPlaceholder" xml:space="preserve">
-    <value>向师父请教...</value>
+    <value>Ask your master...</value>
   </data>
   <data name="MasterChat_StopBtn" xml:space="preserve">
-    <value>停止</value>
+    <value>Stop</value>
   </data>
   <data name="MasterChat_SendBtn" xml:space="preserve">
-    <value>发送</value>
+    <value>Send</value>
   </data>
   <data name="MasterChat_AiNotConfigured" xml:space="preserve">
-    <value>AI 未配置</value>
+    <value>AI Not Configured</value>
   </data>
   <data name="MasterChat_AiConfigRequired" xml:space="preserve">
-    <value>虚拟师父需要 AI 服务支持，请在「设置 &gt; AI 服务」中配置</value>
+    <value>Virtual Master requires AI service. Go to Settings &gt; AI Services to configure.</value>
   </data>
   <data name="MasterChat_AiConfigLater" xml:space="preserve">
-    <value>稍后再说</value>
+    <value>Later</value>
   </data>
   <data name="MasterChat_AiConfigGo" xml:space="preserve">
-    <value>前往配置</value>
+    <value>Configure Now</value>
   </data>
   <data name="MasterChat_ModalTitle" xml:space="preserve">
-    <value>拜师学艺</value>
+    <value>Become an Apprentice</value>
   </data>
   <data name="MasterChat_Industry" xml:space="preserve">
-    <value>行业</value>
+    <value>Industry</value>
   </data>
   <data name="MasterChat_LearningGoal" xml:space="preserve">
-    <value>学习目标</value>
+    <value>Learning Goal</value>
   </data>
   <data name="MasterChat_GoalPlaceholder" xml:space="preserve">
-    <value>例如：通过执业医师考试</value>
+    <value>e.g. Pass the medical licensing exam</value>
   </data>
   <data name="MasterChat_Cancel" xml:space="preserve">
-    <value>取消</value>
+    <value>Cancel</value>
   </data>
   <data name="MasterChat_Creating" xml:space="preserve">
-    <value>正在拜师...</value>
+    <value>Becoming an apprentice...</value>
   </data>
   <data name="MasterChat_ConfirmCreate" xml:space="preserve">
-    <value>确认拜师</value>
+    <value>Confirm</value>
   </data>
   <data name="MasterStage_PageTitle" xml:space="preserve">
-    <value>阶段进度</value>
+    <value>Stage Progress</value>
   </data>
   <data name="MasterStage_Title" xml:space="preserve">
-    <value>阶段进度</value>
+    <value>Stage Progress</value>
   </data>
   <data name="MasterStage_NoMasterHint" xml:space="preserve">
-    <value>未选择师父，&lt;a href="master-chat"&gt;返回师父对话页&lt;/a&gt;</value>
+    <value>No master selected. &lt;a href="master-chat"&gt;Go back to master chat&lt;/a&gt;</value>
   </data>
   <data name="MasterStage_Loading" xml:space="preserve">
-    <value>加载中...</value>
+    <value>Loading...</value>
   </data>
   <data name="MasterStage_MasterLabel" xml:space="preserve">
-    <value>师父：</value>
+    <value>Master:</value>
   </data>
   <data name="MasterStage_GoBack" xml:space="preserve">
-    <value>返回对话</value>
+    <value>Back to Chat</value>
   </data>
   <data name="MasterStage_ProgressText" xml:space="preserve">
-    <value>{0}/{1} 阶段完成</value>
+    <value>{0}/{1} stages complete</value>
   </data>
   <data name="MasterStage_CompleteBtn" xml:space="preserve">
-    <value>完成此阶段</value>
+    <value>Complete This Stage</value>
   </data>
   <data name="MasterStage_CompletingBtn" xml:space="preserve">
-    <value>处理中...</value>
+    <value>Processing...</value>
   </data>
   <data name="MasterStage_StageSummary" xml:space="preserve">
-    <value>阶段摘要</value>
+    <value>Stage Summary</value>
   </data>
   <data name="MasterStage_KeyCorrections" xml:space="preserve">
-    <value>关键纠正</value>
+    <value>Key Corrections</value>
   </data>
   <data name="MasterStage_KnowledgeBase" xml:space="preserve">
-    <value>知识库关联</value>
+    <value>Knowledge Base</value>
   </data>
   <data name="MasterStage_LinkVaultBtn" xml:space="preserve">
-    <value>关联知识库</value>
+    <value>Link Knowledge Base</value>
   </data>
   <data name="MasterStage_LoadingVaults" xml:space="preserve">
-    <value>加载中...</value>
+    <value>Loading...</value>
   </data>
   <data name="MasterStage_VaultEmpty" xml:space="preserve">
-    <value>尚未关联知识库，关联后师父将参考知识库内容教学</value>
+    <value>No knowledge base linked yet. The master will reference knowledge base content when teaching.</value>
   </data>
   <data name="MasterStage_RemoveVault" xml:space="preserve">
-    <value>解除关联</value>
+    <value>Unlink</value>
   </data>
   <data name="MasterStage_DialogTitle" xml:space="preserve">
-    <value>阶段完成</value>
+    <value>Stage Complete</value>
   </data>
   <data name="MasterStage_StageComplete" xml:space="preserve">
-    <value>「{0}」阶段完成！</value>
+    <value>Stage "{0}" complete!</value>
   </data>
   <data name="MasterStage_StageSummaryDesc" xml:space="preserve">
-    <value>阶段小结</value>
+    <value>Stage Summary</value>
   </data>
   <data name="MasterStage_StageCorrections" xml:space="preserve">
-    <value>关键纠正</value>
+    <value>Key Corrections</value>
   </data>
   <data name="MasterStage_ContinueBtn" xml:space="preserve">
-    <value>继续修行</value>
+    <value>Continue Learning</value>
   </data>
   <data name="MasterStage_VaultPickerTitle" xml:space="preserve">
-    <value>选择知识库</value>
+    <value>Select Knowledge Base</value>
   </data>
   <data name="MasterStage_NoVaults" xml:space="preserve">
-    <value>暂无可用知识库</value>
+    <value>No available knowledge bases</value>
   </data>
   <data name="MasterStage_CloseBtn" xml:space="preserve">
-    <value>关闭</value>
+    <value>Close</value>
   </data>
   <data name="OpenClaw_PageTitle" xml:space="preserve">
     <value>OpenClaw Task Delegation</value>
@@ -926,7 +926,7 @@
     <value>Automatically added to AI Settings</value>
   </data>
   <data name="LocalModels_CpuCore" xml:space="preserve">
-    <value>核</value>
+    <value>cores</value>
   </data>
   <data name="Vaults_PageTitle" xml:space="preserve">
     <value>Vault Management</value>
@@ -2858,7 +2858,8 @@
     <value>Off</value>
   </data>
   <data name="Messages_InputPlaceholder" xml:space="preserve">
-    <value>Type a message...&#x0D;&#x0A;Shift+Enter new line, Enter to send</value>
+    <value>Type a message...
+Shift+Enter new line, Enter to send</value>
   </data>
   <data name="Messages_Stop" xml:space="preserve">
     <value>⏹ Stop</value>
@@ -2939,7 +2940,7 @@
     <value>Note Not Found</value>
   </data>
   <data name="NoteDetail_NoteNotFoundPath" xml:space="preserve">
-    <value>Note with path &quot;{0}&quot; not found</value>
+    <value>Note with path "{0}" not found</value>
   </data>
   <data name="NoteDetail_BackToSearch" xml:space="preserve">
     <value>Back to Search</value>
@@ -2954,7 +2955,7 @@
     <value>AI Generate This Note</value>
   </data>
   <data name="NoteDetail_Back" xml:space="preserve">
-    <value>&#x2190; Back</value>
+    <value>← Back</value>
   </data>
   <data name="NoteDetail_Favorite" xml:space="preserve">
     <value>Favorite</value>
@@ -3708,5 +3709,113 @@
   </data>
   <data name="Nav_ModeEasy" xml:space="preserve">
     <value>👤 Beginner</value>
+  </data>
+  <data name="Api_TaskCreateFailed" xml:space="preserve">
+    <value>Task creation failed</value>
+  </data>
+  <data name="Api_CreateFailedWithError" xml:space="preserve">
+    <value>Creation failed: {0}</value>
+  </data>
+  <data name="Api_SearchTimeout" xml:space="preserve">
+    <value>Search timed out, please try again later</value>
+  </data>
+  <data name="Api_SearchUnavailable" xml:space="preserve">
+    <value>Search service unavailable</value>
+  </data>
+  <data name="Api_AiQueryFailed" xml:space="preserve">
+    <value>AI query failed</value>
+  </data>
+  <data name="Api_QueryFailedWithError" xml:space="preserve">
+    <value>Query failed: {0}</value>
+  </data>
+  <data name="Api_LocalStreamError" xml:space="preserve">
+    <value>Local model stream error: {0}</value>
+  </data>
+  <data name="Api_ChatFailedWithError" xml:space="preserve">
+    <value>Chat failed: {0}</value>
+  </data>
+  <data name="Api_StreamError" xml:space="preserve">
+    <value>AI stream response error: {0}</value>
+  </data>
+  <data name="Api_RetryFailed" xml:space="preserve">
+    <value>Retry failed</value>
+  </data>
+  <data name="Api_RetryFailedWithError" xml:space="preserve">
+    <value>Retry failed: {0}</value>
+  </data>
+  <data name="Api_RequestFailedWithError" xml:space="preserve">
+    <value>Request failed: {0}</value>
+  </data>
+  <data name="Api_ResponseParseFailed" xml:space="preserve">
+    <value>Response parsing failed</value>
+  </data>
+  <data name="Api_StartFailedWithError" xml:space="preserve">
+    <value>Start failed: {0}</value>
+  </data>
+  <data name="Api_SaveSuccess" xml:space="preserve">
+    <value>Configuration saved</value>
+  </data>
+  <data name="Api_SaveFailedWithError" xml:space="preserve">
+    <value>Save failed: {0}</value>
+  </data>
+  <data name="Api_UnknownError" xml:space="preserve">
+    <value>Unknown error</value>
+  </data>
+  <data name="Api_FetchFailed" xml:space="preserve">
+    <value>Fetch failed</value>
+  </data>
+  <data name="Api_DetectFailed" xml:space="preserve">
+    <value>Detection failed</value>
+  </data>
+  <data name="Api_DetectFailedWithError" xml:space="preserve">
+    <value>Detection failed: {0}</value>
+  </data>
+  <data name="Api_MasterCreateFailed" xml:space="preserve">
+    <value>Create master failed (HTTP {0})</value>
+  </data>
+  <data name="Api_CreateFailed" xml:space="preserve">
+    <value>Creation failed</value>
+  </data>
+  <data name="Api_MasterChatFailed" xml:space="preserve">
+    <value>Master chat failed (HTTP {0})</value>
+  </data>
+  <data name="Api_MasterChatError" xml:space="preserve">
+    <value>Master chat error: {0}</value>
+  </data>
+  <data name="Api_StageCompleteFailed" xml:space="preserve">
+    <value>Stage completion failed (HTTP {0})</value>
+  </data>
+  <data name="Api_OperationFailed" xml:space="preserve">
+    <value>Operation failed</value>
+  </data>
+  <data name="Api_ProfileFetchFailed" xml:space="preserve">
+    <value>Profile fetch failed (HTTP {0})</value>
+  </data>
+  <data name="Api_AssessFailed" xml:space="preserve">
+    <value>Assessment failed</value>
+  </data>
+  <data name="Api_AssessFailedWithHttp" xml:space="preserve">
+    <value>Assessment failed (HTTP {0})</value>
+  </data>
+  <data name="Api_MastersListFailed" xml:space="preserve">
+    <value>Get master list failed (HTTP {0})</value>
+  </data>
+  <data name="Api_CleanupFailed" xml:space="preserve">
+    <value>Cleanup failed</value>
+  </data>
+  <data name="Api_CleanupFailedWithError" xml:space="preserve">
+    <value>Cleanup failed: {0}</value>
+  </data>
+  <data name="Api_UpdateFailed" xml:space="preserve">
+    <value>Update failed</value>
+  </data>
+  <data name="Api_UpdateFailedWithError" xml:space="preserve">
+    <value>Update failed: {0}</value>
+  </data>
+  <data name="Api_FetchFailedWithError" xml:space="preserve">
+    <value>Fetch failed: {0}</value>
+  </data>
+  <data name="Api_OperationFailedWithError" xml:space="preserve">
+    <value>Operation failed: {0}</value>
   </data>
 </root>

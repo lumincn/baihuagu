@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using Baihua.Core.Localization;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace Baihua.Family.Services;
@@ -34,26 +36,29 @@ public class AiMetricsService : IDisposable
     private readonly Histogram<int> _healthScore;
     private readonly Counter<long> _healthComponents;
 
-    public AiMetricsService()
+    private readonly IStringLocalizer<SharedResources> _loc;
+
+    public AiMetricsService(IStringLocalizer<SharedResources> loc)
     {
+        _loc = loc;
         _meter = new Meter(MeterName, "1.0.0");
 
-        _aiLatency = _meter.CreateHistogram<double>("ai.latency_ms", unit: "ms", description: "AI 请求延迟");
-        _aiTps = _meter.CreateHistogram<double>("ai.tokens_per_second", unit: "tokens/s", description: "AI Token 生成速率");
-        _aiRequests = _meter.CreateCounter<long>("ai.requests.total", unit: "{request}", description: "AI 请求总次数");
-        _aiTokens = _meter.CreateCounter<long>("ai.tokens.total", unit: "{token}", description: "AI Token 处理总量");
+        _aiLatency = _meter.CreateHistogram<double>("ai.latency_ms", unit: "ms", description: _loc["AiMetrics_AiLatency"]);
+        _aiTps = _meter.CreateHistogram<double>("ai.tokens_per_second", unit: "tokens/s", description: _loc["AiMetrics_AiTps"]);
+        _aiRequests = _meter.CreateCounter<long>("ai.requests.total", unit: "{request}", description: _loc["AiMetrics_AiRequests"]);
+        _aiTokens = _meter.CreateCounter<long>("ai.tokens.total", unit: "{token}", description: _loc["AiMetrics_AiTokens"]);
 
-        _benchLatency = _meter.CreateHistogram<double>("benchmark.latency_ms", unit: "ms", description: "Benchmark 单条提示词延迟");
-        _benchTps = _meter.CreateHistogram<double>("benchmark.tokens_per_second", unit: "tokens/s", description: "Benchmark Token 生成速率");
-        _benchQuality = _meter.CreateHistogram<int>("benchmark.quality_score", unit: "1", description: "Benchmark 质量评分");
-        _benchTimeouts = _meter.CreateCounter<long>("benchmark.timeouts.total", unit: "{timeout}", description: "Benchmark 超时次数");
-        _benchErrors = _meter.CreateCounter<long>("benchmark.errors.total", unit: "{error}", description: "Benchmark 错误次数");
-        _benchRuns = _meter.CreateCounter<long>("benchmark.runs.total", unit: "{run}", description: "Benchmark 提示词运行次数");
+        _benchLatency = _meter.CreateHistogram<double>("benchmark.latency_ms", unit: "ms", description: _loc["AiMetrics_BenchLatency"]);
+        _benchTps = _meter.CreateHistogram<double>("benchmark.tokens_per_second", unit: "tokens/s", description: _loc["AiMetrics_BenchTps"]);
+        _benchQuality = _meter.CreateHistogram<int>("benchmark.quality_score", unit: "1", description: _loc["AiMetrics_BenchQuality"]);
+        _benchTimeouts = _meter.CreateCounter<long>("benchmark.timeouts.total", unit: "{timeout}", description: _loc["AiMetrics_BenchTimeouts"]);
+        _benchErrors = _meter.CreateCounter<long>("benchmark.errors.total", unit: "{error}", description: _loc["AiMetrics_BenchErrors"]);
+        _benchRuns = _meter.CreateCounter<long>("benchmark.runs.total", unit: "{run}", description: _loc["AiMetrics_BenchRuns"]);
 
-        _healthCheckDuration = _meter.CreateHistogram<double>("health.check.duration_ms", unit: "ms", description: "单个健康检查组件耗时");
-        _healthWallClock = _meter.CreateHistogram<double>("health.check.wallclock_ms", unit: "ms", description: "健康检查整体耗时");
-        _healthScore = _meter.CreateHistogram<int>("health.score", unit: "1", description: "健康检查评分");
-        _healthComponents = _meter.CreateCounter<long>("health.components.total", unit: "{component}", description: "健康检查组件状态统计");
+        _healthCheckDuration = _meter.CreateHistogram<double>("health.check.duration_ms", unit: "ms", description: _loc["AiMetrics_HealthCheckDuration"]);
+        _healthWallClock = _meter.CreateHistogram<double>("health.check.wallclock_ms", unit: "ms", description: _loc["AiMetrics_HealthWallClock"]);
+        _healthScore = _meter.CreateHistogram<int>("health.score", unit: "1", description: _loc["AiMetrics_HealthScore"]);
+        _healthComponents = _meter.CreateCounter<long>("health.components.total", unit: "{component}", description: _loc["AiMetrics_HealthComponents"]);
     }
 
     /// <summary>

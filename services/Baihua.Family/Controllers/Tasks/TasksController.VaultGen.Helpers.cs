@@ -1,9 +1,11 @@
 using Baihua.Core;
+using Baihua.Core.Localization;
 using Baihua.Family.Services;
 using System.Text.Json;
 using Baihua.Family.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Localization;
 using Baihua.Family.Models;
 using Baihua.Contracts.Scene;
 using Baihua.Contracts.Tasks;
@@ -17,7 +19,7 @@ namespace Baihua.Family.Controllers
         {
             if (string.IsNullOrWhiteSpace(request.Industry) || string.IsNullOrWhiteSpace(request.Keyword))
             {
-                return BadRequest(new { error = "行业和关键词不能为空" });
+                return BadRequest(new { error = _loc["Task_IndustryKeywordEmpty"] });
             }
 
             var noteCount = request.NoteCount;
@@ -39,7 +41,7 @@ namespace Baihua.Family.Controllers
                 var provider = ResolveProvider(modelName);
                 if (provider == null)
                 {
-                    return BadRequest(new { error = "未找到可用的 AI 提供商，请检查模型配置" });
+                    return BadRequest(new { error = _loc["Task_VaultGenAiProviderMissing"] });
                 }
 
                 var parameters = new Dictionary<string, string>
@@ -69,28 +71,28 @@ namespace Baihua.Family.Controllers
 
                         // Step 1: 生成知识库名称
                         currentStep++;
-                        await _taskManager.UpdateProgress(taskId, currentStep, totalSteps, "生成知识库名称...");
+                        await _taskManager.UpdateProgress(taskId, currentStep, totalSteps, _loc["Task_Progress_VaultName"]);
                         var vaultName = await GenerateVaultNameAsync(provider, modelName, request.Industry, request.Keyword, options, linkedCts.Token);
 
                         // Step 2: 生成 system prompt
                         currentStep++;
-                        await _taskManager.UpdateProgress(taskId, currentStep, totalSteps, "生成系统提示词...");
+                        await _taskManager.UpdateProgress(taskId, currentStep, totalSteps, _loc["Task_Progress_SystemPrompt"]);
                         var systemPrompt = await GenerateSystemPromptAsync(provider, modelName, request.Industry, options, linkedCts.Token);
 
                         // Step 3: 生成笔记列表
                         currentStep++;
-                        await _taskManager.UpdateProgress(taskId, currentStep, totalSteps, "生成笔记大纲...");
+                        await _taskManager.UpdateProgress(taskId, currentStep, totalSteps, _loc["Task_Progress_Outline"]);
                         var outline = await GenerateNoteListAsync(provider, modelName, vaultName, request.Industry, request.Keyword, systemPrompt, options, linkedCts.Token);
 
                         if (outline.Count == 0)
                         {
-                            await _taskManager.UpdateStatus(taskId, RunnerTaskStatus.Failed, "笔记大纲生成失败，返回空列表");
+                            await _taskManager.UpdateStatus(taskId, RunnerTaskStatus.Failed, _loc["Task_OutlineFailed"]);
                             return;
                         }
 
                         // Step 4: 创建知识库
                         currentStep++;
-                        await _taskManager.UpdateProgress(taskId, currentStep, totalSteps, $"创建知识库: {vaultName}...");
+                        await _taskManager.UpdateProgress(taskId, currentStep, totalSteps, _loc["Task_Progress_CreatingVault", vaultName]);
                         var vault = _vaultSettings.AddVault(vaultName, "", request.Industry);
                         var vaultId = vault.Id;
                         var vaultPath = vault.Path;
@@ -108,7 +110,7 @@ namespace Baihua.Family.Controllers
                             linkedCts.Token.ThrowIfCancellationRequested();
                             currentStep++;
                             var item = outline[i];
-                            await _taskManager.UpdateProgress(taskId, currentStep, totalSteps, $"生成笔记 ({i + 1}/{outline.Count}): {item.title}");
+                            await _taskManager.UpdateProgress(taskId, currentStep, totalSteps, _loc["Task_Progress_GeneratingNote", i + 1, outline.Count, item.title]);
 
                             try
                             {
@@ -135,10 +137,10 @@ namespace Baihua.Family.Controllers
                         stopwatch.Stop();
 
                         // 重建 FTS5 索引
-                        await _taskManager.UpdateProgress(taskId, currentStep, totalSteps, "重建搜索索引...");
+                        await _taskManager.UpdateProgress(taskId, currentStep, totalSteps, _loc["Task_Progress_RebuildIndex"]);
                         await _vaultNoteIndexer.IndexVaultAsync(vaultId, vaultPath, linkedCts.Token);
 
-                        await _taskManager.UpdateProgress(taskId, totalSteps, totalSteps, "任务完成");
+                        await _taskManager.UpdateProgress(taskId, totalSteps, totalSteps, _loc["Task_Progress_Done"]);
                         await _taskManager.UpdateStatus(taskId, RunnerTaskStatus.Success, data: new
                         {
                             vaultId = vaultId,
@@ -159,7 +161,7 @@ namespace Baihua.Family.Controllers
                                 ["vaultName"] = vaultName,
                                 ["trigger"] = "vault_generation"
                             });
-                            _taskManager.UpdateProgress(cardTaskId, 0, 100, $"开始为「{vaultName}」使用 AI 生成记忆卡片...");
+                            _taskManager.UpdateProgress(cardTaskId, 0, 100, _loc["Task_Progress_StartCardGen", vaultName]);
 
                             var notesPath = Path.Combine(vaultPath, "notes");
                             if (Directory.Exists(notesPath))
@@ -194,7 +196,7 @@ namespace Baihua.Family.Controllers
                             _logger.LogWarning("AI 知识库生成任务超时：{TaskId}", taskId);
                             var timeoutMin = _aiSettings.AiRequestTimeoutMinutes * 4;
                             await _taskManager.UpdateStatus(taskId, RunnerTaskStatus.Timeout,
-                                $"AI 知识库生成超时（{timeoutMin} 分钟）| 模型: {modelName}");
+                                _loc["Task_VaultGenTimeout", timeoutMin, modelName]);
                         }
                     }
                     catch (Exception ex)
@@ -211,7 +213,7 @@ namespace Baihua.Family.Controllers
                 return Ok(new VaultGenerationResponse
                 {
                     Success = true,
-                    Message = "任务已创建",
+                    Message = _loc["Task_Created"],
                     TaskId = taskId
                 });
             }
@@ -221,7 +223,7 @@ namespace Baihua.Family.Controllers
                 return Ok(new VaultGenerationResponse
                 {
                     Success = false,
-                    Message = $"创建失败：{ex.Message}"
+                    Message = _loc["Task_CreateFailed", ex.Message]
                 });
             }
         }
@@ -269,7 +271,7 @@ namespace Baihua.Family.Controllers
             var response = await _aiClientService.GetChatResponseWithAutoStartAsync(provider, model, messages, options, ct, operation: "vault_gen_prompt");
             var promptText = (response.Text ?? "").Trim();
             if (string.IsNullOrWhiteSpace(promptText))
-                promptText = $"你是{industry}领域专家，请用专业、严谨、结构化的方式回答问题。";
+                promptText = _loc["Task_FallbackPrompt", industry];
             return promptText;
         }
 
@@ -314,7 +316,7 @@ namespace Baihua.Family.Controllers
                         fallback.Add(new NoteOutlineItem
                         {
                             title = titleMatch.Groups[1].Value,
-                            category = catMatch.Success ? catMatch.Groups[1].Value : "其他"
+                            category = catMatch.Success ? catMatch.Groups[1].Value : _loc["Task_CategoryOther"]
                         });
                     }
                 }

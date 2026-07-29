@@ -586,12 +586,12 @@ namespace Baihua.Web.Services
                 var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
                 var response = await PostWithMetricsAsync("/api/tasks/ai-query", httpContent);
                 response.EnsureSuccessStatusCode();
-                return await response.Content.ReadFromJsonAsync<AiTaskResponse>() ?? new AiTaskResponse { Success = false, Message = "创建任务失败" };
+                return await response.Content.ReadFromJsonAsync<AiTaskResponse>() ?? new AiTaskResponse { Success = false, Message = _loc["Api_TaskCreateFailed"] };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "创建 AI 任务失败，问题: {Query}, 模型: {Model}", query, model ?? "默认");
-                return new AiTaskResponse { Success = false, Message = $"创建失败：{ex.Message}" };
+                return new AiTaskResponse { Success = false, Message = _loc["Api_CreateFailedWithError", ex.Message] };
             }
         }
 
@@ -657,7 +657,7 @@ namespace Baihua.Web.Services
                     }
                     else if (currentEvent == "error")
                     {
-                        throw new InvalidOperationException($"本地模型流式响应错误: {data}");
+                        throw new InvalidOperationException(_loc["Api_LocalStreamError", data!]);
                     }
                 }
                 else if (string.IsNullOrEmpty(line))
@@ -764,7 +764,7 @@ namespace Baihua.Web.Services
                     }
                     else if (currentEvent == "error")
                     {
-                        throw new InvalidOperationException($"AI 流式响应错误: {data}");
+                        throw new InvalidOperationException(_loc["Api_StreamError", data!]);
                     }
                 }
                 else if (string.IsNullOrEmpty(line))
@@ -842,7 +842,7 @@ namespace Baihua.Web.Services
                     }
                     else if (currentEvent == "error")
                     {
-                        throw new InvalidOperationException($"AI 流式响应错误: {data}");
+                        throw new InvalidOperationException(_loc["Api_StreamError", data!]);
                     }
                 }
                 else if (string.IsNullOrEmpty(line))
@@ -926,7 +926,7 @@ namespace Baihua.Web.Services
                     }
                     else if (currentEvent == "error")
                     {
-                        throw new InvalidOperationException($"AI 流式响应错误: {data}");
+                        throw new InvalidOperationException(_loc["Api_StreamError", data!]);
                     }
                 }
                 else if (string.IsNullOrEmpty(line))
@@ -1103,12 +1103,12 @@ namespace Baihua.Web.Services
                 var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
                 var response = await PostWithMetricsAsync($"/api/tasks/{taskId}/retry", httpContent);
                 response.EnsureSuccessStatusCode();
-                return await response.Content.ReadFromJsonAsync<AiTaskResponse>() ?? new AiTaskResponse { Success = false, Message = "重试失败" };
+                return await response.Content.ReadFromJsonAsync<AiTaskResponse>() ?? new AiTaskResponse { Success = false, Message = _loc["Api_RetryFailed"] };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "重试任务失败，TaskId: {TaskId}", taskId);
-                return new AiTaskResponse { Success = false, Message = $"重试失败：{ex.Message}" };
+                return new AiTaskResponse { Success = false, Message = _loc["Api_RetryFailedWithError", ex.Message] };
             }
         }
 
@@ -1198,7 +1198,7 @@ namespace Baihua.Web.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "生成缺失笔记失败，链接: {LinkPath}", linkPath);
-                return new GenerateMissingNoteResponse { Success = false, Message = $"请求失败：{ex.Message}" };
+                return new GenerateMissingNoteResponse { Success = false, Message = _loc["Api_RequestFailedWithError", ex.Message] };
             }
         }
 
@@ -1391,7 +1391,7 @@ namespace Baihua.Web.Services
                 
                 if (response.IsSuccessStatusCode)
                 {
-                    return new SaveAiProviderResult { Success = true, Message = "配置已保存" };
+                    return new SaveAiProviderResult { Success = true, Message = _loc["Api_SaveSuccess"] };
                 }
                 else
                 {
@@ -1399,17 +1399,17 @@ namespace Baihua.Web.Services
                     return new SaveAiProviderResult 
                     { 
                         Success = false, 
-                        Message = $"保存失败: {error}" 
+                        Message = _loc["Api_SaveFailedWithError", error!]
                     };
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "保存 AI 配置失败，ProviderId: {ProviderId}", request.Id);
-                return new SaveAiProviderResult 
-                { 
-                    Success = false, 
-                    Message = $"保存失败: {ex.Message}" 
+                return new SaveAiProviderResult
+                {
+                    Success = false,
+                    Message = _loc["Api_SaveFailedWithError", ex.Message]
                 };
             }
         }
@@ -1486,7 +1486,7 @@ namespace Baihua.Web.Services
                 var response = await _aiHttpClient.PostAsync("/api/embedding/config", JsonContent.Create(request), quick.Token);
                 response.EnsureSuccessStatusCode();
                 return await response.Content.ReadFromJsonAsync<SaveAiProviderResult>(quick.Token)
-                       ?? new SaveAiProviderResult { Success = false, Message = "未知错误" };
+                       ?? new SaveAiProviderResult { Success = false, Message = _loc["Api_UnknownError"] };
             }
             catch (Exception ex)
             {
@@ -1507,7 +1507,7 @@ namespace Baihua.Web.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取每日卡片失败");
-                return new DailyCardResultDto { HasCard = false, Message = "获取失败" };
+                return new DailyCardResultDto { HasCard = false, Message = _loc["Api_FetchFailed"] };
             }
         }
 
@@ -2086,12 +2086,12 @@ namespace Baihua.Web.Services
                 var response = await PostWithMetricsAsync("/api/local-models/deploy", content, linked.Token);
                 response.EnsureSuccessStatusCode();
                 return await response.Content.ReadFromJsonAsync<DeployLocalModelResult>(linked.Token)
-                       ?? new DeployLocalModelResult { Success = false, Message = "响应解析失败" };
+                       ?? new DeployLocalModelResult { Success = false, Message = _loc["Api_ResponseParseFailed"] };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "启动模型部署失败");
-                return new DeployLocalModelResult { Success = false, Message = $"启动失败: {ex.Message}" };
+                return new DeployLocalModelResult { Success = false, Message = _loc["Api_StartFailedWithError", ex.Message] };
             }
         }
 
@@ -2526,12 +2526,12 @@ namespace Baihua.Web.Services
                 var response = await PostWithMetricsAsync("/api/openclaw/local-ai-detect", content, cts.Token);
                 response.EnsureSuccessStatusCode();
                 return await response.Content.ReadFromJsonAsync<LocalAiServiceStatusDto>(cts.Token)
-                       ?? new LocalAiServiceStatusDto { Provider = provider, Message = "检测失败" };
+                       ?? new LocalAiServiceStatusDto { Provider = provider, Message = _loc["Api_DetectFailed"] };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "检测/启动本地 AI 服务失败，Provider: {Provider}", provider);
-                return new LocalAiServiceStatusDto { Provider = provider, Message = $"检测失败: {ex.Message}" };
+                return new LocalAiServiceStatusDto { Provider = provider, Message = _loc["Api_DetectFailedWithError", ex.Message] };
             }
         }
 
@@ -2887,10 +2887,10 @@ namespace Baihua.Web.Services
             if (!response.IsSuccessStatusCode)
             {
                 var error = await TryGetErrorMessageAsync(response);
-                throw new HttpRequestException(error ?? $"创建师父失败 (HTTP {(int)response.StatusCode})");
+                throw new HttpRequestException(error ?? _loc["Api_MasterCreateFailed", (int)response.StatusCode]);
             }
             return await response.Content.ReadFromJsonAsync<CreateMasterResponse>(cancellationToken)
-                   ?? new CreateMasterResponse { Success = false, Message = "创建失败" };
+                   ?? new CreateMasterResponse { Success = false, Message = _loc["Api_CreateFailed"] };
         }
 
         private static async Task<string?> TryGetErrorMessageAsync(HttpResponseMessage response)
@@ -2939,7 +2939,7 @@ namespace Baihua.Web.Services
             if (!response.IsSuccessStatusCode)
             {
                 var error = await TryGetErrorMessageAsync(response);
-                throw new HttpRequestException(error ?? $"师父对话失败 (HTTP {(int)response.StatusCode})");
+                throw new HttpRequestException(error ?? _loc["Api_MasterChatFailed", (int)response.StatusCode]);
             }
 
             var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
@@ -2973,7 +2973,7 @@ namespace Baihua.Web.Services
                     }
                     else if (currentEvent == "error")
                     {
-                        throw new InvalidOperationException($"师父对话错误: {data}");
+                        throw new InvalidOperationException(_loc["Api_MasterChatError", data!]);
                     }
                 }
                 else if (string.IsNullOrEmpty(line))
@@ -2990,10 +2990,10 @@ namespace Baihua.Web.Services
             if (!response.IsSuccessStatusCode)
             {
                 var error = await TryGetErrorMessageAsync(response);
-                throw new HttpRequestException(error ?? $"阶段完成失败 (HTTP {(int)response.StatusCode})");
+                throw new HttpRequestException(error ?? _loc["Api_StageCompleteFailed", (int)response.StatusCode]);
             }
             return await response.Content.ReadFromJsonAsync<StageCompleteResponse>(cancellationToken)
-                   ?? new StageCompleteResponse { Success = false, Message = "操作失败" };
+                   ?? new StageCompleteResponse { Success = false, Message = _loc["Api_OperationFailed"] };
         }
 
         public async Task<ApprenticeProfileResponse> GetMasterProfileAsync(string masterId, CancellationToken cancellationToken = default)
@@ -3002,10 +3002,10 @@ namespace Baihua.Web.Services
             if (!response.IsSuccessStatusCode)
             {
                 var error = await TryGetErrorMessageAsync(response);
-                throw new HttpRequestException(error ?? $"获取画像失败 (HTTP {(int)response.StatusCode})");
+                throw new HttpRequestException(error ?? _loc["Api_ProfileFetchFailed", (int)response.StatusCode]);
             }
             return await response.Content.ReadFromJsonAsync<ApprenticeProfileResponse>(cancellationToken)
-                   ?? new ApprenticeProfileResponse { Success = false, Message = "获取失败" };
+                   ?? new ApprenticeProfileResponse { Success = false, Message = _loc["Api_FetchFailed"] };
         }
 
         public async Task<AssessResponse> MasterAssessAsync(string masterId, string type = "capability", CancellationToken cancellationToken = default)
@@ -3015,10 +3015,10 @@ namespace Baihua.Web.Services
             if (!response.IsSuccessStatusCode)
             {
                 var error = await TryGetErrorMessageAsync(response);
-                throw new HttpRequestException(error ?? $"评估失败 (HTTP {(int)response.StatusCode})");
+                throw new HttpRequestException(error ?? _loc["Api_AssessFailedWithHttp", (int)response.StatusCode]);
             }
             return await response.Content.ReadFromJsonAsync<AssessResponse>(cancellationToken)
-                   ?? new AssessResponse { Success = false, Message = "评估失败" };
+                   ?? new AssessResponse { Success = false, Message = _loc["Api_AssessFailed"] };
         }
 
         public async Task<List<MasterListItem>> GetMastersAsync(CancellationToken cancellationToken = default)
@@ -3046,12 +3046,12 @@ namespace Baihua.Web.Services
                 var response = await _httpClient.PostAsync($"/api/master/{masterId}/evict", null, cancellationToken);
                 response.EnsureSuccessStatusCode();
                 return await response.Content.ReadFromJsonAsync<MasterEvictResponse>(cancellationToken)
-                    ?? new MasterEvictResponse { Success = false, Message = "清理失败" };
+                    ?? new MasterEvictResponse { Success = false, Message = _loc["Api_CleanupFailed"] };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "清理师父数据失败，MasterId: {MasterId}", masterId);
-                return new MasterEvictResponse { Success = false, Message = $"清理失败：{ex.Message}" };
+                return new MasterEvictResponse { Success = false, Message = _loc["Api_CleanupFailedWithError", ex.Message] };
             }
         }
 
@@ -3064,12 +3064,12 @@ namespace Baihua.Web.Services
                 var response = await _httpClient.PutAsync($"/api/master/{masterId}/profile", httpContent, cancellationToken);
                 response.EnsureSuccessStatusCode();
                 return await response.Content.ReadFromJsonAsync<ApprenticeProfileResponse>(cancellationToken)
-                    ?? new ApprenticeProfileResponse { Success = false, Message = "更新失败" };
+                    ?? new ApprenticeProfileResponse { Success = false, Message = _loc["Api_UpdateFailed"] };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "更新师父画像失败，MasterId: {MasterId}", masterId);
-                return new ApprenticeProfileResponse { Success = false, Message = $"更新失败：{ex.Message}" };
+                return new ApprenticeProfileResponse { Success = false, Message = _loc["Api_UpdateFailedWithError", ex.Message] };
             }
         }
 
@@ -3080,12 +3080,12 @@ namespace Baihua.Web.Services
                 var response = await _httpClient.GetAsync($"/api/master/{masterId}/vault-focus", cancellationToken);
                 response.EnsureSuccessStatusCode();
                 return await response.Content.ReadFromJsonAsync<VaultFocusListResponse>(cancellationToken)
-                    ?? new VaultFocusListResponse { Success = false, Message = "获取失败" };
+                    ?? new VaultFocusListResponse { Success = false, Message = _loc["Api_FetchFailed"] };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "获取知识库关联失败，MasterId: {MasterId}", masterId);
-                return new VaultFocusListResponse { Success = false, Message = $"获取失败：{ex.Message}" };
+                return new VaultFocusListResponse { Success = false, Message = _loc["Api_FetchFailedWithError", ex.Message] };
             }
         }
 
@@ -3098,7 +3098,7 @@ namespace Baihua.Web.Services
                 var response = await _httpClient.PostAsync($"/api/master/{masterId}/vault-focus", httpContent, cancellationToken);
                 response.EnsureSuccessStatusCode();
                 return await response.Content.ReadFromJsonAsync<VaultFocusUpdateResponse>(cancellationToken)
-                    ?? new VaultFocusUpdateResponse { Success = false, Message = "操作失败" };
+                    ?? new VaultFocusUpdateResponse { Success = false, Message = _loc["Api_OperationFailed"] };
             }
             catch (Exception ex)
             {
@@ -3114,7 +3114,7 @@ namespace Baihua.Web.Services
                 var response = await _httpClient.DeleteAsync($"/api/master/{masterId}/vault-focus/{vaultId}", cancellationToken);
                 response.EnsureSuccessStatusCode();
                 return await response.Content.ReadFromJsonAsync<VaultFocusUpdateResponse>(cancellationToken)
-                    ?? new VaultFocusUpdateResponse { Success = false, Message = "操作失败" };
+                    ?? new VaultFocusUpdateResponse { Success = false, Message = _loc["Api_OperationFailed"] };
             }
             catch (Exception ex)
             {

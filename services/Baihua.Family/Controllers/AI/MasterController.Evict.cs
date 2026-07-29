@@ -28,7 +28,7 @@ public partial class MasterController
             await using var db = await _dbFactory.CreateDbContextAsync();
             var master = await db.Masters.FirstOrDefaultAsync(m => m.MasterId == id);
             if (master == null)
-                return NotFound(new { Success = false, Message = "师父不存在" });
+                return NotFound(new { Success = false, Message = _loc["Master_NotFound"] });
 
             var graduated = System.Text.Json.JsonSerializer.Deserialize<List<string>>(master.GraduatedStagesJson) ?? new();
             var cutoff = DateTime.Now.AddDays(-7);
@@ -49,10 +49,10 @@ public partial class MasterController
 
                 var (provider, model) = ResolveProviderAndModel(null, null);
                 var convText = string.Join("\n", conversations.Select(c => $"{c.Role}: {c.Content}"));
-                var summaryPrompt = $"请为以下对话生成简洁摘要（200字以内），提取关键知识点和学习要点：\n\n{TruncateText(convText, 3000)}";
+                var summaryPrompt = $"{_loc["Master_CompressUserPrompt"]}\n\n{TruncateText(convText, 3000)}";
                 var messages = new List<ChatMessage>
                 {
-                    new(ChatRole.System, "你是一位学习记录整理专家，请简洁客观地总结对话内容。"),
+                    new(ChatRole.System, _loc["Master_CompressSystemPrompt"]),
                     new(ChatRole.User, summaryPrompt)
                 };
                 var options = AiClientService.BuildChatOptions(temperature: 0.3f, maxOutputTokens: 500);
@@ -79,7 +79,7 @@ public partial class MasterController
         catch (Exception ex)
         {
             _logger.LogError(ex, "数据压缩失败");
-            return StatusCode(500, new { Success = false, Message = $"压缩失败：{ex.Message}" });
+            return StatusCode(500, new { Success = false, Message = string.Format(_loc["Master_CompressFailed"], ex.Message) });
         }
     }
 
@@ -97,7 +97,7 @@ public partial class MasterController
             await using var db = await _dbFactory.CreateDbContextAsync();
             var master = await db.Masters.FirstOrDefaultAsync(m => m.MasterId == id);
             if (master == null)
-                return NotFound(new { Success = false, Message = "师父不存在" });
+                return NotFound(new { Success = false, Message = _loc["Master_NotFound"] });
 
             var graduated = System.Text.Json.JsonSerializer.Deserialize<List<string>>(master.GraduatedStagesJson) ?? new();
             var cutoff = DateTime.Now.AddDays(-30);
@@ -118,10 +118,10 @@ public partial class MasterController
                 if (summary.CreatedAt > cutoff) continue;
 
                 var (provider, model) = ResolveProviderAndModel(null, null);
-                var profilePrompt = $"根据以下阶段学习摘要，提取学徒的核心能力画像（基础、学习风格、优势、薄弱点），以JSON格式返回：{{\"foundation\": \"...\", \"learningStyle\": \"...\", \"strengths\": \"...\", \"weaknesses\": \"...\"}}\n\n阶段：{stage}\n摘要：{summary.Summary}";
+                var profilePrompt = $"{_loc["Master_EvictProfilePrompt"]}\n\n{_loc["Master_EvictStageLabel"]} {stage}\n{_loc["Master_EvictSummaryLabel"]} {summary.Summary}";
                 var messages = new List<ChatMessage>
                 {
-                    new(ChatRole.System, "你是一位学习评估专家，请客观提取学徒能力画像。"),
+                    new(ChatRole.System, _loc["Master_EvictSystemPrompt"]),
                     new(ChatRole.User, profilePrompt)
                 };
                 var options = AiClientService.BuildChatOptions(temperature: 0.3f, maxOutputTokens: 500);
@@ -164,7 +164,7 @@ public partial class MasterController
         catch (Exception ex)
         {
             _logger.LogError(ex, "数据淘汰失败");
-            return StatusCode(500, new { Success = false, Message = $"淘汰失败：{ex.Message}" });
+            return StatusCode(500, new { Success = false, Message = string.Format(_loc["Master_EvictFailed"], ex.Message) });
         }
     }
 
@@ -204,10 +204,10 @@ public partial class MasterController
                     {
                         var (provider, model) = ResolveProviderAndModel(null, null);
                         var convText = string.Join("\n", conversations.Select(c => $"{c.Role}: {c.Content}"));
-                        var summaryPrompt = $"请为以下对话生成简洁摘要（200字以内），提取关键知识点和学习要点：\n\n{TruncateText(convText, 3000)}";
+                        var summaryPrompt = $"{_loc["Master_CompressUserPrompt"]}\n\n{TruncateText(convText, 3000)}";
                         var messages = new List<ChatMessage>
                         {
-                            new(ChatRole.System, "你是一位学习记录整理专家，请简洁客观地总结对话内容。"),
+                            new(ChatRole.System, _loc["Master_CompressSystemPrompt"]),
                             new(ChatRole.User, summaryPrompt)
                         };
                         var options = AiClientService.BuildChatOptions(temperature: 0.3f, maxOutputTokens: 500);
@@ -249,10 +249,10 @@ public partial class MasterController
                     try
                     {
                         var (provider, model) = ResolveProviderAndModel(null, null);
-                        var profilePrompt = $"根据以下阶段学习摘要，提取学徒的核心能力画像（基础、学习风格、优势、薄弱点），以JSON格式返回：{{\"foundation\": \"...\", \"learningStyle\": \"...\", \"strengths\": \"...\", \"weaknesses\": \"...\"}}\n\n阶段：{stage}\n摘要：{summary.Summary}";
+                        var profilePrompt = $"{_loc["Master_EvictProfilePrompt"]}\n\n{_loc["Master_EvictStageLabel"]} {stage}\n{_loc["Master_EvictSummaryLabel"]} {summary.Summary}";
                         var messages = new List<ChatMessage>
                         {
-                            new(ChatRole.System, "你是一位学习评估专家，请客观提取学徒能力画像。"),
+                            new(ChatRole.System, _loc["Master_EvictSystemPrompt"]),
                             new(ChatRole.User, profilePrompt)
                         };
                         var options = AiClientService.BuildChatOptions(temperature: 0.3f, maxOutputTokens: 500);
@@ -300,7 +300,7 @@ public partial class MasterController
             return Ok(new MasterEvictResponse
             {
                 Success = true,
-                Message = $"数据驱逐完成：压缩 {compressedCount} 个阶段，淘汰 {evictedCount} 个阶段",
+                Message = string.Format(_loc["Master_EvictAllComplete"], compressedCount, evictedCount),
                 CompressedStages = compressedCount,
                 EvictedStages = evictedCount
             });
@@ -308,7 +308,7 @@ public partial class MasterController
         catch (Exception ex)
         {
             _logger.LogError(ex, "批量数据驱逐失败");
-            return StatusCode(500, new MasterEvictResponse { Success = false, Message = $"驱逐失败：{ex.Message}" });
+            return StatusCode(500, new MasterEvictResponse { Success = false, Message = string.Format(_loc["Master_EvictAllFailed"], ex.Message) });
         }
     }
 }

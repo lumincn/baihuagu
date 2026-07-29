@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
+using Baihua.Core.Localization;
 using Baihua.Family.Controllers.AI.Stages;
 using Baihua.Data;
 using Baihua.Family.Models;
@@ -17,6 +19,7 @@ public partial class MasterController : ControllerBase
     private readonly IDbContextFactory<FamilyDbContext> _dbFactory;
     private readonly VaultSettingsService _vaultSettings;
     private readonly VaultNoteIndexer _vaultNoteIndexer;
+    private readonly IStringLocalizer<SharedResources> _loc;
     private readonly ILogger<MasterController> _logger;
 
     public MasterController(
@@ -26,6 +29,7 @@ public partial class MasterController : ControllerBase
         IDbContextFactory<FamilyDbContext> dbFactory,
         VaultSettingsService vaultSettings,
         VaultNoteIndexer vaultNoteIndexer,
+        IStringLocalizer<SharedResources> loc,
         ILogger<MasterController> logger)
     {
         _aiClientService = aiClientService;
@@ -34,6 +38,7 @@ public partial class MasterController : ControllerBase
         _dbFactory = dbFactory;
         _vaultSettings = vaultSettings;
         _vaultNoteIndexer = vaultNoteIndexer;
+        _loc = loc;
         _logger = logger;
     }
 

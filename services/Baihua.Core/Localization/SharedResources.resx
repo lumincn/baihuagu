@@ -177,4 +177,750 @@
   <data name="Vault_Required" xml:space="preserve">
     <value>A valid vault must be specified</value>
   </data>
+  <data name="Task_IndustryKeywordEmpty" xml:space="preserve">
+    <value>Industry and keyword cannot be empty</value>
+  </data>
+  <data name="Task_VaultGenAiProviderMissing" xml:space="preserve">
+    <value>No available AI provider found, please check model configuration</value>
+  </data>
+  <data name="Task_OutlineFailed" xml:space="preserve">
+    <value>Note outline generation failed, returned empty list</value>
+  </data>
+  <data name="Task_Created" xml:space="preserve">
+    <value>Task created</value>
+  </data>
+  <data name="Task_CreateFailed" xml:space="preserve">
+    <value>Create failed: {0}</value>
+  </data>
+  <data name="Task_Progress_VaultName" xml:space="preserve">
+    <value>Generating vault name...</value>
+  </data>
+  <data name="Task_Progress_SystemPrompt" xml:space="preserve">
+    <value>Generating system prompt...</value>
+  </data>
+  <data name="Task_Progress_Outline" xml:space="preserve">
+    <value>Generating note outline...</value>
+  </data>
+  <data name="Task_Progress_CreatingVault" xml:space="preserve">
+    <value>Creating vault: {0}...</value>
+  </data>
+  <data name="Task_Progress_GeneratingNote" xml:space="preserve">
+    <value>Generating note ({0}/{1}): {2}</value>
+  </data>
+  <data name="Task_Progress_RebuildIndex" xml:space="preserve">
+    <value>Rebuilding search index...</value>
+  </data>
+  <data name="Task_Progress_Done" xml:space="preserve">
+    <value>Task complete</value>
+  </data>
+  <data name="Task_Progress_StartCardGen" xml:space="preserve">
+    <value>Starting AI memory card generation for "{0}"...</value>
+  </data>
+  <data name="Task_Progress_RetryPreparing" xml:space="preserve">
+    <value>Preparing AI call (retry)...</value>
+  </data>
+  <data name="Task_Progress_RetryCallingModel" xml:space="preserve">
+    <value>Calling AI model: {0} (timeout {1} min)...</value>
+  </data>
+  <data name="Task_Progress_RetryCardGen" xml:space="preserve">
+    <value>Starting AI memory card generation (retry)...</value>
+  </data>
+  <data name="Task_Progress_Preparing" xml:space="preserve">
+    <value>Preparing AI call...</value>
+  </data>
+  <data name="Task_Progress_CallingModel" xml:space="preserve">
+    <value>Calling AI model: {0}...</value>
+  </data>
+  <data name="Task_RetryTypeNotSupported" xml:space="preserve">
+    <value>Only AI query, vault generation, or card generation tasks can be retried</value>
+  </data>
+  <data name="Task_RetryQueryMissing" xml:space="preserve">
+    <value>Original task is missing query content</value>
+  </data>
+  <data name="Task_RetryVaultMissing" xml:space="preserve">
+    <value>Original vault no longer exists, cannot retry save-to-vault. Please create a new task from AI generation page.</value>
+  </data>
+  <data name="Task_RetryCreated" xml:space="preserve">
+    <value>Retry task created</value>
+  </data>
+  <data name="Task_RetryAnkiVaultIdMissing" xml:space="preserve">
+    <value>Original task is missing vault ID</value>
+  </data>
+  <data name="Task_RetryCardCreated" xml:space="preserve">
+    <value>AI card generation retry task created</value>
+  </data>
+  <data name="Task_RetryParamsMissing" xml:space="preserve">
+    <value>Original task is missing industry or keyword parameters</value>
+  </data>
+  <data name="Task_RetryFailed" xml:space="preserve">
+    <value>Retry failed</value>
+  </data>
+  <data name="Task_ContentReviewFailed" xml:space="preserve">
+    <value>AI content review failed: the input may contain sensitive information. Please modify and retry.</value>
+  </data>
+  <data name="Task_QueryEmpty" xml:space="preserve">
+    <value>Query content cannot be empty</value>
+  </data>
+  <data name="Task_VaultNotFoundForCreate" xml:space="preserve">
+    <value>Specified vault does not exist, please select another.</value>
+  </data>
+  <data name="Task_CancelFailed" xml:space="preserve">
+    <value>Failed to cancel task</value>
+  </data>
+  <data name="Task_HistoryError" xml:space="preserve">
+    <value>Failed to retrieve task history</value>
+  </data>
+  <data name="Task_CleanupError" xml:space="preserve">
+    <value>Failed to clean up tasks</value>
+  </data>
+  <data name="Task_AllDeleted" xml:space="preserve">
+    <value>All tasks cleared</value>
+  </data>
+  <data name="Task_DeleteAllError" xml:space="preserve">
+    <value>Failed to clear all tasks</value>
+  </data>
+  <data name="Task_StatsError" xml:space="preserve">
+    <value>Failed to retrieve task statistics</value>
+  </data>
+  <data name="Task_VaultGenTimeout" xml:space="preserve">
+    <value>AI vault generation timed out ({0} min) | Model: {1}</value>
+  </data>
+  <data name="Task_QueryTimeout" xml:space="preserve">
+    <value>AI call timed out ({0} min) | Model: {1} | Prompt: {2}</value>
+  </data>
+  <data name="Task_RetryTimeout" xml:space="preserve">
+    <value>AI call timed out ({0} min) | Model: {1}</value>
+  </data>
+  <data name="Task_CategoryOther" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="Task_FallbackPrompt" xml:space="preserve">
+    <value>You are an expert in the {0} field, please answer questions professionally, rigorously, and in a structured manner.</value>
+  </data>
+  <data name="AiMetrics_AiLatency" xml:space="preserve">
+    <value>AI request latency</value>
+  </data>
+  <data name="AiMetrics_AiTps" xml:space="preserve">
+    <value>AI token generation rate</value>
+  </data>
+  <data name="AiMetrics_AiRequests" xml:space="preserve">
+    <value>Total AI requests</value>
+  </data>
+  <data name="AiMetrics_AiTokens" xml:space="preserve">
+    <value>Total AI tokens processed</value>
+  </data>
+  <data name="AiMetrics_BenchLatency" xml:space="preserve">
+    <value>Benchmark single prompt latency</value>
+  </data>
+  <data name="AiMetrics_BenchTps" xml:space="preserve">
+    <value>Benchmark token generation rate</value>
+  </data>
+  <data name="AiMetrics_BenchQuality" xml:space="preserve">
+    <value>Benchmark quality score</value>
+  </data>
+  <data name="AiMetrics_BenchTimeouts" xml:space="preserve">
+    <value>Benchmark timeout count</value>
+  </data>
+  <data name="AiMetrics_BenchErrors" xml:space="preserve">
+    <value>Benchmark error count</value>
+  </data>
+  <data name="AiMetrics_BenchRuns" xml:space="preserve">
+    <value>Benchmark prompt run count</value>
+  </data>
+  <data name="AiMetrics_HealthCheckDuration" xml:space="preserve">
+    <value>Single health check component duration</value>
+  </data>
+  <data name="AiMetrics_HealthWallClock" xml:space="preserve">
+    <value>Health check total duration</value>
+  </data>
+  <data name="AiMetrics_HealthScore" xml:space="preserve">
+    <value>Health check score</value>
+  </data>
+  <data name="AiMetrics_HealthComponents" xml:space="preserve">
+    <value>Health check component status count</value>
+  </data>
+
+  <!-- Master Prompt Builder -->
+  <data name="Prompt_DefaultMasterName" xml:space="preserve">
+    <value>Master</value>
+  </data>
+  <data name="Prompt_SafetyRefusal" xml:space="preserve">
+    <value>Sorry, I cannot provide real medical diagnoses, prescriptions, or legal advice. I am a learning assistant and can only help you study for exams. For real needs, please consult a licensed professional.</value>
+  </data>
+  <data name="Prompt_StageNameRuDao" xml:space="preserve">
+    <value>Initiation</value>
+  </data>
+  <data name="Prompt_StageNameZhuJi" xml:space="preserve">
+    <value>Foundation</value>
+  </data>
+  <data name="Prompt_StageNameJingJin" xml:space="preserve">
+    <value>Refinement</value>
+  </data>
+  <data name="Prompt_StageNameMoLi" xml:space="preserve">
+    <value>Honing</value>
+  </data>
+  <data name="Prompt_StageNameChuShi" xml:space="preserve">
+    <value>Graduation</value>
+  </data>
+  <data name="Prompt_StageDescRuDao" xml:space="preserve">
+    <value>Set goals, assess foundation, generate initial knowledge base and tasks</value>
+  </data>
+  <data name="Prompt_StageDescZhuJi" xml:space="preserve">
+    <value>Build knowledge framework, daily tasks, develop study habits</value>
+  </data>
+  <data name="Prompt_StageDescJingJin" xml:space="preserve">
+    <value>Refine by subject, conquer details, eliminate weak areas</value>
+  </data>
+  <data name="Prompt_StageDescMoLi" xml:space="preserve">
+    <value>Mock exams, fill gaps, reinforce high-frequency topics</value>
+  </data>
+  <data name="Prompt_StageDescChuShi" xml:space="preserve">
+    <value>Skill certification, exam guidance, final sprint</value>
+  </data>
+  <data name="Prompt_SectionMasterRole" xml:space="preserve">
+    <value># Master Role Setting</value>
+  </data>
+  <data name="Prompt_YouAreTemplate" xml:space="preserve">
+    <value>You are "{0}", a {2} in the {1} industry.</value>
+  </data>
+  <data name="Prompt_StyleTemplate" xml:space="preserve">
+    <value>Your teaching style: {0}.</value>
+  </data>
+  <data name="Prompt_SectionApprenticeGoal" xml:space="preserve">
+    <value># Apprentice Goal</value>
+  </data>
+  <data name="Prompt_GoalTemplate" xml:space="preserve">
+    <value>The apprentice's goal is: {0}</value>
+  </data>
+  <data name="Prompt_CurrentStageTemplate" xml:space="preserve">
+    <value>Current stage: {0}</value>
+  </data>
+  <data name="Prompt_SectionCoreProfile" xml:space="preserve">
+    <value># Apprentice Core Profile</value>
+  </data>
+  <data name="Prompt_SectionStageSummary" xml:space="preserve">
+    <value># Current Stage Learning Summary</value>
+  </data>
+  <data name="Prompt_SectionTeachingPrinciples" xml:space="preserve">
+    <value># Teaching Principles</value>
+  </data>
+  <data name="Prompt_Principle1" xml:space="preserve">
+    <value>1. Teach according to ability: Adjust pace based on the apprentice's foundation</value>
+  </data>
+  <data name="Prompt_Principle2" xml:space="preserve">
+    <value>2. Step by step: Don't skip fundamentals, don't rush for results</value>
+  </data>
+  <data name="Prompt_Principle3" xml:space="preserve">
+    <value>3. Practice-oriented: All knowledge should connect to real applications</value>
+  </data>
+  <data name="Prompt_Principle4" xml:space="preserve">
+    <value>4. Timely feedback: Point out errors and provide improvement suggestions</value>
+  </data>
+  <data name="Prompt_Principle5" xml:space="preserve">
+    <value>5. Encourage as priority: Acknowledge progress and motivate learning</value>
+  </data>
+  <data name="Prompt_SectionSafety" xml:space="preserve">
+    <value># Safety Boundaries</value>
+  </data>
+  <data name="Prompt_SafetyBoundary" xml:space="preserve">
+    <value>You can only assist with exam preparation knowledge. You must not provide real medical diagnoses, prescriptions, or legal advice. When encountering such requests, you must clearly refuse and recommend consulting a licensed professional.</value>
+  </data>
+  <!-- Master Controller -->
+  <data name="Master_GoalRequired" xml:space="preserve">
+    <value>Goal cannot be empty</value>
+  </data>
+  <data name="Master_IndustryRequired" xml:space="preserve">
+    <value>Industry cannot be empty</value>
+  </data>
+  <data name="Master_CreateGreetingTemplate" xml:space="preserve">
+    <value>I want to {0}. Please be my master and first understand my situation.</value>
+  </data>
+  <data name="Master_CreateFallbackGreeting" xml:space="preserve">
+    <value>Welcome, let us begin your learning journey.</value>
+  </data>
+  <data name="Master_CreateFailed" xml:space="preserve">
+    <value>Failed to create master</value>
+  </data>
+  <data name="Master_CreateFailedDetail" xml:space="preserve">
+    <value>Failed to create master: {0}</value>
+  </data>
+  <data name="Master_IdRequired" xml:space="preserve">
+    <value>Master ID cannot be empty</value>
+  </data>
+  <data name="Master_NotFound" xml:space="preserve">
+    <value>Master not found</value>
+  </data>
+  <data name="Master_ProfileFetchSuccess" xml:space="preserve">
+    <value>Profile retrieved successfully</value>
+  </data>
+  <data name="Master_ProfileUpdateSuccess" xml:space="preserve">
+    <value>Profile updated successfully</value>
+  </data>
+  <data name="Master_VaultFocusFetchSuccess" xml:space="preserve">
+    <value>Vault associations retrieved successfully</value>
+  </data>
+  <data name="Master_UnknownVault" xml:space="preserve">
+    <value>Unknown vault</value>
+  </data>
+  <data name="Master_VaultIdRequired" xml:space="preserve">
+    <value>Vault ID cannot be empty</value>
+  </data>
+  <data name="Master_VaultFocused" xml:space="preserve">
+    <value>Vault has been associated</value>
+  </data>
+  <data name="Master_VaultUnfocused" xml:space="preserve">
+    <value>Vault association has been removed</value>
+  </data>
+  <data name="Master_OperationFailed" xml:space="preserve">
+    <value>Operation failed: {0}</value>
+  </data>
+  <data name="Master_ParamsRequired" xml:space="preserve">
+    <value>Parameters cannot be empty</value>
+  </data>
+  <data name="Master_VaultFocusNotFound" xml:space="preserve">
+    <value>Association not found</value>
+  </data>
+  <data name="Master_VaultFocusRemoved" xml:space="preserve">
+    <value>Association has been removed</value>
+  </data>
+  <data name="Master_UpdateFailed" xml:space="preserve">
+    <value>Update failed: {0}</value>
+  </data>
+  <data name="Master_AssessDaily" xml:space="preserve">
+    <value>Please give 1-2 daily quiz questions to assess today learning.</value>
+  </data>
+  <data name="Master_AssessWeekly" xml:space="preserve">
+    <value>Please give 10 comprehensive questions to assess this week learning.</value>
+  </data>
+  <data name="Master_AssessStage" xml:space="preserve">
+    <value>Please provide a complete stage assessment exam to determine if the apprentice can advance.</value>
+  </data>
+  <data name="Master_AssessDefault" xml:space="preserve">
+    <value>Please conduct a comprehensive assessment, providing pass probability, weak points, and improvement suggestions.</value>
+  </data>
+  <data name="Master_AssessSystemPrompt" xml:space="preserve">
+    <value>You are a rigorous assessment expert. Please objectively evaluate the apprentice ability, providing specific pass probability, weak points, and improvement suggestions. Return in JSON format: {{"report": "...", "passProbability": 0.75, "weakPoints": [...], "advice": "..."}}</value>
+  </data>
+  <data name="Master_AssessComplete" xml:space="preserve">
+    <value>Assessment complete</value>
+  </data>
+  <data name="Master_AssessFailed" xml:space="preserve">
+    <value>Assessment failed: {0}</value>
+  </data>
+  <data name="Master_ChatMessageEmpty" xml:space="preserve">
+    <value>Message cannot be empty</value>
+  </data>
+  <data name="Master_ChatProfileTemplate" xml:space="preserve">
+    <value>Foundation: {0}; Learning style: {1}; Strengths: {2}; Weaknesses: {3}</value>
+  </data>
+  <data name="Master_Unknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="Master_ChatTimeout" xml:space="preserve">
+    <value>AI call timed out or was cancelled</value>
+  </data>
+  <data name="Master_ChatFailed" xml:space="preserve">
+    <value>Chat failed: {0}</value>
+  </data>
+  <data name="Master_ConversationFetchSuccess" xml:space="preserve">
+    <value>Conversation history retrieved successfully</value>
+  </data>
+  <data name="Master_ConversationFetchFailed" xml:space="preserve">
+    <value>Failed to retrieve conversation history: {0}</value>
+  </data>
+  <data name="Master_ConversationSyncSuccess" xml:space="preserve">
+    <value>Sync successful, added {0} messages</value>
+  </data>
+  <data name="Master_ConversationSyncFailed" xml:space="preserve">
+    <value>Sync failed: {0}</value>
+  </data>
+  <data name="Master_CompressSystemPrompt" xml:space="preserve">
+    <value>You are a learning record organization expert. Please summarize the conversation content concisely and objectively.</value>
+  </data>
+  <data name="Master_CompressUserPrompt" xml:space="preserve">
+    <value>Please generate a concise summary (within 200 characters) of the following conversation, extracting key knowledge points and learning highlights:</value>
+  </data>
+  <data name="Master_CompressFailed" xml:space="preserve">
+    <value>Compression failed: {0}</value>
+  </data>
+  <data name="Master_EvictSystemPrompt" xml:space="preserve">
+    <value>You are a learning assessment expert. Please objectively extract the apprentice ability profile.</value>
+  </data>
+  <data name="Master_EvictProfilePrompt" xml:space="preserve">
+    <value>Based on the following stage learning summary, extract the apprentice core ability profile (foundation, learning style, strengths, weaknesses), return in JSON format: {{"foundation": "...", "learningStyle": "...", "strengths": "...", "weaknesses": "..."}}</value>
+  </data>
+  <data name="Master_EvictFailed" xml:space="preserve">
+    <value>Eviction failed: {0}</value>
+  </data>
+  <data name="Master_EvictAllComplete" xml:space="preserve">
+    <value>Data eviction complete: compressed {0} stages, evicted {1} stages</value>
+  </data>
+  <data name="Master_EvictAllFailed" xml:space="preserve">
+    <value>Eviction failed: {0}</value>
+  </data>
+  <data name="Master_StageUnknown" xml:space="preserve">
+    <value>Unknown stage: {0}</value>
+  </data>
+  <data name="Master_StageSummaryPrompt" xml:space="preserve">
+    <value>Please generate a concise summary (within 200 characters) of the apprentice learning in the "{0}" stage, including: knowledge points mastered, areas needing improvement, and suggestions for the next stage.</value>
+  </data>
+  <data name="Master_StageSummarySystem" xml:space="preserve">
+    <value>You are a learning assessment expert. Please summarize learning outcomes concisely and objectively.</value>
+  </data>
+  <data name="Master_StageCorrectionsPrompt" xml:space="preserve">
+    <value>Please identify 2-3 key issues that need correction in the apprentice "{0}" stage learning (within 100 characters). If none, reply None.</value>
+  </data>
+  <data name="Master_StageCorrectionsSystem" xml:space="preserve">
+    <value>You are a strict learning supervisor. Only point out the most critical corrections.</value>
+  </data>
+  <data name="Master_StageNoCorrections" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="Master_StageComplete" xml:space="preserve">
+    <value>Stage "{0}" completed</value>
+  </data>
+  <data name="Master_StageCompleteFailed" xml:space="preserve">
+    <value>Stage completion failed: {0}</value>
+  </data>
+  <data name="AiFunction_VaultNotConfiguredSearch" xml:space="preserve">
+    <value>No vault is currently configured. Cannot search.</value>
+  </data>
+  <data name="AiFunction_SearchNoResults" xml:space="preserve">
+    <value>No relevant content found in the knowledge base.</value>
+  </data>
+  <data name="AiFunction_SearchResults" xml:space="preserve">
+    <value>Found {0} related notes in the knowledge base (showing first 5):
+
+</value>
+  </data>
+  <data name="AiFunction_SearchFailed" xml:space="preserve">
+    <value>Search failed: {0}</value>
+  </data>
+  <data name="AiFunction_CurrentTime" xml:space="preserve">
+    <value>Current time: {0}</value>
+  </data>
+  <data name="AiFunction_NoVaultsConfigured" xml:space="preserve">
+    <value>No vaults are currently configured.</value>
+  </data>
+  <data name="AiFunction_VaultsList" xml:space="preserve">
+    <value>Configured vaults:
+</value>
+  </data>
+  <data name="AiFunction_VaultNotConfiguredSave" xml:space="preserve">
+    <value>No vault is currently configured. Cannot save note. Please configure a vault first.</value>
+  </data>
+  <data name="AiFunction_ContentEmpty" xml:space="preserve">
+    <value>Title and content cannot be empty.</value>
+  </data>
+  <data name="AiFunction_NoteSourceInfo" xml:space="preserve">
+    <value>&gt; 📌 **Source**: AI Generated  
+</value>
+  </data>
+  <data name="AiFunction_NoteTimeInfo" xml:space="preserve">
+    <value>&gt; ⏰ **Time**: {0}  
+
+</value>
+  </data>
+  <data name="AiFunction_NoteSaved" xml:space="preserve">
+    <value>Note "{0}" has been saved to vault [{1}].</value>
+  </data>
+  <data name="AiFunction_SaveNoteFailed" xml:space="preserve">
+    <value>Failed to save note: {0}</value>
+  </data>
+  <data name="AiFunction_StatusHealthy" xml:space="preserve">
+    <value>System is running normally</value>
+  </data>
+  <data name="AiFunction_StatusWarning" xml:space="preserve">
+    <value>System has warnings that need attention</value>
+  </data>
+  <data name="AiFunction_StatusCritical" xml:space="preserve">
+    <value>System has critical issues that need attention</value>
+  </data>
+  <data name="AiFunction_StatusUnknown" xml:space="preserve">
+    <value>System status unknown</value>
+  </data>
+  <data name="AiFunction_StatusWithScore" xml:space="preserve">
+    <value>{0} (Health Score: {1}/100)
+
+</value>
+  </data>
+  <data name="AiFunction_GetStatusFailed" xml:space="preserve">
+    <value>Failed to retrieve system status: {0}</value>
+  </data>
+  <data name="AiFunction_SearchVaultDesc" xml:space="preserve">
+    <value>Search the knowledge base for relevant notes. Use when the user asks about notes or knowledge base content.</value>
+  </data>
+  <data name="AiFunction_GetCurrentDateDesc" xml:space="preserve">
+    <value>Get the current date and time. Use when the user asks about time or date.</value>
+  </data>
+  <data name="AiFunction_ListVaultsDesc" xml:space="preserve">
+    <value>List all configured knowledge vaults. Use when the user asks about vault configuration.</value>
+  </data>
+  <data name="AiFunction_CreateNoteDesc" xml:space="preserve">
+    <value>Create a note and save it to the knowledge vault. Use when the user asks to save, record, or create notes.</value>
+  </data>
+  <data name="AiFunction_GetSystemStatusDesc" xml:space="preserve">
+    <value>Get system health status including Git, Obsidian, Ollama, Python, Node, API Keys, vault paths. Use when the user asks about system status or issues.</value>
+  </data>
+  <data name="Mcp_QueryAi" xml:space="preserve">
+    <value>Directly query the AI model and return results. Supports specifying a model, otherwise uses the default model.</value>
+  </data>
+  <data name="Mcp_QueryParam" xml:space="preserve">
+    <value>Query content</value>
+  </data>
+  <data name="Mcp_ModelParam" xml:space="preserve">
+    <value>AI model to use, e.g. ollama/biancang:latest, Qwen/Qwen2.5-14B-Instruct. Leave empty to use the default model.</value>
+  </data>
+  <data name="Mcp_SystemPromptParam" xml:space="preserve">
+    <value>Optional system prompt to override the default assistant role</value>
+  </data>
+  <data name="Mcp_CreateAiQueryTask" xml:space="preserve">
+    <value>Create an async AI query background task, returns taskId for polling. Suitable for long-running queries.</value>
+  </data>
+  <data name="Mcp_ModelParamOptional" xml:space="preserve">
+    <value>AI model to use, leave empty for default</value>
+  </data>
+  <data name="Mcp_SaveToVaultParam" xml:space="preserve">
+    <value>Whether to save the result to the knowledge base</value>
+  </data>
+  <data name="Mcp_VaultIdParam" xml:space="preserve">
+    <value>Target vault ID (required when save_to_vault is true)</value>
+  </data>
+  <data name="Mcp_CreateOpenClawTask" xml:space="preserve">
+    <value>Run an AI task via OpenClaw agent. Suitable for complex knowledge analysis tasks.</value>
+  </data>
+  <data name="Mcp_OpenClawPromptParam" xml:space="preserve">
+    <value>OpenClaw task prompt</value>
+  </data>
+  <data name="Mcp_GetTaskStatus" xml:space="preserve">
+    <value>Get the current status and results of a background task (ai_query, split_atom_notes, openclaw, etc.).</value>
+  </data>
+  <data name="Mcp_TaskIdParam" xml:space="preserve">
+    <value>Task ID</value>
+  </data>
+  <data name="Mcp_ListTasks" xml:space="preserve">
+    <value>List recent background tasks, including AI queries, note splitting, OpenClaw tasks, etc.</value>
+  </data>
+  <data name="Mcp_LimitParam" xml:space="preserve">
+    <value>Maximum number of results</value>
+  </data>
+  <data name="Mcp_StatusFilterParam" xml:space="preserve">
+    <value>Filter by status: Pending, Running, Success, Failed, Timeout</value>
+  </data>
+  <data name="Mcp_GetSystemHealth" xml:space="preserve">
+    <value>Get the TaskRunner system health report, including Git, Obsidian, Ollama, Python, Node.js, API Key, Vault, and other component status.</value>
+  </data>
+  <data name="Mcp_ListLocalAiModels" xml:space="preserve">
+    <value>Scan and list available models on local AI services (Ollama, LM Studio, llama.cpp).</value>
+  </data>
+  <data name="Mcp_ProviderParam" xml:space="preserve">
+    <value>Specify provider: ollama, lmstudio, llamacpp. Leave empty to scan all configured providers.</value>
+  </data>
+  <data name="Mcp_ListOpenClawTasks" xml:space="preserve">
+    <value>List OpenClaw task history.</value>
+  </data>
+  <data name="Mcp_GetOpenClawTaskReport" xml:space="preserve">
+    <value>Get the full report content of a specified OpenClaw task.</value>
+  </data>
+  <data name="Mcp_OpenClawTaskIdParam" xml:space="preserve">
+    <value>OpenClaw task database ID (not TaskId string)</value>
+  </data>
+  <data name="Mcp_ListVaults" xml:space="preserve">
+    <value>List all configured vaults.</value>
+  </data>
+  <data name="Mcp_ReadVaultNote" xml:space="preserve">
+    <value>Read the specified note content from a vault.</value>
+  </data>
+  <data name="Mcp_NotePathParam" xml:space="preserve">
+    <value>Note path (without .md suffix), e.g. symptoms/headache</value>
+  </data>
+  <data name="Mcp_SearchVault" xml:space="preserve">
+    <value>Search the knowledge base for keywords and return matching notes.</value>
+  </data>
+  <data name="Mcp_SearchQueryParam" xml:space="preserve">
+    <value>Search keywords</value>
+  </data>
+  <data name="Mcp_MissingArgs" xml:space="preserve">
+    <value>Missing arguments</value>
+  </data>
+  <data name="Mcp_QueryRequired" xml:space="preserve">
+    <value>query cannot be empty</value>
+  </data>
+  <data name="Mcp_NoAiProvider" xml:space="preserve">
+    <value>No available AI provider found</value>
+  </data>
+  <data name="Mcp_DefaultSystemPrompt" xml:space="preserve">
+    <value>You are a knowledgeable assistant.</value>
+  </data>
+  <data name="Mcp_AiResponseEmpty" xml:space="preserve">
+    <value>(AI returned empty content)</value>
+  </data>
+  <data name="Mcp_AiQueryFailed" xml:space="preserve">
+    <value>AI query failed: {0}</value>
+  </data>
+  <data name="Mcp_AiQueryTaskCreated" xml:space="preserve">
+    <value>AI query task created, taskId: {0}
+Note: Task created but not auto-executed. Trigger execution via WebUI, or contact developer for MCP auto-execution support.</value>
+  </data>
+  <data name="Mcp_PromptRequired" xml:space="preserve">
+    <value>prompt cannot be empty</value>
+  </data>
+  <data name="Mcp_OpenClawTaskCreated" xml:space="preserve">
+    <value>OpenClaw task created
+Task ID: {0}
+Database ID: {1}
+Status: {2}
+Created at: {3}</value>
+  </data>
+  <data name="Mcp_CreateOpenClawTaskFailed" xml:space="preserve">
+    <value>Failed to create OpenClaw task: {0}</value>
+  </data>
+  <data name="Mcp_TaskIdRequired" xml:space="preserve">
+    <value>task_id cannot be empty</value>
+  </data>
+  <data name="Mcp_TaskNotFound" xml:space="preserve">
+    <value>Task not found: {0}</value>
+  </data>
+  <data name="Mcp_VaultIdRequired" xml:space="preserve">
+    <value>vault_id cannot be empty</value>
+  </data>
+  <data name="Mcp_PathRequired" xml:space="preserve">
+    <value>path cannot be empty</value>
+  </data>
+  <data name="Mcp_VaultNotFound" xml:space="preserve">
+    <value>Vault not found: {0}</value>
+  </data>
+  <data name="Mcp_VaultPathInvalid" xml:space="preserve">
+    <value>Invalid vault path: {0}</value>
+  </data>
+  <data name="Mcp_NoteNotFound" xml:space="preserve">
+    <value>Note not found: {0}</value>
+  </data>
+  <data name="Mcp_ReadNoteFailed" xml:space="preserve">
+    <value>Failed to read note: {0}</value>
+  </data>
+  <data name="Mcp_SearchFailed" xml:space="preserve">
+    <value>Search failed: {0}</value>
+  </data>
+  <data name="Mcp_HealthCheckFailed" xml:space="preserve">
+    <value>Health check failed: {0}</value>
+  </data>
+  <data name="Mcp_ListOpenClawTasksFailed" xml:space="preserve">
+    <value>Failed to get OpenClaw task list: {0}</value>
+  </data>
+  <data name="Mcp_TaskIdPositive" xml:space="preserve">
+    <value>task_id must be a positive integer</value>
+  </data>
+  <data name="Mcp_ReportNotFound" xml:space="preserve">
+    <value>Report does not exist or has not been generated yet</value>
+  </data>
+  <data name="Mcp_GetReportFailed" xml:space="preserve">
+    <value>Failed to get report: {0}</value>
+  </data>
+  <data name="Mcp_UnknownTool" xml:space="preserve">
+    <value>Unknown tool: {0}</value>
+  </data>
+  <data name="Mcp_ToolCallFailed" xml:space="preserve">
+    <value>Tool call failed: {0}</value>
+  </data>
+  <data name="Mcp_DiagnoseSymptoms" xml:space="preserve">
+    <value>Symptom diagnosis: syndrome differentiation analysis based on symptom description</value>
+  </data>
+  <data name="Mcp_SymptomsParam" xml:space="preserve">
+    <value>Patient symptom description</value>
+  </data>
+  <data name="Mcp_DurationParam" xml:space="preserve">
+    <value>Symptom duration</value>
+  </data>
+  <data name="Mcp_AnalyzeFormula" xml:space="preserve">
+    <value>Formula analysis: analyze composition, efficacy, indications, and mechanism of classical formulas</value>
+  </data>
+  <data name="Mcp_FormulaParam" xml:space="preserve">
+    <value>Formula name, e.g. Guizhi Decoction, Mahuang Decoction</value>
+  </data>
+  <data name="Mcp_StudyClassic" xml:space="preserve">
+    <value>Classic study: interpret passages from Shanghai Lun and Jingui Yaolue</value>
+  </data>
+  <data name="Mcp_ClassicTextParam" xml:space="preserve">
+    <value>Classic passage content</value>
+  </data>
+  <data name="Mcp_SourceParam" xml:space="preserve">
+    <value>Source, e.g. Shanghai Lun, Jingui Yaolue</value>
+  </data>
+  <data name="Mcp_CaseAnalysis" xml:space="preserve">
+    <value>Case analysis: analyze the diagnostic reasoning, prescription, and efficacy of medical cases</value>
+  </data>
+  <data name="Mcp_CaseTextParam" xml:space="preserve">
+    <value>Medical case content</value>
+  </data>
+  <data name="Mcp_DiagnoseSymptomsTitle" xml:space="preserve">
+    <value>Symptom Diagnosis</value>
+  </data>
+  <data name="Mcp_DiagnoseSymptomsSystemPrompt" xml:space="preserve">
+    <value>You are a knowledgeable classic formula expert. Please perform six-meridian syndrome differentiation based on the patient's symptoms, analyze the pathogenesis, suggest treatment principles, and recommend possible classical formulas. Reference original texts in your analysis.</value>
+  </data>
+  <data name="Mcp_PatientSymptoms" xml:space="preserve">
+    <value>Patient symptoms: {0}</value>
+  </data>
+  <data name="Mcp_PatientSymptomsWithDuration" xml:space="preserve">
+    <value>Patient symptoms: {0}
+Duration: {1}</value>
+  </data>
+  <data name="Mcp_AnalyzeFormulaTitle" xml:space="preserve">
+    <value>Formula Analysis</value>
+  </data>
+  <data name="Mcp_AnalyzeFormulaSystemPrompt" xml:space="preserve">
+    <value>You are a knowledgeable classic formula expert. Please analyze the following formula in detail: its composition, synergistic relationships, efficacy, indications, and explain its origin and formula interpretation in Shanghai Lun or Jingui Yaolue.</value>
+  </data>
+  <data name="Mcp_AnalyzeFormulaRequest" xml:space="preserve">
+    <value>Please analyze the formula: {0}</value>
+  </data>
+  <data name="Mcp_StudyClassicTitle" xml:space="preserve">
+    <value>Classic Study</value>
+  </data>
+  <data name="Mcp_StudyClassicSystemPrompt" xml:space="preserve">
+    <value>You are a classic research expert. Please interpret the following classic passages, including word explanations, pathogenesis analysis, clinical significance, and related formula-syndrome correspondences.</value>
+  </data>
+  <data name="Mcp_StudyClassicRequest" xml:space="preserve">
+    <value>Please interpret the following passage:
+{0}</value>
+  </data>
+  <data name="Mcp_StudyClassicRequestWithSource" xml:space="preserve">
+    <value>Please interpret the passage from "{0}":
+{1}</value>
+  </data>
+  <data name="Mcp_CaseAnalysisTitle" xml:space="preserve">
+    <value>Case Analysis</value>
+  </data>
+  <data name="Mcp_CaseAnalysisSystemPrompt" xml:space="preserve">
+    <value>You are an experienced clinical physician. Please analyze the following medical case, outlining the diagnostic reasoning, prescription rationale, and evaluate efficacy. Point out any areas for improvement.</value>
+  </data>
+  <data name="Mcp_CaseAnalysisRequest" xml:space="preserve">
+    <value>Please analyze the following medical case:
+{0}</value>
+  </data>
+  <data name="Mcp_UnknownPrompt" xml:space="preserve">
+    <value>Unknown prompt: {0}</value>
+  </data>
+  <data name="Mcp_ResourceNoteDesc" xml:space="preserve">
+    <value>Note in vault '{0}'</value>
+  </data>
+  <data name="Mcp_UnsupportedUri" xml:space="preserve">
+    <value>Unsupported resource URI: {0}</value>
+  </data>
+  <data name="Mcp_InvalidUri" xml:space="preserve">
+    <value>Invalid URI: {0}</value>
+  </data>
+  <data name="Mcp_InvalidPath" xml:space="preserve">
+    <value>Illegal path</value>
+  </data>
+  <data name="Mcp_ResourceNotFound" xml:space="preserve">
+    <value>Resource not found: {0}</value>
+  </data>
+  <data name="Master_EvictStageLabel" xml:space="preserve">
+    <value>Stage:</value>
+  </data>
+  <data name="Master_EvictSummaryLabel" xml:space="preserve">
+    <value>Summary:</value>
+  </data>
 </root>

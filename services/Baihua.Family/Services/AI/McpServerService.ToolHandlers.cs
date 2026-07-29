@@ -15,9 +15,9 @@ public partial class McpServerService
 
     private async Task<McpToolCallResult> HandleQueryAiAsync(JsonElement? args, CancellationToken ct)
     {
-        if (args == null) return ErrorResult("缺少参数");
+        if (args == null) return ErrorResult(_loc["Mcp_MissingArgs"]);
         var query = GetString(args.Value, "query");
-        if (string.IsNullOrWhiteSpace(query)) return ErrorResult("query 不能为空");
+        if (string.IsNullOrWhiteSpace(query)) return ErrorResult(_loc["Mcp_QueryRequired"]);
 
         var model = GetString(args.Value, "model");
         var systemPrompt = GetString(args.Value, "system_prompt");
@@ -73,7 +73,7 @@ public partial class McpServerService
             if (provider is null)
             {
                 provider = providers.FirstOrDefault(p => p.IsMain) ?? providers.FirstOrDefault()
-                    ?? throw new Exception("未找到可用的 AI 提供商");
+                    ?? throw new Exception(_loc["Mcp_NoAiProvider"]);
             }
 
             if (string.IsNullOrWhiteSpace(modelName))
@@ -87,7 +87,7 @@ public partial class McpServerService
             var messages = new List<ChatMessage>
             {
                 new(ChatRole.System, string.IsNullOrWhiteSpace(systemPrompt)
-                    ? "你是一位知识库专家助手。"
+                    ? _loc["Mcp_DefaultSystemPrompt"]
                     : systemPrompt),
                 new(ChatRole.User, query)
             };
@@ -96,20 +96,20 @@ public partial class McpServerService
             var response = await _aiClientService.GetChatResponseWithAutoStartAsync(
                 provider, modelName, messages, options, ct);
 
-            var content = response.Text ?? "（AI 返回空内容）";
+            var content = response.Text ?? _loc["Mcp_AiResponseEmpty"];
             return TextResult(content);
         }
         catch (Exception ex)
         {
-            return ErrorResult($"AI 查询失败: {ex.Message}");
+            return ErrorResult(string.Format(_loc["Mcp_AiQueryFailed"], ex.Message));
         }
     }
 
     private Task<McpToolCallResult> HandleCreateAiQueryTaskAsync(JsonElement? args, CancellationToken ct)
     {
-        if (args == null) return Task.FromResult(ErrorResult("缺少参数"));
+        if (args == null) return Task.FromResult(ErrorResult(_loc["Mcp_MissingArgs"]));
         var query = GetString(args.Value, "query");
-        if (string.IsNullOrWhiteSpace(query)) return Task.FromResult(ErrorResult("query 不能为空"));
+        if (string.IsNullOrWhiteSpace(query)) return Task.FromResult(ErrorResult(_loc["Mcp_QueryRequired"]));
 
         var model = GetString(args.Value, "model");
         var saveToVault = GetBool(args.Value, "save_to_vault", false);
@@ -126,34 +126,34 @@ public partial class McpServerService
         // Note: 实际执行需要 TasksController 中相同的逻辑。MCP 只负责创建任务。
         // 如果需要立即执行，这里需要注入更多依赖并复制 TasksController 的执行逻辑。
         // 为简化，MCP 仅创建任务，用户用 get_task_status 查询。
-        return Task.FromResult(TextResult($"AI 查询任务已创建，taskId: {taskId}\n注意：任务已创建但未自动执行。请通过 WebUI 触发执行，或联系开发者支持 MCP 自动执行。"));
+        return Task.FromResult(TextResult(string.Format(_loc["Mcp_AiQueryTaskCreated"], taskId)));
     }
 
     private async Task<McpToolCallResult> HandleCreateOpenClawTaskAsync(JsonElement? args, CancellationToken ct)
     {
-        if (args == null) return ErrorResult("缺少参数");
+        if (args == null) return ErrorResult(_loc["Mcp_MissingArgs"]);
         var prompt = GetString(args.Value, "prompt");
-        if (string.IsNullOrWhiteSpace(prompt)) return ErrorResult("prompt 不能为空");
+        if (string.IsNullOrWhiteSpace(prompt)) return ErrorResult(_loc["Mcp_PromptRequired"]);
 
         try
         {
             var task = await _openClawTaskService.CreateTaskAsync(prompt.Trim());
-            return TextResult($"OpenClaw 任务已创建\nTask ID: {task.TaskId}\n数据库 ID: {task.Id}\nStatus: {task.Status}\n创建时间: {task.CreatedAt:yyyy-MM-dd HH:mm:ss}");
+            return TextResult(string.Format(_loc["Mcp_OpenClawTaskCreated"], task.TaskId, task.Id, task.Status, task.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")));
         }
         catch (Exception ex)
         {
-            return ErrorResult($"创建 OpenClaw 任务失败: {ex.Message}");
+            return ErrorResult(string.Format(_loc["Mcp_CreateOpenClawTaskFailed"], ex.Message));
         }
     }
 
     private Task<McpToolCallResult> HandleGetTaskStatusAsync(JsonElement? args, CancellationToken ct)
     {
-        if (args == null) return Task.FromResult(ErrorResult("缺少参数"));
+        if (args == null) return Task.FromResult(ErrorResult(_loc["Mcp_MissingArgs"]));
         var taskId = GetString(args.Value, "task_id");
-        if (string.IsNullOrWhiteSpace(taskId)) return Task.FromResult(ErrorResult("task_id 不能为空"));
+        if (string.IsNullOrWhiteSpace(taskId)) return Task.FromResult(ErrorResult(_loc["Mcp_TaskIdRequired"]));
 
         var task = _taskManager.GetTask(taskId);
-        if (task == null) return Task.FromResult(ErrorResult($"任务不存在: {taskId}"));
+        if (task == null) return Task.FromResult(ErrorResult(string.Format(_loc["Mcp_TaskNotFound"], taskId)));
 
         var result = new JsonObject
         {
@@ -253,7 +253,7 @@ public partial class McpServerService
         }
         catch (Exception ex)
         {
-            return ErrorResult($"健康检查失败: {ex.Message}");
+            return ErrorResult(string.Format(_loc["Mcp_HealthCheckFailed"], ex.Message));
         }
     }
 
@@ -317,25 +317,25 @@ public partial class McpServerService
         }
         catch (Exception ex)
         {
-            return ErrorResult($"获取 OpenClaw 任务列表失败: {ex.Message}");
+            return ErrorResult(string.Format(_loc["Mcp_ListOpenClawTasksFailed"], ex.Message));
         }
     }
 
     private async Task<McpToolCallResult> HandleGetOpenClawTaskReportAsync(JsonElement? args, CancellationToken ct)
     {
-        if (args == null) return ErrorResult("缺少参数");
+        if (args == null) return ErrorResult(_loc["Mcp_MissingArgs"]);
         var taskId = GetInt(args.Value, "task_id", 0);
-        if (taskId <= 0) return ErrorResult("task_id 必须是正整数");
+        if (taskId <= 0) return ErrorResult(_loc["Mcp_TaskIdPositive"]);
 
         try
         {
             var report = await _openClawTaskService.GetReportContentAsync(taskId);
-            if (report == null) return ErrorResult("报告不存在或尚未生成");
+            if (report == null) return ErrorResult(_loc["Mcp_ReportNotFound"]);
             return TextResult(report);
         }
         catch (Exception ex)
         {
-            return ErrorResult($"获取报告失败: {ex.Message}");
+            return ErrorResult(string.Format(_loc["Mcp_GetReportFailed"], ex.Message));
         }
     }
 
@@ -355,16 +355,16 @@ public partial class McpServerService
 
     private Task<McpToolCallResult> HandleReadVaultNoteAsync(JsonElement? args, CancellationToken ct)
     {
-        if (args == null) return Task.FromResult(ErrorResult("缺少参数"));
+        if (args == null) return Task.FromResult(ErrorResult(_loc["Mcp_MissingArgs"]));
         var vaultId = GetString(args.Value, "vault_id");
         var path = GetString(args.Value, "path");
-        if (string.IsNullOrWhiteSpace(vaultId)) return Task.FromResult(ErrorResult("vault_id 不能为空"));
-        if (string.IsNullOrWhiteSpace(path)) return Task.FromResult(ErrorResult("path 不能为空"));
+        if (string.IsNullOrWhiteSpace(vaultId)) return Task.FromResult(ErrorResult(_loc["Mcp_VaultIdRequired"]));
+        if (string.IsNullOrWhiteSpace(path)) return Task.FromResult(ErrorResult(_loc["Mcp_PathRequired"]));
 
         var vault = _vaultSettings.GetVaults().FirstOrDefault(v => v.Id == vaultId);
-        if (vault == null) return Task.FromResult(ErrorResult($"知识库不存在: {vaultId}"));
+        if (vault == null) return Task.FromResult(ErrorResult(string.Format(_loc["Mcp_VaultNotFound"], vaultId)));
         if (string.IsNullOrWhiteSpace(vault.Path) || !Directory.Exists(vault.Path))
-            return Task.FromResult(ErrorResult($"知识库路径无效: {vault.Path}"));
+            return Task.FromResult(ErrorResult(string.Format(_loc["Mcp_VaultPathInvalid"], vault.Path)));
 
         try
         {
@@ -378,30 +378,30 @@ public partial class McpServerService
             var filePath = Path.Combine(notesPath, cleanPath + ".md");
 
             if (!File.Exists(filePath))
-                return Task.FromResult(ErrorResult($"笔记不存在: {path}"));
+                return Task.FromResult(ErrorResult(string.Format(_loc["Mcp_NoteNotFound"], path)));
 
             var content = File.ReadAllText(filePath);
             return Task.FromResult(TextResult(content));
         }
         catch (Exception ex)
         {
-            return Task.FromResult(ErrorResult($"读取笔记失败: {ex.Message}"));
+            return Task.FromResult(ErrorResult(string.Format(_loc["Mcp_ReadNoteFailed"], ex.Message)));
         }
     }
 
     private Task<McpToolCallResult> HandleSearchVaultAsync(JsonElement? args, CancellationToken ct)
     {
-        if (args == null) return Task.FromResult(ErrorResult("缺少参数"));
+        if (args == null) return Task.FromResult(ErrorResult(_loc["Mcp_MissingArgs"]));
         var vaultId = GetString(args.Value, "vault_id");
         var query = GetString(args.Value, "query");
         var limit = GetInt(args, "limit", 20);
-        if (string.IsNullOrWhiteSpace(vaultId)) return Task.FromResult(ErrorResult("vault_id 不能为空"));
-        if (string.IsNullOrWhiteSpace(query)) return Task.FromResult(ErrorResult("query 不能为空"));
+        if (string.IsNullOrWhiteSpace(vaultId)) return Task.FromResult(ErrorResult(_loc["Mcp_VaultIdRequired"]));
+        if (string.IsNullOrWhiteSpace(query)) return Task.FromResult(ErrorResult(_loc["Mcp_QueryRequired"]));
 
         var vault = _vaultSettings.GetVaults().FirstOrDefault(v => v.Id == vaultId);
-        if (vault == null) return Task.FromResult(ErrorResult($"知识库不存在: {vaultId}"));
+        if (vault == null) return Task.FromResult(ErrorResult(string.Format(_loc["Mcp_VaultNotFound"], vaultId)));
         if (string.IsNullOrWhiteSpace(vault.Path) || !Directory.Exists(vault.Path))
-            return Task.FromResult(ErrorResult($"知识库路径无效: {vault.Path}"));
+            return Task.FromResult(ErrorResult(string.Format(_loc["Mcp_VaultPathInvalid"], vault.Path)));
 
         try
         {
@@ -459,7 +459,7 @@ public partial class McpServerService
         }
         catch (Exception ex)
         {
-            return Task.FromResult(ErrorResult($"搜索失败: {ex.Message}"));
+            return Task.FromResult(ErrorResult(string.Format(_loc["Mcp_SearchFailed"], ex.Message)));
         }
     }
 

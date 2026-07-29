@@ -1,9 +1,11 @@
 using Baihua.Core;
+using Baihua.Core.Localization;
 using Baihua.Family.Services;
 using System.Text.Json;
 using Baihua.Family.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Localization;
 using Baihua.Family.Models;
 using Baihua.Contracts.Scene;
 using Baihua.Contracts.Tasks;
@@ -18,15 +20,15 @@ namespace Baihua.Family.Controllers
             var task = _taskManager.GetTask(taskId);
             if (task == null)
             {
-                return NotFound(new { error = "任务不存在" });
+                return NotFound(new { error = _loc["Task_NotFound"] });
             }
             if (task.Status != RunnerTaskStatus.Timeout && task.Status != RunnerTaskStatus.Failed && task.Status != RunnerTaskStatus.Cancelled)
             {
-                return BadRequest(new { error = "只能重试失败、超时或已取消的任务" });
+                return BadRequest(new { error = _loc["Task_RetryOnly"] });
             }
             if (task.Type != "ai_query" && task.Type != "ai_vault_generation" && task.Type != "anki_generate_ai")
             {
-                return BadRequest(new { error = "目前仅支持重试 AI 查询、知识库生成或记忆卡片生成任务" });
+                return BadRequest(new { error = _loc["Task_RetryTypeNotSupported"] });
             }
 
             // 从原任务参数中提取信息
@@ -49,7 +51,7 @@ namespace Baihua.Family.Controllers
 
             if (string.IsNullOrWhiteSpace(query))
             {
-                return BadRequest(new { error = "原任务缺少查询内容" });
+                return BadRequest(new { error = _loc["Task_RetryQueryMissing"] });
             }
 
             string modelName;
@@ -72,7 +74,7 @@ namespace Baihua.Family.Controllers
             if (saveToVault && retryVault == null)
             {
                 _logger.LogWarning("[RetryDebug] 重试任务失败：原知识库已不存在，vaultId={VaultId}", vaultId);
-                return BadRequest(new { error = "原任务对应的知识库已不存在，无法重试保存到知识库。请从AI生成页新建任务。" });
+                return BadRequest(new { error = _loc["Task_RetryVaultMissing"] });
             }
             
             var retryParameters = new Dictionary<string, string>
@@ -104,11 +106,11 @@ namespace Baihua.Family.Controllers
                 try
                 {
                     await _taskManager.UpdateStatus(newTaskId, RunnerTaskStatus.Running);
-                    await _taskManager.UpdateProgress(newTaskId, 1, 3, "准备调用 AI（重试）...");
+                    await _taskManager.UpdateProgress(newTaskId, 1, 3, _loc["Task_Progress_RetryPreparing"]);
 
                     var stopwatch = System.Diagnostics.Stopwatch.StartNew();
                     var requestTime = DateTime.Now;
-                    await _taskManager.UpdateProgress(newTaskId, 2, 3, $"调用 AI 模型：{modelName}（超时 {timeoutMinutes} 分钟）...");
+                    await _taskManager.UpdateProgress(newTaskId, 2, 3, _loc["Task_Progress_RetryCallingModel", modelName, timeoutMinutes]);
                     var aiResult = await CallAiApiAsync(query, modelName, cts.Token, scene: retryScene, industry: industry);
                     stopwatch.Stop();
 
@@ -128,7 +130,7 @@ namespace Baihua.Family.Controllers
                         var vaultPath = retryVault?.Path;
                         if (string.IsNullOrEmpty(vaultPath))
                         {
-                            await _taskManager.UpdateStatus(newTaskId, RunnerTaskStatus.Failed, "必须指定有效的知识库");
+                            await _taskManager.UpdateStatus(newTaskId, RunnerTaskStatus.Failed, _loc["Vault_Required"]);
                             return;
                         }
 
@@ -172,7 +174,7 @@ namespace Baihua.Family.Controllers
                             }
                         }
 
-                        await _taskManager.UpdateProgress(newTaskId, 3, 3, "任务完成");
+                        await _taskManager.UpdateProgress(newTaskId, 3, 3, _loc["Task_Progress_Done"]);
                     await _taskManager.UpdateStatus(newTaskId, RunnerTaskStatus.Success, data: new
                     {
                         notes = new[] { new { title = title, path = notePath ?? "" } },
@@ -204,7 +206,7 @@ namespace Baihua.Family.Controllers
                     {
                         _logger.LogWarning("AI 重试任务超时：{TaskId}", newTaskId);
                         await _taskManager.UpdateStatus(newTaskId, RunnerTaskStatus.Timeout,
-                            $"AI 调用超时（{timeoutMinutes} 分钟）| 模型: {modelName}");
+                            _loc["Task_RetryTimeout", timeoutMinutes, modelName]);
                     }
                 }
                 catch (ArgumentOutOfRangeException ex) when (ex.Message.Contains("index"))
@@ -212,7 +214,7 @@ namespace Baihua.Family.Controllers
                     // OpenAI SDK 在解析阿里云内容审核响应时（choices为空）会崩溃
                     _logger.LogWarning(ex, "AI 重试任务触发内容审核：{TaskId}", newTaskId);
                     await _taskManager.UpdateStatus(newTaskId, RunnerTaskStatus.Failed,
-                        "AI 内容审核未通过：输入内容可能包含敏感信息，请修改后重试。");
+                        _loc["Task_ContentReviewFailed"]);
                 }
                 catch (Exception ex)
                 {
@@ -228,7 +230,7 @@ namespace Baihua.Family.Controllers
             return Ok(new AiTaskResponse
             {
                 Success = true,
-                Message = "重试任务已创建",
+                Message = _loc["Task_RetryCreated"],
                 TaskId = newTaskId
             });
         }
@@ -238,7 +240,7 @@ namespace Baihua.Family.Controllers
             var vaultId = task.Parameters?.GetValueOrDefault("vaultId") ?? "";
             if (string.IsNullOrWhiteSpace(vaultId))
             {
-                return BadRequest(new AiTaskResponse { Success = false, Message = "原任务缺少知识库 ID" });
+                return BadRequest(new AiTaskResponse { Success = false, Message = _loc["Task_RetryAnkiVaultIdMissing"] });
             }
 
             var newTaskId = _taskManager.CreateTask("anki_generate_ai", task.Parameters);
@@ -247,12 +249,12 @@ namespace Baihua.Family.Controllers
                 try
                 {
                     await _taskManager.UpdateStatus(newTaskId, RunnerTaskStatus.Running);
-                    await _taskManager.UpdateProgress(newTaskId, 0, 100, "开始使用 AI 生成记忆卡片（重试）...");
+                    await _taskManager.UpdateProgress(newTaskId, 0, 100, _loc["Task_Progress_RetryCardGen"]);
 
                     var vault = _vaultSettings.GetVaults().FirstOrDefault(v => v.Id == vaultId);
                     if (vault == null)
                     {
-                        await _taskManager.UpdateStatus(newTaskId, RunnerTaskStatus.Failed, error: "知识库不存在");
+                        await _taskManager.UpdateStatus(newTaskId, RunnerTaskStatus.Failed, error: _loc["Vault_NotFound"]);
                         return;
                     }
 
@@ -272,7 +274,7 @@ namespace Baihua.Family.Controllers
                 }
             });
 
-            return Ok(new AiTaskResponse { Success = true, Message = "AI 卡片生成重试任务已创建", TaskId = newTaskId });
+            return Ok(new AiTaskResponse { Success = true, Message = _loc["Task_RetryCardCreated"], TaskId = newTaskId });
         }
 
         private async Task<ActionResult<AiTaskResponse>> HandleRetryVaultGenerationTaskAsync(Baihua.Core.TaskInfo task, RetryAiTaskRequest? retryRequest)
@@ -283,7 +285,7 @@ namespace Baihua.Family.Controllers
 
             if (string.IsNullOrWhiteSpace(industry) || string.IsNullOrWhiteSpace(keyword))
             {
-                return BadRequest(new { error = "原任务缺少行业或关键词参数" });
+                return BadRequest(new { error = _loc["Task_RetryParamsMissing"] });
             }
 
             var request = new VaultGenerationRequest
@@ -301,7 +303,7 @@ namespace Baihua.Family.Controllers
             }
             return result.Result != null
                 ? new ActionResult<AiTaskResponse>(result.Result)
-                : new ActionResult<AiTaskResponse>(new AiTaskResponse { Success = false, Message = "重试失败" });
+                : new ActionResult<AiTaskResponse>(new AiTaskResponse { Success = false, Message = _loc["Task_RetryFailed"] });
         }
 
 

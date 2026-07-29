@@ -35,13 +35,13 @@ public partial class MasterController
         {
             if (string.IsNullOrWhiteSpace(request.Message))
             {
-                await SendSse("error", "消息不能为空");
+                await SendSse("error", _loc["Master_ChatMessageEmpty"]);
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(request.MasterId))
             {
-                await SendSse("error", "师父ID不能为空");
+                await SendSse("error", _loc["Master_IdRequired"]);
                 return;
             }
 
@@ -49,15 +49,20 @@ public partial class MasterController
             var master = await db.Masters.FirstOrDefaultAsync(m => m.MasterId == request.MasterId);
             if (master == null)
             {
-                await SendSse("error", "师父不存在");
+                await SendSse("error", _loc["Master_NotFound"]);
                 return;
             }
 
             var currentStage = string.IsNullOrEmpty(request.Stage) ? master.CurrentStage : request.Stage;
 
             var profile = await db.ApprenticeProfiles.FirstOrDefaultAsync(p => p.MasterId == request.MasterId);
+            var unknown = _loc["Master_Unknown"];
             var coreProfile = profile != null
-                ? $"基础：{profile.Foundation ?? "未知"}；学习风格：{profile.LearningStyle ?? "未知"}；优势：{profile.Strengths ?? "未知"}；薄弱：{profile.Weaknesses ?? "未知"}"
+                ? string.Format(_loc["Master_ChatProfileTemplate"],
+                    profile.Foundation ?? unknown,
+                    profile.LearningStyle ?? unknown,
+                    profile.Strengths ?? unknown,
+                    profile.Weaknesses ?? unknown)
                 : null;
 
             var stageSummaryEntity = await db.StageSummaries
@@ -146,12 +151,12 @@ public partial class MasterController
         }
         catch (OperationCanceledException)
         {
-            await SendSse("error", "AI 调用超时或已被取消");
+            await SendSse("error", _loc["Master_ChatTimeout"]);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "师父对话失败");
-            await SendSse("error", $"对话失败：{ex.Message}");
+            await SendSse("error", string.Format(_loc["Master_ChatFailed"], ex.Message));
         }
     }
 
@@ -162,14 +167,14 @@ public partial class MasterController
     public async Task<ActionResult<ConversationHistoryResponse>> GetConversations(string id, int limit = 100)
     {
         if (string.IsNullOrWhiteSpace(id))
-            return BadRequest(new ConversationHistoryResponse { Success = false, Message = "师父ID不能为空" });
+            return BadRequest(new ConversationHistoryResponse { Success = false, Message = _loc["Master_IdRequired"] });
 
         try
         {
             await using var db = await _dbFactory.CreateDbContextAsync();
             var master = await db.Masters.FirstOrDefaultAsync(m => m.MasterId == id);
             if (master == null)
-                return NotFound(new ConversationHistoryResponse { Success = false, Message = "师父不存在" });
+                return NotFound(new ConversationHistoryResponse { Success = false, Message = _loc["Master_NotFound"] });
 
             var conversations = await db.MasterConversations
                 .Where(c => c.MasterId == id)
@@ -188,14 +193,14 @@ public partial class MasterController
             return Ok(new ConversationHistoryResponse
             {
                 Success = true,
-                Message = "获取对话历史成功",
+                Message = _loc["Master_ConversationFetchSuccess"],
                 Items = conversations
             });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取对话历史失败");
-            return StatusCode(500, new ConversationHistoryResponse { Success = false, Message = $"获取失败：{ex.Message}" });
+            return StatusCode(500, new ConversationHistoryResponse { Success = false, Message = string.Format(_loc["Master_ConversationFetchFailed"], ex.Message) });
         }
     }
 
@@ -206,14 +211,14 @@ public partial class MasterController
     public async Task<ActionResult<ConversationSyncResponse>> SyncConversations(string id, [FromBody] ConversationSyncRequest request)
     {
         if (string.IsNullOrWhiteSpace(id))
-            return BadRequest(new ConversationSyncResponse { Success = false, Message = "师父ID不能为空" });
+            return BadRequest(new ConversationSyncResponse { Success = false, Message = _loc["Master_IdRequired"] });
 
         try
         {
             await using var db = await _dbFactory.CreateDbContextAsync();
             var master = await db.Masters.FirstOrDefaultAsync(m => m.MasterId == id);
             if (master == null)
-                return NotFound(new ConversationSyncResponse { Success = false, Message = "师父不存在" });
+                return NotFound(new ConversationSyncResponse { Success = false, Message = _loc["Master_NotFound"] });
 
             var syncedCount = 0;
             foreach (var item in request.Items)
@@ -236,14 +241,14 @@ public partial class MasterController
             return Ok(new ConversationSyncResponse
             {
                 Success = true,
-                Message = $"同步成功，新增 {syncedCount} 条对话",
+                Message = string.Format(_loc["Master_ConversationSyncSuccess"], syncedCount),
                 SyncedCount = syncedCount
             });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "对话同步失败");
-            return StatusCode(500, new ConversationSyncResponse { Success = false, Message = $"同步失败：{ex.Message}" });
+            return StatusCode(500, new ConversationSyncResponse { Success = false, Message = string.Format(_loc["Master_ConversationSyncFailed"], ex.Message) });
         }
     }
 }

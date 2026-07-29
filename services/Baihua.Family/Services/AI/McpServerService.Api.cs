@@ -46,7 +46,7 @@ public partial class McpServerService
     {
         if (!_handlers.TryGetValue(request.Name, out var handler))
         {
-            return ErrorResult($"未知工具: {request.Name}");
+            return ErrorResult(string.Format(_loc["Mcp_UnknownTool"], request.Name));
         }
 
         try
@@ -56,7 +56,7 @@ public partial class McpServerService
         catch (Exception ex)
         {
             _logger.LogError(ex, "MCP 工具调用失败: {ToolName}", request.Name);
-            return ErrorResult($"工具调用失败: {ex.Message}");
+            return ErrorResult(string.Format(_loc["Mcp_ToolCallFailed"], ex.Message));
         }
     }
 
@@ -69,39 +69,39 @@ public partial class McpServerService
                 new()
                 {
                     Name = "diagnose_symptoms",
-                    Description = "症状诊断：根据症状描述进行辨证分析",
+                    Description = _loc["Mcp_DiagnoseSymptoms"],
                     Arguments = new List<McpPromptArgument>
                     {
-                        new() { Name = "symptoms", Description = "患者症状描述", Required = true },
-                        new() { Name = "duration", Description = "症状持续时间", Required = false },
+                        new() { Name = "symptoms", Description = _loc["Mcp_SymptomsParam"], Required = true },
+                        new() { Name = "duration", Description = _loc["Mcp_DurationParam"], Required = false },
                     }
                 },
                 new()
                 {
                     Name = "analyze_formula",
-                    Description = "方剂分析：分析经方的组成、功效、适应症和方解",
+                    Description = _loc["Mcp_AnalyzeFormula"],
                     Arguments = new List<McpPromptArgument>
                     {
-                        new() { Name = "formula", Description = "方剂名称，如桂枝汤、麻黄汤", Required = true },
+                        new() { Name = "formula", Description = _loc["Mcp_FormulaParam"], Required = true },
                     }
                 },
                 new()
                 {
                     Name = "study_classic",
-                    Description = "经典学习：解读《伤寒论》《金匮要略》条文",
+                    Description = _loc["Mcp_StudyClassic"],
                     Arguments = new List<McpPromptArgument>
                     {
-                        new() { Name = "text", Description = "经典条文内容", Required = true },
-                        new() { Name = "source", Description = "出处，如伤寒论、金匮要略", Required = false },
+                        new() { Name = "text", Description = _loc["Mcp_ClassicTextParam"], Required = true },
+                        new() { Name = "source", Description = _loc["Mcp_SourceParam"], Required = false },
                     }
                 },
                 new()
                 {
                     Name = "case_analysis",
-                    Description = "医案分析：分析医案的辨证思路、处方用药和疗效",
+                    Description = _loc["Mcp_CaseAnalysis"],
                     Arguments = new List<McpPromptArgument>
                     {
-                        new() { Name = "case_text", Description = "医案内容", Required = true },
+                        new() { Name = "case_text", Description = _loc["Mcp_CaseTextParam"], Required = true },
                     }
                 }
             }
@@ -120,7 +120,7 @@ public partial class McpServerService
         {
             "diagnose_symptoms" => new McpPromptGetResult
             {
-                Description = "症状诊断",
+                Description = _loc["Mcp_DiagnoseSymptomsTitle"],
                 Messages = new List<McpPromptMessage>
                 {
                     new()
@@ -129,7 +129,7 @@ public partial class McpServerService
                         Content = new McpPromptMessageContent
                         {
                             Type = "text",
-                            Text = "你是一位知识库专家。请根据患者症状进行六经辨证，分析病机、给出治法建议，并推荐可能的经方。分析时请引用原文依据。"
+                            Text = _loc["Mcp_DiagnoseSymptomsSystemPrompt"]
                         }
                     },
                     new()
@@ -139,15 +139,15 @@ public partial class McpServerService
                         {
                             Type = "text",
                             Text = string.IsNullOrWhiteSpace(duration)
-                                ? $"患者症状：{symptoms}"
-                                : $"患者症状：{symptoms}\n持续时间：{duration}"
+                                ? string.Format(_loc["Mcp_PatientSymptoms"], symptoms)
+                                : string.Format(_loc["Mcp_PatientSymptomsWithDuration"], symptoms, duration)
                         }
                     }
                 }
             },
             "analyze_formula" => new McpPromptGetResult
             {
-                Description = "方剂分析",
+                Description = _loc["Mcp_AnalyzeFormulaTitle"],
                 Messages = new List<McpPromptMessage>
                 {
                     new()
@@ -156,7 +156,7 @@ public partial class McpServerService
                         Content = new McpPromptMessageContent
                         {
                             Type = "text",
-                            Text = "你是一位知识库专家。请详细分析以下方剂的组成、配伍意义、功效主治、适用证候，并说明其在《伤寒论》或《金匮要略》中的出处和方解。"
+                            Text = _loc["Mcp_AnalyzeFormulaSystemPrompt"]
                         }
                     },
                     new()
@@ -165,14 +165,14 @@ public partial class McpServerService
                         Content = new McpPromptMessageContent
                         {
                             Type = "text",
-                            Text = $"请分析方剂：{formula}"
+                            Text = string.Format(_loc["Mcp_AnalyzeFormulaRequest"], formula)
                         }
                     }
                 }
             },
             "study_classic" => new McpPromptGetResult
             {
-                Description = "经典学习",
+                Description = _loc["Mcp_StudyClassicTitle"],
                 Messages = new List<McpPromptMessage>
                 {
                     new()
@@ -181,7 +181,7 @@ public partial class McpServerService
                         Content = new McpPromptMessageContent
                         {
                             Type = "text",
-                            Text = "你是一位经典研究专家。请解读以下经典条文，包括字词解释、病机分析、临床意义，以及相关的方证对应关系。"
+                            Text = _loc["Mcp_StudyClassicSystemPrompt"]
                         }
                     },
                     new()
@@ -191,15 +191,15 @@ public partial class McpServerService
                         {
                             Type = "text",
                             Text = string.IsNullOrWhiteSpace(source)
-                                ? $"请解读以下条文：\n{text}"
-                                : $"请解读《{source}》条文：\n{text}"
+                                ? string.Format(_loc["Mcp_StudyClassicRequest"], text)
+                                : string.Format(_loc["Mcp_StudyClassicRequestWithSource"], source, text)
                         }
                     }
                 }
             },
             "case_analysis" => new McpPromptGetResult
             {
-                Description = "医案分析",
+                Description = _loc["Mcp_CaseAnalysisTitle"],
                 Messages = new List<McpPromptMessage>
                 {
                     new()
@@ -208,7 +208,7 @@ public partial class McpServerService
                         Content = new McpPromptMessageContent
                         {
                             Type = "text",
-                            Text = "你是一位经验丰富的临床医师。请分析以下医案，梳理辨证思路、处方用药依据，并评价疗效。如有可改进之处也请指出。"
+                            Text = _loc["Mcp_CaseAnalysisSystemPrompt"]
                         }
                     },
                     new()
@@ -217,12 +217,12 @@ public partial class McpServerService
                         Content = new McpPromptMessageContent
                         {
                             Type = "text",
-                            Text = $"请分析以下医案：\n{symptoms}"
+                            Text = string.Format(_loc["Mcp_CaseAnalysisRequest"], symptoms)
                         }
                     }
                 }
             },
-            _ => throw new Exception($"未知提示词: {request.Name}")
+            _ => throw new Exception(string.Format(_loc["Mcp_UnknownPrompt"], request.Name))
         };
     }
 
@@ -251,7 +251,7 @@ public partial class McpServerService
                     {
                         Uri = uri,
                         Name = fileName,
-                        Description = $"知识库 '{vault.Name}' 中的笔记",
+                        Description = string.Format(_loc["Mcp_ResourceNoteDesc"], vault.Name),
                         MimeType = "text/markdown"
                     });
                 }
@@ -269,18 +269,18 @@ public partial class McpServerService
     {
         var uri = request.Uri;
         if (!uri.StartsWith("vault://"))
-            throw new Exception($"不支持的资源 URI: {uri}");
+            throw new Exception(string.Format(_loc["Mcp_UnsupportedUri"], uri));
 
         var parts = uri[8..].Split('/', 2);
         if (parts.Length < 2)
-            throw new Exception($"无效的 URI: {uri}");
+            throw new Exception(string.Format(_loc["Mcp_InvalidUri"], uri));
 
         var vaultId = parts[0];
         var path = parts[1];
 
         var vault = _vaultSettings.GetVaults().FirstOrDefault(v => v.Id == vaultId);
         if (vault == null || string.IsNullOrWhiteSpace(vault.Path))
-            throw new Exception($"知识库不存在: {vaultId}");
+            throw new Exception(string.Format(_loc["Mcp_VaultNotFound"], vaultId));
 
         var notesPath = Path.Combine(vault.Path, "notes");
         var filePath = Path.Combine(notesPath, path);
@@ -289,10 +289,10 @@ public partial class McpServerService
         var fullPath = Path.GetFullPath(filePath);
         var safeBase = Path.GetFullPath(notesPath);
         if (!fullPath.StartsWith(safeBase))
-            throw new Exception("非法路径");
+            throw new Exception(_loc["Mcp_InvalidPath"]);
 
         if (!File.Exists(filePath))
-            throw new Exception($"资源不存在: {path}");
+            throw new Exception(string.Format(_loc["Mcp_ResourceNotFound"], path));
 
         var content = File.ReadAllText(filePath);
         return new McpResourceReadResult

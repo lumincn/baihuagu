@@ -21,9 +21,9 @@ public partial class MasterController
     public async Task<ActionResult<CreateMasterResponse>> Create([FromBody] CreateMasterRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Goal))
-            return BadRequest(new CreateMasterResponse { Success = false, Message = "目标不能为空" });
+            return BadRequest(new CreateMasterResponse { Success = false, Message = _loc["Master_GoalRequired"] });
         if (string.IsNullOrWhiteSpace(request.Industry))
-            return BadRequest(new CreateMasterResponse { Success = false, Message = "行业不能为空" });
+            return BadRequest(new CreateMasterResponse { Success = false, Message = _loc["Master_IndustryRequired"] });
 
         try
         {
@@ -41,14 +41,14 @@ public partial class MasterController
             var messages = new List<ChatMessage>
             {
                 new(ChatRole.System, systemPrompt),
-                new(ChatRole.User, $"我想{request.Goal}，请作为我的师父，先了解一下我的情况。")
+                new(ChatRole.User, string.Format(_loc["Master_CreateGreetingTemplate"], request.Goal))
             };
 
             var options = AiClientService.BuildChatOptions(temperature: 0.7f, maxOutputTokens: 500);
             var response = await _aiClientService.GetChatResponseWithAutoStartAsync(
                 provider, model, messages, options, HttpContext.RequestAborted, operation: "master-create");
 
-            var greeting = response.Text ?? "欢迎，让我们开始你的学习之旅。";
+            var greeting = response.Text ?? _loc["Master_CreateFallbackGreeting"];
 
             await using var db = await _dbFactory.CreateDbContextAsync();
             db.Masters.Add(new Master
@@ -84,7 +84,7 @@ public partial class MasterController
         {
             _logger.LogError(ex, "创建师父失败");
             var detail = UnwrapExceptionMessage(ex);
-            return StatusCode(500, new CreateMasterResponse { Success = false, Message = $"创建师父失败：{detail}" });
+            return StatusCode(500, new CreateMasterResponse { Success = false, Message = string.Format(_loc["Master_CreateFailedDetail"], detail) });
         }
     }
 
@@ -142,12 +142,12 @@ public partial class MasterController
     public async Task<ActionResult<ApprenticeProfileResponse>> GetProfile(string id)
     {
         if (string.IsNullOrWhiteSpace(id))
-            return BadRequest(new ApprenticeProfileResponse { Success = false, Message = "师父ID不能为空" });
+            return BadRequest(new ApprenticeProfileResponse { Success = false, Message = _loc["Master_IdRequired"] });
 
         await using var db = await _dbFactory.CreateDbContextAsync();
         var master = await db.Masters.FirstOrDefaultAsync(m => m.MasterId == id);
         if (master == null)
-            return NotFound(new ApprenticeProfileResponse { Success = false, Message = "师父不存在" });
+            return NotFound(new ApprenticeProfileResponse { Success = false, Message = _loc["Master_NotFound"] });
 
         var profile = await db.ApprenticeProfiles.FirstOrDefaultAsync(p => p.MasterId == id);
         var graduated = System.Text.Json.JsonSerializer.Deserialize<List<string>>(master.GraduatedStagesJson) ?? new();
@@ -155,7 +155,7 @@ public partial class MasterController
         return Ok(new ApprenticeProfileResponse
         {
             Success = true,
-            Message = "获取画像成功",
+            Message = _loc["Master_ProfileFetchSuccess"],
             MasterId = id,
             Goal = master.Goal,
             Foundation = profile?.Foundation,
@@ -175,14 +175,14 @@ public partial class MasterController
     public async Task<ActionResult<ApprenticeProfileResponse>> UpdateProfile(string id, [FromBody] UpdateProfileRequest request)
     {
         if (string.IsNullOrWhiteSpace(id))
-            return BadRequest(new ApprenticeProfileResponse { Success = false, Message = "师父ID不能为空" });
+            return BadRequest(new ApprenticeProfileResponse { Success = false, Message = _loc["Master_IdRequired"] });
 
         try
         {
             await using var db = await _dbFactory.CreateDbContextAsync();
             var master = await db.Masters.FirstOrDefaultAsync(m => m.MasterId == id);
             if (master == null)
-                return NotFound(new ApprenticeProfileResponse { Success = false, Message = "师父不存在" });
+                return NotFound(new ApprenticeProfileResponse { Success = false, Message = _loc["Master_NotFound"] });
 
             var profile = await db.ApprenticeProfiles.FirstOrDefaultAsync(p => p.MasterId == id);
             if (profile == null)
@@ -204,7 +204,7 @@ public partial class MasterController
             return Ok(new ApprenticeProfileResponse
             {
                 Success = true,
-                Message = "画像更新成功",
+                Message = _loc["Master_ProfileUpdateSuccess"],
                 MasterId = id,
                 Goal = master.Goal,
                 Foundation = profile.Foundation,
@@ -219,7 +219,7 @@ public partial class MasterController
         catch (Exception ex)
         {
             _logger.LogError(ex, "更新画像失败");
-            return StatusCode(500, new ApprenticeProfileResponse { Success = false, Message = $"更新失败：{ex.Message}" });
+            return StatusCode(500, new ApprenticeProfileResponse { Success = false, Message = string.Format(_loc["Master_UpdateFailed"], ex.Message) });
         }
     }
 
@@ -230,28 +230,28 @@ public partial class MasterController
     public async Task<ActionResult<AssessResponse>> Assess(string id, [FromBody] AssessRequest request)
     {
         if (string.IsNullOrWhiteSpace(id))
-            return BadRequest(new AssessResponse { Success = false, Message = "师父ID不能为空" });
+            return BadRequest(new AssessResponse { Success = false, Message = _loc["Master_IdRequired"] });
 
         try
         {
             await using var db = await _dbFactory.CreateDbContextAsync();
             var master = await db.Masters.FirstOrDefaultAsync(m => m.MasterId == id);
             if (master == null)
-                return NotFound(new AssessResponse { Success = false, Message = "师父不存在" });
+                return NotFound(new AssessResponse { Success = false, Message = _loc["Master_NotFound"] });
 
             var (provider, model) = ResolveProviderAndModel(null, null);
 
             var assessPrompt = request.Type switch
             {
-                "daily" => "请出1-2道日常小测验题，评估学徒今日学习效果。",
-                "weekly" => "请出10道综合题，评估学徒本周学习成果。",
-                "stage" => "请出一份完整的阶段考核试卷，评估学徒是否可以进入下一阶段。",
-                _ => "请对学徒进行综合能力评估，给出通过概率、薄弱环节和改进建议。"
+                "daily" => _loc["Master_AssessDaily"],
+                "weekly" => _loc["Master_AssessWeekly"],
+                "stage" => _loc["Master_AssessStage"],
+                _ => _loc["Master_AssessDefault"]
             };
 
             var messages = new List<ChatMessage>
             {
-                new(ChatRole.System, "你是一位严谨的考试评估专家。请客观评估学徒能力，给出具体的通过概率、薄弱环节和改进建议。以JSON格式返回：{\"report\": \"...\", \"passProbability\": 0.75, \"weakPoints\": [...], \"advice\": \"...\"}"),
+                new(ChatRole.System, _loc["Master_AssessSystemPrompt"]),
                 new(ChatRole.User, assessPrompt)
             };
 
@@ -300,7 +300,7 @@ public partial class MasterController
             return Ok(new AssessResponse
             {
                 Success = true,
-                Message = "评估完成",
+                Message = _loc["Master_AssessComplete"],
                 Report = report,
                 PassProbability = passProbability,
                 WeakPoints = weakPoints,
@@ -310,7 +310,7 @@ public partial class MasterController
         catch (Exception ex)
         {
             _logger.LogError(ex, "能力评估失败");
-            return StatusCode(500, new AssessResponse { Success = false, Message = $"能力评估失败：{ex.Message}" });
+            return StatusCode(500, new AssessResponse { Success = false, Message = string.Format(_loc["Master_AssessFailed"], ex.Message) });
         }
     }
 
@@ -321,12 +321,12 @@ public partial class MasterController
     public async Task<ActionResult<VaultFocusListResponse>> GetVaultFocus(string id)
     {
         if (string.IsNullOrWhiteSpace(id))
-            return BadRequest(new VaultFocusListResponse { Success = false, Message = "师父ID不能为空" });
+            return BadRequest(new VaultFocusListResponse { Success = false, Message = _loc["Master_IdRequired"] });
 
         await using var db = await _dbFactory.CreateDbContextAsync();
         var master = await db.Masters.FirstOrDefaultAsync(m => m.MasterId == id);
         if (master == null)
-            return NotFound(new VaultFocusListResponse { Success = false, Message = "师父不存在" });
+            return NotFound(new VaultFocusListResponse { Success = false, Message = _loc["Master_NotFound"] });
 
         var focusStates = await db.VaultFocusStates
             .Where(v => v.MasterId == id && v.State == "focused")
@@ -339,7 +339,7 @@ public partial class MasterController
         var items = focusStates.Select(v => new VaultFocusItem
         {
             VaultId = v.VaultId,
-            VaultName = vaultNameMap.GetValueOrDefault(v.VaultId, "未知知识库"),
+            VaultName = vaultNameMap.GetValueOrDefault(v.VaultId, _loc["Master_UnknownVault"]),
             State = v.State,
             StageName = v.StageName,
             UpdatedAt = v.UpdatedAt
@@ -348,7 +348,7 @@ public partial class MasterController
         return Ok(new VaultFocusListResponse
         {
             Success = true,
-            Message = "获取知识库关联成功",
+            Message = _loc["Master_VaultFocusFetchSuccess"],
             Items = items
         });
     }
@@ -360,16 +360,16 @@ public partial class MasterController
     public async Task<ActionResult<VaultFocusUpdateResponse>> UpdateVaultFocus(string id, [FromBody] VaultFocusUpdateRequest request)
     {
         if (string.IsNullOrWhiteSpace(id))
-            return BadRequest(new VaultFocusUpdateResponse { Success = false, Message = "师父ID不能为空" });
+            return BadRequest(new VaultFocusUpdateResponse { Success = false, Message = _loc["Master_IdRequired"] });
         if (string.IsNullOrWhiteSpace(request.VaultId))
-            return BadRequest(new VaultFocusUpdateResponse { Success = false, Message = "知识库ID不能为空" });
+            return BadRequest(new VaultFocusUpdateResponse { Success = false, Message = _loc["Master_VaultIdRequired"] });
 
         try
         {
             await using var db = await _dbFactory.CreateDbContextAsync();
             var master = await db.Masters.FirstOrDefaultAsync(m => m.MasterId == id);
             if (master == null)
-                return NotFound(new VaultFocusUpdateResponse { Success = false, Message = "师父不存在" });
+                return NotFound(new VaultFocusUpdateResponse { Success = false, Message = _loc["Master_NotFound"] });
 
             var existing = await db.VaultFocusStates
                 .FirstOrDefaultAsync(v => v.MasterId == id && v.VaultId == request.VaultId);
@@ -399,13 +399,13 @@ public partial class MasterController
             return Ok(new VaultFocusUpdateResponse
             {
                 Success = true,
-                Message = request.State == "focused" ? "知识库已关联" : "知识库已取消关联"
+                Message = request.State == "focused" ? _loc["Master_VaultFocused"] : _loc["Master_VaultUnfocused"]
             });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "知识库关联更新失败");
-            return StatusCode(500, new VaultFocusUpdateResponse { Success = false, Message = $"操作失败：{ex.Message}" });
+            return StatusCode(500, new VaultFocusUpdateResponse { Success = false, Message = string.Format(_loc["Master_OperationFailed"], ex.Message) });
         }
     }
 
@@ -416,7 +416,7 @@ public partial class MasterController
     public async Task<ActionResult<VaultFocusUpdateResponse>> RemoveVaultFocus(string id, string vaultId)
     {
         if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(vaultId))
-            return BadRequest(new VaultFocusUpdateResponse { Success = false, Message = "参数不能为空" });
+            return BadRequest(new VaultFocusUpdateResponse { Success = false, Message = _loc["Master_ParamsRequired"] });
 
         try
         {
@@ -425,18 +425,18 @@ public partial class MasterController
                 .FirstOrDefaultAsync(v => v.MasterId == id && v.VaultId == vaultId);
 
             if (existing == null)
-                return NotFound(new VaultFocusUpdateResponse { Success = false, Message = "关联不存在" });
+                return NotFound(new VaultFocusUpdateResponse { Success = false, Message = _loc["Master_VaultFocusNotFound"] });
 
             existing.State = "archived";
             existing.UpdatedAt = DateTime.Now;
             await db.SaveChangesAsync();
 
-            return Ok(new VaultFocusUpdateResponse { Success = true, Message = "已取消关联" });
+            return Ok(new VaultFocusUpdateResponse { Success = true, Message = _loc["Master_VaultFocusRemoved"] });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "取消知识库关联失败");
-            return StatusCode(500, new VaultFocusUpdateResponse { Success = false, Message = $"操作失败：{ex.Message}" });
+            return StatusCode(500, new VaultFocusUpdateResponse { Success = false, Message = string.Format(_loc["Master_OperationFailed"], ex.Message) });
         }
     }
 }

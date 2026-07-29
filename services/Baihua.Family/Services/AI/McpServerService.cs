@@ -1,7 +1,9 @@
 using Baihua.Core;
+using Baihua.Core.Localization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Localization;
 using Baihua.Contracts.Mcp;
 using Baihua.Contracts.OpenClaw;
 using Baihua.Family.Models;
@@ -22,6 +24,7 @@ public partial class McpServerService
     private readonly VaultSettingsService _vaultSettings;
     private readonly AiSettingsService _aiSettings;
     private readonly ILogger<McpServerService> _logger;
+    private readonly IStringLocalizer<SharedResources> _loc;
 
     // 工具注册表
     private readonly Dictionary<string, McpTool> _tools = new();
@@ -35,7 +38,8 @@ public partial class McpServerService
         AiClientService aiClientService,
         VaultSettingsService vaultSettings,
         AiSettingsService aiSettings,
-        ILogger<McpServerService> logger)
+        ILogger<McpServerService> logger,
+        IStringLocalizer<SharedResources> loc)
     {
         _taskManager = taskManager;
         _openClawTaskService = openClawTaskService;
@@ -45,6 +49,7 @@ public partial class McpServerService
         _vaultSettings = vaultSettings;
         _aiSettings = aiSettings;
         _logger = logger;
+        _loc = loc;
 
         RegisterTools();
     }
@@ -57,14 +62,14 @@ public partial class McpServerService
         _tools["query_ai"] = new McpTool
         {
             Name = "query_ai",
-            Description = "直接调用 AI 模型进行查询并返回结果。支持指定模型，否则使用默认模型。",
+            Description = _loc["Mcp_QueryAi"],
             InputSchema = new McpJsonSchema
             {
                 Properties = new Dictionary<string, McpJsonSchemaProperty>
                 {
-                    ["query"] = new() { Type = "string", Description = "要查询的内容" },
-                    ["model"] = new() { Type = "string", Description = "指定使用的 AI 模型，如 ollama/biancang:latest、Qwen/Qwen2.5-14B-Instruct。留空使用默认模型。" },
-                    ["system_prompt"] = new() { Type = "string", Description = "可选的 system prompt，覆盖默认的经方家助手角色" },
+                    ["query"] = new() { Type = "string", Description = _loc["Mcp_QueryParam"] },
+                    ["model"] = new() { Type = "string", Description = _loc["Mcp_ModelParam"] },
+                    ["system_prompt"] = new() { Type = "string", Description = _loc["Mcp_SystemPromptParam"] },
                 },
                 Required = new List<string> { "query" }
             }
@@ -75,15 +80,15 @@ public partial class McpServerService
         _tools["create_ai_query_task"] = new McpTool
         {
             Name = "create_ai_query_task",
-            Description = "创建一个异步 AI 查询后台任务，返回 taskId 供后续轮询。适合需要长时间运行的查询。",
+            Description = _loc["Mcp_CreateAiQueryTask"],
             InputSchema = new McpJsonSchema
             {
                 Properties = new Dictionary<string, McpJsonSchemaProperty>
                 {
-                    ["query"] = new() { Type = "string", Description = "要查询的内容" },
-                    ["model"] = new() { Type = "string", Description = "指定使用的 AI 模型，留空使用默认模型" },
-                    ["save_to_vault"] = new() { Type = "boolean", Description = "是否将结果保存到知识库", Default = false },
-                    ["vault_id"] = new() { Type = "string", Description = "目标知识库 ID（save_to_vault 为 true 时必填）" },
+                    ["query"] = new() { Type = "string", Description = _loc["Mcp_QueryParam"] },
+                    ["model"] = new() { Type = "string", Description = _loc["Mcp_ModelParamOptional"] },
+                    ["save_to_vault"] = new() { Type = "boolean", Description = _loc["Mcp_SaveToVaultParam"], Default = false },
+                    ["vault_id"] = new() { Type = "string", Description = _loc["Mcp_VaultIdParam"] },
                 },
                 Required = new List<string> { "query" }
             }
@@ -94,12 +99,12 @@ public partial class McpServerService
         _tools["create_openclaw_task"] = new McpTool
         {
             Name = "create_openclaw_task",
-            Description = "使用 OpenClaw 运行一个 AI 任务（通过 openclaw agent）。适合复杂的知识库分析任务。",
+            Description = _loc["Mcp_CreateOpenClawTask"],
             InputSchema = new McpJsonSchema
             {
                 Properties = new Dictionary<string, McpJsonSchemaProperty>
                 {
-                    ["prompt"] = new() { Type = "string", Description = "OpenClaw 任务提示词" },
+                    ["prompt"] = new() { Type = "string", Description = _loc["Mcp_OpenClawPromptParam"] },
                 },
                 Required = new List<string> { "prompt" }
             }
@@ -110,12 +115,12 @@ public partial class McpServerService
         _tools["get_task_status"] = new McpTool
         {
             Name = "get_task_status",
-            Description = "获取指定后台任务（ai_query、split_atom_notes、openclaw 等）的当前状态和结果。",
+            Description = _loc["Mcp_GetTaskStatus"],
             InputSchema = new McpJsonSchema
             {
                 Properties = new Dictionary<string, McpJsonSchemaProperty>
                 {
-                    ["task_id"] = new() { Type = "string", Description = "任务 ID" },
+                    ["task_id"] = new() { Type = "string", Description = _loc["Mcp_TaskIdParam"] },
                 },
                 Required = new List<string> { "task_id" }
             }
@@ -126,13 +131,13 @@ public partial class McpServerService
         _tools["list_tasks"] = new McpTool
         {
             Name = "list_tasks",
-            Description = "列出最近创建的后台任务，包括 AI 查询、笔记拆分、OpenClaw 任务等。",
+            Description = _loc["Mcp_ListTasks"],
             InputSchema = new McpJsonSchema
             {
                 Properties = new Dictionary<string, McpJsonSchemaProperty>
                 {
-                    ["limit"] = new() { Type = "integer", Description = "返回数量上限", Default = 20 },
-                    ["status"] = new() { Type = "string", Description = "按状态过滤：Pending、Running、Success、Failed、Timeout" },
+                    ["limit"] = new() { Type = "integer", Description = _loc["Mcp_LimitParam"], Default = 20 },
+                    ["status"] = new() { Type = "string", Description = _loc["Mcp_StatusFilterParam"] },
                 },
                 Required = null
             }
@@ -143,7 +148,7 @@ public partial class McpServerService
         _tools["get_system_health"] = new McpTool
         {
             Name = "get_system_health",
-            Description = "获取 TaskRunner 系统健康状态报告，包括 Git、Obsidian、Ollama、Python、Node.js、API Key、知识库等组件的状态。",
+            Description = _loc["Mcp_GetSystemHealth"],
             InputSchema = new McpJsonSchema
             {
                 Properties = new(),
@@ -156,12 +161,12 @@ public partial class McpServerService
         _tools["list_local_ai_models"] = new McpTool
         {
             Name = "list_local_ai_models",
-            Description = "扫描并列出本地 AI 服务（Ollama、LM Studio、llama.cpp）上的可用模型。",
+            Description = _loc["Mcp_ListLocalAiModels"],
             InputSchema = new McpJsonSchema
             {
                 Properties = new Dictionary<string, McpJsonSchemaProperty>
                 {
-                    ["provider"] = new() { Type = "string", Description = "指定 provider：ollama、lmstudio、llamacpp。留空扫描所有已配置的 provider。" },
+                    ["provider"] = new() { Type = "string", Description = _loc["Mcp_ProviderParam"] },
                 },
                 Required = null
             }
@@ -172,12 +177,12 @@ public partial class McpServerService
         _tools["list_openclaw_tasks"] = new McpTool
         {
             Name = "list_openclaw_tasks",
-            Description = "列出 OpenClaw 任务历史。",
+            Description = _loc["Mcp_ListOpenClawTasks"],
             InputSchema = new McpJsonSchema
             {
                 Properties = new Dictionary<string, McpJsonSchemaProperty>
                 {
-                    ["limit"] = new() { Type = "integer", Description = "返回数量上限", Default = 20 },
+                    ["limit"] = new() { Type = "integer", Description = _loc["Mcp_LimitParam"], Default = 20 },
                 },
                 Required = null
             }
@@ -188,12 +193,12 @@ public partial class McpServerService
         _tools["get_openclaw_task_report"] = new McpTool
         {
             Name = "get_openclaw_task_report",
-            Description = "获取指定 OpenClaw 任务的完整报告内容。",
+            Description = _loc["Mcp_GetOpenClawTaskReport"],
             InputSchema = new McpJsonSchema
             {
                 Properties = new Dictionary<string, McpJsonSchemaProperty>
                 {
-                    ["task_id"] = new() { Type = "integer", Description = "OpenClaw 任务的数据库 ID（不是 TaskId 字符串）" },
+                    ["task_id"] = new() { Type = "integer", Description = _loc["Mcp_OpenClawTaskIdParam"] },
                 },
                 Required = new List<string> { "task_id" }
             }
@@ -204,7 +209,7 @@ public partial class McpServerService
         _tools["list_vaults"] = new McpTool
         {
             Name = "list_vaults",
-            Description = "列出所有已配置的知识库（Vault）。",
+            Description = _loc["Mcp_ListVaults"],
             InputSchema = new McpJsonSchema
             {
                 Properties = new(),
@@ -217,13 +222,13 @@ public partial class McpServerService
         _tools["read_vault_note"] = new McpTool
         {
             Name = "read_vault_note",
-            Description = "读取知识库中的指定笔记内容。",
+            Description = _loc["Mcp_ReadVaultNote"],
             InputSchema = new McpJsonSchema
             {
                 Properties = new Dictionary<string, McpJsonSchemaProperty>
                 {
-                    ["vault_id"] = new() { Type = "string", Description = "知识库 ID" },
-                    ["path"] = new() { Type = "string", Description = "笔记路径（不含 .md 后缀），如 症状/头痛" },
+                    ["vault_id"] = new() { Type = "string", Description = _loc["Mcp_VaultIdParam"] },
+                    ["path"] = new() { Type = "string", Description = _loc["Mcp_NotePathParam"] },
                 },
                 Required = new List<string> { "vault_id", "path" }
             }
@@ -234,14 +239,14 @@ public partial class McpServerService
         _tools["search_vault"] = new McpTool
         {
             Name = "search_vault",
-            Description = "在知识库中搜索关键词，返回匹配的笔记列表。",
+            Description = _loc["Mcp_SearchVault"],
             InputSchema = new McpJsonSchema
             {
                 Properties = new Dictionary<string, McpJsonSchemaProperty>
                 {
-                    ["vault_id"] = new() { Type = "string", Description = "知识库 ID" },
-                    ["query"] = new() { Type = "string", Description = "搜索关键词" },
-                    ["limit"] = new() { Type = "integer", Description = "返回数量上限", Default = 20 },
+                    ["vault_id"] = new() { Type = "string", Description = _loc["Mcp_VaultIdParam"] },
+                    ["query"] = new() { Type = "string", Description = _loc["Mcp_SearchQueryParam"] },
+                    ["limit"] = new() { Type = "integer", Description = _loc["Mcp_LimitParam"], Default = 20 },
                 },
                 Required = new List<string> { "vault_id", "query" }
             }
