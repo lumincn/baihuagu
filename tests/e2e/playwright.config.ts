@@ -1,7 +1,8 @@
 import { defineConfig } from '@playwright/test';
 import * as path from 'path';
 
-const sharedE2EPath = path.resolve(__dirname, '../../../tests/shared-e2e');
+// shared-e2e folder sits under tests/shared-e2e relative to this file (tests/e2e)
+const sharedE2EPath = path.resolve(__dirname, '..', 'shared-e2e');
 
 process.env.PLAYWRIGHT_BASE_URL = 'http://127.0.0.1:5177';
 process.env.API_PORT = '8788';
@@ -22,10 +23,11 @@ export default defineConfig({
     trace: 'retain-on-failure',
     storageState: './storage-state.json',
     // Ubuntu 26.04 下 Playwright 无法自动下载浏览器，使用系统 Chromium
-    launchOptions: {
-      executablePath: process.env.PW_CHROMIUM_PATH || '/snap/chromium/current/usr/lib/chromium-browser/chrome',
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    },
+    // On Linux use system Chromium when PW_CHROMIUM_PATH is not set; on other OS leave undefined so Playwright uses its own browsers
+    launchOptions: (() => {
+      const exe = process.env.PW_CHROMIUM_PATH || (process.platform === 'linux' ? '/snap/chromium/current/usr/lib/chromium-browser/chrome' : undefined);
+      return exe ? { executablePath: exe, args: ['--no-sandbox', '--disable-setuid-sandbox'] } : { args: ['--no-sandbox', '--disable-setuid-sandbox'] };
+    })(),
   },
   projects: [
     // 导航系统：页面路由、导航栏、页面间跳转（本地）
@@ -53,7 +55,7 @@ export default defineConfig({
     // 移动端管理：设备注册、发现（本地）
     { name: 'devices', testDir: './tests/family-mode', testMatch: /devices\.spec\.ts/ },
     // 家长看板：家庭统计、学习趋势、答题分布（本地）
-    { name: 'dashboard', testDir: './tests/dashboard', testMatch: /.*\.spec\.ts/ },
+    { name: 'dashboard', testDir: './tests/dashboard', testMatch: /.*\.spec\.ts/, use: { storageState: undefined } },
     // 每日一帖：卡片翻转、难度选择、进度显示（本地）
     { name: 'daily-card', testDir: './tests/daily-card', testMatch: /.*\.spec\.ts/ },
     // 成就墙：成就解锁、学习者管理、统计概览（本地）

@@ -60,10 +60,10 @@
     <value>正在加载看板...</value>
   </data>
   <data name="Dashboard_WeeklyLearning" xml:space="preserve">
-    <value>本周学习</value>
+    <value>本周学习动态</value>
   </data>
   <data name="Dashboard_WeeklyTrend" xml:space="preserve">
-    <value>每周趋势</value>
+    <value>本周学习趋势</value>
   </data>
   <data name="Dashboard_WeekTotal" xml:space="preserve">
     <value>周总计</value>
