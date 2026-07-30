@@ -15,9 +15,7 @@ public class MauiQrScanner : IQrScanner
 
         // 如果页面还在（用户没点取消），确保关闭
         if (mainPage.Navigation.ModalStack.Contains(page))
-        {
             await mainPage.Navigation.PopModalAsync();
-        }
 
         return result;
     }

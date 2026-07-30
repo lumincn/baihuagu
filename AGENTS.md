@@ -21,6 +21,17 @@
   [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
   ```
 
+### 终端中文乱码修复（`dotnet build` 输出）
+
+运行 `dotnet build` 时，.NET 输出的 UTF-8 中文可能被 `pwsh` 误解码为 GBK 导致乱码（如"鐢熸垚澶辫触"）。
+
+**修复方式**（已写入 PowerShell Profile `C:\Users\lumin\Documents\PowerShell\profile.ps1`）：
+```powershell
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$PSDefaultParameterValues['*:Encoding'] = 'utf8'
+```
+配置后重启终端或重新打开 VS Code 即可生效。
+
 ### 项目目录结构
 
 ```

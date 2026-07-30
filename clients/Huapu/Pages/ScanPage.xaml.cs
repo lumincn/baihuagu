@@ -11,13 +11,15 @@ public partial class ScanPage : ContentPage
     {
         InitializeComponent();
 
-        // 显式设置扫描选项：只识别二维码（2D），提高识别率
+        // 只识别 QR 码，调快帧分析速度
         CameraBarcodeReaderView.Options = new BarcodeReaderOptions
         {
-            Formats = BarcodeFormats.TwoDimensional,
+            Formats = BarcodeFormat.QrCode,
             AutoRotate = true,
             TryHarder = true,
             Multiple = false,
+            DelayBetweenAnalyzingFrames = 50,
+            InitialDelayBeforeAnalyzingFrames = 100,
         };
     }
 
