@@ -1386,7 +1386,7 @@
     <value>探测本机工具链。</value>
   </data>
   <data name="Health_ArchDesc1_Pre" xml:space="preserve">
-    <value>本页向 Task Runner 请求</value>
+    <value>本页向 Baihua.Family 请求</value>
   </data>
   <data name="Health_ArchDesc1_Strong" xml:space="preserve">
     <value>并行</value>
@@ -1566,10 +1566,10 @@
     <value>总请求数</value>
   </data>
   <data name="Health_WebuiConnectivityFailed" xml:space="preserve">
-    <value>WebUI 无法访问 Task Runner: {0}</value>
+    <value>WebUI 无法访问 Baihua.Family: {0}</value>
   </data>
   <data name="Health_WebuiConnectivityOk" xml:space="preserve">
-    <value>WebUI 可正常访问 Task Runner（{0}ms）</value>
+    <value>WebUI 可正常访问 Baihua.Family（{0}ms）</value>
   </data>
   <data name="Devices_PageTitle" xml:space="preserve">
     <value>移动端管理</value>
@@ -3436,10 +3436,40 @@ Shift+Enter 换行，Enter 发送</value>
     <value>&lt;strong&gt;P99 &amp;gt; 2000ms&lt;/strong&gt;：存在长尾延迟，检查偶发慢请求</value>
   </data>
   <data name="ApiCallPerf_TipSuccessRate" xml:space="preserve">
-    <value>&lt;strong&gt;成功率 &amp;lt; 99%&lt;/strong&gt;：检查 TaskRunner 服务稳定性</value>
+    <value>&lt;strong&gt;成功率 &amp;lt; 99%&lt;/strong&gt;：检查 Baihua.Family 服务稳定性</value>
   </data>
   <data name="ApiCallPerf_TipTooManyCalls" xml:space="preserve">
     <value>&lt;strong&gt;调用次数过多&lt;/strong&gt;：考虑批量请求或添加客户端缓存</value>
+  </data>
+  <data name="ApiCallPerf_OptTitle" xml:space="preserve">
+    <value>⚡ 性能优化建议</value>
+  </data>
+  <data name="ApiCallPerf_OptSubtitleData" xml:space="preserve">
+    <value>根据当前指标触发的建议（高亮项为已触发阈值）：</value>
+  </data>
+  <data name="ApiCallPerf_OptSubtitleNoData" xml:space="preserve">
+    <value>暂无 API 调用数据，默认显示全部建议 — 积累数据后会有更精确的分析：</value>
+  </data>
+  <data name="CompPerf_OptTitle" xml:space="preserve">
+    <value>⚡ 组件性能优化建议</value>
+  </data>
+  <data name="CompPerf_OptSubtitleData" xml:space="preserve">
+    <value>根据当前指标触发的建议（高亮项为已触发阈值）：</value>
+  </data>
+  <data name="CompPerf_OptSubtitleNoData" xml:space="preserve">
+    <value>暂无组件数据，默认显示全部建议 — 积累数据后会有更精确的分析：</value>
+  </data>
+  <data name="CompPerf_AvgTimeSuggestion" xml:space="preserve">
+    <value>&lt;strong&gt;平均渲染时间 &amp;gt; 阈值&lt;/strong&gt;：考虑使用 @key 或 ShouldRender 减少重渲染</value>
+  </data>
+  <data name="CompPerf_MaxTimeSuggestion" xml:space="preserve">
+    <value>&lt;strong&gt;最大渲染时间 &amp;gt; 2x 阈值&lt;/strong&gt;：存在极端慢渲染，检查组件的开销操作</value>
+  </data>
+  <data name="CompPerf_SlowCompSuggestion" xml:space="preserve">
+    <value>&lt;strong&gt;检测到慢组件&lt;/strong&gt;：检查渲染模式，考虑拆分大组件</value>
+  </data>
+  <data name="CompPerf_TotalRendersSuggestion" xml:space="preserve">
+    <value>&lt;strong&gt;渲染次数过多&lt;/strong&gt;：考虑减少不必要的状态更新或谨慎使用 StateHasChanged</value>
   </data>
   <data name="CompPerf_TotalComponents" xml:space="preserve">
     <value>组件总数</value>
@@ -3629,6 +3659,27 @@ Shift+Enter 换行，Enter 发送</value>
   </data>
   <data name="E2EPerf_BottleneckDesc" xml:space="preserve">
     <value>：总耗时高但网络低 → 渲染问题；网络高 → API 问题</value>
+  </data>
+  <data name="E2EPerf_OptTitle" xml:space="preserve">
+    <value>⚡ 端到端性能优化建议</value>
+  </data>
+  <data name="E2EPerf_OptSubtitleData" xml:space="preserve">
+    <value>根据当前指标触发的建议（高亮项为已触发阈值）：</value>
+  </data>
+  <data name="E2EPerf_OptSubtitleNoData" xml:space="preserve">
+    <value>暂无 E2E 数据，默认显示全部建议 — 积累数据后会有更精确的分析：</value>
+  </data>
+  <data name="E2EPerf_AvgTotalTimeSuggestion" xml:space="preserve">
+    <value>&lt;strong&gt;平均总耗时 &amp;gt; 2000ms&lt;/strong&gt;：页面加载过慢，考虑懒加载或分批渲染</value>
+  </data>
+  <data name="E2EPerf_NetworkSuggestion" xml:space="preserve">
+    <value>&lt;strong&gt;平均网络耗时 &amp;gt; 1000ms&lt;/strong&gt;：网络请求过慢，考虑预加载或减少请求数</value>
+  </data>
+  <data name="E2EPerf_RenderingSuggestion" xml:space="preserve">
+    <value>&lt;strong&gt;平均渲染耗时 &amp;gt; 500ms&lt;/strong&gt;：渲染过慢，考虑虚拟滚动或减少重渲染</value>
+  </data>
+  <data name="E2EPerf_SlowOpSuggestion" xml:space="preserve">
+    <value>&lt;strong&gt;检测到慢操作&lt;/strong&gt;：检查组件渲染性能及 API 调用模式</value>
   </data>
   <data name="App_Title" xml:space="preserve">
     <value>百花</value>

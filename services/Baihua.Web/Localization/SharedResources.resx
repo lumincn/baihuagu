@@ -1380,7 +1380,7 @@
     <value>Created At:</value>
   </data>
   <data name="Health_ArchDesc1_Mid" xml:space="preserve">
-    <value> from Task Runner, and probes toolchains on the server in</value>
+    <value> from Baihua.Family, and probes toolchains on the server in</value>
   </data>
   <data name="Health_ArchDesc1_Post" xml:space="preserve">
     <value>.</value>
@@ -1566,10 +1566,10 @@
     <value>Total Requests</value>
   </data>
   <data name="Health_WebuiConnectivityFailed" xml:space="preserve">
-    <value>WebUI cannot reach Task Runner: {0}</value>
+    <value>WebUI cannot reach Baihua.Family: {0}</value>
   </data>
   <data name="Health_WebuiConnectivityOk" xml:space="preserve">
-    <value>WebUI can reach Task Runner ({0}ms)</value>
+    <value>WebUI can reach Baihua.Family ({0}ms)</value>
   </data>
   <data name="Devices_PageTitle" xml:space="preserve">
     <value>Mobile Device Management</value>
@@ -3437,10 +3437,40 @@ Shift+Enter new line, Enter to send</value>
     <value>&lt;strong&gt;P99 &amp;gt; 2000ms&lt;/strong&gt;: Long tail latency exists, check occasional slow requests</value>
   </data>
   <data name="ApiCallPerf_TipSuccessRate" xml:space="preserve">
-    <value>&lt;strong&gt;Success rate &amp;lt; 99%&lt;/strong&gt;: Check TaskRunner service stability</value>
+    <value>&lt;strong&gt;Success rate &amp;lt; 99%&lt;/strong&gt;: Check Baihua.Family service stability</value>
   </data>
   <data name="ApiCallPerf_TipTooManyCalls" xml:space="preserve">
     <value>&lt;strong&gt;Too many calls&lt;/strong&gt;: Consider batch requests or adding client cache</value>
+  </data>
+  <data name="ApiCallPerf_OptTitle" xml:space="preserve">
+    <value>⚡ Performance Optimization Guide</value>
+  </data>
+  <data name="ApiCallPerf_OptSubtitleData" xml:space="preserve">
+    <value>Suggestions based on current metrics — triggered thresholds are highlighted:</value>
+  </data>
+  <data name="ApiCallPerf_OptSubtitleNoData" xml:space="preserve">
+    <value>No API call data yet. All suggestions shown by default — come back after data accumulates for targeted advice:</value>
+  </data>
+  <data name="CompPerf_OptTitle" xml:space="preserve">
+    <value>⚡ Component Performance Optimization Guide</value>
+  </data>
+  <data name="CompPerf_OptSubtitleData" xml:space="preserve">
+    <value>Suggestions based on current metrics — triggered thresholds are highlighted:</value>
+  </data>
+  <data name="CompPerf_OptSubtitleNoData" xml:space="preserve">
+    <value>No component data yet. All suggestions shown by default — come back after data accumulates for targeted advice:</value>
+  </data>
+  <data name="CompPerf_AvgTimeSuggestion" xml:space="preserve">
+    <value>&lt;strong&gt;Avg render time &amp;gt; threshold&lt;/strong&gt;: Consider using @key or ShouldRender to reduce re-renders</value>
+  </data>
+  <data name="CompPerf_MaxTimeSuggestion" xml:space="preserve">
+    <value>&lt;strong&gt;Max render time &amp;gt; 2x threshold&lt;/strong&gt;: Extreme slow render detected, check for heavy operations in the component</value>
+  </data>
+  <data name="CompPerf_SlowCompSuggestion" xml:space="preserve">
+    <value>&lt;strong&gt;Slow components detected&lt;/strong&gt;: Check rendering patterns and consider splitting large components</value>
+  </data>
+  <data name="CompPerf_TotalRendersSuggestion" xml:space="preserve">
+    <value>&lt;strong&gt;High render count&lt;/strong&gt;: Consider reducing unnecessary state updates or using StateHasChanged sparingly</value>
   </data>
   <data name="CompPerf_TotalComponents" xml:space="preserve">
     <value>Total Components</value>
@@ -3630,6 +3660,27 @@ Shift+Enter new line, Enter to send</value>
   </data>
   <data name="E2EPerf_BottleneckDesc" xml:space="preserve">
     <value>: High total but low network → rendering issue; high network → API issue</value>
+  </data>
+  <data name="E2EPerf_OptTitle" xml:space="preserve">
+    <value>⚡ E2E Performance Optimization Guide</value>
+  </data>
+  <data name="E2EPerf_OptSubtitleData" xml:space="preserve">
+    <value>Suggestions based on current metrics — triggered thresholds are highlighted:</value>
+  </data>
+  <data name="E2EPerf_OptSubtitleNoData" xml:space="preserve">
+    <value>No E2E data yet. All suggestions shown by default — come back after data accumulates for targeted advice:</value>
+  </data>
+  <data name="E2EPerf_AvgTotalTimeSuggestion" xml:space="preserve">
+    <value>&lt;strong&gt;Avg total time &amp;gt; 2000ms&lt;/strong&gt;: Page load too slow, consider lazy loading or batch rendering</value>
+  </data>
+  <data name="E2EPerf_NetworkSuggestion" xml:space="preserve">
+    <value>&lt;strong&gt;Avg network time &amp;gt; 1000ms&lt;/strong&gt;: Network too slow, consider preloading or reducing request count</value>
+  </data>
+  <data name="E2EPerf_RenderingSuggestion" xml:space="preserve">
+    <value>&lt;strong&gt;Avg rendering time &amp;gt; 500ms&lt;/strong&gt;: Rendering too slow, consider virtual scrolling or reducing re-renders</value>
+  </data>
+  <data name="E2EPerf_SlowOpSuggestion" xml:space="preserve">
+    <value>&lt;strong&gt;Slow operations detected&lt;/strong&gt;: Check component render performance and API call patterns</value>
   </data>
   <data name="App_Title" xml:space="preserve">
     <value>Baihua</value>

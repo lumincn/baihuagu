@@ -3,6 +3,7 @@ using Baihua.Web.Services;
 
 namespace Baihua.Web.Components;
 
+
 /// <summary>
 /// 性能监控组件基类 - 自动记录组件渲染时间
 /// 用法：继承此类，或使用 @inherits PerformanceComponentBase
@@ -11,7 +12,7 @@ namespace Baihua.Web.Components;
 /// - 在 OnInitialized 中调用 SetCurrentTraceId(traceId) 关联 E2E 追踪
 /// - 组件渲染完成会自动记录到 E2EPerformanceService
 /// </summary>
-public class PerformanceComponentBase : ComponentBase
+public class PerformanceComponentBase : ComponentBase, IDisposable
 {
     [Inject]
     protected ComponentPerformanceService? PerformanceService { get; set; }
@@ -50,6 +51,12 @@ public class PerformanceComponentBase : ComponentBase
             _renderToken = PerformanceService.BeginRender(_componentName);
         }
         
+        // 自动创建 E2E trace（如果没有设置 trace id）
+        if (E2EPerformanceService != null && _currentTraceId == null)
+        {
+            _currentTraceId = E2EPerformanceService.StartTrace(_componentName, _componentName);
+        }
+        
         base.OnInitialized();
     }
     
@@ -84,5 +91,14 @@ public class PerformanceComponentBase : ComponentBase
         }
         
         base.OnAfterRender(firstRender);
+    }
+
+    public void Dispose()
+    {
+        if (_currentTraceId != null && E2EPerformanceService != null)
+        {
+            E2EPerformanceService.EndTrace(_currentTraceId);
+            _currentTraceId = null;
+        }
     }
 }

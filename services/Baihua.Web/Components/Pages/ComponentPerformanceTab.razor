@@ -79,6 +79,69 @@
     </div>
 </div>
 
+<!-- 性能优化建议 -->
+<div class="card border-warning mb-4">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">@L["CompPerf_OptTitle"]</h5>
+    </div>
+    <div class="card-body">
+        @if (HasData)
+        {
+            <p class="small text-muted mb-3">@L["CompPerf_OptSubtitleData"]</p>
+        }
+        else
+        {
+            <p class="small text-muted mb-3">@L["CompPerf_OptSubtitleNoData"]</p>
+        }
+        <ul class="list-unstyled mb-0">
+            <li class="py-2 px-3 mb-2 rounded @(summary == null || summary.AverageRenderTimeMs <= ComponentPerformanceService.SlowThresholdMs ? "bg-body-tertiary text-body-secondary" : "bg-warning bg-opacity-10 border-start border-3 border-warning")">
+                @if (summary != null && summary.AverageRenderTimeMs > ComponentPerformanceService.SlowThresholdMs)
+                {
+                    <span class="badge bg-warning text-dark me-2">⚠</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary me-2">✓</span>
+                }
+                @((MarkupString)L["CompPerf_AvgTimeSuggestion"].Value)
+            </li>
+            <li class="py-2 px-3 mb-2 rounded @(summary == null || summary.MaxRenderTimeMs <= ComponentPerformanceService.SlowThresholdMs * 2 ? "bg-body-tertiary text-body-secondary" : "bg-warning bg-opacity-10 border-start border-3 border-warning")">
+                @if (summary != null && summary.MaxRenderTimeMs > ComponentPerformanceService.SlowThresholdMs * 2)
+                {
+                    <span class="badge bg-warning text-dark me-2">⚠</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary me-2">✓</span>
+                }
+                @((MarkupString)L["CompPerf_MaxTimeSuggestion"].Value)
+            </li>
+            <li class="py-2 px-3 mb-2 rounded @(summary == null || summary.SlowComponentCount <= 0 ? "bg-body-tertiary text-body-secondary" : "bg-danger bg-opacity-10 border-start border-3 border-danger")">
+                @if (summary != null && summary.SlowComponentCount > 0)
+                {
+                    <span class="badge bg-danger text-white me-2">⚠</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary me-2">✓</span>
+                }
+                @((MarkupString)L["CompPerf_SlowCompSuggestion"].Value)
+            </li>
+            <li class="py-2 px-3 rounded @(summary == null || summary.TotalRenders <= 500 ? "bg-body-tertiary text-body-secondary" : "bg-info bg-opacity-10 border-start border-3 border-info")">
+                @if (summary != null && summary.TotalRenders > 500)
+                {
+                    <span class="badge bg-info text-dark me-2">ℹ</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary me-2">✓</span>
+                }
+                @((MarkupString)L["CompPerf_TotalRendersSuggestion"].Value)
+            </li>
+        </ul>
+    </div>
+</div>
+
 <!-- 慢组件列表 -->
 @if (slowComponents?.Any() == true)
 {
@@ -231,6 +294,16 @@
     </div>
 }
 
+<style>
+    [data-bs-theme="dark"] .table-light {
+        --bs-table-bg: rgba(255,255,255,0.06);
+        --bs-table-color: #c0c8d0;
+    }
+    [data-bs-theme="dark"] .table-light th { color: #c0c8d0; }
+    [data-bs-theme="dark"] .sticky-top { background: #232a3b !important; }
+    [data-bs-theme="dark"] .bg-body-tertiary { background: rgba(255,255,255,0.04) !important; }
+</style>
+
 @code {
     [Parameter] public required ComponentPerformanceService ComponentPerformanceService { get; set; }
     private PerformanceSummary? summary;
@@ -238,6 +311,8 @@
     private List<ComponentMetrics>? slowComponents;
     private List<RenderEvent>? recentEvents;
     private int slowThreshold = 100;
+
+    private bool HasData => summary?.TotalRenders > 0;
 
     protected override void OnInitialized()
     {

@@ -297,25 +297,30 @@ var retryPolicy = HttpPolicyExtensions
     .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.5, retryAttempt - 1)));
 
 var taskRunnerBaseUrl = builder.Configuration["TaskRunnerApi:BaseUrl"] ?? "http://127.0.0.1:8788/";
+builder.Services.AddTransient<Baihua.Web.Middleware.MetricsRecordingHandler>();
+
 builder.Services.AddHttpClient("TaskRunnerApi", client =>
 {
     client.BaseAddress = new Uri(taskRunnerBaseUrl);
     client.Timeout = TimeSpan.FromSeconds(30);
-}).AddPolicyHandler(retryPolicy);
+}).AddPolicyHandler(retryPolicy)
+ .AddHttpMessageHandler<Baihua.Web.Middleware.MetricsRecordingHandler>();
 
 var taskRunnerAiBaseUrl = builder.Configuration["TaskRunnerAiApi:BaseUrl"] ?? "http://127.0.0.1:8791/";
 builder.Services.AddHttpClient("TaskRunnerAiApi", client =>
 {
     client.BaseAddress = new Uri(taskRunnerAiBaseUrl);
     client.Timeout = TimeSpan.FromSeconds(30);
-}).AddPolicyHandler(retryPolicy);
+}).AddPolicyHandler(retryPolicy)
+ .AddHttpMessageHandler<Baihua.Web.Middleware.MetricsRecordingHandler>();
 
 var taskRunnerVaultBaseUrl = builder.Configuration["TaskRunnerVaultApi:BaseUrl"] ?? "http://127.0.0.1:8790/";
 builder.Services.AddHttpClient("TaskRunnerVaultApi", client =>
 {
     client.BaseAddress = new Uri(taskRunnerVaultBaseUrl);
     client.Timeout = TimeSpan.FromSeconds(30);
-}).AddPolicyHandler(retryPolicy);
+}).AddPolicyHandler(retryPolicy)
+ .AddHttpMessageHandler<Baihua.Web.Middleware.MetricsRecordingHandler>();
 
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("TaskRunnerApi"));
 

@@ -24,6 +24,25 @@ public class EndToEndPerformanceService
     }
     
     /// <summary>
+    /// 开始一个新的端到端追踪
+    /// </summary>
+    public string StartTrace(string operationName, string? pageName = null)
+    {
+        var traceId = $"{operationName}_{Guid.NewGuid():N}";
+        var trace = new E2EPerformanceTrace
+        {
+            TraceId = traceId,
+            OperationName = operationName,
+            PageName = pageName ?? operationName,
+            StartTime = DateTime.UtcNow,
+            StartTimestamp = Stopwatch.GetTimestamp()
+        };
+        _activeTraces[traceId] = trace;
+        _logger.LogDebug("[E2E-Trace-{TraceId}] 开始追踪: {Operation}", traceId, operationName);
+        return traceId;
+    }
+
+    /// <summary>
     /// 记录 API 调用开始
     /// </summary>
     public void RecordApiCallStart(string traceId, string endpoint, string method)

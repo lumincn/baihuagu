@@ -158,27 +158,79 @@
         </div>
     </div>
 }
-else
-{
-    <div class="card">
-        <div class="card-body text-center py-5 text-muted">
-            <div class="mb-3">📭</div>
-            <p>@L["ApiCallPerf_NoData"]</p>
-            <p class="small">@L["ApiCallPerf_NoDataHint"]</p>
-        </div>
-    </div>
-}
 
-<!-- 使用说明 -->
-<div class="alert alert-info mt-4">
-    <h6>@L["ApiCallPerf_PerfTips"]</h6>
-    <ul class="mb-0 small">
-        <li>@L["ApiCallPerf_TipAvgElapsed"]</li>
-        <li>@L["ApiCallPerf_TipP99"]</li>
-        <li>@L["ApiCallPerf_TipSuccessRate"]</li>
-        <li>@L["ApiCallPerf_TipTooManyCalls"]</li>
-    </ul>
+<!-- 性能优化建议 -->
+<div class="card border-warning mt-4">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">@L["ApiCallPerf_OptTitle"]</h5>
+    </div>
+    <div class="card-body">
+        @if (HasData)
+        {
+            <p class="small text-muted mb-3">@L["ApiCallPerf_OptSubtitleData"]</p>
+        }
+        else
+        {
+            <p class="small text-muted mb-3">@L["ApiCallPerf_OptSubtitleNoData"]</p>
+        }
+        <ul class="list-unstyled mb-0">
+            <li class="py-2 px-3 mb-2 rounded @(ApiSummary == null || ApiSummary.AvgElapsedMs <= 500 ? "bg-body-tertiary text-body-secondary" : "bg-warning bg-opacity-10 border-start border-3 border-warning")">
+                @if (ApiSummary != null && ApiSummary.AvgElapsedMs > 500)
+                {
+                    <span class="badge bg-warning text-dark me-2">⚠</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary me-2">✓</span>
+                }
+                @((MarkupString)L["ApiCallPerf_TipAvgElapsed"].Value)
+            </li>
+            <li class="py-2 px-3 mb-2 rounded @(ApiSummary == null || ApiSummary.MaxElapsedMs <= 2000 ? "bg-body-tertiary text-body-secondary" : "bg-warning bg-opacity-10 border-start border-3 border-warning")">
+                @if (ApiSummary != null && ApiSummary.MaxElapsedMs > 2000)
+                {
+                    <span class="badge bg-warning text-dark me-2">⚠</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary me-2">✓</span>
+                }
+                @((MarkupString)L["ApiCallPerf_TipP99"].Value)
+            </li>
+            <li class="py-2 px-3 mb-2 rounded @(ApiSummary == null || ApiSummary.SuccessRate >= 99 ? "bg-body-tertiary text-body-secondary" : "bg-danger bg-opacity-10 border-start border-3 border-danger")">
+                @if (ApiSummary != null && ApiSummary.SuccessRate < 99)
+                {
+                    <span class="badge bg-danger text-white me-2">⚠</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary me-2">✓</span>
+                }
+                @((MarkupString)L["ApiCallPerf_TipSuccessRate"].Value)
+            </li>
+            <li class="py-2 px-3 rounded @(ApiSummary == null || ApiSummary.TotalCalls <= 1000 ? "bg-body-tertiary text-body-secondary" : "bg-info bg-opacity-10 border-start border-3 border-info")">
+                @if (ApiSummary != null && ApiSummary.TotalCalls > 1000)
+                {
+                    <span class="badge bg-info text-dark me-2">ℹ</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary me-2">✓</span>
+                }
+                @((MarkupString)L["ApiCallPerf_TipTooManyCalls"].Value)
+            </li>
+        </ul>
+    </div>
 </div>
+
+<style>
+    [data-bs-theme="dark"] .table-light {
+        --bs-table-bg: rgba(255,255,255,0.06);
+        --bs-table-color: #c0c8d0;
+    }
+    [data-bs-theme="dark"] .table-light th { color: #c0c8d0; }
+    [data-bs-theme="dark"] .sticky-top { background: #232a3b !important; }
+    [data-bs-theme="dark"] .bg-body-tertiary { background: rgba(255,255,255,0.04) !important; }
+</style>
 
 @code {
     [Parameter] public ApiCallMetricsSummary? ApiSummary { get; set; }
@@ -191,6 +243,8 @@ else
         if (elapsedMs > 500) return "bg-info";
         return "bg-success";
     }
+
+    private bool HasData => ApiMetrics?.Any() == true && ApiSummary?.TotalCalls > 0;
 
     private string GetRowClass(long avgElapsedMs)
     {

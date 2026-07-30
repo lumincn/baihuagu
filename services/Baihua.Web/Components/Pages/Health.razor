@@ -417,10 +417,10 @@
             <div class="health-arch-diagram rounded border bg-light overflow-auto px-2 py-3">
                 <img src="/images/health-architecture.svg"
                      class="w-100 d-block"
-                     style="min-height: 280px; max-height: 420px;"
-                     alt="架构示意：本页 WebUI 调用 Task Runner 的 /api/health/full，并行检测 Git、Obsidian、Ollama、Python、Node.js 与 PIP，用于在跑同步与任务前发现依赖问题"
+                     style="min-height: 320px; max-height: 480px;"
+                     alt="架构示意：本页 Baihua.Web 调用 Baihua.Family 的 /api/health/full，并行检测 Git、Obsidian、Ollama、Python、Node.js、PIP、API Key 与 Vault，用于在跑同步与任务前发现依赖问题"
                      width="920"
-                     height="400" />
+                     height="460" />
             </div>
         </div>
     </div>
@@ -459,6 +459,56 @@
         </div>
     }
 </div>
+
+<style>
+    /* 暗色模式 — 健康检查页专属覆盖 */
+    [data-bs-theme="dark"] {
+        /* 请求指标/错误日志的摘要卡片 */
+        .p-3.bg-light.rounded.text-center {
+            background: rgba(255,255,255,0.05) !important;
+        }
+        .p-3.bg-light.rounded.text-center .text-muted,
+        .p-3.bg-light.rounded.text-center .h4,
+        .p-3.bg-light.rounded.text-center .h4 span {
+            color: #c0c8d0 !important;
+        }
+        /* 表格头部 */
+        .table-light {
+            --bs-table-bg: rgba(255,255,255,0.06);
+            --bs-table-color: #c0c8d0;
+        }
+        .table-light th {
+            color: #c0c8d0;
+        }
+        /* 架构图容器 */
+        .health-arch-diagram {
+            background: rgba(255,255,255,0.05) !important;
+            border-color: #2d3548 !important;
+        }
+        /* 组件状态卡片 */
+        .rounded.border.h-100 {
+            border-color: #2d3548 !important;
+        }
+        /* text-bg-light border text-dark 标签 */
+        .text-bg-light.border.text-dark {
+            background: rgba(255,255,255,0.08) !important;
+            color: #c0c8d0 !important;
+            border-color: #3d4558 !important;
+        }
+        /* 进度条 */
+        .progress {
+            background: #2d3548;
+        }
+        /* sticky-top 表头在暗色模式下对齐 */
+        .sticky-top {
+            background: #232a3b !important;
+        }
+        /* 架构区块头部 */
+        .card-header.bg-body-secondary {
+            background: rgba(255,255,255,0.04) !important;
+        }
+    }
+</style>
 
 @code
 {
