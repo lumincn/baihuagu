@@ -297,7 +297,20 @@ else
     private void OnWebSocketConnectionStateChange(bool connected)
     {
         _pushConnected = connected;
+        // WebSocket 连接状态即代表服务器在线状态，无需额外 HTTP health check
+        if (_selectedServer != null && _selectedServer.IsOnline != connected)
+        {
+            _ = UpdateServerOnlineStateAsync(connected);
+        }
         InvokeAsync(StateHasChanged);
+    }
+
+    private async Task UpdateServerOnlineStateAsync(bool isOnline)
+    {
+        if (_selectedServer == null) return;
+        var updated = _selectedServer with { IsOnline = isOnline };
+        await ServerStore.AddOrUpdateServerAsync(updated);
+        _selectedServer = updated;
     }
 
     private async Task FetchVaults()
