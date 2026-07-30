@@ -137,9 +137,13 @@ namespace Baihua.Core;
 
         public PairRequestInfo SubmitPairRequest(string deviceName, string pairCode, string? ipAddress = null, string? requestId = null, string? deviceId = null)
         {
+            _logger.LogInformation("[AUTH-DIAG] SubmitPairRequest: DeviceName={DeviceName}, RequestId={RequestId}, PendingCount={Count}",
+                deviceName, requestId, _pendingRequests.Count);
+                
             // 如果指定了 requestId（如 challenge），检查是否已存在
             if (!string.IsNullOrEmpty(requestId) && _pendingRequests.ContainsKey(requestId))
             {
+                _logger.LogInformation("[AUTH-DIAG] SubmitPairRequest: requestId already exists, returning existing");
                 _logger.LogInformation("设备配对请求已存在: {DeviceName}, 请求ID: {RequestId}", 
                     deviceName, requestId);
                 return _pendingRequests[requestId];
@@ -150,6 +154,7 @@ namespace Baihua.Core;
             
             if (existingRequest != null)
             {
+                _logger.LogInformation("[AUTH-DIAG] SubmitPairRequest: deviceName already pending, returning existing");
                 _logger.LogInformation("设备配对请求已存在: {DeviceName}, 请求ID: {RequestId}", 
                     deviceName, existingRequest.RequestId);
                 return existingRequest;
@@ -166,6 +171,7 @@ namespace Baihua.Core;
             };
 
             _pendingRequests[request.RequestId] = request;
+            _logger.LogInformation("[AUTH-DIAG] SubmitPairRequest: NEW pending request created, PendingCount={Count}", _pendingRequests.Count);
             _logger.LogInformation("设备请求配对: {DeviceName}, 请求ID: {RequestId}", deviceName, request.RequestId);
             
             _ = NotifyDeviceStatusChangedAsync("pair_request", deviceName, request.RequestId)
