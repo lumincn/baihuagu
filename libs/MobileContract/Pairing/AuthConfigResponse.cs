@@ -5,6 +5,7 @@ namespace MobileContract.Pairing;
 /// </summary>
 public record AuthConfigResponse
 {
+    public bool Success { get; init; }
     public string? SharedSecret { get; init; }
     public string? Message { get; init; }
 }

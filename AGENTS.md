@@ -41,40 +41,41 @@ C:\Users\lumin\DevecostudioProjects\
 | 花阁 | `./hg` | `.\hg.ps1` |
 
 > 当前架构已从单体后台拆分为 3 个独立后端服务：
-> - **TaskRunner.Family** (8788) — 家庭/亲子功能（任务、成就、OpenClaw、设备配对）
-> - **TaskRunner.AI** (8791) — AI 模型、聊天、配置管理
-> - **TaskRunner.Vault** (8790) — 知识库、同步、搜索、索引
+> - **Baihua.Family** (8788) — 家庭/亲子功能（任务、成就、OpenClaw、设备配对）
+> - **Baihua.AI** (8791) — AI 模型、聊天、配置管理
+> - **Baihua.Vault** (8790) — 知识库、同步、搜索、索引
 >
-> 3 个服务共用同一个 SQLite `taskrunner.db`（通过 `Core.Shared` 共享数据层）。
+> 3 个服务共用同一个 SQLite `baihua.db`（通过 `Baihua.Core` 共享数据层）。
 
 ## 助手 / 自动化约定
 
 - **只要本仓库内 `dotnet build` 成功**，即应保证后台处于运行状态：
-  - TaskRunner.Family **8788**、TaskRunner.AI **8791**、TaskRunner.Vault **8790**、WebUI **5177**
+  - Baihua.Family **8788**、Baihua.AI **8791**、Baihua.Vault **8790**、Baihua.Web **5177**
   - 若未监听，应在释放端口/处理文件锁后 **`dotnet watch run`** 拉起对应服务
-- **WebUI 与 TaskRunner 之间的共享数据类型和 API 接口定义必须放在 `TaskRunner.Contracts`**，两边禁止各自重复定义。新增或修改 API 契约时，先更新 Contracts，再让两边引用同一版本。
-- **共享业务服务（如 `VaultSettingsService`、`VaultNoteIndexer`）放在 `Core.Shared`**，`TaskRunner.Family` 与 `TaskRunner.Vault` 均通过引用 `Core.Shared` 使用，避免 HTTP 调用开销。
+- **WebUI 与后端之间的共享数据类型和 API 接口定义必须放在 `Baihua.Contracts`**，两边禁止各自重复定义。新增或修改 API 契约时，先更新 Contracts，再让两边引用同一版本。
+- **共享业务服务（如 `VaultSettingsService`、`VaultNoteIndexer`）放在 `Baihua.Core`**，`Baihua.Family`、`Baihua.Vault` 和 `Baihua.AI` 均通过引用 `Baihua.Core` 使用，避免 HTTP 调用开销。
 - **`git push` 失败时**，先启动代理再重试：`pwsh -File "C:\Users\lumin\myhysteria\start.ps1"`，等待几秒后设置 `$env:HTTPS_PROXY="socks5://127.0.0.1:1080"` 再 `git push`。
 
 ## 目录
 
-- `services/TaskRunner.Family/`：家庭版主后台（亲子功能、设备管理）
-- `services/TaskRunner.AI/`：AI 微服务（模型、聊天、配置）
-- `services/TaskRunner.Vault/`：知识库微服务（Vault、Sync、Search）
-- `services/WebUI.Family/`：家庭版 Web 界面（Blazor Server）
-- `services/TaskRunner.Contracts/`：共享 DTO 与接口契约
-- `services/Core.Shared/`：共享服务层（含 VaultSettingsService、DeviceService 等）
-- `services/TaskRunner.Data/`：共享 EF Core 数据层
+- `services/Baihua.Family/`：家庭版主后台（亲子功能、设备管理）
+- `services/Baihua.AI/`：AI 微服务（模型、聊天、配置）
+- `services/Baihua.Vault/`：知识库微服务（Vault、Sync、Search）
+- `services/Baihua.Web/`：家庭版 Web 界面（Blazor Server）
+- `services/Baihua.Contracts/`：共享 DTO 与接口契约
+- `services/Baihua.Core/`：共享服务层（含 VaultSettingsService、DeviceService 等）
+- `services/Baihua.Data/`：共享 EF Core 数据层
+- `services/BaiHua.slnx`：服务端解决方案（包含所有 services/ 项目及 libs/MobileContract）
+- `services/bh` / `services/bh.ps1`：极简 CLI 工具（Linux/Mac / Windows）
 - `libs/BaihuaSdk/`：跨平台移动端 SDK（net9.0;net10.0，零 MAUI 依赖，主要 target net10.0）
 - `libs/MobileContract/`：移动端契约（DTO、接口定义）
-- `clients/MobileApp.Maui/`：花圃（BaiHua.Nursery）— 移动端技术实验与验证工具（非正式发布 App，详见下方说明）
-- `clients/MobileApp.Clients.slnx`：花圃解决方案（包含 BaihuaSdk + MobileContract + MobileApp.Maui）
-- `bh`：极简 CLI 工具（Linux/Mac）
+- `clients/Huapu/`：花圃（BaiHua.Nursery）— 移动端技术实验与验证工具（非正式发布 App，详见下方说明）
+- `clients/Huapu.slnx`：花圃解决方案（包含 BaihuaSdk + MobileContract + Huapu）
 - `docs/`：协议与架构文档
 - `scripts/`：开发、发布、部署脚本
-- `tests/BaihuaSdk.Tests/`：SDK 单元测试与集成测试
-- `tests/MobileApp.Maui.Tests/`：MAUI DI 回归测试
-- `tests/TaskRunner.Family.Tests/`：后端配对服务测试
+- `tests/Baihua.Family.Tests/`：后端配对服务测试
+- `tests/Baihua.Sdk.Tests/`：SDK 单元测试与集成测试
+- `tests/Huapu.Tests/`：MAUI DI 回归测试
 
 ## 访问授权
 
@@ -89,17 +90,17 @@ C:\Users\lumin\DevecostudioProjects\
 
 ```bash
 # 开发模式（Linux/macOS，一键启动全部 3 个后台 + WebUI）
-./bh dashboard
+cd services && ./bh dashboard
 
 # 或手动分别启动
 # 终端 1
-cd services/TaskRunner.AI && dotnet watch run --non-interactive --no-hot-reload --urls "http://0.0.0.0:8791"
+cd services/Baihua.AI && dotnet watch run --non-interactive --no-hot-reload --urls "http://0.0.0.0:8791"
 # 终端 2
-cd services/TaskRunner.Vault && dotnet watch run --non-interactive --no-hot-reload --urls "http://0.0.0.0:8790"
+cd services/Baihua.Vault && dotnet watch run --non-interactive --no-hot-reload --urls "http://0.0.0.0:8790"
 # 终端 3
-cd services/TaskRunner.Family && dotnet watch run --non-interactive --no-hot-reload
+cd services/Baihua.Family && dotnet watch run --non-interactive --no-hot-reload
 # 终端 4
-cd services/WebUI.Family && dotnet watch run --non-interactive
+cd services/Baihua.Web && dotnet watch run --non-interactive
 
 # 编译验证（推送前必须执行）
 dotnet build services/BaiHua.slnx -c Release
@@ -109,19 +110,19 @@ dotnet build services/BaiHua.slnx -c Release
 
 | 服务 | 端口 | 说明 |
 |------|------|------|
-| TaskRunner.Family | 8788 | HTTP API（家庭/亲子功能） |
-| TaskRunner.AI | 8791 | HTTP API（AI 模型与配置） |
-| TaskRunner.Vault | 8790 | HTTP API（知识库、同步、搜索） |
-| WebUI | 5177 | HTTP Blazor Server |
+| Baihua.Family | 8788 | HTTP API（家庭/亲子功能、设备管理） |
+| Baihua.AI | 8791 | HTTP API（AI 模型与配置） |
+| Baihua.Vault | 8790 | HTTP API（知识库、同步、搜索） |
+| Baihua.Web | 5177 | HTTP Blazor Server |
 
 ## 移动端兼容
 
 移动端（鸿蒙/安卓）通过 `http://<server>:8788` 发现服务器并调用 API。
-`TaskRunner.Family` 在 8788 上保留了一个**转发中间件**，将移动端调用的 Vault 域 API 路径（如 `/mg/manifest`、`/mg/file`、`/mg/cards`、`/mg/vaults` 等）透明转发到 `TaskRunner.Vault`（8790）。因此 **移动端代码无需任何改动**。
+`Baihua.Family` 在 8788 上保留了一个**转发中间件**，将移动端调用的 Vault 域 API 路径（如 `/mg/manifest`、`/mg/file`、`/mg/cards`、`/mg/vaults` 等）透明转发到 `Baihua.Vault`（8790）。因此 **移动端代码无需任何改动**。
 
 授权与认证：
 - 局域网发现/配对阶段通过 HMAC 签名（共享 `sharedSecret`）校验设备身份。
-- 转发到 `TaskRunner.Vault` 时，`TaskRunner.Family` 会为已授权设备自动附加 `Authorization: Bearer <accessToken>`，Vault 侧校验 Bearer Token 或本机回环请求。
+- 转发到 `Baihua.Vault` 时，`Baihua.Family` 会为已授权设备自动附加 `Authorization: Bearer <accessToken>`，Vault 侧校验 Bearer Token 或本机回环请求。
 
 ## BaihuaSdk（跨平台移动端 SDK）
 
@@ -142,19 +143,19 @@ dotnet build services/BaiHua.slnx -c Release
 
 ```bash
 # 运行 SDK 单元测试
-dotnet test tests/BaihuaSdk.Tests/BaihuaSdk.Tests.csproj
+dotnet test tests/Baihua.Sdk.Tests/
 
 # 运行集成测试（需要百花服务器）
 export BaiHua_TEST_URL=http://192.168.3.x:8788
 export BaiHua_TEST_SECRET=<shared-secret>
 export BaiHua_TEST_VAULT_ID=<vault-id>
-dotnet test tests/BaihuaSdk.Tests/BaihuaSdk.Tests.csproj --filter Integration
+dotnet test tests/Baihua.Sdk.Tests/ --filter Integration
 ```
 
 ## 花圃 / BaiHua.Nursery（移动端技术实验与验证工具）
 
-**位置**: `clients/MobileApp.Maui/` — .NET MAUI Blazor Hybrid App。
-**解决方案**: `clients/MobileApp.Clients.slnx`（包含 BaihuaSdk + MobileContract + MobileApp.Maui）
+**位置**: `clients/Huapu/` — .NET MAUI Blazor Hybrid App。
+**解决方案**: `clients/Huapu.slnx`（包含 BaihuaSdk + MobileContract + Huapu）
 
 > **定位说明**：花圃（BaiHua.Nursery）是百花服务对移动端支持的**技术验证工具**，用于验证 BaihuaSdk 协议、配对流程、同步功能等在真实移动设备上的表现。它**不是正式发布的 App**，不具备产品级功能完整性。花记的正式移动端是鸿蒙端（ArkUI）和安卓端（Jetpack Compose），它们功能远超花圃。
 >
@@ -189,15 +190,15 @@ dotnet test tests/BaihuaSdk.Tests/BaihuaSdk.Tests.csproj --filter Integration
 **组件拆分**：
 - `SyncContent.razor` / `PairingContent.razor`：可复用内容组件，供 KnowledgePage 和独立页面共用
 
-- **Android**: `dotnet build -f net9.0-android -c Release` → APK 在 `bin/Release/net9.0-android/com.lumin.BaiHua-Signed.apk`
+- **Android**: `dotnet build clients/Huapu.slnx -f net9.0-android -c Release` → APK 在 `clients/Huapu/bin/Release/net9.0-android/com.lumin.BaiHua-Signed.apk`
 - **iOS**: 需要 macOS + Xcode（GitHub Actions CI 已配置 `.github/workflows/ci.yml`）
 
 ```bash
 # Android Release 编译
-dotnet build -f net9.0-android -c Release
+dotnet build clients/Huapu.slnx -f net9.0-android -c Release
 
 # 安装到手机
-adb install clients/MobileApp.Maui/bin/Release/net9.0-android/com.lumin.BaiHua-Signed.apk
+adb install clients/Huapu/bin/Release/net9.0-android/com.lumin.BaiHua-Signed.apk```
 ```
 
 ### 花圃 Honor/部分 Android 设备 .NET 10 兼容性

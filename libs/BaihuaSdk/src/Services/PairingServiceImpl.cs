@@ -208,13 +208,45 @@ public class PairingServiceImpl : IPairingService, IDeviceRegistrationService
     }
 
     /// <inheritdoc />
-    /// <remarks>
-    /// [后端未实现 /mg/auth/config] 当前服务端未实现认证配置端点，
-    /// 因此直接抛出 <see cref="NotSupportedException"/>。待后端实现后可移除。
-    /// </remarks>
-    public Task<AuthConfigResponse> GetAuthConfigAsync(AuthConfigRequest request, CancellationToken cancellationToken = default)
+    public async Task<AuthConfigResponse> GetAuthConfigAsync(AuthConfigRequest request, CancellationToken cancellationToken = default)
     {
-        throw new NotSupportedException("[后端未实现 /mg/auth/config] 移动端 SDK 暂不支持获取认证配置端点。");
+        EnsureInitialized();
+        var transport = new HttpTransport(_httpClient, _signer, _serverUrl);
+        var body = new { deviceId = request.DeviceId, deviceName = request.DeviceName ?? _deviceName };
+        var resp = await transport.PostJsonAsync<JsonElement>("/mg/auth/config", body, ct: cancellationToken);
+
+        if (resp.IsSuccess && resp.Data is JsonElement root)
+        {
+            if (root.ValueKind != JsonValueKind.Object)
+                return new AuthConfigResponse { Success = false, Message = "返回格式错误" };
+
+            // HTTP 200 但业务上不成功
+            if (GetString(root, "error") is { } serverErr)
+                return new AuthConfigResponse { Success = false, Message = serverErr };
+
+            return new AuthConfigResponse
+            {
+                Success = GetBool(root, "success"),
+                SharedSecret = GetString(root, "sharedSecret"),
+                Message = GetString(root, "message")
+            };
+        }
+
+        // 401 Unauthorized
+        if (resp.StatusCode == 401)
+        {
+            return new AuthConfigResponse
+            {
+                Success = false,
+                Message = HttpTransport.ExtractServerError(resp.RawBody) ?? "设备未授权"
+            };
+        }
+
+        var httpMsg = $"HTTP {(int)resp.StatusCode}";
+        var bodyErr = HttpTransport.ExtractServerError(resp.RawBody);
+        if (!string.IsNullOrEmpty(bodyErr))
+            httpMsg += $": {bodyErr}";
+        return new AuthConfigResponse { Success = false, Message = httpMsg };
     }
 
     // ---- helpers ----

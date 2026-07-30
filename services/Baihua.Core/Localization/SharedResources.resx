@@ -2701,4 +2701,16 @@ User question: {query}</value>
   <data name="OpenClaw_Profile_Balanced_Speed" xml:space="preserve">
     <value>🚀 Fast</value>
   </data>
+  <data name="AuthConfig_DeviceIdRequired" xml:space="preserve">
+    <value>deviceId 不能为空</value>
+  </data>
+  <data name="AuthConfig_DeviceNotAuthorized" xml:space="preserve">
+    <value>设备未授权</value>
+  </data>
+  <data name="AuthConfig_Success" xml:space="preserve">
+    <value>ok</value>
+  </data>
+  <data name="AuthConfig_DeviceNotAuthorizedMessage" xml:space="preserve">
+    <value>Please authorize the device in the management console.</value>
+  </data>
 </root>

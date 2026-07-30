@@ -2703,4 +2703,16 @@ TOOL_CALL: {{&quot;tool&quot;:&quot;工具名&quot;,&quot;arguments&quot;:{{{arg
   <data name="OpenClaw_Profile_Balanced_Speed" xml:space="preserve">
     <value>🚀 快</value>
   </data>
+  <data name="AuthConfig_DeviceIdRequired" xml:space="preserve">
+    <value>deviceId 不能为空</value>
+  </data>
+  <data name="AuthConfig_DeviceNotAuthorized" xml:space="preserve">
+    <value>设备未授权</value>
+  </data>
+  <data name="AuthConfig_Success" xml:space="preserve">
+    <value>ok</value>
+  </data>
+  <data name="AuthConfig_DeviceNotAuthorizedMessage" xml:space="preserve">
+    <value>请先在管理后台的「设备管理」中授权该设备。</value>
+  </data>
 </root>
