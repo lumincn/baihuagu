@@ -30,6 +30,12 @@ public class MobileDeviceServiceAdapter :
 
     #region IPairingService
 
+    /// <inheritdoc />
+    public void Initialize(string serverUrl)
+    {
+        // 服务端适配器无需设置服务器地址
+    }
+
     public Task<PairCodeResponse> GetPairCodeAsync(CancellationToken cancellationToken = default)
     {
         var code = _deviceService.GetPairCode();

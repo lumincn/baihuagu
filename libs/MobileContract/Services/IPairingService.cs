@@ -8,6 +8,11 @@ namespace MobileContract.Services;
 public interface IPairingService
 {
     /// <summary>
+    /// 设置后续配对操作使用的服务器地址。
+    /// </summary>
+    void Initialize(string serverUrl);
+
+    /// <summary>
     /// 获取当前配对码和设备ID
     /// </summary>
     Task<PairCodeResponse> GetPairCodeAsync(CancellationToken cancellationToken = default);

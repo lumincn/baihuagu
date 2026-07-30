@@ -1,4 +1,5 @@
 using ZXing.Net.Maui;
+using ZXing.Net.Maui.Controls;
 
 namespace MobileApp.Maui.Pages;
 
@@ -9,9 +10,31 @@ public partial class ScanPage : ContentPage
     public ScanPage()
     {
         InitializeComponent();
+
+        // 显式设置扫描选项：只识别二维码（2D），提高识别率
+        CameraBarcodeReaderView.Options = new BarcodeReaderOptions
+        {
+            Formats = BarcodeFormats.TwoDimensional,
+            AutoRotate = true,
+            TryHarder = true,
+            Multiple = false,
+        };
     }
 
     public Task<string?> WaitForResultAsync() => _tcs.Task;
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        CameraBarcodeReaderView.IsDetecting = true;
+    }
+
+    protected override void OnDisappearing()
+    {
+        CameraBarcodeReaderView.IsDetecting = false;
+        CameraBarcodeReaderView.IsTorchOn = false;
+        base.OnDisappearing();
+    }
 
     private void OnBarcodesDetected(object sender, BarcodeDetectionEventArgs e)
     {

@@ -15,6 +15,7 @@
         <zxing:CameraBarcodeReaderView
             Grid.Row="1"
             x:Name="CameraBarcodeReaderView"
+            IsDetecting="True"
             BarcodesDetected="OnBarcodesDetected"
             VerticalOptions="FillAndExpand"
             HorizontalOptions="FillAndExpand" />
