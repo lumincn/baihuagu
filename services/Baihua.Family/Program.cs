@@ -614,6 +614,16 @@ app.Use(async (context, next) =>
                             request.Headers.Authorization =
                                 new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authorizedDevice.AccessToken);
                         }
+                        else
+                        {
+                            // 未找到已授权设备 → 拒绝转发，防止未授权设备通过 HMAC 全局密钥绕过授权
+                            var logger2 = context.RequestServices.GetService<ILogger<Program>>();
+                            logger2?.LogWarning("[AUTH-DIAG] Vault forward blocked: no authorized device for IP {RemoteIp}, path={Path}",
+                                remoteIp, path);
+                            context.Response.StatusCode = 401;
+                            await context.Response.WriteAsJsonAsync(new { error = "Device not authorized. Please complete pairing first." });
+                            return;
+                        }
                     }
                 }
                 catch (Exception ex)
