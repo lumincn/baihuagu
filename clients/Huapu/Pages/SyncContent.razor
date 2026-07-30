@@ -4,6 +4,7 @@
 @inject BaihuaSdk.Storage.IServerConfigStore ServerStore
 @inject BaihuaSdk.Storage.ISecureStore SecureStore
 @inject MobileApp.Maui.Services.IVaultStorageFactory VaultStorageFactory
+@inject MobileContract.Services.IPairingService PairingService
 @inject NavigationManager Nav
 @inject IJSRuntime JS
 @implements IDisposable
@@ -156,6 +157,30 @@ else
                     Signer.SetServerSecret(current.HttpUrl, secret);
             }
             _hasSecret = Signer.HasServerSecret(current.HttpUrl);
+
+            // 本地密钥丢失时，尝试轻量查询（已授权设备无需完整注册流程）
+            if (!_hasSecret)
+            {
+                try
+                {
+                    PairingService.Initialize(current.HttpUrl);
+                    var config = await PairingService.GetAuthConfigAsync(
+                        new MobileContract.Pairing.AuthConfigRequest
+                        {
+                            DeviceId = MobileApp.Maui.Services.DeviceInfoHelper.GetDeviceId()
+                        });
+                    if (config.Success && !string.IsNullOrEmpty(config.SharedSecret))
+                    {
+                        Signer.SetServerSecret(current.HttpUrl, config.SharedSecret);
+                        await SecureStore.SetAsync($"secret_{current.HttpUrl}", config.SharedSecret);
+                        _hasSecret = true;
+                    }
+                }
+                catch
+                {
+                    // GetAuthConfigAsync 失败（未授权/网络问题等），稍后走完整注册流程
+                }
+            }
         }
     }
 
