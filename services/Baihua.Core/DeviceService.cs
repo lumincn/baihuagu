@@ -288,6 +288,30 @@ namespace Baihua.Core;
                 return (true, existingAuthorized.AccessToken, null);
             }
 
+            // DeviceId 有 UNIQUE 约束：如果同 DeviceId 的记录已存在（如被撤销后重新授权），
+            // 更新状态为 Authorized 而非新增记录
+            var existingByDeviceId = !string.IsNullOrEmpty(request.DeviceId)
+                ? dbContext.AuthorizedDevices.FirstOrDefault(d => d.DeviceId == request.DeviceId)
+                : null;
+            if (existingByDeviceId != null)
+            {
+                _logger.LogInformation("设备重新授权（更新已撤销记录）: {DeviceName}, DeviceId: {DeviceId}, 原状态: {OldStatus}",
+                    request.DeviceName, request.DeviceId, existingByDeviceId.Status);
+                existingByDeviceId.Status = "Authorized";
+                existingByDeviceId.DeviceName = request.DeviceName;
+                existingByDeviceId.AccessToken = Guid.NewGuid().ToString("N");
+                existingByDeviceId.IpAddress = request.IpAddress ?? existingByDeviceId.IpAddress;
+                existingByDeviceId.AuthorizedTime = DateTime.UtcNow;
+                existingByDeviceId.UpdatedAt = DateTime.UtcNow;
+                dbContext.SaveChanges();
+
+                _requestResults[requestId] = "authorized";
+                _ = NotifyDeviceStatusChangedAsync("authorized", request.DeviceName, requestId);
+                _logger.LogInformation("设备已重新授权: {DeviceName}, DeviceId: {DeviceId}",
+                    request.DeviceName, existingByDeviceId.DeviceId);
+                return (true, existingByDeviceId.AccessToken, null);
+            }
+
             var newDeviceId = string.IsNullOrEmpty(request.DeviceId) ? Guid.NewGuid().ToString("N") : request.DeviceId;
             var accessToken = Guid.NewGuid().ToString("N");
 
@@ -300,7 +324,16 @@ namespace Baihua.Core;
                 IpAddress = request.IpAddress,
                 AuthorizedTime = DateTime.UtcNow
             });
-            dbContext.SaveChanges();
+            try
+            {
+                dbContext.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[AUTH-DIAG] SaveChanges failed when adding AuthorizedDevice: DeviceName={DeviceName}, DeviceId={DeviceId}, InnerException={InnerEx}",
+                    request.DeviceName, newDeviceId, ex.InnerException?.Message);
+                throw;
+            }
             
             _requestResults[requestId] = "authorized";
             
