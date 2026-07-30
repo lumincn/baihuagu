@@ -45,7 +45,18 @@ public class RequestSignatureService
         {
         }
 
-        return string.Empty;
+        // Family 版：自动生成共享密钥（避免 IP 白名单回退的安全漏洞）
+        // DB 中的密钥会在 GetSettings() 首次调用时自动生成并持久化，
+        // 此回退仅在 DB 尚未初始化时生效（临时内存密钥）
+        return GenerateRandomSecret();
+    }
+
+    /// <summary>生成随机 32 字符共享密钥</summary>
+    private static string GenerateRandomSecret()
+    {
+        const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+        var bytes = RandomNumberGenerator.GetBytes(32);
+        return new string(bytes.Select(b => chars[b % chars.Length]).ToArray());
     }
 
     /// <summary>

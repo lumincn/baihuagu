@@ -492,44 +492,13 @@ app.Use(async (context, next) =>
 
         if (signatureService.IsConfigured)
         {
-            // Cloud 版：使用 HMAC 签名验证
+            // HMAC 签名验证
             var signatureHeader = context.Request.Headers["X-Mobile-Signature"].FirstOrDefault();
             if (!signatureService.VerifySignature(context.Request.Method, context.Request.Path + context.Request.QueryString, body, signatureHeader))
             {
                 context.Response.StatusCode = 401;
                 await context.Response.WriteAsJsonAsync(new { error = "Invalid request signature" });
                 return;
-            }
-        }
-        else
-        {
-            // Family 版：未配置 sharedSecret 时，回退到 Bearer Token 验证
-            // 已授权设备的 IP 直接放行（与 FamilySyncAuthorizationStrategy 保持一致）
-            var remoteIp = context.Connection.RemoteIpAddress?.ToString();
-            var deviceService = context.RequestServices.GetService<DeviceService>();
-            var isAuthorizedIp = !string.IsNullOrEmpty(remoteIp) && deviceService != null &&
-                deviceService.GetAuthorizedDevices().Any(d => remoteIp.Equals(d.IpAddress, StringComparison.OrdinalIgnoreCase));
-
-            if (isAuthorizedIp)
-            {
-                logger.LogInformation("[Signature] Allowing authorized device from IP: {RemoteIP} for {Path}", remoteIp, path);
-            }
-            else
-            {
-                var authHeader = context.Request.Headers.Authorization.FirstOrDefault();
-                if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
-                {
-                    context.Response.StatusCode = 401;
-                    await context.Response.WriteAsJsonAsync(new { error = "Bearer Token authentication required" });
-                    return;
-                }
-                var token = authHeader.Substring("Bearer ".Length).Trim();
-                if (deviceService == null || !deviceService.ValidateAccessToken(token))
-                {
-                    context.Response.StatusCode = 401;
-                    await context.Response.WriteAsJsonAsync(new { error = "Invalid access token" });
-                    return;
-                }
             }
         }
     }
