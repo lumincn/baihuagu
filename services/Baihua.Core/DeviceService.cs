@@ -430,24 +430,31 @@ namespace Baihua.Core;
         /// <summary>
         /// 自动授权设备（无需等待 WebUI 审批）
         /// </summary>
-        public (bool success, string? accessToken, string? error) AutoAuthorizeDevice(string deviceName, string? ipAddress = null)
+        public (bool success, string? accessToken, string? error) AutoAuthorizeDevice(
+            string deviceName, string? ipAddress = null, string? deviceId = null)
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
 
-            // 检查是否已存在同名授权设备
-            var existing = dbContext.AuthorizedDevices
-                .FirstOrDefault(d => d.DeviceName == deviceName && d.Status == "Authorized");
+            // 优先通过真实 deviceId 检查是否已授权
+            var existing = deviceId != null
+                ? dbContext.AuthorizedDevices.FirstOrDefault(d => d.DeviceId == deviceId && d.Status == "Authorized")
+                : null;
+            if (existing == null)
+            {
+                existing = dbContext.AuthorizedDevices
+                    .FirstOrDefault(d => d.DeviceName == deviceName && d.Status == "Authorized");
+            }
             if (existing != null)
             {
                 return (true, existing.AccessToken, null);
             }
 
-            var deviceId = Guid.NewGuid().ToString("N");
+            var resolvedDeviceId = deviceId ?? Guid.NewGuid().ToString("N");
             var accessToken = Guid.NewGuid().ToString("N");
 
             dbContext.AuthorizedDevices.Add(new AuthorizedDevice
             {
-                DeviceId = deviceId,
+                DeviceId = resolvedDeviceId,
                 DeviceName = deviceName,
                 AccessToken = accessToken,
                 Status = "Authorized",
@@ -459,7 +466,7 @@ namespace Baihua.Core;
             });
             dbContext.SaveChanges();
 
-            _logger.LogInformation("设备已自动授权: {DeviceName}, DeviceId: {DeviceId}", deviceName, deviceId);
+            _logger.LogInformation("设备已自动授权: {DeviceName}, DeviceId: {DeviceId}", deviceName, resolvedDeviceId);
             return (true, accessToken, null);
         }
 

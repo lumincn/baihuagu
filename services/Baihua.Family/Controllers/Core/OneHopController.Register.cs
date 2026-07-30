@@ -117,7 +117,7 @@ public partial class OneHopController
                 {
                     _logger.LogInformation("Auto-authorize enabled, authorizing device directly: {DeviceName} ({DeviceId})",
                         deviceName, request.DeviceId);
-                    var (success, accessToken, error) = _deviceService.AutoAuthorizeDevice(deviceName, ipAddress);
+                    var (success, accessToken, error) = _deviceService.AutoAuthorizeDevice(deviceName, ipAddress, request.DeviceId);
                     if (success)
                     {
                         // 清理刚创建的 pending 请求
