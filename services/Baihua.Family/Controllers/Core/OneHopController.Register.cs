@@ -112,6 +112,32 @@ public partial class OneHopController
                 // 自动创建局域网发现待授权请求（无需扫码）
                 var pairRequest = _deviceService.SubmitLanDiscoveryRequest(deviceName, ipAddress, request.DeviceId);
 
+                // 自动授权模式：跳过等待，直接批准设备
+                if (_deviceService.AutoAuthorizeEnabled)
+                {
+                    _logger.LogInformation("Auto-authorize enabled, authorizing device directly: {DeviceName} ({DeviceId})",
+                        deviceName, request.DeviceId);
+                    var (success, accessToken, error) = _deviceService.AutoAuthorizeDevice(deviceName, ipAddress);
+                    if (success)
+                    {
+                        // 清理刚创建的 pending 请求
+                        _deviceService.RejectRequest(pairRequest.RequestId);
+                        return Ok(new
+                        {
+                            message = _loc["OneHop_DeviceAuthorized"],
+                            deviceId = request.DeviceId,
+                            deviceName = deviceName,
+                            serverName = serverName,
+                            ipAddress = ipAddress,
+                            requestId = request.DeviceId,
+                            authorized = true,
+                            accessToken = accessToken,
+                            sharedSecret = _signatureService.GetSharedSecret()
+                        });
+                    }
+                    _logger.LogWarning("Auto-authorize failed for {DeviceName}: {Error}", deviceName, error);
+                }
+
                 return Ok(new
                 {
                     message = _loc["OneHop_DeviceRegistered"],

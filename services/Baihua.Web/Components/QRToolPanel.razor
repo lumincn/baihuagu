@@ -64,6 +64,23 @@
                             </div>
                         </div>
                     </div>
+                    <!-- 自动授权开关 -->
+                    <div class="auto-auth-toggle mt-3">
+                        <label class="form-check form-switch d-flex align-items-center gap-2 mb-0">
+                            <input class="form-check-input" type="checkbox" role="switch"
+                                   checked="@_autoAuthorizeEnabled"
+                                   @onchange="ToggleAutoAuth"
+                                   disabled="@_isTogglingAutoAuth" />
+                            <span class="form-check-label">
+                                自动授权
+                                @if (_isTogglingAutoAuth)
+                                {
+                                    <span class="spinner-border spinner-border-sm ms-1" style="width:12px;height:12px;"></span>
+                                }
+                            </span>
+                        </label>
+                        <small class="text-muted d-block mt-1">开启后，扫码设备自动获得授权，无需手动审批</small>
+                    </div>
                 }
             }
             else if (!string.IsNullOrEmpty(_serverQRError))
@@ -175,6 +192,10 @@
     private bool _showAiKey = false;
     private bool _showGeneralQR = false;
 
+    // 自动授权
+    private bool _autoAuthorizeEnabled = false;
+    private bool _isTogglingAutoAuth = false;
+
     private void ToggleAiKey() => _showAiKey = !_showAiKey;
     private void ToggleGeneralQR() => _showGeneralQR = !_showGeneralQR;
 
@@ -188,10 +209,55 @@
     {
         if (firstRender)
         {
+            await LoadAutoAuthStatus();
             await LoadServerQRCode();
             await LoadMainAiApiKey();
         }
     }
+
+    private async Task LoadAutoAuthStatus()
+    {
+        try
+        {
+            var apiClient = HttpClientFactory.CreateClient("TaskRunnerApi");
+            var result = await apiClient.GetFromJsonAsync<AutoAuthStatusResponse>("api/devices/auto-auth");
+            _autoAuthorizeEnabled = result?.Enabled ?? false;
+            StateHasChanged();
+        }
+        catch
+        {
+            // 加载失败保持默认值
+        }
+    }
+
+    private async Task ToggleAutoAuth(ChangeEventArgs e)
+    {
+        _autoAuthorizeEnabled = e.Value is true;
+        _isTogglingAutoAuth = true;
+        try
+        {
+            var apiClient = HttpClientFactory.CreateClient("TaskRunnerApi");
+            var response = await apiClient.PostAsJsonAsync("api/devices/auto-auth",
+                new { enabled = _autoAuthorizeEnabled });
+            if (!response.IsSuccessStatusCode)
+            {
+                // 回退
+                _autoAuthorizeEnabled = !_autoAuthorizeEnabled;
+            }
+        }
+        catch
+        {
+            // 网络失败，回退
+            _autoAuthorizeEnabled = !_autoAuthorizeEnabled;
+        }
+        finally
+        {
+            _isTogglingAutoAuth = false;
+            StateHasChanged();
+        }
+    }
+
+    public record AutoAuthStatusResponse(bool Enabled);
 
     private async Task LoadMainAiApiKey()
     {

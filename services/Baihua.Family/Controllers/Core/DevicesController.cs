@@ -129,5 +129,33 @@ namespace Baihua.Family.Controllers
             var stats = _deviceService.GetMobileStats();
             return Ok(stats);
         }
+
+        /// <summary>
+        /// 获取自动授权开关状态。
+        /// </summary>
+        [HttpGet("auto-auth")]
+        public ActionResult GetAutoAuthStatus()
+        {
+            return Ok(new { enabled = _deviceService.AutoAuthorizeEnabled });
+        }
+
+        /// <summary>
+        /// 设置自动授权开关。
+        /// </summary>
+        [HttpPost("auto-auth")]
+        public IActionResult SetAutoAuthStatus([FromBody] AutoAuthRequest request)
+        {
+            _deviceService.AutoAuthorizeEnabled = request?.Enabled == true;
+            _logger.LogInformation("Auto-authorize set to: {Enabled}", _deviceService.AutoAuthorizeEnabled);
+            return Ok(new { success = true, enabled = _deviceService.AutoAuthorizeEnabled });
+        }
     }
+}
+
+/// <summary>
+/// 自动授权开关请求。
+/// </summary>
+public class AutoAuthRequest
+{
+    public bool Enabled { get; set; }
 }

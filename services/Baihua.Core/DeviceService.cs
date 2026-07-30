@@ -78,6 +78,11 @@ namespace Baihua.Core;
         // 局域网发现请求锁，防止同名设备创建多个 pending 请求
         private readonly object _lanDiscoveryLock = new();
 
+        /// <summary>
+        /// 是否开启自动授权（新设备扫描服务器二维码后自动批准，无需手动在 WebUI 授权）。
+        /// </summary>
+        public bool AutoAuthorizeEnabled { get; set; }
+
         public DeviceService(
             IConfiguration configuration, 
             ILogger<DeviceService> logger, 
