@@ -65,14 +65,26 @@ public partial class VaultSettingsService
                     if (!dbVaults.ContainsKey(dir))
                     {
                         var name = Path.GetFileName(dir);
+                        // 从父目录名推断行业：.../vaults/local/{industry}/{name}
+                        var industry = InferIndustryFromPath(dir, rootPath);
                         try
                         {
-                            AddVault(name, dir, "其他");
+                            AddVault(name, dir, industry);
                             added++;
                         }
                         catch (Exception ex)
                         {
                             _logger.LogWarning(ex, "同步知识库时跳过重复: {Path}", dir);
+                        }
+                    }
+                    else
+                    {
+                        // 已有知识库：校正行业（如果路径暗示的行业与数据库不符）
+                        var expectedIndustry = InferIndustryFromPath(dir, rootPath);
+                        var existing = dbVaults[dir];
+                        if (!string.Equals(existing.Industry, expectedIndustry, StringComparison.Ordinal))
+                        {
+                            UpdateVaultIndustryByPath(dir, expectedIndustry);
                         }
                     }
                 }
@@ -96,6 +108,41 @@ public partial class VaultSettingsService
         }
 
         return (added, removed);
+    }
+
+    private static string InferIndustryFromPath(string vaultDir, string rootPath)
+    {
+        // 物理结构：{rootPath}/local/{industry}/{vaultName}
+        // 父目录名即为行业名
+        var parentDir = Directory.GetParent(vaultDir);
+        if (parentDir == null) return "其他";
+
+        var parentName = parentDir.Name;
+        // 如果父目录是 "local" 或等于根目录名，说明不在标准结构中，回退到 "其他"
+        if (string.IsNullOrWhiteSpace(parentName) ||
+            string.Equals(parentName, "local", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(parentName, Path.GetFileName(rootPath), StringComparison.OrdinalIgnoreCase))
+            return "其他";
+
+        return parentName;
+    }
+
+    private void UpdateVaultIndustryByPath(string vaultPath, string newIndustry)
+    {
+        using var dbContext = _dbContextFactory.CreateDbContext();
+        lock (_vaultPathLock)
+        {
+            var vault = dbContext.Vaults.FirstOrDefault(v => v.Path == vaultPath && !v.IsDeleted);
+            if (vault == null) return;
+
+            if (string.Equals(vault.Industry, newIndustry, StringComparison.Ordinal))
+                return;
+
+            _logger.LogInformation("校正知识库行业: {Path} \"{Old}\" → \"{New}\"",
+                vaultPath, vault.Industry, newIndustry);
+            vault.Industry = newIndustry;
+            dbContext.SaveChanges();
+        }
     }
 
     private static List<string> ParseTags(string? tags)
