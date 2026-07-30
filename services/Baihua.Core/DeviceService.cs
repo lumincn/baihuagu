@@ -187,12 +187,15 @@ namespace Baihua.Core;
         {
             lock (_lanDiscoveryLock)
             {
+                _logger.LogInformation("[AUTH-DIAG] SubmitLanDiscoveryRequest: DeviceName={DeviceName}, DeviceId={DeviceId}, Ip={Ip}", 
+                    deviceName, deviceId, ipAddress);
+                    
                 var existingRequest = _pendingRequests.Values
                     .FirstOrDefault(r => r.DeviceName.Equals(deviceName, StringComparison.OrdinalIgnoreCase));
                 
                 if (existingRequest != null)
                 {
-                    _logger.LogInformation("局域网发现请求已存在: {DeviceName}, 请求ID: {RequestId}", 
+                    _logger.LogInformation("[AUTH-DIAG] LAN request already exists: {DeviceName}, RequestId={RequestId}", 
                         deviceName, existingRequest.RequestId);
                     return existingRequest;
                 }
@@ -304,12 +307,14 @@ namespace Baihua.Core;
 
         public bool RejectRequest(string requestId)
         {
+            _logger.LogInformation("[AUTH-DIAG] RejectRequest: RequestId={RequestId}, PendingCount={Count}",
+                requestId, _pendingRequests.Count);
             if (_pendingRequests.TryRemove(requestId, out var request))
             {
                 _requestResults[requestId] = "rejected";
                 
-                _logger.LogInformation("设备配对请求已拒绝: {DeviceName}, RequestId: {RequestId}", 
-                    request.DeviceName, requestId);
+                _logger.LogInformation("[AUTH-DIAG] Rejected: {DeviceName}, NewPendingCount={Count}",
+                    request.DeviceName, _pendingRequests.Count);
                 
                 _ = NotifyDeviceStatusChangedAsync("rejected", request.DeviceName, requestId);
                 
@@ -433,6 +438,9 @@ namespace Baihua.Core;
         public (bool success, string? accessToken, string? error) AutoAuthorizeDevice(
             string deviceName, string? ipAddress = null, string? deviceId = null)
         {
+            _logger.LogInformation("[AUTH-DIAG] AutoAuthorizeDevice called: DeviceName={DeviceName}, DeviceId={DeviceId}",
+                deviceName, deviceId);
+                
             using var dbContext = _dbContextFactory.CreateDbContext();
 
             // 优先通过真实 deviceId 检查是否已授权
@@ -446,6 +454,8 @@ namespace Baihua.Core;
             }
             if (existing != null)
             {
+                _logger.LogInformation("[AUTH-DIAG] Device already authorized: {DeviceName}, DeviceId={DeviceId}, AccessToken={AccessToken}",
+                    deviceName, existing.DeviceId, existing.AccessToken);
                 return (true, existing.AccessToken, null);
             }
 

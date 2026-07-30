@@ -110,18 +110,30 @@ public partial class OneHopController
                 }
 
                 // 自动创建局域网发现待授权请求（无需扫码）
+                _logger.LogInformation("[AUTH-DIAG] Creating pending request for device: {DeviceName} ({DeviceId})",
+                    deviceName, request.DeviceId);
                 var pairRequest = _deviceService.SubmitLanDiscoveryRequest(deviceName, ipAddress, request.DeviceId);
+                _logger.LogInformation("[AUTH-DIAG] Pending request created: RequestId={RequestId}",
+                    pairRequest.RequestId);
 
                 // 自动授权模式：跳过等待，直接批准设备
+                _logger.LogInformation("[AUTH-DIAG] AutoAuthorizeEnabled={Enabled}, deviceId={DeviceId}, deviceName={DeviceName}",
+                    _deviceService.AutoAuthorizeEnabled, request.DeviceId, deviceName);
+
                 if (_deviceService.AutoAuthorizeEnabled)
                 {
-                    _logger.LogInformation("Auto-authorize enabled, authorizing device directly: {DeviceName} ({DeviceId})",
-                        deviceName, request.DeviceId);
+                    _logger.LogInformation("[AUTH-DIAG] Auto-authorizing device: {DeviceName} ({DeviceId}) @ {IpAddress}",
+                        deviceName, request.DeviceId, ipAddress);
                     var (success, accessToken, error) = _deviceService.AutoAuthorizeDevice(deviceName, ipAddress, request.DeviceId);
+                    _logger.LogInformation("[AUTH-DIAG] AutoAuthorize result: Success={Success}, AccessToken={AccessToken}, Error={Error}",
+                        success, accessToken, error);
                     if (success)
                     {
                         // 清理刚创建的 pending 请求
+                        _logger.LogInformation("[AUTH-DIAG] Cleaning pending request: {RequestId}", pairRequest.RequestId);
                         _deviceService.RejectRequest(pairRequest.RequestId);
+                        _logger.LogInformation("[AUTH-DIAG] Returning authorized: DeviceId={DeviceId}, AccessToken={AccessToken}",
+                            request.DeviceId, accessToken);
                         return Ok(new
                         {
                             message = _loc["OneHop_DeviceAuthorized"],
