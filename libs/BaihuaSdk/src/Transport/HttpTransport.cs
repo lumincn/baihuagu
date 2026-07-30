@@ -59,6 +59,28 @@ public class HttpTransport
         Dictionary<string, string>? query = null, CancellationToken ct = default) =>
         SendJsonAsync<T>(HttpMethod.Delete, path, query, null, ct);
 
+    /// <summary>
+    /// 发起 POST 流式请求（SSE），返回原始 HttpResponseMessage。
+    /// 调用方负责读取流并 dispose response。
+    /// </summary>
+    public async Task<HttpResponseMessage> PostStreamAsync(
+        string path, object? body,
+        Dictionary<string, string>? query = null, CancellationToken ct = default)
+    {
+        var url = BuildUrl(path, query);
+        var bodyStr = body != null ? JsonSerializer.Serialize(body) : null;
+
+        var request = new HttpRequestMessage(HttpMethod.Post, url);
+        if (bodyStr != null)
+            request.Content = new StringContent(bodyStr, Encoding.UTF8, "application/json");
+
+        InjectSignature(request, bodyStr);
+
+        var response = await _client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+        response.EnsureSuccessStatusCode();
+        return response;
+    }
+
     // ---- core send logic ----
 
     private async Task<ApiResponse<string>> SendAsync(

@@ -133,25 +133,14 @@ public class MasterService : IMasterService
 
     public async Task<bool> DeleteMasterAsync(string masterId)
     {
-        var server = await _serverStore.GetCurrentServerAsync();
-        if (server == null)
-            throw new InvalidOperationException("未选择服务器");
-
-        var baseUrl = HttpTransport.NormalizeBaseUrl(server.HttpUrl);
-        var url = $"{baseUrl}/api/master/{masterId}";
-
-        using var request = new HttpRequestMessage(HttpMethod.Delete, url);
-        var signHeaders = _signer.SignRequest(HttpMethod.Delete.Method, url, null, baseUrl);
-        foreach (var (k, v) in signHeaders)
-            request.Headers.TryAddWithoutValidation(k, v);
-
-        using var response = await _httpClient.SendAsync(request);
-        if (response.IsSuccessStatusCode)
+        var transport = await CreateTransportAsync();
+        var response = await transport.DeleteJsonAsync<object>($"/api/master/{masterId}");
+        if (response.IsSuccess)
         {
             await _cacheService.ClearConversationAsync(masterId);
             OnMastersUpdated?.Invoke(this, EventArgs.Empty);
         }
-        return response.IsSuccessStatusCode;
+        return response.IsSuccess;
     }
 
     public async Task<ApprenticeProfileResponse> GetProfileAsync(string masterId, bool useCache = true)
@@ -404,17 +393,10 @@ public class MasterService : IMasterService
         string url, string jsonBody, string baseUrl,
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Post, url)
-        {
-            Content = new StringContent(jsonBody, System.Text.Encoding.UTF8, "application/json")
-        };
-
-        var signHeaders = _signer.SignRequest(HttpMethod.Post.Method, url, jsonBody, baseUrl);
-        foreach (var (k, v) in signHeaders)
-            request.Headers.TryAddWithoutValidation(k, v);
-
-        using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
-        response.EnsureSuccessStatusCode();
+        // 通过 SDK HttpTransport.PostStreamAsync 发起，而非直接操作 HttpClient
+        var transport = new HttpTransport(_httpClient, _signer, baseUrl);
+        using var response = await transport.PostStreamAsync("/api/master/chat/stream",
+            JsonSerializer.Deserialize<MasterChatRequest>(jsonBody), ct: ct);
 
         await using var stream = await response.Content.ReadAsStreamAsync(ct);
         using var reader = new StreamReader(stream);
@@ -456,17 +438,10 @@ public class MasterService : IMasterService
         string url, string jsonBody, string baseUrl,
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Post, url)
-        {
-            Content = new StringContent(jsonBody, System.Text.Encoding.UTF8, "application/json")
-        };
-
-        var signHeaders = _signer.SignRequest(HttpMethod.Post.Method, url, jsonBody, baseUrl);
-        foreach (var (k, v) in signHeaders)
-            request.Headers.TryAddWithoutValidation(k, v);
-
-        using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead, ct);
-        response.EnsureSuccessStatusCode();
+        // 通过 SDK HttpTransport.PostStreamAsync 发起非流式后备请求
+        var transport = new HttpTransport(_httpClient, _signer, baseUrl);
+        using var response = await transport.PostStreamAsync("/api/master/chat/stream",
+            JsonSerializer.Deserialize<MasterChatRequest>(jsonBody), ct: ct);
 
         var fullContent = await response.Content.ReadAsStringAsync(ct);
 
