@@ -456,7 +456,8 @@ app.Use(async (context, next) =>
         "/mobile-vaults/push",
         // MobileGateway 风格路径别名
         "/mg/manifest", "/mg/file", "/mg/cards",
-        "/mg/vaults", "/mg/pair"
+        "/mg/vaults", "/mg/pair",
+        "/mg/devices/revoke"
     };
 
     // 以下路径为公开路径，无需 HMAC 签名（设备注册、密钥获取等初始化流程）
@@ -532,6 +533,7 @@ app.Use(async (context, next) =>
         "/mg/pair", "/mg/pair/check",
         "/mg/onehop/register-device",
         "/mg/auth/config", "/mg/verify-token",
+        "/mg/devices/revoke",
     };
 
     if (publicPaths.Any(p => path.StartsWith(p)))
@@ -696,6 +698,9 @@ app.MapGet("/health", (Baihua.Family.Services.ServerAddressService sas) =>
         serverName = settings.DisplayName
     });
 });
+
+// 启用 WebSocket 支持（SignalR + 移动端 /ws/devices 端点需要）
+app.UseWebSockets();
 
 app.MapHub<TaskProgressHub>("/hubs/task-progress");
 app.MapHub<DeviceHub>("/hubs/devices");

@@ -46,67 +46,13 @@ public partial class OneHopController
                     });
                 }
 
-                // 兼容旧设备：通过 deviceName 查找
-                var deviceByName = _deviceService.GetAuthorizedDeviceByName(deviceName);
-                if (deviceByName != null)
-                {
-                    // 旧数据兼容：如果数据库中 DeviceId 为空，允许恢复并更新 DeviceId
-                    if (string.IsNullOrEmpty(deviceByName.DeviceId))
-                    {
-                        _logger.LogInformation("Legacy device recovery: name={DeviceName} updating DeviceId from empty to {RequestId}",
-                            deviceName, request.DeviceId);
-                        _deviceService.UpdateDeviceId(deviceByName.DeviceId ?? "", request.DeviceId, deviceName);
-                        return Ok(new
-                        {
-                            message = _loc["OneHop_DeviceAuthorizedUpdated"],
-                            deviceId = request.DeviceId,
-                            deviceName = deviceName,
-                            serverName = serverName,
-                            ipAddress = ipAddress,
-                            requestId = request.DeviceId,
-                            authorized = true,
-                            accessToken = deviceByName.AccessToken,
-                            sharedSecret = _signatureService.GetSharedSecret()
-                        });
-                    }
-
-                    // deviceName 匹配且已授权，但 deviceId 不匹配（手机重装/换设备后新ID）
-                    // 自动更新 DeviceId 并放行，无需重新授权
-                    _logger.LogInformation("Device ID updated for authorized device: name={DeviceName} oldId={OldId} newId={NewId}",
-                        deviceName, deviceByName.DeviceId, request.DeviceId);
-                    _deviceService.UpdateDeviceId(deviceByName.DeviceId, request.DeviceId, deviceName);
-                    return Ok(new
-                    {
-                        message = _loc["OneHop_DeviceAuthorizedUpdated"],
-                        deviceId = request.DeviceId,
-                        deviceName = deviceName,
-                        serverName = serverName,
-                        ipAddress = ipAddress,
-                        requestId = request.DeviceId,
-                        authorized = true,
-                        accessToken = deviceByName.AccessToken,
-                        sharedSecret = _signatureService.GetSharedSecret()
-                    });
-                }
-
-                // 检查是否有同名的已撤销设备：未被明确撤销过的设备不应出现在待授权列表
-                // 如果设备之前被撤销（用户主动取消授权），仍需重新授权
+                // 已撤销设备重注册：一律走人工授权流程（不再自动恢复）
                 var anyNameDevice = _deviceService.GetDeviceByNameAnyStatus(deviceName);
                 if (anyNameDevice != null && anyNameDevice.Status == DeviceStatus.Revoked)
                 {
-                    _logger.LogWarning("Revoked device re-registering: name={DeviceName} oldId={OldId} newId={NewId}, creating new pair request",
-                        deviceName, anyNameDevice.DeviceId, request.DeviceId);
+                    _logger.LogInformation("Revoked device re-registering, creating pending request: {DeviceName} {DeviceId}", deviceName, request.DeviceId);
                     var pairRequest2 = _deviceService.SubmitLanDiscoveryRequest(deviceName, ipAddress, request.DeviceId);
-                    return Ok(new
-                    {
-                        message = _loc["OneHop_DeviceIdChangedReauthorize"],
-                        deviceId = request.DeviceId,
-                        deviceName = deviceName,
-                        serverName = serverName,
-                        ipAddress = ipAddress,
-                        requestId = pairRequest2.RequestId,
-                        authorized = false
-                    });
+                    return Ok(new { message = _loc["OneHop_DeviceIdChangedReauthorize"], deviceId = request.DeviceId, deviceName, serverName, ipAddress, requestId = pairRequest2.RequestId, authorized = false });
                 }
 
                 // 自动创建局域网发现待授权请求（无需扫码）

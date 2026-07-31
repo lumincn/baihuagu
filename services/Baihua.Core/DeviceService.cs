@@ -658,6 +658,9 @@ namespace Baihua.Core;
             return device == null ? null : MapToDeviceInfo(device);
         }
 
+        public bool RestoreRevokedDevice(string deviceId, string deviceName, string? ipAddress = null)
+            => ReactivateRevokedDevice(deviceName, deviceId, ipAddress);
+
         public bool ReactivateRevokedDevice(string deviceName, string newDeviceId, string? ipAddress = null)
         {
             using var dbContext = _dbContextFactory.CreateDbContext();
