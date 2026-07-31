@@ -419,10 +419,40 @@ public class PairingServiceTests
     }
 
     [Fact]
-    public async Task GetAuthConfigAsync_ThrowsNotSupported()
+    public async Task GetAuthConfigAsync_Authorized_ReturnsSharedSecret()
     {
-        var (service, _, _) = CreatePairingService();
-        await Assert.ThrowsAsync<NotSupportedException>(() =>
-            service.GetAuthConfigAsync(new AuthConfigRequest { DeviceId = "device-1" }));
+        var (service, handler, _) = CreatePairingService();
+        handler.SetupResponse("/mg/auth/config", HttpStatusCode.OK,
+            """{"success":true,"sharedSecret":"secret-abc","message":"已授权"}""");
+
+        var result = await service.GetAuthConfigAsync(new AuthConfigRequest { DeviceId = "device-1" });
+
+        Assert.True(result.Success);
+        Assert.Equal("secret-abc", result.SharedSecret);
+    }
+
+    [Fact]
+    public async Task GetAuthConfigAsync_Unauthorized_ReturnsFailure()
+    {
+        var (service, handler, _) = CreatePairingService();
+        handler.SetupResponse("/mg/auth/config", HttpStatusCode.OK,
+            """{"success":false,"message":"设备未授权"}""");
+
+        var result = await service.GetAuthConfigAsync(new AuthConfigRequest { DeviceId = "device-1" });
+
+        Assert.False(result.Success);
+        Assert.Null(result.SharedSecret);
+    }
+
+    [Fact]
+    public async Task GetAuthConfigAsync_Http401_ReturnsFailure()
+    {
+        var (service, handler, _) = CreatePairingService();
+        handler.SetupResponse("/mg/auth/config", HttpStatusCode.Unauthorized, "");
+
+        var result = await service.GetAuthConfigAsync(new AuthConfigRequest { DeviceId = "device-1" });
+
+        Assert.False(result.Success);
+        Assert.Null(result.SharedSecret);
     }
 }
