@@ -768,8 +768,8 @@ namespace Baihua.Core;
             {
                 try
                 {
-                    _logger.LogInformation("[AUTH-DIAG] Broadcasting to {Count} WS clients: action={Action}, deviceName={DeviceName}",
-                        _wsHub.ConnectedCount, action, deviceName);
+                    _logger.LogInformation("[AUTH-DIAG] WS broadcast: action={Action} device={DeviceName} clients={Count} pushType={PushType}",
+                        action, deviceName, _wsHub.ConnectedCount, pushType);
                     await _wsHub.BroadcastAsync(action, deviceName, requestId, pushType, vaultId, vaultName);
                 }
                 catch (Exception ex)

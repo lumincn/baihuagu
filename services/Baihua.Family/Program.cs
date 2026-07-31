@@ -521,6 +521,7 @@ app.Use(async (context, next) =>
     {
         "/health", "/api/health", "/swagger",
         "/mcp",
+        "/ws/devices",
         "/vault/manifest", "/vault/file", "/vault/file_chunk",
         "/api/vaults", "/vault/pair", "/pair",
         "/api/sync/notes", "/api/sync/system", "/api/sync",

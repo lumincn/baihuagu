@@ -48,12 +48,12 @@ public class AuthController : ControllerBase
             });
         }
 
-        _logger.LogDebug("AuthConfig requested by device: {DeviceId}", request.DeviceId);
+        _logger.LogInformation("[AUTH-DIAG] AuthConfig request: DeviceId={DeviceId}", request.DeviceId);
 
         var authorizedDevice = _deviceService.GetAuthorizedDeviceById(request.DeviceId);
         if (authorizedDevice == null)
         {
-            _logger.LogWarning("AuthConfig rejected: device {DeviceId} is not authorized", request.DeviceId);
+            _logger.LogWarning("[AUTH-DIAG] AuthConfig REJECTED: device {DeviceId} not authorized", request.DeviceId);
             return Unauthorized(new AuthConfigResponse
             {
                 Success = false,
@@ -61,7 +61,7 @@ public class AuthController : ControllerBase
             });
         }
 
-        _logger.LogInformation("AuthConfig succeeded for device: {DeviceId}", request.DeviceId);
+        _logger.LogInformation("[AUTH-DIAG] AuthConfig OK: device={DeviceId}", request.DeviceId);
 
         return Ok(new AuthConfigResponse
         {
