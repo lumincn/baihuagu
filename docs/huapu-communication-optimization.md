@@ -44,37 +44,30 @@ WebSocket 连接 + 监听 Authorized 推送
 
 ## 三、待同步优化的部分
 
-### 3.1 Kotlin SDK：实现 `getAuthConfigAsync`
+### 3.1 Kotlin SDK：实现 `getAuthConfigAsync` ✅ 已完成（2026-07-31）
 
-**当前状态**：Kotlin SDK 已有 `AuthConfigRequest`/`AuthConfigResponse` 数据类，但 `getAuthConfigAsync()` 抛出 `NotSupportedException`。
-
-**方案**：参照 C# SDK 的 `PairingServiceImpl.GetAuthConfigAsync()` 实现，通过 `HttpTransport` 发送 `POST /mg/auth/config`，返回 `{ success, sharedSecret, message }`。
+**当前状态**：Kotlin SDK 的 `PairingServiceImpl.getAuthConfigAsync()` 已实现，通过 `HttpTransport` 发送 `POST /mg/auth/config` 返回 `{ success, sharedSecret, message }`，并被 `AuthorizationWatcher.fetchSecret()` 使用。
 
 **文件**：
 - `kotlin/baihua-sdk/src/main/kotlin/com/baihua/sdk/pairing/PairingServiceImpl.kt`
-- `kotlin/baihua-sdk/src/main/kotlin/com/baihua/sdk/contract/Pairing.kt`（补充 `success` 字段）
+- `kotlin/baihua-sdk/src/main/kotlin/com/baihua/sdk/contract/Pairing.kt`
 
-### 3.2 ArkTS SDK：实现 `getAuthConfigAsync`
+### 3.2 ArkTS SDK：实现 `getAuthConfigAsync` ✅ 已完成（2026-07-31）
 
-**当前状态**：ArkTS SDK 无此接口。
-
-**方案**：
-1. 在 `IPairingService.ets` 中新增方法声明
-2. 在 `PairingServiceImpl.ets` 中实现
-3. 在 `Pairing.ets` 中补充 `success` 字段到 `AuthConfigResponse`
+**当前状态**：ArkTS SDK 的 `PairingServiceImpl.getAuthConfigAsync()` 已实现（`POST /mg/auth/config`）。
 
 **文件**：
 - `baihua_sdk/src/main/ets/pairing/IPairingService.ets`
 - `baihua_sdk/src/main/ets/pairing/PairingServiceImpl.ets`
 - `baihua_sdk/src/main/ets/contract/Pairing.ets`
 
-### 3.3 三端统一去掉轮询
+### 3.3 三端统一去掉轮询 ✅ 已完成（2026-07-31）
 
 | 平台 | 需要修改的文件 | 操作 |
 |------|--------------|------|
 | **C#** | `AuthorizationWatcher.cs` | ✅ 已完成 |
-| **Kotlin** | `AuthorizationWatcher.kt` 或相应等待授权逻辑 | 移除轮询，纯 WebSocket + 超时 |
-| **ArkTS** | `AuthorizationWatcher.ets` | 移除 `waitForAuthorizationViaPolling()`，WebSocket 超时后直接失败 |
+| **Kotlin** | `AuthorizationWatcher.kt` | ✅ 已完成 — 纯 WebSocket + `/mg/auth/config` 密钥恢复，无轮询 |
+| **ArkTS** | `AuthorizationWatcher.ets` | ✅ 已完成 — 废弃文件已删除（含 `waitForAuthorizationViaPolling()`），授权统一走 AuthServiceImpl 纯 WebSocket |
 
 ## 四、统一后的标准流程
 
@@ -137,8 +130,8 @@ WebSocket 连接 + 监听 Authorized 推送
 |------|------|------|
 | 1 | C# AuthorizationWatcher 去掉轮询 | ✅ 已完成 |
 | 2 | C# `/mg/auth/config` 端点 + SDK | ✅ 已完成 |
-| 3 | Kotlin SDK 实现 `getAuthConfigAsync` | 待实施 |
-| 4 | ArkTS SDK 实现 `getAuthConfigAsync` | 待实施 |
-| 5 | Kotlin 去掉授权轮询 | 待实施 |
-| 6 | ArkTS 去掉授权轮询 | 待实施 |
-| 7 | 三端联调验证 | 待实施 |
+| 3 | Kotlin SDK 实现 `getAuthConfigAsync` | ✅ 已完成 |
+| 4 | ArkTS SDK 实现 `getAuthConfigAsync` | ✅ 已完成 |
+| 5 | Kotlin 去掉授权轮询 | ✅ 已完成 |
+| 6 | ArkTS 去掉授权轮询 | ✅ 已完成（废弃 AuthorizationWatcher 删除） |
+| 7 | 三端联调验证 | ⏳ 待实施（真机验证） |
