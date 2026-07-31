@@ -29,6 +29,8 @@ namespace Baihua.Core;
     {
         public string DeviceId { get; set; } = string.Empty;
         public string DeviceName { get; set; } = string.Empty;
+        /// <summary>系统设备名（与花记名互补展示）</summary>
+        public string? SystemDeviceName { get; set; }
         public DeviceStatus Status { get; set; }
         public DateTime FirstRequestTime { get; set; }
         public DateTime? AuthorizedTime { get; set; }
@@ -50,6 +52,8 @@ namespace Baihua.Core;
     {
         public string RequestId { get; set; } = string.Empty;
         public string DeviceName { get; set; } = string.Empty;
+        /// <summary>系统设备名（与花记名互补，可为 null）</summary>
+        public string? SystemDeviceName { get; set; }
         public string PairCode { get; set; } = string.Empty;
         public DateTime RequestTime { get; set; }
         public string? IpAddress { get; set; }
@@ -135,7 +139,7 @@ namespace Baihua.Core;
             return pairCode.Trim() == _pairCode;
         }
 
-        public PairRequestInfo SubmitPairRequest(string deviceName, string pairCode, string? ipAddress = null, string? requestId = null, string? deviceId = null)
+        public PairRequestInfo SubmitPairRequest(string deviceName, string pairCode, string? ipAddress = null, string? requestId = null, string? deviceId = null, string? systemDeviceName = null)
         {
             _logger.LogInformation("[AUTH-DIAG] SubmitPairRequest: DeviceName={DeviceName}, RequestId={RequestId}, PendingCount={Count}",
                 deviceName, requestId, _pendingRequests.Count);
@@ -164,6 +168,7 @@ namespace Baihua.Core;
             {
                 RequestId = requestId ?? Guid.NewGuid().ToString("N"),
                 DeviceName = deviceName,
+                SystemDeviceName = systemDeviceName,
                 PairCode = pairCode,
                 RequestTime = DateTime.UtcNow,
                 IpAddress = ipAddress,
@@ -189,7 +194,7 @@ namespace Baihua.Core;
         /// <summary>
         /// 局域网自动发现请求：无需配对码，直接创建待授权请求
         /// </summary>
-        public PairRequestInfo SubmitLanDiscoveryRequest(string deviceName, string? ipAddress = null, string? deviceId = null)
+        public PairRequestInfo SubmitLanDiscoveryRequest(string deviceName, string? ipAddress = null, string? deviceId = null, string? systemDeviceName = null)
         {
             lock (_lanDiscoveryLock)
             {
@@ -210,6 +215,7 @@ namespace Baihua.Core;
                 {
                     RequestId = Guid.NewGuid().ToString("N"),
                     DeviceName = deviceName,
+                    SystemDeviceName = systemDeviceName,
                     PairCode = "LAN", // 标记为局域网发现，不参与配对码验证
                     RequestTime = DateTime.UtcNow,
                     IpAddress = ipAddress,
@@ -280,6 +286,10 @@ namespace Baihua.Core;
                     existingAuthorized.DeviceId = request.DeviceId;
                     existingAuthorized.IpAddress = request.IpAddress ?? existingAuthorized.IpAddress;
                     existingAuthorized.UpdatedAt = DateTime.UtcNow;
+                    if (!string.IsNullOrEmpty(request.SystemDeviceName))
+                    {
+                        existingAuthorized.SystemDeviceName = request.SystemDeviceName;
+                    }
                     dbContext.SaveChanges();
                 }
 
@@ -299,6 +309,10 @@ namespace Baihua.Core;
                     request.DeviceName, request.DeviceId, existingByDeviceId.Status);
                 existingByDeviceId.Status = "Authorized";
                 existingByDeviceId.DeviceName = request.DeviceName;
+                if (!string.IsNullOrEmpty(request.SystemDeviceName))
+                {
+                    existingByDeviceId.SystemDeviceName = request.SystemDeviceName;
+                }
                 existingByDeviceId.AccessToken = Guid.NewGuid().ToString("N");
                 existingByDeviceId.IpAddress = request.IpAddress ?? existingByDeviceId.IpAddress;
                 existingByDeviceId.AuthorizedTime = DateTime.UtcNow;
@@ -319,6 +333,7 @@ namespace Baihua.Core;
             {
                 DeviceId = newDeviceId,
                 DeviceName = request.DeviceName,
+                SystemDeviceName = request.SystemDeviceName,
                 AccessToken = accessToken,
                 Status = "Authorized",
                 IpAddress = request.IpAddress,
@@ -475,7 +490,7 @@ namespace Baihua.Core;
         /// 自动授权设备（无需等待 WebUI 审批）
         /// </summary>
         public (bool success, string? accessToken, string? error) AutoAuthorizeDevice(
-            string deviceName, string? ipAddress = null, string? deviceId = null)
+            string deviceName, string? ipAddress = null, string? deviceId = null, string? systemDeviceName = null)
         {
             _logger.LogInformation("[AUTH-DIAG] AutoAuthorizeDevice called: DeviceName={DeviceName}, DeviceId={DeviceId}",
                 deviceName, deviceId);
@@ -505,6 +520,7 @@ namespace Baihua.Core;
             {
                 DeviceId = resolvedDeviceId,
                 DeviceName = deviceName,
+                SystemDeviceName = systemDeviceName,
                 AccessToken = accessToken,
                 Status = "Authorized",
                 IpAddress = ipAddress,
@@ -603,6 +619,7 @@ namespace Baihua.Core;
                 {
                     DeviceId = d.DeviceId,
                     DeviceName = d.DeviceName,
+                    SystemDeviceName = d.SystemDeviceName,
                     IpAddress = d.IpAddress,
                     SyncCount = d.SyncCount,
                     FirstSyncTime = d.FirstSyncTime,
@@ -720,6 +737,7 @@ namespace Baihua.Core;
             {
                 DeviceId = device.DeviceId,
                 DeviceName = device.DeviceName,
+                SystemDeviceName = device.SystemDeviceName,
                 Status = device.Status == "Authorized" ? DeviceStatus.Authorized : DeviceStatus.Revoked,
                 AuthorizedTime = device.AuthorizedTime,
                 LastSyncTime = device.LastSyncTime,

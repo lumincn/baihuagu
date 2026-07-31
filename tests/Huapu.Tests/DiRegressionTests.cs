@@ -27,9 +27,10 @@ public class DiRegressionTests
         var ctor = typeof(PairingServiceImpl).GetConstructors().Single();
         var stringParams = ctor.GetParameters().Where(p => p.ParameterType == typeof(string));
 
-        Assert.Equal(2, stringParams.Count());
+        Assert.Equal(3, stringParams.Count());
         Assert.Contains(stringParams, p => p.Name == "deviceId");
         Assert.Contains(stringParams, p => p.Name == "deviceName");
+        Assert.Contains(stringParams, p => p.Name == "systemDeviceName");
     }
 
     // ---- SyncServiceImpl ----

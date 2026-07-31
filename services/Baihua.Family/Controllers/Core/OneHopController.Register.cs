@@ -51,14 +51,14 @@ public partial class OneHopController
                 if (anyNameDevice != null && anyNameDevice.Status == DeviceStatus.Revoked)
                 {
                     _logger.LogInformation("Revoked device re-registering, creating pending request: {DeviceName} {DeviceId}", deviceName, request.DeviceId);
-                    var pairRequest2 = _deviceService.SubmitLanDiscoveryRequest(deviceName, ipAddress, request.DeviceId);
+                    var pairRequest2 = _deviceService.SubmitLanDiscoveryRequest(deviceName, ipAddress, request.DeviceId, request.SystemDeviceName);
                     return Ok(new { message = _loc["OneHop_DeviceIdChangedReauthorize"], deviceId = request.DeviceId, deviceName, serverName, ipAddress, requestId = pairRequest2.RequestId, authorized = false });
                 }
 
                 // 自动创建局域网发现待授权请求（无需扫码）
                 _logger.LogInformation("[AUTH-DIAG] Creating pending request for device: {DeviceName} ({DeviceId})",
                     deviceName, request.DeviceId);
-                var pairRequest = _deviceService.SubmitLanDiscoveryRequest(deviceName, ipAddress, request.DeviceId);
+                var pairRequest = _deviceService.SubmitLanDiscoveryRequest(deviceName, ipAddress, request.DeviceId, request.SystemDeviceName);
                 _logger.LogInformation("[AUTH-DIAG] Pending request created: RequestId={RequestId}",
                     pairRequest.RequestId);
 
@@ -70,7 +70,7 @@ public partial class OneHopController
                 {
                     _logger.LogInformation("[AUTH-DIAG] Auto-authorizing device: {DeviceName} ({DeviceId}) @ {IpAddress}",
                         deviceName, request.DeviceId, ipAddress);
-                    var (success, accessToken, error) = _deviceService.AutoAuthorizeDevice(deviceName, ipAddress, request.DeviceId);
+                    var (success, accessToken, error) = _deviceService.AutoAuthorizeDevice(deviceName, ipAddress, request.DeviceId, request.SystemDeviceName);
                     _logger.LogInformation("[AUTH-DIAG] AutoAuthorize result: Success={Success}, AccessToken={AccessToken}, Error={Error}",
                         success, accessToken, error);
                     if (success)

@@ -13,6 +13,12 @@ public class AuthorizedDeviceDto
     [JsonPropertyName("deviceName")]
     public string DeviceName { get; set; } = string.Empty;
 
+    /// <summary>
+    /// 系统设备名（与花记名互补，如“HUAWEI P60”）
+    /// </summary>
+    [JsonPropertyName("systemDeviceName")]
+    public string? SystemDeviceName { get; set; }
+
     [JsonPropertyName("authorizedTime")]
     public DateTime? AuthorizedTime { get; set; }
 

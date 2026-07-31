@@ -17,17 +17,19 @@ public class PairingServiceImpl : IPairingService, IDeviceRegistrationService
     private readonly IRequestSigner _signer;
     private readonly string _deviceId;
     private readonly string _deviceName;
+    private readonly string? _systemDeviceName;
 
     private string _serverUrl = "";
 
     public PairingServiceImpl(
         HttpClient httpClient, IRequestSigner signer,
-        string deviceId, string deviceName)
+        string deviceId, string deviceName, string? systemDeviceName = null)
     {
         _httpClient = httpClient;
         _signer = signer;
         _deviceId = deviceId;
         _deviceName = deviceName;
+        _systemDeviceName = systemDeviceName;
     }
 
     /// <summary>设置后续配对操作使用的服务器地址</summary>
@@ -84,7 +86,7 @@ public class PairingServiceImpl : IPairingService, IDeviceRegistrationService
         try
         {
             var transport = new HttpTransport(_httpClient, _signer, serverUrl);
-            var body = new { deviceId = _deviceId, deviceName = _deviceName, deviceType = "maui" };
+            var body = new { deviceId = _deviceId, deviceName = _deviceName, deviceType = "maui", systemDeviceName = _systemDeviceName };
             var resp = await transport.PostJsonAsync<JsonElement>(
                 "/mg/onehop/register-device", body);
 

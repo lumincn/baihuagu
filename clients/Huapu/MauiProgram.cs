@@ -67,7 +67,7 @@ public static class MauiProgram
             var client = sp.GetRequiredService<HttpClient>();
             var signer = sp.GetRequiredService<IRequestSigner>();
             return new PairingServiceImpl(client, signer,
-                DeviceInfoHelper.GetDeviceId(), DeviceInfoHelper.GetDeviceName());
+                DeviceInfoHelper.GetDeviceId(), DeviceInfoHelper.GetDisplayName(), DeviceInfoHelper.GetDeviceName());
         });
         builder.Services.AddSingleton<IPairingService>(sp => sp.GetRequiredService<PairingServiceImpl>());
         builder.Services.AddSingleton<IDeviceRegistrationService>(sp => sp.GetRequiredService<PairingServiceImpl>());

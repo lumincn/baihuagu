@@ -37,6 +37,9 @@ public class DeviceStat
     [JsonPropertyName("deviceName")]
     public string DeviceName { get; set; } = "";
 
+    [JsonPropertyName("systemDeviceName")]
+    public string? SystemDeviceName { get; set; }
+
     [JsonPropertyName("ipAddress")]
     public string? IpAddress { get; set; }
 

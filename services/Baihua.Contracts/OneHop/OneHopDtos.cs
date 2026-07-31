@@ -40,4 +40,9 @@ public class OneHopRegisterDeviceRequest
     public string DeviceId { get; set; } = string.Empty;
     public string DeviceName { get; set; } = string.Empty;
     public string? DeviceType { get; set; }
+
+    /// <summary>
+    /// 系统设备名（如“HUAWEI P60”），与花记名（DeviceName）互补存储
+    /// </summary>
+    public string? SystemDeviceName { get; set; }
 }

@@ -13,6 +13,9 @@ public class PendingDeviceDto
     [JsonPropertyName("deviceInfo")]
     public string DeviceName { get; set; } = string.Empty;
 
+    [JsonPropertyName("systemDeviceName")]
+    public string? SystemDeviceName { get; set; }
+
     [JsonPropertyName("createdAt")]
     public DateTime RequestTime { get; set; }
 

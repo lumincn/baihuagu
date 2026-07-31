@@ -219,7 +219,13 @@
                                         @foreach (var device in pendingDevices)
                                         {
                                             <tr>
-                                                <td>@device.DeviceName</td>
+                                                <td>
+                                                    <div>@device.DeviceName</div>
+                                                    @if (!string.IsNullOrEmpty(device.SystemDeviceName))
+                                                    {
+                                                        <div class="text-muted small">@device.SystemDeviceName</div>
+                                                    }
+                                                </td>
                                                 <td class="text-muted small">@device.IpAddress</td>
                                                 <td class="small">@device.RequestTime.ToLocalTime().ToString("MM-dd HH:mm:ss")</td>
                                                 <td>
@@ -279,6 +285,10 @@
                                             <tr>
                                                 <td>
                                                     <strong>@device.DeviceName</strong>
+                                                    @if (!string.IsNullOrEmpty(device.SystemDeviceName))
+                                                    {
+                                                        <div class="text-muted small">@device.SystemDeviceName</div>
+                                                    }
                                                     <div class="text-muted small">@device.DeviceId</div>
                                                 </td>
                                                 <td class="text-muted small">@device.IpAddress</td>
@@ -448,6 +458,7 @@
             {
                 RequestId = d.SessionId ?? "",
                 DeviceName = d.DeviceInfo ?? L["Devices_UnknownDevice"],
+                SystemDeviceName = d.SystemDeviceName,
                 RequestTime = d.CreatedAt != default ? d.CreatedAt : DateTime.Now,
                 IpAddress = d.IpAddress
             }).ToList();
@@ -456,6 +467,7 @@
             {
                 DeviceId = d.DeviceId ?? "",
                 DeviceName = d.DeviceName ?? L["Devices_UnknownDevice"],
+                SystemDeviceName = d.SystemDeviceName,
                 AuthorizedTime = d.AuthorizedTime,
                 LastSyncTime = d.LastSyncTime,
                 IpAddress = d.IpAddress,
@@ -760,6 +772,9 @@
 
         [System.Text.Json.Serialization.JsonPropertyName("ipAddress")]
         public string? IpAddress { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("systemDeviceName")]
+        public string? SystemDeviceName { get; set; }
     }
 
     private class DeviceAuthorizedResponse
@@ -791,12 +806,15 @@
         [System.Text.Json.Serialization.JsonPropertyName("syncedVaultNames")]
         public Dictionary<string, string>? SyncedVaultNames { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("systemDeviceName")]
+        public string? SystemDeviceName { get; set; }
     }
 
     private class PendingDeviceInfo
     {
         public string RequestId { get; set; } = "";
         public string DeviceName { get; set; } = "";
+        public string? SystemDeviceName { get; set; }
         public DateTime RequestTime { get; set; }
         public string? IpAddress { get; set; }
     }
@@ -805,6 +823,7 @@
     {
         public string DeviceId { get; set; } = "";
         public string DeviceName { get; set; } = "";
+        public string? SystemDeviceName { get; set; }
         public DateTime? AuthorizedTime { get; set; }
         public DateTime? LastSyncTime { get; set; }
         public string? IpAddress { get; set; }

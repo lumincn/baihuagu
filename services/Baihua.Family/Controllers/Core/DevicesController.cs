@@ -37,6 +37,7 @@ namespace Baihua.Family.Controllers
             {
                 RequestId = r.RequestId,
                 DeviceName = r.DeviceName,
+                SystemDeviceName = r.SystemDeviceName,
                 RequestTime = r.RequestTime,
                 IpAddress = r.IpAddress
             }).ToList();
@@ -51,6 +52,7 @@ namespace Baihua.Family.Controllers
             {
                 DeviceId = d.DeviceId,
                 DeviceName = d.DeviceName,
+                SystemDeviceName = d.SystemDeviceName,
                 AuthorizedTime = d.AuthorizedTime,
                 LastSyncTime = d.LastSyncTime,
                 IpAddress = d.IpAddress,

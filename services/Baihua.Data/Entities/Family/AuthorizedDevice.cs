@@ -8,6 +8,10 @@ public class AuthorizedDevice
     public int Id { get; set; }
     public string DeviceId { get; set; } = "";
     public string DeviceName { get; set; } = "";
+    /// <summary>
+    /// 系统设备名（如“HUAWEI P60”/“蓝牙名 - 型号”），与花记名（DeviceName）互补展示
+    /// </summary>
+    public string? SystemDeviceName { get; set; }
     public string AccessToken { get; set; } = "";
     public string Status { get; set; } = "Authorized"; // Authorized, Revoked
     public string? IpAddress { get; set; }
