@@ -1634,6 +1634,9 @@
   <data name="Devices_ColDeviceName" xml:space="preserve">
     <value>Device Name</value>
   </data>
+  <data name="Devices_ColDisplayName" xml:space="preserve">
+    <value>Display Name</value>
+  </data>
   <data name="Devices_ColSignalStrength" xml:space="preserve">
     <value>Signal Strength</value>
   </data>

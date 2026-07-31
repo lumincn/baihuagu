@@ -209,7 +209,8 @@
                                 <table class="table table-hover table-sm mb-0">
                                     <thead class="table-light">
                                         <tr>
-                                            <th>@L["Devices_ColDeviceInfo"]</th>
+                                            <th>@L["Devices_ColDisplayName"]</th>
+                                            <th>@L["Devices_ColDeviceName"]</th>
                                             <th>@L["Devices_ColIpAddress"]</th>
                                             <th>@L["Devices_ColRequestTime"]</th>
                                             <th>@L["Devices_ColActions"]</th>
@@ -221,10 +222,9 @@
                                             <tr>
                                                 <td>
                                                     <div>@device.DeviceName</div>
-                                                    @if (!string.IsNullOrEmpty(device.SystemDeviceName))
-                                                    {
-                                                        <div class="text-muted small">@device.SystemDeviceName</div>
-                                                    }
+                                                </td>
+                                                <td class="text-muted small">
+                                                    @(string.IsNullOrEmpty(device.SystemDeviceName) ? "-" : device.SystemDeviceName)
                                                 </td>
                                                 <td class="text-muted small">@device.IpAddress</td>
                                                 <td class="small">@device.RequestTime.ToLocalTime().ToString("MM-dd HH:mm:ss")</td>
@@ -269,6 +269,7 @@
                                 <table class="table table-hover table-sm mb-0">
                                     <thead class="table-light">
                                         <tr>
+                                            <th>@L["Devices_ColDisplayName"]</th>
                                             <th>@L["Devices_ColDeviceName"]</th>
                                             <th>@L["Devices_ColIpAddress"]</th>
                                             <th>@L["Devices_ColAuthorizedTime"]</th>
@@ -285,11 +286,10 @@
                                             <tr>
                                                 <td>
                                                     <strong>@device.DeviceName</strong>
-                                                    @if (!string.IsNullOrEmpty(device.SystemDeviceName))
-                                                    {
-                                                        <div class="text-muted small">@device.SystemDeviceName</div>
-                                                    }
                                                     <div class="text-muted small">@device.DeviceId</div>
+                                                </td>
+                                                <td class="text-muted small">
+                                                    @(string.IsNullOrEmpty(device.SystemDeviceName) ? "-" : device.SystemDeviceName)
                                                 </td>
                                                 <td class="text-muted small">@device.IpAddress</td>
                                                 <td class="small">
