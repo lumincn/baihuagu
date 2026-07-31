@@ -33,7 +33,7 @@ ArkTS / C#: 同格局，平台差异单独决策
 | 7 | Kotlin vault-sdk 解耦（ISyncService 注入） | ✅ |
 | 8 | ArkTS `baihua_sdk` 新增 AuthService/AuthState/ServerAuthInfo | ✅ |
 | 9 | ArkTS entry 迁移到新 AuthService（替换 AuthorizationWatcher） | ✅ |
-| 10 | C# 确认 | ⏳ |
+| 10 | C# 确认（SRP 对齐 + 冗余清理） | ✅ |
 
 ### 完成：Kotlin `huage-sdk` → `ai-sdk` 改名
 - 模块名、包名、目录、namespace、app 层 import
@@ -73,6 +73,14 @@ ArkTS / C#: 同格局，平台差异单独决策
   - 改为 `new AuthViewModel(context, deviceId, deviceName).init()`
   - 导出 `getAuthViewModel()` 全局访问
   - 移除 `initAuthorizationWatcher` / `updateAllLanServersOnline` / `launchAuthWatcher` 函数
+
+### 10. C# 确认（SRP 对齐 + 冗余清理）✅
+- 审计：Vault 无旧版 AuthorizationWatcher，SDK 层分层正确（Signing/Services/Storage/Push/Models）
+- 清理：`RequestSignatureService.cs` 移除自身命名空间冗余 using
+- 已知架构债（记录待后续）：
+  - `ISyncAuthorizationStrategy`/`ServerAddressService` 物理在 Core 但用 Family 命名空间（12 文件引用）
+  - `Baihua.Contracts` 与 `MobileContract` 设备 DTO 重复（class vs record / DateTime vs DateTimeOffset）
+  - Vault 的 `/mg/auth/config` + `/vault/verify-token` 为 auth 端点（当前可用，概念重叠）
 
 ## 依赖关系（2026-07-31）
 

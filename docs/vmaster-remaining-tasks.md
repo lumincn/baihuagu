@@ -12,8 +12,8 @@
 | T-SDK 百花授权全链路 | ✅ 完成 | Kotlin/C#/ArkTS 三端对齐，纯 WebSocket 授权 |
 | T-SDK SDK 架构重组 | ✅ 完成 | 6 SDK SRP 拆分，vault-sdk 接口注入解耦 |
 | T-SDK ArkTS AuthService | ✅ 完成 | AuthServiceImpl + AuthViewModel + EntryAbility 迁移 |
-| T-SDK C# 确认 | ⏳ 待做 | 确认 C# 端命名空间/接口无冗余 |
-| T-Kotlin MainViewModel 清理 | ⏳ 待做 | 移除死代码引用（已通过 Deps 编译通过） |
+| T-SDK C# 确认 | ✅ 完成 | SRP 审计 + RequestSignatureService 冗余清理 |
+| T-Kotlin MainViewModel 清理 | ✅ 完成 | 移除 PushSyncInfo/sdkPushService 死代码 |
 
 ---
 
