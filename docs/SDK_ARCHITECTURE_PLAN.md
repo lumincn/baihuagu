@@ -31,8 +31,9 @@ ArkTS / C#: 同格局，平台差异单独决策
 | 5 | Kotlin `baihua-sdk-v2` → 合并入 `baihua-sdk` | ✅ |
 | 6 | Kotlin 删除废弃 AuthorizationWatcher/WebSocketPushService/IPushService | ✅ |
 | 7 | Kotlin vault-sdk 解耦（ISyncService 注入） | ✅ |
-| 8 | ArkTS 对标 | ⏳ |
-| 9 | C# 确认 | ⏳ |
+| 8 | ArkTS `baihua_sdk` 新增 AuthService/AuthState/ServerAuthInfo | ✅ |
+| 9 | ArkTS entry 迁移到新 AuthService（替换 AuthorizationWatcher） | ⏳ |
+| 10 | C# 确认 | ⏳ |
 
 ### 完成：Kotlin `huage-sdk` → `ai-sdk` 改名
 - 模块名、包名、目录、namespace、app 层 import
