@@ -32,7 +32,7 @@ ArkTS / C#: 同格局，平台差异单独决策
 | 6 | Kotlin 删除废弃 AuthorizationWatcher/WebSocketPushService/IPushService | ✅ |
 | 7 | Kotlin vault-sdk 解耦（ISyncService 注入） | ✅ |
 | 8 | ArkTS `baihua_sdk` 新增 AuthService/AuthState/ServerAuthInfo | ✅ |
-| 9 | ArkTS entry 迁移到新 AuthService（替换 AuthorizationWatcher） | ⏳ |
+| 9 | ArkTS entry 迁移到新 AuthService（替换 AuthorizationWatcher） | ✅ |
 | 10 | C# 确认 | ⏳ |
 
 ### 完成：Kotlin `huage-sdk` → `ai-sdk` 改名
@@ -62,6 +62,17 @@ ArkTS / C#: 同格局，平台差异单独决策
 | master-sdk | Stage/Blessing 定义 | DB/Context |
 | vault-sdk | 知识库本地管理 | 服务器通信(仅依赖接口) |
 | transfer-sdk | BLE 传输 | — |
+
+### 9. ArkTS entry 迁移到新 AuthService ✅
+- 新建 `viewmodel/AuthViewModel.ets` — 封装 AuthServiceImpl，对标 Kotlin AuthViewModel
+  - 三列表状态（listPending / listUnauthorized / listB）
+  - 持久化服务器列表（preferences）→ 恢复后 probeOnline → connectAuthorized/requestAuth
+  - `addDiscoveredServer()` 自动发起授权
+  - `onUpdate()` 回调供 UI 观察
+- `EntryAbility.ets` 替换旧 `initAuthorizationWatcher`（WebSocketPushService + AuthorizationWatcher + PairingServiceImpl ~120行）
+  - 改为 `new AuthViewModel(context, deviceId, deviceName).init()`
+  - 导出 `getAuthViewModel()` 全局访问
+  - 移除 `initAuthorizationWatcher` / `updateAllLanServersOnline` / `launchAuthWatcher` 函数
 
 ## 依赖关系（2026-07-31）
 
