@@ -28,8 +28,11 @@ ArkTS / C#: 同格局，平台差异单独决策
 | 2 | Kotlin 全局 `baihuagu` → `baihua` | ✅ |
 | 3 | Kotlin 新建 `huage-sdk` + HuageSyncGateway | ✅ |
 | 4 | SRP 审计 | ✅ |
-| 5 | ArkTS 对标 | ⏳ |
-| 6 | C# 确认 | ⏳ |
+| 5 | Kotlin `baihua-sdk-v2` → 合并入 `baihua-sdk` | ✅ |
+| 6 | Kotlin 删除废弃 AuthorizationWatcher/WebSocketPushService/IPushService | ✅ |
+| 7 | Kotlin vault-sdk 解耦（ISyncService 注入） | ✅ |
+| 8 | ArkTS 对标 | ⏳ |
+| 9 | C# 确认 | ⏳ |
 
 ### 完成：Kotlin `huage-sdk` → `ai-sdk` 改名
 - 模块名、包名、目录、namespace、app 层 import
@@ -52,8 +55,23 @@ ArkTS / C#: 同格局，平台差异单独决策
 
 | SDK | 应含 | 不含 |
 |------|------|------|
-| baihua-sdk | 百花服务器通信 | Markdown、AI、拜师、工具 |
-| huage-sdk | 花阁 shzhengji.com | 百花本地 |
+| baihua-sdk | 百花通信(HMAC/配对/同步/授权/推送) | Markdown、AI、拜师 |
+| huage-sdk | 花阁 shzhengji.com API | 百花本地 |
 | ai-sdk | DeepSeek/Anthropic API | 百花/花阁 |
 | master-sdk | Stage/Blessing 定义 | DB/Context |
-| vault-sdk | 知识库本地管理 | 服务器通信 |
+| vault-sdk | 知识库本地管理 | 服务器通信(仅依赖接口) |
+| transfer-sdk | BLE 传输 | — |
+
+## 依赖关系（2026-07-31）
+
+```
+app ─┬─ baihua-sdk   (signing/sync/models/transport/AuthService/pairing)
+     ├─ huage-sdk     (花阁 API，不依赖其他 SDK)
+     ├─ ai-sdk        (DeepSeek，不依赖其他 SDK)
+     ├─ master-sdk    (拜师，不依赖其他 SDK)
+     ├─ vault-sdk     (知识库，仅依赖 baihua-sdk 的三个接口)
+     │    └─→ baihua-sdk  (ISyncService + IRequestSigner + IVaultStorageAdapter)
+     └─ transfer-sdk  (BLE，不依赖其他 SDK)
+```
+
+唯一跨 SDK 依赖：`vault-sdk → baihua-sdk`，且全部通过接口注入。
