@@ -2588,7 +2588,13 @@
   <data name="BrowseVault_AllIndustries" xml:space="preserve">
     <value>All</value>
   </data>
-  <data name="BrowseVault_TagLabel" xml:space="preserve">
+    <data name="BrowseVault_SourceLabel" xml:space="preserve">
+    <value>Source:</value>
+  </data>
+  <data name="BrowseVault_AllSources" xml:space="preserve">
+    <value>All</value>
+  </data>
+<data name="BrowseVault_TagLabel" xml:space="preserve">
     <value>🏷️ Tags:</value>
   </data>
   <data name="BrowseVault_AllTags" xml:space="preserve">

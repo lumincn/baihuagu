@@ -2588,7 +2588,13 @@
   <data name="BrowseVault_AllIndustries" xml:space="preserve">
     <value>全部</value>
   </data>
-  <data name="BrowseVault_TagLabel" xml:space="preserve">
+    <data name="BrowseVault_SourceLabel" xml:space="preserve">
+    <value>来源：</value>
+  </data>
+  <data name="BrowseVault_AllSources" xml:space="preserve">
+    <value>全部</value>
+  </data>
+<data name="BrowseVault_TagLabel" xml:space="preserve">
     <value>🏷️ 标签：</value>
   </data>
   <data name="BrowseVault_AllTags" xml:space="preserve">

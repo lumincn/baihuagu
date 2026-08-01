@@ -69,6 +69,24 @@
             </div>
         }
 
+        <!-- 来源过滤栏 -->
+        @if (allSources.Count > 0)
+        {
+            <div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
+                <span class="text-muted small">@L["BrowseVault_SourceLabel"]</span>
+                <button class="btn btn-sm @(selectedSources.Count == 0 ? "btn-primary" : "btn-outline-secondary")" @onclick="ClearSourceFilter">
+                    @L["BrowseVault_AllSources"]
+                </button>
+                @foreach (var source in allSources)
+                {
+                    <button class="btn btn-sm @(selectedSources.Contains(source) ? "btn-success" : "btn-outline-success")" @onclick="() => ToggleSourceFilter(source)"
+                    style="font-size: 0.8em; padding: 0.2em 0.6em;">
+                        @(source == "mobile" ? L["BrowseVault_MobilePush"] : L["BrowseVault_Local"])
+                    </button>
+                }
+            </div>
+        }
+
         <!-- 知识库列表（文件夹卡片形式） -->
         <div class="row g-3">
             @foreach (var v in FilteredVaults)
@@ -409,6 +427,13 @@
     private bool isLoadingVaults = false;
     private HashSet<string> selectedTags = new();
     private HashSet<string> selectedIndustries = new();
+    private HashSet<string> selectedSources = new();
+
+    private List<string> allSources => vaults
+        .Select(v => string.IsNullOrWhiteSpace(v.Source) ? "local" : v.Source)
+        .Distinct()
+        .OrderBy(s => s)
+        .ToList();
 
     private List<string> allTags => vaults
         .SelectMany(v => v.Tags ?? new List<string>())
@@ -426,6 +451,7 @@
     private List<VaultConfig> FilteredVaults => vaults
         .Where(v => selectedIndustries.Count == 0 || selectedIndustries.Contains(v.Industry ?? ""))
         .Where(v => selectedTags.Count == 0 || (v.Tags != null && selectedTags.All(tag => v.Tags.Contains(tag))))
+        .Where(v => selectedSources.Count == 0 || selectedSources.Contains(string.IsNullOrWhiteSpace(v.Source) ? "local" : v.Source))
         .ToList();
 
     private string currentVaultName => vaults.FirstOrDefault(v => v.Id == selectedVaultId)?.Name ?? "";
@@ -473,6 +499,7 @@
         browseItems.Clear();
         selectedTags.Clear();
         selectedIndustries.Clear();
+        selectedSources.Clear();
     }
 
     private void ToggleTagFilter(string tag)
@@ -499,6 +526,19 @@
     private void ClearIndustryFilter()
     {
         selectedIndustries.Clear();
+    }
+
+    private void ToggleSourceFilter(string source)
+    {
+        if (selectedSources.Contains(source))
+            selectedSources.Remove(source);
+        else
+            selectedSources.Add(source);
+    }
+
+    private void ClearSourceFilter()
+    {
+        selectedSources.Clear();
     }
 
     private async Task LoadBrowseItems()
