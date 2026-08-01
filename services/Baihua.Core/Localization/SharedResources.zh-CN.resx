@@ -1882,6 +1882,12 @@ Status: {2}
   <data name="Vault_PushFailed" xml:space="preserve">
     <value>推送失败: {0}</value>
   </data>
+  <data name="Vault_UnpushInvalidRequest" xml:space="preserve">
+    <value>缺少知识库ID或设备ID</value>
+  </data>
+  <data name="Vault_UnpushFailed" xml:space="preserve">
+    <value>清除推送标记失败: {0}</value>
+  </data>
   <data name="Vault_PathRequired" xml:space="preserve">
     <value>路径不能为空</value>
   </data>

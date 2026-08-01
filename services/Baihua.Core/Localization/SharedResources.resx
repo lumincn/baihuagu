@@ -1877,6 +1877,12 @@ Duration: {1}</value>
   <data name="Vault_PushFailed" xml:space="preserve">
     <value>Push failed: {0}</value>
   </data>
+  <data name="Vault_UnpushInvalidRequest" xml:space="preserve">
+    <value>VaultId and DeviceId are required</value>
+  </data>
+  <data name="Vault_UnpushFailed" xml:space="preserve">
+    <value>Failed to clear push marker: {0}</value>
+  </data>
   <data name="Vault_PathRequired" xml:space="preserve">
     <value>Path cannot be empty</value>
   </data>
