@@ -601,17 +601,19 @@ app.Use(async (context, next) =>
             }
 
             // 为 Vault 的 FamilySyncAuthorizationStrategy 附加 Bearer Token：
-            // Family 已完成 HMAC 签名验证，按来源 IP 找到已授权设备，把其 AccessToken 转发给 Vault。
+            // Family 已完成 HMAC 签名验证，按请求头 X-Device-Id 找到已授权设备，把其 AccessToken 转发给 Vault。
+            // （不能用来源 IP 匹配：IP 是动态的，不同设备在不同时间可能分配相同 IP，
+            //   会导致未授权设备借已授权设备的 IP 绕过授权验证）
             if (!request.Headers.Contains("Authorization"))
             {
                 try
                 {
                     var deviceService = context.RequestServices.GetService<DeviceService>();
-                    var remoteIp = context.Connection.RemoteIpAddress?.ToString();
-                    if (!string.IsNullOrEmpty(remoteIp) && deviceService != null)
+                    // 从签名请求头读取设备 ID（RequestSigner 对每个请求都附带 X-Device-Id）
+                    var deviceId = context.Request.Headers["X-Device-Id"].FirstOrDefault();
+                    if (!string.IsNullOrEmpty(deviceId) && deviceService != null)
                     {
-                        var authorizedDevice = deviceService.GetAuthorizedDevices()
-                            .FirstOrDefault(d => remoteIp.Equals(d.IpAddress, StringComparison.OrdinalIgnoreCase));
+                        var authorizedDevice = deviceService.GetAuthorizedDeviceById(deviceId);
                         if (authorizedDevice != null && !string.IsNullOrEmpty(authorizedDevice.AccessToken))
                         {
                             request.Headers.Authorization =
@@ -621,12 +623,21 @@ app.Use(async (context, next) =>
                         {
                             // 未找到已授权设备 → 拒绝转发，防止未授权设备通过 HMAC 全局密钥绕过授权
                             var logger2 = context.RequestServices.GetService<ILogger<Program>>();
-                            logger2?.LogWarning("[AUTH-DIAG] Vault forward blocked: no authorized device for IP {RemoteIp}, path={Path}",
-                                remoteIp, path);
+                            logger2?.LogWarning("[AUTH-DIAG] Vault forward blocked: no authorized device for DeviceId {DeviceId}, path={Path}",
+                                deviceId, path);
                             context.Response.StatusCode = 401;
                             await context.Response.WriteAsJsonAsync(new { error = "Device not authorized. Please complete pairing first." });
                             return;
                         }
+                    }
+                    else
+                    {
+                        // 缺少设备 ID 头 → 拒绝（不能回退到 IP 匹配）
+                        var logger2 = context.RequestServices.GetService<ILogger<Program>>();
+                        logger2?.LogWarning("[AUTH-DIAG] Vault forward blocked: missing X-Device-Id header, path={Path}", path);
+                        context.Response.StatusCode = 401;
+                        await context.Response.WriteAsJsonAsync(new { error = "Device identity missing. Please re-pair the device." });
+                        return;
                     }
                 }
                 catch (Exception ex)

@@ -53,24 +53,14 @@ public class FamilySyncAuthorizationStrategy : ISyncAuthorizationStrategy
             }
         }
 
-        // Family 版局域网环境：如果请求来自已授权设备的 IP，也允许同步
+        // 仅允许本机回环请求（TaskRunner.Family 转发而来，已在转发层按 X-Device-Id 完成授权验证）。
+        // 不做来源 IP 与已授权设备匹配：IP 是动态的，不同设备在不同时间可能分配相同 IP，
+        // 会导致未授权设备借已授权设备的 IP 绕过授权验证。
         var remoteIp = httpContext.Connection.RemoteIpAddress;
-        if (remoteIp != null)
+        if (remoteIp != null &&
+            (IPAddress.IsLoopback(remoteIp) || remoteIp.ToString() == "127.0.0.1" || remoteIp.ToString() == "::1"))
         {
-            // 来自本机的请求视为已由 TaskRunner.Family 完成 HMAC/Bearer 验证后转发，直接放行
-            if (IPAddress.IsLoopback(remoteIp) ||
-                remoteIp.ToString() == "127.0.0.1" ||
-                remoteIp.ToString() == "::1")
-            {
-                return true;
-            }
-
-            var remoteIpString = remoteIp.ToString();
-            var authorizedDevices = _deviceService.GetAuthorizedDevices();
-            if (authorizedDevices.Any(d => remoteIpString.Equals(d.IpAddress, StringComparison.OrdinalIgnoreCase)))
-            {
-                return true;
-            }
+            return true;
         }
 
         return false;
