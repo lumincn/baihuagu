@@ -2708,10 +2708,10 @@ User question: {query}</value>
     <value>🚀 Fast</value>
   </data>
   <data name="AuthConfig_DeviceIdRequired" xml:space="preserve">
-    <value>deviceId 不能为空</value>
+    <value>deviceId is required</value>
   </data>
   <data name="AuthConfig_DeviceNotAuthorized" xml:space="preserve">
-    <value>设备未授权</value>
+    <value>Device not authorized</value>
   </data>
   <data name="AuthConfig_Success" xml:space="preserve">
     <value>ok</value>

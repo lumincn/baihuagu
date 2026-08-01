@@ -134,4 +134,4 @@ WebSocket 连接 + 监听 Authorized 推送
 | 4 | ArkTS SDK 实现 `getAuthConfigAsync` | ✅ 已完成 |
 | 5 | Kotlin 去掉授权轮询 | ✅ 已完成 |
 | 6 | ArkTS 去掉授权轮询 | ✅ 已完成（废弃 AuthorizationWatcher 删除） |
-| 7 | 三端联调验证 | ⏳ 待实施（真机验证） |
+| 7 | 三端联调验证 | ⏳ 待实施（真机验证；服务端已新增 discovery_sdk 独立模块 2026-08-01） |

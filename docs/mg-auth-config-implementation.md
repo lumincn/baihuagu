@@ -1,4 +1,6 @@
 # `/mg/auth/config` 接口实现需求
+> 状态：✅ 已实现（AuthController.cs 提供 /mg/auth/config；Kotlin/ArkTS SDK 均已实现 getAuthConfigAsync）
+> 本文档为需求与实现记录。
 
 ## 1. 背景
 
