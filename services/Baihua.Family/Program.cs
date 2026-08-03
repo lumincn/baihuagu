@@ -217,9 +217,6 @@ builder.Services.AddSingleton<MobileContract.Admin.IOneHopAdminService, Baihua.F
 builder.Services.AddSingleton<IOneHopService, OneHopService>();
 builder.Services.AddSingleton<OneHopManager>();
 
-// 注册mDNS服务（标准DNS-SD协议，供移动端发现）
-builder.Services.AddSingleton<MDnsService>();
-builder.Services.AddHostedService(provider => provider.GetRequiredService<MDnsService>());
 
 // 注册 AI 配置服务（Data Protection + SQLite）
 builder.Services.AddDataProtection();
