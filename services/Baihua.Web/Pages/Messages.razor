@@ -365,6 +365,66 @@
         line-height: 1.4;
         padding: 0.5rem 0.75rem;
     }
+
+    /* ===== 窄屏适配（手机/小窗口） ===== */
+    @@media (max-width: 600px) {
+        .model-selector-bar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.5rem;
+        }
+        .mode-btn-groups {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.4rem;
+        }
+        .mode-btn-groups .btn-group {
+            width: 100%;
+        }
+        .mode-btn-groups .btn-group .btn {
+            flex: 1;
+        }
+        .mode-group-sep {
+            display: none;
+        }
+        .local-tools-group {
+            width: 100%;
+            flex-wrap: wrap;
+        }
+        .local-tools-group select {
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+        .selector-group {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.25rem;
+            width: 100%;
+        }
+        .selector-group .form-select,
+        .selector-group .form-control {
+            width: 100%;
+            max-width: 100%;
+        }
+        .selector-group.path-group > div {
+            flex-wrap: wrap;
+        }
+        .selector-group.path-group input {
+            flex: 1 1 100% !important;
+        }
+        .selector-group.path-group .btn {
+            flex: 1;
+        }
+        .chat-input {
+            flex-wrap: wrap;
+        }
+        .chat-input .chat-textarea {
+            min-height: 5.25rem;
+        }
+        .chat-input .btn {
+            flex: 1;
+        }
+    }
     .local-model-list {
         display: flex;
         flex-wrap: wrap;
