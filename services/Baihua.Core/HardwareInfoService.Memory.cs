@@ -7,6 +7,30 @@ namespace Baihua.Family.Services;
 
 public partial class HardwareInfoService
 {
+        // ===== Windows 内存检测（P/Invoke，兼容 wmic 已被移除的 Win11 24H2+）=====
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        private class MemoryStatusEx
+        {
+            public uint dwLength;
+            public uint dwMemoryLoad;
+            public ulong ullTotalPhys;
+            public ulong ullAvailPhys;
+            public ulong ullTotalPageFile;
+            public ulong ullAvailPageFile;
+            public ulong ullTotalVirtual;
+            public ulong ullAvailVirtual;
+            public ulong ullAvailExtendedVirtual;
+
+            public MemoryStatusEx()
+            {
+                dwLength = (uint)Marshal.SizeOf(typeof(MemoryStatusEx));
+            }
+        }
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool GlobalMemoryStatusEx([In, Out] MemoryStatusEx lpBuffer);
+
         private MemoryInfoDto GetMemoryInfo()
         {
             var mem = new MemoryInfoDto();
@@ -28,11 +52,26 @@ public partial class HardwareInfoService
 
         private void EnrichMemoryWindows(MemoryInfoDto mem)
         {
+            try
+            {
+                var status = new MemoryStatusEx();
+                if (GlobalMemoryStatusEx(status))
+                {
+                    mem.TotalBytes = (long)status.ullTotalPhys;
+                    mem.AvailableBytes = (long)status.ullAvailPhys;
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "GlobalMemoryStatusEx 失败，回退 wmic");
+            }
+
+            // 回退：wmic（Win11 24H2 已移除，仅兼容旧系统）
             var output = HardwareInfoHelper.RunCommand("wmic", "computersystem get TotalPhysicalMemory /value", 5000);
             if (long.TryParse(HardwareInfoHelper.ExtractWmicValue(output ?? "", "TotalPhysicalMemory"), out var total))
                 mem.TotalBytes = total;
 
-            // Available memory via WMI
             var osOutput = HardwareInfoHelper.RunCommand("wmic", "os get FreePhysicalMemory /value", 5000);
             if (long.TryParse(HardwareInfoHelper.ExtractWmicValue(osOutput ?? "", "FreePhysicalMemory"), out var freeKb))
                 mem.AvailableBytes = freeKb * 1024;

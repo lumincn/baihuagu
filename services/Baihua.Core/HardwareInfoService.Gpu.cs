@@ -36,7 +36,19 @@ public partial class HardwareInfoService
             if (nvidiaGpus.Count > 0)
                 return nvidiaGpus;
 
-            // 回退到 WMI
+            // 非 NVIDIA 回退：PowerShell Get-CimInstance（wmic 已在 Win11 24H2+ 移除）
+            var psOutput = HardwareInfoHelper.RunCommand("powershell",
+                "-NoProfile -NonInteractive -Command \"Get-CimInstance Win32_VideoController | Select-Object Name,AdapterRAM | ConvertTo-Json -Compress\"",
+                10000);
+            if (!string.IsNullOrWhiteSpace(psOutput))
+            {
+                var parsed = ParseGpuJson(psOutput);
+                if (parsed.Count > 0)
+                    return parsed;
+            }
+
+            // 回退到 WMI（仅兼容旧系统）
+
             var output = HardwareInfoHelper.RunCommand("wmic", "path win32_VideoController get Name,AdapterRAM /value", 5000);
             if (string.IsNullOrEmpty(output)) return list;
 
@@ -64,6 +76,60 @@ public partial class HardwareInfoService
             }
 
             return list;
+        }
+
+        /// <summary>
+        /// 解析 PowerShell Get-CimInstance ConvertTo-Json 输出（单个 GPU 返回对象，多个返回数组）
+        /// </summary>
+        private static List<GpuInfoDto> ParseGpuJson(string json)
+        {
+            var list = new List<GpuInfoDto>();
+            try
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(json.Trim());
+                var root = doc.RootElement;
+                if (root.ValueKind == System.Text.Json.JsonValueKind.Object)
+                {
+                    AddGpuFromJson(list, root);
+                }
+                else if (root.ValueKind == System.Text.Json.JsonValueKind.Array)
+                {
+                    foreach (var item in root.EnumerateArray())
+                    {
+                        AddGpuFromJson(list, item);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"ParseGpuJson failed: {ex.Message}");
+            }
+            return list;
+        }
+
+        private static void AddGpuFromJson(List<GpuInfoDto> list, System.Text.Json.JsonElement el)
+        {
+            if (el.ValueKind != System.Text.Json.JsonValueKind.Object)
+                return;
+            var name = el.TryGetProperty("Name", out var n) ? n.GetString() ?? "" : "";
+            if (string.IsNullOrWhiteSpace(name))
+                return;
+
+            var gpu = new GpuInfoDto
+            {
+                Name = name.Trim(),
+                Vendor = HardwareInfoHelper.InferVendor(name),
+                IsIntegrated = HardwareInfoHelper.IsIntegratedGpu(name),
+            };
+
+            if (el.TryGetProperty("AdapterRAM", out var ramEl) && ramEl.ValueKind == System.Text.Json.JsonValueKind.Number)
+            {
+                var ram = ramEl.GetUInt32();
+                if (ram > 0 && ram < 0xFFFFFFFF)
+                    gpu.VramBytes = ram;
+            }
+
+            list.Add(gpu);
         }
 
         private List<GpuInfoDto> GetGpuInfoLinux()
