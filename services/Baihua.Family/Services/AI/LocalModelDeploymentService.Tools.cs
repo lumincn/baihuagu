@@ -100,7 +100,7 @@ public partial class LocalModelDeploymentService
                 InstallGuideUrl = "https://docs.openvino.ai"
             });
 
-            _cache.Set(ToolsCacheKey, tools, TimeSpan.FromSeconds(60));
+            _cache.Set(ToolsCacheKey, tools, TimeSpan.FromSeconds(300));
             return tools;
         }
 
@@ -153,19 +153,27 @@ public partial class LocalModelDeploymentService
 
         public async Task<List<string>> GetAvailableModelsAsync(string toolId, CancellationToken ct = default)
         {
+            var cacheKey = "available_" + toolId.ToLowerInvariant();
+            if (_cache.TryGetValue(cacheKey, out List<string>? cached) && cached != null)
+            {
+                _logger.LogDebug("可用模型列表命中缓存: {Key}", cacheKey);
+                return cached;
+            }
+
+            List<string> result;
             if (toolId.Equals("ollama", StringComparison.OrdinalIgnoreCase))
-                return await _ollama.GetAvailableModelsAsync(ct);
+                result = await _ollama.GetAvailableModelsAsync(ct);
+            else if (toolId.Equals("lmstudio", StringComparison.OrdinalIgnoreCase))
+                result = await _lmStudio.GetAvailableModelsAsync(ct);
+            else if (toolId.Equals("llamacpp", StringComparison.OrdinalIgnoreCase))
+                result = await _llamaCpp.GetAvailableModelsAsync(ct);
+            else if (toolId.Equals("openvino", StringComparison.OrdinalIgnoreCase))
+                result = await _openVino.GetAvailableModelsAsync(ct);
+            else
+                result = new List<string>();
 
-            if (toolId.Equals("lmstudio", StringComparison.OrdinalIgnoreCase))
-                return await _lmStudio.GetAvailableModelsAsync(ct);
-
-            if (toolId.Equals("llamacpp", StringComparison.OrdinalIgnoreCase))
-                return await _llamaCpp.GetAvailableModelsAsync(ct);
-
-            if (toolId.Equals("openvino", StringComparison.OrdinalIgnoreCase))
-                return await _openVino.GetAvailableModelsAsync(ct);
-
-            return new List<string>();
+            _cache.Set(cacheKey, result, TimeSpan.FromSeconds(300));
+            return result;
         }
 
         #endregion
@@ -182,10 +190,14 @@ public partial class LocalModelDeploymentService
 
             var runningModels = await GetRunningModelsAsync(forceRefresh: false, ct);
 
+            // 先拿工具状态（缓存），跳过未安装工具的下载扫描（避免未监听端口的 2s+ 连接延迟）
+            var tools = await GetLocalToolsAsync(ct: ct);
+            var installedIds = tools.Where(t => t.IsInstalled).Select(t => t.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
             // 4 个工具并行扫描下载目录（避免串行把 2s 连接探测延迟叠加）
-            var ollamaTask = _ollama.GetDownloadedModelsAsync(runningModels, ct);
-            var lmTask = _lmStudio.GetDownloadedModelsAsync(runningModels, ct);
-            var llamaTask = _llamaCpp.GetDownloadedModelsAsync(runningModels, ct);
+            var ollamaTask = installedIds.Contains("ollama") ? _ollama.GetDownloadedModelsAsync(runningModels, ct) : Task.FromResult(new List<DownloadedModelDto>());
+            var lmTask = installedIds.Contains("lmstudio") ? _lmStudio.GetDownloadedModelsAsync(runningModels, ct) : Task.FromResult(new List<DownloadedModelDto>());
+            var llamaTask = installedIds.Contains("llamacpp") ? _llamaCpp.GetDownloadedModelsAsync(runningModels, ct) : Task.FromResult(new List<DownloadedModelDto>());
             var ovTask = _openVino.GetDownloadedModelsAsync(ct);
             await Task.WhenAll(ollamaTask, lmTask, llamaTask, ovTask);
 
@@ -195,7 +207,7 @@ public partial class LocalModelDeploymentService
             results.AddRange(await llamaTask);
             results.AddRange(await ovTask);
 
-            _cache.Set(DownloadedModelsCacheKey, results, TimeSpan.FromSeconds(30));
+            _cache.Set(DownloadedModelsCacheKey, results, TimeSpan.FromSeconds(300));
             return results;
         }
 

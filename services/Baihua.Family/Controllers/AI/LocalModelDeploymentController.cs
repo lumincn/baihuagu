@@ -94,9 +94,13 @@ namespace Baihua.Family.Controllers;
                     : _recommendationEngine.GetRecommendations(hardware, scenario);
 
                 // 查询已下载模型列表，填充下载状态
-                var ollamaModels = await _deploymentService.GetAvailableModelsAsync("ollama");
-                var lmStudioModels = await _deploymentService.GetAvailableModelsAsync("lmstudio");
-                var llamaCppModels = await _deploymentService.GetAvailableModelsAsync("llamacpp");
+                var ollamaTask = _deploymentService.GetAvailableModelsAsync("ollama");
+                var lmStudioTask = _deploymentService.GetAvailableModelsAsync("lmstudio");
+                var llamaCppTask = _deploymentService.GetAvailableModelsAsync("llamacpp");
+                await Task.WhenAll(ollamaTask, lmStudioTask, llamaCppTask);
+                var ollamaModels = await ollamaTask;
+                var lmStudioModels = await lmStudioTask;
+                var llamaCppModels = await llamaCppTask;
 
                 foreach (var r in recommendations)
                 {

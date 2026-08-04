@@ -43,8 +43,12 @@ namespace Baihua.Family.Services
                     _ = Task.WhenAll(
                         deployment.GetLocalToolsAsync(ct: stoppingToken),
                         deployment.GetRunningModelsAsync(ct: stoppingToken),
-                        deployment.GetDownloadedModelsAsync(stoppingToken));
-                    _logger.LogInformation("tool/running/downloaded cache warmup started");
+                        deployment.GetDownloadedModelsAsync(stoppingToken),
+                        deployment.GetAvailableModelsAsync("ollama", stoppingToken),
+                        deployment.GetAvailableModelsAsync("lmstudio", stoppingToken),
+                        deployment.GetAvailableModelsAsync("llamacpp", stoppingToken),
+                        deployment.GetAvailableModelsAsync("openvino", stoppingToken));
+                    _logger.LogInformation("tool/running/downloaded/available cache warmup started");
                 }
                 catch (Exception ex)
                 {

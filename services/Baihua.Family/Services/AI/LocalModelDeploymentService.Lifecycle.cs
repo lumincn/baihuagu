@@ -135,6 +135,10 @@ public partial class LocalModelDeploymentService
             _cache.Remove(RunningModelsCacheKey);
             _cache.Remove(ToolsCacheKey);
             _cache.Remove(DownloadedModelsCacheKey);
+            _cache.Remove("available_ollama");
+            _cache.Remove("available_lmstudio");
+            _cache.Remove("available_llamacpp");
+            _cache.Remove("available_openvino");
             _logger.LogDebug("本地模型缓存已清除");
         }
 
