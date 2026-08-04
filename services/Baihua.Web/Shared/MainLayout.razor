@@ -8,7 +8,6 @@
 @inject OnboardingService OnboardingService
 @inject GlobalStateService GlobalStateService
 @inject IHttpClientFactory HttpClientFactory
-@inject UserTypeService UserTypeService
 @inject ILogger<MainLayout> Logger
 @implements IDisposable
 
@@ -81,7 +80,6 @@
             </div>
         </div>
 </div>
-
 
 <style>
     /* 核心布局 */
@@ -240,8 +238,6 @@
         min-width: 0;
     }
 
-
-
     .top-row {
         background: var(--layout-toprow-bg);
         border-bottom: 1px solid var(--layout-toprow-border);
@@ -254,8 +250,6 @@
         position: relative;
         z-index: 100;
     }
-
-
 
     .content {
         padding: 20px;
@@ -430,7 +424,6 @@
 
 @code {
     private bool _onboardingChecked = false;
-    private bool _isProfessional = false;
     private bool _apiConnectionError = false;
     private string _apiErrorMessage = "";
     private bool _showSystemMenu = false;
@@ -442,10 +435,6 @@
     {
         Navigation.LocationChanged += OnLocationChanged;
         GlobalStateService.StateChanged += OnGlobalStateChanged;
-        UserTypeService.UserTypeChanged += OnUserTypeChanged;
-
-        // 家庭版：初始化用户类型（默认非专业）
-        _isProfessional = UserTypeService.IsProfessional;
 
         // 异步检测 AI 配置状态（不阻塞渲染，避免后端未启动时白屏）
         _ = LoadAiStatusAsync();
@@ -464,16 +453,12 @@
             // 只在交互式渲染后初始化 SignalR，避免 circuit 失败
             GlobalStateService.Initialize(Navigation.ToAbsoluteUri("/hubs/status").ToString());
 
-            // 交互式渲染后从 localStorage 读取用户类型
-            await UserTypeService.InitializeAsync();
-            _isProfessional = UserTypeService.IsProfessional;
             await InvokeAsync(StateHasChanged);
         }
     }
 
     private void OnUserTypeChanged(object? sender, EventArgs e)
     {
-        _isProfessional = UserTypeService.IsProfessional;
         InvokeAsync(StateHasChanged);
     }
 
@@ -584,7 +569,6 @@
     {
         Navigation.LocationChanged -= OnLocationChanged;
         GlobalStateService.StateChanged -= OnGlobalStateChanged;
-        UserTypeService.UserTypeChanged -= OnUserTypeChanged;
     }
 
     private async Task LogoutAsync()

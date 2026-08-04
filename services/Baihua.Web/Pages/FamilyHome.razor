@@ -4,7 +4,6 @@
 @inject Baihua.Web.Services.ISearchHistoryService SearchHistoryService
 @inject Baihua.Web.Services.AIStatusService AIStatusService
 @inject Baihua.Web.Services.VaultStatusService VaultStatusService
-@inject UserTypeService UserTypeService
 @inject Microsoft.Extensions.Logging.ILogger<FamilyHome> Logger
 @inject Microsoft.Extensions.Localization.IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
@@ -22,43 +21,6 @@
         <span class="core-value-text">@L["FamilyHome_CoreValue"]</span>
     </div>
 
-    @if (_showUserTypeDialog)
-    {
-        <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">@L["FamilyHome_WelcomeTitle"]</h5>
-                    </div>
-                    <div class="modal-body">
-                        <p class="text-muted mb-3">@L["FamilyHome_UserTypePrompt"]</p>
-                        <div class="d-grid gap-3">
-                            <button class="btn btn-outline-success btn-lg text-start p-3" @onclick="() => SelectUserType(UserType.Beginner)">
-                                <div class="d-flex align-items-center gap-3">
-                                    <span style="font-size: 2rem;">👤</span>
-                                    <div>
-                                        <div class="fw-bold">@L["FamilyHome_BeginnerUserType"]</div>
-                                        <div class="small text-muted">@L["FamilyHome_BeginnerDescription"]</div>
-                                    </div>
-                                </div>
-                            </button>
-                            <button class="btn btn-outline-info btn-lg text-start p-3" @onclick="() => SelectUserType(UserType.Professional)">
-                                <div class="d-flex align-items-center gap-3">
-                                    <span style="font-size: 2rem;">🔧</span>
-                                    <div>
-                                        <div class="fw-bold">@L["FamilyHome_ProfessionalUserType"]</div>
-                                        <div class="small text-muted">@L["FamilyHome_ProfessionalDescription"]</div>
-                                    </div>
-                                </div>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    }
-
-    <!-- 初始化任务引导 -->
     <InitializationTasks @ref="_initTasks" OnTasksChanged="OnTasksChanged" />
 
     <!-- 配置提醒区域 -->
@@ -484,7 +446,6 @@
     private AIStatusSummary? aiStatus;
     private VaultStatusSummary? vaultStatus;
     private bool isInitialLoading = true;
-    private bool _showUserTypeDialog = false;
 
     protected override void OnInitialized()
     {
@@ -494,14 +455,6 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
-
-        await UserTypeService.InitializeAsync();
-        var hasSelected = await UserTypeService.HasSelectedAsync();
-        if (!hasSelected)
-        {
-            _showUserTypeDialog = true;
-            await InvokeAsync(StateHasChanged);
-        }
 
         _ = Task.Run(async () =>
         {
@@ -531,12 +484,6 @@
                 });
             }
         });
-    }
-
-    private async Task SelectUserType(UserType type)
-    {
-        await UserTypeService.SetUserTypeAsync(type);
-        _showUserTypeDialog = false;
     }
 
     private async Task LoadRecentNotesAsync()

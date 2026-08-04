@@ -4,7 +4,6 @@
 @inject CapabilityService CapabilityService
 @inject GlobalStateService GlobalStateService
 @inject NavigationManager NavigationManager
-@inject UserTypeService UserTypeService
 @inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 @implements IDisposable
 
@@ -97,15 +96,17 @@
         </NavLink>
     </div>
 
-    @if (_isProfessional)
-    {
-        <div class="nav-group">
-            <div class="nav-group-label">@L["Nav_ResearchLabel"]</div>
+    <div class="nav-group">
+        <div class="nav-group-label">@L["Nav_ResearchLabel"]</div>
             @if (_canShowLocalModels)
             {
                 <NavLink href="local-models">
                     <span class="nav-icon bi bi-cpu"></span>
                     <span>@L["Nav_LocalModels"]</span>
+                </NavLink>
+                <NavLink href="image-recognition">
+                    <span class="nav-icon bi bi-eye"></span>
+                    <span>@L["Nav_ImageRecognition"]</span>
                 </NavLink>
             }
             @if (_canShowModelBenchmark)
@@ -124,7 +125,7 @@
                 <span>@L["Nav_HardwareBenchmark"]</span>
             </NavLink>
         </div>
-    }
+
     <div class="nav-group">
         <div class="nav-group-label">@L["Nav_ConfigLabel"]</div>
         <NavLink href="settings">
@@ -140,27 +141,13 @@
 
 <hr class="nav-divider" />
 
-<!-- 模式切换 -->
-<div class="nav-group">
-    <div class="nav-group-label">@L["Nav_ModeLabel"]</div>
-    <div class="mode-switch" @onclick="ToggleUserType" title="@(_isProfessional ? L["Nav_ModeProTooltip"] : L["Nav_ModeEasyTooltip"])">
-        <span class="mode-label @(_isProfessional ? "active" : "muted")">@L["Nav_ModePro"]</span>
-        <div class="switch-track @(_isProfessional ? "track-pro" : "track-easy")">
-            <div class="switch-thumb @(_isProfessional ? "thumb-left" : "thumb-right")"></div>
-        </div>
-        <span class="mode-label @(!_isProfessional ? "active" : "muted")">@L["Nav_ModeEasy"]</span>
-    </div>
-</div>
-
 @code {
     private int _activeScene = 0;
-    private bool _isProfessional = false;
     private bool _canShowLocalModels = true;
     private bool _canShowModelBenchmark = true;
 
     protected override async Task OnInitializedAsync()
     {
-        UserTypeService.UserTypeChanged += OnUserTypeChanged;
 
         // 根据当前路由推断场景
         var relativePath = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
@@ -181,15 +168,6 @@
         NavigationManager.LocationChanged += OnLocationChanged;
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!firstRender) return;
-
-        await UserTypeService.InitializeAsync();
-        _isProfessional = UserTypeService.IsProfessional;
-        await InvokeAsync(StateHasChanged);
-    }
-
     private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
     {
         var relativePath = NavigationManager.ToBaseRelativePath(e.Location);
@@ -197,7 +175,7 @@
         var inferred = relativePath switch
         {
             string p when p.StartsWith("tasks") || p.StartsWith("openclaw") || p.StartsWith("achievements") || p.StartsWith("leaderboard") || p.StartsWith("dashboard") || p.StartsWith("daily-card") => 1,
-            string p when p.StartsWith("messages") || p.StartsWith("master-chat") || p.StartsWith("master-stage") || p.StartsWith("generate") || p.StartsWith("local-models") || p.StartsWith("model-benchmark") || p.StartsWith("ai-metrics") || p.StartsWith("hardware-benchmark") || p.StartsWith("settings") || p.StartsWith("prompt-templates") => 2,
+            string p when p.StartsWith("messages") || p.StartsWith("master-chat") || p.StartsWith("master-stage") || p.StartsWith("generate") || p.StartsWith("local-models") || p.StartsWith("image-recognition") || p.StartsWith("model-benchmark") || p.StartsWith("ai-metrics") || p.StartsWith("hardware-benchmark") || p.StartsWith("settings") || p.StartsWith("prompt-templates") => 2,
             string p when p.StartsWith("log-settings") || p.StartsWith("browse") || p.StartsWith("search") || p.StartsWith("cards") || p.StartsWith("vaults") || p == "" => 0,
             _ => 0
         };
@@ -208,23 +186,9 @@
         }
     }
 
-    private void OnUserTypeChanged(object? sender, EventArgs e)
-    {
-        _isProfessional = UserTypeService.IsProfessional;
-        InvokeAsync(StateHasChanged);
-    }
-
-    private async Task ToggleUserType()
-    {
-        var newType = _isProfessional ? UserType.Beginner : UserType.Professional;
-        await UserTypeService.SetUserTypeAsync(newType);
-        _isProfessional = UserTypeService.IsProfessional;
-    }
-
     public void Dispose()
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
-        UserTypeService.UserTypeChanged -= OnUserTypeChanged;
     }
 }
 
@@ -274,63 +238,6 @@
     .scene-label {
         font-size: 0.7rem;
         letter-spacing: 0.02em;
-    }
-
-    .mode-switch {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 6px 10px;
-        cursor: pointer;
-        user-select: none;
-        border-radius: 8px;
-        transition: background 0.2s;
-    }
-    .mode-switch:hover {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    .mode-label {
-        font-size: 0.8rem;
-        font-weight: 500;
-        transition: color 0.3s;
-        white-space: nowrap;
-    }
-    .mode-label.active {
-        color: #fff;
-    }
-    .mode-label.muted {
-        color: rgba(255, 255, 255, 0.4);
-    }
-    .switch-track {
-        width: 40px;
-        height: 22px;
-        border-radius: 11px;
-        position: relative;
-        transition: background 0.3s;
-        flex-shrink: 0;
-        margin: 0 8px;
-    }
-    .switch-track.track-pro {
-        background: #2e8baf;
-    }
-    .switch-track.track-easy {
-        background: #6b9e75;
-    }
-    .switch-thumb {
-        width: 18px;
-        height: 18px;
-        background: #fff;
-        border-radius: 50%;
-        position: absolute;
-        top: 2px;
-        transition: left 0.3s ease;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-    }
-    .switch-thumb.thumb-left {
-        left: 2px;
-    }
-    .switch-thumb.thumb-right {
-        left: 20px;
     }
 
     .nav-divider {

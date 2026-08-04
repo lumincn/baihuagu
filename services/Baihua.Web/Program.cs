@@ -121,7 +121,6 @@ builder.Services.AddSingleton<Baihua.Web.Hubs.StatusUpdateService>();
 
 // Add Authentication service (must be scoped for per-user state)
 builder.Services.AddSingleton<Baihua.Web.Services.AuthService>();
-builder.Services.AddScoped<Baihua.Web.Services.UserTypeService>();
 
 // Add AI Status service
 builder.Services.AddSingleton<Baihua.Web.Services.AIStatusService>(sp => 
