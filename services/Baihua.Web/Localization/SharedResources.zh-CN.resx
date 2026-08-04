@@ -4022,4 +4022,8 @@ Shift+Enter 换行，Enter 发送</value>
   <data name="Messages_RunningLocalModelsHint" xml:space="preserve">
     <value>在"本地模型"页加载的模型会出现在这里，选中后可直接对话。</value>
   </data>
+
+  <data name="Messages_RunningModelUnsupported" xml:space="preserve">
+    <value>暂不支持对话（仅 OpenVINO 可用）</value>
+  </data>
 </root>

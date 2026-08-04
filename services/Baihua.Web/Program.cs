@@ -4,6 +4,8 @@ using System.Text;
 using System.Threading.RateLimiting;
 
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Hosting.StaticWebAssets;
+using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 
 using Polly.Extensions.Http;
 using Polly;
@@ -367,6 +369,12 @@ if (basePath != "/")
 }
 
 app.UseRouting();
+// 直接运行 apphost（非 dotnet run）时启用 Static Web Assets，否则静态资源 0 字节
+StaticWebAssetsLoader.UseStaticWebAssets(app.Environment, app.Configuration);
+
+// 直接运行 apphost（非 dotnet run）时启用 Static Web Assets，否则静态资源 0 字节
+StaticWebAssetsLoader.UseStaticWebAssets(app.Environment, app.Configuration);
+
 app.UseStaticFiles();
 app.MapStaticAssets();
 app.UseAntiforgery();

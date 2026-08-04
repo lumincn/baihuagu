@@ -97,14 +97,41 @@
     </div>
 
     <div class="chat-controls">
+        @if (chatMode != "remote" && chatMode != "gguf" && chatMode != "onnx" && runningLocalModels.Count > 0)
+        {
+            <div class="running-models-row">
+                <label>@L["Messages_RunningLocalModels"]</label>
+                <select class="form-select" value="@selectedRunningModel" @onchange="OnRunningModelChanged" disabled="@isThinking" style="font-size: 0.85rem;">
+                    <option value="">@L["Messages_SelectRunningModel"]</option>
+                    @foreach (var rm in runningLocalModels)
+                    {
+                        @if (rm.ToolId.Equals("openvino", StringComparison.OrdinalIgnoreCase))
+                        {
+                            <option value="@rm.ModelName">@rm.ToolName · @rm.DisplayName (@rm.ModelName)</option>
+                        }
+                        else
+                        {
+                            <option value="@rm.ModelName" disabled title="@L["Messages_RunningModelUnsupported"]">@rm.ToolName · @rm.DisplayName (@rm.ModelName) ⚠️</option>
+                        }
+                    }
+                </select>
+                <span class="form-text" style="font-size: 0.75rem; white-space: nowrap;">@L["Messages_RunningLocalModelsHint"]</span>
+            </div>
+        }
         <div class="model-selector-bar">
             <div class="selector-group">
                 <label>@L["Messages_Mode"]</label>
-                <div class="btn-group btn-group-sm" role="group">
-                    <button type="button" class="btn @(chatMode == "remote" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => OnChatModeChangedSync("remote"))" disabled="@isThinking">@L["Messages_ModeRemote"]</button>
-                    <button type="button" class="btn @(chatMode == "gguf" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => OnChatModeChangedSync("gguf"))" disabled="@isThinking">🦙 GGUF</button>
-                    <button type="button" class="btn @(chatMode == "onnx" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => OnChatModeChangedSync("onnx"))" disabled="@isThinking">📦 ONNX</button>
-                    <button type="button" class="btn @(chatMode == "openvino" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => OnChatModeChangedSync("openvino"))" disabled="@isThinking">🧿 OpenVINO</button>
+                <div class="mode-btn-groups">
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn @(chatMode == "remote" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => OnChatModeChangedSync("remote"))" disabled="@isThinking">@L["Messages_ModeRemote"]</button>
+                    </div>
+                    <span class="mode-group-sep"></span>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn @(chatMode == "gguf" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => OnChatModeChangedSync("gguf"))" disabled="@isThinking">🦙 GGUF</button>
+                        <button type="button" class="btn @(chatMode == "onnx" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => OnChatModeChangedSync("onnx"))" disabled="@isThinking">📦 ONNX</button>
+                    </div>
+                    <span class="mode-group-sep"></span>
+                    <span class="mode-group-label">@L["Messages_RunningLocalModels"]</span>
                 </div>
             </div>
             @if (chatMode == "remote")
@@ -138,23 +165,9 @@
                     }
                 </div>
             }
-            else
+            else if (chatMode == "gguf" || chatMode == "onnx")
             {
-                @if (runningLocalModels.Count > 0)
-                {
-                    <div class="selector-group" style="flex: 1; min-width: 14rem;">
-                        <label>@L["Messages_RunningLocalModels"]</label>
-                        <select class="form-select" value="@selectedRunningModel" @onchange="OnRunningModelChanged" disabled="@isThinking" style="font-size: 0.85rem;">
-                            <option value="">@L["Messages_SelectRunningModel"]</option>
-                            @foreach (var rm in runningLocalModels)
-                            {
-                                <option value="@rm.ModelName">@rm.ToolName · @rm.DisplayName (@rm.ModelName)</option>
-                            }
-                        </select>
-                        <div class="form-text" style="font-size: 0.75rem;">@L["Messages_RunningLocalModelsHint"]</div>
-                    </div>
-                }
-                <div class="selector-group" style="flex: 1; min-width: 12rem;">
+                <div class="selector-group path-group">
                     <label>@L["Messages_ModelPath"]</label>
                     <div style="display: flex; gap: 0.5rem; flex: 1;">
                         <input type="text"
@@ -167,6 +180,14 @@
                             @L["Messages_Scan"]
                         </button>
                     </div>
+                </div>
+            }
+            else
+            {
+                <div class="selector-group" style="flex: 1;">
+                    <label>@L["Messages_ModelPath"]</label>
+                    <input type="text" class="form-control" value="@localModelPath" readonly disabled="@isThinking"
+                           style="flex: 1; font-size: 0.85rem; background: #f5f5f5;" />
                 </div>
             }
             @if (chatMode == "remote")
@@ -247,6 +268,41 @@
         flex-direction: column;
         gap: 0.5rem;
     }
+    .selector-group.path-group {
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+    .selector-group.path-group input {
+        min-width: 0;
+    }
+    .mode-btn-groups {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+    }
+    .mode-group-sep {
+        width: 1px;
+        height: 1.4rem;
+        background: #ccc;
+        margin: 0 0.2rem;
+    }
+    .mode-group-label {
+        font-size: 0.78rem;
+        color: #888;
+        white-space: nowrap;
+    }
+    .running-models-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    .running-models-row select {
+        flex: 1;
+        max-width: 30rem;
+    }
     .model-selector-bar {
         display: flex;
         gap: 0.75rem;
@@ -282,7 +338,7 @@
     .chat-input textarea {
         flex: 1;
         resize: none;
-        min-height: 2.5rem;
+        min-height: 5.25rem; /* 3 行输入框 */
         max-height: 8rem;
         overflow-y: auto;
         line-height: 1.4;
@@ -809,6 +865,12 @@
     private void OnChatModeChangedSync(string mode)
     {
         chatMode = mode;
+        // 切到本地文件模式时，清掉运行中模型（openvino://）残留的路径
+        if ((mode == "gguf" || mode == "onnx") && localModelPath.StartsWith("openvino://"))
+        {
+            localModelPath = "";
+            selectedRunningModel = "";
+        }
     }
 
     private async Task LoadRunningLocalModelsAsync()

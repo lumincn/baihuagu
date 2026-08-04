@@ -4023,4 +4023,8 @@ Shift+Enter new line, Enter to send</value>
   <data name="Messages_RunningLocalModelsHint" xml:space="preserve">
     <value>Models loaded in the Local Models page appear here.</value>
   </data>
+
+  <data name="Messages_RunningModelUnsupported" xml:space="preserve">
+    <value>Chat not supported yet (OpenVINO only)</value>
+  </data>
 </root>
