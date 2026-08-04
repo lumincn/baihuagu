@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.Components.Web
 @using Baihua.Web.Services
 @using Markdig
+@using Baihua.Contracts.LocalModels
 @using Microsoft.JSInterop
 @inject Baihua.Web.Services.IApiService ApiService
 @inject CapabilityService CapabilityService
@@ -103,6 +104,7 @@
                     <button type="button" class="btn @(chatMode == "remote" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => OnChatModeChangedSync("remote"))" disabled="@isThinking">@L["Messages_ModeRemote"]</button>
                     <button type="button" class="btn @(chatMode == "gguf" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => OnChatModeChangedSync("gguf"))" disabled="@isThinking">🦙 GGUF</button>
                     <button type="button" class="btn @(chatMode == "onnx" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => OnChatModeChangedSync("onnx"))" disabled="@isThinking">📦 ONNX</button>
+                    <button type="button" class="btn @(chatMode == "openvino" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => OnChatModeChangedSync("openvino"))" disabled="@isThinking">🧿 OpenVINO</button>
                 </div>
             </div>
             @if (chatMode == "remote")
@@ -138,6 +140,20 @@
             }
             else
             {
+                @if (runningLocalModels.Count > 0)
+                {
+                    <div class="selector-group" style="flex: 1; min-width: 14rem;">
+                        <label>@L["Messages_RunningLocalModels"]</label>
+                        <select class="form-select" value="@selectedRunningModel" @onchange="OnRunningModelChanged" disabled="@isThinking" style="font-size: 0.85rem;">
+                            <option value="">@L["Messages_SelectRunningModel"]</option>
+                            @foreach (var rm in runningLocalModels)
+                            {
+                                <option value="@rm.ModelName">@rm.ToolName · @rm.DisplayName (@rm.ModelName)</option>
+                            }
+                        </select>
+                        <div class="form-text" style="font-size: 0.75rem;">@L["Messages_RunningLocalModelsHint"]</div>
+                    </div>
+                }
                 <div class="selector-group" style="flex: 1; min-width: 12rem;">
                     <label>@L["Messages_ModelPath"]</label>
                     <div style="display: flex; gap: 0.5rem; flex: 1;">
@@ -485,6 +501,8 @@
     private string localModelPath = "";
     private List<LocalModelInfo> localModels = new();
     private bool _canShowLocalModels = true;
+    private List<RunningModelDto> runningLocalModels = new();
+    private string selectedRunningModel = "";
 
     private List<AiConfigModel> availableModels => providers
         .FirstOrDefault(p => p.Id == selectedProviderId)?.Models ?? new List<AiConfigModel>();
@@ -505,6 +523,7 @@
         {
             _canShowLocalModels = await CapabilityService.CanShowAsync("MessagesLocalModelSelector");
             await LoadProvidersAsync();
+            await LoadRunningLocalModelsAsync();
             await LoadChatHistoryAsync();
         }
         // 每次渲染后为代码块添加复制按钮
@@ -790,6 +809,51 @@
     private void OnChatModeChangedSync(string mode)
     {
         chatMode = mode;
+    }
+
+    private async Task LoadRunningLocalModelsAsync()
+    {
+        try
+        {
+            runningLocalModels = await ApiService.GetRunningModelsAsync();
+            // 若只剩一个运行中模型且当前未选择，自动选中
+            if (runningLocalModels.Count == 1 && string.IsNullOrEmpty(selectedRunningModel))
+            {
+                SelectRunningModel(runningLocalModels[0]);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"获取运行中本地模型失败: {ex.Message}");
+        }
+    }
+
+    private void OnRunningModelChanged(ChangeEventArgs e)
+    {
+        var name = e.Value?.ToString() ?? "";
+        var model = runningLocalModels.FirstOrDefault(m => m.ModelName == name);
+        if (model != null) SelectRunningModel(model);
+    }
+
+    private void SelectRunningModel(RunningModelDto model)
+    {
+        selectedRunningModel = model.ModelName;
+        if (model.ToolId.Equals("openvino", StringComparison.OrdinalIgnoreCase))
+        {
+            localModelPath = $"openvino://{model.ModelName}";
+            chatMode = "openvino";
+        }
+        else if (model.ToolId.Equals("ollama", StringComparison.OrdinalIgnoreCase))
+        {
+            localModelPath = model.ModelName;
+            chatMode = "ollama";
+        }
+        else
+        {
+            // llama.cpp / LM Studio 等：尝试用模型名
+            localModelPath = model.ModelName;
+            chatMode = model.ToolId.ToLowerInvariant();
+        }
     }
 
     private async Task ScanLocalModels()

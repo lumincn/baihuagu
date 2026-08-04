@@ -4012,4 +4012,14 @@ Shift+Enter 换行，Enter 发送</value>
   <data name="LocalModels_LoadOpenVinoTitle" xml:space="preserve">
     <value>加载 OpenVINO 模型</value>
   </data>
+
+  <data name="Messages_RunningLocalModels" xml:space="preserve">
+    <value>🖥️ 运行中本地模型（本地模型页启动）</value>
+  </data>
+  <data name="Messages_SelectRunningModel" xml:space="preserve">
+    <value>选择运行中的模型…</value>
+  </data>
+  <data name="Messages_RunningLocalModelsHint" xml:space="preserve">
+    <value>在"本地模型"页加载的模型会出现在这里，选中后可直接对话。</value>
+  </data>
 </root>

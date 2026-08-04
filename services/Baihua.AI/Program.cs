@@ -79,6 +79,7 @@ builder.Services.AddAiClientServices();
 // 本地模型推理后端（GGUF / ONNX）
 builder.Services.AddSingleton<Baihua.Family.Services.LocalAI.ILocalModelInference, Baihua.Family.Services.LocalAI.LlamaSharpInference>();
 builder.Services.AddSingleton<Baihua.Family.Services.LocalAI.ILocalModelInference, Baihua.Family.Services.LocalAI.OnnxRuntimeGenAIInference>();
+builder.Services.AddSingleton<Baihua.Family.Services.LocalAI.ILocalModelInference, Baihua.Family.Services.LocalAI.OpenVinoChatInference>();
 
 // 本地视觉分析（Qwen2.5-VL + OpenVINO）
 builder.Services.Configure<Baihua.Family.Services.LocalAI.LocalVisionOptions>(

@@ -75,18 +75,22 @@ def get_pipe(model_id: str):
     return pipe
 
 
-def generate(model_id: str, image_bytes: bytes, prompt: str, max_tokens: int = 512):
+def generate(model_id: str, image_bytes, prompt: str, max_tokens: int = 512):
     pipe = get_pipe(model_id)
     import openvino_genai as ov
-    from PIL import Image
-    import numpy as np
 
-    img = Image.open(io.BytesIO(image_bytes)).convert('RGB')
-    tensor = OV_CORE.Tensor(np.array(img))
     cfg = ov.GenerationConfig()
     cfg.max_new_tokens = max_tokens
     cfg.do_sample = False
-    result = pipe.generate(prompt, images=[tensor], generation_config=cfg)
+    if image_bytes:
+        from PIL import Image
+        import numpy as np
+        img = Image.open(io.BytesIO(image_bytes)).convert('RGB')
+        tensor = OV_CORE.Tensor(np.array(img))
+        result = pipe.generate(prompt, images=[tensor], generation_config=cfg)
+    else:
+        # 纯文本对话（Qwen2.5-VL 支持无图输入）
+        result = pipe.generate(prompt, generation_config=cfg)
     return str(result)
 
 
@@ -150,6 +154,17 @@ class Handler(BaseHTTPRequestHandler):
                 log(f'vision request: model={model} image_b64_len={len(image_b64)} prompt_len={len(prompt)}')
                 image_bytes = base64.b64decode(image_b64)
                 text = generate(model, image_bytes, prompt)
+                self._send_json(200, {'text': text, 'model': model})
+            elif path == '/v1/chat':
+                # 纯文本对话（无图，Qwen2.5-VL）
+                model = str(req.get('model', '3b'))
+                prompt = str(req.get('prompt', ''))
+                if not prompt.strip():
+                    self._send_json(400, {'error': 'prompt required'})
+                    return
+                max_tokens = int(req.get('max_tokens', 1024))
+                log(f'chat request: model={model} prompt_len={len(prompt)}')
+                text = generate(model, None, prompt, max_tokens=max_tokens)
                 self._send_json(200, {'text': text, 'model': model})
             elif path == '/v1/vision/reload':
                 model = str(req.get('model', '3b'))
