@@ -52,7 +52,7 @@ public class AiFunctionService
     /// <summary>
     /// 搜索知识库中的笔记
     /// </summary>
-    private async Task<string> SearchVaultAsync(
+    public async Task<string> SearchVaultAsync(
         [Description("搜索关键词，如\"桂枝汤\"、\"太阳中风\"、\"发热恶寒\"")] string query)
     {
         try
@@ -83,7 +83,7 @@ public class AiFunctionService
     /// <summary>
     /// 获取当前日期时间
     /// </summary>
-    private Task<string> GetCurrentDateAsync()
+    public Task<string> GetCurrentDateAsync()
     {
         return Task.FromResult(string.Format(_loc["AiFunction_CurrentTime"], DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")));
     }
@@ -91,7 +91,7 @@ public class AiFunctionService
     /// <summary>
     /// 列出已配置的知识库
     /// </summary>
-    private Task<string> ListVaultsAsync()
+    public Task<string> ListVaultsAsync()
     {
         var vaults = _vaultSettings.GetVaults();
         if (vaults.Count == 0)
@@ -104,7 +104,7 @@ public class AiFunctionService
     /// <summary>
     /// 创建笔记到知识库
     /// </summary>
-    private async Task<string> CreateNoteAsync(
+    public async Task<string> CreateNoteAsync(
         [Description("笔记标题，简洁概括主题，如\"桂枝汤的功效与主治\"")] string title,
         [Description("笔记的 Markdown 内容，支持标题、列表、引用等格式")] string content)
     {
@@ -154,7 +154,7 @@ public class AiFunctionService
     /// <summary>
     /// 获取系统健康状态
     /// </summary>
-    private async Task<string> GetSystemStatusAsync()
+    public async Task<string> GetSystemStatusAsync()
     {
         try
         {

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 using Baihua.Core.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -17,15 +18,21 @@ public class LocalAIController : ControllerBase
     private readonly IEnumerable<ILocalModelInference> _inferences;
     private readonly ILogger<LocalAIController> _logger;
     private readonly IStringLocalizer<SharedResources> _loc;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly string _familyBaseUrl;
 
     public LocalAIController(
         IEnumerable<ILocalModelInference> inferences,
         ILogger<LocalAIController> logger,
-        IStringLocalizer<SharedResources> loc)
+        IStringLocalizer<SharedResources> loc,
+        IHttpClientFactory httpClientFactory,
+        IConfiguration configuration)
     {
         _inferences = inferences;
         _logger = logger;
         _loc = loc;
+        _httpClientFactory = httpClientFactory;
+        _familyBaseUrl = (configuration["TaskRunnerApi:BaseUrl"] ?? "http://127.0.0.1:8788").TrimEnd('/');
     }
 
     /// <summary>
@@ -107,13 +114,14 @@ public class LocalAIController : ControllerBase
                 _logger.LogInformation("本地模型调用工具: {Tool} -> {Result}", toolName, toolResult);
                 await SendSse("tool_call", JsonSerializer.Serialize(new { tool = toolName, result = toolResult }));
 
-                // 工具结果并入 assistant 消息（避免连续 user 消息，LlamaSharp 会拒绝）
-                history.Add(("assistant", firstText + $"\n[工具 {toolName} 返回结果：{toolResult}]"));
+                // 工具结果并入 assistant 消息（干净说明，避免 TOOL_CALL 残留在上下文诱导模型再次调用）
+                history.Add(("assistant", $"[已调用工具 {toolName}，返回结果：{toolResult}]"));
 
+                // 第二轮不注入工具描述，防止模型再次输出 TOOL_CALL
                 await foreach (var text in inference.ChatAsync(
                     request.ModelPath,
                     request.Message,
-                    BuildToolPrompt(null),
+                    request.SystemPrompt,
                     history,
                     linkedCts.Token))
                 {
@@ -151,9 +159,12 @@ public class LocalAIController : ControllerBase
 你有以下工具可用：
 - get_current_date: 获取当前日期时间（无参数）
 - get_system_status: 获取本机系统运行状态（无参数）
+- search_vault: 搜索知识库中的笔记，参数 {"query":"搜索关键词"}
+- list_vaults: 列出所有知识库（无参数）
+- create_note: 创建知识库笔记，参数 {"title":"笔记标题","content":"Markdown 内容"}
 
 如果需要调用工具，请在回复开头单独一行使用以下格式（严格 JSON，不要多余字符）：
-TOOL_CALL: {"tool":"工具名","arguments":{}}
+TOOL_CALL: {"tool":"工具名","arguments":{参数对象}}
 然后在下一行给出你的正常回复。
 """;
         return string.IsNullOrWhiteSpace(originalSystemPrompt)
@@ -209,14 +220,31 @@ TOOL_CALL: {"tool":"工具名","arguments":{}}
                     var memMb = GC.GetTotalMemory(false) / 1024 / 1024;
                     var uptimeMin = Environment.TickCount64 / 1000 / 60;
                     return $"进程内存 {memMb:F0} MB；当前时间 {DateTime.Now:yyyy-MM-dd HH:mm:ss}；进程已运行 {uptimeMin} 分钟；系统 {Environment.OSVersion}";
+                case "search_vault":
+                case "list_vaults":
+                case "create_note":
+                    // 通过 Family 的 AI 函数端点执行（复用 AiFunctionService 完整实现）
+                    return await CallFamilyFunctionAsync(tool, arguments);
                 default:
-                    return $"未知工具 {tool}（可用：get_current_date, get_system_status）";
+                    return $"未知工具 {tool}（可用：get_current_date, get_system_status, search_vault, list_vaults, create_note）";
             }
         }
         catch (Exception ex)
         {
             return $"工具执行失败: {ex.Message}";
         }
+    }
+
+    private async Task<string> CallFamilyFunctionAsync(string tool, JsonElement arguments)
+    {
+        using var client = _httpClientFactory.CreateClient();
+        client.Timeout = TimeSpan.FromSeconds(30);
+        var payload = new { tool, arguments = arguments.ValueKind == JsonValueKind.Object ? arguments : JsonDocument.Parse("{}").RootElement };
+        var resp = await client.PostAsJsonAsync(_familyBaseUrl + "/api/ai/functions/call", payload);
+        if (!resp.IsSuccessStatusCode)
+            return $"工具 {tool} 调用失败（HTTP {(int)resp.StatusCode}）";
+        using var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+        return doc.RootElement.TryGetProperty("result", out var r) ? r.GetString() ?? "" : "";
     }
 
     /// <summary>
