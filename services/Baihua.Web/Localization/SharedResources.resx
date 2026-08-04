@@ -4027,4 +4027,14 @@ Shift+Enter new line, Enter to send</value>
   <data name="Messages_RunningModelUnsupported" xml:space="preserve">
     <value>Chat not supported yet (OpenVINO only)</value>
   </data>
+
+  <data name="Messages_LocalTools" xml:space="preserve">
+    <value>Local tools</value>
+  </data>
+  <data name="Messages_NoRunningTools" xml:space="preserve">
+    <value>No local tools running, </value>
+  </data>
+  <data name="Messages_GoToDeployPage" xml:space="preserve">
+    <value>start one in Local Models page →</value>
+  </data>
 </root>

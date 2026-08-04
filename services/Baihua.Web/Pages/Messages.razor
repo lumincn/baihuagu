@@ -97,27 +97,6 @@
     </div>
 
     <div class="chat-controls">
-        @if (chatMode != "remote" && chatMode != "gguf" && chatMode != "onnx" && runningLocalModels.Count > 0)
-        {
-            <div class="running-models-row">
-                <label>@L["Messages_RunningLocalModels"]</label>
-                <select class="form-select" value="@selectedRunningModel" @onchange="OnRunningModelChanged" disabled="@isThinking" style="font-size: 0.85rem;">
-                    <option value="">@L["Messages_SelectRunningModel"]</option>
-                    @foreach (var rm in runningLocalModels)
-                    {
-                        @if (rm.ToolId.Equals("openvino", StringComparison.OrdinalIgnoreCase))
-                        {
-                            <option value="@rm.ModelName">@rm.ToolName · @rm.DisplayName (@rm.ModelName)</option>
-                        }
-                        else
-                        {
-                            <option value="@rm.ModelName" disabled title="@L["Messages_RunningModelUnsupported"]">@rm.ToolName · @rm.DisplayName (@rm.ModelName) ⚠️</option>
-                        }
-                    }
-                </select>
-                <span class="form-text" style="font-size: 0.75rem; white-space: nowrap;">@L["Messages_RunningLocalModelsHint"]</span>
-            </div>
-        }
         <div class="model-selector-bar">
             <div class="selector-group">
                 <label>@L["Messages_Mode"]</label>
@@ -131,7 +110,25 @@
                         <button type="button" class="btn @(chatMode == "onnx" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => OnChatModeChangedSync("onnx"))" disabled="@isThinking">📦 ONNX</button>
                     </div>
                     <span class="mode-group-sep"></span>
-                    <span class="mode-group-label">@L["Messages_RunningLocalModels"]</span>
+                    <div class="local-tools-group">
+                        <span class="mode-group-label">🔧 @L["Messages_LocalTools"]</span>
+                        @if (runningLocalModels.Count > 0)
+                        {
+                            <select class="form-select form-select-sm" value="@selectedRunningModel" @onchange="OnRunningModelChanged" disabled="@isThinking" style="font-size: 0.85rem; max-width: 22rem; width: auto;">
+                                <option value="">@L["Messages_SelectRunningModel"]</option>
+                                @foreach (var rm in runningLocalModels)
+                                {
+                                    <option value="@rm.ModelName">@rm.ToolName · @GetShortModelName(rm.DisplayName)</option>
+                                }
+                            </select>
+                        }
+                        else
+                        {
+                            <span class="form-text" style="font-size: 0.75rem;">
+                                @L["Messages_NoRunningTools"] <a href="local-models" class="link-small">@L["Messages_GoToDeployPage"]</a>
+                            </span>
+                        }
+                    </div>
                 </div>
             </div>
             @if (chatMode == "remote")
@@ -185,9 +182,17 @@
             else
             {
                 <div class="selector-group" style="flex: 1;">
-                    <label>@L["Messages_ModelPath"]</label>
-                    <input type="text" class="form-control" value="@localModelPath" readonly disabled="@isThinking"
-                           style="flex: 1; font-size: 0.85rem; background: #f5f5f5;" />
+                    <label>@L["Messages_RunningLocalModels"]</label>
+                    @if (SelectedRunningModelInfo != null)
+                    {
+                        <span class="form-control" style="flex: 1; font-size: 0.85rem; background: #f5f5f5;">
+                            @SelectedRunningModelInfo.ToolName · @SelectedRunningModelInfo.DisplayName
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="form-text">@L["Messages_NoRunningTools"]</span>
+                    }
                 </div>
             }
             @if (chatMode == "remote")
@@ -559,6 +564,10 @@
     private bool _canShowLocalModels = true;
     private List<RunningModelDto> runningLocalModels = new();
     private string selectedRunningModel = "";
+    private RunningModelDto? SelectedRunningModelInfo =>
+        runningLocalModels.FirstOrDefault(m => m.ModelName == selectedRunningModel);
+    private bool IsLocalToolMode =>
+        chatMode != "remote" && chatMode != "gguf" && chatMode != "onnx";
 
     private List<AiConfigModel> availableModels => providers
         .FirstOrDefault(p => p.Id == selectedProviderId)?.Models ?? new List<AiConfigModel>();
@@ -631,6 +640,26 @@
             }).ToList();
             var json = System.Text.Json.JsonSerializer.Serialize(new { sessionId = chatSessionId, messages = history });
             await JSRuntime.InvokeVoidAsync("localStorage.setItem", "chat_history", json);
+
+            await SaveChatPrefsAsync();
+        }
+        catch { }
+    }
+
+    private async Task SaveChatPrefsAsync()
+    {
+        try
+        {
+            var prefs = new
+            {
+                chatMode,
+                selectedProviderId,
+                selectedModel,
+                localModelPath,
+                selectedRunningModel
+            };
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "chat_prefs",
+                System.Text.Json.JsonSerializer.Serialize(prefs));
         }
         catch { }
     }
@@ -639,6 +668,50 @@
     {
         try
         {
+            // 恢复上次的模式选择（无记忆则保持默认 remote）
+            var prefsJson = await JSRuntime.InvokeAsync<string?>("localStorage.getItem", "chat_prefs");
+            if (!string.IsNullOrWhiteSpace(prefsJson))
+            {
+                using var prefsDoc = System.Text.Json.JsonDocument.Parse(prefsJson);
+                var prefs = prefsDoc.RootElement;
+                if (prefs.TryGetProperty("chatMode", out var modeProp))
+                {
+                    var savedMode = modeProp.GetString() ?? "";
+                    if (savedMode == "remote")
+                    {
+                        chatMode = "remote";
+                        if (prefs.TryGetProperty("selectedProviderId", out var pidProp))
+                            selectedProviderId = pidProp.GetString() ?? selectedProviderId;
+                        if (prefs.TryGetProperty("selectedModel", out var mProp))
+                            selectedModel = mProp.GetString() ?? selectedModel;
+                    }
+                    else if (savedMode == "gguf" || savedMode == "onnx")
+                    {
+                        chatMode = savedMode;
+                        if (prefs.TryGetProperty("localModelPath", out var lpProp))
+                            localModelPath = lpProp.GetString() ?? "";
+                    }
+                    else
+                    {
+                        // 本地工具模式：仅当该工具仍在运行时恢复，否则回退远程
+                        if (prefs.TryGetProperty("selectedRunningModel", out var rmProp))
+                            selectedRunningModel = rmProp.GetString() ?? "";
+                        var info = runningLocalModels.FirstOrDefault(m => m.ModelName == selectedRunningModel);
+                        if (info != null)
+                        {
+                            SelectRunningModel(info);
+                        }
+                        else
+                        {
+                            chatMode = "remote";
+                            selectedRunningModel = "";
+                            localModelPath = "";
+                        }
+                    }
+                    StateHasChanged();
+                }
+            }
+
             var json = await JSRuntime.InvokeAsync<string?>("localStorage.getItem", "chat_history");
             if (!string.IsNullOrWhiteSpace(json))
             {
@@ -860,6 +933,7 @@
         {
             selectedModel = "";
         }
+        _ = SaveChatPrefsAsync();
     }
 
     private void OnChatModeChangedSync(string mode)
@@ -871,6 +945,7 @@
             localModelPath = "";
             selectedRunningModel = "";
         }
+        _ = SaveChatPrefsAsync();
     }
 
     private async Task LoadRunningLocalModelsAsync()
@@ -878,11 +953,7 @@
         try
         {
             runningLocalModels = await ApiService.GetRunningModelsAsync();
-            // 若只剩一个运行中模型且当前未选择，自动选中
-            if (runningLocalModels.Count == 1 && string.IsNullOrEmpty(selectedRunningModel))
-            {
-                SelectRunningModel(runningLocalModels[0]);
-            }
+            StateHasChanged();
         }
         catch (Exception ex)
         {
@@ -894,7 +965,11 @@
     {
         var name = e.Value?.ToString() ?? "";
         var model = runningLocalModels.FirstOrDefault(m => m.ModelName == name);
-        if (model != null) SelectRunningModel(model);
+        if (model != null)
+        {
+            SelectRunningModel(model);
+            _ = SaveChatPrefsAsync();
+        }
     }
 
     private void SelectRunningModel(RunningModelDto model)

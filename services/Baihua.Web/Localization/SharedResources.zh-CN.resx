@@ -4026,4 +4026,14 @@ Shift+Enter 换行，Enter 发送</value>
   <data name="Messages_RunningModelUnsupported" xml:space="preserve">
     <value>暂不支持对话（仅 OpenVINO 可用）</value>
   </data>
+
+  <data name="Messages_LocalTools" xml:space="preserve">
+    <value>本地工具</value>
+  </data>
+  <data name="Messages_NoRunningTools" xml:space="preserve">
+    <value>暂无运行中的本地工具，</value>
+  </data>
+  <data name="Messages_GoToDeployPage" xml:space="preserve">
+    <value>去本地模型部署页启动 →</value>
+  </data>
 </root>
