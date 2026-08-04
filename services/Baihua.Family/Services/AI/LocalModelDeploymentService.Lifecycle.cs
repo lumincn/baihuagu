@@ -33,6 +33,11 @@ public partial class LocalModelDeploymentService
             {
                 result = await _llamaCpp.LoadModelAsync(modelName, ct);
             }
+            else if (toolId.Equals("openvino", StringComparison.OrdinalIgnoreCase))
+            {
+                await _openVino.EnsureServerRunningAsync(ct);
+                result = await _openVino.LoadModelAsync(modelName, ct);
+            }
             else
             {
                 return false;
@@ -51,6 +56,8 @@ public partial class LocalModelDeploymentService
                 result = await _lmStudio.UnloadModelAsync(modelName, ct);
             else if (toolId.Equals("llamacpp", StringComparison.OrdinalIgnoreCase))
                 result = await _llamaCpp.UnloadModelAsync(ct);
+            else if (toolId.Equals("openvino", StringComparison.OrdinalIgnoreCase))
+                result = await _openVino.UnloadModelAsync(modelName, ct);
             else
                 return false;
 
@@ -127,6 +134,7 @@ public partial class LocalModelDeploymentService
         {
             _cache.Remove(RunningModelsCacheKey);
             _cache.Remove(ToolsCacheKey);
+            _cache.Remove(DownloadedModelsCacheKey);
             _logger.LogDebug("本地模型缓存已清除");
         }
 

@@ -24,7 +24,7 @@ namespace Baihua.Family.Services
             try
             {
                 using var client = httpClientFactory.CreateClient();
-                client.Timeout = TimeSpan.FromSeconds(3);
+                client.Timeout = TimeSpan.FromSeconds(1.5);
                 var response = await client.GetAsync($"{llamaCpp.BaseUrl.TrimEnd('/')}/v1/models", ct);
                 if (!response.IsSuccessStatusCode) return list;
 

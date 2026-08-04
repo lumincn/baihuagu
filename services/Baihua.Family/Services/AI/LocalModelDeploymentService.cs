@@ -27,6 +27,7 @@ namespace Baihua.Family.Services;
         private readonly LmStudioService _lmStudio;
         private readonly LmStudioDownloadService _lmStudioDownload;
         private readonly LlamaCppService _llamaCpp;
+    private readonly OpenVinoToolService _openVino;
 
         // 内存中的部署任务状态
         private static readonly ConcurrentDictionary<string, DeployTaskStatusDto> _tasks = new();
@@ -35,6 +36,7 @@ namespace Baihua.Family.Services;
         // 缓存配置
         private const string ToolsCacheKey = "local_tools";
         private const string RunningModelsCacheKey = "running_models";
+        private const string DownloadedModelsCacheKey = "downloaded_models";
 
         public LocalModelDeploymentService(
             ILogger<LocalModelDeploymentService> logger,
@@ -48,6 +50,7 @@ namespace Baihua.Family.Services;
             LmStudioService lmStudio,
             LmStudioDownloadService lmStudioDownload,
             LlamaCppService llamaCpp,
+            OpenVinoToolService openVino,
             IStringLocalizer<SharedResources> loc)
         {
             _logger = logger;
@@ -61,6 +64,7 @@ namespace Baihua.Family.Services;
             _lmStudio = lmStudio;
             _lmStudioDownload = lmStudioDownload;
             _llamaCpp = llamaCpp;
+            _openVino = openVino;
             _loc = loc;
         }
 

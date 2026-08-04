@@ -30,6 +30,9 @@
     <li class="nav-item">
         <button class="nav-link @(_activeTab == "llamacpp" ? "active" : "")" @onclick='async () => await OnTabChanged("llamacpp")'>⚡ llama.cpp</button>
     </li>
+    <li class="nav-item">
+        <button class="nav-link @(_activeTab == "openvino" ? "active" : "")" @onclick='async () => await OnTabChanged("openvino")'>🧿 OpenVINO</button>
+    </li>
 </ul>
 
 
@@ -1457,6 +1460,11 @@ else
         color: #a07050;
     }
 
+    .tool-openvino {
+        background: #e8f0e8;
+        color: #3d7a4d;
+    }
+
     .mem-bar {
         width: 100%;
         height: 6px;
@@ -1796,7 +1804,179 @@ else
         word-break: break-all;
         margin: 0;
     }
+
+    /* ===== 暗色模式适配（data-bs-theme=dark）===== */
+    [data-bs-theme="dark"] {
+        .loading-spinner { color: #91a0b0; }
+        .hardware-section h2, .tools-section h2, .scenario-section h2, .deploy-section h2 { color: #d4d8dd; }
+        .hw-card { background: #232a3b; border-color: #2d3548; }
+        .hw-title { color: #91a0b0; }
+        .hw-value { color: #d4d8dd; }
+        .hw-detail { color: #8090a0; }
+        .tool-item { background: #232a3b; border-color: #2d3548; }
+        .scenario-tag { background: #232a3b; border-color: #2d3548; }
+        .scenario-tag:hover { background: #2a3040; }
+        .model-card { background: #232a3b; border-color: #2d3548; }
+        .model-name { color: #d4d8dd; }
+        .model-size { background: #2d3548; color: #c0c8d0; }
+        .model-desc { color: #a8b0b8; }
+        .model-requirements { color: #91a0b0; }
+        .tier-group { background: #232a3b; border-color: #2d3548; }
+        .tier-group.tier-recommended { border-color: #6b9e75; }
+        .tier-group-header { background: #2a3040; border-bottom-color: #2d3548; }
+        .tier-group.tier-recommended .tier-group-header { background: rgba(107, 158, 117, 0.15); }
+        .tier-badge { color: #d4d8dd; }
+        .tier-count { color: #91a0b0; }
+        .deploy-card { background: #232a3b; border-color: #2d3548; }
+        .deploy-logs { border: 1px solid #2d3548; }
+        .progress-bar { background: #2d3548; }
+        .progress-text { color: #91a0b0; }
+        .deploy-step { color: #a8b0b8; }
+        .running-models-table { background: #232a3b; border-color: #2d3548; }
+        .running-table-header { background: #2a3040; color: #a8b0b8; }
+        .running-table-row { border-color: #2d3548; }
+        .running-table-row:hover { background: #2a3040; }
+        .mem-bar { background: #2d3548; }
+        .memory-summary { color: #91a0b0; }
+        .load-model-section { background: #232a3b; border-color: #2d3548; }
+        .badge-light { background: #2a3040; color: #d4d8dd; border-color: #2d3548; }
+        .llamacpp-section { background: #24261f; border-color: #3a3a30; }
+        .llamacpp-section h2 { color: #c0a080; }
+        .preset-label { color: #91a0b0; }
+        .preset-checkbox { background: #2a2a24; border-color: #3a3a30; color: #c0c8d0; }
+        .preset-checkbox:hover { background: #33332a; }
+        .downloaded-models-table { background: #232a3b; border-color: #2d3548; }
+        .downloaded-table-header { background: #2a3040; color: #a8b0b8; }
+        .downloaded-table-row { border-color: #2d3548; }
+        .downloaded-table-row:hover { background: #2a3040; }
+        .digest-text { color: #8090a0; }
+        .modal-content { background: #232a3b; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6); }
+        .modal-header { border-bottom-color: #2d3548; }
+        .modal-footer { border-top-color: #2d3548; }
+        .modal-close { color: #91a0b0; }
+        .modal-close:hover { color: #d4d8dd; }
+        .tool-ollama { background: rgba(37, 122, 158, 0.22); color: #7fc4e0; }
+        .tool-lmstudio { background: rgba(106, 27, 154, 0.28); color: #ce93d8; }
+        .tool-llamacpp { background: rgba(160, 112, 80, 0.22); color: #c8a080; }
+        .tool-openvino { background: rgba(61, 122, 77, 0.22); color: #8fc79e; }
+    }
+
 </style>
+
+    @if (_activeTab == "openvino")
+    {
+    <!-- OpenVINO Downloaded Models -->
+    <div class="downloaded-section">
+        <div class="section-header" style="cursor:pointer;" @onclick="() => ToggleSection(ref _showDownloadedModels)">
+            <h2>@(_showDownloadedModels ? "▼" : "▶") 🧿 @L["LocalModels_DownloadedOpenVino"]</h2>
+            @if (_showDownloadedModels)
+            {
+                <button class="btn btn-secondary btn-sm" @onclick="RefreshDownloadedModels" disabled="@isLoadingDownloaded">
+                    @(isLoadingDownloaded ? "🔄 " + L["LocalModels_Refreshing"] : "🔄 " + L["LocalModels_RefreshModels"])
+                </button>
+            }
+        </div>
+        @if (_showDownloadedModels)
+        {
+        @if (downloadedModels.Count == 0)
+        {
+            <div class="alert alert-info">@L["LocalModels_NoDownloadedModels"]</div>
+        }
+        else
+        {
+            <div class="downloaded-models-table">
+                <div class="downloaded-table-header">
+                    <span class="col-dl-name">@L["LocalModels_DlName"]</span>
+                    <span class="col-dl-tool">@L["LocalModels_DlTool"]</span>
+                    <span class="col-dl-size">@L["LocalModels_DlSize"]</span>
+                    <span class="col-dl-time">@L["LocalModels_DlTime"]</span>
+                    <span class="col-dl-status">@L["LocalModels_DlStatus"]</span>
+                    <span class="col-dl-actions">@L["LocalModels_DlActions"]</span>
+                </div>
+                @foreach (var dm in downloadedModels.Where(m => m.ToolId == "openvino"))
+                {
+                    <div class="downloaded-table-row">
+                        <span class="col-dl-name">
+                            <span class="model-name-text">@dm.Name</span>
+                            @if (!string.IsNullOrEmpty(dm.Digest))
+                            {
+                                <span class="digest-text" title="@dm.Digest">@dm.Digest[..Math.Min(12, dm.Digest.Length)]...</span>
+                            }
+                        </span>
+                        <span class="col-dl-tool">
+                            <span class="tool-badge @GetToolBadgeClass(dm.ToolId)">@dm.ToolName</span>
+                        </span>
+                        <span class="col-dl-size">@dm.SizeGiB GB</span>
+                        <span class="col-dl-time">
+                            @(dm.ModifiedAt.HasValue ? dm.ModifiedAt.Value.ToString("yyyy-MM-dd HH:mm") : "-")
+                        </span>
+                        <span class="col-dl-status">
+                            @if (dm.IsRunning)
+                            {
+                                <span class="badge badge-info">▶ @L["LocalModels_RunningBadge"]</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-light">⏹ @L["LocalModels_StoppedBadge"]</span>
+                            }
+                        </span>
+                        <span class="col-dl-actions">
+                            <button class="btn btn-primary btn-sm" @onclick='() => LoadDownloadedModel(dm)' disabled="@isLoadingModel">
+                                @L["LocalModels_LoadBtn"]
+                            </button>
+                            <button class="btn btn-secondary btn-sm" @onclick='() => ShowModelDetails(dm)' disabled="@isLoadingDetails">
+                                @L["LocalModels_DetailsBtn"]
+                            </button>
+                        </span>
+                    </div>
+                }
+            </div>
+            <div class="memory-summary">
+                @L["LocalModels_ModelCount", downloadedModels.Count, downloadedModels.Sum(m => m.SizeGiB).ToString("F1")]
+            </div>
+        }
+        @if (!string.IsNullOrEmpty(downloadedModelMessage))
+        {
+            <div class="load-message @(downloadedModelSuccess ? "text-success" : "text-error")" style="margin-top:0.5rem;">
+                @downloadedModelMessage
+            </div>
+        }
+        }
+    </div>
+
+    <!-- OpenVINO Load Model -->
+    <div class="load-model-section">
+        <div class="section-header" style="cursor:pointer;" @onclick="() => ToggleSection(ref _showLoadModel)">
+            <h3>@(_showLoadModel ? "▼" : "▶") 📥 @L["LocalModels_LoadOpenVinoTitle"]</h3>
+        </div>
+        @if (_showLoadModel)
+        {
+        <div class="load-model-form">
+            <div class="form-row">
+                <div class="form-group">
+<label>@L["LocalModels_ModelSelectLabel"]</label>
+                    <select class="form-control" @bind="loadModelName" disabled="@string.IsNullOrEmpty(loadToolId)">
+                        <option value="">@L["LocalModels_SelectModelPlaceholder"]</option>
+                        @foreach (var name in availableModelsForLoad)
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    </select>
+                    <div class="form-text">OpenVINO 模型加载到显存后，识别图片无需等待冷加载。</div>
+                </div>
+            </div>
+            <button class="btn btn-primary" @onclick="LoadSelectedModel" disabled="@(!CanLoadModel())">
+                @(isLoadingModel ? @L["Common_Loading"] : @L["LocalModels_LoadModelBtn"])
+            </button>
+            @if (!string.IsNullOrEmpty(loadModelMessage))
+            {
+                <span class="load-message @(loadModelSuccess ? "text-success" : "text-error")">@loadModelMessage</span>
+            }
+        </div>
+        }
+    </div>
+    }
+
 
 @code {
     private bool isLoading = true;
@@ -2369,6 +2549,7 @@ else
             "ollama" => "tool-ollama",
             "lmstudio" => "tool-lmstudio",
             "llamacpp" => "tool-llamacpp",
+            "openvino" => "tool-openvino",
             _ => ""
         };
     }
@@ -2689,7 +2870,7 @@ else
     private async Task OnTabChanged(string tab)
     {
         _activeTab = tab;
-        if (tab == "ollama" || tab == "lmstudio" || tab == "llamacpp")
+        if (tab == "ollama" || tab == "lmstudio" || tab == "llamacpp" || tab == "openvino")
         {
             loadToolId = tab;
             await OnLoadToolChanged();

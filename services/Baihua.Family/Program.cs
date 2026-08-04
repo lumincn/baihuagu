@@ -254,6 +254,9 @@ builder.Services.AddSingleton<OllamaService>();
 builder.Services.AddSingleton<LmStudioDownloadService>();
 builder.Services.AddSingleton<LmStudioService>();
 builder.Services.AddSingleton<LlamaCppService>();
+builder.Services.Configure<Baihua.Family.Services.OpenVinoToolOptions>(
+    builder.Configuration.GetSection("LocalVision"));
+builder.Services.AddSingleton<Baihua.Family.Services.OpenVinoToolService>();
 builder.Services.AddSingleton<LocalModelDeploymentService>();
 builder.Services.AddSingleton<AiMetricsService>();
 builder.Services.AddSingleton<BenchmarkRepository>();

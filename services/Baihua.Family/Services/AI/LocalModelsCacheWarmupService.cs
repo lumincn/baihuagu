@@ -36,6 +36,21 @@ namespace Baihua.Family.Services
                 var hardware = hardwareService.GetHardwareInfo();
                 recommendationEngine.GetRecommendations(hardware, scenario: null, maxResults: 20);
 
+                // 后台预热工具状态/运行中模型/已下载模型（避免页面首访冷加载 5s+）
+                try
+                {
+                    var deployment = scope.ServiceProvider.GetRequiredService<LocalModelDeploymentService>();
+                    _ = Task.WhenAll(
+                        deployment.GetLocalToolsAsync(ct: stoppingToken),
+                        deployment.GetRunningModelsAsync(ct: stoppingToken),
+                        deployment.GetDownloadedModelsAsync(stoppingToken));
+                    _logger.LogInformation("tool/running/downloaded cache warmup started");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "tool/model cache warmup failed (non-critical)");
+                }
+
                 _logger.LogInformation("本地模型缓存预热完成");
             }
             catch (Exception ex)

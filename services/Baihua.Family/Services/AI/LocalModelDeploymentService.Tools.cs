@@ -87,7 +87,20 @@ public partial class LocalModelDeploymentService
                 InstallGuideUrl = "https://github.com/ggerganov/llama.cpp"
             });
 
-            _cache.Set(ToolsCacheKey, tools, TimeSpan.FromSeconds(10));
+            // OpenVINO GenAI（本地视觉模型，对接 vision_server.py）
+            var (ovInstalled, ovVersion, ovRunning, ovModelPath) = await _openVino.GetToolInfoAsync(ct);
+            tools.Add(new LocalToolInfoDto
+            {
+                Id = "openvino",
+                Name = "OpenVINO GenAI",
+                IsInstalled = ovInstalled,
+                Version = ovVersion,
+                IsRunning = ovRunning,
+                DefaultModelPath = ovModelPath,
+                InstallGuideUrl = "https://docs.openvino.ai"
+            });
+
+            _cache.Set(ToolsCacheKey, tools, TimeSpan.FromSeconds(60));
             return tools;
         }
 
@@ -105,38 +118,33 @@ public partial class LocalModelDeploymentService
 
             var results = new List<RunningModelDto>();
 
-            try
-            {
-                var ollamaModels = await _ollama.GetRunningModelsAsync(ct);
-                results.AddRange(ollamaModels);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogDebug(ex, "获取 Ollama 运行中模型失败");
-            }
+            // 4 个工具并行探测（各自内部有超时兑底，串行会把超时叠加到 6s+）
+            var ollamaTask = SafeRunningAsync(() => _ollama.GetRunningModelsAsync(ct), "Ollama");
+            var lmTask = SafeRunningAsync(() => _lmStudio.GetRunningModelsAsync(ct), "LM Studio");
+            var llamaTask = SafeRunningAsync(() => _llamaCpp.GetRunningModelsAsync(ct), "llama.cpp");
+            var ovTask = SafeRunningAsync(() => _openVino.GetRunningModelsAsync(ct), "OpenVINO");
+            await Task.WhenAll(ollamaTask, lmTask, llamaTask, ovTask);
 
-            try
-            {
-                var lmModels = await _lmStudio.GetRunningModelsAsync(ct);
-                results.AddRange(lmModels);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogDebug(ex, "获取 LM Studio 运行中模型失败");
-            }
-
-            try
-            {
-                var llamaModels = await _llamaCpp.GetRunningModelsAsync(ct);
-                results.AddRange(llamaModels);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogDebug(ex, "获取 llama.cpp 运行中模型失败");
-            }
+            results.AddRange(await ollamaTask);
+            results.AddRange(await lmTask);
+            results.AddRange(await llamaTask);
+            results.AddRange(await ovTask);
 
             _cache.Set(RunningModelsCacheKey, results);
             return results;
+        }
+
+        private async Task<List<RunningModelDto>> SafeRunningAsync(Func<Task<List<RunningModelDto>>> probe, string name)
+        {
+            try
+            {
+                return await probe();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "获取 {Tool} 运行中模型失败", name);
+                return new List<RunningModelDto>();
+            }
         }
 
         #endregion
@@ -154,6 +162,9 @@ public partial class LocalModelDeploymentService
             if (toolId.Equals("llamacpp", StringComparison.OrdinalIgnoreCase))
                 return await _llamaCpp.GetAvailableModelsAsync(ct);
 
+            if (toolId.Equals("openvino", StringComparison.OrdinalIgnoreCase))
+                return await _openVino.GetAvailableModelsAsync(ct);
+
             return new List<string>();
         }
 
@@ -163,13 +174,28 @@ public partial class LocalModelDeploymentService
 
         public async Task<List<DownloadedModelDto>> GetDownloadedModelsAsync(CancellationToken ct = default)
         {
-            var runningModels = await GetRunningModelsAsync(forceRefresh: true, ct);
+            if (_cache.TryGetValue(DownloadedModelsCacheKey, out List<DownloadedModelDto>? cached) && cached != null)
+            {
+                _logger.LogDebug("已下载模型命中缓存");
+                return cached;
+            }
+
+            var runningModels = await GetRunningModelsAsync(forceRefresh: false, ct);
+
+            // 4 个工具并行扫描下载目录（避免串行把 2s 连接探测延迟叠加）
+            var ollamaTask = _ollama.GetDownloadedModelsAsync(runningModels, ct);
+            var lmTask = _lmStudio.GetDownloadedModelsAsync(runningModels, ct);
+            var llamaTask = _llamaCpp.GetDownloadedModelsAsync(runningModels, ct);
+            var ovTask = _openVino.GetDownloadedModelsAsync(ct);
+            await Task.WhenAll(ollamaTask, lmTask, llamaTask, ovTask);
+
             var results = new List<DownloadedModelDto>();
+            results.AddRange(await ollamaTask);
+            results.AddRange(await lmTask);
+            results.AddRange(await llamaTask);
+            results.AddRange(await ovTask);
 
-            results.AddRange(await _ollama.GetDownloadedModelsAsync(runningModels, ct));
-            results.AddRange(await _lmStudio.GetDownloadedModelsAsync(runningModels, ct));
-            results.AddRange(await _llamaCpp.GetDownloadedModelsAsync(runningModels, ct));
-
+            _cache.Set(DownloadedModelsCacheKey, results, TimeSpan.FromSeconds(30));
             return results;
         }
 
@@ -194,6 +220,12 @@ public partial class LocalModelDeploymentService
             if (toolId.Equals("llamacpp", StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogWarning("llama.cpp 模型删除暂不支持，请手动删除 .gguf 文件");
+                return false;
+            }
+
+            if (toolId.Equals("openvino", StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogWarning("OpenVINO 模型删除暂不支持，请手动删除模型目录");
                 return false;
             }
 

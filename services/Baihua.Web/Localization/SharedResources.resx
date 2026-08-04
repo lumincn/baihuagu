@@ -4006,4 +4006,11 @@ Shift+Enter new line, Enter to send</value>
   <data name="Vision_NotEnabled" xml:space="preserve">
     <value>Local vision disabled (config LocalVision:Enabled)</value>
   </data>
+
+  <data name="LocalModels_DownloadedOpenVino" xml:space="preserve">
+    <value>OpenVINO Models</value>
+  </data>
+  <data name="LocalModels_LoadOpenVinoTitle" xml:space="preserve">
+    <value>Load OpenVINO Model</value>
+  </data>
 </root>

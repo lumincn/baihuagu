@@ -142,8 +142,8 @@ class Handler(BaseHTTPRequestHandler):
         try:
             raw = self._read_body()
             log(f'POST {path} body_len={len(raw)}')
+            req = json.loads(raw.decode('utf-8')) if raw else {}
             if path == '/v1/vision':
-                req = json.loads(raw.decode('utf-8'))
                 model = str(req.get('model', '3b'))
                 prompt = str(req.get('prompt', '请详细描述这张图片的内容。'))
                 image_b64 = req.get('image_base64') or req.get('imageBase64') or ''
@@ -154,6 +154,12 @@ class Handler(BaseHTTPRequestHandler):
             elif path == '/v1/vision/reload':
                 model = str(req.get('model', '3b'))
                 get_pipe(model)
+                self._send_json(200, {'ok': True, 'model': model})
+            elif path == '/v1/vision/unload':
+                model = str(req.get('model', '3b'))
+                with _pipes_lock:
+                    _pipes.pop(model, None)
+                log(f'model {model} unloaded')
                 self._send_json(200, {'ok': True, 'model': model})
             else:
                 self._send_json(404, {'error': 'not found'})

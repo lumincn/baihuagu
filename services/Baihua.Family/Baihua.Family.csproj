@@ -49,6 +49,11 @@
     <EmbeddedResource Include="Data/ExamOutlines/*.json" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- 本地视觉推理服务（OpenVINO），随发布拷贝 -->
+    <None Include="..\Baihua.AI\LocalVision\vision_server.py" Link="LocalVision\vision_server.py" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
 
 

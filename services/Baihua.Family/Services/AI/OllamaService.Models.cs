@@ -14,7 +14,7 @@ public partial class OllamaService
         {
             var list = new List<RunningModelDto>();
             using var client = httpClientFactory.CreateClient();
-            client.Timeout = TimeSpan.FromSeconds(3);
+            client.Timeout = TimeSpan.FromSeconds(1.5);
             var response = await client.GetAsync("http://localhost:11434/api/ps", ct);
             if (!response.IsSuccessStatusCode) return list;
 
