@@ -177,6 +177,16 @@
                             @L["Messages_Scan"]
                         </button>
                     </div>
+                    <div class="form-text engine-info">
+                        @if (chatMode == "gguf")
+                        {
+                            <span>🦙 @L["Messages_GgufEngineInfo"]</span>
+                        }
+                        else
+                        {
+                            <span>📦 @L["Messages_OnnxEngineInfo"]</span>
+                        }
+                    </div>
                 </div>
             }
             else
@@ -279,6 +289,12 @@
     }
     .selector-group.path-group input {
         min-width: 0;
+    }
+    .engine-info {
+        font-size: 0.75rem;
+        color: #888;
+        margin-top: 0.15rem;
+        width: 100%;
     }
     .mode-btn-groups {
         display: flex;

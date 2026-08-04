@@ -4037,4 +4037,11 @@ Shift+Enter new line, Enter to send</value>
   <data name="Messages_GoToDeployPage" xml:space="preserve">
     <value>start one in Local Models page →</value>
   </data>
+
+  <data name="Messages_GgufEngineInfo" xml:space="preserve">
+    <value>Engine: LlamaSharp (llama.cpp C# binding, CPU/GPU) · loads .gguf files</value>
+  </data>
+  <data name="Messages_OnnxEngineInfo" xml:space="preserve">
+    <value>Engine: ONNX Runtime GenAI (Microsoft, GPU accel) · loads ONNX model dirs</value>
+  </data>
 </root>

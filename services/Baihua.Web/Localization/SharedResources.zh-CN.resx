@@ -4036,4 +4036,11 @@ Shift+Enter 换行，Enter 发送</value>
   <data name="Messages_GoToDeployPage" xml:space="preserve">
     <value>去本地模型部署页启动 →</value>
   </data>
+
+  <data name="Messages_GgufEngineInfo" xml:space="preserve">
+    <value>处理引擎：LlamaSharp（llama.cpp C# 绑定，CPU/GPU 推理）· 加载 .gguf 模型文件</value>
+  </data>
+  <data name="Messages_OnnxEngineInfo" xml:space="preserve">
+    <value>处理引擎：ONNX Runtime GenAI（微软 ONNX Runtime，GPU 加速）· 加载 ONNX 模型目录</value>
+  </data>
 </root>
