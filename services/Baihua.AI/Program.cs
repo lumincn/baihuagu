@@ -80,6 +80,11 @@ builder.Services.AddAiClientServices();
 builder.Services.AddSingleton<Baihua.Family.Services.LocalAI.ILocalModelInference, Baihua.Family.Services.LocalAI.LlamaSharpInference>();
 builder.Services.AddSingleton<Baihua.Family.Services.LocalAI.ILocalModelInference, Baihua.Family.Services.LocalAI.OnnxRuntimeGenAIInference>();
 
+// 本地视觉分析（Qwen2.5-VL + OpenVINO）
+builder.Services.Configure<Baihua.Family.Services.LocalAI.LocalVisionOptions>(
+    builder.Configuration.GetSection("LocalVision"));
+builder.Services.AddSingleton<Baihua.Family.Services.LocalAI.OpenVinoVisionService>();
+
 
 
 // 健康检查

@@ -55,6 +55,12 @@ namespace Baihua.Web.Services
         IAsyncEnumerable<string> StreamLocalChatAsync(string message, string modelPath, string modelType, List<(bool IsUser, string Content)>? history = null, CancellationToken cancellationToken = default);
         IAsyncEnumerable<string> StreamChatWithVaultAsync(string message, string model, List<(bool IsUser, string Content)>? history = null, CancellationToken cancellationToken = default);
         Task<List<LocalModelInfo>> ScanLocalModelsAsync(string? directory = null);
+
+        // 本地视觉识别（Qwen2.5-VL + OpenVINO）
+        Task<VisionStatusDto> GetVisionStatusAsync(CancellationToken cancellationToken = default);
+        Task<VisionStatusDto> StartVisionServerAsync(CancellationToken cancellationToken = default);
+        Task<VisionResultDto> RecognizeImageAsync(byte[] imageBytes, string prompt, string model, CancellationToken cancellationToken = default);
+
         string GetBackendBaseUrl();
         Task<bool> DeleteTaskAsync(string taskId);
         Task<bool> DeleteAllTasksAsync();
@@ -687,6 +693,61 @@ namespace Baihua.Web.Services
                 _logger.LogError(ex, "扫描本地模型失败");
                 return new List<LocalModelInfo>();
             }
+        }
+
+        // ========== 本地视觉识别（Qwen2.5-VL + OpenVINO）==========
+
+        public async Task<VisionStatusDto> GetVisionStatusAsync(CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                using var quick = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+                var response = await _aiHttpClient.GetAsync("/api/local-ai/vision/status", linked.Token);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadFromJsonAsync<VisionStatusDto>(linked.Token)
+                       ?? new VisionStatusDto { Enabled = false };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "获取本地视觉状态失败");
+                return new VisionStatusDto { Enabled = false, Message = ex.Message };
+            }
+        }
+
+        public async Task<VisionStatusDto> StartVisionServerAsync(CancellationToken cancellationToken = default)
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(100));
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
+            var response = await _aiHttpClient.PostAsync("/api/local-ai/vision/start", null, linked.Token);
+            if (!response.IsSuccessStatusCode)
+            {
+                var err = await response.Content.ReadFromJsonAsync<VisionStatusDto>(linked.Token);
+                return err ?? new VisionStatusDto { Enabled = false, ServerRunning = false };
+            }
+            return await response.Content.ReadFromJsonAsync<VisionStatusDto>(linked.Token)
+                   ?? new VisionStatusDto();
+        }
+
+        public async Task<VisionResultDto> RecognizeImageAsync(
+            byte[] imageBytes, string prompt, string model, CancellationToken cancellationToken = default)
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
+            var request = new VisionRequestDto
+            {
+                ImageBase64 = Convert.ToBase64String(imageBytes),
+                Prompt = prompt,
+                Model = model,
+            };
+            var response = await _aiHttpClient.PostAsJsonAsync("/api/local-ai/vision", request, linked.Token);
+            var result = await response.Content.ReadFromJsonAsync<VisionResultDto>(linked.Token)
+                         ?? new VisionResultDto { Text = "识别失败（无响应）" };
+            if (!response.IsSuccessStatusCode && string.IsNullOrEmpty(result.Text))
+            {
+                result.Text = $"识别失败（HTTP {(int)response.StatusCode}）";
+            }
+            return result;
         }
 
         public async Task<ChatResponse> ChatAsync(string message, CancellationToken cancellationToken = default)

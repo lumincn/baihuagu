@@ -41,6 +41,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- 本地视觉推理服务（Qwen2.5-VL + OpenVINO），随发布拷贝 -->
+    <None Include="LocalVision\vision_server.py" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Remove="**/*.resx" />
   </ItemGroup>
 
