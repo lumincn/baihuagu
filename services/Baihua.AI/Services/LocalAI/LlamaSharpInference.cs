@@ -43,7 +43,7 @@ public class LlamaSharpInference : ILocalModelInference, IDisposable
             var parameters = new ModelParams(path)
             {
                 ContextSize = 2048,
-                GpuLayerCount = 0, // CPU 推理
+                GpuLayerCount = 999, // CPU 推理
                 Encoding = Encoding.UTF8
             };
             return LLamaWeights.LoadFromFile(parameters);
@@ -52,7 +52,7 @@ public class LlamaSharpInference : ILocalModelInference, IDisposable
         var contextParams = new ModelParams(modelPath)
         {
             ContextSize = 2048,
-            GpuLayerCount = 0,
+            GpuLayerCount = 999,
             Encoding = Encoding.UTF8
         };
 

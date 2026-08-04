@@ -42,7 +42,30 @@ public class OnnxRuntimeGenAIInference : ILocalModelInference, IDisposable
         var cached = _modelCache.GetOrAdd(modelPath, path =>
         {
             _logger.LogInformation("正在加载 ONNX 模型: {Path}", path);
-            var model = new Model(path);
+            // 默认 CPU 执行器（Phi-3 int4 在 DirectML 下算子不兼容会崩）；
+            // 设置环境变量 LOCAL_AI_DML=1 可尝试 DirectML GPU
+            Model model;
+            if (Environment.GetEnvironmentVariable("LOCAL_AI_DML") == "1")
+            {
+                try
+                {
+                    var config = new Config(path);
+                    config.ClearProviders();
+                    config.AppendProvider("DML");
+                    model = new Model(config);
+                    _logger.LogInformation("ONNX using DirectML GPU");
+                }
+                catch (Exception dmlEx)
+                {
+                    _logger.LogWarning(dmlEx, "DirectML init failed, fallback to default");
+                    model = new Model(path);
+                }
+            }
+            else
+            {
+                model = new Model(path);
+                _logger.LogInformation("ONNX using CPU executor");
+            }
             var tokenizer = new Tokenizer(model);
             return new CachedOnnxModel(model, tokenizer);
         });

@@ -81,17 +81,54 @@ public class LocalAIController : ControllerBase
             using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(30));
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(HttpContext.RequestAborted, timeoutCts.Token);
 
-            var history = request.History?.Select(h => (h.Role, h.Content)).ToList();
+            var history = request.History?.Select(h => (h.Role, h.Content)).ToList() ?? new List<(string Role, string Content)>();
+            var toolPrompt = BuildToolPrompt(request.SystemPrompt);
+            var fullFirst = new System.Text.StringBuilder();
+
+            // 第一轮：收集完整回复（可能含 TOOL_CALL）
             await foreach (var text in inference.ChatAsync(
                 request.ModelPath,
                 request.Message,
-                request.SystemPrompt,
+                toolPrompt,
                 history,
                 linkedCts.Token))
             {
-                if (!string.IsNullOrEmpty(text))
+                fullFirst.Append(text);
+            }
+
+            var firstText = fullFirst.ToString();
+            var toolCall = ParseToolCall(firstText);
+
+            if (toolCall != null)
+            {
+                // 执行工具，把结果喂回模型进行第二轮
+                var (toolName, toolArgs) = toolCall.Value;
+                var toolResult = await ExecuteLocalToolAsync(toolName, toolArgs);
+                _logger.LogInformation("本地模型调用工具: {Tool} -> {Result}", toolName, toolResult);
+                await SendSse("tool_call", JsonSerializer.Serialize(new { tool = toolName, result = toolResult }));
+
+                // 工具结果并入 assistant 消息（避免连续 user 消息，LlamaSharp 会拒绝）
+                history.Add(("assistant", firstText + $"\n[工具 {toolName} 返回结果：{toolResult}]"));
+
+                await foreach (var text in inference.ChatAsync(
+                    request.ModelPath,
+                    request.Message,
+                    BuildToolPrompt(null),
+                    history,
+                    linkedCts.Token))
                 {
-                    await SendSse("delta", JsonSerializer.Serialize(new { content = text }));
+                    if (!string.IsNullOrEmpty(text))
+                    {
+                        await SendSse("delta", JsonSerializer.Serialize(new { content = text }));
+                    }
+                }
+            }
+            else
+            {
+                // 无工具调用，直接输出
+                if (!string.IsNullOrEmpty(firstText))
+                {
+                    await SendSse("delta", JsonSerializer.Serialize(new { content = firstText }));
                 }
             }
 
@@ -105,6 +142,80 @@ public class LocalAIController : ControllerBase
         {
             _logger.LogError(ex, "本地模型流式聊天失败: {ModelPath} ({ModelType})", request.ModelPath, request.ModelType);
             await SendSse("error", _loc["Ai_Chat_Failed", ex.Message].Value);
+        }
+    }
+
+    private static string BuildToolPrompt(string? originalSystemPrompt)
+    {
+        const string toolDesc = """
+你有以下工具可用：
+- get_current_date: 获取当前日期时间（无参数）
+- get_system_status: 获取本机系统运行状态（无参数）
+
+如果需要调用工具，请在回复开头单独一行使用以下格式（严格 JSON，不要多余字符）：
+TOOL_CALL: {"tool":"工具名","arguments":{}}
+然后在下一行给出你的正常回复。
+""";
+        return string.IsNullOrWhiteSpace(originalSystemPrompt)
+            ? toolDesc
+            : originalSystemPrompt + "\n\n" + toolDesc;
+    }
+
+    private static (string Tool, JsonElement Arguments)? ParseToolCall(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return null;
+        var idx = text.IndexOf("TOOL_CALL:", StringComparison.OrdinalIgnoreCase);
+        if (idx < 0) return null;
+        var braceIdx = text.IndexOf('{', idx);
+        if (braceIdx < 0) return null;
+
+        // 平衡括号扫描（支持 arguments 嵌套对象）
+        int depth = 0;
+        int end = -1;
+        for (int i = braceIdx; i < text.Length; i++)
+        {
+            if (text[i] == '{') depth++;
+            else if (text[i] == '}')
+            {
+                depth--;
+                if (depth == 0) { end = i + 1; break; }
+            }
+        }
+        if (end < 0) return null;
+
+        try
+        {
+            using var doc = JsonDocument.Parse(text.Substring(braceIdx, end - braceIdx));
+            var root = doc.RootElement;
+            var tool = root.TryGetProperty("tool", out var t) ? t.GetString() : "";
+            var args = root.TryGetProperty("arguments", out var a) ? a.Clone() : default;
+            return string.IsNullOrWhiteSpace(tool) ? null : (tool, args);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private async Task<string> ExecuteLocalToolAsync(string tool, JsonElement arguments)
+    {
+        try
+        {
+            switch (tool)
+            {
+                case "get_current_date":
+                    return DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss dddd");
+                case "get_system_status":
+                    var memMb = GC.GetTotalMemory(false) / 1024 / 1024;
+                    var uptimeMin = Environment.TickCount64 / 1000 / 60;
+                    return $"进程内存 {memMb:F0} MB；当前时间 {DateTime.Now:yyyy-MM-dd HH:mm:ss}；进程已运行 {uptimeMin} 分钟；系统 {Environment.OSVersion}";
+                default:
+                    return $"未知工具 {tool}（可用：get_current_date, get_system_status）";
+            }
+        }
+        catch (Exception ex)
+        {
+            return $"工具执行失败: {ex.Message}";
         }
     }
 
