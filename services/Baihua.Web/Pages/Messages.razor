@@ -98,7 +98,7 @@
 
     <div class="chat-controls">
         <div class="model-selector-bar">
-            <div class="selector-group">
+            <div class="mode-row">
                 <label>@L["Messages_Mode"]</label>
                 <div class="mode-btn-groups">
                     <div class="btn-group btn-group-sm" role="group">
@@ -131,6 +131,7 @@
                     </div>
                 </div>
             </div>
+            <div class="content-row">
             @if (chatMode == "remote")
             {
                 <div class="selector-group">
@@ -217,6 +218,7 @@
                     </div>
                 </div>
             }
+            </div>
         </div>
         @if (localModels.Any())
         {
@@ -286,8 +288,14 @@
     .selector-group.path-group {
         flex: 1 1 100%;
         min-width: 0;
+        flex-wrap: wrap;
     }
     .selector-group.path-group input {
+        min-width: 0;
+        flex: 1;
+    }
+    .selector-group.path-group > div:not(.engine-info) {
+        flex: 1;
         min-width: 0;
     }
     .engine-info {
@@ -312,6 +320,22 @@
         font-size: 0.78rem;
         color: #888;
         white-space: nowrap;
+    }
+    /* 模式行：永远独占一行 */
+    .mode-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        width: 100%;
+    }
+    /* 内容行：模式选定后的填写/选择区，另起一行 */
+    .content-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        width: 100%;
+        align-items: center;
     }
     .running-models-row {
         display: flex;
@@ -372,6 +396,14 @@
             flex-direction: column;
             align-items: stretch;
             gap: 0.5rem;
+        }
+        .mode-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .content-row {
+            flex-direction: column;
+            align-items: stretch;
         }
         .mode-btn-groups {
             flex-direction: column;
