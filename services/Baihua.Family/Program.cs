@@ -719,7 +719,8 @@ app.MapHub<TaskProgressHub>("/hubs/task-progress");
 app.MapHub<DeviceHub>("/hubs/devices");
 
 // 纯 WebSocket 端点（供移动端使用，无需 SignalR 协议）
-app.Map("/ws/devices", async (HttpContext context, Baihua.Core.WebSocket.DeviceWebSocketHub hub) =>
+app.Map("/ws/devices", async (HttpContext context, Baihua.Core.WebSocket.DeviceWebSocketHub hub,
+    Baihua.Family.Services.ServerAddressService sas) =>
 {
     if (!context.WebSockets.IsWebSocketRequest)
     {
@@ -728,8 +729,10 @@ app.Map("/ws/devices", async (HttpContext context, Baihua.Core.WebSocket.DeviceW
     }
 
     var deviceName = context.Request.Query["deviceName"].ToString();
+    // 握手携带服务器自身身份（serverId/serverName），供移动端校验是否已添加过的服务器
+    var settings = sas.GetSettings();
     var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-    await hub.AcceptAsync(webSocket, deviceName);
+    await hub.AcceptAsync(webSocket, deviceName, settings.ServerInstanceId, settings.DisplayName);
 });
 
 // 启动信息

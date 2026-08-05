@@ -18,12 +18,38 @@ public class DeviceWebSocketHub
 
     public int ConnectedCount => _connections.Count;
 
-    public async Task AcceptAsync(System.Net.WebSockets.WebSocket webSocket, string? deviceName = null)
+    public async Task AcceptAsync(System.Net.WebSockets.WebSocket webSocket, string? deviceName = null,
+        string? serverId = null, string? serverName = null)
     {
         var connectionId = Guid.NewGuid().ToString("N")[..8];
         var connection = new WebSocketConnection(connectionId, webSocket, deviceName);
         _connections[connectionId] = connection;
         _logger.LogInformation("WebSocket 客户端连接: {ConnectionId}, deviceName={DeviceName}", connectionId, deviceName);
+
+        // 握手：告知客户端本服务器的身份（serverId），供客户端校验是否为本地已添加的服务器。
+        // 防止换网络后遇到 IP 相同的另一台服务器，被误认为是已添加的服务器。
+        if (!string.IsNullOrEmpty(serverId))
+        {
+            try
+            {
+                var welcome = new Dictionary<string, object?>
+                {
+                    ["action"] = "server_info",
+                    ["serverId"] = serverId,
+                    ["serverName"] = serverName ?? "",
+                    ["timestamp"] = DateTime.UtcNow.ToString("o")
+                };
+                var welcomeBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(welcome));
+                if (webSocket.State == WebSocketState.Open)
+                {
+                    await webSocket.SendAsync(welcomeBytes, WebSocketMessageType.Text, true, CancellationToken.None);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "发送 server_info 握手消息失败: {ConnectionId}", connectionId);
+            }
+        }
 
         try
         {
@@ -52,7 +78,7 @@ public class DeviceWebSocketHub
     }
 
     public async Task BroadcastAsync(string action, string? deviceName = null, string? requestId = null,
-        string? type = null, string? vaultId = null, string? vaultName = null)
+        string? type = null, string? vaultId = null, string? vaultName = null, string? deviceId = null)
     {
         if (_connections.IsEmpty) return;
 
@@ -61,6 +87,7 @@ public class DeviceWebSocketHub
             ["action"] = action,
             ["deviceName"] = deviceName,
             ["requestId"] = requestId,
+            ["deviceId"] = deviceId,
             ["timestamp"] = DateTime.UtcNow.ToString("o")
         };
         if (!string.IsNullOrEmpty(type)) msg["type"] = type;
