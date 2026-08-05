@@ -3200,7 +3200,7 @@ namespace Baihua.Web.Services
         {
             try
             {
-                var response = await _aiHttpClient.GetAsync("/api/comfy/status", cancellationToken);
+                var response = await _httpClient.GetAsync("/api/comfy/status", cancellationToken);
                 response.EnsureSuccessStatusCode();
                 return await response.Content.ReadFromJsonAsync<ComfyStatusDto>(cancellationToken)
                     ?? new ComfyStatusDto { Available = false };
@@ -3213,7 +3213,7 @@ namespace Baihua.Web.Services
 
         public async Task<ComfyGenerateResultDto> GenerateComfyImageAsync(string prompt, string negativePrompt, int width, int height, int steps, CancellationToken cancellationToken = default)
         {
-            var response = await _aiHttpClient.PostAsJsonAsync("/api/comfy/generate-image", new
+            var response = await _httpClient.PostAsJsonAsync("/api/comfy/generate-image", new
             {
                 Prompt = prompt,
                 NegativePrompt = negativePrompt,
@@ -3226,7 +3226,7 @@ namespace Baihua.Web.Services
 
         public async Task<ComfyGenerateResultDto> GenerateComfyVideoAsync(string prompt, string negativePrompt, CancellationToken cancellationToken = default)
         {
-            var response = await _aiHttpClient.PostAsJsonAsync("/api/comfy/generate-video", new
+            var response = await _httpClient.PostAsJsonAsync("/api/comfy/generate-video", new
             {
                 Prompt = prompt,
                 NegativePrompt = negativePrompt
@@ -3239,7 +3239,7 @@ namespace Baihua.Web.Services
             try
             {
                 var path = $"/api/comfy/history?limit={limit}" + (string.IsNullOrEmpty(kind) ? "" : $"&kind={kind}");
-                var response = await _aiHttpClient.GetAsync(path, cancellationToken);
+                var response = await _httpClient.GetAsync(path, cancellationToken);
                 response.EnsureSuccessStatusCode();
                 return await response.Content.ReadFromJsonAsync<List<ComfyHistoryItemDto>>(cancellationToken) ?? [];
             }
