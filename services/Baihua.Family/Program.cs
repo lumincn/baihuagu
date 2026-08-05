@@ -729,10 +729,13 @@ app.Map("/ws/devices", async (HttpContext context, Baihua.Core.WebSocket.DeviceW
     }
 
     var deviceName = context.Request.Query["deviceName"].ToString();
+    // 设备 id（客户端 ANDROID_ID/鸿蒙设备 id）：服务端据此定向推送设备状态事件（授权/拒绝/撤销），
+    // 不再全量广播 + 客户端过滤
+    var deviceId = context.Request.Query["deviceId"].ToString();
     // 握手携带服务器自身身份（serverId/serverName），供移动端校验是否已添加过的服务器
     var settings = sas.GetSettings();
     var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-    await hub.AcceptAsync(webSocket, deviceName, settings.ServerInstanceId, settings.DisplayName);
+    await hub.AcceptAsync(webSocket, deviceName, deviceId, settings.ServerInstanceId, settings.DisplayName);
 });
 
 // 启动信息

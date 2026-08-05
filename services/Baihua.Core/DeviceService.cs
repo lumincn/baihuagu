@@ -294,7 +294,7 @@ namespace Baihua.Core;
                 }
 
                 _requestResults[requestId] = "authorized";
-                _ = NotifyDeviceStatusChangedAsync("authorized", request.DeviceName, requestId);
+                _ = NotifyDeviceStatusChangedAsync("authorized", request.DeviceName, requestId, deviceId: request.DeviceId);
                 return (true, existingAuthorized.AccessToken, null);
             }
 
@@ -320,7 +320,7 @@ namespace Baihua.Core;
                 dbContext.SaveChanges();
 
                 _requestResults[requestId] = "authorized";
-                _ = NotifyDeviceStatusChangedAsync("authorized", request.DeviceName, requestId);
+                _ = NotifyDeviceStatusChangedAsync("authorized", request.DeviceName, requestId, deviceId: request.DeviceId);
                 _logger.LogInformation("设备已重新授权: {DeviceName}, DeviceId: {DeviceId}",
                     request.DeviceName, existingByDeviceId.DeviceId);
                 return (true, existingByDeviceId.AccessToken, null);
@@ -354,7 +354,7 @@ namespace Baihua.Core;
             
             _logger.LogInformation("设备已授权: {DeviceName}, DeviceId: {DeviceId}", request.DeviceName, newDeviceId);
             
-            _ = NotifyDeviceStatusChangedAsync("authorized", request.DeviceName, requestId);
+            _ = NotifyDeviceStatusChangedAsync("authorized", request.DeviceName, requestId, deviceId: request.DeviceId);
 
             return (true, accessToken, null);
         }
@@ -370,7 +370,7 @@ namespace Baihua.Core;
                 _logger.LogInformation("[AUTH-DIAG] Rejected: {DeviceName}, NewPendingCount={Count}",
                     request.DeviceName, _pendingRequests.Count);
                 
-                _ = NotifyDeviceStatusChangedAsync("rejected", request.DeviceName, requestId);
+                _ = NotifyDeviceStatusChangedAsync("rejected", request.DeviceName, requestId, deviceId: request.DeviceId);
                 
                 return true;
             }

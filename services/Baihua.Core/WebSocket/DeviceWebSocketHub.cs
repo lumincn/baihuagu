@@ -19,10 +19,10 @@ public class DeviceWebSocketHub
     public int ConnectedCount => _connections.Count;
 
     public async Task AcceptAsync(System.Net.WebSockets.WebSocket webSocket, string? deviceName = null,
-        string? serverId = null, string? serverName = null)
+        string? deviceId = null, string? serverId = null, string? serverName = null)
     {
         var connectionId = Guid.NewGuid().ToString("N")[..8];
-        var connection = new WebSocketConnection(connectionId, webSocket, deviceName);
+        var connection = new WebSocketConnection(connectionId, webSocket, deviceName, deviceId);
         _connections[connectionId] = connection;
         _logger.LogInformation("WebSocket 客户端连接: {ConnectionId}, deviceName={DeviceName}", connectionId, deviceName);
 
@@ -82,6 +82,10 @@ public class DeviceWebSocketHub
     {
         if (_connections.IsEmpty) return;
 
+        // deviceId 非空 = 定向推送（只发给该设备的所有连接，如授权/拒绝/撤销）；
+        // 为空 = 全量广播（如 sync_updated 同步通知、pair_request 配对通知，所有移动端都要收到）
+        var targeted = !string.IsNullOrEmpty(deviceId);
+
         var msg = new Dictionary<string, object?>
         {
             ["action"] = action,
@@ -101,6 +105,7 @@ public class DeviceWebSocketHub
 
         foreach (var kvp in _connections)
         {
+            if (targeted && kvp.Value.DeviceId != deviceId) continue;
             try
             {
                 if (kvp.Value.Socket.State == WebSocketState.Open)
@@ -124,5 +129,5 @@ public class DeviceWebSocketHub
         }
     }
 
-    private record WebSocketConnection(string Id, System.Net.WebSockets.WebSocket Socket, string? DeviceName);
+    private record WebSocketConnection(string Id, System.Net.WebSockets.WebSocket Socket, string? DeviceName, string? DeviceId);
 }
