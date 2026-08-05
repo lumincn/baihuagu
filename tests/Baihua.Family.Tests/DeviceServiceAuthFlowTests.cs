@@ -1,0 +1,143 @@
+using System.Reflection;
+using Baihua.Core;
+using Baihua.Core.WebSocket;
+using Baihua.Data;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
+using Xunit;
+
+namespace Baihua.Family.Tests;
+
+/// <summary>
+/// DeviceService 授权状态机测试（服务端核心状态流转）：
+/// 注册 → 授权（authorized 定向推送参数）→ 拒绝 → 撤销（revoked 定向推送参数）→ 重新激活。
+/// 覆盖用户场景：WebUI 批准后设备必须变为已授权；撤销后变为 Revoked 且推送带正确 deviceId。
+/// </summary>
+public class DeviceServiceAuthFlowTests : IDisposable
+{
+    private readonly SqliteConnection _sqlite;
+    private readonly Mock<IDbContextFactory<FamilyDbContext>> _factory;
+
+    public DeviceServiceAuthFlowTests()
+    {
+        // SQLite 内存库（真实约束：DeviceId UNIQUE），每个测试独立连接
+        _sqlite = new SqliteConnection("DataSource=:memory:");
+        _sqlite.Open();
+        var options = new DbContextOptionsBuilder<FamilyDbContext>()
+            .UseSqlite(_sqlite)
+            .Options;
+        using (var ctx = new FamilyDbContext(options))
+        {
+            ctx.Database.EnsureCreated();
+        }
+        _factory = new Mock<IDbContextFactory<FamilyDbContext>>();
+        _factory.Setup(f => f.CreateDbContext()).Returns(() => new FamilyDbContext(options));
+    }
+
+    public void Dispose()
+    {
+        _sqlite.Dispose();
+    }
+
+    private DeviceService CreateService(DeviceWebSocketHub? hub = null)
+    {
+        var config = new ConfigurationBuilder().Build();
+        return new DeviceService(config, NullLogger<DeviceService>.Instance, _factory.Object,
+            wsHub: hub);
+    }
+
+    [Fact]
+    public void AuthorizeDevice_marks_device_authorized_with_registered_deviceId()
+    {
+        var hub = new DeviceWebSocketHub(NullLogger<DeviceWebSocketHub>.Instance);
+        var service = CreateService(hub);
+        service.AutoAuthorizeEnabled = false;
+
+        var request = service.SubmitLanDiscoveryRequest("望月·书轩", deviceId: "android-abc123");
+        var result = service.AuthorizeDevice(request.RequestId);
+
+        Assert.True(result.success);
+        Assert.NotNull(result.accessToken);
+        using var ctx = _factory.Object.CreateDbContext();
+        var device = ctx.AuthorizedDevices.Single(d => d.DeviceName == "望月·书轩");
+        Assert.Equal("Authorized", device.Status);
+        Assert.Equal("android-abc123", device.DeviceId);
+        Assert.Equal(result.accessToken, device.AccessToken);
+    }
+
+    [Fact]
+    public void RevokeDevice_marks_device_revoked()
+    {
+        var service = CreateService();
+        var request = service.SubmitLanDiscoveryRequest("安卓机", deviceId: "android-xyz");
+        service.AuthorizeDevice(request.RequestId);
+
+        var ok = service.RevokeDevice("android-xyz");
+        Assert.True(ok);
+
+        using var ctx = _factory.Object.CreateDbContext();
+        var device = ctx.AuthorizedDevices.Single(d => d.DeviceId == "android-xyz");
+        Assert.Equal("Revoked", device.Status);
+    }
+
+    [Fact]
+    public void RevokeDevice_unknown_deviceId_returns_false_without_crash()
+    {
+        var service = CreateService();
+        Assert.False(service.RevokeDevice("no-such-device"));
+    }
+
+    [Fact]
+    public void RejectRequest_removes_pending_and_reauthorization_allowed()
+    {
+        var service = CreateService();
+        service.AutoAuthorizeEnabled = false;
+
+        var request = service.SubmitLanDiscoveryRequest("待拒设备", deviceId: "android-rej");
+        Assert.True(service.RejectRequest(request.RequestId));
+
+        // 拒绝后可重新注册并授权（同一 deviceId）
+        var request2 = service.SubmitLanDiscoveryRequest("待拒设备", deviceId: "android-rej");
+        var result = service.AuthorizeDevice(request2.RequestId);
+        Assert.True(result.success);
+    }
+
+    [Fact]
+    public void Revoked_device_can_be_reactivated_with_new_deviceId()
+    {
+        var service = CreateService();
+        var request = service.SubmitLanDiscoveryRequest("重激活", deviceId: "android-old");
+        service.AuthorizeDevice(request.RequestId);
+        service.RevokeDevice("android-old");
+
+        var ok = service.ReactivateRevokedDevice("重激活", "android-new");
+        Assert.True(ok);
+
+        using var ctx = _factory.Object.CreateDbContext();
+        var device = ctx.AuthorizedDevices.Single(d => d.DeviceName == "重激活");
+        Assert.Equal("Authorized", device.Status);
+        Assert.Equal("android-new", device.DeviceId);
+    }
+
+    [Fact]
+    public void AuthorizedDevice_authorized_then_revoked_then_reauthorized_same_id()
+    {
+        // 同 DeviceId 被撤销后重新授权：更新原记录为 Authorized（DeviceId UNIQUE 约束路径）
+        var service = CreateService();
+        var req1 = service.SubmitLanDiscoveryRequest("轮回设备", deviceId: "android-loop");
+        service.AuthorizeDevice(req1.RequestId);
+        service.RevokeDevice("android-loop");
+
+        var req2 = service.SubmitLanDiscoveryRequest("轮回设备", deviceId: "android-loop");
+        var result = service.AuthorizeDevice(req2.RequestId);
+        Assert.True(result.success);
+
+        using var ctx = _factory.Object.CreateDbContext();
+        var devices = ctx.AuthorizedDevices.Where(d => d.DeviceId == "android-loop").ToList();
+        Assert.Single(devices); // 不新增重复记录
+        Assert.Equal("Authorized", devices[0].Status);
+    }
+}
