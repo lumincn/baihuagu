@@ -155,6 +155,7 @@
 
         // 根据当前路由推断场景
         var relativePath = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        _activeScene = InferScene(relativePath);
 
         // 能力检测
         try
@@ -176,18 +177,23 @@
     {
         var relativePath = NavigationManager.ToBaseRelativePath(e.Location);
         // URL 推断场景
-        var inferred = relativePath switch
-        {
-            string p when p.StartsWith("tasks") || p.StartsWith("openclaw") || p.StartsWith("achievements") || p.StartsWith("leaderboard") || p.StartsWith("dashboard") || p.StartsWith("daily-card") => 1,
-            string p when p.StartsWith("messages") || p.StartsWith("master-chat") || p.StartsWith("master-stage") || p.StartsWith("generate") || p.StartsWith("local-models") || p.StartsWith("image-recognition") || p.StartsWith("model-benchmark") || p.StartsWith("ai-metrics") || p.StartsWith("hardware-benchmark") || p.StartsWith("settings") || p.StartsWith("prompt-templates") => 2,
-            string p when p.StartsWith("log-settings") || p.StartsWith("browse") || p.StartsWith("search") || p.StartsWith("cards") || p.StartsWith("vaults") || p == "" => 0,
-            _ => 0
-        };
+        var inferred = InferScene(relativePath);
         if (inferred != _activeScene)
         {
             _activeScene = inferred;
             InvokeAsync(StateHasChanged);
         }
+    }
+
+    private static int InferScene(string relativePath)
+    {
+        return relativePath switch
+        {
+            string p when p.StartsWith("tasks") || p.StartsWith("openclaw") || p.StartsWith("achievements") || p.StartsWith("leaderboard") || p.StartsWith("dashboard") || p.StartsWith("daily-card") => 1,
+            string p when p.StartsWith("messages") || p.StartsWith("master-chat") || p.StartsWith("master-stage") || p.StartsWith("generate") || p.StartsWith("local-models") || p.StartsWith("image-recognition") || p.StartsWith("ai-drawing") || p.StartsWith("model-benchmark") || p.StartsWith("ai-metrics") || p.StartsWith("hardware-benchmark") || p.StartsWith("settings") || p.StartsWith("prompt-templates") => 2,
+            string p when p.StartsWith("log-settings") || p.StartsWith("browse") || p.StartsWith("search") || p.StartsWith("cards") || p.StartsWith("vaults") || p == "" => 0,
+            _ => 0
+        };
     }
 
     public void Dispose()
