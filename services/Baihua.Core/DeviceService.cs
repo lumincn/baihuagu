@@ -696,7 +696,7 @@ namespace Baihua.Core;
 
             _logger.LogInformation("已撤销设备重新激活: {DeviceName}, 新DeviceId: {NewDeviceId}", deviceName, newDeviceId);
 
-            _ = NotifyDeviceStatusChangedAsync("authorized", device.DeviceName, null);
+            _ = NotifyDeviceStatusChangedAsync("authorized", device.DeviceName, null, deviceId: newDeviceId);
             return true;
         }
 
