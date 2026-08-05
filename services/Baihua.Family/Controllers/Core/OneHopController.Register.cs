@@ -1,4 +1,4 @@
-using Baihua.Core;
+﻿using Baihua.Core;
 using Baihua.Core.Localization;
 using Baihua.Core.Security;
 using Microsoft.AspNetCore.Mvc;
@@ -41,6 +41,7 @@ public partial class OneHopController
                         deviceId = request.DeviceId,
                         deviceName = deviceName,
                         serverName = serverName,
+                            serverId = _oneHopService.DeviceId,
                         ipAddress = ipAddress,
                         requestId = authorizedDevice.DeviceId,
                         authorized = true,
@@ -55,7 +56,7 @@ public partial class OneHopController
                 {
                     _logger.LogInformation("Revoked device re-registering, creating pending request: {DeviceName} {DeviceId}", deviceName, request.DeviceId);
                     var pairRequest2 = _deviceService.SubmitLanDiscoveryRequest(deviceName, ipAddress, request.DeviceId, request.SystemDeviceName);
-                    return Ok(new { message = _loc["OneHop_DeviceIdChangedReauthorize"], deviceId = request.DeviceId, deviceName, serverName, ipAddress, requestId = pairRequest2.RequestId, authorized = false });
+                    return Ok(new { message = _loc["OneHop_DeviceIdChangedReauthorize"], deviceId = request.DeviceId, deviceName, serverName, serverId = _oneHopService.DeviceId, ipAddress, requestId = pairRequest2.RequestId, authorized = false });
                 }
 
                 // 自动创建局域网发现待授权请求（无需扫码）
@@ -89,6 +90,7 @@ public partial class OneHopController
                             deviceId = request.DeviceId,
                             deviceName = deviceName,
                             serverName = serverName,
+                            serverId = _oneHopService.DeviceId,
                             ipAddress = ipAddress,
                             requestId = request.DeviceId,
                             authorized = true,
@@ -105,6 +107,7 @@ public partial class OneHopController
                     deviceId = request.DeviceId,
                     deviceName = deviceName,
                     serverName = serverName,
+                            serverId = _oneHopService.DeviceId,
                     ipAddress = ipAddress,
                     requestId = pairRequest.RequestId,
                     authorized = false,
