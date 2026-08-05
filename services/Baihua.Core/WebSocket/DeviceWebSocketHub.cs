@@ -85,6 +85,14 @@ public class DeviceWebSocketHub
         // deviceId 非空 = 定向推送（只发给该设备的所有连接，如授权/拒绝/撤销）；
         // 为空 = 全量广播（如 sync_updated 同步通知、pair_request 配对通知，所有移动端都要收到）
         var targeted = !string.IsNullOrEmpty(deviceId);
+        // 优雅降级：定向推送但没有任何连接携带该 deviceId 时（旧客户端 WS 不带 deviceId、
+        // 或目标设备离线），降级为全量广播——消息仍带 deviceId，新客户端会按 deviceId 过滤
+        // 忽略非本机事件，旧客户端靠兼容逻辑处理，避免事件丢失（如授权通知到达不了旧客户端）
+        if (targeted && !_connections.Values.Any(c => c.DeviceId == deviceId))
+        {
+            _logger.LogInformation("WS 定向推送无匹配连接 deviceId={DeviceId}，降级为全量广播", deviceId);
+            targeted = false;
+        }
 
         var msg = new Dictionary<string, object?>
         {

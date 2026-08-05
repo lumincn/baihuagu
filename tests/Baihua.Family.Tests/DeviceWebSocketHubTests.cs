@@ -143,8 +143,10 @@ public class DeviceWebSocketHubTests
     }
 
     [Fact]
-    public async Task BroadcastAsync_targeting_unknown_deviceId_sends_to_none()
+    public async Task BroadcastAsync_targeting_unknown_deviceId_falls_back_to_broadcast()
     {
+        // 定向目标没有任何连接匹配（目标离线/旧客户端不带 deviceId）→ 降级全量广播，
+        // 消息仍带 deviceId，新客户端按 deviceId 过滤忽略非本机，旧客户端靠兼容逻辑收到
         var hub = new DeviceWebSocketHub(NullLogger<DeviceWebSocketHub>.Instance);
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         await using var devA = await ConnectDeviceAsync(hub, "devA", "设备A", cts.Token);
@@ -152,7 +154,43 @@ public class DeviceWebSocketHubTests
 
         await hub.BroadcastAsync("revoked", "未知", deviceId: "ghost-device");
 
-        var msgA = await TryReceiveAsync(devA.Client, 800);
-        Assert.Null(msgA);
+        var msgA = await TryReceiveAsync(devA.Client, 3000);
+        Assert.NotNull(msgA); // 降级后仍能收到（自己按 deviceId 判断是否本机）
+        Assert.Contains("\"deviceId\":\"ghost-device\"", msgA);
+    }
+
+    [Fact]
+    public async Task BroadcastAsync_delivers_to_legacy_client_without_deviceId_when_target_missing()
+    {
+        // 旧客户端：WS 连接不带 deviceId。定向推送（目标=它的设备 id）找不到匹配连接
+        // → 降级全量 → 旧客户端能收到授权通知（否则旧客户端永远收不到 authorized）
+        var hub = new DeviceWebSocketHub(NullLogger<DeviceWebSocketHub>.Instance);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        await using var legacy = await ConnectDeviceAsync(hub, "", "旧版安卓", cts.Token); // deviceId 为空 = 旧客户端
+        await WaitForConnectionsAsync(hub, 1, cts.Token);
+
+        await hub.BroadcastAsync("authorized", "旧版安卓", type: "Authorized", deviceId: "legacy-android-id");
+
+        var msg = await TryReceiveAsync(legacy.Client, 3000);
+        Assert.NotNull(msg);
+        Assert.Contains("\"action\":\"authorized\"", msg);
+    }
+
+    [Fact]
+    public async Task BroadcastAsync_targeting_online_device_does_not_leak_to_others()
+    {
+        // 定向目标在线（有匹配连接）→ 严格定向，其他连接（含旧客户端无 deviceId）都不收到
+        var hub = new DeviceWebSocketHub(NullLogger<DeviceWebSocketHub>.Instance);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        await using var devA = await ConnectDeviceAsync(hub, "devA", "设备A", cts.Token);
+        await using var legacy = await ConnectDeviceAsync(hub, "", "旧版安卓", cts.Token);
+        await WaitForConnectionsAsync(hub, 2, cts.Token);
+
+        await hub.BroadcastAsync("revoked", "设备A", deviceId: "devA");
+
+        var msgA = await TryReceiveAsync(devA.Client, 3000);
+        Assert.NotNull(msgA);
+        var msgLegacy = await TryReceiveAsync(legacy.Client, 800);
+        Assert.Null(msgLegacy);
     }
 }
