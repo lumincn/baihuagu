@@ -18,6 +18,7 @@ public partial class OneHopController : ControllerBase
     private readonly DeviceService _deviceService;
     private readonly RequestSignatureService _signatureService;
     private readonly IStringLocalizer<SharedResources> _loc;
+    private readonly ServerAddressService _serverAddressService;
 
     public OneHopController(
         ILogger<OneHopController> logger,
@@ -25,7 +26,8 @@ public partial class OneHopController : ControllerBase
         IOneHopService oneHopService,
         DeviceService deviceService,
         RequestSignatureService signatureService,
-        IStringLocalizer<SharedResources> loc)
+        IStringLocalizer<SharedResources> loc,
+        ServerAddressService serverAddressService)
     {
         _logger = logger;
         _oneHopManager = oneHopManager;
@@ -33,6 +35,7 @@ public partial class OneHopController : ControllerBase
         _deviceService = deviceService;
         _signatureService = signatureService;
         _loc = loc;
+        _serverAddressService = serverAddressService;
     }
 
     [HttpGet("status")]

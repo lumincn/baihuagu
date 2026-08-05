@@ -26,7 +26,10 @@ public partial class OneHopController
                 _oneHopManager.RegisterDevice(request.DeviceId, deviceName, ipAddress, deviceType);
 
                 // 检查设备是否已授权，已授权则不再创建待授权请求
-                var serverName = Environment.MachineName;
+                // 服务器名用 WebUI 配置的显示名（与 /health 一致），而非机器名，保证移动端显示统一
+                var serverName = string.IsNullOrWhiteSpace(_serverAddressService.GetSettings().DisplayName)
+                    ? Environment.MachineName
+                    : _serverAddressService.GetSettings().DisplayName;
 
                 // 安全验证：优先通过 deviceId 查找授权设备，防止 deviceName 碰撞攻击
                 var authorizedDevice = _deviceService.GetAuthorizedDeviceById(request.DeviceId);
