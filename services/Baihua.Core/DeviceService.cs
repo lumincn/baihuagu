@@ -391,7 +391,7 @@ namespace Baihua.Core;
                 _logger.LogInformation("设备授权已撤销: {DeviceName}, DeviceId: {DeviceId}", 
                     device.DeviceName, deviceId);
                 
-                _ = NotifyDeviceStatusChangedAsync("revoked", device.DeviceName, null);
+                _ = NotifyDeviceStatusChangedAsync("revoked", device.DeviceName, null, deviceId: device.DeviceId);
                 
                 return true;
             }
@@ -750,7 +750,7 @@ namespace Baihua.Core;
         }
 
         private async Task NotifyDeviceStatusChangedAsync(string action, string deviceName, string? requestId,
-            string? vaultId = null, string? vaultName = null)
+            string? vaultId = null, string? vaultName = null, string? deviceId = null)
         {
             var pushType = action switch
             {
@@ -791,7 +791,7 @@ namespace Baihua.Core;
                 {
                     _logger.LogInformation("[AUTH-DIAG] WS broadcast: action={Action} device={DeviceName} clients={Count} pushType={PushType}",
                         action, deviceName, _wsHub.ConnectedCount, pushType);
-                    await _wsHub.BroadcastAsync(action, deviceName, requestId, pushType, vaultId, vaultName);
+                    await _wsHub.BroadcastAsync(action, deviceName, requestId, pushType, vaultId, vaultName, deviceId);
                 }
                 catch (Exception ex)
                 {
