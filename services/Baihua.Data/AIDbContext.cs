@@ -24,6 +24,7 @@ public class AIDbContext : DbContext
     public DbSet<AiUsageMetric> AiUsageMetrics => Set<AiUsageMetric>();
     public DbSet<BenchmarkSessionEntity> BenchmarkSessions => Set<BenchmarkSessionEntity>();
     public DbSet<EmbeddingConfig> EmbeddingConfigs => Set<EmbeddingConfig>();
+    public DbSet<ComfyArtworkEntity> ComfyArtworks => Set<ComfyArtworkEntity>();
 
 
     public string DatabasePath => _dbPath;
@@ -127,6 +128,26 @@ public class AIDbContext : DbContext
             entity.Property(e => e.IsEnabled).HasDefaultValue(true);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("datetime('now')");
+        });
+
+        modelBuilder.Entity<ComfyArtworkEntity>(entity =>
+        {
+            entity.ToTable("ComfyArtworks");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.CreatedAt);
+            entity.HasIndex(e => e.Kind);
+            entity.HasIndex(e => e.PromptId).IsUnique();
+
+            entity.Property(e => e.Kind).HasMaxLength(10).IsRequired();
+            entity.Property(e => e.Prompt).HasMaxLength(2000).IsRequired();
+            entity.Property(e => e.Model).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.ParamsJson).IsRequired().HasDefaultValue("{}");
+            entity.Property(e => e.FileName).HasMaxLength(300).IsRequired();
+            entity.Property(e => e.Subfolder).HasMaxLength(300).HasDefaultValue("");
+            entity.Property(e => e.FileType).HasMaxLength(20).HasDefaultValue("output");
+            entity.Property(e => e.PromptId).HasMaxLength(64).IsRequired();
+            entity.Property(e => e.ErrorMessage).HasMaxLength(2000);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
         });
 
     }

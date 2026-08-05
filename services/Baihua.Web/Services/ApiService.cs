@@ -61,6 +61,12 @@ namespace Baihua.Web.Services
         Task<VisionStatusDto> StartVisionServerAsync(CancellationToken cancellationToken = default);
         Task<VisionResultDto> RecognizeImageAsync(byte[] imageBytes, string prompt, string model, CancellationToken cancellationToken = default);
 
+        // AI 绘图（ComfyUI）
+        Task<ComfyStatusDto> GetComfyStatusAsync(CancellationToken cancellationToken = default);
+        Task<ComfyGenerateResultDto> GenerateComfyImageAsync(string prompt, string negativePrompt, int width, int height, int steps, CancellationToken cancellationToken = default);
+        Task<ComfyGenerateResultDto> GenerateComfyVideoAsync(string prompt, string negativePrompt, CancellationToken cancellationToken = default);
+        Task<List<ComfyHistoryItemDto>> GetComfyHistoryAsync(int limit = 50, string? kind = null, CancellationToken cancellationToken = default);
+
         string GetBackendBaseUrl();
         Task<bool> DeleteTaskAsync(string taskId);
         Task<bool> DeleteAllTasksAsync();
@@ -3188,6 +3194,80 @@ namespace Baihua.Web.Services
             }
         }
 
+        // ============ AI 绘图（ComfyUI） ============
+
+        public async Task<ComfyStatusDto> GetComfyStatusAsync(CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var response = await _aiHttpClient.GetAsync("/api/comfy/status", cancellationToken);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadFromJsonAsync<ComfyStatusDto>(cancellationToken)
+                    ?? new ComfyStatusDto { Available = false };
+            }
+            catch
+            {
+                return new ComfyStatusDto { Available = false };
+            }
+        }
+
+        public async Task<ComfyGenerateResultDto> GenerateComfyImageAsync(string prompt, string negativePrompt, int width, int height, int steps, CancellationToken cancellationToken = default)
+        {
+            var response = await _aiHttpClient.PostAsJsonAsync("/api/comfy/generate-image", new
+            {
+                Prompt = prompt,
+                NegativePrompt = negativePrompt,
+                Width = width,
+                Height = height,
+                Steps = steps
+            }, cancellationToken);
+            return await ReadComfyGenerateResultAsync(response, cancellationToken);
+        }
+
+        public async Task<ComfyGenerateResultDto> GenerateComfyVideoAsync(string prompt, string negativePrompt, CancellationToken cancellationToken = default)
+        {
+            var response = await _aiHttpClient.PostAsJsonAsync("/api/comfy/generate-video", new
+            {
+                Prompt = prompt,
+                NegativePrompt = negativePrompt
+            }, cancellationToken);
+            return await ReadComfyGenerateResultAsync(response, cancellationToken);
+        }
+
+        public async Task<List<ComfyHistoryItemDto>> GetComfyHistoryAsync(int limit = 50, string? kind = null, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var path = $"/api/comfy/history?limit={limit}" + (string.IsNullOrEmpty(kind) ? "" : $"&kind={kind}");
+                var response = await _aiHttpClient.GetAsync(path, cancellationToken);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadFromJsonAsync<List<ComfyHistoryItemDto>>(cancellationToken) ?? [];
+            }
+            catch
+            {
+                return [];
+            }
+        }
+
+        private static async Task<ComfyGenerateResultDto> ReadComfyGenerateResultAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+        {
+            var body = await response.Content.ReadAsStringAsync(cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                string? error = null;
+                try
+                {
+                    using var doc = System.Text.Json.JsonDocument.Parse(body);
+                    if (doc.RootElement.TryGetProperty("error", out var err) && err.ValueKind == System.Text.Json.JsonValueKind.String)
+                        error = err.GetString();
+                }
+                catch { }
+                throw new InvalidOperationException(error ?? $"HTTP {(int)response.StatusCode}");
+            }
+            return System.Text.Json.JsonSerializer.Deserialize<ComfyGenerateResultDto>(body)
+                ?? throw new InvalidOperationException("空响应");
+        }
+
         #endregion
     }
 
@@ -3197,6 +3277,28 @@ namespace Baihua.Web.Services
         public string TaskId { get; set; } = "";
         public string Message { get; set; } = "";
         public string VaultName { get; set; } = "";
+    }
+
+    public class ComfyStatusDto
+    {
+        public bool Available { get; set; }
+    }
+
+    public class ComfyGenerateResultDto
+    {
+        public int Id { get; set; }
+        public string Url { get; set; } = "";
+        public double DurationSeconds { get; set; }
+    }
+
+    public class ComfyHistoryItemDto
+    {
+        public int Id { get; set; }
+        public string Kind { get; set; } = "";
+        public string Prompt { get; set; } = "";
+        public string Url { get; set; } = "";
+        public bool IsSuccess { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 
 }

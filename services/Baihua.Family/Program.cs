@@ -177,6 +177,8 @@ builder.Services.AddHostedService<StartupOrchestratorHostedService>();
 builder.Services.AddSingleton<DefaultPromptProvider>();
 builder.Services.AddAiClientServices();
 builder.Services.AddSingleton<AiFunctionService>();
+builder.Services.AddHttpClient<Baihua.Core.Services.ComfyUiClient>();
+
 
 builder.Services.AddSingleton<NoteParser>();
 builder.Services.AddSingleton<CardRepository>();
