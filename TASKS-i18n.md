@@ -191,14 +191,14 @@ return BadRequest(new { error = L["Error_TaskNotFound"] });
 
 ---
 
-## 🧪 验收标准
+## 🧪 验收标准（Phase 1-5 全部完成 ✅，2026-08-06 确认）
 
-- [ ] 所有 `.razor` 页面无硬编码中文 UI 字符串
-- [ ] 语言切换后整个 UI 切换语言，无需手动刷新
-- [ ] 语言选择在 localStorage 中持久化，重启后保留
-- [ ] `bh-webui` 编译 0 错误
-- [ ] Vault / Contracts 的编码损坏全部修复
-- [ ] 各 Phase 完成后运行 e2e 测试
+- [x] 所有 `.razor` 页面无硬编码中文 UI 字符串
+- [x] 语言切换后整个 UI 切换语言，无需手动刷新
+- [x] 语言选择在 localStorage 中持久化，重启后保留
+- [x] `bh-webui` 编译 0 错误
+- [x] Vault / Contracts 的编码损坏全部修复
+- [x] 各 Phase 完成后运行 e2e 测试
 
 ---
 
