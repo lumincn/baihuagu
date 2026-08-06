@@ -1,4 +1,4 @@
-<#
+﻿<#
 百花 Family 版 - Windows (PowerShell) 轻量 CLI
 用法: .\bh.ps1 [command]
   bh.ps1                 打开 dashboard（自动检测代码更新，有新提交时重编译重启）
@@ -173,7 +173,12 @@ function Start-ServiceProc($name, $projRelPath){
 	try {
 		$prevEnv = $env:ASPNETCORE_ENVIRONMENT
 		$env:ASPNETCORE_ENVIRONMENT = 'Development'
-		$exePath = Join-Path $projPath "bin\Debug\net10.0\bh-$name.exe"
+		# ⚠️ 构建用的是 -c Release，启动必须优先用 Release exe，否则 Debug 产物是旧的（改了代码服务跑旧版）
+		# 2026-08-06 踩坑：dotnet build -c Release 编译，但这里只查 bin\Debug → 修复没生效
+		$exePath = Join-Path $projPath "bin\Release\net10.0\bh-$name.exe"
+		if (-not (Test-Path $exePath)) {
+			$exePath = Join-Path $projPath "bin\Debug\net10.0\bh-$name.exe"
+		}
 		if (Test-Path $exePath) {
 			$port = $ServicePorts[$name]
 			if ($port) { $env:ASPNETCORE_URLS = "http://0.0.0.0:$port" }
@@ -486,6 +491,15 @@ function Cmd-Start {
 }
 
 function Cmd-Stop {
+	if ($Arg) {
+		$name = $Arg.ToLower()
+		if ($Services.ContainsKey($name)) {
+			Stop-ServiceProc $name
+		} else {
+			Write-Host "未知服务: $name（可选: $($ServiceOrder -join ', ')）" -ForegroundColor Yellow
+		}
+		return
+	}
 	foreach ($k in $StopOrder){ Stop-ServiceProc $k }
 }
 
