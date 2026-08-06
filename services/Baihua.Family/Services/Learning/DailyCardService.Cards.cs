@@ -79,7 +79,7 @@ public partial class DailyCardService
 
             for (int i = 0; i < days; i++)
             {
-                var date = DateTime.Today.AddDays(-i);
+                var date = BeijingToday.AddDays(-i);
                 var file = Path.Combine(studyDir, $"daily-{date:yyyy-MM-dd}.json");
                 if (!File.Exists(file)) continue;
 

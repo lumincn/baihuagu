@@ -3189,6 +3189,9 @@ Shift+Enter 换行，Enter 发送</value>
   <data name="FamilyHome_ApiKeyNotConfigured" xml:space="preserve">
     <value>AI API Key 未配置</value>
   </data>
+  <data name="FamilyHome_StatusFetchFailed" xml:space="preserve">
+    <value>AI 服务状态获取失败</value>
+  </data>
   <data name="FamilyHome_ApiKeyNotConfiguredDesc" xml:space="preserve">
     <value>您尚未配置 AI API Key，无法使用 AI 功能。</value>
   </data>

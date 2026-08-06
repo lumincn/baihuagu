@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 using Baihua.Contracts.Anki;
+using Baihua.Core.Time;
 using Baihua.Family.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Baihua.Data;
@@ -10,14 +11,26 @@ namespace Baihua.Family.Services;
 
 public partial class DailyCardService
 {
+    /// <summary>北京时间今日（FAM-01：统一时区）</summary>
+    private DateTime BeijingToday => _timeProvider.Today;
+
+    /// <summary>UTC 时间转北京时间日期（用于对比 StudyActivity.CreatedAt）</summary>
+    private DateTime ToBeijingDate(DateTime utc)
+    {
+        if (utc.Kind == DateTimeKind.Unspecified) utc = DateTime.SpecifyKind(utc, DateTimeKind.Utc);
+        return TimeZoneInfo.ConvertTimeFromUtc(utc, SystemTimeProvider.BeijingTz).Date;
+    }
+
     private HashSet<string> GetTodayStudiedIds(string vaultId)
     {
         try
         {
             using var db = _dbFactory.CreateDbContext();
-            var today = DateTime.UtcNow.Date;
+            var today = BeijingToday;
             var ids = db.StudyActivities
-                .Where(a => a.VaultId == vaultId && a.ActivityType == "study" && a.CreatedAt.Date == today && a.CardId != null)
+                .Where(a => a.VaultId == vaultId && a.ActivityType == "study" && a.CardId != null)
+                .AsEnumerable()
+                .Where(a => ToBeijingDate(a.CreatedAt) == today)
                 .Select(a => a.CardId!)
                 .ToHashSet();
             if (ids.Count > 0) return ids;
@@ -32,7 +45,7 @@ public partial class DailyCardService
             var studyDir = _cardRepo.GetStudyDir(vaultId);
             if (string.IsNullOrEmpty(studyDir)) return new HashSet<string>();
 
-            var today = DateTime.Today.ToString("yyyy-MM-dd");
+            var today = BeijingToday.ToString("yyyy-MM-dd");
             var file = Path.Combine(studyDir, $"daily-{today}.json");
             if (!File.Exists(file)) return new HashSet<string>();
 
@@ -49,13 +62,14 @@ public partial class DailyCardService
             using var db = _dbFactory.CreateDbContext();
             var dates = db.StudyActivities
                 .Where(a => a.VaultId == vaultId && a.ActivityType == "study")
-                .Select(a => a.CreatedAt.Date)
+                .AsEnumerable()
+                .Select(a => ToBeijingDate(a.CreatedAt))
                 .Distinct()
                 .OrderByDescending(d => d)
                 .ToList();
 
             int streak = 0;
-            var today = DateTime.UtcNow.Date;
+            var today = BeijingToday;
             for (int i = 0; i < dates.Count; i++)
             {
                 var expected = today.AddDays(-i);
@@ -74,31 +88,6 @@ public partial class DailyCardService
         {
             return 0;
         }
-    }
-
-    private int CalculateStreakFromFiles(string vaultId)
-    {
-        var studyDir = _cardRepo.GetStudyDir(vaultId);
-        if (string.IsNullOrEmpty(studyDir) || !Directory.Exists(studyDir)) return 0;
-
-        int streak = 0;
-        for (int i = 0; ; i++)
-        {
-            var date = DateTime.Today.AddDays(-i);
-            var file = Path.Combine(studyDir, $"daily-{date:yyyy-MM-dd}.json");
-            if (!File.Exists(file))
-            {
-                if (i > 0) break;
-                continue;
-            }
-
-            var daily = ReadDailyRecord(file);
-            if (daily.Completed > 0)
-                streak++;
-            else if (i > 0)
-                break;
-        }
-        return streak;
     }
 
     private DailyRecord ReadDailyRecord(string file)
@@ -141,7 +130,7 @@ public partial class DailyCardService
                     VaultId = vaultId,
                     CardId = cardId,
                     IntervalDays = 1,
-                    NextReviewDate = DateTime.UtcNow.Date.AddDays(1),
+                    NextReviewDate = BeijingToday.AddDays(1),
                     ConsecutiveRemember = 0,
                     TotalReviews = 1,
                     LastResult = result
@@ -169,7 +158,7 @@ public partial class DailyCardService
                         break;
                 }
 
-                state.NextReviewDate = DateTime.UtcNow.Date.AddDays(state.IntervalDays);
+                state.NextReviewDate = BeijingToday.AddDays(state.IntervalDays);
                 db.CardReviewStates.Update(state);
             }
 

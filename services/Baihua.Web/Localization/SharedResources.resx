@@ -3190,6 +3190,9 @@ Shift+Enter new line, Enter to send</value>
   <data name="FamilyHome_ApiKeyNotConfigured" xml:space="preserve">
     <value>AI API Key Not Configured</value>
   </data>
+  <data name="FamilyHome_StatusFetchFailed" xml:space="preserve">
+    <value>AI service status unavailable</value>
+  </data>
   <data name="FamilyHome_ApiKeyNotConfiguredDesc" xml:space="preserve">
     <value>You have not configured an AI API Key and cannot use AI features.</value>
   </data>

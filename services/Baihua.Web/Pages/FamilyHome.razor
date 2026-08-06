@@ -25,8 +25,19 @@
 
     <!-- 配置提醒区域 -->
     <div class="config-alerts">
-        <!-- API Key 配置提醒 -->
-        @if (!isInitialLoading && (!aiStatus?.IsConfigured ?? true))
+        <!-- API Key 配置提醒（FAM-03：三态 + 代理感知）
+             已配置 → 不显示；代理模式（服务器 AI 可用）→ 不显示；
+             查询失败（null）→ 显示"服务状态获取失败"；真正未配置 → 显示红色提醒 -->
+        @if (!isInitialLoading && aiStatus == null)
+        {
+            <div class="config-alert status-alert">
+                <div class="alert-header">
+                    <span class="alert-icon">ℹ️</span>
+                    <span class="alert-title">@L["FamilyHome_StatusFetchFailed"]</span>
+                </div>
+            </div>
+        }
+        else if (!isInitialLoading && !aiStatus!.IsConfigured && !AIStatusService.IsServerProxyMode)
         {
             <div class="config-alert api-alert">
                 <div class="alert-header">
@@ -220,6 +231,11 @@
     .api-alert {
         background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
         box-shadow: 0 4px 12px rgba(238, 90, 111, 0.3);
+    }
+
+    .status-alert {
+        background: linear-gradient(135deg, #8e9eab 0%, #6b7f8f 100%);
+        box-shadow: 0 4px 12px rgba(107, 127, 143, 0.3);
     }
 
     .vault-alert {

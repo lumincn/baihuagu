@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using Baihua.Contracts.Anki;
 using Baihua.Core.Localization;
+using Baihua.Core.Time;
 using Baihua.Family.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
@@ -21,6 +22,7 @@ public partial class DailyCardService
     private readonly CardRepository _cardRepo;
     private readonly ILogger<DailyCardService> _logger;
     private readonly IStringLocalizer<SharedResources> _loc;
+    private readonly ITimeProvider _timeProvider;
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, object> _fileLocks = new();
 
     public DailyCardService(
@@ -28,13 +30,15 @@ public partial class DailyCardService
         LearnerService learnerService,
         CardRepository cardRepo,
         ILogger<DailyCardService> logger,
-        IStringLocalizer<SharedResources> loc)
+        IStringLocalizer<SharedResources> loc,
+        ITimeProvider timeProvider)
     {
         _dbFactory = dbFactory;
         _learnerService = learnerService;
         _cardRepo = cardRepo;
         _logger = logger;
         _loc = loc;
+        _timeProvider = timeProvider;
     }
 
     /// <summary>
@@ -60,7 +64,7 @@ public partial class DailyCardService
         }
 
         var todayStudied = GetTodayStudiedIds(vaultId);
-        var today = DateTime.UtcNow.Date;
+        var today = BeijingToday;
         var rng = seed.HasValue ? new Random(seed.Value) : new Random();
 
         // 1. 优先：今日到期的复习卡片（且今天还没学过）

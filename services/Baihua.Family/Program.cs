@@ -191,6 +191,7 @@ builder.Services.AddSingleton<RagService>();
 builder.Services.AddSingleton<Baihua.Family.Controllers.AI.Stages.StageStrategyFactory>();
         builder.Services.AddHostedService<MasterDataRetentionService>();
 builder.Services.AddSingleton<AnkiCardGenerator>();
+builder.Services.AddSingleton<Baihua.Core.Time.ITimeProvider, Baihua.Core.Time.SystemTimeProvider>();
 builder.Services.AddSingleton<DailyCardService>();
 builder.Services.AddSingleton<LearnerService>();
 builder.Services.AddSingleton<AchievementEngine>();

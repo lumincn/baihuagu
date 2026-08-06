@@ -11,6 +11,12 @@ public class AIStatusService
     private readonly TimeSpan _cacheDuration = TimeSpan.FromSeconds(5);
 
     /// <summary>
+    /// 服务器代理模式（FAM-03）：服务器端 AI 网关已配置（provider 存在）时视为可用，
+    /// 用户无需自配 API Key，首页不显示"API Key 未配置"红色警报。
+    /// </summary>
+    public bool IsServerProxyMode { get; private set; }
+
+    /// <summary>
     /// 状态变更事件 - 当 AI 配置发生变化时触发
     /// </summary>
     public event EventHandler? StateChanged;
@@ -138,7 +144,9 @@ public class AIStatusService
     {
         var provider = await GetMainProviderAsync();
         var isConfigured = provider != null;
-        
+        // FAM-03：服务器端已配置 AI 网关（provider 存在）→ 代理模式可用，无需用户自配 API Key
+        IsServerProxyMode = isConfigured;
+
         return new AIStatusSummary
         {
             IsConfigured = isConfigured,

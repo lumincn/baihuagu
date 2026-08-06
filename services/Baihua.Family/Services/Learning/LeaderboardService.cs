@@ -1,20 +1,39 @@
 using Microsoft.EntityFrameworkCore;
 using Baihua.Data;
+using Baihua.Core.Time;
 
 namespace Baihua.Family.Services;
 
 /// <summary>
 /// 家庭赛舟榜服务
 /// </summary>
-
-
 public class LeaderboardService
 {
     private readonly IDbContextFactory<FamilyDbContext> _dbFactory;
+    private readonly ITimeProvider _timeProvider;
 
-    public LeaderboardService(IDbContextFactory<FamilyDbContext> dbFactory)
+    public LeaderboardService(IDbContextFactory<FamilyDbContext> dbFactory, ITimeProvider timeProvider)
     {
         _dbFactory = dbFactory;
+        _timeProvider = timeProvider;
+    }
+
+    /// <summary>北京时间今日</summary>
+    private DateTime BeijingToday => _timeProvider.Today;
+
+    /// <summary>UTC 转北京时间日期</summary>
+    private static DateTime ToBeijingDate(DateTime utc)
+    {
+        if (utc.Kind == DateTimeKind.Unspecified) utc = DateTime.SpecifyKind(utc, DateTimeKind.Utc);
+        return TimeZoneInfo.ConvertTimeFromUtc(utc, SystemTimeProvider.BeijingTz).Date;
+    }
+
+    /// <summary>北京时间本周一 00:00</summary>
+    private DateTime BeijingStartOfWeek()
+    {
+        var today = BeijingToday;
+        var daysSinceMonday = ((int)today.DayOfWeek + 6) % 7; // Mon=0 ... Sun=6
+        return today.AddDays(-daysSinceMonday);
     }
 
     /// <summary>
@@ -22,7 +41,7 @@ public class LeaderboardService
     /// </summary>
     public async Task<List<LeaderboardEntry>> GetWeeklyLeaderboardAsync(string? vaultId = null)
     {
-        var startOfWeek = DateTime.UtcNow.Date.AddDays(-(int)DateTime.UtcNow.DayOfWeek);
+        var startOfWeek = BeijingStartOfWeek();
         return await GetLeaderboardAsync(startOfWeek, vaultId);
     }
 
@@ -31,7 +50,7 @@ public class LeaderboardService
     /// </summary>
     public async Task<List<LeaderboardEntry>> GetMonthlyLeaderboardAsync(string? vaultId = null)
     {
-        var startOfMonth = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var startOfMonth = new DateTime(BeijingToday.Year, BeijingToday.Month, 1, 0, 0, 0, DateTimeKind.Unspecified);
         return await GetLeaderboardAsync(startOfMonth, vaultId);
     }
 
@@ -76,19 +95,18 @@ public class LeaderboardService
     {
         using var db = await _dbFactory.CreateDbContextAsync();
         var learners = await db.LearnerProfiles.ToListAsync();
-        var today = DateTime.UtcNow.Date;
+        var today = BeijingToday;
         var result = new List<LeaderboardEntry>();
 
         foreach (var learner in learners)
         {
             var query = db.StudyActivities.Where(a => a.LearnerId == learner.Id
                 && a.ActivityType == "study"
-                && a.CreatedAt.Date == today
                 && a.Result != null);
             if (!string.IsNullOrEmpty(vaultId))
                 query = query.Where(a => a.VaultId == vaultId);
 
-            var records = await query.ToListAsync();
+            var records = (await query.ToListAsync()).Where(r => ToBeijingDate(r.CreatedAt) == today).ToList();
             var total = records.Count;
             var remembered = records.Count(r => r.Result == "remember");
             var accuracy = total > 0 ? (double)remembered / total : 0;
@@ -117,12 +135,11 @@ public class LeaderboardService
         foreach (var learner in learners)
         {
             var query = db.StudyActivities.Where(a => a.LearnerId == learner.Id
-                && a.ActivityType == "study"
-                && a.CreatedAt >= since);
+                && a.ActivityType == "study");
             if (!string.IsNullOrEmpty(vaultId))
                 query = query.Where(a => a.VaultId == vaultId);
 
-            var records = await query.ToListAsync();
+            var records = (await query.ToListAsync()).Where(r => ToBeijingDate(r.CreatedAt) >= since).ToList();
             var total = records.Count;
             var remembered = records.Count(r => r.Result == "remember");
             var accuracy = total > 0 ? (double)remembered / total : 0;
@@ -150,7 +167,7 @@ public class LeaderboardService
     {
         using var db = await _dbFactory.CreateDbContextAsync();
         var learners = await db.LearnerProfiles.ToListAsync();
-        var today = DateTime.UtcNow.Date;
+        var today = BeijingToday;
         var weekAgo = today.AddDays(-6);
 
         var familyStats = new List<FamilyMemberStat>();
@@ -168,8 +185,8 @@ public class LeaderboardService
             var query = db.StudyActivities.Where(a => a.LearnerId == learner.Id && a.ActivityType == "study");
             if (!string.IsNullOrEmpty(vaultId)) query = query.Where(a => a.VaultId == vaultId);
 
-            var activities = await query.ToListAsync();
-            var weekActivities = activities.Where(a => a.CreatedAt.Date >= weekAgo).ToList();
+            var activities = (await query.ToListAsync()).Select(a => new { Date = ToBeijingDate(a.CreatedAt), a.Result }).ToList();
+            var weekActivities = activities.Where(a => a.Date >= weekAgo).ToList();
 
             var total = activities.Count;
             var weekTotal = weekActivities.Count;
@@ -192,7 +209,7 @@ public class LeaderboardService
             // 累加每周趋势
             foreach (var act in weekActivities)
             {
-                var dateStr = act.CreatedAt.Date.ToString("MM-dd");
+                var dateStr = act.Date.ToString("MM-dd");
                 var day = weeklyTrend.FirstOrDefault(d => d.Date == dateStr);
                 if (day != null) day.Count++;
             }
@@ -220,9 +237,12 @@ public class LeaderboardService
         }
 
         // 答题结果分布
-        var allWeekActivities = db.StudyActivities.Where(a => a.ActivityType == "study" && a.CreatedAt.Date >= weekAgo);
+        var allWeekActivities = (await db.StudyActivities
+            .Where(a => a.ActivityType == "study")
+            .ToListAsync())
+            .Where(a => ToBeijingDate(a.CreatedAt) >= weekAgo);
         if (!string.IsNullOrEmpty(vaultId)) allWeekActivities = allWeekActivities.Where(a => a.VaultId == vaultId);
-        var weekResults = await allWeekActivities.ToListAsync();
+        var weekResults = allWeekActivities.ToList();
 
         return new DashboardData
         {
@@ -240,15 +260,16 @@ public class LeaderboardService
 
     private async Task<int> CalculateStreakAsync(FamilyDbContext db, int learnerId)
     {
-        var dates = await db.StudyActivities
+        var dates = (await db.StudyActivities
             .Where(a => a.LearnerId == learnerId && a.ActivityType == "study")
-            .Select(a => a.CreatedAt.Date)
+            .ToListAsync())
+            .Select(a => ToBeijingDate(a.CreatedAt))
             .Distinct()
             .OrderByDescending(d => d)
-            .ToListAsync();
+            .ToList();
 
         int streak = 0;
-        var today = DateTime.UtcNow.Date;
+        var today = BeijingToday;
         for (int i = 0; i < dates.Count; i++)
         {
             var expected = today.AddDays(-i);
