@@ -3166,6 +3166,66 @@ Shift+Enter new line, Enter to send</value>
   <data name="FamilyHome_PageTitle" xml:space="preserve">
     <value>Home</value>
   </data>
+  <data name="FamilyLanding_PageTitle" xml:space="preserve">
+    <value>Family Home</value>
+  </data>
+  <data name="FamilyLanding_Title" xml:space="preserve">
+    <value>👨‍👩‍👧 Family</value>
+  </data>
+  <data name="FamilyLanding_Subtitle" xml:space="preserve">
+    <value>Our learning together</value>
+  </data>
+  <data name="FamilyLanding_Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+  <data name="FamilyLanding_NoLearnerGuideTitle" xml:space="preserve">
+    <value>Welcome to Family Learning</value>
+  </data>
+  <data name="FamilyLanding_NoLearnerGuideDesc" xml:space="preserve">
+    <value>Create a family member profile to start tracking learning progress together.</value>
+  </data>
+  <data name="FamilyLanding_GoCreateLearner" xml:space="preserve">
+    <value>Create Family Member</value>
+  </data>
+  <data name="FamilyLanding_TodayLearned" xml:space="preserve">
+    <value>cards this week</value>
+  </data>
+  <data name="FamilyLanding_MaxStreak" xml:space="preserve">
+    <value>day streak</value>
+  </data>
+  <data name="FamilyLanding_MemberSnapshot" xml:space="preserve">
+    <value>Family Members</value>
+  </data>
+  <data name="FamilyLanding_WeekTotal" xml:space="preserve">
+    <value>this week</value>
+  </data>
+  <data name="FamilyLanding_Streak" xml:space="preserve">
+    <value>streak</value>
+  </data>
+  <data name="FamilyLanding_DailyCardShortcut" xml:space="preserve">
+    <value>Daily Card</value>
+  </data>
+  <data name="FamilyLanding_DailyCardTitle" xml:space="preserve">
+    <value>Today's Card</value>
+  </data>
+  <data name="FamilyLanding_DailyCardDesc" xml:space="preserve">
+    <value>Tap to review today's card</value>
+  </data>
+  <data name="FamilyLanding_LeaderboardPreview" xml:space="preserve">
+    <value>This Week's Leaderboard</value>
+  </data>
+  <data name="FamilyLanding_ViewMore" xml:space="preserve">
+    <value>View more</value>
+  </data>
+  <data name="FamilyLanding_Points" xml:space="preserve">
+    <value>pts</value>
+  </data>
+  <data name="FamilyLanding_NoLeaderboardData" xml:space="preserve">
+    <value>No leaderboard data yet</value>
+  </data>
+  <data name="Nav_FamilyHome" xml:space="preserve">
+    <value>Family Home</value>
+  </data>
   <data name="FamilyHome_CoreValue" xml:space="preserve">
     <value>Less is more, put knowledge into your mind</value>
   </data>

@@ -43,7 +43,19 @@ public partial class AchievementsController : ControllerBase
 
     private static List<LeaderboardEntryDto> ToDtos(List<LeaderboardEntry> entries)
     {
-        for (int i = 0; i < entries.Count; i++) entries[i].Rank = i + 1;
+        // FAM-13：标准竞赛排名——相同分数同排名，排名有跳跃（1,1,3,3,5）
+        // 输入按 Score 降序（LeaderboardService 已 OrderByDescending）
+        int rank = 0;
+        int prevScore = int.MinValue;
+        for (int i = 0; i < entries.Count; i++)
+        {
+            if (entries[i].Score != prevScore)
+            {
+                rank = i + 1;
+                prevScore = entries[i].Score;
+            }
+            entries[i].Rank = rank;
+        }
         return entries.Select(e => new LeaderboardEntryDto
         {
             LearnerId = e.LearnerId,
