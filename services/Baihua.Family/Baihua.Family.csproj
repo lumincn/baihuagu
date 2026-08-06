@@ -16,6 +16,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- 仅测试支撑：允许集成测试（WebApplicationFactory<Program>）访问内部 Program 类 -->
+    <InternalsVisibleTo Include="Baihua.Family.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="LLamaSharp" Version="0.26.0" />
     <PackageReference Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.13.1" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />

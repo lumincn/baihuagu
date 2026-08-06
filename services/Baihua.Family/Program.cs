@@ -459,7 +459,10 @@ app.Use(async (context, next) =>
         // MobileGateway 风格路径别名
         "/mg/manifest", "/mg/file", "/mg/cards",
         "/mg/vaults", "/mg/pair",
-        "/mg/devices/revoke"
+        "/mg/devices/revoke",
+
+        // AI 对话代理：/api/ai/chat/* 纳入 HMAC 鉴权域（AI-01）
+        "/api/ai/chat"
     };
 
     // 以下路径为公开路径，无需 HMAC 签名（设备注册、密钥获取等初始化流程）
@@ -536,6 +539,9 @@ app.Use(async (context, next) =>
         "/mg/onehop/register-device",
         "/mg/auth/config", "/mg/verify-token",
         "/mg/devices/revoke",
+
+        // AI 对话代理：已配对移动端经 HMAC 鉴权后访问（AI-01）
+        "/api/ai/chat",
     };
 
     if (publicPaths.Any(p => path.StartsWith(p)))
@@ -688,6 +694,114 @@ app.Use(async (context, next) =>
             logger.LogError(ex, "转发移动端请求到 Vault 服务失败: {TargetUrl}", targetUrl);
             context.Response.StatusCode = 503;
             await context.Response.WriteAsJsonAsync(new { error = "Vault service unavailable" });
+            return;
+        }
+    }
+
+    await next();
+});
+
+// 将移动端 AI 对话请求转发到 Baihua.AI（8791）
+// AI-01：/api/ai/chat/* 已纳入 HMAC 鉴权域（见上方签名验证中间件），
+// 此处复用设备授权检查（X-Device-Id → 已授权设备），鉴权通过则代理，否则 401。
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path.Value ?? "";
+    var aiChatPaths = new[] { "/api/ai/chat" };
+    if (aiChatPaths.Any(p => path.StartsWith(p, StringComparison.OrdinalIgnoreCase)))
+    {
+        var aiBase = Environment.GetEnvironmentVariable("TASKRUNNER_AI_URL")
+            ?? Environment.GetEnvironmentVariable("TASK_RUNNER_AI_API_URL")
+            ?? "http://127.0.0.1:8791";
+        var targetUrl = aiBase.TrimEnd('/') + path + context.Request.QueryString;
+        try
+        {
+            using var client = new HttpClient { Timeout = TimeSpan.FromMinutes(5) };
+            using var request = new HttpRequestMessage(new HttpMethod(context.Request.Method), targetUrl);
+
+            // 复制请求头（跳过 Host/Content-Length 以及含非 ASCII 字符的头）
+            foreach (var header in context.Request.Headers)
+            {
+                if (header.Key.Equals("Host", StringComparison.OrdinalIgnoreCase) ||
+                    header.Key.Equals("Content-Length", StringComparison.OrdinalIgnoreCase))
+                    continue;
+                var values = header.Value.ToArray();
+                if (values.Any(v => v != null && v.Any(c => c > 127)))
+                    continue;
+                request.Headers.TryAddWithoutValidation(header.Key, values);
+            }
+
+            // 设备授权检查：与 Vault 转发一致，防止未配对设备通过全局 HMAC 密钥绕过授权
+            if (!request.Headers.Contains("Authorization"))
+            {
+                var deviceService = context.RequestServices.GetService<DeviceService>();
+                var deviceId = context.Request.Headers["X-Device-Id"].FirstOrDefault();
+                if (!string.IsNullOrEmpty(deviceId) && deviceService != null)
+                {
+                    var authorizedDevice = deviceService.GetAuthorizedDeviceById(deviceId);
+                    if (authorizedDevice != null && !string.IsNullOrEmpty(authorizedDevice.AccessToken))
+                    {
+                        request.Headers.Authorization =
+                            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authorizedDevice.AccessToken);
+                    }
+                    else
+                    {
+                        var logger2 = context.RequestServices.GetService<ILogger<Program>>();
+                        logger2?.LogWarning("[AUTH-DIAG] AI forward blocked: no authorized device for DeviceId {DeviceId}, path={Path}",
+                            deviceId, path);
+                        context.Response.StatusCode = 401;
+                        await context.Response.WriteAsJsonAsync(new { error = "Device not authorized. Please complete pairing first." });
+                        return;
+                    }
+                }
+                else
+                {
+                    var logger2 = context.RequestServices.GetService<ILogger<Program>>();
+                    logger2?.LogWarning("[AUTH-DIAG] AI forward blocked: missing X-Device-Id header, path={Path}", path);
+                    context.Response.StatusCode = 401;
+                    await context.Response.WriteAsJsonAsync(new { error = "Device identity missing. Please re-pair the device." });
+                    return;
+                }
+            }
+
+            // 复制请求体
+            if (context.Request.ContentLength > 0 ||
+                (context.Request.Headers.ContentLength.HasValue && context.Request.Headers.ContentLength.Value > 0))
+            {
+                request.Content = new StreamContent(context.Request.Body);
+                if (context.Request.Headers.ContentType.Any())
+                {
+                    request.Content.Headers.ContentType =
+                        System.Net.Http.Headers.MediaTypeHeaderValue.Parse(context.Request.Headers.ContentType!);
+                }
+            }
+
+            using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, context.RequestAborted);
+            context.Response.StatusCode = (int)response.StatusCode;
+
+            foreach (var header in response.Headers)
+            {
+                if (header.Key.Equals("Transfer-Encoding", StringComparison.OrdinalIgnoreCase))
+                    continue;
+                context.Response.Headers[header.Key] = header.Value.ToArray();
+            }
+            foreach (var header in response.Content.Headers)
+            {
+                if (header.Key.Equals("Content-Length", StringComparison.OrdinalIgnoreCase) ||
+                    header.Key.Equals("Transfer-Encoding", StringComparison.OrdinalIgnoreCase))
+                    continue;
+                context.Response.Headers[header.Key] = header.Value.ToArray();
+            }
+
+            await response.Content.CopyToAsync(context.Response.Body);
+            return;
+        }
+        catch (HttpRequestException ex)
+        {
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+            logger.LogError(ex, "转发移动端 AI 对话请求到 AI 服务失败: {TargetUrl}", targetUrl);
+            context.Response.StatusCode = 503;
+            await context.Response.WriteAsJsonAsync(new { error = "AI service unavailable" });
             return;
         }
     }
