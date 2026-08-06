@@ -210,20 +210,20 @@ else
             }
             else
             {
-                await JSRuntime.InvokeVoidAsync("alert", L["PromptTemplates_SaveFailed"]);
+                await JSRuntime.InvokeVoidAsync("alert", (string)L["PromptTemplates_SaveFailed"]);
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, L["PromptTemplates_LoadFailed"]);
-            await JSRuntime.InvokeVoidAsync("alert", L["PromptTemplates_SaveFailedFormat", ex.Message]);
+            await JSRuntime.InvokeVoidAsync("alert", (string)L["PromptTemplates_SaveFailedFormat", ex.Message]);
         }
         isSaving = false;
     }
 
     private async Task DeleteTemplate(string displayName)
     {
-        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", L["PromptTemplates_ConfirmDelete", displayName]);
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", (string)L["PromptTemplates_ConfirmDelete", displayName]);
         if (!confirmed) return;
 
         try

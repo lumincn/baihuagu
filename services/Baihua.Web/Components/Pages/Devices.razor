@@ -552,7 +552,7 @@
 
     private async Task RevokeDeviceAsync(string deviceId)
     {
-        if (!await JSRuntime.InvokeAsync<bool>("confirm", L["Devices_RevokeConfirm"]))
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", (string)L["Devices_RevokeConfirm"]))
             return;
         try
         {

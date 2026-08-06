@@ -623,7 +623,7 @@ else
 
     private async Task DeleteTask(string taskId)
     {
-        if (!await JSRuntime.InvokeAsync<bool>("confirm", L["Tasks_ConfirmDeleteMessage"]))
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", (string)L["Tasks_ConfirmDeleteMessage"]))
             return;
         var success = await ApiService.DeleteTaskAsync(taskId);
         if (success) await LoadTasks();
@@ -631,7 +631,7 @@ else
 
     private async Task CancelTask(string taskId)
     {
-        if (!await JSRuntime.InvokeAsync<bool>("confirm", L["Tasks_ConfirmCancelMessage"]))
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", (string)L["Tasks_ConfirmCancelMessage"]))
             return;
         var success = await ApiService.CancelTaskAsync(taskId);
         if (success) await LoadTasks();

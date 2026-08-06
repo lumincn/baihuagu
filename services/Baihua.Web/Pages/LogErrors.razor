@@ -230,7 +230,7 @@
 
     private async Task ClearLocalLogs()
     {
-        if (!await JSRuntime.InvokeAsync<bool>("confirm", L["LogErrors_ConfirmClearLocal"]))
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", (string)L["LogErrors_ConfirmClearLocal"]))
             return;
 
         var cleared = 0;
@@ -257,7 +257,7 @@
     private async Task ClearOpenObserve()
     {
         if (string.IsNullOrEmpty(ooAuthHeader)) return;
-        if (!await JSRuntime.InvokeAsync<bool>("confirm", L["LogErrors_ConfirmClearOpenObserve"]))
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", (string)L["LogErrors_ConfirmClearOpenObserve"]))
             return;
 
         clearingOo = true;
