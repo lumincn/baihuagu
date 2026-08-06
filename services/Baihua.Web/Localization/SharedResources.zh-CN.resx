@@ -41,7 +41,7 @@
     <value>登录</value>
   </data>
   <data name="Nav_Dashboard" xml:space="preserve">
-    <value>仪表板</value>
+    <value>家长看板</value>
   </data>
   <data name="Nav_Messages" xml:space="preserve">
     <value>消息</value>
@@ -3754,13 +3754,13 @@ Shift+Enter 换行，Enter 发送</value>
     <value>知识库管理</value>
   </data>
   <data name="Nav_DailyCard" xml:space="preserve">
-    <value>每日一帖</value>
+    <value>每日卡片</value>
   </data>
   <data name="Nav_Achievements" xml:space="preserve">
-    <value>成就墙</value>
+    <value>成就</value>
   </data>
   <data name="Nav_Leaderboard" xml:space="preserve">
-    <value>赛舟榜</value>
+    <value>排行榜</value>
   </data>
   <data name="Nav_ParentDashboard" xml:space="preserve">
     <value>家长看板</value>
