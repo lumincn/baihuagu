@@ -9,7 +9,7 @@
   bh.ps1 restart         重启服务
   bh.ps1 logs [name]     查看日志（taskrunner, webui, ai, vault）
   bh.ps1 open            打开 Web 管理界面 (http://localhost:5177)
-  bh.ps1 dev             开发模式（监听文件变动自动重编译重启）
+  bh.ps1 dev             开发模式（Debug 构建，监听文件变动自动重编译重启）
   bh.ps1 observe         启动 OpenObserve 可观测平台（Docker）并打开 Web UI
   bh.ps1 all             启动全部服务（.NET 服务 + OpenObserve + hostmetrics）
 
@@ -17,7 +17,7 @@
 - 该脚本为简易移植，依赖 PowerShell (推荐 pwsh) 和 dotnet SDK
 - 后台进程 PID 与日志保存在 $env:TEMP\bh-[service].*
 - dashboard 命令会比较当前 git HEAD 与上次启动时的 commit，不同则自动重编译重启
-- dev 命令监听 services/ 下 .cs/.razor 文件变动，2秒防抖后自动重编译重启
+- dev 命令用 Debug 构建（编译快、符号全、可调试），监听 services/ 下 .cs/.razor 文件变动，2秒防抖后自动重编译重启
 - observe 命令使用 docker compose 启动 OpenObserve（端口 5082/5083）
 - all 命令启动所有 .NET 服务（ai, vault, taskrunner, webui）和 Docker 监控容器（openobserve, hostmetrics）
 #>
@@ -49,7 +49,7 @@ function Get-Help {
 	Write-Host "  status                查看服务状态"
 	Write-Host "  logs [name]           查看日志（taskrunner, webui, ai, vault）"
 	Write-Host "  open                  打开 Web 管理界面 (http://localhost:5177)"
-	Write-Host "  dev                   开发模式（监听文件变动自动重编译重启）"
+	Write-Host "  dev                   开发模式（Debug 构建，监听文件变动自动重编译重启）"
 	Write-Host "  observe               启动 OpenObserve 可观测平台（Docker）"
 	Write-Host "  all                   启动全部服务（.NET + OpenObserve + hostmetrics）"
 	Write-Host ""
@@ -137,7 +137,7 @@ function Test-NeedsRebuild{
 	return $false
 }
 
-function Start-ServiceProc($name, $projRelPath){
+function Start-ServiceProc($name, $projRelPath, $preferConfig = 'Release'){
 	$projPath = Join-Path $HG_ROOT $projRelPath
 	if (-not (Test-Path $projPath)){
 		Write-Host "[!] 项目未找到: $projPath" -ForegroundColor Yellow
@@ -173,11 +173,13 @@ function Start-ServiceProc($name, $projRelPath){
 	try {
 		$prevEnv = $env:ASPNETCORE_ENVIRONMENT
 		$env:ASPNETCORE_ENVIRONMENT = 'Development'
-		# ⚠️ 构建用的是 -c Release，启动必须优先用 Release exe，否则 Debug 产物是旧的（改了代码服务跑旧版）
+		# ⚠️ 启动优先用 preferConfig 对应的 exe（默认 Release），否则改了代码服务跑旧版
 		# 2026-08-06 踩坑：dotnet build -c Release 编译，但这里只查 bin\Debug → 修复没生效
-		$exePath = Join-Path $projPath "bin\Release\net10.0\bh-$name.exe"
+		# dev 模式传 preferConfig='Debug'，优先 Debug 产物（编译快、符号全）
+		$exePath = Join-Path $projPath "bin\$preferConfig\net10.0\bh-$name.exe"
 		if (-not (Test-Path $exePath)) {
-			$exePath = Join-Path $projPath "bin\Debug\net10.0\bh-$name.exe"
+			$fallback = if ($preferConfig -eq 'Release') { 'Debug' } else { 'Release' }
+			$exePath = Join-Path $projPath "bin\$fallback\net10.0\bh-$name.exe"
 		}
 		if (Test-Path $exePath) {
 			$port = $ServicePorts[$name]
@@ -786,17 +788,17 @@ switch ($Command.ToLower()){
 		Write-Host "  Press Ctrl+C to stop" -ForegroundColor DarkGray
 		Write-Host ""
 
-		# 首次编译+启动
+		# 首次编译+启动（dev 用 Debug：编译快、符号全、可调试）
 		Cmd-Stop
 		Start-Sleep -Seconds 1
-		Write-Host "[...] dotnet build..." -ForegroundColor Cyan
-		dotnet build (Join-Path $HG_ROOT 'services\BaiHua.slnx') -c Release 2>&1 | Select-Object -Last 3 | ForEach-Object { Write-Host "    $_" }
+		Write-Host "[...] dotnet build (Debug)..." -ForegroundColor Cyan
+		dotnet build (Join-Path $HG_ROOT 'services\BaiHua.slnx') -c Debug 2>&1 | Select-Object -Last 3 | ForEach-Object { Write-Host "    $_" }
 		if ($LASTEXITCODE -ne 0) { Write-Host "[X] Build failed" -ForegroundColor Red; break }
 		Write-Host "[v] Build OK" -ForegroundColor Green
 		Save-GitCommit
 
 		foreach ($k in $ServiceOrder){
-			Start-ServiceProc $k $Services[$k]
+			Start-ServiceProc $k $Services[$k] 'Debug'
 			if ($k -ne 'webui') {
 				Write-Host "  $k : " -NoNewline
 				Wait-For-Service $k 30 -wasJustStarted $true | Out-Null
@@ -849,12 +851,12 @@ switch ($Command.ToLower()){
 					Write-Host "[i] Change detected, rebuilding..." -ForegroundColor Yellow
 					Cmd-Stop
 					Start-Sleep -Seconds 1
-					dotnet build (Join-Path $HG_ROOT 'services\BaiHua.slnx') -c Release 2>&1 | Select-Object -Last 3 | ForEach-Object { Write-Host "    $_" }
+					dotnet build (Join-Path $HG_ROOT 'services\BaiHua.slnx') -c Debug 2>&1 | Select-Object -Last 3 | ForEach-Object { Write-Host "    $_" }
 					if ($script:LASTEXITCODE -ne 0) { Write-Host "[X] Build failed" -ForegroundColor Red; return }
 					Write-Host "[v] Build OK, restarting..." -ForegroundColor Green
 					Save-GitCommit
 					foreach ($k in $ServiceOrder){
-						Start-ServiceProc $k $Services[$k]
+						Start-ServiceProc $k $Services[$k] 'Debug'
 					}
 				} | Out-Null
 				$changeTimer.Start()
