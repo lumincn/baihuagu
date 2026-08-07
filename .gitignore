@@ -28,6 +28,15 @@ tmp_check_db.csx
 *.pyc
 *.swp
 .DS_Store
+
+# 构建产物（隔离输出目录，如 .fam35/.testout/.artifacts-* 等）
+.fam35/
+.testout/
+.artifacts-*/
+
+# .NET 构建输出（通用）
+**/bin/
+**/obj/
 .atom/
 .build/
 .buildlog/
