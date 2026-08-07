@@ -1,31 +1,41 @@
 ﻿<#
 百花 Family 版 - Windows (PowerShell) 轻量 CLI
-用法: .\bh.ps1 [command]
-  bh.ps1                 打开 dashboard（自动检测代码更新，有新提交时重编译重启）
-  bh.ps1 setup           首次配置（交互）
-  bh.ps1 start           启动服务（在后台运行 dotnet run）
-  bh.ps1 stop            停止服务
-  bh.ps1 status          查看服务状态
-  bh.ps1 restart         重启服务
-  bh.ps1 logs [name]     查看日志（family, webui, ai, vault）
-  bh.ps1 open            打开 Web 管理界面 (http://localhost:5177)
-  bh.ps1 dev             开发模式（dotnet watch，改代码自动热重载）
-  bh.ps1 observe         启动 OpenObserve 可观测平台（Docker）并打开 Web UI
-  bh.ps1 all             启动全部服务（.NET 服务 + OpenObserve + hostmetrics）
+用法: .\bh.ps1 [command] [args]
+  bh.ps1                  打开 dashboard（自动检测代码更新，有新提交时重编译重启）
+  bh.ps1 setup            首次配置（交互）
+  bh.ps1 start            启动服务（在后台运行 dotnet run）
+  bh.ps1 stop [name]      停止服务（不指定则停止全部）
+  bh.ps1 restart [name]   重启服务（不指定则重启全部）
+  bh.ps1 status           查看服务状态（含端口/日志路径）
+  bh.ps1 logs <name> [lines]   查看日志（默认最近 50 行，加 -f 跟随）
+  bh.ps1 open             打开 Web 管理界面 (http://localhost:5177)
+  bh.ps1 dev              开发模式（dotnet watch，改代码自动热重载）
+  bh.ps1 observe          启动 OpenObserve 可观测平台（Docker）并打开 Web UI
+  bh.ps1 all              启动全部服务（.NET 服务 + OpenObserve + hostmetrics）
+  bh.ps1 version          显示脚本版本
+  bh.ps1 help             显示帮助
 
 说明:
-- 该脚本为简易移植，依赖 PowerShell (推荐 pwsh) 和 dotnet SDK
+- 该脚本为简易移植，依赖 PowerShell (推荐 pwsh 7+) 和 dotnet SDK
 - 后台进程 PID 与日志保存在 $env:TEMP\bh-[service].*
 - dashboard 命令会比较当前 git HEAD 与上次启动时的 commit，不同则自动重编译重启
-- dev 命令用 dotnet watch run 启动每个服务（Debug 配置），改 .cs/.razor 自动热重载/重启，不依赖自定义文件监听
+- dev 命令用 dotnet watch run 启动每个服务（Debug 配置），改 .cs/.razor 自动热重载/重启
 - observe 命令使用 docker compose 启动 OpenObserve（端口 5082/5083）
-- all 命令启动所有 .NET 服务（ai, vault, family, webui）和 Docker 监控容器（openobserve, hostmetrics）
+- all 命令启动所有 .NET 服务（ai, vault, family, webui）和 Docker 监控容器
 #>
+[CmdletBinding()]
 param(
 	[string]$Command = 'dashboard',
 	[string]$Arg,
 	[string]$Browser = ''
 )
+
+# PowerShell 5.1 兼容性检查（编码/特性差异，推荐 pwsh 7+）
+if ($PSVersionTable.PSVersion.Major -lt 7) {
+	Write-Host "[i] 检测到 Windows PowerShell $($PSVersionTable.PSVersion)（旧版）" -ForegroundColor Yellow
+	Write-Host "    推荐使用 PowerShell 7+ (pwsh)：支持 UTF-8 无 BOM、并发等现代特性" -ForegroundColor Yellow
+	Write-Host "    安装: winget install Microsoft.PowerShell" -ForegroundColor DarkGray
+}
 
 chcp 65001 | Out-Null
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
@@ -33,31 +43,7 @@ chcp 65001 | Out-Null
 $OutputEncoding = [System.Text.Encoding]::UTF8
 Set-StrictMode -Version Latest
 
-function Get-Help {
-	Write-Host ""
-	Write-Host "百花 Family 版 - Windows (PowerShell) 轻量 CLI" -ForegroundColor Cyan
-	Write-Host "================================================="
-	Write-Host ""
-	Write-Host "用法: .\bh.ps1 [command]"
-	Write-Host ""
-	Write-Host "Commands:"
-	Write-Host "  dashboard             打开管理面板（默认，自动检测更新重编译）"
-	Write-Host "  setup                 首次配置（交互）"
-	Write-Host "  start                 启动服务（后台运行 dotnet run）"
-	Write-Host "  stop                  停止服务"
-	Write-Host "  restart               重启服务"
-	Write-Host "  status                查看服务状态"
-	Write-Host "  logs [name]           查看日志（family, webui, ai, vault）"
-	Write-Host "  open                  打开 Web 管理界面 (http://localhost:5177)"
-	Write-Host "  dev                   开发模式（dotnet watch，改代码自动热重载）"
-	Write-Host "  observe               启动 OpenObserve 可观测平台（Docker）"
-	Write-Host "  all                   启动全部服务（.NET + OpenObserve + hostmetrics）"
-	Write-Host ""
-	Write-Host "说明:"
-	Write-Host "  - 日志与 PID 文件保存在 $env:TEMP\bh-[service].*"
-	Write-Host "  - dashboard 命令会比较 git HEAD，有更新时自动重编译重启"
-	Write-Host ""
-}
+$SCRIPT_VERSION = '2.0.0'
 
 function Get-HgRoot {
 	if ($PSScriptRoot) { return $PSScriptRoot }
@@ -74,27 +60,25 @@ $TEMP_DIR = $env:TEMP
 $ServiceOrder = @('ai', 'vault', 'family', 'webui')
 # 停止顺序：依赖别人的先停止（WebUI → Family → Vault → AI）
 $StopOrder = @('webui', 'family', 'vault', 'ai')
-$Services = @{ 
-	ai         = "services/Baihua.AI";
-	vault      = "services/Baihua.Vault";
-	family = "services/Baihua.Family";
-	webui      = "services/Baihua.Web";
+
+# 统一服务配置：路径 / 健康检查 / 端口（单一数据源，避免改端口要改多处）
+function Get-ServiceConfig {
+	return @{
+		ai         = @{ Project = "services/Baihua.AI";     Health = 'http://127.0.0.1:8791/api/ai/config/providers'; Port = 8791; OpenUrl = '' }
+		vault      = @{ Project = "services/Baihua.Vault";  Health = 'http://127.0.0.1:8790/mg/vaults'; Port = 8790; OpenUrl = '' }
+		family     = @{ Project = "services/Baihua.Family"; Health = 'http://127.0.0.1:8788/api/capability'; Port = 8788; OpenUrl = '' }
+		webui      = @{ Project = "services/Baihua.Web";    Health = 'http://127.0.0.1:5177/login'; Port = 5177; OpenUrl = 'http://127.0.0.1:5177' }
+	}
 }
 
-# 服务健康检查 URL（用轻量端点，避免认证拦截）
-$HealthUrls = @{
-	ai         = 'http://127.0.0.1:8791/api/ai/config/providers'
-	vault      = 'http://127.0.0.1:8790/mg/vaults'
-	family = 'http://127.0.0.1:8788/api/capability'
-	webui      = 'http://127.0.0.1:5177/login'
-}
-
-$ServicePorts = @{
-	ai         = 8791
-	vault      = 8790
-	family = 8788
-	webui      = 5177
-}
+# webui 打开地址（Open-Dashboard 用）
+function Get-WebUrl { return (Get-ServiceConfig)['webui'].OpenUrl }
+# webui 登录页（健康检查/等待就绪用）
+function Get-LoginUrl { return (Get-ServiceConfig)['webui'].Health }
+# cli-token 接口地址（自动登录用）
+function Get-CliTokenUrl { return (Get-WebUrl) + '/api/auth/cli-token' }
+# 带 cli-token 的 dashboard 地址
+function Get-DashboardUrl($token) { return (Get-WebUrl) + "/?cli-token=$token" }
 
 function Get-LogPath($name){ Join-Path $TEMP_DIR "bh-$name.log" }
 function Get-PidPath($name){ Join-Path $TEMP_DIR "bh-$name.pid" }
@@ -137,6 +121,30 @@ function Test-NeedsRebuild{
 	return $false
 }
 
+# 查找服务可执行文件（支持任意 TFM，不再硬编码 net10.0）
+function Find-ServiceExe($name, $projPath, $preferConfig){
+	$cfg = (Get-ServiceConfig)[$name]
+	if (-not $cfg) { return $null }
+	$port = $cfg.Port
+	# 优先 preferConfig 对应的 exe（默认 Release），否则回退另一配置
+	$patterns = @(
+		"$projPath\bin\$preferConfig\*\bh-$name.exe",
+		"$projPath\bin\$preferConfig\*\bh-$name.dll"
+	)
+	if ($preferConfig -eq 'Release') {
+		$patterns += "$projPath\bin\Debug\*\bh-$name.exe"
+		$patterns += "$projPath\bin\Debug\*\bh-$name.dll"
+	} else {
+		$patterns += "$projPath\bin\Release\*\bh-$name.exe"
+		$patterns += "$projPath\bin\Release\*\bh-$name.dll"
+	}
+	foreach ($p in $patterns) {
+		$hit = Get-ChildItem -Path $p -ErrorAction SilentlyContinue | Where-Object { $_.Name -match "^bh-$name\.(exe|dll)$" } | Select-Object -First 1
+		if ($hit) { return $hit.FullName }
+	}
+	return $null
+}
+
 function Start-ServiceProc($name, $projRelPath, $preferConfig = 'Release'){
 	$projPath = Join-Path $HG_ROOT $projRelPath
 	if (-not (Test-Path $projPath)){
@@ -157,7 +165,8 @@ function Start-ServiceProc($name, $projRelPath, $preferConfig = 'Release'){
 		}
 	}
 
-	$port = $ServicePorts[$name]
+	$cfg = (Get-ServiceConfig)[$name]
+	$port = $cfg.Port
 	if ($port) {
 		$portProc = netstat -ano 2>$null | Select-String ":${port}\s" | Select-String "LISTENING"
 		if ($portProc) {
@@ -173,19 +182,14 @@ function Start-ServiceProc($name, $projRelPath, $preferConfig = 'Release'){
 	try {
 		$prevEnv = $env:ASPNETCORE_ENVIRONMENT
 		$env:ASPNETCORE_ENVIRONMENT = 'Development'
-		# ⚠️ 启动优先用 preferConfig 对应的 exe（默认 Release），否则改了代码服务跑旧版
-		# 2026-08-06 踩坑：dotnet build -c Release 编译，但这里只查 bin\Debug → 修复没生效
-		# dev 模式传 preferConfig='Debug'，优先 Debug 产物（编译快、符号全）
-		$exePath = Join-Path $projPath "bin\$preferConfig\net10.0\bh-$name.exe"
-		if (-not (Test-Path $exePath)) {
-			$fallback = if ($preferConfig -eq 'Release') { 'Debug' } else { 'Release' }
-			$exePath = Join-Path $projPath "bin\$fallback\net10.0\bh-$name.exe"
-		}
-		if (Test-Path $exePath) {
-			$port = $ServicePorts[$name]
+		# 优先用 preferConfig 对应的 exe（默认 Release），否则回退 dotnet run
+		# 2026-08-06 踩坑：dotnet build -c Release 编译，但只查 bin\Debug → 修复没生效
+		$exePath = Find-ServiceExe $name $projPath $preferConfig
+		if ($exePath) {
 			if ($port) { $env:ASPNETCORE_URLS = "http://0.0.0.0:$port" }
 			$proc = Start-Process -FilePath $exePath -RedirectStandardOutput $log -RedirectStandardError $errLog -NoNewWindow -PassThru
 		} else {
+			if ($port) { $env:ASPNETCORE_URLS = "http://0.0.0.0:$port" }
 			$proc = Start-Process -FilePath 'dotnet' -ArgumentList $args -RedirectStandardOutput $log -RedirectStandardError $errLog -NoNewWindow -PassThru
 		}
 		if ($null -ne $prevEnv) { $env:ASPNETCORE_ENVIRONMENT = $prevEnv } else { Remove-Item Env:\ASPNETCORE_ENVIRONMENT -ErrorAction SilentlyContinue }
@@ -219,7 +223,8 @@ function Start-WatchProc($name, $projRelPath){
 		}
 	}
 
-	$port = $ServicePorts[$name]
+	$cfg = (Get-ServiceConfig)[$name]
+	$port = $cfg.Port
 	if ($port) {
 		$portProc = netstat -ano 2>$null | Select-String ":${port}\s" | Select-String "LISTENING"
 		if ($portProc) {
@@ -282,7 +287,8 @@ function Stop-ServiceProc($name){
 }
 
 function Stop-ServiceByPort($name){
-	$port = $ServicePorts[$name]
+	$cfg = (Get-ServiceConfig)[$name]
+	$port = $cfg.Port
 	if (-not $port) { return }
 	$connections = netstat -ano 2>$null | Select-String ":${port}\s" | Select-String "LISTENING"
 	foreach ($conn in $connections) {
@@ -307,7 +313,8 @@ function Stop-ServiceByPort($name){
 }
 
 function Get-RealServicePid($name){
-	$port = $ServicePorts[$name]
+	$cfg = (Get-ServiceConfig)[$name]
+	$port = $cfg.Port
 	if (-not $port) { return $null }
 	$connections = netstat -ano 2>$null | Select-String ":${port}\s" | Select-String "LISTENING"
 	foreach ($conn in $connections) {
@@ -354,7 +361,8 @@ function Show-Status(){
 		if (Test-ServiceRunning $k){
 			$pidFile = Get-PidPath $k
 			$existingPid = Get-Content $pidFile -ErrorAction SilentlyContinue
-			$healthUrl = $HealthUrls[$k]
+			$cfg = (Get-ServiceConfig)[$k]
+			$healthUrl = $cfg.Health
 			$healthy = $false
 			if ($healthUrl) {
 				try {
@@ -369,18 +377,34 @@ function Show-Status(){
 				$status = "$k : running (PID $existingPid) ⚠ not ready"
 				$color = [ConsoleColor]::Yellow
 			}
+			Write-Host $status -ForegroundColor $color
+			Write-Host "       port: $($cfg.Port) | log: $(Get-LogPath $k)" -ForegroundColor DarkGray
+		} else {
+			Write-Host $status -ForegroundColor $color
 		}
-		Write-Host $status -ForegroundColor $color
 	}
 }
 
-function Tail-Log($name){
+function Tail-Log($name, [int]$Lines = 50, [switch]$Follow){
 	$log = Get-LogPath $name
 	$errLog = "$log.err"
-	if (-not (Test-Path $log)) { Write-Host "Log not found: $log"; if (Test-Path $errLog){ Write-Host "But stderr exists: $errLog" }; return }
-	Write-Host "Tailing log: $log (Ctrl+C to stop)"
-	if (Test-Path $errLog) { Write-Host "Also monitoring stderr: $errLog" }
-	Get-Content -Path $log -Tail 50 -Wait -Encoding UTF8
+	if (-not (Test-Path $log)) { 
+		Write-Host "Log not found: $log" -ForegroundColor Yellow
+		if (Test-Path $errLog){ Write-Host "But stderr exists: $errLog" }
+		return 
+	}
+	if ($Follow) {
+		Write-Host "Tailing log (follow): $log (Ctrl+C to stop)"
+		if (Test-Path $errLog) { Write-Host "Also monitoring stderr: $errLog" }
+		Get-Content -Path $log -Tail $Lines -Wait -Encoding UTF8
+	} else {
+		Write-Host "=== $log (last $Lines lines) ===" -ForegroundColor Cyan
+		Get-Content -Path $log -Tail $Lines -Encoding UTF8
+		if (Test-Path $errLog) {
+			Write-Host "=== $errLog (last $Lines lines) ===" -ForegroundColor Cyan
+			Get-Content -Path $errLog -Tail $Lines -Encoding UTF8
+		}
+	}
 }
 
 function Cmd-Setup {
@@ -396,9 +420,10 @@ function Cmd-Setup {
 }
 
 function Open-InBrowser([string]$url){
-	if ($Browser) {
-		Write-Host "Opening: $url (browser: $Browser)"
-		try { Start-Process $Browser $url } catch { Write-Host "Cannot launch browser '${Browser}': ${_}" }
+	$browser = $script:Browser
+	if ($browser) {
+		Write-Host "Opening: $url (browser: $browser)"
+		try { Start-Process $browser $url } catch { Write-Host "Cannot launch browser '${browser}': ${_}" }
 	} else {
 		Write-Host "Opening: $url"
 		try { Start-Process $url } catch { Write-Host "Cannot open browser: ${_}" }
@@ -406,7 +431,7 @@ function Open-InBrowser([string]$url){
 }
 
 function Open-Dashboard {
-	Open-InBrowser 'http://127.0.0.1:5177'
+	Open-InBrowser (Get-WebUrl)
 }
 
 function Ensure-ServiceRunning($name){
@@ -415,7 +440,7 @@ function Ensure-ServiceRunning($name){
 		return $true
 	}
 	Write-Host "Service $name not running, starting..."
-	Start-ServiceProc $name $Services[$name]
+	Start-ServiceProc $name (Get-ServiceConfig)[$name].Project
 	return $false
 }
 
@@ -450,13 +475,13 @@ function Wait-For-Url([string]$url, [int]$timeoutSec = 30){
 }
 
 function Wait-For-Service([string]$name, [int]$timeoutSec = 20, [bool]$wasJustStarted = $false){
-	$healthUrl = $HealthUrls[$name]
+	$cfg = (Get-ServiceConfig)[$name]
+	$healthUrl = $cfg.Health
 	if (-not $healthUrl) { 
 		Write-Host "  $name : no health check URL, skipping wait"
 		return $true 
 	}
-	# 仅对新启动的服务等待 5 秒让 dotnet run 进程稳定（编译+启动）
-	# 已运行的服务直接做健康检查，无需等待
+	# 仅对新启动的服务等待 3 秒让进程稳定（编译+启动）
 	if ($wasJustStarted) {
 		Start-Sleep -Seconds 3
 	}
@@ -529,11 +554,11 @@ function Invoke-BuildIfNeeded {
 function Cmd-Start {
 	if (-not (Invoke-BuildIfNeeded)) { return }
 	foreach ($k in $ServiceOrder){
-		Start-ServiceProc $k $Services[$k]
+		Start-ServiceProc $k (Get-ServiceConfig)[$k].Project
 		Write-Host "  $k : " -NoNewline
 		if ($k -eq 'webui') {
 			Start-Sleep -Seconds 3
-			if (Wait-For-Url 'http://127.0.0.1:5177/login' 30) {
+			if (Wait-For-Url (Get-LoginUrl) 30) {
 				Write-Host "ready" -ForegroundColor Green
 			} else {
 				Write-Host "not ready" -ForegroundColor Red
@@ -548,14 +573,53 @@ function Cmd-Start {
 function Cmd-Stop {
 	if ($Arg) {
 		$name = $Arg.ToLower()
-		if ($Services.ContainsKey($name)) {
+		if ($name -in $ServiceOrder) {
+			Write-Host "Stopping $name ..." -ForegroundColor Cyan
 			Stop-ServiceProc $name
+		} elseif ($name -eq 'all') {
+			Cmd-StopAll
+		} else {
+			Write-Host "未知服务: $name（可选: $($ServiceOrder -join ', ') 或 all）" -ForegroundColor Yellow
+		}
+		return
+	}
+	Cmd-StopAll
+}
+
+function Cmd-StopAll {
+	Write-Host "Stopping all services in order: $($StopOrder -join ' -> ')" -ForegroundColor Cyan
+	foreach ($k in $StopOrder){ Stop-ServiceProc $k }
+}
+
+function Cmd-Restart {
+	if ($Arg) {
+		$name = $Arg.ToLower()
+		if ($name -in $ServiceOrder) {
+			Write-Host "Restarting $name ..." -ForegroundColor Cyan
+			Stop-ServiceProc $name
+			Start-Sleep -Seconds 1
+			Start-ServiceProc $name (Get-ServiceConfig)[$name].Project
+			Write-Host "  $name : " -NoNewline
+			if ($name -eq 'webui') {
+				Start-Sleep -Seconds 3
+				if (Wait-For-Url (Get-LoginUrl) 30) {
+					Write-Host "ready" -ForegroundColor Green
+				} else {
+					Write-Host "not ready" -ForegroundColor Red
+				}
+			} else {
+				Wait-For-Service $name 30 -wasJustStarted $true | Out-Null
+			}
 		} else {
 			Write-Host "未知服务: $name（可选: $($ServiceOrder -join ', ')）" -ForegroundColor Yellow
 		}
 		return
 	}
-	foreach ($k in $StopOrder){ Stop-ServiceProc $k }
+	Cmd-Stop
+	Write-Host "Waiting for ports to release..."
+	Start-Sleep -Seconds 1
+	if (-not (Invoke-BuildIfNeeded)) { return }
+	Cmd-Start
 }
 
 function Cmd-Observe {
@@ -678,7 +742,7 @@ function Cmd-All {
 	$webuiWasRunning = Ensure-ServiceRunning 'webui'
 	Write-Host "  webui : " -NoNewline
 	if (-not $webuiWasRunning) { Start-Sleep -Seconds 3 }
-	if (-not (Wait-For-Url 'http://127.0.0.1:5177/login' 20)){
+	if (-not (Wait-For-Url (Get-LoginUrl) 20)){
 		Write-Host "X not ready" -ForegroundColor Red
 		$failedServices += 'webui'
 	} else {
@@ -699,11 +763,11 @@ function Cmd-All {
 
 	Write-Host ""
 	try {
-		$resp = Invoke-WebRequest -Uri 'http://127.0.0.1:5177/api/auth/cli-token' -Method POST -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
+		$resp = Invoke-WebRequest -Uri (Get-CliTokenUrl) -Method POST -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
 		$json = $resp.Content | ConvertFrom-Json
 		$token = $json.token
 		if ($token) {
-			$dashboardUrl = "http://127.0.0.1:5177/?cli-token=$token"
+			$dashboardUrl = Get-DashboardUrl $token
 			Write-Host "Opening dashboard with CLI token..."
 			Open-InBrowser $dashboardUrl
 		} else {
@@ -721,168 +785,245 @@ function Cmd-All {
 	}
 }
 
-switch ($Command.ToLower()){
-	'help' { Get-Help; break }
-	'setup' { Cmd-Setup; break }
-	'start' {
-		Cmd-Start
-		break
-	}
-	'stop' {
-		Cmd-Stop
-		break
-	}
-	'restart' {
-		Cmd-Stop
-		Write-Host "Waiting for ports to release..."
-		Start-Sleep -Seconds 1
-		if (-not (Invoke-BuildIfNeeded)) { break }
-		Cmd-Start
-		break
-	}
-	'status' { Show-Status; break }
-	'logs' {
-		if (-not $Arg){ Write-Host "请指定服务名: family, webui, ai, vault" -ForegroundColor Yellow; break }
-		Tail-Log $Arg; break
-	}
-	'open' { Open-Dashboard; break }
-	'observe' { Cmd-Observe; break }
-	'all' { Cmd-All; break }
-	'dashboard' {
-		Write-Host "=== 百花 Dashboard ===" -ForegroundColor Cyan
+function Show-Help {
+	Write-Host ""
+	Write-Host "百花 Family 版 - Windows (PowerShell) 轻量 CLI  v$SCRIPT_VERSION" -ForegroundColor Cyan
+	Write-Host "================================================="
+	Write-Host ""
+	Write-Host "用法: .\bh.ps1 [command] [args]"
+	Write-Host ""
+	Write-Host "Commands:"
+	Write-Host "  dashboard             打开管理面板（默认，自动检测更新重编译）"
+	Write-Host "  setup                 首次配置（交互）"
+	Write-Host "  start                 启动服务（后台运行 dotnet run）"
+	Write-Host "  stop [name]           停止服务（不指定则停止全部）"
+	Write-Host "  restart [name]        重启服务（不指定则重启全部）"
+	Write-Host "  status                查看服务状态（含端口/日志路径）"
+	Write-Host "  logs <name> [lines]   查看日志（默认 50 行；加 -f 跟随）"
+	Write-Host "  open                  打开 Web 管理界面 (http://localhost:$((Get-ServiceConfig)['webui'].Port))"
+	Write-Host "  dev                   开发模式（dotnet watch，改代码自动热重载）"
+	Write-Host "  observe               启动 OpenObserve 可观测平台（Docker）"
+	Write-Host "  all                   启动全部服务（.NET + OpenObserve + hostmetrics）"
+	Write-Host "  version               显示脚本版本"
+	Write-Host "  help                  显示帮助"
+	Write-Host ""
+	Write-Host "服务名: $($ServiceOrder -join ', ')"
+	Write-Host ""
+	Write-Host "说明:"
+	Write-Host "  - 日志与 PID 文件保存在 $env:TEMP\bh-[service].*"
+	Write-Host "  - dashboard 命令会比较 git HEAD，有更新时自动重编译重启"
+	Write-Host "  - 推荐使用 PowerShell 7+ (pwsh)；Windows PowerShell 5.1 也可用但功能受限"
+	Write-Host ""
+}
 
-		# 检测是否需要重新编译
-		$needsRebuild = Test-NeedsRebuild
-		if ($needsRebuild) {
-			$curr = Get-CurrentGitCommit
-			$saved = Get-SavedGitCommit
-			Write-Host ""
-			if ($saved) {
-				Write-Host "[i] 检测到代码更新" -ForegroundColor Yellow
-				Write-Host "    上次: $($saved.Substring(0,8))"
-				Write-Host "    当前: $($curr.Substring(0,8))"
-			} else {
-				Write-Host "[i] 首次运行或无构建记录" -ForegroundColor Yellow
-			}
-			Write-Host "[...] 停止旧服务并重新编译..." -ForegroundColor Cyan
+function Main {
+	param([string]$CommandName, [string]$ServiceArg, [string]$LineArg, [string]$BrowserArg)
+
+	switch ($CommandName.ToLower()){
+		'help' { Show-Help; break }
+		'version' { Write-Host "bh.ps1 v$SCRIPT_VERSION"; break }
+		'setup' { Cmd-Setup; break }
+		'start' {
+			Cmd-Start
+			break
+		}
+		'stop' {
 			Cmd-Stop
-			Write-Host "Waiting for ports to release..."
-			Start-Sleep -Seconds 1
-
-			Write-Host "[...] dotnet build..." -ForegroundColor Cyan
-			$buildResult = dotnet build (Join-Path $HG_ROOT 'services\BaiHua.slnx') -c Release 2>&1
-			$buildExit = $LASTEXITCODE
-			if ($buildExit -ne 0) {
-				Write-Host "[X] 编译失败!" -ForegroundColor Red
-				$buildResult | Select-Object -Last 10 | ForEach-Object { Write-Host "    $_" }
+			break
+		}
+		'restart' {
+			Cmd-Restart
+			break
+		}
+		'status' { Show-Status; break }
+		'logs' {
+			# 支持: bh.ps1 logs <name> [lines] [-f]
+			$svc = $ServiceArg
+			if (-not $svc){ 
+				Write-Host "请指定服务名: $($ServiceOrder -join ', ')" -ForegroundColor Yellow
+				Write-Host "示例: .\bh.ps1 logs webui 100" -ForegroundColor DarkGray
+				break 
+			}
+			if ($svc -notin $ServiceOrder) {
+				Write-Host "未知服务: $svc（可选: $($ServiceOrder -join ', ')）" -ForegroundColor Yellow
 				break
 			}
-			Write-Host "[v] 编译成功" -ForegroundColor Green
-			Save-GitCommit
-		}
-
-		# 清理僵尸进程 & 修正 PID
-		foreach ($name in $ServiceOrder) {
-			Test-ServiceRunning $name | Out-Null
-		}
-
-		# 按顺序启动并等待每个后端服务就绪
-		Write-Host ""
-		$failedServices = @()
-		foreach ($name in @('ai', 'vault', 'family')) {
-			$wasRunning = Ensure-ServiceRunning $name
-			Write-Host "  $name : " -NoNewline
-			if (-not (Wait-For-Service $name 30 -wasJustStarted:(-not $wasRunning))) { $failedServices += $name }
-		}
-
-		# 启动 WebUI
-		$webuiWasRunning = Ensure-ServiceRunning 'webui'
-		Write-Host "  webui : " -NoNewline
-		if (-not $webuiWasRunning) { Start-Sleep -Seconds 3 }
-		if (-not (Wait-For-Url 'http://127.0.0.1:5177/login' 20)){
-			Write-Host "  webui : X not ready. Check: .\bh.ps1 logs webui" -ForegroundColor Red
-			$failedServices += 'webui'
-		} else {
-			Write-Host "  webui : v ready" -ForegroundColor Green
-		}
-
-		# 首次启动保存 commit
-		if (-not $needsRebuild) { Save-GitCommit }
-
-		# 获取 CLI token 并打开浏览器
-		Write-Host ""
-		try {
-			$resp = Invoke-WebRequest -Uri 'http://127.0.0.1:5177/api/auth/cli-token' -Method POST -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
-			$json = $resp.Content | ConvertFrom-Json
-			$token = $json.token
-			if ($token) {
-				$dashboardUrl = "http://127.0.0.1:5177/?cli-token=$token"
-				Write-Host "Opening dashboard with CLI token..."
-				Open-InBrowser $dashboardUrl
+			$lines = 50
+			if ($LineArg -and $LineArg -match '^\d+$') { $lines = [int]$LineArg }
+			if ($LineArg -eq '-f' -or $ServiceArg -eq '-f') {
+				Tail-Log $svc -Lines $lines -Follow
 			} else {
-				Open-Dashboard
+				Tail-Log $svc -Lines $lines
 			}
-		} catch {
-			Write-Host "Failed to get CLI token, opening without auto-login"
-			Open-Dashboard
+			break
 		}
+		'open' { Open-Dashboard; break }
+		'observe' { Cmd-Observe; break }
+		'all' { Cmd-All; break }
+		'dashboard' {
+			Write-Host "=== 百花 Dashboard ===" -ForegroundColor Cyan
 
-		if ($failedServices.Count -gt 0) {
-			Write-Host ""
-			Write-Host "! Some services failed: $($failedServices -join ', ')" -ForegroundColor Yellow
-			Write-Host "  Check logs: .\bh.ps1 logs <name>" -ForegroundColor Yellow
-		}
-		break
-	}
-	default { Open-Dashboard }
-	'dev' {
-		Write-Host "=== 百花 Dev Mode (dotnet watch, auto hot-reload) ===" -ForegroundColor Cyan
-		Write-Host "  Watching: each service project (.cs/.razor, native dotnet watch)" -ForegroundColor DarkGray
-		Write-Host "  Press Ctrl+C to stop" -ForegroundColor DarkGray
-		Write-Host ""
-
-		# 停止旧服务，清理 PID/端口（dev 用 dotnet watch 启动）
-		Cmd-Stop
-		Start-Sleep -Seconds 1
-
-		foreach ($k in $ServiceOrder){
-			Start-WatchProc $k $Services[$k]
-			if ($k -ne 'webui') {
-				Write-Host "  $k : " -NoNewline
-				Wait-For-Service $k 60 -wasJustStarted $true | Out-Null
-			}
-		}
-		Start-Sleep -Seconds 3
-		Write-Host "  webui : " -NoNewline
-		if (Wait-For-Url 'http://127.0.0.1:5177/login' 20) {
-			Write-Host "v ready" -ForegroundColor Green
-			# 自动登录
-			Write-Host "[i] Auto-login with CLI token..." -ForegroundColor DarkGray
-			try {
-				$resp = Invoke-WebRequest -Uri 'http://127.0.0.1:5177/api/auth/cli-token' -Method POST -UseBasicParsing -TimeoutSec 5
-				if ($resp.StatusCode -eq 200) {
-					$token = ($resp.Content | ConvertFrom-Json).token
-					$dashboardUrl = "http://127.0.0.1:5177/?cli-token=$token"
-					Write-Host "[v] Auto-login OK" -ForegroundColor Green
-					Start-Process $dashboardUrl
+			# 检测是否需要重新编译
+			$needsRebuild = Test-NeedsRebuild
+			if ($needsRebuild) {
+				$curr = Get-CurrentGitCommit
+				$saved = Get-SavedGitCommit
+				Write-Host ""
+				if ($saved) {
+					Write-Host "[i] 检测到代码更新" -ForegroundColor Yellow
+					Write-Host "    上次: $($saved.Substring(0,8))"
+					Write-Host "    当前: $($curr.Substring(0,8))"
 				} else {
-					Write-Host "[!] Auto-login failed (status $($resp.StatusCode)), open manually" -ForegroundColor Yellow
-					Start-Process 'http://127.0.0.1:5177'
+					Write-Host "[i] 首次运行或无构建记录" -ForegroundColor Yellow
+				}
+				Write-Host "[...] 停止旧服务并重新编译..." -ForegroundColor Cyan
+				Cmd-Stop
+				Write-Host "Waiting for ports to release..."
+				Start-Sleep -Seconds 1
+
+				Write-Host "[...] dotnet build..." -ForegroundColor Cyan
+				$buildResult = dotnet build (Join-Path $HG_ROOT 'services\BaiHua.slnx') -c Release 2>&1
+				$buildExit = $LASTEXITCODE
+				if ($buildExit -ne 0) {
+					Write-Host "[X] 编译失败!" -ForegroundColor Red
+					$buildResult | Select-Object -Last 10 | ForEach-Object { Write-Host "    $_" }
+					break
+				}
+				Write-Host "[v] 编译成功" -ForegroundColor Green
+				Save-GitCommit
+			}
+
+			# 清理僵尸进程 & 修正 PID
+			foreach ($name in $ServiceOrder) {
+				Test-ServiceRunning $name | Out-Null
+			}
+
+			# 按顺序启动并等待每个后端服务就绪
+			Write-Host ""
+			$failedServices = @()
+			foreach ($name in @('ai', 'vault', 'family')) {
+				$wasRunning = Ensure-ServiceRunning $name
+				Write-Host "  $name : " -NoNewline
+				if (-not (Wait-For-Service $name 30 -wasJustStarted:(-not $wasRunning))) { $failedServices += $name }
+			}
+
+			# 启动 WebUI
+			$webuiWasRunning = Ensure-ServiceRunning 'webui'
+			Write-Host "  webui : " -NoNewline
+			if (-not $webuiWasRunning) { Start-Sleep -Seconds 3 }
+			if (-not (Wait-For-Url (Get-LoginUrl) 20)){
+				Write-Host "  webui : X not ready. Check: .\bh.ps1 logs webui" -ForegroundColor Red
+				$failedServices += 'webui'
+			} else {
+				Write-Host "  webui : v ready" -ForegroundColor Green
+			}
+
+			# 首次启动保存 commit
+			if (-not $needsRebuild) { Save-GitCommit }
+
+			# 获取 CLI token 并打开浏览器
+			Write-Host ""
+			try {
+				$resp = Invoke-WebRequest -Uri (Get-CliTokenUrl) -Method POST -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
+				$json = $resp.Content | ConvertFrom-Json
+				$token = $json.token
+				if ($token) {
+					$dashboardUrl = Get-DashboardUrl $token
+					Write-Host "Opening dashboard with CLI token..."
+					Open-InBrowser $dashboardUrl
+				} else {
+					Open-Dashboard
 				}
 			} catch {
-				Write-Host "[!] Auto-login failed: $($_.Exception.Message), open manually" -ForegroundColor Yellow
-				Start-Process 'http://127.0.0.1:5177'
+				Write-Host "Failed to get CLI token, opening without auto-login"
+				Open-Dashboard
 			}
-		} else {
-			Write-Host "X not ready" -ForegroundColor Red
-		}
 
-		Write-Host "[v] dotnet watch running: edit code, hot-reload auto-applies (per-service)" -ForegroundColor Green
-		try {
-			while ($true) { Start-Sleep -Seconds 1 }
-		} finally {
-			Cmd-Stop
+			if ($failedServices.Count -gt 0) {
+				Write-Host ""
+				Write-Host "! Some services failed: $($failedServices -join ', ')" -ForegroundColor Yellow
+				Write-Host "  Check logs: .\bh.ps1 logs <name>" -ForegroundColor Yellow
+			}
+			break
 		}
-		break
+		'dev' {
+			Write-Host "=== 百花 Dev Mode (dotnet watch, auto hot-reload) ===" -ForegroundColor Cyan
+			Write-Host "  Watching: each service project (.cs/.razor, native dotnet watch)" -ForegroundColor DarkGray
+			Write-Host "  Press Ctrl+C to stop" -ForegroundColor DarkGray
+			Write-Host ""
+
+			# 停止旧服务，清理 PID/端口（dev 用 dotnet watch 启动）
+			Cmd-Stop
+			Start-Sleep -Seconds 1
+
+			foreach ($k in $ServiceOrder){
+				Start-WatchProc $k (Get-ServiceConfig)[$k].Project
+				if ($k -ne 'webui') {
+					Write-Host "  $k : " -NoNewline
+					Wait-For-Service $k 60 -wasJustStarted $true | Out-Null
+				}
+			}
+			Start-Sleep -Seconds 3
+			Write-Host "  webui : " -NoNewline
+			if (Wait-For-Url (Get-LoginUrl) 20) {
+				Write-Host "v ready" -ForegroundColor Green
+				# 自动登录
+				Write-Host "[i] Auto-login with CLI token..." -ForegroundColor DarkGray
+				try {
+					$resp = Invoke-WebRequest -Uri (Get-CliTokenUrl) -Method POST -UseBasicParsing -TimeoutSec 5
+					if ($resp.StatusCode -eq 200) {
+						$token = ($resp.Content | ConvertFrom-Json).token
+						$dashboardUrl = Get-DashboardUrl $token
+						Write-Host "[v] Auto-login OK" -ForegroundColor Green
+						Start-Process $dashboardUrl
+					} else {
+						Write-Host "[!] Auto-login failed (status $($resp.StatusCode)), open manually" -ForegroundColor Yellow
+						Start-Process (Get-WebUrl)
+					}
+				} catch {
+					Write-Host "[!] Auto-login failed: $($_.Exception.Message), open manually" -ForegroundColor Yellow
+					Start-Process (Get-WebUrl)
+				}
+			} else {
+				Write-Host "X not ready" -ForegroundColor Red
+			}
+
+			Write-Host "[v] dotnet watch running: edit code, hot-reload auto-applies (per-service)" -ForegroundColor Green
+			try {
+				while ($true) { Start-Sleep -Seconds 1 }
+			} finally {
+				Cmd-Stop
+			}
+			break
+		}
+		default {
+			Write-Host "未知命令: $CommandName" -ForegroundColor Red
+			Write-Host "输入 .\bh.ps1 help 查看可用命令" -ForegroundColor Yellow
+			break
+		}
 	}
 }
+
+# 主入口守卫：dot-source / Import-Module 时只加载函数，不执行
+if ($MyInvocation.InvocationName -eq '.') { return }
+
+# 位置参数解析：
+#   .\bh.ps1 <cmd> <arg1> <arg2>
+#   cmd=logs 时 arg2=行数 或 -f（跟随）；其他 cmd 时 arg2 视为浏览器路径
+#   $Browser 兼作：logs 的行数/-f / 浏览器路径（命名参数 -Browser 也支持）
+$cmd = $Command
+$svcArg = $Arg
+if ($Browser -match '^-f$' -or $Browser -match '^\d+$') {
+	# logs 的行数或 -f
+	$lineArg = $Browser
+	$browserArg = ''
+} else {
+	$lineArg = ''
+	$browserArg = $Browser
+}
+# 写回脚本作用域，供 Open-InBrowser 读取
+$script:Browser = $browserArg
+
+Main -CommandName $cmd -ServiceArg $svcArg -LineArg $lineArg -BrowserArg $browserArg
+
+exit 0
