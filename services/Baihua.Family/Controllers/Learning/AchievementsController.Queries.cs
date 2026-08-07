@@ -6,9 +6,9 @@ namespace Baihua.Family.Controllers;
 
 public partial class AchievementsController : ControllerBase
 {
-    private async Task<DashboardDataDto> HandleGetDashboardAsync(string? vaultId)
+    private async Task<DashboardDataDto> HandleGetDashboardAsync(string? vaultId, int? learnerId)
     {
-        var data = await _leaderboardService.GetDashboardAsync(vaultId);
+        var data = await _leaderboardService.GetDashboardAsync(vaultId, learnerId);
         return new DashboardDataDto
         {
             FamilyStats = data.FamilyStats.Select(s => new FamilyMemberStatDto
@@ -37,7 +37,33 @@ public partial class AchievementsController : ControllerBase
                 Remember = data.ResultDistribution.Remember,
                 Hard = data.ResultDistribution.Hard,
                 Forgot = data.ResultDistribution.Forgot
-            }
+            },
+            // FAM-20 家长看板 v2 字段
+            FamilyStreak = data.FamilyStreak,
+            TodayCompleted = data.TodayCompleted,
+            YesterdayCompleted = data.YesterdayCompleted,
+            TrendArrow = data.TrendArrow,
+            TodayActivities = data.TodayActivities.Select(a => new TodayActivityItemDto
+            {
+                LearnerName = a.LearnerName,
+                Description = a.Description
+            }).ToList(),
+            LatestAchievements = data.LatestAchievements.Select(a => new RecentAchievementDto
+            {
+                LearnerName = a.LearnerName,
+                AvatarEmoji = a.AvatarEmoji,
+                Title = a.Title,
+                Icon = a.Icon,
+                Tier = a.Tier,
+                UnlockedAt = a.UnlockedAt
+            }).ToList(),
+            GrowthTimeline = data.GrowthTimeline.Select(t => new GrowthTimelineItemDto
+            {
+                Date = t.Date,
+                LearnerName = t.LearnerName,
+                Description = t.Description
+            }).ToList(),
+            PageSize = data.PageSize
         };
     }
 

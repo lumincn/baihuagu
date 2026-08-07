@@ -152,9 +152,9 @@ public partial class AchievementsController : ControllerBase
     }
 
     /// <summary>
-    /// 家长看板数据
+    /// 家长看板数据（FAM-20：支持成员筛选 learnerId）
     /// </summary>
     [HttpGet("dashboard")]
-    public async Task<ActionResult<DashboardDataDto>> GetDashboard([FromQuery] string? vaultId = null)
-        => Ok(await HandleGetDashboardAsync(vaultId));
+    public async Task<ActionResult<DashboardDataDto>> GetDashboard([FromQuery] string? vaultId = null, [FromQuery] int? learnerId = null)
+        => Ok(await HandleGetDashboardAsync(vaultId, learnerId));
 }

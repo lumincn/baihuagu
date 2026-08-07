@@ -161,14 +161,23 @@ public class LeaderboardService
     }
 
     /// <summary>
-    /// 获取家长看板数据
+    /// 获取家长看板数据（FAM-20：家庭日报版）
     /// </summary>
-    public async Task<DashboardData> GetDashboardAsync(string? vaultId = null)
+    /// <param name="vaultId">知识库 ID（可空=全部）</param>
+    /// <param name="learnerId">成员筛选（null/0=全部成员，非 null=单成员维度）</param>
+    public async Task<DashboardData> GetDashboardAsync(string? vaultId = null, int? learnerId = null)
     {
+        // 探针契约：learnerId=0 视同 null（全部成员）；Learner Id 从 1 开始
+        int? effectiveLearnerId = learnerId is null or <= 0 ? null : learnerId;
+
         using var db = await _dbFactory.CreateDbContextAsync();
         var learners = await db.LearnerProfiles.ToListAsync();
+        if (effectiveLearnerId.HasValue)
+            learners = learners.Where(l => l.Id == effectiveLearnerId.Value).ToList();
         var today = BeijingToday;
+        var yesterday = today.AddDays(-1);
         var weekAgo = today.AddDays(-6);
+        var timelineStart = today.AddDays(-29); // FAM-20-AC4：最近 30 天窗口（含今天，07-08 起，与测试断言 d >= 07-08 对齐）
 
         var familyStats = new List<FamilyMemberStat>();
         var weeklyTrend = new List<DailyTrend>();
@@ -180,12 +189,17 @@ public class LeaderboardService
             weeklyTrend.Add(new DailyTrend { Date = today.AddDays(-i).ToString("MM-dd"), Count = 0 });
         }
 
+        // 学习活动（按成员维度筛选）
+        var activityQuery = db.StudyActivities.Where(a => a.ActivityType == "study");
+        if (!string.IsNullOrEmpty(vaultId)) activityQuery = activityQuery.Where(a => a.VaultId == vaultId);
+        if (effectiveLearnerId.HasValue) activityQuery = activityQuery.Where(a => a.LearnerId == effectiveLearnerId.Value);
+        var allActivities = (await activityQuery.ToListAsync())
+            .Select(a => new { a.LearnerId, a.Result, Date = ToBeijingDate(a.CreatedAt), a.CreatedAt })
+            .ToList();
+
         foreach (var learner in learners)
         {
-            var query = db.StudyActivities.Where(a => a.LearnerId == learner.Id && a.ActivityType == "study");
-            if (!string.IsNullOrEmpty(vaultId)) query = query.Where(a => a.VaultId == vaultId);
-
-            var activities = (await query.ToListAsync()).Select(a => new { Date = ToBeijingDate(a.CreatedAt), a.Result }).ToList();
+            var activities = allActivities.Where(a => a.LearnerId == learner.Id).ToList();
             var weekActivities = activities.Where(a => a.Date >= weekAgo).ToList();
 
             var total = activities.Count;
@@ -215,9 +229,10 @@ public class LeaderboardService
             }
         }
 
-        // 最近解锁的成就
-        var achievements = await db.Achievements
-            .Where(a => a.UnlockedAt >= weekAgo)
+        // 最近解锁的成就（按成员维度筛选）
+        var achievementQuery = db.Achievements.AsQueryable();
+        if (effectiveLearnerId.HasValue) achievementQuery = achievementQuery.Where(a => a.LearnerId == effectiveLearnerId.Value);
+        var achievements = await achievementQuery
             .OrderByDescending(a => a.UnlockedAt)
             .Take(10)
             .ToListAsync();
@@ -236,13 +251,80 @@ public class LeaderboardService
             });
         }
 
-        // 答题结果分布
-        var allWeekActivities = (await db.StudyActivities
-            .Where(a => a.ActivityType == "study")
-            .ToListAsync())
-            .Where(a => ToBeijingDate(a.CreatedAt) >= weekAgo);
-        if (!string.IsNullOrEmpty(vaultId)) allWeekActivities = allWeekActivities.Where(a => a.VaultId == vaultId);
-        var weekResults = allWeekActivities.ToList();
+        // 答题结果分布（本周，按成员维度筛选）
+        var weekResults = allActivities.Where(a => a.Date >= weekAgo).ToList();
+
+        // ===== FAM-20：家庭日报字段 =====
+
+        // AC1：今日/昨日完成卡片数（北京自然日）
+        var todayCompleted = allActivities.Count(a => a.Date == today);
+        var yesterdayCompleted = allActivities.Count(a => a.Date == yesterday);
+
+        // AC1：趋势箭头（今天>昨天→up；今天<昨天→down；持平→flat；无数据→""）
+        string trendArrow;
+        if (todayCompleted == 0 && yesterdayCompleted == 0) trendArrow = "";
+        else if (todayCompleted > yesterdayCompleted) trendArrow = "up";
+        else if (todayCompleted < yesterdayCompleted) trendArrow = "down";
+        else trendArrow = "flat";
+
+        // AC3：家庭维度连续打卡——任意成员有学习行为即算当天（北京时间自然日）
+        var familyStreak = CalculateFamilyStreak(allActivities.Select(a => a.Date).ToList(), today);
+
+        // AC1：今日三件事（谁 + 做了什么）——今日有学习行为的成员
+        var todayActivities = learners
+            .Select(l => new
+            {
+                Learner = l,
+                Count = allActivities.Count(a => a.LearnerId == l.Id && a.Date == today)
+            })
+            .Where(x => x.Count > 0)
+            .Select(x => new TodayActivityItem
+            {
+                LearnerName = x.Learner.Name,
+                Description = $"完成了 {x.Count} 张卡片"
+            })
+            .ToList();
+
+        // AC1：最新成就（最多 3 个，按解锁时间倒序）
+        var latestAchievements = achievements
+            .OrderByDescending(a => a.UnlockedAt)
+            .Take(3)
+            .Select(a => new RecentAchievement
+            {
+                LearnerName = learners.FirstOrDefault(l => l.Id == a.LearnerId)?.Name ?? "",
+                AvatarEmoji = learners.FirstOrDefault(l => l.Id == a.LearnerId)?.AvatarEmoji ?? "",
+                Title = a.Title,
+                Icon = a.Icon,
+                Tier = a.Tier,
+                UnlockedAt = a.UnlockedAt
+            })
+            .ToList();
+
+        // AC4：成长时间线（最近 30 天，时间倒序）——学习事件 + 成就解锁事件
+        var timeline = new List<GrowthTimelineItem>();
+        foreach (var grp in allActivities
+                     .Where(a => a.Date >= timelineStart)
+                     .GroupBy(a => new { a.LearnerId, a.Date }))
+        {
+            var learner = learners.FirstOrDefault(l => l.Id == grp.Key.LearnerId);
+            timeline.Add(new GrowthTimelineItem
+            {
+                Date = grp.Min(a => a.CreatedAt),
+                LearnerName = learner?.Name ?? "",
+                Description = $"完成了 {grp.Count()} 张卡片"
+            });
+        }
+        foreach (var ach in achievements.Where(a => ToBeijingDate(a.UnlockedAt) >= timelineStart))
+        {
+            var learner = learners.FirstOrDefault(l => l.Id == ach.LearnerId);
+            timeline.Add(new GrowthTimelineItem
+            {
+                Date = ach.UnlockedAt,
+                LearnerName = learner?.Name ?? "",
+                Description = $"解锁了 {ach.Title} 成就"
+            });
+        }
+        timeline = timeline.OrderByDescending(t => t.Date).ToList();
 
         return new DashboardData
         {
@@ -254,8 +336,40 @@ public class LeaderboardService
                 Remember = weekResults.Count(r => r.Result == "remember"),
                 Hard = weekResults.Count(r => r.Result == "hard"),
                 Forgot = weekResults.Count(r => r.Result == "forgot")
-            }
+            },
+            // FAM-20 新增
+            FamilyStreak = familyStreak,
+            TodayCompleted = todayCompleted,
+            YesterdayCompleted = yesterdayCompleted,
+            TrendArrow = trendArrow,
+            TodayActivities = todayActivities,
+            LatestAchievements = latestAchievements,
+            GrowthTimeline = timeline,
+            PageSize = DashboardData.TimelinePageSize
         };
+    }
+
+    /// <summary>
+    /// 家庭维度连续打卡：任意成员有学习行为即算当天（不是取各 Learner streak 最大值）。
+    /// 从今天（北京时间）往回数连续自然日；今天没学但昨天学则从昨天起算。
+    /// </summary>
+    private static int CalculateFamilyStreak(List<DateTime> beijingDates, DateTime today)
+    {
+        var dates = beijingDates.Distinct().OrderByDescending(d => d).ToList();
+        int streak = 0;
+        for (int i = 0; i < dates.Count; i++)
+        {
+            var expected = today.AddDays(-i);
+            if (dates[i] == expected || (i == 0 && dates[i] == expected.AddDays(-1)))
+            {
+                streak++;
+            }
+            else
+            {
+                break;
+            }
+        }
+        return streak;
     }
 
     private async Task<int> CalculateStreakAsync(FamilyDbContext db, int learnerId)

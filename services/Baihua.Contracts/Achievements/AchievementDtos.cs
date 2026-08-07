@@ -47,6 +47,46 @@ public class DashboardDataDto
     public List<DailyTrendDto> WeeklyTrend { get; set; } = new();
     public List<RecentAchievementDto> RecentAchievements { get; set; } = new();
     public ResultDistributionDto ResultDistribution { get; set; } = new();
+
+    // ===== FAM-20 家长看板 v2（家庭日报）=====
+    /// <summary>家庭维度连续打卡天数（任意成员有学习行为即算当天，北京时间自然日）</summary>
+    public int FamilyStreak { get; set; }
+
+    /// <summary>今日完成的卡片/任务数（北京时间）</summary>
+    public int TodayCompleted { get; set; }
+
+    /// <summary>昨日完成的卡片/任务数（北京时间）</summary>
+    public int YesterdayCompleted { get; set; }
+
+    /// <summary>趋势箭头：up=今天&gt;昨天 / down=今天&lt;昨天 / flat=持平 / ""=无数据（页面显示 --）</summary>
+    public string TrendArrow { get; set; } = "";
+
+    /// <summary>今日三件事条目（谁 + 做了什么）</summary>
+    public List<TodayActivityItemDto> TodayActivities { get; set; } = new();
+
+    /// <summary>最新成就（最多 3 个，按解锁时间倒序）</summary>
+    public List<RecentAchievementDto> LatestAchievements { get; set; } = new();
+
+    /// <summary>成长时间线（最近 30 天，时间倒序）</summary>
+    public List<GrowthTimelineItemDto> GrowthTimeline { get; set; } = new();
+
+    /// <summary>时间线分页大小（FAM-20-AC4 契约：每页 20 条）</summary>
+    public int PageSize { get; set; } = 20;
+}
+
+/// <summary>今日三件事条目：Learner 名 + 学习内容描述</summary>
+public class TodayActivityItemDto
+{
+    public string LearnerName { get; set; } = "";
+    public string Description { get; set; } = "";
+}
+
+/// <summary>成长时间线条目：日期 + Learner 名 + 事件描述</summary>
+public class GrowthTimelineItemDto
+{
+    public DateTime? Date { get; set; }
+    public string LearnerName { get; set; } = "";
+    public string Description { get; set; } = "";
 }
 
 public class FamilyMemberStatDto

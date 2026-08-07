@@ -115,7 +115,7 @@ namespace Baihua.Web.Services
         Task<List<AchievementDto>> GetAchievementsAsync(int learnerId);
         Task<List<AchievementDto>> CheckAchievementsAsync(int learnerId);
         Task<List<LeaderboardEntryDto>> GetLeaderboardAsync(string type, string? vaultId = null);
-        Task<DashboardDataDto> GetDashboardAsync(string? vaultId = null);
+        Task<DashboardDataDto> GetDashboardAsync(string? vaultId = null, int? learnerId = null);
 
         // Obsidian 操作
         Task<bool> OpenInObsidianAsync(CancellationToken cancellationToken = default);
@@ -1871,14 +1871,19 @@ namespace Baihua.Web.Services
             }
         }
 
-        public async Task<DashboardDataDto> GetDashboardAsync(string? vaultId = null)
+        public async Task<DashboardDataDto> GetDashboardAsync(string? vaultId = null, int? learnerId = null)
         {
             try
             {
                 using var quick = new CancellationTokenSource(QuickCallTimeout);
                 var url = "/api/achievements/dashboard";
+                var query = new List<string>();
                 if (!string.IsNullOrEmpty(vaultId))
-                    url += $"?vaultId={Uri.EscapeDataString(vaultId)}";
+                    query.Add($"vaultId={Uri.EscapeDataString(vaultId)}");
+                if (learnerId.HasValue)
+                    query.Add($"learnerId={learnerId.Value}");
+                if (query.Count > 0)
+                    url += "?" + string.Join("&", query);
                 var response = await GetWithMetricsAsync(url, quick.Token);
                 response.EnsureSuccessStatusCode();
                 return await response.Content.ReadFromJsonAsync<DashboardDataDto>(quick.Token) ?? new DashboardDataDto();
