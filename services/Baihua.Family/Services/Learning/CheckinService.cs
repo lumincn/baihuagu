@@ -149,6 +149,13 @@ public class CheckinService
     /// <param name="beijingDate">补签日期（北京时间自然日）</param>
     /// <param name="vaultId">知识库 ID（可空=全部）</param>
     /// <returns>补签结果（Success/Message/Remaining）</returns>
+    /// <summary>
+    /// FAM-33 补签（pm 拍板语义）：对最近 3 天内**无 StudyActivity** 的 ⬜ 日期打补签标记，
+    /// 填补连击缺口。不创建虚假 StudyActivity。月限 3 次（家庭维度）。
+    /// </summary>
+    /// <param name="beijingDate">补签日期（北京时间自然日）</param>
+    /// <param name="vaultId">知识库 ID（可空=全部）</param>
+    /// <returns>补签结果（Success/Message/Remaining）</returns>
     public async Task<CheckinMakeupResult> MakeupCheckinAsync(DateTime beijingDate, string? vaultId = null)
     {
         var today = BeijingToday;
@@ -156,8 +163,7 @@ public class CheckinService
 
         using var db = await _dbFactory.CreateDbContextAsync();
 
-        // AC2：月限 3 次（家庭维度，按补签日期所在月）——优先于窗口/记录检查，
-        // 保证"已用完"提示优先（qa 契约：第 4 次补签无论日期必须报已用完）
+        // AC2：月限 3 次（家庭维度，按补签日期所在月）——优先于其他检查
         var monthStart = new DateTime(date.Year, date.Month, 1);
         var monthEnd = monthStart.AddMonths(1);
         var makeupCountThisMonth = await db.CheckinMakeupRecords
@@ -184,18 +190,19 @@ public class CheckinService
             };
         }
 
-        // AC3：该日必须有真实学习记录（StudyActivity）
+        // pm 拍板语义：该日已有学习记录 → 已是 🔥，无需补签（不显示入口）；
+        // 无 StudyActivity 的 ⬜ 日期才允许补签（填补连击缺口，不创建虚假记录）
         var activityQuery = db.StudyActivities.AsQueryable();
         if (!string.IsNullOrEmpty(vaultId))
             activityQuery = activityQuery.Where(a => a.VaultId == vaultId);
         var activities = await activityQuery.ToListAsync();
         var hasActivity = activities.Any(a => ToBeijingDate(a.CreatedAt) == date);
-        if (!hasActivity)
+        if (hasActivity)
         {
             return new CheckinMakeupResult
             {
                 Success = false,
-                Message = "该日无学习记录，无法补签",
+                Message = "该日已有学习记录，无需补签",
                 Remaining = 0
             };
         }

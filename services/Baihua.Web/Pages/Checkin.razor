@@ -83,7 +83,7 @@
             </div>
         }
 
-        @if (makeupToast)
+        @if (!string.IsNullOrEmpty(makeupToast))
         {
             <div class="makeup-toast">@makeupToast</div>
         }
