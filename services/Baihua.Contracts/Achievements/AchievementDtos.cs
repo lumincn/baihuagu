@@ -1,5 +1,43 @@
 namespace Baihua.Contracts.Achievements;
 
+/// <summary>FAM-21 学习打卡数据</summary>
+public class CheckinDataDto
+{
+    /// <summary>家庭维度连续打卡天数（从今天往前连续有记录的天数，北京时间）</summary>
+    public int FamilyStreak { get; set; }
+
+    /// <summary>今日学习清单（按 Learner 分组）</summary>
+    public List<CheckinRecordDto> TodayRecords { get; set; } = new();
+
+    /// <summary>最近 7 天打卡日历（7 格：日期 + 是否打卡 + 是否今天）</summary>
+    public List<CheckinCalendarDayDto> Last7Days { get; set; } = new();
+}
+
+/// <summary>今日学习记录条目（AC1/AC3）</summary>
+public class CheckinRecordDto
+{
+    public string LearnerName { get; set; } = "";
+    public string Content { get; set; } = "";
+    public DateTime? Time { get; set; }
+    public bool IsCompleted { get; set; }
+
+    /// <summary>来源标签（每日卡片/自由学习/复习模式）</summary>
+    public string Source { get; set; } = "";
+
+    public DateTime? StartTime { get; set; }
+    public DateTime? EndTime { get; set; }
+    public int CardCount { get; set; }
+    public double Accuracy { get; set; }
+}
+
+/// <summary>打卡日历格子（AC4）</summary>
+public class CheckinCalendarDayDto
+{
+    public DateTime? Date { get; set; }
+    public bool IsChecked { get; set; }
+    public bool IsToday { get; set; }
+}
+
 public class LearnerDto
 {
     public int Id { get; set; }

@@ -116,6 +116,7 @@ namespace Baihua.Web.Services
         Task<List<AchievementDto>> CheckAchievementsAsync(int learnerId);
         Task<List<LeaderboardEntryDto>> GetLeaderboardAsync(string type, string? vaultId = null);
         Task<DashboardDataDto> GetDashboardAsync(string? vaultId = null, int? learnerId = null);
+        Task<CheckinDataDto> GetCheckinDataAsync(string? vaultId = null);
 
         // Obsidian 操作
         Task<bool> OpenInObsidianAsync(CancellationToken cancellationToken = default);
@@ -1892,6 +1893,25 @@ namespace Baihua.Web.Services
             {
                 _logger.LogError(ex, "获取家长看板失败");
                 return new DashboardDataDto();
+            }
+        }
+
+        public async Task<CheckinDataDto> GetCheckinDataAsync(string? vaultId = null)
+        {
+            try
+            {
+                using var quick = new CancellationTokenSource(QuickCallTimeout);
+                var url = "/api/checkin";
+                if (!string.IsNullOrEmpty(vaultId))
+                    url += $"?vaultId={Uri.EscapeDataString(vaultId)}";
+                var response = await GetWithMetricsAsync(url, quick.Token);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadFromJsonAsync<CheckinDataDto>(quick.Token) ?? new CheckinDataDto();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取学习打卡数据失败");
+                return new CheckinDataDto();
             }
         }
 

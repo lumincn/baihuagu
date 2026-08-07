@@ -3825,6 +3825,9 @@ Shift+Enter 换行，Enter 发送</value>
   <data name="Nav_ParentDashboard" xml:space="preserve">
     <value>家长看板</value>
   </data>
+  <data name="Nav_Checkin" xml:space="preserve">
+    <value>学习打卡</value>
+  </data>
   <data name="Nav_ChatLabel" xml:space="preserve">
     <value>对话</value>
   </data>

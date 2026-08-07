@@ -196,6 +196,7 @@ builder.Services.AddSingleton<DailyCardService>();
 builder.Services.AddSingleton<LearnerService>();
 builder.Services.AddSingleton<AchievementEngine>();
 builder.Services.AddSingleton<LeaderboardService>();
+        builder.Services.AddSingleton<CheckinService>();
 builder.Services.AddHostedService<StudyRecordMigrationService>();
 builder.Services.AddSingleton<Baihua.Core.WebSocket.DeviceWebSocketHub>();
 builder.Services.AddSingleton<DeviceService>();
