@@ -351,24 +351,23 @@ public class LeaderboardService
 
     /// <summary>
     /// 家庭维度连续打卡：任意成员有学习行为即算当天（不是取各 Learner streak 最大值）。
-    /// 从今天（北京时间）往回数连续自然日；今天没学但昨天学则从昨天起算。
+    /// 锚点：今天有行为→today；今天无但昨天有→yesterday；否则→0。
+    /// 从锚点往回数连续自然日（修复：今天无打卡但昨天起连续时返回正确天数）。
     /// </summary>
     private static int CalculateFamilyStreak(List<DateTime> beijingDates, DateTime today)
     {
-        var dates = beijingDates.Distinct().OrderByDescending(d => d).ToList();
+        var dateSet = new HashSet<DateTime>(beijingDates);
+        if (dateSet.Count == 0) return 0;
+
+        // 锚点：今天有行为 → today；今天无但昨天有 → yesterday；否则 → 0
+        DateTime anchor;
+        if (dateSet.Contains(today)) anchor = today;
+        else if (dateSet.Contains(today.AddDays(-1))) anchor = today.AddDays(-1);
+        else return 0;
+
         int streak = 0;
-        for (int i = 0; i < dates.Count; i++)
-        {
-            var expected = today.AddDays(-i);
-            if (dates[i] == expected || (i == 0 && dates[i] == expected.AddDays(-1)))
-            {
-                streak++;
-            }
-            else
-            {
-                break;
-            }
-        }
+        while (dateSet.Contains(anchor.AddDays(-streak)))
+            streak++;
         return streak;
     }
 
@@ -378,24 +377,21 @@ public class LeaderboardService
             .Where(a => a.LearnerId == learnerId && a.ActivityType == "study")
             .ToListAsync())
             .Select(a => ToBeijingDate(a.CreatedAt))
-            .Distinct()
-            .OrderByDescending(d => d)
             .ToList();
 
-        int streak = 0;
+        // 锚点：今天有行为 → today；今天无但昨天有 → yesterday；否则 → 0
         var today = BeijingToday;
-        for (int i = 0; i < dates.Count; i++)
-        {
-            var expected = today.AddDays(-i);
-            if (dates[i] == expected || (i == 0 && dates[i] == expected.AddDays(-1)))
-            {
-                streak++;
-            }
-            else
-            {
-                break;
-            }
-        }
+        var dateSet = new HashSet<DateTime>(dates);
+        if (dateSet.Count == 0) return 0;
+
+        DateTime anchor;
+        if (dateSet.Contains(today)) anchor = today;
+        else if (dateSet.Contains(today.AddDays(-1))) anchor = today.AddDays(-1);
+        else return 0;
+
+        int streak = 0;
+        while (dateSet.Contains(anchor.AddDays(-streak)))
+            streak++;
         return streak;
     }
 }
