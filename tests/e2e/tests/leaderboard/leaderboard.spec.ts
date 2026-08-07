@@ -1,34 +1,38 @@
 import { test, expect } from '@playwright/test';
-import { navigateTo, waitForBlazor } from '../helpers';
+import { navigateTo, waitForBlazor, authorize, ensureTestData } from '../helpers';
 
-test.describe('赛舟榜功能', () => {
+// FAM-35：排行榜冒烟（FAM-22 友好化后）
+// 路由：/leaderboard
+test.describe('排行榜功能（FAM-22 后）', () => {
   test.beforeEach(async ({ page }) => {
+    await authorize(page);
+    await ensureTestData(page);
     await navigateTo(page, '/leaderboard');
   });
 
-  test('赛舟榜页面加载成功', async ({ page }) => {
-    await expect(page.locator('h1')).toContainText('赛舟榜', { timeout: 15000 });
+  test('默认显示"和自己比"视图（非全家庭排行）', async ({ page }) => {
+    await waitForBlazor(page);
+    // FAM-22 AC1：默认"和自己比"视图（本周 vs 上周）
+    await expect(page.locator('text=和自己比').first()).toBeVisible({ timeout: 15000 });
+    // 和自己比视图显示"上周"（AC2）
+    await expect(page.locator('text=上周').first()).toBeVisible();
   });
 
-  test('显示 Tab 切换工具栏', async ({ page }) => {
+  test('切换"家庭排行"显示孩子榜/大人榜 Tab', async ({ page }) => {
     await waitForBlazor(page);
-    await expect(page.locator('.toolbar')).toBeVisible();
+    // 点击"家庭排行"视图切换（FAM-22 AC3）
+    await page.locator('text=家庭排行').first().click();
+    await expect(page.locator('text=孩子榜').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('text=大人榜').first()).toBeVisible();
   });
 
-  test('Tab 切换功能正常', async ({ page }) => {
+  test('全家 Tab 默认隐藏（未开启设置时）', async ({ page }) => {
     await waitForBlazor(page);
-    const weekTab = page.locator('.tab').filter({ hasText: '周' });
-    await expect(weekTab).toBeVisible();
-    await weekTab.click();
-    await expect(weekTab).toHaveClass(/active/);
-  });
-
-  test('有榜单区域或暂无数据', async ({ page }) => {
-    await waitForBlazor(page);
-    await page.waitForTimeout(2000); // 等待数据加载
-    const leaderboard = page.locator('.leaderboard-table');
-    const empty = page.locator('.empty');
-    const loading = page.locator('.loading');
-    await expect(leaderboard.or(empty).or(loading)).toBeVisible({ timeout: 15000 });
+    // 进入家庭排行视图（FAM-22 AC5：全家 Tab 默认关闭）
+    await page.locator('text=家庭排行').first().click();
+    await expect(page.locator('text=孩子榜').first()).toBeVisible({ timeout: 15000 });
+    // 默认无"全家"Tab（allFamilyEnabled=false 条件渲染）
+    await expect(page.locator('button:has-text("全家")')).toHaveCount(0);
   });
 });
+
