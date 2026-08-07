@@ -162,6 +162,29 @@
     .makeup-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
     .makeup-toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 0.6rem 1.2rem; border-radius: 8px; z-index: 1100; }
 
+    /* FAM-32 响应式：手机 ≤768px（日历不换行缩小、清单紧凑） */
+    @@media (max-width: 768px) {
+        .checkin-page { padding: 0.5rem; }
+        .calendar7 { gap: 0.2rem; }
+        .cal-cell { padding: 0.35rem 0; }
+        .cal-mark { font-size: 1rem; }
+        .cal-date { font-size: 0.65rem; }
+        .streak-num { font-size: 2rem; }
+        .record-item { flex-wrap: wrap; gap: 0.3rem; }
+        .rec-time { font-size: 0.8rem; }
+        .makeup-dialog { min-width: 0; width: calc(100% - 2rem); }
+    }
+
+    /* FAM-32 响应式：平板 769-1024px */
+    @@media (min-width: 769px) and (max-width: 1024px) {
+        .checkin-page { max-width: 100%; }
+    }
+
+    /* FAM-32 响应式：桌面 ≥1025px（锚） */
+    @@media (min-width: 1025px) {
+        .checkin-page { max-width: 800px; }
+    }
+
     .today-section h2 { font-size: 1.1rem; margin-bottom: 0.75rem; color: #333; }
     .learner-group { margin-bottom: 1rem; background: #fff; border: 1px solid #e8eef2; border-radius: 10px; padding: 0.75rem; }
     .group-header { font-weight: 700; color: #333; margin-bottom: 0.5rem; }

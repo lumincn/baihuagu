@@ -198,6 +198,7 @@ builder.Services.AddSingleton<AchievementEngine>();
 builder.Services.AddSingleton<LeaderboardService>();
         builder.Services.AddSingleton<CheckinService>();
         builder.Services.AddSingleton<LeaderboardSettingsService>();
+builder.Services.AddSingleton<RewardService>();
 builder.Services.AddHostedService<StudyRecordMigrationService>();
 builder.Services.AddSingleton<Baihua.Core.WebSocket.DeviceWebSocketHub>();
 builder.Services.AddSingleton<DeviceService>();

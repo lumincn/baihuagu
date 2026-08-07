@@ -117,6 +117,9 @@ namespace Baihua.Web.Services
         Task<bool> DeleteLearnerAsync(int id);
         Task<List<AchievementDto>> GetAchievementsAsync(int learnerId);
         Task<List<AchievementDto>> CheckAchievementsAsync(int learnerId);
+        Task<List<RewardProgressDto>> GetRewardProgressAsync(string? vaultId = null);
+        Task<RewardConfigDto> CreateRewardAsync(CreateRewardRequest request);
+        Task<List<RewardClaimDto>> TriggerRewardsAsync(string? vaultId = null);
         Task<List<LeaderboardEntryDto>> GetLeaderboardAsync(string type, string? vaultId = null);
         Task<DashboardDataDto> GetDashboardAsync(string? vaultId = null, int? learnerId = null);
         Task<CheckinDataDto> GetCheckinDataAsync(string? vaultId = null);
@@ -1890,6 +1893,62 @@ namespace Baihua.Web.Services
             {
                 _logger.LogError(ex, "检查成就失败");
                 return new List<AchievementDto>();
+            }
+        }
+
+        // ===== FAM-31 家庭奖励 =====
+
+        public async Task<List<RewardProgressDto>> GetRewardProgressAsync(string? vaultId = null)
+        {
+            try
+            {
+                using var quick = new CancellationTokenSource(QuickCallTimeout);
+                var url = "/api/rewards/progress";
+                if (!string.IsNullOrEmpty(vaultId))
+                    url += $"?vaultId={Uri.EscapeDataString(vaultId)}";
+                var response = await GetWithMetricsAsync(url, quick.Token);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadFromJsonAsync<List<RewardProgressDto>>(quick.Token) ?? new List<RewardProgressDto>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取奖励进度失败");
+                return new List<RewardProgressDto>();
+            }
+        }
+
+        public async Task<RewardConfigDto> CreateRewardAsync(CreateRewardRequest request)
+        {
+            try
+            {
+                using var quick = new CancellationTokenSource(QuickCallTimeout);
+                var response = await PostWithMetricsAsync("/api/rewards", JsonContent.Create(request), quick.Token);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadFromJsonAsync<RewardConfigDto>(quick.Token) ?? new RewardConfigDto();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "创建奖励失败");
+                return new RewardConfigDto();
+            }
+        }
+
+        public async Task<List<RewardClaimDto>> TriggerRewardsAsync(string? vaultId = null)
+        {
+            try
+            {
+                using var quick = new CancellationTokenSource(QuickCallTimeout);
+                var url = "/api/rewards/trigger";
+                if (!string.IsNullOrEmpty(vaultId))
+                    url += $"?vaultId={Uri.EscapeDataString(vaultId)}";
+                var response = await PostWithMetricsAsync(url, null, quick.Token);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadFromJsonAsync<List<RewardClaimDto>>(quick.Token) ?? new List<RewardClaimDto>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "触发奖励检查失败");
+                return new List<RewardClaimDto>();
             }
         }
 

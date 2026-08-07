@@ -346,6 +346,23 @@
     .loading { text-align: center; padding: 3rem; color: #888; }
     .empty { text-align: center; padding: 2.5rem 1rem 0.5rem; color: #666; }
     .solo-guide { text-align: center; padding: 0.5rem 1rem 2.5rem; color: #1d9c73; font-weight: 600; }
+
+    /* FAM-32 响应式：手机 ≤768px（Tab 横向不换行、文字缩小） */
+    @@media (max-width: 768px) {
+        .leaderboard-page { padding: 0.5rem; }
+        .view-switch { gap: 0.3rem; }
+        .view-tab { padding: 0.4rem 0.6rem; font-size: 0.85rem; white-space: nowrap; }
+        .compare-grid { gap: 0.5rem; }
+        .compare-card { padding: 0.75rem; }
+        .cmp-value { font-size: 1.6rem; }
+        .leaderboard-row { gap: 0.4rem; }
+        .role-tabs { gap: 0.3rem; }
+    }
+
+    /* FAM-32 响应式：平板 769-1024px */
+    @@media (min-width: 769px) and (max-width: 1024px) {
+        .leaderboard-page { max-width: 100%; }
+    }
 </style>
 
 @code {

@@ -436,6 +436,28 @@
     .onboarding-steps { display: flex; justify-content: center; gap: 0.75rem; margin-top: 1.25rem; }
     .ob-step { font-size: 0.8rem; color: #aaa; padding: 0.3rem 0.75rem; border-radius: 20px; background: #f0f4f6; }
     .ob-step.active { color: #fff; background: #2e8baf; font-weight: 600; }
+
+    /* FAM-32 响应式：手机 ≤768px（汇总卡片堆叠、成员卡片单列） */
+    @@media (max-width: 768px) {
+        .family-landing { padding: 0.5rem; }
+        .family-summary { grid-template-columns: 1fr; gap: 0.5rem; }
+        .member-snapshot { grid-template-columns: 1fr; }
+        .daily-card-shortcut { padding: 1rem; }
+        .landing-header h1 { font-size: 1.3rem; }
+        .onboarding-card { padding: 1.25rem; }
+        .onboarding-steps { flex-wrap: wrap; gap: 0.4rem; }
+    }
+
+    /* FAM-32 响应式：平板 769-1024px */
+    @@media (min-width: 769px) and (max-width: 1024px) {
+        .family-landing { max-width: 100%; }
+        .family-summary { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* FAM-32 响应式：桌面 ≥1025px（锚） */
+    @@media (min-width: 1025px) {
+        .family-landing { max-width: 960px; }
+    }
 </style>
 
 @code {

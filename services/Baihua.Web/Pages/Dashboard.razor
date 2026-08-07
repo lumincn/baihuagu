@@ -125,6 +125,28 @@
 
     .empty-hint { color: #888; text-align: center; padding: 1rem 0; }
     .empty-hint .cta-btn { margin-top: 0.5rem; }
+
+    /* FAM-32 响应式：平板适中 */
+    @@media (max-width: 1024px) {
+        .dashboard-page { max-width: 100%; }
+    }
+
+    /* FAM-32 响应式：手机 ≤768px 单列堆叠 */
+    @@media (max-width: 768px) {
+        .dashboard-page { padding: 0.5rem; }
+        .dashboard-first-screen { display: grid; grid-template-columns: 1fr; gap: 0.75rem; }
+        .dashboard-first-screen .section { padding: 0.75rem; }
+        .today-summary { flex-wrap: wrap; }
+        .timeline-item { flex-wrap: wrap; gap: 0.25rem; }
+        .tl-learner { min-width: 0; }
+        .member-selector { gap: 0.35rem; }
+        .member-chip { padding: 0.3rem 0.6rem; font-size: 0.85rem; }
+    }
+
+    /* FAM-32 响应式：桌面 ≥1025px（锚，保持现有布局） */
+    @@media (min-width: 1025px) {
+        .dashboard-first-screen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    }
 </style>
 
 @code {

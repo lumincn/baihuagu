@@ -205,3 +205,44 @@ public class ResultDistributionDto
     public int Hard { get; set; }
     public int Forgot { get; set; }
 }
+
+/// <summary>FAM-31 奖励进度 DTO（孩子视角进度条）</summary>
+public class RewardProgressDto
+{
+    public int RewardId { get; set; }
+    public string RewardName { get; set; } = "";
+    public string RewardIcon { get; set; } = "";
+    public string ConditionType { get; set; } = "";
+    public int TargetValue { get; set; }
+    public int CurrentValue { get; set; }
+    public bool IsAchieved { get; set; }
+    public int Remaining { get; set; }
+}
+
+/// <summary>FAM-31 奖励达成 DTO（庆祝提示）</summary>
+public class RewardClaimDto
+{
+    public int RewardId { get; set; }
+    public string RewardName { get; set; } = "";
+    public string RewardIcon { get; set; } = "";
+    public DateTime ClaimedAt { get; set; }
+}
+
+/// <summary>FAM-31 奖励配置 DTO</summary>
+public class RewardConfigDto
+{
+    public int RewardId { get; set; }
+    public string ConditionType { get; set; } = "";
+    public int TargetValue { get; set; }
+    public string RewardName { get; set; } = "";
+    public string RewardIcon { get; set; } = "";
+}
+
+/// <summary>FAM-31 创建奖励请求</summary>
+public class CreateRewardRequest
+{
+    public string? ConditionType { get; set; }
+    public int TargetValue { get; set; }
+    public string RewardName { get; set; } = "";
+    public string? RewardIcon { get; set; }
+}

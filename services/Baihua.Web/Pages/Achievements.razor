@@ -9,6 +9,11 @@
 <div class="achievements-page">
     <h1>🏆 @L["Achievements_Title"]</h1>
 
+    @if (!string.IsNullOrEmpty(celebrationText))
+    {
+        <div class="reward-celebration">@celebrationText</div>
+    }
+
     <!-- 学习者选择 -->
     <div class="learner-bar">
         @foreach (var learner in learners)
@@ -39,6 +44,51 @@
             <button class="btn btn-secondary btn-sm" @onclick="() => showAddForm = false">@L["Common_Cancel"]</button>
         </div>
     }
+
+    <!-- FAM-31 家庭奖励进度（孩子视角进度条） -->
+    <section class="reward-section">
+        <h2>🎁 家庭奖励</h2>
+        @if (rewardProgress.Count == 0)
+        {
+            <div class="reward-empty">还没有奖励，家长可在下方添加奖励激励孩子学习</div>
+        }
+        else
+        {
+            @foreach (var reward in rewardProgress)
+            {
+                <div class="reward-item">
+                    <span class="reward-icon">@reward.RewardIcon</span>
+                    <div class="reward-body">
+                        <div class="reward-name">@reward.RewardName</div>
+                        @if (reward.IsAchieved)
+                        {
+                            <div class="reward-achieved">🎉 已达成！</div>
+                        }
+                        else
+                        {
+                            <div class="reward-progress-text">
+                                进度 @reward.CurrentValue/@reward.TargetValue，还差 @reward.Remaining 就能获得 @reward.RewardIcon @reward.RewardName！
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar" style="width: @(reward.TargetValue > 0 ? (reward.CurrentValue * 100 / reward.TargetValue) : 0)%"></div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        }
+        <!-- 家长添加奖励 -->
+        <div class="reward-add">
+            <input type="text" class="form-control form-control-sm" @bind="newRewardName" placeholder="奖励名称（如：冰淇淋）" />
+            <select class="form-select form-select-sm" @bind="newRewardType">
+                <option value="streak_days">连续打卡天数</option>
+                <option value="achievement_count">解锁成就数</option>
+                <option value="card_count">学习卡片数</option>
+            </select>
+            <input type="number" class="form-control form-control-sm" @bind="newRewardTarget" placeholder="目标值" min="1" />
+            <button class="btn btn-primary btn-sm" @onclick="AddRewardAsync">添加奖励</button>
+        </div>
+    </section>
 
     <!-- 统计概览 -->
     @if (achievements.Count > 0)
@@ -194,6 +244,45 @@
     .achievement-desc { font-size: 0.8rem; color: #666; }
     .achievement-date { font-size: 0.75rem; color: #aaa; margin-top: 0.35rem; }
     .loading { text-align: center; padding: 2rem; color: #888; }
+
+    /* FAM-31 奖励区 */
+    .reward-section { background: #fff; border: 1px solid #e8eef2; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
+    .reward-section h2 { font-size: 1.05rem; margin-bottom: 0.75rem; color: #333; }
+    .reward-empty { color: #888; font-size: 0.9rem; padding: 0.5rem 0; }
+    .reward-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px dashed #eef2f5; }
+    .reward-icon { font-size: 1.6rem; }
+    .reward-body { flex: 1; }
+    .reward-name { font-weight: 600; color: #333; }
+    .reward-achieved { color: #e67e22; font-weight: 600; font-size: 0.9rem; }
+    .reward-progress-text { color: #666; font-size: 0.85rem; margin: 0.2rem 0; }
+    .reward-item .progress { height: 8px; }
+    .reward-add { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.75rem; flex-wrap: wrap; }
+    .reward-add .form-control, .reward-add .form-select { width: auto; min-width: 120px; }
+
+    /* FAM-31 达成庆祝动画 */
+    .reward-celebration {
+        position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        background: linear-gradient(135deg, #ffd54f, #ffb300);
+        color: #5d4037; border-radius: 16px; padding: 1.5rem 2rem;
+        font-size: 1.2rem; font-weight: 700; text-align: center;
+        box-shadow: 0 8px 30px rgba(255, 179, 0, 0.4); z-index: 1200;
+        animation: celebration-pop 0.5s ease;
+    }
+    @@keyframes celebration-pop {
+        0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+        70% { transform: translate(-50%, -50%) scale(1.1); }
+        100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+
+    /* FAM-32 响应式：手机 ≤768px（贴纸网格紧凑、Learner 栏可换行） */
+    @@media (max-width: 768px) {
+        .learner-bar { flex-wrap: wrap; gap: 0.35rem; }
+        .achievement-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.5rem; }
+        .achievement-icon { font-size: 1.6rem; }
+        .achievement-title { font-size: 0.85rem; }
+        .achievement-desc { font-size: 0.75rem; }
+        .add-learner-form { flex-wrap: wrap; }
+    }
 </style>
 
 @code {
@@ -206,6 +295,13 @@
     private string newLearnerEmoji = "👤";
     private string newLearnerColor = "#2e8baf";
     private bool isAdding = false;
+
+    // FAM-31 家庭奖励
+    private List<RewardProgressDto> rewardProgress = new();
+    private string newRewardName = "";
+    private string newRewardType = "streak_days";
+    private int newRewardTarget = 7;
+    private string? celebrationText;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -226,6 +322,7 @@
         {
             isLoading = false;
         }
+        await LoadRewardsAsync();
         await InvokeAsync(StateHasChanged);
     }
 
@@ -265,5 +362,38 @@
         showAddForm = false;
         await LoadLearnersAsync();
         isAdding = false;
+    }
+
+    // ===== FAM-31 家庭奖励 =====
+
+    private async Task LoadRewardsAsync()
+    {
+        rewardProgress = await ApiService.GetRewardProgressAsync();
+        // AC4：进入时检查并触发达成（每条件一次），新达成弹庆祝
+        var claims = await ApiService.TriggerRewardsAsync();
+        if (claims.Count > 0)
+        {
+            var first = claims[0];
+            celebrationText = $"🎉 达成奖励：{first.RewardIcon} {first.RewardName}！";
+            rewardProgress = await ApiService.GetRewardProgressAsync();
+            await InvokeAsync(StateHasChanged);
+            await Task.Delay(3000);
+            celebrationText = null;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task AddRewardAsync()
+    {
+        if (string.IsNullOrWhiteSpace(newRewardName) || newRewardTarget <= 0) return;
+        await ApiService.CreateRewardAsync(new CreateRewardRequest
+        {
+            ConditionType = newRewardType,
+            TargetValue = newRewardTarget,
+            RewardName = newRewardName.Trim(),
+            RewardIcon = "🎁"
+        });
+        newRewardName = "";
+        await LoadRewardsAsync();
     }
 }

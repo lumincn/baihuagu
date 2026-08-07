@@ -19,6 +19,9 @@
     var sceneItems = visibleItems.Where(i => i.Scene == _activeScene).ToList();
 }
 
+<!-- FAM-32 移动端汉堡菜单（≤768px 显示，点击展开导航） -->
+<button class="family-menu-toggle" @onclick="ToggleMobileMenu">☰</button>
+
 <!-- 场景选择器 -->
 <div class="scene-selector">
     @foreach (var scene in Scenes)
@@ -140,6 +143,13 @@ else if (_activeScene == 0)
 
     private void SetScene(int scene) => _activeScene = scene;
 
+    private bool _mobileMenuOpen;
+
+    private void ToggleMobileMenu()
+    {
+        _mobileMenuOpen = !_mobileMenuOpen;
+    }
+
     private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
     {
         var inferred = InferScene(NavigationManager.ToBaseRelativePath(e.Location));
@@ -225,5 +235,28 @@ else if (_activeScene == 0)
         border-top: 1px solid rgba(255, 255, 255, 0.1);
         margin: 1rem 0.5rem;
         opacity: 0.5;
+    }
+
+    /* FAM-32 响应式：移动端汉堡菜单（≤768px 折叠侧边栏，点击展开） */
+    .family-menu-toggle {
+        display: none;
+        background: none;
+        border: none;
+        color: rgba(220, 235, 245, 0.9);
+        font-size: 1.4rem;
+        cursor: pointer;
+        padding: 0.5rem 0.75rem;
+    }
+
+    @@media (max-width: 768px) {
+        .family-menu-toggle {
+            display: block;
+        }
+        .nav-menu-mobile {
+            display: none;
+        }
+        .nav-menu-mobile.open {
+            display: block;
+        }
     }
 </style>
