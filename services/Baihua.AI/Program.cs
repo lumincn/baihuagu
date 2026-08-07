@@ -278,8 +278,12 @@ catch (Exception ex)
 }
 
 // 再执行 EF 数据库迁移
+// 注意：必须先清空 SQLite 连接池——MigrateApiKeysIfNeeded 的查询会打开到 ai.db 的连接
+// 且被连接池保留（物理连接仍持有读锁），此时 Migrate() 的 BEGIN EXCLUSIVE 会 SQLITE_BUSY 无限等待
+// （AcquireDatabaseLock 自锁，进程卡死、端口不监听）
 try
 {
+    Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
     using var scope = app.Services.CreateScope();
     var aiDb = scope.ServiceProvider.GetRequiredService<Baihua.Data.AIDbContext>();
     aiDb.Database.Migrate();

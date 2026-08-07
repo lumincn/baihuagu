@@ -9,7 +9,7 @@
   bh.ps1 restart         重启服务
   bh.ps1 logs [name]     查看日志（taskrunner, webui, ai, vault）
   bh.ps1 open            打开 Web 管理界面 (http://localhost:5177)
-  bh.ps1 dev             开发模式（Debug 构建，监听文件变动自动重编译重启）
+  bh.ps1 dev             开发模式（dotnet watch，改代码自动热重载）
   bh.ps1 observe         启动 OpenObserve 可观测平台（Docker）并打开 Web UI
   bh.ps1 all             启动全部服务（.NET 服务 + OpenObserve + hostmetrics）
 
@@ -17,7 +17,7 @@
 - 该脚本为简易移植，依赖 PowerShell (推荐 pwsh) 和 dotnet SDK
 - 后台进程 PID 与日志保存在 $env:TEMP\bh-[service].*
 - dashboard 命令会比较当前 git HEAD 与上次启动时的 commit，不同则自动重编译重启
-- dev 命令用 Debug 构建（编译快、符号全、可调试），监听 services/ 下 .cs/.razor 文件变动，2秒防抖后自动重编译重启
+- dev 命令用 dotnet watch run 启动每个服务（Debug 配置），改 .cs/.razor 自动热重载/重启，不依赖自定义文件监听
 - observe 命令使用 docker compose 启动 OpenObserve（端口 5082/5083）
 - all 命令启动所有 .NET 服务（ai, vault, taskrunner, webui）和 Docker 监控容器（openobserve, hostmetrics）
 #>
@@ -49,7 +49,7 @@ function Get-Help {
 	Write-Host "  status                查看服务状态"
 	Write-Host "  logs [name]           查看日志（taskrunner, webui, ai, vault）"
 	Write-Host "  open                  打开 Web 管理界面 (http://localhost:5177)"
-	Write-Host "  dev                   开发模式（Debug 构建，监听文件变动自动重编译重启）"
+	Write-Host "  dev                   开发模式（dotnet watch，改代码自动热重载）"
 	Write-Host "  observe               启动 OpenObserve 可观测平台（Docker）"
 	Write-Host "  all                   启动全部服务（.NET + OpenObserve + hostmetrics）"
 	Write-Host ""
@@ -198,6 +198,53 @@ function Start-ServiceProc($name, $projRelPath, $preferConfig = 'Release'){
 	}
 }
 
+function Start-WatchProc($name, $projRelPath){
+	$projPath = Join-Path $HG_ROOT $projRelPath
+	if (-not (Test-Path $projPath)){
+		Write-Host "[!] 项目未找到: $projPath" -ForegroundColor Yellow
+		return
+	}
+	$log = Get-LogPath $name
+	$errLog = "$log.err"
+	$pidFile = Get-PidPath $name
+
+	# 清理旧 PID 文件（若进程已死）
+	if (Test-Path $pidFile) {
+		$existingPid = Get-Content $pidFile -ErrorAction SilentlyContinue
+		if ($existingPid -and (Get-Process -Id $existingPid -ErrorAction SilentlyContinue)) {
+			Write-Host "[INFO] $name 已在运行 (PID $existingPid)"
+			return
+		} else {
+			Remove-Item $pidFile -ErrorAction SilentlyContinue
+		}
+	}
+
+	$port = $ServicePorts[$name]
+	if ($port) {
+		$portProc = netstat -ano 2>$null | Select-String ":${port}\s" | Select-String "LISTENING"
+		if ($portProc) {
+			Write-Host "[WARN] Port :${port} 被占用，尝试释放..." -ForegroundColor Yellow
+			Stop-ServiceByPort $name
+			Start-Sleep -Seconds 1
+		}
+	}
+
+	Write-Host "Starting $name (dotnet watch) -> $projPath"
+	$prevEnv = $env:ASPNETCORE_ENVIRONMENT
+	$env:ASPNETCORE_ENVIRONMENT = 'Development'
+	if ($port) { $env:ASPNETCORE_URLS = "http://0.0.0.0:$port" }
+
+	# dotnet watch run：监听项目源文件，热重载/自动重启
+	# --non-interactive 防止等待键盘输入（后台运行时必须）
+	# --no-launch-profile 忽略 launchSettings.json（端口由 ASPNETCORE_URLS 控制）
+	$watchArgs = @('watch', 'run', '--project', "$projPath", '--no-launch-profile', '--non-interactive', '-c', 'Debug')
+	$proc = Start-Process -FilePath 'dotnet' -ArgumentList $watchArgs -RedirectStandardOutput $log -RedirectStandardError $errLog -NoNewWindow -PassThru
+	if ($null -ne $prevEnv) { $env:ASPNETCORE_ENVIRONMENT = $prevEnv } else { Remove-Item Env:\ASPNETCORE_ENVIRONMENT -ErrorAction SilentlyContinue }
+	Start-Sleep -Milliseconds 300
+	Set-Content -Path $pidFile -Value $proc.Id
+	Write-Host "Started $name (watch PID $($proc.Id)), log: $log (stderr: $errLog)"
+}
+
 function Stop-ServiceProc($name){
 	$pidFile = Get-PidPath $name
 	if (-not (Test-Path $pidFile)){
@@ -207,7 +254,13 @@ function Stop-ServiceProc($name){
 	$existingPid = Get-Content $pidFile -ErrorAction SilentlyContinue
 	if ($existingPid -and (Get-Process -Id $existingPid -ErrorAction SilentlyContinue)) {
 		try {
-			Stop-Process -Id $existingPid -Force -ErrorAction Stop
+			# 优先杀进程树（dotnet watch 会 spawn 子进程，只杀父进程会残留）
+			$isWatch = (Get-Process -Id $existingPid -ErrorAction SilentlyContinue).ProcessName -eq 'dotnet'
+			if ($isWatch) {
+				taskkill /T /F /PID $existingPid 2>$null | Out-Null
+			} else {
+				Stop-Process -Id $existingPid -Force -ErrorAction Stop
+			}
 			$sw = [System.Diagnostics.Stopwatch]::StartNew()
 			while ((Get-Process -Id $existingPid -ErrorAction SilentlyContinue) -and $sw.Elapsed.TotalSeconds -lt 10) {
 				Start-Sleep -Milliseconds 200
@@ -783,25 +836,20 @@ switch ($Command.ToLower()){
 	}
 	default { Open-Dashboard }
 	'dev' {
-		Write-Host "=== 百花 Dev Mode (auto-rebuild on change) ===" -ForegroundColor Cyan
-		Write-Host "  Watching: $HG_ROOT\services\*.cs, *.razor" -ForegroundColor DarkGray
+		Write-Host "=== 百花 Dev Mode (dotnet watch, auto hot-reload) ===" -ForegroundColor Cyan
+		Write-Host "  Watching: each service project (.cs/.razor, native dotnet watch)" -ForegroundColor DarkGray
 		Write-Host "  Press Ctrl+C to stop" -ForegroundColor DarkGray
 		Write-Host ""
 
-		# 首次编译+启动（dev 用 Debug：编译快、符号全、可调试）
+		# 停止旧服务，清理 PID/端口（dev 用 dotnet watch 启动）
 		Cmd-Stop
 		Start-Sleep -Seconds 1
-		Write-Host "[...] dotnet build (Debug)..." -ForegroundColor Cyan
-		dotnet build (Join-Path $HG_ROOT 'services\BaiHua.slnx') -c Debug 2>&1 | Select-Object -Last 3 | ForEach-Object { Write-Host "    $_" }
-		if ($LASTEXITCODE -ne 0) { Write-Host "[X] Build failed" -ForegroundColor Red; break }
-		Write-Host "[v] Build OK" -ForegroundColor Green
-		Save-GitCommit
 
 		foreach ($k in $ServiceOrder){
-			Start-ServiceProc $k $Services[$k] 'Debug'
+			Start-WatchProc $k $Services[$k]
 			if ($k -ne 'webui') {
 				Write-Host "  $k : " -NoNewline
-				Wait-For-Service $k 30 -wasJustStarted $true | Out-Null
+				Wait-For-Service $k 60 -wasJustStarted $true | Out-Null
 			}
 		}
 		Start-Sleep -Seconds 3
@@ -829,49 +877,10 @@ switch ($Command.ToLower()){
 			Write-Host "X not ready" -ForegroundColor Red
 		}
 
-		# 文件监听
-		$watcher = New-Object System.IO.FileSystemWatcher
-		$watcher.Path = Join-Path $HG_ROOT 'services'
-		$watcher.Filter = '*.*'
-		$watcher.IncludeSubdirectories = $true
-		$watcher.EnableRaisingEvents = $true
-
-		$exts = @('.cs', '.razor', '.cshtml', '.css', '.js')
-		$changeTimer = $null
-		$debounceMs = 2000
-
-		$action = {
-			$ext = [System.IO.Path]::GetExtension($Event.SourceEventArgs.Name)
-			if ($ext -in $exts) {
-				if ($null -ne $changeTimer) { $changeTimer.Dispose() }
-				$changeTimer = New-Object System.Timers.Timer($debounceMs)
-				$changeTimer.AutoReset = $false
-				Register-ObjectEvent -InputObject $changeTimer -EventName Elapsed -Action {
-					Write-Host ""
-					Write-Host "[i] Change detected, rebuilding..." -ForegroundColor Yellow
-					Cmd-Stop
-					Start-Sleep -Seconds 1
-					dotnet build (Join-Path $HG_ROOT 'services\BaiHua.slnx') -c Debug 2>&1 | Select-Object -Last 3 | ForEach-Object { Write-Host "    $_" }
-					if ($LASTEXITCODE -ne 0) { Write-Host "[X] Build failed" -ForegroundColor Red; return }
-					Write-Host "[v] Build OK, restarting..." -ForegroundColor Green
-					Save-GitCommit
-					foreach ($k in $ServiceOrder){
-						Start-ServiceProc $k $Services[$k] 'Debug'
-					}
-				} | Out-Null
-				$changeTimer.Start()
-			}
-		}
-
-		Register-ObjectEvent -InputObject $watcher -EventName Changed -Action $action | Out-Null
-		Register-ObjectEvent -InputObject $watcher -EventName Created -Action $action | Out-Null
-		Register-ObjectEvent -InputObject $watcher -EventName Renamed -Action $action | Out-Null
-
-		Write-Host "[v] Watching for changes... (debounce ${debounceMs}ms)" -ForegroundColor Green
+		Write-Host "[v] dotnet watch running: edit code, hot-reload auto-applies (per-service)" -ForegroundColor Green
 		try {
 			while ($true) { Start-Sleep -Seconds 1 }
 		} finally {
-			$watcher.Dispose()
 			Cmd-Stop
 		}
 		break

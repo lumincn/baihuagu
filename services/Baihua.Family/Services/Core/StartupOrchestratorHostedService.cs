@@ -100,6 +100,8 @@ public class StartupOrchestratorHostedService : IHostedService
     {
         try
         {
+            // 清空 SQLite 连接池，避免同进程先前打开的连接持有读锁导致 BEGIN EXCLUSIVE 自锁
+            Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
             dbContext.Database.Migrate();
             _logger.LogDebug("{Domain} migrate completed successfully", domainName);
         }
