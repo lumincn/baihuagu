@@ -6,16 +6,16 @@ import { test, expect } from '@playwright/test';
  */
 
 const apiPort = process.env.API_PORT || '8788';
-const oneHopPort = 8791;
+const apiBase = `http://127.0.0.1:${apiPort}`;
 
 test.describe('移动端管理', () => {
 
-  test('mDNS 发现端点应返回正确服务信息', async ({ request }) => {
-    const res = await request.get(`http://localhost:${apiPort}/mg/discovery`);
+  test('OneHop 发现状态端点应返回正确服务信息', async ({ request }) => {
+    const res = await request.get(`${apiBase}/api/onehop/status`);
     expect(res.status()).toBe(200);
     const json = await res.json();
-    expect(json.serviceId).toBe('com.lumin.huaji.sync');
-    expect(json.oneHopEnabled).toBe(true);
-    expect(json.oneHopPort).toBe(oneHopPort);
+    expect(json.ServiceId).toBe('com.lumin.huaji.sync');
+    expect(json.Port).toBe(8789);
+    expect(json.IsAvailable).toBe(true);
   });
 });

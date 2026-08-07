@@ -53,7 +53,7 @@ export default defineConfig({
     // 记忆卡片：Anki 卡片生成任务（共享）
     { name: 'anki', testDir: path.join(sharedE2EPath, 'tests/anki'), testMatch: /.*\.spec\.ts/ },
     // 移动端管理：设备注册、发现（本地）
-    { name: 'devices', testDir: './tests/family-mode', testMatch: /devices\.spec\.ts/ },
+    { name: 'devices', testDir: './tests/family-mode', testMatch: /(devices|server-manage)\.spec\.ts/ },
     // 家长看板：家庭统计、学习趋势、答题分布（本地）
     { name: 'dashboard', testDir: './tests/dashboard', testMatch: /.*\.spec\.ts/, use: { storageState: undefined } },
     // 每日一帖：卡片翻转、难度选择、进度显示（本地）
