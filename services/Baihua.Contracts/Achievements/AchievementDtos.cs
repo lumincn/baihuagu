@@ -246,3 +246,84 @@ public class CreateRewardRequest
     public string RewardName { get; set; } = "";
     public string? RewardIcon { get; set; }
 }
+
+/// <summary>FAM-30 对战会话 DTO</summary>
+public class QuizSessionDto
+{
+    public string SessionId { get; set; } = "";
+    public QuizPlayerDto PlayerA { get; set; } = new();
+    public QuizPlayerDto PlayerB { get; set; } = new();
+    public int TotalRounds { get; set; }
+    public int CurrentRound { get; set; }
+    public int CurrentAskerId { get; set; }
+    public int CurrentAnswererId { get; set; }
+    public int TimeLimitSeconds { get; set; }
+    public QuizCardDto? CurrentQuestion { get; set; }
+    public int ScoreA { get; set; }
+    public int ScoreB { get; set; }
+    public string Status { get; set; } = "";
+    public string? VaultId { get; set; }
+}
+
+/// <summary>FAM-30 对战玩家 DTO</summary>
+public class QuizPlayerDto
+{
+    public int LearnerId { get; set; }
+    public string Name { get; set; } = "";
+    public string AvatarEmoji { get; set; } = "";
+}
+
+/// <summary>FAM-30 题目卡片 DTO（简答模式：正面为题、背面为答案）</summary>
+public class QuizCardDto
+{
+    public string CardId { get; set; } = "";
+    public string Front { get; set; } = "";
+    public string Back { get; set; } = "";
+}
+
+/// <summary>FAM-30 作答判定/结算结果 DTO</summary>
+public class QuizResultDto
+{
+    public string SessionId { get; set; } = "";
+    public bool IsCorrect { get; set; }
+    public string CorrectAnswer { get; set; } = "";
+    public int ScoreA { get; set; }
+    public int ScoreB { get; set; }
+    public int CurrentRound { get; set; }
+    public string Status { get; set; } = ""; // playing / finished
+    public int? WinnerId { get; set; }
+    public string? WinnerName { get; set; }
+    public double AccuracyA { get; set; }
+    public double AccuracyB { get; set; }
+    public QuizCardDto? NextQuestion { get; set; }
+    public int? NextAskerId { get; set; }
+    public int? NextAnswererId { get; set; }
+}
+
+/// <summary>FAM-30 创建对战请求</summary>
+public class CreateQuizRequest
+{
+    public int PlayerAId { get; set; }
+    public int PlayerBId { get; set; }
+    public string? VaultId { get; set; }
+    public int Rounds { get; set; }
+}
+
+/// <summary>FAM-30 提交答案请求（携带完整会话状态，服务端无状态）</summary>
+public class SubmitAnswerRequest
+{
+    public string SessionId { get; set; } = "";
+    public QuizPlayerDto PlayerA { get; set; } = new();
+    public QuizPlayerDto PlayerB { get; set; } = new();
+    public int TotalRounds { get; set; }
+    public int CurrentRound { get; set; }
+    public int CurrentAskerId { get; set; }
+    public int CurrentAnswererId { get; set; }
+    public int TimeLimitSeconds { get; set; }
+    public QuizCardDto? CurrentQuestion { get; set; }
+    public int ScoreA { get; set; }
+    public int ScoreB { get; set; }
+    public string Status { get; set; } = "";
+    public string? VaultId { get; set; }
+    public string Answer { get; set; } = "";
+}

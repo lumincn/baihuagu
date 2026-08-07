@@ -120,6 +120,8 @@ namespace Baihua.Web.Services
         Task<List<RewardProgressDto>> GetRewardProgressAsync(string? vaultId = null);
         Task<RewardConfigDto> CreateRewardAsync(CreateRewardRequest request);
         Task<List<RewardClaimDto>> TriggerRewardsAsync(string? vaultId = null);
+        Task<QuizSessionDto> CreateQuizAsync(CreateQuizRequest request);
+        Task<QuizResultDto> SubmitQuizAnswerAsync(SubmitAnswerRequest request);
         Task<List<LeaderboardEntryDto>> GetLeaderboardAsync(string type, string? vaultId = null);
         Task<DashboardDataDto> GetDashboardAsync(string? vaultId = null, int? learnerId = null);
         Task<CheckinDataDto> GetCheckinDataAsync(string? vaultId = null);
@@ -1949,6 +1951,40 @@ namespace Baihua.Web.Services
             {
                 _logger.LogError(ex, "触发奖励检查失败");
                 return new List<RewardClaimDto>();
+            }
+        }
+
+        // ===== FAM-30 亲子互考 =====
+
+        public async Task<QuizSessionDto> CreateQuizAsync(CreateQuizRequest request)
+        {
+            try
+            {
+                using var quick = new CancellationTokenSource(QuickCallTimeout);
+                var response = await PostWithMetricsAsync("/api/quiz/create", JsonContent.Create(request), quick.Token);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadFromJsonAsync<QuizSessionDto>(quick.Token) ?? new QuizSessionDto();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "创建互考失败");
+                throw;
+            }
+        }
+
+        public async Task<QuizResultDto> SubmitQuizAnswerAsync(SubmitAnswerRequest request)
+        {
+            try
+            {
+                using var quick = new CancellationTokenSource(QuickCallTimeout);
+                var response = await PostWithMetricsAsync("/api/quiz/answer", JsonContent.Create(request), quick.Token);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadFromJsonAsync<QuizResultDto>(quick.Token) ?? new QuizResultDto();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "提交互考答案失败");
+                throw;
             }
         }
 
