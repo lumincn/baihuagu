@@ -7,7 +7,7 @@
   bh.ps1 stop            停止服务
   bh.ps1 status          查看服务状态
   bh.ps1 restart         重启服务
-  bh.ps1 logs [name]     查看日志（taskrunner, webui, ai, vault）
+  bh.ps1 logs [name]     查看日志（family, webui, ai, vault）
   bh.ps1 open            打开 Web 管理界面 (http://localhost:5177)
   bh.ps1 dev             开发模式（dotnet watch，改代码自动热重载）
   bh.ps1 observe         启动 OpenObserve 可观测平台（Docker）并打开 Web UI
@@ -19,7 +19,7 @@
 - dashboard 命令会比较当前 git HEAD 与上次启动时的 commit，不同则自动重编译重启
 - dev 命令用 dotnet watch run 启动每个服务（Debug 配置），改 .cs/.razor 自动热重载/重启，不依赖自定义文件监听
 - observe 命令使用 docker compose 启动 OpenObserve（端口 5082/5083）
-- all 命令启动所有 .NET 服务（ai, vault, taskrunner, webui）和 Docker 监控容器（openobserve, hostmetrics）
+- all 命令启动所有 .NET 服务（ai, vault, family, webui）和 Docker 监控容器（openobserve, hostmetrics）
 #>
 param(
 	[string]$Command = 'dashboard',
@@ -47,7 +47,7 @@ function Get-Help {
 	Write-Host "  stop                  停止服务"
 	Write-Host "  restart               重启服务"
 	Write-Host "  status                查看服务状态"
-	Write-Host "  logs [name]           查看日志（taskrunner, webui, ai, vault）"
+	Write-Host "  logs [name]           查看日志（family, webui, ai, vault）"
 	Write-Host "  open                  打开 Web 管理界面 (http://localhost:5177)"
 	Write-Host "  dev                   开发模式（dotnet watch，改代码自动热重载）"
 	Write-Host "  observe               启动 OpenObserve 可观测平台（Docker）"
@@ -70,14 +70,14 @@ function Get-HgRoot {
 $HG_ROOT = Get-HgRoot
 $TEMP_DIR = $env:TEMP
 
-# 启动顺序：被依赖的先启动（AI → Vault → TaskRunner → WebUI）
-$ServiceOrder = @('ai', 'vault', 'taskrunner', 'webui')
-# 停止顺序：依赖别人的先停止（WebUI → TaskRunner → Vault → AI）
-$StopOrder = @('webui', 'taskrunner', 'vault', 'ai')
+# 启动顺序：被依赖的先启动（AI → Vault → Family → WebUI）
+$ServiceOrder = @('ai', 'vault', 'family', 'webui')
+# 停止顺序：依赖别人的先停止（WebUI → Family → Vault → AI）
+$StopOrder = @('webui', 'family', 'vault', 'ai')
 $Services = @{ 
 	ai         = "services/Baihua.AI";
 	vault      = "services/Baihua.Vault";
-	taskrunner = "services/Baihua.Family";
+	family = "services/Baihua.Family";
 	webui      = "services/Baihua.Web";
 }
 
@@ -85,14 +85,14 @@ $Services = @{
 $HealthUrls = @{
 	ai         = 'http://127.0.0.1:8791/api/ai/config/providers'
 	vault      = 'http://127.0.0.1:8790/mg/vaults'
-	taskrunner = 'http://127.0.0.1:8788/api/capability'
+	family = 'http://127.0.0.1:8788/api/capability'
 	webui      = 'http://127.0.0.1:5177/login'
 }
 
 $ServicePorts = @{
 	ai         = 8791
 	vault      = 8790
-	taskrunner = 8788
+	family = 8788
 	webui      = 5177
 }
 
@@ -669,7 +669,7 @@ function Cmd-All {
 	Write-Host ""
 	Write-Host "[1/2] 启动 .NET 服务..." -ForegroundColor Cyan
 	$failedServices = @()
-	foreach ($name in @('ai', 'vault', 'taskrunner')) {
+	foreach ($name in @('ai', 'vault', 'family')) {
 		$wasRunning = Ensure-ServiceRunning $name
 		Write-Host "  $name : " -NoNewline
 		if (-not (Wait-For-Service $name 30 -wasJustStarted:(-not $wasRunning))) { $failedServices += $name }
@@ -742,7 +742,7 @@ switch ($Command.ToLower()){
 	}
 	'status' { Show-Status; break }
 	'logs' {
-		if (-not $Arg){ Write-Host "请指定服务名: taskrunner, webui, ai, vault" -ForegroundColor Yellow; break }
+		if (-not $Arg){ Write-Host "请指定服务名: family, webui, ai, vault" -ForegroundColor Yellow; break }
 		Tail-Log $Arg; break
 	}
 	'open' { Open-Dashboard; break }
@@ -789,7 +789,7 @@ switch ($Command.ToLower()){
 		# 按顺序启动并等待每个后端服务就绪
 		Write-Host ""
 		$failedServices = @()
-		foreach ($name in @('ai', 'vault', 'taskrunner')) {
+		foreach ($name in @('ai', 'vault', 'family')) {
 			$wasRunning = Ensure-ServiceRunning $name
 			Write-Host "  $name : " -NoNewline
 			if (-not (Wait-For-Service $name 30 -wasJustStarted:(-not $wasRunning))) { $failedServices += $name }
