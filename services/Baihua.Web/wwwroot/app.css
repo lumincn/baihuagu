@@ -2011,3 +2011,151 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
     /* ---- FamilyHome 卡片文字 ---- */
     .card h3, .card-title { color: #d4d8dd; }
 }
+
+/* =============================================
+   暗色模式 — 家庭系列页面（FamilyLanding/Checkin/DailyCard/
+   Achievements/Leaderboard/Dashboard/Quiz）
+   ============================================= */
+[data-bs-theme="dark"] {
+    /* ---- FamilyLanding 家庭首页 ---- */
+    .family-landing .landing-header h1 { color: #e0e8ee; }
+    .family-landing .landing-subtitle { color: #91a0b0; }
+    .family-landing .loading { color: #91a0b0; }
+    .family-landing .empty-guide { background: #1e2433; border-color: #3d4558; }
+    .family-landing .empty-guide h2 { color: #d4d8dd; }
+    .family-landing .empty-guide p { color: #91a0b0; }
+    .family-landing .guide-button { background: #2e8baf; color: #fff; }
+    .family-landing .summary-card { background: #232a3b; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+    .family-landing .summary-value { color: #e0e8ee; }
+    .family-landing .summary-label { color: #91a0b0; }
+    .family-landing .section-header h2 { color: #d4d8dd; }
+    .family-landing .section-link { color: #5ab0d4; }
+    .family-landing .member-card { background: #232a3b; border-color: #3d4558; }
+    .family-landing .member-name { color: #e0e8ee; }
+    .family-landing .m-label { color: #91a0b0; }
+    .family-landing .m-value { color: #d4d8dd; }
+    .family-landing .daily-card-shortcut { background: #232a3b; border-color: #3d4558; }
+    .family-landing .shortcut-title { color: #d4d8dd; }
+    .family-landing .shortcut-desc { color: #91a0b0; }
+    .family-landing .leaderboard-preview { background: #232a3b; border-color: #3d4558; }
+    .family-landing .leaderboard-row { border-color: #2d3548; }
+    .family-landing .lb-name { color: #d4d8dd; }
+    .family-landing .lb-score { color: #91a0b0; }
+
+    /* ---- Onboarding 向导 ---- */
+    .onboarding-wizard .onboarding-header { background: #1e2433; }
+    .onboarding-wizard .onboarding-card { background: #232a3b; border-color: #3d4558; }
+    .onboarding-wizard .onboarding-card h2 { color: #e0e8ee; }
+    .onboarding-wizard .onboarding-card p { color: #91a0b0; }
+    .onboarding-wizard .onboarding-form input { background: #1e2433; border-color: #3d4558; color: #d4d8dd; }
+    .onboarding-wizard .ob-step { background: #2d3548; color: #91a0b0; }
+    .onboarding-wizard .ob-step.active { background: #2e8baf; color: #fff; }
+
+    /* ---- Checkin 学习打卡 ---- */
+    .checkin-page .streak-banner { background: linear-gradient(135deg, rgba(46,139,175,0.25), rgba(46,125,50,0.2)); }
+    .checkin-page .streak-num { color: #ffb74d; }
+    .checkin-page .streak-label { color: #c0c8d0; }
+    .checkin-page .streak-motivation { color: #91a0b0; }
+    .checkin-page .today-section h2 { color: #d4d8dd; }
+    .checkin-page .today-section h3 { color: #d4d8dd; }
+    .checkin-page .cal-cell { background: #232a3b; border-color: #2d3548; }
+    .checkin-page .cal-date { color: #c0c8d0; }
+    .checkin-page .cal-cell.today { border-color: #2e8baf; }
+    .checkin-page .cal-mark { background: #2e8baf; }
+    .checkin-page .cal-makeup-hint { color: #91a0b0; }
+    .checkin-page .record-item { background: #232a3b; border-color: #2d3548; }
+    .checkin-page .rec-content { color: #d4d8dd; }
+    .checkin-page .rec-time, .checkin-page .rec-source { color: #91a0b0; }
+    .checkin-page .empty-state { background: #1e2433; border-color: #3d4558; }
+    .checkin-page .empty-text { color: #91a0b0; }
+    .checkin-page .learner-group h3 { color: #d4d8dd; }
+    .checkin-page .group-count { color: #91a0b0; }
+    .checkin-page .makeup-dialog { background: #232a3b; border-color: #3d4558; }
+    .checkin-page .makeup-dialog h3 { color: #e0e8ee; }
+    .checkin-page .makeup-quota { color: #91a0b0; }
+
+    /* ---- DailyCard 每日卡片 ---- */
+    .daily-card-page .progress-section { background: #232a3b; border-color: #3d4558; }
+    .daily-card-page .progress-text { color: #d4d8dd; }
+    .daily-card-page .progress-fill { background: #2e8baf; }
+    .daily-card-page .card-container .card-content { background: #232a3b; border-color: #3d4558; }
+    .daily-card-page .card-content h3, .daily-card-page .card-content h4 { color: #e0e8ee; }
+    .daily-card-page .card-content p { color: #c0c8d0; }
+    .daily-card-page .card-deck { color: #91a0b0; }
+    .daily-card-page .card-tags .tag { background: #2d3548; color: #5ab0d4; }
+    .daily-card-page .no-card { background: #1e2433; border-color: #3d4558; }
+    .daily-card-page .no-card-icon, .daily-card-page .no-card p { color: #91a0b0; }
+    .daily-card-page .vault-selector { background: #232a3b; border-color: #3d4558; color: #d4d8dd; }
+    .daily-card-page .card-hint, .daily-card-page .flip-hint { color: #91a0b0; }
+    .daily-card-page .streak-badge { background: rgba(46,139,175,0.2); color: #5ab0d4; }
+    .daily-card-page .streak-count { color: #ffb74d; }
+
+    /* ---- Achievements 成就 ---- */
+    .achievements-page .toolbar { background: #232a3b; border-color: #3d4558; }
+    .achievements-page .achievement-card { background: #232a3b; border-color: #3d4558; }
+    .achievements-page .achievement-title { color: #e0e8ee; }
+    .achievements-page .achievement-desc { color: #91a0b0; }
+    .achievements-page .achievement-tier { color: #5ab0d4; }
+    .achievements-page .achievement-progress-bar { background: #2d3548; }
+    .achievements-page .achievement-progress-fill { background: #2e8baf; }
+
+    /* ---- Leaderboard 排行榜 ---- */
+    .leaderboard-page .toolbar, .leaderboard-page .view-switch { background: #232a3b; border-color: #3d4558; }
+    .leaderboard-page .leaderboard-table { background: #232a3b; border-color: #3d4558; }
+    .leaderboard-page .leaderboard-row { border-color: #2d3548; }
+    .leaderboard-page .leaderboard-row .name, .leaderboard-page .leaderboard-row .stat-value { color: #d4d8dd; }
+    .leaderboard-page .leaderboard-row .stat-label { color: #91a0b0; }
+    .leaderboard-page .rank-num { color: #91a0b0; }
+    .leaderboard-page .compare-card { background: #232a3b; border-color: #3d4558; }
+    .leaderboard-page .cmp-label { color: #91a0b0; }
+    .leaderboard-page .cmp-value { color: #e0e8ee; }
+    .leaderboard-page .cmp-delta { color: #91a0b0; }
+    .leaderboard-page .solo-guide { background: #1e2433; border-color: #3d4558; }
+    .leaderboard-page .solo-guide p { color: #91a0b0; }
+    .leaderboard-page .stats .stat { background: #232a3b; border-color: #3d4558; }
+    .leaderboard-page .stat-label { color: #91a0b0; }
+    .leaderboard-page .stat-value { color: #e0e8ee; }
+    .leaderboard-page .tab { background: #2d3548; color: #91a0b0; }
+    .leaderboard-page .tab.active { background: #2e8baf; color: #fff; }
+
+    /* ---- Dashboard 家长看板 ---- */
+    .dashboard-page .dashboard-first-screen { background: #1e2433; border-color: #3d4558; }
+    .dashboard-page .family-summary-card { background: #232a3b; border-color: #3d4558; }
+    .dashboard-page .dashboard-card { background: #232a3b; border-color: #3d4558; }
+    .dashboard-page .dashboard-card h3 { color: #d4d8dd; }
+    .dashboard-page .dashboard-stat-value { color: #e0e8ee; }
+    .dashboard-page .dashboard-stat-label { color: #91a0b0; }
+    .dashboard-page .trend-arrow-up { color: #4caf50; }
+    .dashboard-page .trend-arrow-down { color: #f44336; }
+    .dashboard-page .activity-item { background: #232a3b; border-color: #2d3548; }
+    .dashboard-page .activity-text { color: #d4d8dd; }
+    .dashboard-page .activity-time { color: #91a0b0; }
+    .dashboard-page .timeline-item { border-color: #2d3548; }
+    .dashboard-page .timeline-title { color: #d4d8dd; }
+    .dashboard-page .timeline-desc { color: #91a0b0; }
+    .dashboard-page .section h2 { color: #d4d8dd; }
+    .dashboard-page .empty-state { background: #1e2433; border-color: #3d4558; }
+    .dashboard-page .empty-text { color: #91a0b0; }
+    .dashboard-page .member-chip { background: #2d3548; color: #c0c8d0; }
+    .dashboard-page .selector-label { color: #91a0b0; }
+    .dashboard-page .skeleton-card, .dashboard-page .skeleton-header, .dashboard-page .skeleton-line { background: #2d3548; }
+
+    /* ---- Quiz 家庭测验 ---- */
+    .quiz-page .quiz-setup, .quiz-page .quiz-round, .quiz-page .quiz-settlement { background: #232a3b; border-color: #3d4558; }
+    .quiz-page .question-card { background: #232a3b; border-color: #3d4558; }
+    .quiz-page .q-front, .quiz-page .q-asker { color: #e0e8ee; }
+    .quiz-page .quiz-question { color: #e0e8ee; }
+    .quiz-page .quiz-option { background: #2d3548; border-color: #3d4558; color: #c0c8d0; }
+    .quiz-page .quiz-option:hover { background: #363d52; }
+    .quiz-page .quiz-option.selected { border-color: #2e8baf; background: rgba(46,139,175,0.2); }
+    .quiz-page .answer-feedback { color: #91a0b0; }
+    .quiz-page .correct, .quiz-page .quiz-correct { color: #4caf50; }
+    .quiz-page .quiz-wrong { color: #f44336; }
+    .quiz-page .scoreboard { background: #1e2433; border-color: #3d4558; }
+    .quiz-page .sp-name { color: #d4d8dd; }
+    .quiz-page .sp-score { color: #e0e8ee; }
+    .quiz-page .round-num { color: #91a0b0; }
+    .quiz-page .quiz-empty { background: #1e2433; border-color: #3d4558; }
+    .quiz-page .quiz-empty p { color: #91a0b0; }
+    .quiz-page .settle-winner { color: #ffb74d; }
+}

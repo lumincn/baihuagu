@@ -476,17 +476,29 @@
     private int todayTotal => data.FamilyStats.Sum(s => s.WeekTotal);
     private int maxStreak => data.FamilyStats.Count > 0 ? data.FamilyStats.Max(s => s.Streak) : 0;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnInitializedAsync()
     {
-        if (!firstRender) return;
-        await LoadLandingAsync();
+        Logger.LogInformation("FamilyLanding OnInitializedAsync enter");
+        try
+        {
+            await LoadLandingAsync();
+            Logger.LogInformation("FamilyLanding OnInitializedAsync done");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "FamilyLanding OnInitializedAsync exception");
+            isLoading = false;
+            StateHasChanged();
+        }
     }
 
     private async Task LoadLandingAsync()
     {
+        Logger.LogInformation("FamilyLanding LoadLandingAsync start");
         try
         {
             learners = await ApiService.GetLearnersAsync();
+            Logger.LogInformation("FamilyLanding learners count={Count}", learners.Count);
             // FAM-34 AC1/AC4：无 Learner 且 Onboarding 未完成（且无使用痕迹）才触发
             if (learners.Count == 0)
             {
