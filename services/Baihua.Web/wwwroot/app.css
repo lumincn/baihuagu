@@ -2041,6 +2041,8 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
     .family-landing .leaderboard-row { border-color: #2d3548; }
     .family-landing .lb-name { color: #d4d8dd; }
     .family-landing .lb-score { color: #91a0b0; }
+    .family-landing .section-empty { background: #1e2433; border-color: #3d4558; }
+    .family-landing .section-empty p { color: #91a0b0; }
 
     /* ---- Onboarding 向导 ---- */
     .onboarding-wizard .onboarding-header { background: #1e2433; }
@@ -2053,6 +2055,7 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
 
     /* ---- Checkin 学习打卡 ---- */
     .checkin-page .streak-banner { background: linear-gradient(135deg, rgba(46,139,175,0.25), rgba(46,125,50,0.2)); }
+    .checkin-page .streak-section { background: #232a3b; border-color: #3d4558; }
     .checkin-page .streak-num { color: #ffb74d; }
     .checkin-page .streak-label { color: #c0c8d0; }
     .checkin-page .streak-motivation { color: #91a0b0; }
@@ -2064,21 +2067,29 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
     .checkin-page .cal-mark { background: #2e8baf; }
     .checkin-page .cal-makeup-hint { color: #91a0b0; }
     .checkin-page .record-item { background: #232a3b; border-color: #2d3548; }
+    .checkin-page .record-item:hover { background: #2d3548; }
     .checkin-page .rec-content { color: #d4d8dd; }
     .checkin-page .rec-time, .checkin-page .rec-source { color: #91a0b0; }
+    .checkin-page .rec-source { background: rgba(46,125,50,0.2); color: #81c784; }
+    .checkin-page .record-detail { background: #1e2433; border-radius: 6px; }
+    .checkin-page .detail-row { color: #c0c8d0; }
     .checkin-page .empty-state { background: #1e2433; border-color: #3d4558; }
     .checkin-page .empty-text { color: #91a0b0; }
+    .checkin-page .learner-group { background: #232a3b; border-color: #3d4558; }
     .checkin-page .learner-group h3 { color: #d4d8dd; }
     .checkin-page .group-count { color: #91a0b0; }
     .checkin-page .makeup-dialog { background: #232a3b; border-color: #3d4558; }
     .checkin-page .makeup-dialog h3 { color: #e0e8ee; }
     .checkin-page .makeup-quota { color: #91a0b0; }
+    .checkin-page .checkin-error { background: rgba(244,67,54,0.12); color: #ff8a80; border-color: rgba(244,67,54,0.3); }
 
     /* ---- DailyCard 每日卡片 ---- */
     .daily-card-page .progress-section { background: #232a3b; border-color: #3d4558; }
     .daily-card-page .progress-text { color: #d4d8dd; }
     .daily-card-page .progress-fill { background: #2e8baf; }
     .daily-card-page .card-container .card-content { background: #232a3b; border-color: #3d4558; }
+    .daily-card-page .card-face { background: #232a3b; border-color: #3d4558; }
+    .daily-card-page .card-back { background: #1e2433; border-color: #3d4558; }
     .daily-card-page .card-content h3, .daily-card-page .card-content h4 { color: #e0e8ee; }
     .daily-card-page .card-content p { color: #c0c8d0; }
     .daily-card-page .card-deck { color: #91a0b0; }
@@ -2089,6 +2100,17 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
     .daily-card-page .card-hint, .daily-card-page .flip-hint { color: #91a0b0; }
     .daily-card-page .streak-badge { background: rgba(46,139,175,0.2); color: #5ab0d4; }
     .daily-card-page .streak-count { color: #ffb74d; }
+    .daily-card-page .custom-card-form { background: #1e2433; border-color: #3d4558; }
+    .daily-card-page .custom-card-form label { color: #c0c8d0; }
+    .daily-card-page .custom-card-form input, .daily-card-page .custom-card-form textarea { background: #232a3b; border-color: #3d4558; color: #d4d8dd; }
+    .daily-card-page .btn-hard, .daily-card-page .btn-forgot, .daily-card-page .btn-remember { color: #fff; }
+    .daily-card-page .btn-remember { background: #2e7d32; }
+    .daily-card-page .btn-hard { background: #d84315; }
+    .daily-card-page .btn-forgot { background: #5d4037; }
+    .daily-card-page .tier-bronze { background: #4a3826; color: #e0c080; }
+    .daily-card-page .tier-silver { background: #3a3f4a; color: #c0c8d0; }
+    .daily-card-page .tier-gold { background: #4a3d1e; color: #e0c860; }
+    .daily-card-page .tier-platinum { background: #1e3a44; color: #7fd4e8; }
 
     /* ---- Achievements 成就 ---- */
     .achievements-page .toolbar { background: #232a3b; border-color: #3d4558; }
@@ -2098,14 +2120,28 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
     .achievements-page .achievement-tier { color: #5ab0d4; }
     .achievements-page .achievement-progress-bar { background: #2d3548; }
     .achievements-page .achievement-progress-fill { background: #2e8baf; }
+    .achievements-page .stat-card { background: #232a3b; border-color: #3d4558; }
+    .achievements-page .reward-section { background: #232a3b; border-color: #3d4558; }
+    .achievements-page .add-learner-form { background: #1e2433; border-color: #3d4558; }
+    .achievements-page .achievement-card.tier-gold { background: #4a3d1e; border-color: #e0c860; }
+    .achievements-page .achievement-card.tier-diamond { background: #1e3a44; border-color: #b9f2ff; }
+    .achievements-page .learner-chip { background: #232a3b; border-color: #3d4558; color: #d4d8dd; }
+    .achievements-page .achievement-date { color: #91a0b0; }
+    .achievements-page .reward-empty, .achievements-page .reward-icon { color: #91a0b0; }
 
     /* ---- Leaderboard 排行榜 ---- */
     .leaderboard-page .toolbar, .leaderboard-page .view-switch { background: #232a3b; border-color: #3d4558; }
     .leaderboard-page .leaderboard-table { background: #232a3b; border-color: #3d4558; }
-    .leaderboard-page .leaderboard-row { border-color: #2d3548; }
+    .leaderboard-page .leaderboard-row { background: #232a3b; border-color: #2d3548; }
+    .leaderboard-page .leaderboard-row.top-1, .leaderboard-page .leaderboard-row.top-2, .leaderboard-page .leaderboard-row.top-3 { background: rgba(46,139,175,0.08); }
+    .leaderboard-page .leaderboard-row.top-1 { border-color: #e0c860; }
+    .leaderboard-page .leaderboard-row.top-2 { border-color: #a0a8b0; }
+    .leaderboard-page .leaderboard-row.top-3 { border-color: #cd7f32; }
+    .leaderboard-page .role-tabs { background: #1e2433; border-color: #3d4558; }
     .leaderboard-page .leaderboard-row .name, .leaderboard-page .leaderboard-row .stat-value { color: #d4d8dd; }
     .leaderboard-page .leaderboard-row .stat-label { color: #91a0b0; }
     .leaderboard-page .rank-num { color: #91a0b0; }
+    .leaderboard-page .self-compare { background: #232a3b; border-color: #3d4558; }
     .leaderboard-page .compare-card { background: #232a3b; border-color: #3d4558; }
     .leaderboard-page .cmp-label { color: #91a0b0; }
     .leaderboard-page .cmp-value { color: #e0e8ee; }
@@ -2117,12 +2153,15 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
     .leaderboard-page .stat-value { color: #e0e8ee; }
     .leaderboard-page .tab { background: #2d3548; color: #91a0b0; }
     .leaderboard-page .tab.active { background: #2e8baf; color: #fff; }
+    .leaderboard-page .view-tab { background: #2d3548; color: #91a0b0; }
+    .leaderboard-page .view-tab.active { background: #2e8baf; color: #fff; }
 
     /* ---- Dashboard 家长看板 ---- */
     .dashboard-page .dashboard-first-screen { background: #1e2433; border-color: #3d4558; }
     .dashboard-page .family-summary-card { background: #232a3b; border-color: #3d4558; }
     .dashboard-page .dashboard-card { background: #232a3b; border-color: #3d4558; }
     .dashboard-page .dashboard-card h3 { color: #d4d8dd; }
+    .dashboard-page .section { background: #232a3b; border-color: #3d4558; }
     .dashboard-page .dashboard-stat-value { color: #e0e8ee; }
     .dashboard-page .dashboard-stat-label { color: #91a0b0; }
     .dashboard-page .trend-arrow-up { color: #4caf50; }
@@ -2130,13 +2169,14 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
     .dashboard-page .activity-item { background: #232a3b; border-color: #2d3548; }
     .dashboard-page .activity-text { color: #d4d8dd; }
     .dashboard-page .activity-time { color: #91a0b0; }
-    .dashboard-page .timeline-item { border-color: #2d3548; }
+    .dashboard-page .timeline-item { background: #1e2433; border-color: #2d3548; }
     .dashboard-page .timeline-title { color: #d4d8dd; }
     .dashboard-page .timeline-desc { color: #91a0b0; }
     .dashboard-page .section h2 { color: #d4d8dd; }
     .dashboard-page .empty-state { background: #1e2433; border-color: #3d4558; }
     .dashboard-page .empty-text { color: #91a0b0; }
-    .dashboard-page .member-chip { background: #2d3548; color: #c0c8d0; }
+    .dashboard-page .dashboard-error { background: rgba(244,67,54,0.12); color: #ff8a80; border-color: rgba(244,67,54,0.3); }
+    .dashboard-page .member-chip { background: #232a3b; border-color: #3d4558; color: #d4d8dd; }
     .dashboard-page .selector-label { color: #91a0b0; }
     .dashboard-page .skeleton-card, .dashboard-page .skeleton-header, .dashboard-page .skeleton-line { background: #2d3548; }
 
@@ -2144,11 +2184,14 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
     .quiz-page .quiz-setup, .quiz-page .quiz-round, .quiz-page .quiz-settlement { background: #232a3b; border-color: #3d4558; }
     .quiz-page .question-card { background: #232a3b; border-color: #3d4558; }
     .quiz-page .q-front, .quiz-page .q-asker { color: #e0e8ee; }
+    .quiz-page .q-front { background: #1e2433; }
     .quiz-page .quiz-question { color: #e0e8ee; }
     .quiz-page .quiz-option { background: #2d3548; border-color: #3d4558; color: #c0c8d0; }
     .quiz-page .quiz-option:hover { background: #363d52; }
     .quiz-page .quiz-option.selected { border-color: #2e8baf; background: rgba(46,139,175,0.2); }
     .quiz-page .answer-feedback { color: #91a0b0; }
+    .quiz-page .answer-feedback.correct { background: rgba(46,125,50,0.2); color: #81c784; }
+    .quiz-page .answer-feedback.wrong { background: rgba(244,67,54,0.15); color: #ff8a80; }
     .quiz-page .correct, .quiz-page .quiz-correct { color: #4caf50; }
     .quiz-page .quiz-wrong { color: #f44336; }
     .quiz-page .scoreboard { background: #1e2433; border-color: #3d4558; }
@@ -2158,4 +2201,5 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
     .quiz-page .quiz-empty { background: #1e2433; border-color: #3d4558; }
     .quiz-page .quiz-empty p { color: #91a0b0; }
     .quiz-page .settle-winner { color: #ffb74d; }
+    .quiz-page .correct-answer { color: #91a0b0; }
 }
