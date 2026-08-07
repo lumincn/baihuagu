@@ -852,7 +852,7 @@ switch ($Command.ToLower()){
 					Cmd-Stop
 					Start-Sleep -Seconds 1
 					dotnet build (Join-Path $HG_ROOT 'services\BaiHua.slnx') -c Debug 2>&1 | Select-Object -Last 3 | ForEach-Object { Write-Host "    $_" }
-					if ($script:LASTEXITCODE -ne 0) { Write-Host "[X] Build failed" -ForegroundColor Red; return }
+					if ($LASTEXITCODE -ne 0) { Write-Host "[X] Build failed" -ForegroundColor Red; return }
 					Write-Host "[v] Build OK, restarting..." -ForegroundColor Green
 					Save-GitCommit
 					foreach ($k in $ServiceOrder){
