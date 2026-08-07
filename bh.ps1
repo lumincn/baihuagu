@@ -27,7 +27,8 @@
 param(
 	[string]$Command = 'dashboard',
 	[string]$Arg,
-	[string]$Browser = ''
+	[string]$Browser = '',
+	[switch]$NoLogin
 )
 
 # PowerShell 5.1 兼容性检查（编码/特性差异，推荐 pwsh 7+）
@@ -793,7 +794,8 @@ function Show-Help {
 	Write-Host "用法: .\bh.ps1 [command] [args]"
 	Write-Host ""
 	Write-Host "Commands:"
-	Write-Host "  dashboard             打开管理面板（默认，自动检测更新重编译）"
+	Write-Host "  dashboard             打开管理面板（默认，自动检测更新重编译）
+  dashboard --nologin   同上但跳过打开浏览器登录（测试/CI 用）"
 	Write-Host "  setup                 首次配置（交互）"
 	Write-Host "  start                 启动服务（后台运行 dotnet run）"
 	Write-Host "  stop [name]           停止服务（不指定则停止全部）"
@@ -817,7 +819,7 @@ function Show-Help {
 }
 
 function Main {
-	param([string]$CommandName, [string]$ServiceArg, [string]$LineArg, [string]$BrowserArg)
+	param([string]$CommandName, [string]$ServiceArg, [string]$LineArg, [string]$BrowserArg, [switch]$NoLogin)
 
 	switch ($CommandName.ToLower()){
 		'help' { Show-Help; break }
@@ -921,22 +923,26 @@ function Main {
 			# 首次启动保存 commit
 			if (-not $needsRebuild) { Save-GitCommit }
 
-			# 获取 CLI token 并打开浏览器
+			# 获取 CLI token 并打开浏览器（--nologin 跳过）
 			Write-Host ""
-			try {
-				$resp = Invoke-WebRequest -Uri (Get-CliTokenUrl) -Method POST -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
-				$json = $resp.Content | ConvertFrom-Json
-				$token = $json.token
-				if ($token) {
-					$dashboardUrl = Get-DashboardUrl $token
-					Write-Host "Opening dashboard with CLI token..."
-					Open-InBrowser $dashboardUrl
-				} else {
+			if ($NoLogin) {
+				Write-Host "[i] --nologin: 跳过打开浏览器（服务已就绪: http://localhost:$((Get-ServiceConfig)['webui'].Port)）" -ForegroundColor DarkGray
+			} else {
+				try {
+					$resp = Invoke-WebRequest -Uri (Get-CliTokenUrl) -Method POST -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
+					$json = $resp.Content | ConvertFrom-Json
+					$token = $json.token
+					if ($token) {
+						$dashboardUrl = Get-DashboardUrl $token
+						Write-Host "Opening dashboard with CLI token..."
+						Open-InBrowser $dashboardUrl
+					} else {
+						Open-Dashboard
+					}
+				} catch {
+					Write-Host "Failed to get CLI token, opening without auto-login"
 					Open-Dashboard
 				}
-			} catch {
-				Write-Host "Failed to get CLI token, opening without auto-login"
-				Open-Dashboard
 			}
 
 			if ($failedServices.Count -gt 0) {
@@ -967,22 +973,26 @@ function Main {
 			Write-Host "  webui : " -NoNewline
 			if (Wait-For-Url (Get-LoginUrl) 20) {
 				Write-Host "v ready" -ForegroundColor Green
-				# 自动登录
-				Write-Host "[i] Auto-login with CLI token..." -ForegroundColor DarkGray
-				try {
-					$resp = Invoke-WebRequest -Uri (Get-CliTokenUrl) -Method POST -UseBasicParsing -TimeoutSec 5
-					if ($resp.StatusCode -eq 200) {
-						$token = ($resp.Content | ConvertFrom-Json).token
-						$dashboardUrl = Get-DashboardUrl $token
-						Write-Host "[v] Auto-login OK" -ForegroundColor Green
-						Start-Process $dashboardUrl
-					} else {
-						Write-Host "[!] Auto-login failed (status $($resp.StatusCode)), open manually" -ForegroundColor Yellow
+				if ($NoLogin) {
+					Write-Host "[i] --nologin: 跳过打开浏览器（服务已就绪: http://localhost:$((Get-ServiceConfig)['webui'].Port)）" -ForegroundColor DarkGray
+				} else {
+					# 自动登录
+					Write-Host "[i] Auto-login with CLI token..." -ForegroundColor DarkGray
+					try {
+						$resp = Invoke-WebRequest -Uri (Get-CliTokenUrl) -Method POST -UseBasicParsing -TimeoutSec 5
+						if ($resp.StatusCode -eq 200) {
+							$token = ($resp.Content | ConvertFrom-Json).token
+							$dashboardUrl = Get-DashboardUrl $token
+							Write-Host "[v] Auto-login OK" -ForegroundColor Green
+							Start-Process $dashboardUrl
+						} else {
+							Write-Host "[!] Auto-login failed (status $($resp.StatusCode)), open manually" -ForegroundColor Yellow
+							Start-Process (Get-WebUrl)
+						}
+					} catch {
+						Write-Host "[!] Auto-login failed: $($_.Exception.Message), open manually" -ForegroundColor Yellow
 						Start-Process (Get-WebUrl)
 					}
-				} catch {
-					Write-Host "[!] Auto-login failed: $($_.Exception.Message), open manually" -ForegroundColor Yellow
-					Start-Process (Get-WebUrl)
 				}
 			} else {
 				Write-Host "X not ready" -ForegroundColor Red
@@ -1011,6 +1021,12 @@ if ($MyInvocation.InvocationName -eq '.') { return }
 #   .\bh.ps1 <cmd> <arg1> <arg2>
 #   cmd=logs 时 arg2=行数 或 -f（跟随）；其他 cmd 时 arg2 视为浏览器路径
 #   $Browser 兼作：logs 的行数/-f / 浏览器路径（命名参数 -Browser 也支持）
+# --nologin 兼容：位置参数形式 .\bh.ps1 dashboard --nologin（$Arg 或 $Browser 携带）
+if (-not $NoLogin -and ($Arg -eq '--nologin' -or $Browser -eq '--nologin')) {
+	$NoLogin = $true
+	if ($Arg -eq '--nologin') { $Arg = '' }
+	if ($Browser -eq '--nologin') { $Browser = '' }
+}
 $cmd = $Command
 $svcArg = $Arg
 if ($Browser -match '^-f$' -or $Browser -match '^\d+$') {
@@ -1021,9 +1037,15 @@ if ($Browser -match '^-f$' -or $Browser -match '^\d+$') {
 	$lineArg = ''
 	$browserArg = $Browser
 }
+# --nologin 兼容：位置参数形式 .\bh.ps1 dashboard --nologin（$Arg 或 $Browser 携带）
+if (-not $NoLogin -and ($svcArg -eq '--nologin' -or $browserArg -eq '--nologin')) {
+	$NoLogin = $true
+	if ($svcArg -eq '--nologin') { $svcArg = '' }
+	if ($browserArg -eq '--nologin') { $browserArg = '' }
+}
 # 写回脚本作用域，供 Open-InBrowser 读取
 $script:Browser = $browserArg
 
-Main -CommandName $cmd -ServiceArg $svcArg -LineArg $lineArg -BrowserArg $browserArg
+Main -CommandName $cmd -ServiceArg $svcArg -LineArg $lineArg -BrowserArg $browserArg -NoLogin:$NoLogin
 
 exit 0

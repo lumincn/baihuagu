@@ -158,4 +158,13 @@ Describe "命令冒烟测试" {
         $out = Invoke-BhCmd @('status')
         $out | Should Match 'port:'
     }
+    It "status --nologin 参数被正确解析（不报未知服务）" {
+        $out = Invoke-BhCmd @('status', '--nologin')
+        $out | Should Not Match '未知服务'
+        $out | Should Match 'port:'
+    }
+    It "help 显示 --nologin 说明" {
+        $out = Invoke-BhCmd @('help')
+        $out | Should Match 'nologin'
+    }
 }

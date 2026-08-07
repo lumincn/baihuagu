@@ -87,6 +87,14 @@ Test-Case "restart 未知服务名提示" {
     Assert-True ($out -match '未知服务') "应提示未知服务"
 }
 
+# 8. dashboard --nologin 跳过浏览器登录（不调 cli-token、不 Open-InBrowser）
+Test-Case "dashboard --nologin 跳过浏览器登录" {
+    $out = & $script:ScriptPath dashboard --nologin 6>&1 2>&1 | Out-String
+    Assert-True ($out -match 'nologin') "应显示 --nologin 跳过提示"
+    Assert-True ($out -notmatch 'Opening dashboard') "不应尝试打开浏览器"
+    Assert-True ($out -notmatch 'Auto-login') "不应执行自动登录"
+}
+
 Write-Host ""
 Write-Host "=== 集成测试结果 ===" -ForegroundColor Cyan
 Write-Host "  Passed: $Passed / Failed: $Failed" -ForegroundColor $(if ($Failed -eq 0) { 'Green' } else { 'Red' })
