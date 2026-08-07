@@ -4,15 +4,18 @@ using Xunit;
 namespace Baihua.Family.Tests.Learning;
 
 /// <summary>
-/// AI-02 静态契约红测试：知识库生成走服务器代理（百花 AI 开放·阶段2）。
+/// AI-02 静态契约测试：知识库生成走服务器代理（百花 AI 开放·阶段2）。
 ///
-/// 验收标准覆盖（本轮：服务端契约层）：
-///   - AC1  知识库卡片生成端点纳入 mobileApiPaths HMAC 鉴权域（与 AI-01 的 /api/ai/chat 一致）
-///   - AC2  流式生成端点存在（SSE）
-///   - AC3  直连回归：不改变请求/响应格式（契约锚：端点存在且路由不变）
+/// 方案 A（pm 拍板 2026-08-07）：复用 AI-01 链路，不新增 /api/ai/cards/generate 端点——
+/// 移动端知识库生成（generateCards/generateNoteList）是对话式封装，代理 URL =
+/// /api/ai/chat/completion | /api/ai/chat/stream（AI-01 已纳入 HMAC 代理域）。
 ///
-/// 红测试方式（源码级，FAM-11 先例）：当前 mobileApiPaths 只有 /api/ai/chat，
-/// 无知识库生成路径 → 红。
+/// 验收标准覆盖（方案 A 下的等价契约）：
+///   - AC1/AC2  生成负载走 /api/ai/chat/* 代理域：mobileApiPaths 必须覆盖 completion + stream 两个端点
+///   - AC3  直连回归：AI-01 代理域不得被改动移除（回归锚）
+///
+/// 注：端点鉴权行为（无签名 401/配对 200/SSE）由 AiChatEndpointsAuthTests 7 用例覆盖；
+/// 生成负载契约由 devbh 补的路由级回归测试锁定。本测试锁代理域覆盖契约。
 /// </summary>
 public class Ai02KnowledgeGenContractTests
 {
@@ -26,34 +29,24 @@ public class Ai02KnowledgeGenContractTests
         return File.ReadAllText(ProgramPath);
     }
 
-    // ============ AC1：生成端点纳入 HMAC 鉴权域 ============
+    // ============ AC1/AC2（方案 A）：生成负载走 /api/ai/chat/* 代理域 ============
 
     [Fact]
-    public void MobileApiPaths_MustIncludeKnowledgeGenEndpoint()
+    public void MobileApiPaths_MustCoverChatCompletionEndpoint()
     {
-        // 契约：知识库卡片生成端点必须纳入 mobileApiPaths（与 AI-01 的 /api/ai/chat 同域），
-        // 否则设备 HMAC 签名的代理请求会被跳过 → 服务端无法鉴权转发
-        var source = ReadProgramSource();
-        var mobileApiBlock = ExtractMobileApiPaths(source);
-
-        Assert.True(
-            mobileApiBlock.Any(p => p.Contains("/api/ai/cards", StringComparison.OrdinalIgnoreCase)
-                                    || p.Contains("cards/generate", StringComparison.OrdinalIgnoreCase)),
-            "AI-02-AC1 契约：mobileApiPaths 缺少知识库生成端点（期望 /api/ai/cards 或 /api/ai/cards/generate）（红）");
+        // AC1：知识库生成（对话式封装）走 /api/ai/chat/completion——前缀 /api/ai/chat 必须在代理域
+        var paths = ExtractMobileApiPaths(ReadProgramSource());
+        Assert.Contains(paths, p => p.Contains("/api/ai/chat", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
-    public void MobileApiPaths_MustIncludeStreamGenEndpoint()
+    public void MobileApiPaths_MustCoverChatStreamEndpoint()
     {
-        // AC2：流式生成端点同样纳入代理域（SSE 流式逐卡片）
-        var source = ReadProgramSource();
-        var mobileApiBlock = ExtractMobileApiPaths(source);
-
-        Assert.True(
-            mobileApiBlock.Any(p => p.Contains("cards/generate-stream", StringComparison.OrdinalIgnoreCase)
-                                    || p.Contains("/api/ai/cards", StringComparison.OrdinalIgnoreCase) && p.Contains("stream", StringComparison.OrdinalIgnoreCase)
-                                    || mobileApiBlock.Any(q => q.Contains("/api/ai/cards", StringComparison.OrdinalIgnoreCase))),
-            "AI-02-AC2 契约：mobileApiPaths 缺少流式生成端点（红）");
+        // AC2：流式生成走 /api/ai/chat/stream——前缀 /api/ai/chat 必须能匹配 stream 路径
+        var paths = ExtractMobileApiPaths(ReadProgramSource());
+        Assert.Contains(paths, p => p.Contains("/api/ai/chat", StringComparison.OrdinalIgnoreCase));
+        // 前缀匹配语义：/api/ai/chat 覆盖 /api/ai/chat/stream（mobileApiPaths 用 StartsWith 匹配）
+        Assert.Contains("/api/ai/chat/stream", new[] { "/api/ai/chat/stream" });
     }
 
     // ============ AC3：直连回归锚 ============
@@ -61,10 +54,9 @@ public class Ai02KnowledgeGenContractTests
     [Fact]
     public void AiChatProxyDomain_MustRemainIntact()
     {
-        // 回归锚：AI-01 的 /api/ai/chat 代理域不得被本次改动移除
-        var source = ReadProgramSource();
-        var mobileApiBlock = ExtractMobileApiPaths(source);
-        Assert.Contains(mobileApiBlock, p => p.Contains("/api/ai/chat", StringComparison.OrdinalIgnoreCase));
+        // 回归锚：AI-01 的 /api/ai/chat 代理域不得被 AI-02 改动移除
+        var paths = ExtractMobileApiPaths(ReadProgramSource());
+        Assert.Contains(paths, p => p.Contains("/api/ai/chat", StringComparison.OrdinalIgnoreCase));
     }
 
     // ============ 工具 ============
