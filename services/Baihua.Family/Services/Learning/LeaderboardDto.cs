@@ -98,3 +98,22 @@ public class LeaderboardEntry
     public int Streak { get; set; }
     public int Rank { get; set; }
 }
+
+/// <summary>FAM-22 "和自己比"结果：本周 vs 上周</summary>
+public class WeeklyCompareResult
+{
+    /// <summary>本周完成卡片数（北京周界：周一 00:00 起）</summary>
+    public int WeekTotal { get; set; }
+
+    /// <summary>上周完成卡片数</summary>
+    public int LastWeekTotal { get; set; }
+
+    /// <summary>变化量 = 本周 - 上周</summary>
+    public int Delta { get; set; }
+
+    /// <summary>变化百分比（上周为 0 时无意义返回 0）</summary>
+    public double Percent { get; set; }
+
+    /// <summary>趋势箭头：up / down / flat / ""（无上周数据，页面显示 --）</summary>
+    public string Arrow { get; set; } = "";
+}

@@ -79,6 +79,23 @@ public class LeaderboardEntryDto
     public int Rank { get; set; }
 }
 
+/// <summary>FAM-22 "和自己比"结果 DTO：本周 vs 上周</summary>
+public class WeeklyCompareResultDto
+{
+    public int WeekTotal { get; set; }
+    public int LastWeekTotal { get; set; }
+    public int Delta { get; set; }
+    public double Percent { get; set; }
+    public string Arrow { get; set; } = "";
+}
+
+/// <summary>FAM-22 排行榜设置 DTO</summary>
+public class LeaderboardSettingsDto
+{
+    /// <summary>全家排行 Tab 是否开启（默认 false）</summary>
+    public bool AllFamilyTabEnabled { get; set; }
+}
+
 public class DashboardDataDto
 {
     public List<FamilyMemberStatDto> FamilyStats { get; set; } = new();

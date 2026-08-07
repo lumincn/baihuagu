@@ -9,76 +9,153 @@
 <div class="leaderboard-page">
     <h1>🐲 @L["Leaderboard_Title"]</h1>
 
-    <div class="toolbar">
-        <div class="tab-group">
-            @foreach (var tab in tabs)
-            {
-                <button class="tab @(activeTab == tab.Key ? "active" : "")" @onclick="() => SwitchTab(tab.Key)">
-                    @tab.Label
-                </button>
-            }
-        </div>
+    <!-- FAM-22：视图切换（默认选中第一个视图按钮） -->
+    <div class="view-switch">
+        <button class="view-tab @(activeView == "self" ? "active" : "")" @onclick='() => SwitchView("self")'>
+            👤 和自己比
+        </button>
+        <button class="view-tab @(activeView == "family" ? "active" : "")" @onclick='() => SwitchView("family")'>
+            👨‍👩‍👧 家庭排行
+        </button>
     </div>
 
     @if (isLoading)
     {
         <div class="loading">@L["Leaderboard_Loading"]</div>
     }
-    else if (entries.Count == 0)
+    else if (activeView == "self")
     {
-        <div class="empty">@L["Leaderboard_EmptyHint"]</div>
-    }
-    else
-    {
-        <div class="leaderboard-table">
-            @foreach (var entry in entries)
-            {
-                <div class="leaderboard-row @(entry.Rank <= 3 ? "top-" + entry.Rank : "")">
-                    <div class="rank">
-                        @if (entry.Rank == 1)
+        <!-- ========== 和自己比视图（AC1/AC2） ========== -->
+        <div class="self-compare">
+            <div class="compare-grid">
+                <div class="compare-card">
+                    <div class="cmp-label">本周</div>
+                    <div class="cmp-value">@compare.WeekTotal</div>
+                    <div class="cmp-unit">张卡片</div>
+                </div>
+                <div class="compare-arrow">
+                    @if (compare.Arrow == "up")
+                    {
+                        <span class="arrow-up">↑</span>
+                    }
+                    else if (compare.Arrow == "down")
+                    {
+                        <span class="arrow-down">↓</span>
+                    }
+                    else if (compare.Arrow == "flat")
+                    {
+                        <span class="arrow-flat">→</span>
+                    }
+                    else
+                    {
+                        <span class="arrow-none">--</span>
+                    }
+                    <div class="cmp-delta">
+                        @if (compare.Arrow == "")
                         {
-                            <span class="rank-medal">🥇</span>
-                        }
-                        else if (entry.Rank == 2)
-                        {
-                            <span class="rank-medal">🥈</span>
-                        }
-                        else if (entry.Rank == 3)
-                        {
-                            <span class="rank-medal">🥉</span>
+                            <span>--</span>
                         }
                         else
                         {
-                            <span class="rank-num">@entry.Rank</span>
+                            <span>@(compare.Delta >= 0 ? "+" : "")@compare.Delta</span>
+                            <span class="cmp-percent">(@compare.Percent.ToString("F1")%)</span>
                         }
                     </div>
-                    <div class="avatar" style="background:@entry.Color">
-                        @entry.AvatarEmoji
-                    </div>
-                    <div class="name">@entry.LearnerName</div>
-                    <div class="stats">
-                        <div class="stat">
-                            <span class="stat-value">@entry.CardsStudied</span>
-                            <span class="stat-label">@L["Leaderboard_CardsStat"]</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-value">@entry.Accuracy.ToString("F0")%</span>
-                            <span class="stat-label">@L["Leaderboard_AccuracyStat"]</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-value">@entry.Streak</span>
-                            <span class="stat-label">🔥</span>
-                        </div>
-                    </div>
-                    <div class="score">
-                        <div class="score-bar-wrap">
-                            <div class="score-bar" style="width:@(maxScore > 0 ? (entry.Score * 100 / maxScore) : 0)%;background:@entry.Color"></div>
-                        </div>
-                        <span class="score-value">@entry.Score</span>
-                    </div>
                 </div>
-            }
+                <div class="compare-card">
+                    <div class="cmp-label">上周</div>
+                    <div class="cmp-value">@compare.LastWeekTotal</div>
+                    <div class="cmp-unit">张卡片</div>
+                </div>
+            </div>
+            <div class="compare-tip">和自己比，进步看得见 💪</div>
         </div>
+    }
+    else
+    {
+        <!-- ========== 家庭排行视图（AC3/AC4/AC5） ========== -->
+        <div class="toolbar">
+            <div class="role-tabs">
+                <button class="tab @(activeRole == "kids" ? "active" : "")" @onclick='() => SwitchRole("kids")'>🧒 孩子榜</button>
+                <button class="tab @(activeRole == "adults" ? "active" : "")" @onclick='() => SwitchRole("adults")'>👩 大人榜</button>
+                @if (allFamilyEnabled)
+                {
+                    <button class="tab @(activeRole == "all" ? "active" : "")" @onclick='() => SwitchRole("all")'>👨‍👩‍👧 全家</button>
+                }
+            </div>
+            <div class="setting-toggle">
+                <label class="toggle-label">
+                    <input type="checkbox" checked="@allFamilyEnabled" @onchange="OnAllFamilyToggle" />
+                    显示全家排行
+                </label>
+            </div>
+            <div class="tab-group">
+                @foreach (var tab in tabs)
+                {
+                    <button class="tab @(activeTab == tab.Key ? "active" : "")" @onclick="() => SwitchTab(tab.Key)">
+                        @tab.Label
+                    </button>
+                }
+            </div>
+        </div>
+
+        @if (entries.Count == 0)
+        {
+            <div class="empty">@L["Leaderboard_EmptyHint"]</div>
+            <div class="solo-guide">邀请更多小伙伴一起学吧 🌱</div>
+        }
+        else
+        {
+            <div class="leaderboard-table">
+                @foreach (var entry in entries)
+                {
+                    <div class="leaderboard-row @(entry.Rank <= 3 ? "top-" + entry.Rank : "")">
+                        <div class="rank">
+                            @if (entry.Rank == 1)
+                            {
+                                <span class="rank-medal">🥇</span>
+                            }
+                            else if (entry.Rank == 2)
+                            {
+                                <span class="rank-medal">🥈</span>
+                            }
+                            else if (entry.Rank == 3)
+                            {
+                                <span class="rank-medal">🥉</span>
+                            }
+                            else
+                            {
+                                <span class="rank-num">@entry.Rank</span>
+                            }
+                        </div>
+                        <div class="avatar" style="background:@entry.Color">
+                            @entry.AvatarEmoji
+                        </div>
+                        <div class="name">@entry.LearnerName</div>
+                        <div class="stats">
+                            <div class="stat">
+                                <span class="stat-value">@entry.CardsStudied</span>
+                                <span class="stat-label">@L["Leaderboard_CardsStat"]</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value">@entry.Accuracy.ToString("F0")%</span>
+                                <span class="stat-label">@L["Leaderboard_AccuracyStat"]</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value">@entry.Streak</span>
+                                <span class="stat-label">🔥</span>
+                            </div>
+                        </div>
+                        <div class="score">
+                            <div class="score-bar-wrap">
+                                <div class="score-bar" style="width:@(maxScore > 0 ? (entry.Score * 100 / maxScore) : 0)%;background:@entry.Color"></div>
+                            </div>
+                            <span class="score-value">@entry.Score</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
     }
 </div>
 
@@ -86,7 +163,79 @@
     .leaderboard-page { max-width: 800px; margin: 0 auto; padding: 1rem; }
     .leaderboard-page h1 { margin-bottom: 1rem; }
 
+    /* FAM-22 视图切换 */
+    .view-switch {
+        display: flex;
+        gap: 0.4rem;
+        margin-bottom: 1rem;
+        background: #e8eef2;
+        padding: 0.25rem;
+        border-radius: 8px;
+        width: fit-content;
+    }
+    .view-tab {
+        padding: 0.45rem 1.2rem;
+        border: none;
+        border-radius: 6px;
+        background: transparent;
+        cursor: pointer;
+        font-size: 0.95rem;
+        color: #666;
+        transition: all 0.2s;
+    }
+    .view-tab.active {
+        background: white;
+        color: #333;
+        font-weight: 600;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    /* 和自己比 */
+    .self-compare {
+        background: #fff;
+        border: 1px solid #e8eef2;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+    }
+    .compare-grid {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1.5rem;
+    }
+    .compare-card {
+        background: #f8fafc;
+        border-radius: 10px;
+        padding: 1rem 1.5rem;
+        min-width: 110px;
+    }
+    .cmp-label { font-size: 0.85rem; color: #888; }
+    .cmp-value { font-size: 2.2rem; font-weight: 800; color: #333; }
+    .cmp-unit { font-size: 0.8rem; color: #aaa; }
+    .compare-arrow { text-align: center; min-width: 90px; }
+    .arrow-up { font-size: 2rem; color: #27ae60; font-weight: 800; }
+    .arrow-down { font-size: 2rem; color: #e74c3c; font-weight: 800; }
+    .arrow-flat { font-size: 2rem; color: #95a5a6; font-weight: 800; }
+    .arrow-none { font-size: 2rem; color: #bbb; font-weight: 800; }
+    .cmp-delta { font-size: 0.95rem; color: #555; font-weight: 600; }
+    .cmp-percent { color: #888; font-weight: 400; }
+    .compare-tip { margin-top: 1rem; color: #aaa; font-size: 0.85rem; }
+
     .toolbar { margin-bottom: 1rem; }
+
+    /* FAM-22 角色 Tab */
+    .role-tabs {
+        display: flex;
+        gap: 0.25rem;
+        margin-bottom: 0.5rem;
+        background: #f0f4f7;
+        padding: 0.25rem;
+        border-radius: 8px;
+        width: fit-content;
+    }
+    .setting-toggle { margin: 0.5rem 0; font-size: 0.9rem; color: #666; }
+    .toggle-label { display: flex; align-items: center; gap: 0.4rem; cursor: pointer; }
 
     .tab-group {
         display: flex;
@@ -195,12 +344,17 @@
     }
 
     .loading { text-align: center; padding: 3rem; color: #888; }
-    .empty { text-align: center; padding: 3rem; color: #666; }
+    .empty { text-align: center; padding: 2.5rem 1rem 0.5rem; color: #666; }
+    .solo-guide { text-align: center; padding: 0.5rem 1rem 2.5rem; color: #1d9c73; font-weight: 600; }
 </style>
 
 @code {
+    private string activeView = "self"; // FAM-22：默认"和自己比"
+    private string activeRole = "kids"; // 家庭排行：默认孩子榜
     private string activeTab = "weekly";
     private List<LeaderboardEntryDto> entries = new();
+    private WeeklyCompareResultDto compare = new();
+    private bool allFamilyEnabled; // FAM-22：全家排行默认关闭（AC5）
     private bool isLoading = true;
     private int maxScore = 1;
     private string? selectedVaultId;
@@ -219,7 +373,26 @@
         if (!firstRender) return;
         var vaults = await VaultsService.GetVaultsAsync();
         selectedVaultId = vaults.Vaults.FirstOrDefault()?.Id;
+        var settings = await ApiService.GetAllFamilyTabSettingAsync();
+        allFamilyEnabled = settings.AllFamilyTabEnabled;
         await LoadLeaderboardAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SwitchView(string view)
+    {
+        activeView = view;
+        isLoading = true;
+        await LoadLeaderboardAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SwitchRole(string role)
+    {
+        activeRole = role;
+        isLoading = true;
+        await LoadLeaderboardAsync();
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task SwitchTab(string tab)
@@ -230,11 +403,38 @@
         await InvokeAsync(StateHasChanged);
     }
 
+    private async Task OnAllFamilyToggle(ChangeEventArgs e)
+    {
+        allFamilyEnabled = e.Value is bool b && b;
+        await ApiService.SetAllFamilyTabSettingAsync(allFamilyEnabled);
+        if (activeRole == "all" && !allFamilyEnabled)
+        {
+            activeRole = "kids";
+        }
+        await LoadLeaderboardAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
     private async Task LoadLeaderboardAsync()
     {
-        entries = await ApiService.GetLeaderboardAsync(activeTab, selectedVaultId);
-        maxScore = entries.Count > 0 ? entries.Max(e => e.Score) : 1;
-        if (maxScore == 0) maxScore = 1;
+        if (activeView == "self")
+        {
+            compare = await ApiService.GetWeeklyCompareAsync(selectedVaultId, learnerId: null);
+        }
+        else
+        {
+            // 家庭排行：角色榜（本周卡片数）或原类型榜
+            if (activeRole != "all" && activeTab == "weekly")
+            {
+                entries = await ApiService.GetRoleLeaderboardAsync(activeRole, selectedVaultId);
+            }
+            else
+            {
+                entries = await ApiService.GetLeaderboardAsync(activeTab, selectedVaultId);
+            }
+            maxScore = entries.Count > 0 ? entries.Max(e => e.Score) : 1;
+            if (maxScore == 0) maxScore = 1;
+        }
         isLoading = false;
     }
 }

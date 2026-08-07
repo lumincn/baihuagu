@@ -117,6 +117,10 @@ namespace Baihua.Web.Services
         Task<List<LeaderboardEntryDto>> GetLeaderboardAsync(string type, string? vaultId = null);
         Task<DashboardDataDto> GetDashboardAsync(string? vaultId = null, int? learnerId = null);
         Task<CheckinDataDto> GetCheckinDataAsync(string? vaultId = null);
+        Task<WeeklyCompareResultDto> GetWeeklyCompareAsync(string? vaultId = null, int? learnerId = null);
+        Task<List<LeaderboardEntryDto>> GetRoleLeaderboardAsync(string role, string? vaultId = null);
+        Task<LeaderboardSettingsDto> GetAllFamilyTabSettingAsync();
+        Task<LeaderboardSettingsDto> SetAllFamilyTabSettingAsync(bool enabled);
 
         // Obsidian 操作
         Task<bool> OpenInObsidianAsync(CancellationToken cancellationToken = default);
@@ -1912,6 +1916,79 @@ namespace Baihua.Web.Services
             {
                 _logger.LogError(ex, "获取学习打卡数据失败");
                 return new CheckinDataDto();
+            }
+        }
+
+        public async Task<WeeklyCompareResultDto> GetWeeklyCompareAsync(string? vaultId = null, int? learnerId = null)
+        {
+            try
+            {
+                using var quick = new CancellationTokenSource(QuickCallTimeout);
+                var url = "/api/achievements/leaderboard/compare";
+                var query = new List<string>();
+                if (!string.IsNullOrEmpty(vaultId)) query.Add($"vaultId={Uri.EscapeDataString(vaultId)}");
+                if (learnerId.HasValue) query.Add($"learnerId={learnerId.Value}");
+                if (query.Count > 0) url += "?" + string.Join("&", query);
+                var response = await GetWithMetricsAsync(url, quick.Token);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadFromJsonAsync<WeeklyCompareResultDto>(quick.Token) ?? new WeeklyCompareResultDto();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取和自己比数据失败");
+                return new WeeklyCompareResultDto();
+            }
+        }
+
+        public async Task<List<LeaderboardEntryDto>> GetRoleLeaderboardAsync(string role, string? vaultId = null)
+        {
+            try
+            {
+                using var quick = new CancellationTokenSource(QuickCallTimeout);
+                var url = $"/api/achievements/leaderboard/role?role={Uri.EscapeDataString(role)}";
+                if (!string.IsNullOrEmpty(vaultId)) url += $"&vaultId={Uri.EscapeDataString(vaultId)}";
+                var response = await GetWithMetricsAsync(url, quick.Token);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadFromJsonAsync<List<LeaderboardEntryDto>>(quick.Token) ?? new List<LeaderboardEntryDto>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取角色排行榜失败");
+                return new List<LeaderboardEntryDto>();
+            }
+        }
+
+        public async Task<LeaderboardSettingsDto> GetAllFamilyTabSettingAsync()
+        {
+            try
+            {
+                using var quick = new CancellationTokenSource(QuickCallTimeout);
+                var response = await GetWithMetricsAsync("/api/achievements/leaderboard/settings/all-family-tab", quick.Token);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadFromJsonAsync<LeaderboardSettingsDto>(quick.Token) ?? new LeaderboardSettingsDto();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取全家排行设置失败");
+                return new LeaderboardSettingsDto();
+            }
+        }
+
+        public async Task<LeaderboardSettingsDto> SetAllFamilyTabSettingAsync(bool enabled)
+        {
+            try
+            {
+                using var quick = new CancellationTokenSource(QuickCallTimeout);
+                var body = JsonSerializer.Serialize(new LeaderboardSettingsDto { AllFamilyTabEnabled = enabled });
+                var content = new StringContent(body, Encoding.UTF8, "application/json");
+                var response = await PostWithMetricsAsync("/api/achievements/leaderboard/settings/all-family-tab", content, quick.Token);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadFromJsonAsync<LeaderboardSettingsDto>(quick.Token) ?? new LeaderboardSettingsDto();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "设置全家排行失败");
+                return new LeaderboardSettingsDto();
             }
         }
 

@@ -16,17 +16,20 @@ public partial class AchievementsController : ControllerBase
     private readonly LearnerService _learnerService;
     private readonly AchievementEngine _achievementEngine;
     private readonly LeaderboardService _leaderboardService;
+    private readonly LeaderboardSettingsService _leaderboardSettings;
     private readonly IStringLocalizer<SharedResources> _loc;
 
     public AchievementsController(
         LearnerService learnerService,
         AchievementEngine achievementEngine,
         LeaderboardService leaderboardService,
+        LeaderboardSettingsService leaderboardSettings,
         IStringLocalizer<SharedResources> loc)
     {
         _learnerService = learnerService;
         _achievementEngine = achievementEngine;
         _leaderboardService = leaderboardService;
+        _leaderboardSettings = leaderboardSettings;
         _loc = loc;
     }
 
@@ -149,6 +152,44 @@ public partial class AchievementsController : ControllerBase
     {
         var entries = await _leaderboardService.GetAccuracyLeaderboardAsync(vaultId);
         return Ok(ToDtos(entries));
+    }
+
+    // ---- FAM-22 排行榜友好化 ----
+
+    /// <summary>和自己比：本周 vs 上周（AC1/AC2）</summary>
+    [HttpGet("leaderboard/compare")]
+    public async Task<ActionResult<WeeklyCompareResultDto>> GetWeeklyCompare([FromQuery] string? vaultId = null, [FromQuery] int? learnerId = null)
+    {
+        var result = await _leaderboardService.GetWeeklyCompareAsync(vaultId, learnerId);
+        return Ok(new WeeklyCompareResultDto
+        {
+            WeekTotal = result.WeekTotal,
+            LastWeekTotal = result.LastWeekTotal,
+            Delta = result.Delta,
+            Percent = result.Percent,
+            Arrow = result.Arrow
+        });
+    }
+
+    /// <summary>角色分组排行榜：孩子榜/大人榜（AC3）</summary>
+    [HttpGet("leaderboard/role")]
+    public async Task<ActionResult<List<LeaderboardEntryDto>>> GetRoleLeaderboard([FromQuery] string role, [FromQuery] string? vaultId = null)
+    {
+        var entries = await _leaderboardService.GetRoleLeaderboardAsync(role, vaultId);
+        return Ok(ToDtos(entries));
+    }
+
+    /// <summary>全家排行开关（AC4/AC5：默认关闭）</summary>
+    [HttpGet("leaderboard/settings/all-family-tab")]
+    public ActionResult<LeaderboardSettingsDto> GetAllFamilyTabSetting()
+        => Ok(new LeaderboardSettingsDto { AllFamilyTabEnabled = _leaderboardSettings.IsAllFamilyTabEnabled() });
+
+    /// <summary>设置全家排行开关（AC4：家长可启用/禁用）</summary>
+    [HttpPut("leaderboard/settings/all-family-tab")]
+    public ActionResult<LeaderboardSettingsDto> SetAllFamilyTabSetting([FromBody] LeaderboardSettingsDto request)
+    {
+        _leaderboardSettings.SetAllFamilyTabEnabled(request.AllFamilyTabEnabled);
+        return Ok(new LeaderboardSettingsDto { AllFamilyTabEnabled = _leaderboardSettings.IsAllFamilyTabEnabled() });
     }
 
     /// <summary>

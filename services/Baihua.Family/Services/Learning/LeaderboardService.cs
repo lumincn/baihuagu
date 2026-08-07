@@ -46,6 +46,89 @@ public class LeaderboardService
     }
 
     /// <summary>
+    /// FAM-22 "和自己比"：本周 vs 上周（北京时间周界：周一 00:00 起）。
+    /// 无上周数据 → Arrow=""（页面显示 --）；否则 up/down/flat。
+    /// </summary>
+    /// <param name="vaultId">知识库 ID（可空=全部）</param>
+    /// <param name="learnerId">成员维度（null/0=全部成员）</param>
+    public async Task<WeeklyCompareResult> GetWeeklyCompareAsync(string? vaultId = null, int? learnerId = null)
+    {
+        int? effectiveLearnerId = learnerId is null or <= 0 ? null : learnerId;
+        using var db = await _dbFactory.CreateDbContextAsync();
+
+        var thisWeekStart = BeijingStartOfWeek();
+        var lastWeekStart = thisWeekStart.AddDays(-7);
+
+        var query = db.StudyActivities.Where(a => a.ActivityType == "study");
+        if (!string.IsNullOrEmpty(vaultId)) query = query.Where(a => a.VaultId == vaultId);
+        if (effectiveLearnerId.HasValue) query = query.Where(a => a.LearnerId == effectiveLearnerId.Value);
+
+        var activities = (await query.ToListAsync())
+            .Select(a => ToBeijingDate(a.CreatedAt))
+            .ToList();
+
+        var weekTotal = activities.Count(d => d >= thisWeekStart);
+        var lastWeekTotal = activities.Count(d => d >= lastWeekStart && d < thisWeekStart);
+        var delta = weekTotal - lastWeekTotal;
+        var percent = lastWeekTotal > 0 ? Math.Round((double)delta / lastWeekTotal * 100, 1) : 0;
+
+        string arrow;
+        if (lastWeekTotal == 0) arrow = "";
+        else if (weekTotal > lastWeekTotal) arrow = "up";
+        else if (weekTotal < lastWeekTotal) arrow = "down";
+        else arrow = "flat";
+
+        return new WeeklyCompareResult
+        {
+            WeekTotal = weekTotal,
+            LastWeekTotal = lastWeekTotal,
+            Delta = delta,
+            Percent = percent,
+            Arrow = arrow
+        };
+    }
+
+    /// <summary>
+    /// FAM-22 角色分组排行榜：孩子榜/大人榜（TECH-08 未完成，LearnerProfile 无 Role/年龄字段，
+    /// 兜底按 IsDefault 判定：默认学习者=大人（家长），其余=孩子）。
+    /// 排序维度：本周完成卡片数（北京周界），并列排名由 FAM-13 在 DTO 层处理。
+    /// </summary>
+    /// <param name="role">角色过滤：adults/kids（大小写不敏感，含 adult 即大人榜）</param>
+    public async Task<List<LeaderboardEntry>> GetRoleLeaderboardAsync(string role, string? vaultId = null)
+    {
+        var isAdults = role.Contains("adult", StringComparison.OrdinalIgnoreCase);
+        var startOfWeek = BeijingStartOfWeek();
+
+        using var db = await _dbFactory.CreateDbContextAsync();
+        var learners = await db.LearnerProfiles.ToListAsync();
+        var filtered = learners
+            .Where(l => isAdults ? l.IsDefault : !l.IsDefault)
+            .ToList();
+
+        var result = new List<LeaderboardEntry>();
+        foreach (var learner in filtered)
+        {
+            var query = db.StudyActivities.Where(a => a.LearnerId == learner.Id && a.ActivityType == "study");
+            if (!string.IsNullOrEmpty(vaultId)) query = query.Where(a => a.VaultId == vaultId);
+
+            var weekCount = (await query.ToListAsync())
+                .Count(a => ToBeijingDate(a.CreatedAt) >= startOfWeek);
+
+            result.Add(new LeaderboardEntry
+            {
+                LearnerId = learner.Id,
+                LearnerName = learner.Name,
+                AvatarEmoji = learner.AvatarEmoji,
+                Color = learner.Color,
+                CardsStudied = weekCount,
+                Score = weekCount
+            });
+        }
+
+        return result.OrderByDescending(r => r.Score).ToList();
+    }
+
+    /// <summary>
     /// 获取月排行榜
     /// </summary>
     public async Task<List<LeaderboardEntry>> GetMonthlyLeaderboardAsync(string? vaultId = null)
