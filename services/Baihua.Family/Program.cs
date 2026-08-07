@@ -521,6 +521,14 @@ app.Use(async (context, next) =>
     var path = context.Request.Path.Value?.ToLowerInvariant() ?? "";
     var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
 
+    // 测试环境跳过 loopback 限制（与 TASKRUNNER_SKIP_MUTEX 同模式；TestServer 无真实 socket，RemoteIpAddress 为 null）
+    var skipAccessControl = builder.Configuration.GetValue<bool>("TASKRUNNER_SKIP_ACCESS_CONTROL", false);
+    if (skipAccessControl)
+    {
+        await next();
+        return;
+    }
+
     // 使用 ForwardedHeadersMiddleware 处理后的 RemoteIpAddress
     // 不再自行解析 X-Forwarded-For（防止客户端伪造 IP 绕过 loopback 限制）
     var remoteIp = context.Connection.RemoteIpAddress;

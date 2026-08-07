@@ -185,7 +185,7 @@ public partial class AchievementsController : ControllerBase
         => Ok(new LeaderboardSettingsDto { AllFamilyTabEnabled = _leaderboardSettings.IsAllFamilyTabEnabled() });
 
     /// <summary>设置全家排行开关（AC4：家长可启用/禁用）</summary>
-    [HttpPut("leaderboard/settings/all-family-tab")]
+    [HttpPost("leaderboard/settings/all-family-tab")]
     public ActionResult<LeaderboardSettingsDto> SetAllFamilyTabSetting([FromBody] LeaderboardSettingsDto request)
     {
         _leaderboardSettings.SetAllFamilyTabEnabled(request.AllFamilyTabEnabled);
