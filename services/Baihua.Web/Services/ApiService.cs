@@ -15,6 +15,7 @@ using Baihua.Contracts.Metrics;
 using Baihua.Contracts.OpenClaw;
 using Baihua.Contracts.Scene;
 using Baihua.Contracts.Master;
+using Baihua.Contracts.Onboarding;
 
 namespace Baihua.Web.Services
 {
@@ -38,6 +39,8 @@ namespace Baihua.Web.Services
 
         Task<List<TaskInfo>> GetTasksAsync();
         Task<TaskInfo?> GetTaskAsync(string taskId);
+        Task<OnboardingStatusDto> GetOnboardingStatusAsync();
+        Task<bool> CompleteOnboardingAsync();
         Task<VaultGenerationResponse> CreateVaultGenerationTaskAsync(string industry, string keyword, string? model = null, int noteCount = 30, bool generateCards = false);
         Task<List<AiProviderInfo>> GetAiProvidersAsync();
         Task<SearchResponse> SearchAsync(string query, string vaultId);
@@ -117,6 +120,7 @@ namespace Baihua.Web.Services
         Task<List<LeaderboardEntryDto>> GetLeaderboardAsync(string type, string? vaultId = null);
         Task<DashboardDataDto> GetDashboardAsync(string? vaultId = null, int? learnerId = null);
         Task<CheckinDataDto> GetCheckinDataAsync(string? vaultId = null);
+        Task<CheckinMakeupResultDto> MakeupCheckinAsync(CheckinMakeupRequest request);
         Task<WeeklyCompareResultDto> GetWeeklyCompareAsync(string? vaultId = null, int? learnerId = null);
         Task<List<LeaderboardEntryDto>> GetRoleLeaderboardAsync(string role, string? vaultId = null);
         Task<LeaderboardSettingsDto> GetAllFamilyTabSettingAsync();
@@ -392,6 +396,38 @@ namespace Baihua.Web.Services
             { 
                 _logger.LogError(ex, "获取任务详情失败，TaskId: {TaskId}", taskId); 
                 return null; 
+            }
+        }
+
+        public async Task<OnboardingStatusDto> GetOnboardingStatusAsync()
+        {
+            try
+            {
+                using var quick = new CancellationTokenSource(QuickCallTimeout);
+                var response = await GetWithMetricsAsync("/api/onboarding/status", quick.Token);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadFromJsonAsync<OnboardingStatusDto>(quick.Token) ?? new OnboardingStatusDto();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取 Onboarding 状态失败");
+                return new OnboardingStatusDto();
+            }
+        }
+
+        public async Task<bool> CompleteOnboardingAsync()
+        {
+            try
+            {
+                using var quick = new CancellationTokenSource(QuickCallTimeout);
+                var response = await PostWithMetricsAsync("/api/onboarding/complete", null, quick.Token);
+                response.EnsureSuccessStatusCode();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "完成 Onboarding 失败");
+                return false;
             }
         }
 
@@ -1916,6 +1952,22 @@ namespace Baihua.Web.Services
             {
                 _logger.LogError(ex, "获取学习打卡数据失败");
                 return new CheckinDataDto();
+            }
+        }
+
+        public async Task<CheckinMakeupResultDto> MakeupCheckinAsync(CheckinMakeupRequest request)
+        {
+            try
+            {
+                using var quick = new CancellationTokenSource(QuickCallTimeout);
+                var response = await PostWithMetricsAsync("/api/checkin/makeup", JsonContent.Create(request), quick.Token);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadFromJsonAsync<CheckinMakeupResultDto>(quick.Token) ?? new CheckinMakeupResultDto();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "补签失败");
+                return new CheckinMakeupResultDto { Success = false, Message = "补签失败" };
             }
         }
 

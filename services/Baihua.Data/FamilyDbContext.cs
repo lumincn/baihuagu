@@ -38,6 +38,7 @@ public class FamilyDbContext : DbContext
 
     public DbSet<VaultFocusState> VaultFocusStates => Set<VaultFocusState>();
     public DbSet<VaultFreeState> VaultFreeStates => Set<VaultFreeState>();
+    public DbSet<CheckinMakeupRecord> CheckinMakeupRecords => Set<CheckinMakeupRecord>();
 
     public string DatabasePath
     {

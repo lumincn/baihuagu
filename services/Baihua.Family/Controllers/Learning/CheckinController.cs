@@ -5,7 +5,7 @@ using Baihua.Family.Services;
 namespace Baihua.Family.Controllers;
 
 /// <summary>
-/// FAM-21 学习打卡 API
+/// FAM-21/33 学习打卡 API
 /// </summary>
 [ApiController]
 [Route("api/checkin")]
@@ -19,7 +19,7 @@ public class CheckinController : ControllerBase
     }
 
     /// <summary>
-    /// 学习打卡数据：今日清单 + 连续打卡 + 最近 7 天日历
+    /// 学习打卡数据：今日清单 + 连续打卡 + 连击保护 + 最近 7 天日历 + 补签剩余次数
     /// </summary>
     [HttpGet]
     public async Task<ActionResult<CheckinDataDto>> GetCheckinData([FromQuery] string? vaultId = null)
@@ -28,6 +28,8 @@ public class CheckinController : ControllerBase
         return Ok(new CheckinDataDto
         {
             FamilyStreak = data.FamilyStreak,
+            StreakStatus = data.StreakStatus,
+            MakeupRemaining = data.MakeupRemaining,
             TodayRecords = data.TodayRecords.Select(r => new CheckinRecordDto
             {
                 LearnerName = r.LearnerName,
@@ -44,8 +46,24 @@ public class CheckinController : ControllerBase
             {
                 Date = d.Date,
                 IsChecked = d.IsChecked,
-                IsToday = d.IsToday
+                IsToday = d.IsToday,
+                IsMakeupable = d.IsMakeupable
             }).ToList()
+        });
+    }
+
+    /// <summary>
+    /// FAM-33 补签：3 天窗口内、有学习记录的日期补签，月限 3 次
+    /// </summary>
+    [HttpPost("makeup")]
+    public async Task<ActionResult<CheckinMakeupResultDto>> MakeupCheckin([FromBody] CheckinMakeupRequest request)
+    {
+        var result = await _checkinService.MakeupCheckinAsync(request.Date, request.VaultId);
+        return Ok(new CheckinMakeupResultDto
+        {
+            Success = result.Success,
+            Message = result.Message,
+            Remaining = result.Remaining
         });
     }
 }

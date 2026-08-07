@@ -36,6 +36,14 @@
                 <span class="streak-num">@data.FamilyStreak</span>
                 <span class="streak-label">天连续打卡</span>
             </div>
+            @if (data.StreakStatus == "今天还没学")
+            {
+                <div class="streak-grace">连续打卡 @data.FamilyStreak 天（今天还没学）</div>
+            }
+            else if (!string.IsNullOrEmpty(data.StreakStatus))
+            {
+                <div class="streak-grace">@data.StreakStatus</div>
+            }
             @if (data.FamilyStreak >= 7)
             {
                 <div class="streak-motivation">🎉 连续 7 天以上，太棒了！</div>
@@ -43,13 +51,42 @@
             <div class="calendar7">
                 @foreach (var day in data.Last7Days)
                 {
-                    <div class="cal-cell @(day.IsToday ? "today" : "")" title="@(day.Date?.ToString("MM-dd"))">
+                    <div class="cal-cell @(day.IsToday ? "today" : "") @(day.IsMakeupable ? "makeupable" : "")"
+                         title="@(day.Date?.ToString("MM-dd"))"
+                         @onclick="() => TryOpenMakeup(day)">
                         <div class="cal-mark">@(day.IsChecked ? "🔥" : "⬜")</div>
+                        @if (day.IsMakeupable)
+                        {
+                            <div class="cal-makeup-hint">补</div>
+                        }
                         <div class="cal-date">@(day.Date?.ToString("dd"))</div>
                     </div>
                 }
             </div>
         </section>
+
+        @if (showMakeupDialog)
+        {
+            <div class="makeup-dialog-mask" @onclick="CloseMakeupDialog">
+                <div class="makeup-dialog" @onclick:stopPropagation="true">
+                    <h3>补签 @(makeupTarget?.ToString("M月d日"))？</h3>
+                    <p class="makeup-quota">本月剩余补签次数：@data.MakeupRemaining/3</p>
+                    @if (!string.IsNullOrEmpty(makeupError))
+                    {
+                        <p class="makeup-error">@makeupError</p>
+                    }
+                    <div class="makeup-actions">
+                        <button class="btn btn-secondary" @onclick="CloseMakeupDialog">取消</button>
+                        <button class="btn btn-primary" @onclick="ConfirmMakeupAsync" disabled="@isMakingUp">确认补签</button>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (makeupToast)
+        {
+            <div class="makeup-toast">@makeupToast</div>
+        }
 
         <!-- 今日学习清单（按 Learner 分组） -->
         <section class="today-section">
@@ -108,10 +145,22 @@
     .streak-motivation { color: #e67e22; margin-top: 0.4rem; font-weight: 600; }
 
     .calendar7 { display: flex; justify-content: space-between; gap: 0.4rem; margin-top: 1rem; }
-    .cal-cell { flex: 1; background: #f8fafc; border: 2px solid transparent; border-radius: 8px; padding: 0.5rem 0; }
+    .cal-cell { flex: 1; background: #f8fafc; border: 2px solid transparent; border-radius: 8px; padding: 0.5rem 0; cursor: default; }
     .cal-cell.today { border-color: #20c997; box-shadow: 0 0 0 2px rgba(32, 201, 151, 0.2); }
+    .cal-cell.makeupable { border: 2px dashed #e67e22; cursor: pointer; }
+    .cal-cell.makeupable:hover { background: #fff6ec; }
     .cal-mark { font-size: 1.2rem; }
     .cal-date { font-size: 0.75rem; color: #888; }
+    .cal-makeup-hint { font-size: 0.7rem; color: #e67e22; font-weight: 700; }
+    .streak-grace { color: #e67e22; margin-top: 0.4rem; font-weight: 600; font-size: 0.9rem; }
+
+    .makeup-dialog-mask { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .makeup-dialog { background: #fff; border-radius: 12px; padding: 1.5rem; min-width: 300px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); }
+    .makeup-dialog h3 { margin: 0 0 0.5rem; }
+    .makeup-quota { color: #666; margin-bottom: 0.75rem; }
+    .makeup-error { color: #c0392b; font-size: 0.85rem; margin-bottom: 0.75rem; }
+    .makeup-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
+    .makeup-toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 0.6rem 1.2rem; border-radius: 8px; z-index: 1100; }
 
     .today-section h2 { font-size: 1.1rem; margin-bottom: 0.75rem; color: #333; }
     .learner-group { margin-bottom: 1rem; background: #fff; border: 1px solid #e8eef2; border-radius: 10px; padding: 0.75rem; }
@@ -153,6 +202,13 @@
     private bool isLoading = true;
     private bool loadError = false;
 
+    // FAM-33 补签
+    private DateTime? makeupTarget;
+    private bool showMakeupDialog = false;
+    private bool isMakingUp = false;
+    private string makeupError = "";
+    private string? makeupToast;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
@@ -162,6 +218,67 @@
     private void ToggleDetail(CheckinRecordDto record)
     {
         expandedRecord = expandedRecord == record ? null : record;
+    }
+
+    private void TryOpenMakeup(CheckinCalendarDayDto day)
+    {
+        if (!day.IsMakeupable || !day.Date.HasValue) return;
+        makeupTarget = day.Date.Value;
+        makeupError = "";
+        showMakeupDialog = true;
+    }
+
+    private void CloseMakeupDialog()
+    {
+        showMakeupDialog = false;
+        makeupTarget = null;
+    }
+
+    private async Task ConfirmMakeupAsync()
+    {
+        if (!makeupTarget.HasValue || isMakingUp) return;
+        isMakingUp = true;
+        makeupError = "";
+        try
+        {
+            var vaults = await VaultsService.GetVaultsAsync();
+            var vaultId = vaults.Vaults.FirstOrDefault()?.Id;
+            var result = await ApiService.MakeupCheckinAsync(new CheckinMakeupRequest
+            {
+                Date = makeupTarget.Value,
+                VaultId = vaultId
+            });
+            if (result.Success)
+            {
+                showMakeupDialog = false;
+                makeupTarget = null;
+                makeupToast = $"补签成功！本月剩余：{result.Remaining}/3";
+                await LoadCheckinAsync();
+                await Task.Delay(2500);
+                makeupToast = null;
+                await InvokeAsync(StateHasChanged);
+            }
+            else
+            {
+                makeupError = result.Message;
+                if (result.Message.Contains("已用完"))
+                {
+                    makeupToast = result.Message;
+                    await Task.Delay(2500);
+                    makeupToast = null;
+                    await InvokeAsync(StateHasChanged);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "补签失败");
+            makeupError = "补签失败，请重试";
+        }
+        finally
+        {
+            isMakingUp = false;
+        }
     }
 
     private async Task LoadCheckinAsync()

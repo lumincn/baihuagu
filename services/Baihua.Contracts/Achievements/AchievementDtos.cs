@@ -6,6 +6,12 @@ public class CheckinDataDto
     /// <summary>家庭维度连续打卡天数（从今天往前连续有记录的天数，北京时间）</summary>
     public int FamilyStreak { get; set; }
 
+    /// <summary>FAM-33 连击保护状态：""（正常）/ "今天还没学" / "已中断 1 天，明天前补学可恢复"</summary>
+    public string StreakStatus { get; set; } = "";
+
+    /// <summary>FAM-33 本月剩余补签次数（月限 3 次，家庭维度）</summary>
+    public int MakeupRemaining { get; set; }
+
     /// <summary>今日学习清单（按 Learner 分组）</summary>
     public List<CheckinRecordDto> TodayRecords { get; set; } = new();
 
@@ -36,6 +42,27 @@ public class CheckinCalendarDayDto
     public DateTime? Date { get; set; }
     public bool IsChecked { get; set; }
     public bool IsToday { get; set; }
+
+    /// <summary>FAM-33：是否可补签（⬜ 格、3 天窗口内；🔥 格不可补签）</summary>
+    public bool IsMakeupable { get; set; }
+}
+
+/// <summary>FAM-33 补签请求</summary>
+public class CheckinMakeupRequest
+{
+    /// <summary>补签日期（北京时间自然日）</summary>
+    public DateTime Date { get; set; }
+
+    /// <summary>知识库 ID（可空=全部）</summary>
+    public string? VaultId { get; set; }
+}
+
+/// <summary>FAM-33 补签结果</summary>
+public class CheckinMakeupResultDto
+{
+    public bool Success { get; set; }
+    public string Message { get; set; } = "";
+    public int Remaining { get; set; }
 }
 
 public class LearnerDto
