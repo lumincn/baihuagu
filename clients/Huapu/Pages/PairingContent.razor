@@ -27,7 +27,7 @@
     <div class="method-card">
         <h3>手动输入</h3>
         <p>直接输入百花服务器地址</p>
-        <input @bind="_manualUrl" placeholder="例如: http://192.168.1.100:8788" />
+        <input @bind="_manualUrl" placeholder="例如: http://192.168.1.100" />
         <button class="btn primary" @onclick="ManualRegister" disabled="@_isLoading">
             @(_isLoading ? "注册中..." : "注册设备")
         </button>

@@ -238,7 +238,7 @@ public class HttpTransport
         if (trimmed.Length == 0) return "";
         if (trimmed.StartsWith("http://") || trimmed.StartsWith("https://"))
             return trimmed.TrimEnd('/');
-        return $"http://{trimmed}:8788";
+        return $"http://{trimmed}";
     }
 
     /// <summary>从 JSON 响应体中提取服务端错误消息</summary>

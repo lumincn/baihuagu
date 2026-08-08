@@ -1592,9 +1592,6 @@
   <data name="Devices_LanDiscoveryHint" xml:space="preserve">
     <value>Ensure your phone and computer are on the same WiFi network. Open the mobile 'Huaji' app to be discovered automatically.</value>
   </data>
-  <data name="Devices_OneHopDiscoveryTitle" xml:space="preserve">
-    <value>🔍 OneHop LAN Discovery</value>
-  </data>
   <data name="Devices_DiscoveryRunning" xml:space="preserve">
     <value>Discovery Running</value>
   </data>

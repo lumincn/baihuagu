@@ -10,15 +10,16 @@ public partial class PairingController : ControllerBase
     {
         var (url, hostName) = _serverAddressService.GetQrCodeAddresses();
         
+        var serverInstanceId = _serverAddressService.GetServerInstanceId();
         var (baseUrl, name, qrCodeData) = _pairingService.GenerateQRCodeContent(
-            url, hostName, _oneHopService.DeviceId);
-        
+            url, hostName, serverInstanceId);
+
         return Ok(new ServerQRResponse
         {
             Url = baseUrl,
             HostName = name,
-            ServerId = _oneHopService.DeviceId,
-            DeviceId = _oneHopService.DeviceId,
+            ServerId = serverInstanceId,
+            DeviceId = serverInstanceId,
             QrCodeData = qrCodeData
         });
     }

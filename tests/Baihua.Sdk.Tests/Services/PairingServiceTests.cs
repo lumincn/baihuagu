@@ -121,7 +121,7 @@ public class PairingServiceTests
             requestId = "req-456",
             deviceName = "TestDevice"
         };
-        handler.SetupResponse("/mg/onehop/register-device", HttpStatusCode.OK,
+        handler.SetupResponse("/mg/register-device", HttpStatusCode.OK,
             JsonSerializer.Serialize(response));
 
         var service = new PairingServiceImpl(client, signerMock.Object, "device-1", "TestDevice");
@@ -144,7 +144,7 @@ public class PairingServiceTests
         signerMock.Setup(s => s.SignRequest(It.IsAny<string>(), It.IsAny<string>(),
             It.IsAny<string?>(), It.IsAny<string?>())).Returns(new Dictionary<string, string>());
 
-        handler.SetupResponse("/mg/onehop/register-device", HttpStatusCode.OK,
+        handler.SetupResponse("/mg/register-device", HttpStatusCode.OK,
             """{"authorized":false,"requestId":"req-1","deviceId":"device-1"}""");
 
         var service = new PairingServiceImpl(client, signerMock.Object, "device-1", "TestDevice");
@@ -165,7 +165,7 @@ public class PairingServiceTests
         signerMock.Setup(s => s.SignRequest(It.IsAny<string>(), It.IsAny<string>(),
             It.IsAny<string?>(), It.IsAny<string?>())).Returns(new Dictionary<string, string>());
 
-        handler.SetupResponse("/mg/onehop/register-device", HttpStatusCode.InternalServerError, "Server error");
+        handler.SetupResponse("/mg/register-device", HttpStatusCode.InternalServerError, "Server error");
 
         var service = new PairingServiceImpl(client, signerMock.Object, "device-1", "TestDevice");
 
@@ -183,7 +183,7 @@ public class PairingServiceTests
         signerMock.Setup(s => s.SignRequest(It.IsAny<string>(), It.IsAny<string>(),
             It.IsAny<string?>(), It.IsAny<string?>())).Returns(new Dictionary<string, string>());
 
-        handler.SetupResponse("/mg/onehop/register-device", HttpStatusCode.NotFound, "Not found");
+        handler.SetupResponse("/mg/register-device", HttpStatusCode.NotFound, "Not found");
 
         var service = new PairingServiceImpl(client, signerMock.Object, "device-1", "TestDevice");
 
@@ -201,7 +201,7 @@ public class PairingServiceTests
         signerMock.Setup(s => s.SignRequest(It.IsAny<string>(), It.IsAny<string>(),
             It.IsAny<string?>(), It.IsAny<string?>())).Returns(new Dictionary<string, string>());
 
-        handler.SetupResponse("/mg/onehop/register-device", HttpStatusCode.OK, "not valid json");
+        handler.SetupResponse("/mg/register-device", HttpStatusCode.OK, "not valid json");
 
         var service = new PairingServiceImpl(client, signerMock.Object, "device-1", "TestDevice");
 
@@ -210,7 +210,7 @@ public class PairingServiceTests
         Assert.False(result.Success);
     }
 
-    // ---- 真实服务端响应格式契约测试（防止再次与 OneHopController 格式脱轨） ----
+    // ---- 真实服务端响应格式契约测试（防止再次与 PairController 格式脱轨） ----
 
     [Fact]
     public async Task RegisterDeviceAsync_ServerRealUnauthorizedResponse_ParsesAsNotAuthorized()
@@ -221,7 +221,7 @@ public class PairingServiceTests
         signerMock.Setup(s => s.SignRequest(It.IsAny<string>(), It.IsAny<string>(),
             It.IsAny<string?>(), It.IsAny<string?>())).Returns(new Dictionary<string, string>());
 
-        handler.SetupResponse("/mg/onehop/register-device", HttpStatusCode.OK,
+        handler.SetupResponse("/mg/register-device", HttpStatusCode.OK,
             """{"message":"设备已注册，请在 WebUI 中授权","deviceId":"d1","deviceName":"Honor","serverName":"family-pc","ipAddress":"192.168.1.100","requestId":"req-abc","authorized":false,"accessToken":null}""");
 
         var service = new PairingServiceImpl(client, signerMock.Object, "d1", "Honor");
@@ -242,7 +242,7 @@ public class PairingServiceTests
         signerMock.Setup(s => s.SignRequest(It.IsAny<string>(), It.IsAny<string>(),
             It.IsAny<string?>(), It.IsAny<string?>())).Returns(new Dictionary<string, string>());
 
-        handler.SetupResponse("/mg/onehop/register-device", HttpStatusCode.OK,
+        handler.SetupResponse("/mg/register-device", HttpStatusCode.OK,
             """{"message":"设备已授权","deviceId":"d1","deviceName":"Honor","serverName":"family-pc","ipAddress":"192.168.1.100","requestId":"d1","authorized":true,"accessToken":"token-xyz","sharedSecret":"secret-123"}""");
 
         var service = new PairingServiceImpl(client, signerMock.Object, "d1", "Honor");
@@ -263,7 +263,7 @@ public class PairingServiceTests
         signerMock.Setup(s => s.SignRequest(It.IsAny<string>(), It.IsAny<string>(),
             It.IsAny<string?>(), It.IsAny<string?>())).Returns(new Dictionary<string, string>());
 
-        handler.SetupResponse("/mg/onehop/register-device", HttpStatusCode.OK,
+        handler.SetupResponse("/mg/register-device", HttpStatusCode.OK,
             """{"message":"设备标识已变更，请在 WebUI 中重新授权","deviceId":"d1","deviceName":"Honor","serverName":"family-pc","ipAddress":"192.168.1.100","requestId":"req-mismatch","authorized":false}""");
 
         var service = new PairingServiceImpl(client, signerMock.Object, "d1", "Honor");

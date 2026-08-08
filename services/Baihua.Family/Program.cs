@@ -218,11 +218,6 @@ builder.Services.AddSingleton<MobileContract.Services.IPairingService, Baihua.Fa
 // 管理后台接口
 builder.Services.AddSingleton<MobileContract.Admin.IDeviceAdminService, Baihua.Family.Services.Adapters.MobileDeviceServiceAdapter>();
 builder.Services.AddSingleton<MobileContract.Admin.IPushAdminService, Baihua.Family.Services.Adapters.MobileDeviceServiceAdapter>();
-builder.Services.AddSingleton<MobileContract.Admin.IOneHopAdminService, Baihua.Family.Services.Adapters.OneHopAdminServiceAdapter>();
-
-// 注册OneHop服务（基于TCP的局域网设备连接）
-builder.Services.AddSingleton<IOneHopService, OneHopService>();
-builder.Services.AddSingleton<OneHopManager>();
 
 
 // 注册 AI 配置服务（Data Protection + SQLite）
@@ -290,7 +285,6 @@ builder.Services.AddRateLimiter(options =>
 // 注册后台服务
 builder.Services.AddHostedService<TaskCleanupService>();
 builder.Services.AddHostedService<ObsidianWarmupHostedService>();
-builder.Services.AddHostedService<OneHopManager>();
 // VaultIndexSchedulerService 已在 TaskRunner.Vault 中注册，避免两个进程同时重建索引
 builder.Services.AddHostedService<BackupSchedulerService>();
 builder.Services.AddHostedService<LocalModelsCacheWarmupService>();
@@ -473,8 +467,7 @@ app.Use(async (context, next) =>
     // 以下路径为公开路径，无需 HMAC 签名（设备注册、密钥获取等初始化流程）
     var publicApiPaths = new[]
     {
-        "/api/onehop/register-device",
-        "/mg/onehop/register-device",
+        "/mg/register-device",
         "/mg/auth/config"
     };
 
@@ -544,12 +537,11 @@ app.Use(async (context, next) =>
         "/vault/manifest", "/vault/file", "/vault/file_chunk",
         "/api/vaults", "/vault/pair", "/pair",
         "/api/sync/notes", "/api/sync/system", "/api/sync",
-        "/api/onehop/register-device",
         "/api/discovery", "/mg/discovery",
         "/mobile-vaults/push",
         "/mg/vaults", "/mg/manifest", "/mg/file", "/mg/cards",
         "/mg/pair", "/mg/pair/check",
-        "/mg/onehop/register-device",
+        "/mg/register-device",
         "/mg/auth/config", "/mg/verify-token",
         "/mg/devices/revoke",
 

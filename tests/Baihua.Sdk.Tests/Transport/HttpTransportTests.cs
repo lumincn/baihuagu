@@ -11,9 +11,9 @@ namespace BaihuaSdk.Tests.Transport;
 public class HttpTransportTests
 {
     [Fact]
-    public void NormalizeBaseUrl_IpOnly_AddsHttpAndPort()
+    public void NormalizeBaseUrl_IpOnly_AddsHttpScheme()
     {
-        Assert.Equal("http://192.168.1.1:8788", HttpTransport.NormalizeBaseUrl("192.168.1.1"));
+        Assert.Equal("http://192.168.1.1", HttpTransport.NormalizeBaseUrl("192.168.1.1"));
     }
 
     [Fact]

@@ -98,7 +98,7 @@ public class AuthorizationWatcher : IDisposable
         }
     }
 
-    /// <summary>立即查询一次授权状态（通过 /mg/onehop/register-device）。</summary>
+    /// <summary>立即查询一次授权状态（通过 /mg/register-device）。</summary>
     public async Task<AuthorizationResult> CheckAuthorizationAsync(string serverUrl, CancellationToken ct = default)
     {
         var result = await _deviceRegistration.RegisterDeviceAsync(serverUrl, ct);

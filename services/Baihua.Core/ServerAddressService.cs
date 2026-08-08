@@ -307,6 +307,11 @@ namespace Baihua.Family.Services
                     ? settings.DisplayName
                     : System.Net.Dns.GetHostName();
 
+                // 优先使用配置的 PublicBaseUrl（Nginx 统一入口地址，如 http://192.168.1.5 或 https://mydomain.com）
+                var publicBase = _configuration["Baihua:PublicBaseUrl"];
+                if (!string.IsNullOrWhiteSpace(publicBase))
+                    return (publicBase.TrimEnd('/'), hostName);
+
                 // 优先使用 Domain（广域网 HTTPS）
                 if (!string.IsNullOrWhiteSpace(settings.Domain))
                 {

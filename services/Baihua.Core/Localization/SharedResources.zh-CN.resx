@@ -2046,22 +2046,22 @@ Status: {2}
   <data name="Onboarding_CreateFailed" xml:space="preserve">
     <value>创建失败: {0}</value>
   </data>
-  <data name="OneHop_DeviceIdRequired" xml:space="preserve">
+  <data name="Register_DeviceIdRequired" xml:space="preserve">
     <value>DeviceId is required</value>
   </data>
-  <data name="OneHop_DefaultDeviceName" xml:space="preserve">
+  <data name="Register_DefaultDeviceName" xml:space="preserve">
     <value>移动端设备</value>
   </data>
-  <data name="OneHop_DeviceAuthorized" xml:space="preserve">
+  <data name="Register_DeviceAuthorized" xml:space="preserve">
     <value>设备已授权</value>
   </data>
-  <data name="OneHop_DeviceAuthorizedUpdated" xml:space="preserve">
+  <data name="Register_DeviceAuthorizedUpdated" xml:space="preserve">
     <value>设备已授权（已更新设备标识）</value>
   </data>
-  <data name="OneHop_DeviceIdChangedReauthorize" xml:space="preserve">
+  <data name="Register_DeviceIdChangedReauthorize" xml:space="preserve">
     <value>设备标识已变更，请在 WebUI 中重新授权</value>
   </data>
-  <data name="OneHop_DeviceRegistered" xml:space="preserve">
+  <data name="Register_DeviceRegistered" xml:space="preserve">
     <value>设备已注册，请在 WebUI 中授权</value>
   </data>
 

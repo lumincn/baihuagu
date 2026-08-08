@@ -78,9 +78,9 @@ public class PairingServiceImpl : IPairingService, IDeviceRegistrationService
         return new ServerAddresses(serverId, http, https, content.HostName, content.DeviceId);
     }
 
-    // ---- OneHop QR Registration (not part of IPairingService) ----
+    // ---- Device Registration (not part of IPairingService) ----
 
-    /// <summary>向服务器注册本机设备（OneHop 二维码流程）</summary>
+    /// <summary>向服务器注册本机设备（扫码/手动输入流程）</summary>
     public async Task<RegisterDeviceResult> RegisterDeviceAsync(string serverUrl, CancellationToken cancellationToken = default)
     {
         try
@@ -88,7 +88,7 @@ public class PairingServiceImpl : IPairingService, IDeviceRegistrationService
             var transport = new HttpTransport(_httpClient, _signer, serverUrl);
             var body = new { deviceId = _deviceId, deviceName = _deviceName, deviceType = "maui", systemDeviceName = _systemDeviceName };
             var resp = await transport.PostJsonAsync<JsonElement>(
-                "/mg/onehop/register-device", body);
+                "/mg/register-device", body);
 
             if (resp.IsSuccess)
             {

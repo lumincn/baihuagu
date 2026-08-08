@@ -1592,9 +1592,6 @@
   <data name="Devices_LanDiscoveryHint" xml:space="preserve">
     <value>确保手机和电脑连接同一 WiFi，打开移动端「花记」APP 即可自动被发现。</value>
   </data>
-  <data name="Devices_OneHopDiscoveryTitle" xml:space="preserve">
-    <value>🔍 OneHop 局域网发现</value>
-  </data>
   <data name="Devices_DiscoveryRunning" xml:space="preserve">
     <value>发现服务运行中</value>
   </data>

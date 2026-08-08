@@ -14,18 +14,15 @@ namespace Baihua.Family.Controllers
     {
         private readonly PairingService _pairingService;
         private readonly ServerAddressService _serverAddressService;
-        private readonly IOneHopService _oneHopService;
         private readonly ILogger<PairingController> _logger;
 
         public PairingController(
             PairingService pairingService, 
             ServerAddressService serverAddressService,
-            IOneHopService oneHopService,
             ILogger<PairingController> logger)
         {
             _pairingService = pairingService;
             _serverAddressService = serverAddressService;
-            _oneHopService = oneHopService;
             _logger = logger;
         }
 

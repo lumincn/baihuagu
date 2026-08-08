@@ -2041,22 +2041,22 @@ Duration: {1}</value>
   <data name="Onboarding_CreateFailed" xml:space="preserve">
     <value>Creation failed: {0}</value>
   </data>
-  <data name="OneHop_DeviceIdRequired" xml:space="preserve">
+  <data name="Register_DeviceIdRequired" xml:space="preserve">
     <value>DeviceId is required</value>
   </data>
-  <data name="OneHop_DefaultDeviceName" xml:space="preserve">
+  <data name="Register_DefaultDeviceName" xml:space="preserve">
     <value>Mobile device</value>
   </data>
-  <data name="OneHop_DeviceAuthorized" xml:space="preserve">
+  <data name="Register_DeviceAuthorized" xml:space="preserve">
     <value>Device authorized</value>
   </data>
-  <data name="OneHop_DeviceAuthorizedUpdated" xml:space="preserve">
+  <data name="Register_DeviceAuthorizedUpdated" xml:space="preserve">
     <value>Device authorized (device ID updated)</value>
   </data>
-  <data name="OneHop_DeviceIdChangedReauthorize" xml:space="preserve">
+  <data name="Register_DeviceIdChangedReauthorize" xml:space="preserve">
     <value>Device ID changed, please reauthorize in WebUI</value>
   </data>
-  <data name="OneHop_DeviceRegistered" xml:space="preserve">
+  <data name="Register_DeviceRegistered" xml:space="preserve">
     <value>Device registered, please authorize in WebUI</value>
   </data>
 

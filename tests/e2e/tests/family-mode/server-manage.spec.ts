@@ -4,9 +4,8 @@ import { navigateTo, waitForBlazor, authorize } from '../helpers';
 // #ac55ffdc：百花服务器页测试与修复
 // 覆盖：百花 WebUI 设备管理页（/devices）
 // 页面 locale 为英文（Mobile Device Management）
-// - 页面加载：标题 + Tab 导航（Devices/Discover）
 // - 待授权/已授权设备区域渲染（空态或列表）
-// - 设备授权 API：pending / authorized / onehop status 端点
+// - 设备授权 API：pending / authorized 端点
 // - 组合场景：已授权设备列表包含真实设备（鸿蒙平板等）
 
 const apiPort = process.env.API_PORT || '8788';
@@ -19,11 +18,8 @@ test.describe('百花服务器页（WebUI 设备管理）', () => {
     await waitForBlazor(page);
   });
 
-  test('设备管理页加载：标题 + Tab 导航', async ({ page }) => {
+  test('设备管理页加载：标题', async ({ page }) => {
     await expect(page.locator('h2').first()).toBeVisible({ timeout: 15000 });
-    // Tab 导航（Devices / Discover）
-    await expect(page.locator('button', { hasText: 'Devices' }).first()).toBeVisible({ timeout: 15000 });
-    await expect(page.locator('button', { hasText: 'Discover' }).first()).toBeVisible({ timeout: 15000 });
   });
 
   test('待授权设备区域渲染（空态或列表）', async ({ page }) => {
@@ -60,21 +56,5 @@ test.describe('百花服务器页（WebUI 设备管理）', () => {
     expect(Array.isArray(json)).toBeTruthy();
     // 至少 1 台已授权设备（鸿蒙平板/安卓）
     expect(json.length).toBeGreaterThan(0);
-  });
-
-  test('API: OneHop 状态端点返回合法结构', async ({ request }) => {
-    const res = await request.get(`${apiBase}/api/onehop/status`);
-    expect(res.status()).toBe(200);
-    const json = await res.json();
-    // 服务端返回 PascalCase（IsRunning/IsAvailable/ServiceId/Port）
-    expect(json).toHaveProperty('IsRunning');
-    expect(json).toHaveProperty('ServiceId');
-  });
-
-  test('发现 Tab：切换后显示 OneHop 发现面板', async ({ page }) => {
-    await page.locator('button', { hasText: 'Discover' }).first().click();
-    await waitForBlazor(page);
-    // 发现面板：OneHop Discovery / LAN Auto Discovery
-    await expect(page.locator('text=OneHop').first()).toBeVisible({ timeout: 15000 });
   });
 });

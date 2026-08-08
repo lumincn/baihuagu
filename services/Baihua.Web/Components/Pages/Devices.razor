@@ -1,7 +1,6 @@
 @page "/devices"
 @rendermode InteractiveServer
 @using Baihua.Web.Components
-@using Baihua.Contracts.OneHop
 @using Microsoft.Extensions.Localization
 @inject HttpClient HttpClient
 @inject IJSRuntime JSRuntime
@@ -19,9 +18,6 @@
         <li class="nav-item">
             <button class="nav-link @(activeTab == "devices" ? "active" : "")" @onclick='() => SwitchTab("devices")'>@L["Devices_TabDevices"]</button>
         </li>
-        <li class="nav-item">
-            <button class="nav-link @(activeTab == "discover" ? "active" : "")" @onclick='() => SwitchTab("discover")'>@L["Devices_TabDiscover"]</button>
-        </li>
     </ul>
 
     @if (!string.IsNullOrEmpty(message))
@@ -32,144 +28,7 @@
         </div>
     }
 
-    @if (activeTab == "discover")
-    {
-        <div class="alert alert-info mb-4">
-            <p class="mb-1"><strong>@L["Devices_LanAutoDiscovery"]</strong></p>
-            <p class="mb-0 small">@L["Devices_LanDiscoveryHint"]</p>
-        </div>
-
-        <!-- 发现 Tab -->
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">@L["Devices_OneHopDiscoveryTitle"]</h5>
-                <div class="d-flex gap-2">
-                    @if (oneHopStatus?.IsRunning == true)
-                    {
-                        <span class="badge bg-success">@L["Devices_DiscoveryRunning"]</span>
-                        <button class="btn btn-sm btn-outline-danger" @onclick="StopDiscoveryAsync" disabled="@isDiscovering">@L["Devices_StopDiscovery"]</button>
-                    }
-                    else
-                    {
-                        <span class="badge bg-secondary">@L["Devices_DiscoveryNotRunning"]</span>
-                        <button class="btn btn-sm btn-outline-primary" @onclick="StartDiscoveryAsync" disabled="@isDiscovering">@L["Devices_StartDiscovery"]</button>
-                    }
-                    <button class="btn btn-sm btn-outline-secondary" @onclick="LoadOneHopDataAsync" disabled="@isDiscovering">@L["Devices_Refresh"]</button>
-                </div>
-            </div>
-            <div class="card-body">
-                @if (oneHopStatus != null)
-                {
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-3">
-                            <div class="p-2 bg-light rounded text-center">
-                                <div class="text-muted small">@L["Devices_Status"]</div>
-                                <div class="fw-bold">@(oneHopStatus.IsRunning ? L["Devices_Running"] : L["Devices_Stopped"])</div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="p-2 bg-light rounded text-center">
-                                <div class="text-muted small">@L["Devices_DiscoveredDevicesCount"]</div>
-                                <div class="fw-bold">@oneHopStatus.DiscoveredDevicesCount</div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="p-2 bg-light rounded text-center">
-                                <div class="text-muted small">@L["Devices_CurrentConnection"]</div>
-                                <div class="fw-bold">@(string.IsNullOrEmpty(oneHopStatus.CurrentConnection?.DeviceName) ? L["Devices_None"] : oneHopStatus.CurrentConnection.DeviceName)</div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="p-2 bg-light rounded text-center">
-                                <div class="text-muted small">ServiceId</div>
-                                <div class="fw-bold text-truncate" title="@oneHopStatus.ServiceId">@oneHopStatus.ServiceId</div>
-                            </div>
-                        </div>
-                    </div>
-                }
-
-                @if (isDiscovering)
-                {
-                    <div class="text-center py-4">
-                        <div class="spinner-border text-primary" role="status"></div>
-                        <p class="mt-2 text-muted">@L["Devices_Discovering"]</p>
-                    </div>
-                }
-                else if (oneHopDevices.Any())
-                {
-                    <h6 class="mb-3">@L["Devices_DiscoveredDevicesTitle"]</h6>
-                    <div class="table-responsive">
-                        <table class="table table-hover table-sm">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>@L["Devices_ColDeviceName"]</th>
-                                    <th>@L["Devices_ColSignalStrength"]</th>
-                                    <th>@L["Devices_ColDiscoveryTime"]</th>
-                                    <th>@L["Devices_ColActions"]</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var device in oneHopDevices)
-                                {
-                                    var isAuthorized = authorizedDevices.Any(a => a.DeviceName.Equals(device.DeviceName, StringComparison.OrdinalIgnoreCase));
-                                    var deviceType = device.ExtraData.TryGetValue("deviceType", out var dt) ? dt : "mobile";
-                                    var typeLabel = deviceType switch
-                                    {
-                                        "android" => "🤖 Android",
-                                        "harmonyos" => "🔷 HarmonyOS",
-                                        "ios" => "🍎 iOS",
-                                        _ => "📱 " + L["Devices_DeviceTypeMobile"]
-                                    };
-                                    <tr>
-                                        <td>
-                                            <strong>@device.DeviceName</strong>
-                                            @if (isAuthorized)
-                                            {
-                                                <span class="badge bg-success ms-2">@L["Devices_Authorized"]</span>
-                                            }
-                                            <div class="text-muted small">@device.DeviceId</div>
-                                            <span class="badge bg-secondary">@typeLabel</span>
-                                        </td>
-                                        <td>
-                                            <div class="progress" style="height: 8px; width: 80px;">
-                                                <div class="progress-bar @(device.SignalStrength > 80 ? "bg-success" : device.SignalStrength > 50 ? "bg-warning" : "bg-danger")" style="width: @device.SignalStrength%"></div>
-                                            </div>
-                                            <small class="text-muted">@device.SignalStrength%</small>
-                                        </td>
-                                        <td class="small">@device.DiscoveredAt.ToLocalTime().ToString("MM-dd HH:mm:ss")</td>
-                                        <td>
-                                            <div class="d-flex gap-2 align-items-center">
-                                                @if (!isAuthorized)
-                                                {
-                                                    <button class="btn btn-sm btn-success" @onclick="() => AuthorizeOneHopDeviceAsync(device.DeviceName)" disabled="@isProcessingDevice">
-                                                        @L["Devices_Authorize"]
-                                                    </button>
-                                                }
-                                                else
-                                                {
-                                                    <button class="btn btn-sm btn-outline-primary" @onclick="() => ConnectOneHopDeviceAsync(device.DeviceId)" disabled="@isProcessingDevice">
-                                                        @L["Devices_Connect"]
-                                                    </button>
-                                                }
-                                            </div>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                }
-                else
-                {
-                    <div class="text-center py-5 text-muted">
-                        <p>@L["Devices_NoLanDevices"]</p>
-                        <button class="btn btn-primary" @onclick="StartDiscoveryAsync" disabled="@isDiscovering">@L["Devices_StartDiscovery"]</button>
-                    </div>
-                }
-            </div>
-        </div>
-    }
-    else if (activeTab == "devices")
+    @if (activeTab == "devices")
     {
         <!-- 设备 Tab -->
         <div class="row">
@@ -349,11 +208,6 @@
     private List<PendingDeviceInfo> pendingDevices = new();
     private List<AuthorizedDeviceInfo> authorizedDevices = new();
 
-    // OneHop 发现
-    private bool isDiscovering;
-    private OneHopStatusResponse? oneHopStatus;
-    private List<OneHopDeviceResponse> oneHopDevices = new();
-
     // 自动轮询定时器
     private System.Timers.Timer? _autoRefreshTimer;
 
@@ -372,10 +226,7 @@
         {
             try
             {
-                await Task.WhenAll(
-                    StartDiscoveryAsync(),
-                    LoadDevicesAsync()
-                );
+                await LoadDevicesAsync();
             }
             catch (Exception ex)
             {
@@ -391,7 +242,7 @@
             }
         });
 
-        // 启动自动轮询（每 5 秒刷新发现列表和设备列表）
+        // 启动自动轮询（每 5 秒刷新设备列表）
         _autoRefreshTimer = new System.Timers.Timer(5000);
         _autoRefreshTimer.Elapsed += async (_, _) =>
         {
@@ -399,7 +250,6 @@
             {
                 await InvokeAsync(async () =>
                 {
-                    await LoadOneHopDataAsync();
                     await LoadDevicesAsync();
                     StateHasChanged();
                 });
@@ -426,10 +276,6 @@
         if (tab == "devices")
         {
             await LoadDevicesAsync();
-        }
-        else if (tab == "discover")
-        {
-            await LoadOneHopDataAsync();
         }
     }
 
@@ -574,179 +420,6 @@
         catch (Exception ex)
         {
             message = string.Format(L["Devices_RevokeFailed"], ex.Message);
-            isSuccess = false;
-        }
-        finally
-        {
-            isProcessingDevice = false;
-        }
-    }
-
-    #endregion
-
-    #region OneHop 发现
-
-    private async Task LoadOneHopDataAsync()
-    {
-        await Task.WhenAll(LoadOneHopStatusAsync(), LoadOneHopDevicesAsync());
-    }
-
-    private async Task LoadOneHopStatusAsync()
-    {
-        try
-        {
-            var sw = System.Diagnostics.Stopwatch.StartNew();
-            oneHopStatus = await HttpClient.GetFromJsonAsync<OneHopStatusResponse>("api/onehop/status");
-            sw.Stop();
-            Logger.LogInformation("[Devices] OneHop 状态耗时: {Ms}ms", sw.ElapsedMilliseconds);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "加载 OneHop 状态失败");
-        }
-    }
-
-    private async Task LoadOneHopDevicesAsync()
-    {
-        try
-        {
-            var sw = System.Diagnostics.Stopwatch.StartNew();
-            var devices = await HttpClient.GetFromJsonAsync<List<OneHopDeviceResponse>>("api/onehop/devices");
-            sw.Stop();
-            Logger.LogInformation("[Devices] OneHop 设备列表耗时: {Ms}ms", sw.ElapsedMilliseconds);
-            oneHopDevices = devices ?? new List<OneHopDeviceResponse>();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "加载 OneHop 设备列表失败");
-            oneHopDevices = new List<OneHopDeviceResponse>();
-        }
-    }
-
-    private async Task StartDiscoveryAsync()
-    {
-        try
-        {
-            isDiscovering = true;
-            var response = await HttpClient.PostAsync("api/onehop/discovery/start", null);
-            if (response.IsSuccessStatusCode)
-            {
-                message = L["Devices_DiscoveryStarted"];
-                isSuccess = true;
-            }
-            else
-            {
-                message = L["Devices_DiscoveryStartFailedSimple"];
-                isSuccess = false;
-            }
-            await LoadOneHopDataAsync();
-        }
-        catch (Exception ex)
-        {
-            message = string.Format(L["Devices_DiscoveryStartFailed"], ex.Message);
-            isSuccess = false;
-        }
-        finally
-        {
-            isDiscovering = false;
-        }
-    }
-
-    private async Task StopDiscoveryAsync()
-    {
-        try
-        {
-            isDiscovering = true;
-            var response = await HttpClient.PostAsync("api/onehop/discovery/stop", null);
-            if (response.IsSuccessStatusCode)
-            {
-                message = L["Devices_DiscoveryStopped"];
-                isSuccess = true;
-            }
-            else
-            {
-                message = L["Devices_DiscoveryStopFailedSimple"];
-                isSuccess = false;
-            }
-            await LoadOneHopDataAsync();
-        }
-        catch (Exception ex)
-        {
-            message = string.Format(L["Devices_DiscoveryStopFailed"], ex.Message);
-            isSuccess = false;
-        }
-        finally
-        {
-            isDiscovering = false;
-        }
-    }
-
-    private async Task ConnectOneHopDeviceAsync(string deviceId)
-    {
-        try
-        {
-            isProcessingDevice = true;
-            var response = await HttpClient.PostAsJsonAsync("api/onehop/connect", new { deviceId });
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadFromJsonAsync<OneHopConnectionResponse>();
-                message = string.Format(L["Devices_Connected"], result?.DeviceName ?? deviceId);
-                isSuccess = true;
-                await LoadOneHopDataAsync();
-            }
-            else
-            {
-                var error = await response.Content.ReadAsStringAsync();
-                message = string.Format(L["Devices_ConnectFailed"], error);
-                isSuccess = false;
-            }
-        }
-        catch (Exception ex)
-        {
-            message = string.Format(L["Devices_ConnectFailed"], ex.Message);
-            isSuccess = false;
-        }
-        finally
-        {
-            isProcessingDevice = false;
-        }
-    }
-
-    private async Task AuthorizeOneHopDeviceAsync(string deviceName)
-    {
-        try
-        {
-            isProcessingDevice = true;
-            // 先刷新 pending 列表，找到对应设备的 requestId
-            await LoadDevicesAsync();
-            var pending = pendingDevices.FirstOrDefault(p =>
-                p.DeviceName.Equals(deviceName, StringComparison.OrdinalIgnoreCase));
-
-            if (pending == null)
-            {
-                message = string.Format(L["Devices_PendingRequestNotFound"], deviceName);
-                isSuccess = false;
-                return;
-            }
-
-            var response = await HttpClient.PostAsJsonAsync("api/devices/authorize", new { requestId = pending.RequestId });
-            if (response.IsSuccessStatusCode)
-            {
-                message = string.Format(L["Devices_DeviceAuthorizedFormat"], deviceName);
-                isSuccess = true;
-                await LoadDevicesAsync();
-                await LoadOneHopDataAsync();
-            }
-            else
-            {
-                var error = await response.Content.ReadAsStringAsync();
-                message = string.Format(L["Devices_AuthorizeFailed"], error);
-                isSuccess = false;
-            }
-        }
-        catch (Exception ex)
-        {
-            message = string.Format(L["Devices_AuthorizeFailed"], ex.Message);
             isSuccess = false;
         }
         finally

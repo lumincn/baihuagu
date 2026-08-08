@@ -71,7 +71,7 @@ WebSocket（Program.cs）：
     /hubs/status       → WebUI Blazor SignalR（:5177，注意与 Family 的 /hubs/* 区分）
 ```
 
-**结论**：所有来自移动端的流量（`/mg/*`、`/onehop/*`、`/api/ai/chat`、`/ws/devices`）**必须先到 Family**，不能让 Nginx 直接分发到 Vault/AI。Family 作为移动端的“统一授权网关”角色保持不变。
+**结论**：所有来自移动端的流量（`/mg/*`、`/api/ai/chat`、`/ws/devices`）**必须先到 Family**，不能让 Nginx 直接分发到 Vault/AI。Family 作为移动端的“统一授权网关”角色保持不变。
 
 ---
 
@@ -115,7 +115,7 @@ WebSocket（Program.cs）：
        │            │    │                            │                  │
        │            │    ▼                            ▼                  │
        │            │  根路径 /                 管理/移动端 API           │
-       │            │  (WebUI)                 /mg/* /onehop/* /pair    │
+       │            │  (WebUI)                 /mg/* /pair              │
        │            │  :5177                   /ws/devices /api/* /hubs/* │
        │            │                           :8788 (Family)          │
        │            │                            │                       │
@@ -267,7 +267,7 @@ server {
 
     # ==============================================================
     # 3. 移动端 API（Family 统一授权入口）
-    #    关键：/mg/* /onehop/* /ws/devices /api/ai/chat 等必须先到 Family，
+    #    关键：/mg/* /ws/devices /api/ai/chat 等必须先到 Family，
     #    绝对不能直连 Vault/AI（否则绕过授权）
     # ==============================================================
     location /mg/ {
@@ -477,7 +477,7 @@ BAIHUA_NGINX_CLIENT_MAX_BODY_SIZE=100M
 | R2 | `X-Forwarded-For` 伪造，绕过 Family 的 loopback 白名单（管理员 UI） | 非本机 IP 访问管理面板 | 现有 Family Program.cs 的 ForwardedHeadersOptions 已**仅信任 loopback**，Nginx 在 host 网络，请求来源 IP 对 Family 来说就是 127.0.0.1 → 转发后 X-Forwarded-For 的第一个真实客户端 IP 正确，不会信任客户端直送的头部 |
 | R3 | 端口 80 被家庭路由器的 Web 管理面板占用 | Nginx 启动失败（Address already in use） | `BAIHUA_NGINX_PORT` 默认 80，用户可在 `.env` 改成 8000/8080 任意端口，文档给常见场景指引 |
 | R4 | `BAIHUA_WEBUI_PREFIX` 非空时 WebUI 链接失效 | 静态 404、SignalR 连不上 | ① WebUI 的 `BasePath` 配置注入 + 已实现的 `UsePathBase` 严格测试；② Nginx `proxy_pass` 尾部 `/` 的前缀剥离在集成测试中单独覆盖；③ Blazor `<base href>` 渲染结果验证 |
-| R5 | 容器崩溃时 Nginx 没起来，WebUI 也“失联” | 用户不知道还能 `http://ip:5177` 直达 | 文档首页醒目写入“直达端口号兜底地址”；Family 侧 `/api/onehop/status` 的直达地址能力迁移到 `/health` 或设备管理 API，让配对失败时移动端能做 fallback |
+| R5 | 容器崩溃时 Nginx 没起来，WebUI 也“失联” | 用户不知道还能 `http://ip:5177` 直达 | 文档首页醒目写入“直达端口号兜底地址”（`http://ip:5177` WebUI / `http://ip:8788` 移动端）；移动端配对失败时可通过 `/mg/pair/code` 或 `/health` 端点做 fallback |
 
 ---
 
