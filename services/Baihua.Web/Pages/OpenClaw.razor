@@ -330,6 +330,141 @@
                             }
                         </div>
 
+                        <!-- OpenVINO -->
+                        <div class="mb-4 p-3 border rounded">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="openVinoEnabled"
+                                       checked="@_openVinoConfig.Enabled" @onchange="OnOpenVinoEnabledChanged">
+                                <label class="form-check-label fw-bold" for="openVinoEnabled">@L["OpenClaw_UseOpenVino"]</label>
+                                @if (_openVinoDetecting)
+                                {
+                                    <span class="badge bg-info ms-2"><span class="spinner-border spinner-border-sm" style="width:0.7rem;height:0.7rem;"></span> 检测中</span>
+                                }
+                                else if (!string.IsNullOrEmpty(_openVinoStatusMessage))
+                                {
+                                    @if (_openVinoStatusMessage.Contains("成功") || _openVinoStatusMessage.Contains("正在运行"))
+                                    {
+                                        <span class="badge bg-success ms-2">@L["OpenClaw_Running"]</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary ms-2">@L["OpenClaw_NotRunning"]</span>
+                                    }
+                                }
+                            </div>
+                            @if (_openVinoDetecting)
+                            {
+                                <div class="alert alert-info py-2 mb-3">
+                                    <span class="spinner-border spinner-border-sm me-2"></span>@_openVinoStatusMessage
+                                </div>
+                            }
+                            else if (!string.IsNullOrEmpty(_openVinoStatusMessage))
+                            {
+                                <div class="alert @(_openVinoStatusMessage.Contains("成功") || _openVinoStatusMessage.Contains("正在运行") ? "alert-success" : "alert-warning") py-2 mb-3">
+                                    @_openVinoStatusMessage
+                                </div>
+                            }
+                            @if (_openVinoConfig.Enabled)
+                            {
+                                <div class="alert alert-light border mb-3">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Intel OpenVINO 推理引擎，支持 CPU/GPU/NPU 加速。需先安装 OpenVINO GenAI Server。
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">服务脚本路径</label>
+                                        <input type="text" class="form-control" @bind="_openVinoConfig.BinaryPath"
+                                               placeholder="openvino-genai-server" />
+                                        <div class="form-text">OpenVINO GenAI Server 可执行文件或 Python 命令</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">模型目录路径</label>
+                                        <input type="text" class="form-control" @bind="_openVinoConfig.ModelPath"
+                                               placeholder="/path/to/openvino_model" />
+                                        <div class="form-text">OpenVINO 优化后的模型目录</div>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-3">
+                                        <label class="form-label">推理设备</label>
+                                        <select class="form-select" @bind="_openVinoConfig.Device">
+                                            <option value="CPU">CPU</option>
+                                            <option value="GPU">GPU</option>
+                                            <option value="NPU">NPU</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">端口</label>
+                                        <input type="number" class="form-control" @bind="_openVinoConfig.Port" />
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Base URL</label>
+                                        <input type="text" class="form-control" @bind="_openVinoConfig.BaseUrl"
+                                               placeholder="http://localhost:8000" />
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">上下文大小</label>
+                                        <input type="number" class="form-control" @bind="_openVinoConfig.ContextSize" />
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">额外启动参数</label>
+                                    <input type="text" class="form-control" @bind="_openVinoConfig.ExtraArgs"
+                                           placeholder="--num-beams 1" />
+                                </div>
+                                <div class="mb-3 d-flex gap-2">
+                                    <button class="btn btn-outline-primary btn-sm" @onclick="ScanOpenVinoModels"
+                                            disabled="@_isScanningOpenVino">
+                                        @if (_isScanningOpenVino)
+                                        {
+                                            <span class="spinner-border spinner-border-sm me-1"></span>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-search me-1"></i>
+                                        }
+                                        @L["OpenClaw_ScanModels"]
+                                    </button>
+                                    <button class="btn btn-outline-success btn-sm" @onclick='() => SyncModelsAsync("openvino")'
+                                            disabled="@(_isSyncingOpenVino || _openVinoModels.Count == 0)">
+                                        @if (_isSyncingOpenVino)
+                                        {
+                                            <span class="spinner-border spinner-border-sm me-1"></span>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-cloud-arrow-up me-1"></i>
+                                        }
+                                        @L["OpenClaw_SyncToOpenClaw"]
+                                    </button>
+                                </div>
+                                @if (_openVinoModels.Count > 0)
+                                {
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-bordered">
+                                            <thead class="table-light">
+                                                <tr><th>@L["OpenClaw_Col_ModelId"]</th><th>@L["OpenClaw_Col_Name"]</th><th>@L["OpenClaw_Col_Context"]</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var m in _openVinoModels)
+                                                {
+                                                    <tr>
+                                                        <td><code>@m.Id</code></td>
+                                                        <td>@m.Name</td>
+                                                        <td>@m.ContextWindow</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                                else if (_openVinoScanned)
+                                {
+                                    <div class="alert alert-warning py-2">未找到 OpenVINO 模型</div>
+                                }
+                            }
+                        </div>
+
                         <!-- 默认模型设置 -->
                         <!-- 模型配置文件 -->
                         <div class="mb-4">
@@ -378,6 +513,17 @@
                                         }
                                     </select>
                                     <div class="form-text">@L["OpenClaw_DefaultModelHint"]</div>
+                                    @if (_availableModels.Count == 0)
+                                    {
+                                        <div class="alert alert-info py-2 mt-2 mb-0 small">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            <strong>暂无可用模型。</strong>请先在下方完成任一操作：
+                                            <ul class="mb-0 mt-1 ps-4">
+                                                <li>进入「AI 设置」页面启用云端 Provider（如硅基流动、OpenAI）并添加模型，模型会自动出现在此处（格式：<code>providerId/modelName</code>）。</li>
+                                                <li>或在本页启用 Ollama / LM Studio / llama.cpp，点击「扫描模型」→「同步到 OpenClaw」，本地模型会出现在此处。</li>
+                                            </ul>
+                                        </div>
+                                    }
                                 </div>
                                 <div class="col-md-4">
                                     <button class="btn btn-primary" @onclick="SaveDefaultModelAsync" disabled="@_isSavingDefaultModel">
@@ -621,6 +767,54 @@
     <div class="modal-backdrop fade show"></div>
 }
 
+<style>
+    /* 暗色模式 — OpenClaw 页专属覆盖 */
+    [data-bs-theme="dark"] {
+        /* 默认模型区域 bg-light 容器 */
+        .mb-4.p-3.border.rounded.bg-light {
+            background: rgba(255,255,255,0.05) !important;
+            border-color: #2d3548 !important;
+        }
+
+        /* llama.cpp 提示框 alert-light */
+        .alert.alert-light.border {
+            background: rgba(255,255,255,0.04) !important;
+            border-color: #3d4558 !important;
+            color: #c0c8d0 !important;
+        }
+        .alert.alert-light.border .bi-info-circle {
+            color: #91c8e0 !important;
+        }
+
+        /* 模型配置卡片 badge bg-light text-dark border */
+        .badge.bg-light.text-dark.border {
+            background: rgba(255,255,255,0.08) !important;
+            color: #c0c8d0 !important;
+            border-color: #3d4558 !important;
+        }
+
+        /* 模型列表 table-light 表头 */
+        .table-light {
+            --bs-table-bg: rgba(255,255,255,0.06);
+            --bs-table-color: #c0c8d0;
+        }
+        .table-light th {
+            color: #c0c8d0;
+            border-color: #3d4558 !important;
+        }
+        table.table-bordered,
+        .table-bordered th,
+        .table-bordered td {
+            border-color: #3d4558 !important;
+        }
+
+        /* Ollama/LM Studio/llama.cpp p-3 border rounded 容器 */
+        .mb-4.p-3.border.rounded:not(.bg-light) {
+            border-color: #2d3548 !important;
+        }
+    }
+</style>
+
 @code {
     private List<OpenClawTaskDto>? _tasks;
     private string _newPrompt = "";
@@ -643,27 +837,34 @@
     private bool _isScanningOllama;
     private bool _isScanningLmStudio;
     private bool _isScanningLlamaCpp;
+    private bool _isScanningOpenVino;
     private bool _ollamaScanned;
     private bool _lmStudioScanned;
     private bool _llamaCppScanned;
+    private bool _openVinoScanned;
     private bool _isSyncingOllama;
     private bool _isSyncingLmStudio;
     private bool _isSyncingLlamaCpp;
+    private bool _isSyncingOpenVino;
     private string? _syncMessage;
     private bool _ollamaDetecting;
     private bool _lmStudioDetecting;
     private bool _llamaCppDetecting;
+    private bool _openVinoDetecting;
     private string? _configError;
     private string? _configSuccess;
     private string? _ollamaStatusMessage;
     private string? _lmStudioStatusMessage;
     private string? _llamaCppStatusMessage;
+    private string? _openVinoStatusMessage;
     private OpenClawLocalProviderConfigDto _ollamaConfig = new();
     private OpenClawLocalProviderConfigDto _lmStudioConfig = new();
     private OpenClawLlamaCppConfigDto _llamaCppConfig = new();
+    private OpenClawOpenVinoConfigDto _openVinoConfig = new();
     private List<OpenClawLocalModelDto> _ollamaModels = new();
     private List<OpenClawLocalModelDto> _lmStudioModels = new();
     private List<OpenClawLocalModelDto> _llamaCppModels = new();
+    private List<OpenClawLocalModelDto> _openVinoModels = new();
 
     // 默认模型设置
     private string _selectedDefaultModel = "";
@@ -739,6 +940,7 @@
         _ollamaConfig = config.Ollama ?? new OpenClawLocalProviderConfigDto();
         _lmStudioConfig = config.LmStudio ?? new OpenClawLocalProviderConfigDto();
         _llamaCppConfig = config.LlamaCpp ?? new OpenClawLlamaCppConfigDto();
+        _openVinoConfig = config.OpenVino ?? new OpenClawOpenVinoConfigDto();
         _ollamaModels = _ollamaConfig.Models.ToList();
         _lmStudioModels = _lmStudioConfig.Models.ToList();
         _llamaCppModels = _llamaCppConfig.Enabled && !string.IsNullOrWhiteSpace(_llamaCppConfig.ModelPath)
@@ -753,6 +955,18 @@
                 }
             }
             : new List<OpenClawLocalModelDto>();
+        _openVinoModels = _openVinoConfig.Enabled && !string.IsNullOrWhiteSpace(_openVinoConfig.ModelPath)
+            ? new List<OpenClawLocalModelDto>
+            {
+                new OpenClawLocalModelDto
+                {
+                    Id = System.IO.Path.GetFileName(_openVinoConfig.ModelPath.TrimEnd('/', '\\')).Replace(".", "-").ToLowerInvariant(),
+                    Name = System.IO.Path.GetFileName(_openVinoConfig.ModelPath.TrimEnd('/', '\\')),
+                    ApiType = _openVinoConfig.ApiType,
+                    ContextWindow = _openVinoConfig.ContextSize,
+                }
+            }
+            : new List<OpenClawLocalModelDto>();
         _configError = null;
         _configSuccess = null;
 
@@ -763,7 +977,11 @@
             _selectedDefaultModel = defaultModel.CurrentModel ?? "";
             _availableModels = defaultModel.AvailableModels.ToList();
         }
-        catch { }
+        catch (Exception ex)
+        {
+            _configError = $"加载默认模型列表失败：{ex.Message}。可用模型将显示为空。";
+            _availableModels = new List<string>();
+        }
 
         // 加载模型配置文件
         try
@@ -772,7 +990,11 @@
             _modelProfiles = profiles.Profiles.ToList();
             _currentProfile = profiles.CurrentProfile;
         }
-        catch { }
+        catch (Exception ex)
+        {
+            if (string.IsNullOrEmpty(_configError))
+                _configError = $"加载模型配置文件失败：{ex.Message}";
+        }
 
         // 自动检测已启用 provider 的服务状态
         if (_ollamaConfig.Enabled)
@@ -781,6 +1003,8 @@
             await DetectAndStartAsync("lmstudio");
         if (_llamaCppConfig.Enabled)
             await DetectAndStartAsync("llamacpp");
+        if (_openVinoConfig.Enabled)
+            await DetectAndStartAsync("openvino");
     }
 
     private static bool GetCheckboxValue(ChangeEventArgs e)
@@ -863,6 +1087,30 @@
         await DetectAndStartAsync("llamacpp");
     }
 
+    private async Task OnOpenVinoEnabledChanged(ChangeEventArgs e)
+    {
+        _openVinoConfig.Enabled = GetCheckboxValue(e);
+        if (!_openVinoConfig.Enabled)
+        {
+            _openVinoModels.Clear();
+            _openVinoScanned = false;
+            _openVinoStatusMessage = "已停用：OpenVINO 配置已从 OpenClaw 中移除（服务本身不会停止）";
+            return;
+        }
+        // 设置默认值
+        if (string.IsNullOrWhiteSpace(_openVinoConfig.BaseUrl))
+            _openVinoConfig.BaseUrl = "http://localhost:8000";
+        if (string.IsNullOrWhiteSpace(_openVinoConfig.ApiType))
+            _openVinoConfig.ApiType = "openai-completions";
+        if (string.IsNullOrWhiteSpace(_openVinoConfig.Device))
+            _openVinoConfig.Device = "CPU";
+        if (_openVinoConfig.Port == 0)
+            _openVinoConfig.Port = 8000;
+        if (_openVinoConfig.ContextSize == 0)
+            _openVinoConfig.ContextSize = 4096;
+        await DetectAndStartAsync("openvino");
+    }
+
     private async Task DetectAndStartAsync(string provider)
     {
         if (provider == "ollama")
@@ -879,6 +1127,11 @@
         {
             _llamaCppDetecting = true;
             _llamaCppStatusMessage = "正在检测 llama.cpp 服务状态...";
+        }
+        else if (provider == "openvino")
+        {
+            _openVinoDetecting = true;
+            _openVinoStatusMessage = "正在检测 OpenVINO 服务状态...";
         }
         await InvokeAsync(StateHasChanged);
 
@@ -910,6 +1163,14 @@
                     await ScanModelsAsync("llamacpp");
                 }
             }
+            else if (provider == "openvino")
+            {
+                _openVinoStatusMessage = status.Message;
+                if (status.IsRunning)
+                {
+                    await ScanModelsAsync("openvino");
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -919,6 +1180,8 @@
                 _lmStudioStatusMessage = $"检测失败: {ex.Message}";
             else if (provider == "llamacpp")
                 _llamaCppStatusMessage = $"检测失败: {ex.Message}";
+            else if (provider == "openvino")
+                _openVinoStatusMessage = $"检测失败: {ex.Message}";
         }
         finally
         {
@@ -928,6 +1191,8 @@
                 _lmStudioDetecting = false;
             else if (provider == "llamacpp")
                 _llamaCppDetecting = false;
+            else if (provider == "openvino")
+                _openVinoDetecting = false;
             await InvokeAsync(StateHasChanged);
         }
     }
@@ -935,6 +1200,7 @@
     private async Task ScanOllamaModels() => await ScanModelsAsync("ollama");
     private async Task ScanLmStudioModels() => await ScanModelsAsync("lmstudio");
     private async Task ScanLlamaCppModels() => await ScanModelsAsync("llamacpp");
+    private async Task ScanOpenVinoModels() => await ScanModelsAsync("openvino");
 
     private async Task ScanModelsAsync(string provider)
     {
@@ -953,6 +1219,11 @@
             _isScanningLlamaCpp = true;
             _llamaCppScanned = false;
         }
+        else if (provider == "openvino")
+        {
+            _isScanningOpenVino = true;
+            _openVinoScanned = false;
+        }
         await InvokeAsync(StateHasChanged);
 
         try
@@ -962,7 +1233,8 @@
             {
                 Ollama = _ollamaConfig,
                 LmStudio = _lmStudioConfig,
-                LlamaCpp = _llamaCppConfig
+                LlamaCpp = _llamaCppConfig,
+                OpenVino = _openVinoConfig
             };
             await ApiService.SaveOpenClawLocalAiConfigAsync(temp);
 
@@ -981,6 +1253,11 @@
                 _llamaCppModels = await ApiService.ScanOpenClawLocalModelsAsync("llamacpp");
                 _llamaCppScanned = true;
             }
+            else if (provider == "openvino")
+            {
+                _openVinoModels = await ApiService.ScanOpenClawLocalModelsAsync("openvino");
+                _openVinoScanned = true;
+            }
         }
         catch (Exception ex)
         {
@@ -994,6 +1271,8 @@
                 _isScanningLmStudio = false;
             else if (provider == "llamacpp")
                 _isScanningLlamaCpp = false;
+            else if (provider == "openvino")
+                _isScanningOpenVino = false;
             await InvokeAsync(StateHasChanged);
         }
     }
@@ -1012,7 +1291,8 @@
             {
                 Ollama = _ollamaConfig,
                 LmStudio = _lmStudioConfig,
-                LlamaCpp = _llamaCppConfig
+                LlamaCpp = _llamaCppConfig,
+                OpenVino = _openVinoConfig
             };
 
             if (_ollamaConfig.Enabled)
@@ -1045,6 +1325,20 @@
                     _llamaCppConfig.NGpuLayers = 999;
                 if (_llamaCppConfig.ContextSize == 0)
                     _llamaCppConfig.ContextSize = 4096;
+            }
+
+            if (_openVinoConfig.Enabled)
+            {
+                if (string.IsNullOrWhiteSpace(_openVinoConfig.BaseUrl))
+                    _openVinoConfig.BaseUrl = "http://localhost:8000";
+                if (string.IsNullOrWhiteSpace(_openVinoConfig.ApiType))
+                    _openVinoConfig.ApiType = "openai-completions";
+                if (string.IsNullOrWhiteSpace(_openVinoConfig.Device))
+                    _openVinoConfig.Device = "CPU";
+                if (_openVinoConfig.Port == 0)
+                    _openVinoConfig.Port = 8000;
+                if (_openVinoConfig.ContextSize == 0)
+                    _openVinoConfig.ContextSize = 4096;
             }
 
             var success = await ApiService.SaveOpenClawLocalAiConfigAsync(request);
@@ -1088,6 +1382,12 @@
             var modelName = System.IO.Path.GetFileNameWithoutExtension(_llamaCppConfig.ModelPath);
             var modelId = modelName.Replace(".", "-").ToLowerInvariant();
             _availableModels.Add($"llamacpp/{modelId}");
+        }
+        if (_openVinoConfig.Enabled && !string.IsNullOrWhiteSpace(_openVinoConfig.ModelPath))
+        {
+            var modelName = System.IO.Path.GetFileName(_openVinoConfig.ModelPath.TrimEnd('/', '\\'));
+            var modelId = modelName.Replace(".", "-").ToLowerInvariant();
+            _availableModels.Add($"openvino/{modelId}");
         }
     }
 
@@ -1164,6 +1464,8 @@
             _isSyncingLmStudio = true;
         else if (provider == "llamacpp")
             _isSyncingLlamaCpp = true;
+        else if (provider == "openvino")
+            _isSyncingOpenVino = true;
         _syncMessage = null;
         StateHasChanged();
 
@@ -1200,6 +1502,8 @@
                 _isSyncingLmStudio = false;
             else if (provider == "llamacpp")
                 _isSyncingLlamaCpp = false;
+            else if (provider == "openvino")
+                _isSyncingOpenVino = false;
             StateHasChanged();
         }
     }

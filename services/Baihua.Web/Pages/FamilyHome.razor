@@ -451,6 +451,55 @@
     .section-empty p {
         margin: 0;
     }
+
+    /* 暗色模式 — 首页专属覆盖 */
+    [data-bs-theme="dark"] {
+        /* 最近浏览/最近搜索空状态 */
+        .section-empty {
+            background: rgba(255,255,255,0.04);
+            color: #91a0b0;
+        }
+
+        /* 笔记卡片标题/元信息 */
+        .note-title {
+            color: #d4d8dd;
+        }
+        .note-meta {
+            color: #708090;
+        }
+
+        /* 搜索芯片 */
+        .search-chip {
+            background: #2d3548;
+            color: #c0c8d0;
+        }
+        .search-chip:hover {
+            background: #2e8baf;
+            color: white;
+        }
+
+        /* 设备管理卡片 */
+        .home-container .card {
+            background: #232a3b;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .home-container .card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+        .home-container .card h3 {
+            color: #d4d8dd;
+        }
+        .home-container .card p {
+            color: #91a0b0;
+        }
+
+        /* 骨架屏（加载中）—— 渐变换成深色调 */
+        .skeleton-card,
+        .skeleton-chip {
+            background: linear-gradient(90deg, #2a3040 25%, #363d52 50%, #2a3040 75%);
+            background-size: 200% 100%;
+        }
+    }
 </style>
 
 @code {

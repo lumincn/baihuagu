@@ -62,12 +62,31 @@ public class OpenClawLlamaCppConfigDto
     public string ExtraArgs { get; set; } = "";
 }
 
+/// <summary>OpenVINO 配置</summary>
+public class OpenClawOpenVinoConfigDto
+{
+    public bool Enabled { get; set; }
+    /// <summary>OpenVINO genai server 脚本或可执行文件路径</summary>
+    public string BinaryPath { get; set; } = "";
+    /// <summary>OpenVINO 优化后的模型目录路径</summary>
+    public string ModelPath { get; set; } = "";
+    public string BaseUrl { get; set; } = "http://localhost:8000";
+    public int Port { get; set; } = 8000;
+    /// <summary>推理设备：CPU / GPU / NPU</summary>
+    public string Device { get; set; } = "CPU";
+    public int ContextSize { get; set; } = 4096;
+    public string ApiType { get; set; } = "openai-completions";
+    /// <summary>额外启动参数</summary>
+    public string ExtraArgs { get; set; } = "";
+}
+
 /// <summary>OpenClaw 本地 AI 配置汇总</summary>
 public class OpenClawLocalAiConfigDto
 {
     public OpenClawLocalProviderConfigDto? Ollama { get; set; }
     public OpenClawLocalProviderConfigDto? LmStudio { get; set; }
     public OpenClawLlamaCppConfigDto? LlamaCpp { get; set; }
+    public OpenClawOpenVinoConfigDto? OpenVino { get; set; }
 }
 
 /// <summary>保存 OpenClaw 本地 AI 配置请求</summary>
@@ -76,6 +95,7 @@ public class SaveOpenClawLocalAiConfigRequest
     public OpenClawLocalProviderConfigDto? Ollama { get; set; }
     public OpenClawLocalProviderConfigDto? LmStudio { get; set; }
     public OpenClawLlamaCppConfigDto? LlamaCpp { get; set; }
+    public OpenClawOpenVinoConfigDto? OpenVino { get; set; }
 }
 
 /// <summary>检测本地 AI 服务请求</summary>

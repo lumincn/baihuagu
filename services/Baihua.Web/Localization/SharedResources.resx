@@ -444,7 +444,7 @@
     <value>Delegate complex tasks to OpenClaw agents. Markdown reports generated automatically.</value>
   </data>
   <data name="OpenClaw_LocalAiConfig" xml:space="preserve">
-    <value>Local AI Config (Ollama / LM Studio / llama.cpp)</value>
+    <value>Local AI Config (Ollama / LM Studio / llama.cpp / OpenVINO)</value>
   </data>
   <data name="OpenClaw_UseOllama" xml:space="preserve">
     <value>Use Ollama in OpenClaw</value>
@@ -454,6 +454,9 @@
   </data>
   <data name="OpenClaw_UseLlamaCpp" xml:space="preserve">
     <value>Use llama.cpp in OpenClaw (GPU accelerated)</value>
+  </data>
+  <data name="OpenClaw_UseOpenVino" xml:space="preserve">
+    <value>Use OpenVINO in OpenClaw (Intel CPU/GPU/NPU accelerated)</value>
   </data>
   <data name="OpenClaw_Running" xml:space="preserve">
     <value>Running</value>

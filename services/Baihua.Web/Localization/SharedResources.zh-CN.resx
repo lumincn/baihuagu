@@ -444,7 +444,7 @@
     <value>将复杂任务委派给 OpenClaw Agent 执行，自动生成 Markdown 报告。</value>
   </data>
   <data name="OpenClaw_LocalAiConfig" xml:space="preserve">
-    <value>本地 AI 配置（Ollama / LM Studio / llama.cpp）</value>
+    <value>本地 AI 配置（Ollama / LM Studio / llama.cpp / OpenVINO）</value>
   </data>
   <data name="OpenClaw_UseOllama" xml:space="preserve">
     <value>在 OpenClaw 中使用 Ollama</value>
@@ -454,6 +454,9 @@
   </data>
   <data name="OpenClaw_UseLlamaCpp" xml:space="preserve">
     <value>在 OpenClaw 中使用 llama.cpp（GPU 加速）</value>
+  </data>
+  <data name="OpenClaw_UseOpenVino" xml:space="preserve">
+    <value>在 OpenClaw 中使用 OpenVINO（Intel CPU/GPU/NPU 加速）</value>
   </data>
   <data name="OpenClaw_Running" xml:space="preserve">
     <value>● 运行中</value>

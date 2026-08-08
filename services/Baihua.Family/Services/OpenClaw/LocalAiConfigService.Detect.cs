@@ -22,6 +22,12 @@ public partial class LocalAiConfigService
             return await DetectAndStartLlamaCppAsync();
         }
 
+        // OpenVINO 特殊处理
+        if (provider.ToLowerInvariant() == "openvino")
+        {
+            return await DetectAndStartOpenVinoAsync();
+        }
+
         var (checkUrl, startCmd, startArgs, displayName) = provider.ToLowerInvariant() switch
         {
             "ollama" => ("http://localhost:11434/api/tags", "ollama", "serve", "Ollama"),
@@ -218,6 +224,135 @@ public partial class LocalAiConfigService
         {
             logger.LogError(ex, "启动 llama.cpp 失败");
             result.Message = string.Format(_loc["LocalAi_StartLlamaCppFailedDetail"], ex.Message);
+        }
+
+        return result;
+    }
+
+    private async Task<LocalAiServiceStatusDto> DetectAndStartOpenVinoAsync()
+    {
+        var result = new LocalAiServiceStatusDto { Provider = "openvino" };
+        var config = await GetLocalAiConfigAsync();
+        var openvino = config.OpenVino;
+
+        if (openvino == null || !openvino.Enabled)
+        {
+            result.Message = "OpenVINO 未启用";
+            return result;
+        }
+
+        if (string.IsNullOrWhiteSpace(openvino.ModelPath) || !Directory.Exists(openvino.ModelPath))
+        {
+            result.Message = $"模型目录不存在: {openvino.ModelPath}";
+            return result;
+        }
+
+        var checkUrl = $"{openvino.BaseUrl.TrimEnd('/')}/v1/models";
+
+        // 1. 检测服务是否已运行
+        try
+        {
+            using var httpClient = httpClientFactory.CreateClient();
+            httpClient.Timeout = TimeSpan.FromSeconds(5);
+            var response = await httpClient.GetAsync(checkUrl);
+            if (response.IsSuccessStatusCode)
+            {
+                result.IsRunning = true;
+                result.Message = "OpenVINO 服务正在运行";
+                return result;
+            }
+        }
+        catch
+        {
+            // 未运行，继续尝试启动
+        }
+
+        // 2. 尝试启动服务
+        result.AttemptedStart = true;
+
+        // 优先使用用户配置的 binaryPath；否则尝试常见路径
+        var binaryPath = openvino.BinaryPath;
+        if (string.IsNullOrWhiteSpace(binaryPath))
+        {
+            // 尝试常见路径
+            var candidates = new[]
+            {
+                "openvino-genai-server",
+                "python -m openvino_genai.chat_utils",
+            };
+            binaryPath = candidates[0]; // 默认
+        }
+
+        try
+        {
+            var args = $"--model-path \"{openvino.ModelPath}\" --device {openvino.Device} --port {openvino.Port}";
+            if (!string.IsNullOrWhiteSpace(openvino.ExtraArgs))
+                args += " " + openvino.ExtraArgs.Trim();
+
+            var shellCmd = $"{binaryPath} {args}";
+
+            logger.LogInformation("正在启动 OpenVINO: {Cmd}", shellCmd);
+
+            var isWindows = Environment.OSVersion.Platform == PlatformID.Win32NT;
+            ProcessStartInfo startInfo;
+            if (isWindows)
+            {
+                startInfo = new ProcessStartInfo
+                {
+                    FileName = "cmd",
+                    Arguments = $"/c {shellCmd}",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                };
+            }
+            else
+            {
+                startInfo = new ProcessStartInfo
+                {
+                    FileName = "/bin/bash",
+                    Arguments = $"-c \"{shellCmd}\"",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                };
+            }
+
+            var process = Process.Start(startInfo);
+            if (process == null)
+            {
+                result.Message = "无法创建 OpenVINO 服务进程";
+                return result;
+            }
+
+            // OpenVINO 加载模型需要较长时间
+            await Task.Delay(TimeSpan.FromSeconds(5));
+
+            // 轮询检测服务是否就绪
+            for (int i = 0; i < 30; i++)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1));
+                try
+                {
+                    using var httpClient = httpClientFactory.CreateClient();
+                    httpClient.Timeout = TimeSpan.FromSeconds(3);
+                    var response = await httpClient.GetAsync(checkUrl);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        result.IsRunning = true;
+                        result.StartSuccess = true;
+                        result.Message = "OpenVINO 服务启动成功";
+                        return result;
+                    }
+                }
+                catch (Exception ex) { logger.LogDebug(ex, "探测 OpenVINO 启动状态失败"); }
+            }
+
+            result.Message = "OpenVINO 启动超时（模型加载可能需要更长时间）";
+            logger.LogWarning("OpenVINO 启动后未就绪");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "启动 OpenVINO 失败");
+            result.Message = $"启动 OpenVINO 失败: {ex.Message}";
         }
 
         return result;

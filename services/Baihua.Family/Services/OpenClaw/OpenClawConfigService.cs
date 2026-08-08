@@ -27,6 +27,14 @@ public class OpenClawConfigService(ILogger<OpenClawConfigService> logger)
         return Path.Combine(home, ".openclaw", "llamacpp-config.json");
     }
 
+    private static string GetOpenVinoConfigPath()
+    {
+        var home = Environment.GetEnvironmentVariable("HOME")
+            ?? Environment.GetEnvironmentVariable("USERPROFILE")
+            ?? AppDomain.CurrentDomain.BaseDirectory;
+        return Path.Combine(home, ".openclaw", "openvino-config.json");
+    }
+
     public async Task<OpenClawLocalAiConfigDto> GetLocalAiConfigAsync()
     {
         var path = GetOpenClawConfigPath();
@@ -47,6 +55,8 @@ public class OpenClawConfigService(ILogger<OpenClawConfigService> logger)
                     result.LmStudio = ParseProviderConfig(lmstudio);
                 if (providers.TryGetProperty("llamacpp", out var llamacpp))
                     result.LlamaCpp = ParseLlamaCppConfig(llamacpp);
+                if (providers.TryGetProperty("openvino", out var openvino))
+                    result.OpenVino = ParseOpenVinoConfig(openvino);
             }
         }
 
@@ -84,6 +94,32 @@ public class OpenClawConfigService(ILogger<OpenClawConfigService> logger)
             if (root.TryGetProperty("useContBatching", out var useContBatching) && useContBatching.ValueKind == JsonValueKind.True)
                 cfg.UseContBatching = useContBatching.GetBoolean();
             result.LlamaCpp = cfg;
+        }
+
+        var openVinoPath = GetOpenVinoConfigPath();
+        if (File.Exists(openVinoPath))
+        {
+            var json = await File.ReadAllTextAsync(openVinoPath);
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+            var cfg = result.OpenVino ?? new OpenClawOpenVinoConfigDto();
+            if (root.TryGetProperty("enabled", out var enabled))
+                cfg.Enabled = enabled.GetBoolean();
+            if (root.TryGetProperty("binaryPath", out var binaryPath))
+                cfg.BinaryPath = binaryPath.GetString() ?? "";
+            if (root.TryGetProperty("modelPath", out var modelPath))
+                cfg.ModelPath = modelPath.GetString() ?? "";
+            if (root.TryGetProperty("baseUrl", out var baseUrl))
+                cfg.BaseUrl = baseUrl.GetString() ?? "http://localhost:8000";
+            if (root.TryGetProperty("port", out var port) && port.ValueKind == JsonValueKind.Number)
+                cfg.Port = port.GetInt32();
+            if (root.TryGetProperty("device", out var device))
+                cfg.Device = device.GetString() ?? "CPU";
+            if (root.TryGetProperty("contextSize", out var ctx) && ctx.ValueKind == JsonValueKind.Number)
+                cfg.ContextSize = ctx.GetInt32();
+            if (root.TryGetProperty("extraArgs", out var extraArgs))
+                cfg.ExtraArgs = extraArgs.GetString() ?? "";
+            result.OpenVino = cfg;
         }
 
         return result;
@@ -144,12 +180,43 @@ public class OpenClawConfigService(ILogger<OpenClawConfigService> logger)
             if (request.LlamaCpp.Enabled && !string.IsNullOrWhiteSpace(request.LlamaCpp.ModelPath))
             {
                 var providerJson = BuildLlamaCppProviderJson(request.LlamaCpp).ToJsonString(JsonHelper.Compact);
-                if (!await RunOpenClawConfigSetAsync("models.providers.llamacpp", providerJson))
-                    return false;
+                // CLI 仅作为同步到 OpenClaw 的"尽力而为"；因为有独立 llamacpp-config.json 作为事实来源，
+                // 就算当前 Node 版本不对导致 CLI 失败，只要文件落盘就认为保存成功。
+                await RunOpenClawConfigSetAsync("models.providers.llamacpp", providerJson);
             }
             else
             {
+                // 禁用也不把失败当致命问题
                 await RunOpenClawConfigUnsetAsync("models.providers.llamacpp");
+            }
+        }
+
+        if (request.OpenVino != null)
+        {
+            var openVinoPath = GetOpenVinoConfigPath();
+            var openVinoConfig = new JsonObject
+            {
+                ["enabled"] = request.OpenVino.Enabled,
+                ["binaryPath"] = request.OpenVino.BinaryPath,
+                ["modelPath"] = request.OpenVino.ModelPath,
+                ["baseUrl"] = request.OpenVino.BaseUrl,
+                ["port"] = request.OpenVino.Port,
+                ["device"] = request.OpenVino.Device,
+                ["contextSize"] = request.OpenVino.ContextSize,
+                ["apiType"] = request.OpenVino.ApiType,
+                ["extraArgs"] = request.OpenVino.ExtraArgs,
+            };
+            await File.WriteAllTextAsync(openVinoPath, openVinoConfig.ToJsonString(JsonHelper.Indented));
+
+            if (request.OpenVino.Enabled && !string.IsNullOrWhiteSpace(request.OpenVino.ModelPath))
+            {
+                var providerJson = BuildOpenVinoProviderJson(request.OpenVino).ToJsonString(JsonHelper.Compact);
+                // 同理：独立 openvino-config.json 已落盘即算保存成功；CLI 只是尽力同步。
+                await RunOpenClawConfigSetAsync("models.providers.openvino", providerJson);
+            }
+            else
+            {
+                await RunOpenClawConfigUnsetAsync("models.providers.openvino");
             }
         }
 
@@ -294,6 +361,46 @@ public class OpenClawConfigService(ILogger<OpenClawConfigService> logger)
             ["cacheTypeK"] = config.CacheTypeK,
             ["cacheTypeV"] = config.CacheTypeV,
             ["useContBatching"] = config.UseContBatching,
+        };
+    }
+
+    private static OpenClawOpenVinoConfigDto ParseOpenVinoConfig(JsonElement element)
+    {
+        var config = new OpenClawOpenVinoConfigDto();
+        if (element.TryGetProperty("baseUrl", out var baseUrl))
+            config.BaseUrl = baseUrl.GetString() ?? "";
+        if (element.TryGetProperty("modelPath", out var modelPath))
+            config.ModelPath = modelPath.GetString() ?? "";
+        if (element.TryGetProperty("binaryPath", out var binaryPath))
+            config.BinaryPath = binaryPath.GetString() ?? "";
+        if (element.TryGetProperty("enabled", out var enabled))
+            config.Enabled = enabled.GetBoolean();
+        if (element.TryGetProperty("port", out var port) && port.ValueKind == JsonValueKind.Number)
+            config.Port = port.GetInt32();
+        if (element.TryGetProperty("device", out var device))
+            config.Device = device.GetString() ?? "CPU";
+        if (element.TryGetProperty("contextSize", out var ctx) && ctx.ValueKind == JsonValueKind.Number)
+            config.ContextSize = ctx.GetInt32();
+        if (element.TryGetProperty("apiType", out var apiType))
+            config.ApiType = apiType.GetString() ?? "";
+        if (element.TryGetProperty("extraArgs", out var extraArgs))
+            config.ExtraArgs = extraArgs.GetString() ?? "";
+        return config;
+    }
+
+    public static JsonObject BuildOpenVinoProviderJson(OpenClawOpenVinoConfigDto config)
+    {
+        return new JsonObject
+        {
+            ["baseUrl"] = config.BaseUrl,
+            ["modelPath"] = config.ModelPath,
+            ["binaryPath"] = config.BinaryPath,
+            ["enabled"] = config.Enabled,
+            ["port"] = config.Port,
+            ["device"] = config.Device,
+            ["contextSize"] = config.ContextSize,
+            ["apiType"] = config.ApiType,
+            ["extraArgs"] = config.ExtraArgs,
         };
     }
 

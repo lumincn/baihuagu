@@ -19,6 +19,7 @@ public partial class LocalAiConfigService
             "ollama" => await SyncOllamaModelsToOpenClawAsync(config.Ollama),
             "lmstudio" => await SyncLmStudioModelsToOpenClawAsync(config.LmStudio),
             "llamacpp" => await SyncLlamaCppModelsToOpenClawAsync(config.LlamaCpp),
+            "openvino" => await SyncOpenVinoModelsToOpenClawAsync(config.OpenVino),
             _ => false,
         };
     }
@@ -156,6 +157,18 @@ public partial class LocalAiConfigService
 
         var providerJson = OpenClawConfigService.BuildLlamaCppProviderJson(config).ToJsonString(JsonHelper.Compact);
         return await openClawConfigService.RunOpenClawConfigSetAsync("models.providers.llamacpp", providerJson);
+    }
+
+    private async Task<bool> SyncOpenVinoModelsToOpenClawAsync(OpenClawOpenVinoConfigDto? config)
+    {
+        if (config == null || !config.Enabled || string.IsNullOrWhiteSpace(config.ModelPath))
+        {
+            logger.LogWarning("OpenVINO 未配置或未启用，无法同步模型");
+            return false;
+        }
+
+        var providerJson = OpenClawConfigService.BuildOpenVinoProviderJson(config).ToJsonString(JsonHelper.Compact);
+        return await openClawConfigService.RunOpenClawConfigSetAsync("models.providers.openvino", providerJson);
     }
 
     #endregion

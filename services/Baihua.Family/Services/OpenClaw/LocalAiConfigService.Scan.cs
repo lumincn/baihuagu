@@ -28,6 +28,10 @@ public partial class LocalAiConfigService
         {
             return await ScanLlamaCppModelsAsync(config.LlamaCpp);
         }
+        if (provider.Equals("openvino", StringComparison.OrdinalIgnoreCase))
+        {
+            return await ScanOpenVinoModelsAsync(config.OpenVino);
+        }
 
         return new List<OpenClawLocalModelDto>();
     }
@@ -150,6 +154,62 @@ public partial class LocalAiConfigService
         if (File.Exists(config.ModelPath))
         {
             var modelName = Path.GetFileNameWithoutExtension(config.ModelPath);
+            var modelId = modelName.Replace(".", "-").ToLowerInvariant();
+            return new List<OpenClawLocalModelDto>
+            {
+                new OpenClawLocalModelDto
+                {
+                    Id = modelId,
+                    Name = string.Format(_loc["LocalModel_NeedsStart"], modelName),
+                    ApiType = config.ApiType,
+                    ContextWindow = config.ContextSize,
+                }
+            };
+        }
+
+        return new List<OpenClawLocalModelDto>();
+    }
+
+    private async Task<List<OpenClawLocalModelDto>> ScanOpenVinoModelsAsync(OpenClawOpenVinoConfigDto? config)
+    {
+        if (config == null || !config.Enabled)
+            return new List<OpenClawLocalModelDto>();
+
+        // 先检测服务是否运行
+        try
+        {
+            using var client = httpClientFactory.CreateClient();
+            client.Timeout = TimeSpan.FromSeconds(5);
+            var response = await client.GetAsync($"{config.BaseUrl.TrimEnd('/')}/v1/models");
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
+                var result = new List<OpenClawLocalModelDto>();
+                if (root.TryGetProperty("data", out var data) && data.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var item in data.EnumerateArray())
+                    {
+                        var id = item.TryGetProperty("id", out var idProp) ? idProp.GetString() ?? "" : "";
+                        if (string.IsNullOrEmpty(id)) continue;
+                        result.Add(new OpenClawLocalModelDto
+                        {
+                            Id = id,
+                            Name = id,
+                            ApiType = config.ApiType,
+                        });
+                    }
+                }
+                return result;
+            }
+        }
+        catch (Exception ex) { logger.LogDebug(ex, "探测 OpenVINO 运行模型失败"); }
+
+        // 服务未运行，返回配置中的模型
+        if (!string.IsNullOrWhiteSpace(config.ModelPath) && Directory.Exists(config.ModelPath))
+        {
+            var modelName = new DirectoryInfo(config.ModelPath).Name;
             var modelId = modelName.Replace(".", "-").ToLowerInvariant();
             return new List<OpenClawLocalModelDto>
             {
