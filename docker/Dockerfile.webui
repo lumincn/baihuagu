@@ -1,15 +1,17 @@
-﻿# WebUI.Family - 瀹跺涵鐗堢鐞嗗悗鍙帮紙Blazor Server锛?
+# WebUI.Family - 瀹跺涵鐗堢鐞嗗悗鍙帮紙Blazor Server锛?
 # 鍩轰簬棰勬瀯寤虹殑鍩虹闀滃儚锛屽姞閫熸瀯寤鸿繃绋?
 #
 # 棣栨鏋勫缓鍓嶉渶瑕佸厛鏋勫缓鍩虹闀滃儚锛?
-#   docker build -f Dockerfile.base-build -t yj-family/base-build:latest ..
-#   docker build -f Dockerfile.base-runtime -t yj-family/base-runtime:latest ..
+#   docker build -f Dockerfile.base-build -t bh-family/base-build:latest ..
+#   docker build -f Dockerfile.base-runtime -t bh-family/base-runtime:latest ..
 
 # ==================== Build 闃舵 ====================
-FROM yj-family/base-build:latest AS build
+FROM bh-family/base-build:latest AS build
 WORKDIR /src
 
 # 鍏堝鍒堕」鐩枃浠朵互鍒╃敤 Docker 缂撳瓨灞?
+COPY NuGet.config .
+COPY nuget-local/ nuget-local/
 COPY services/Baihua.Contracts/Baihua.Contracts.csproj services/Baihua.Contracts/
 COPY services/Baihua.Web/Baihua.Web.csproj services/Baihua.Web/
 RUN dotnet restore services/Baihua.Web/Baihua.Web.csproj
@@ -24,7 +26,7 @@ RUN find /src/services -type d -name bin -exec rm -rf {} + 2>/dev/null; \
     -c Release -o /app/publish
 
 # ==================== Runtime 闃舵 ====================
-FROM yj-family/base-runtime:latest AS runtime
+FROM bh-family/base-runtime:latest AS runtime
 WORKDIR /app
 
 COPY --from=build /app/publish .

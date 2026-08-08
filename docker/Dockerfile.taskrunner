@@ -1,12 +1,12 @@
-﻿# TaskRunner.Family - 瀹跺涵鐗堝悗鍙版湇鍔?
+# TaskRunner.Family - 瀹跺涵鐗堝悗鍙版湇鍔?
 # 鍩轰簬棰勬瀯寤虹殑鍩虹闀滃儚锛屽姞閫熸瀯寤鸿繃绋?
 #
 # 棣栨鏋勫缓鍓嶉渶瑕佸厛鏋勫缓鍩虹闀滃儚锛?
-#   docker build -f Dockerfile.base-build -t yj-family/base-build:latest ..
-#   docker build -f Dockerfile.base-runtime -t yj-family/base-runtime:latest ..
+#   docker build -f Dockerfile.base-build -t bh-family/base-build:latest ..
+#   docker build -f Dockerfile.base-runtime -t bh-family/base-runtime:latest ..
 
 # ==================== Build 闃舵 ====================
-FROM yj-family/base-build:latest AS build
+FROM bh-family/base-build:latest AS build
 WORKDIR /src
 
 # 鍏堝鍒堕」鐩枃浠朵互鍒╃敤 Docker 缂撳瓨灞?
@@ -26,7 +26,7 @@ RUN dotnet publish services/Baihua.Family/Baihua.Family.csproj \
     -c Release -o /app/publish --no-restore
 
 # ==================== Runtime 闃舵 ====================
-FROM yj-family/base-runtime:latest AS runtime
+FROM bh-family/base-runtime:latest AS runtime
 WORKDIR /app
 
 COPY --from=build /app/publish .

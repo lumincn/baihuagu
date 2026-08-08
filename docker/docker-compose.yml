@@ -6,8 +6,8 @@ services:
       args:
         - GIT_COMMIT=${GIT_COMMIT:-unknown}
         - GIT_BRANCH=${GIT_BRANCH:-unknown}
-    image: yj-family/taskrunner:latest
-    container_name: yj-family-taskrunner
+    image: bh-family/taskrunner:latest
+    container_name: bh-family-taskrunner
     restart: unless-stopped
     # 使用 host 网络：WebUI 可直接通过 127.0.0.1:8788 访问 TaskRunner，
     # 且 nginx 反向代理配置无需修改。
@@ -16,11 +16,11 @@ services:
     user: "${USER_UID:-0}:${USER_GID:-0}"
     volumes:
       # 数据持久化到宿主机（SQLite 数据库、配置）
-      - /opt/yj-family/data:/app/data
+      - /opt/bh-family/data:/app/data
       # 日志持久化到宿主机
-      - /opt/yj-family/logs:/app/logs
+      - /opt/bh-family/logs:/app/logs
       # 可选：宿主机自定义配置覆盖容器内配置（只读）
-      - /opt/yj-family/config/taskrunner:/app/config:ro
+      - /opt/bh-family/config/taskrunner:/app/config:ro
       # 知识库根路径（通过 TASKRUNNER_VAULT_ROOT 环境变量指定）
       - ${VAULTS_DIR:-/home/lumin/Vaults}:${VAULTS_DIR:-/home/lumin/Vaults}
     environment:
@@ -58,15 +58,15 @@ services:
       args:
         - GIT_COMMIT=${GIT_COMMIT:-unknown}
         - GIT_BRANCH=${GIT_BRANCH:-unknown}
-    image: yj-family/webui:latest
-    container_name: yj-family-webui
+    image: bh-family/webui:latest
+    container_name: bh-family-webui
     restart: unless-stopped
     network_mode: host
     user: "${USER_UID:-0}:${USER_GID:-0}"
     volumes:
-      - /opt/yj-family/data:/app/data
-      - /opt/yj-family/logs:/app/logs
-      - /opt/yj-family/config/webui:/app/config:ro
+      - /opt/bh-family/data:/app/data
+      - /opt/bh-family/logs:/app/logs
+      - /opt/bh-family/config/webui:/app/config:ro
       # 知识库路径（WebUI 需要在容器内验证路径是否存在）
       - ${VAULTS_DIR:-/home/lumin/Vaults}:${VAULTS_DIR:-/home/lumin/Vaults}
     environment:
@@ -136,15 +136,15 @@ services:
       args:
         - GIT_COMMIT=${GIT_COMMIT:-unknown}
         - GIT_BRANCH=${GIT_BRANCH:-unknown}
-    image: yj-family/taskrunner-vault:latest
-    container_name: yj-family-taskrunner-vault
+    image: bh-family/taskrunner-vault:latest
+    container_name: bh-family-taskrunner-vault
     restart: unless-stopped
     network_mode: host
     user: "${USER_UID:-0}:${USER_GID:-0}"
     volumes:
-      - /opt/yj-family/data:/app/data
-      - /opt/yj-family/logs:/app/logs
-      - /opt/yj-family/config/taskrunner-vault:/app/config:ro
+      - /opt/bh-family/data:/app/data
+      - /opt/bh-family/logs:/app/logs
+      - /opt/bh-family/config/taskrunner-vault:/app/config:ro
       - ${VAULTS_DIR:-/home/lumin/Vaults}:${VAULTS_DIR:-/home/lumin/Vaults}
     environment:
       - YJ_DATA_DIR=/app/data
@@ -168,15 +168,15 @@ services:
       args:
         - GIT_COMMIT=${GIT_COMMIT:-unknown}
         - GIT_BRANCH=${GIT_BRANCH:-unknown}
-    image: yj-family/taskrunner-ai:latest
-    container_name: yj-family-taskrunner-ai
+    image: bh-family/taskrunner-ai:latest
+    container_name: bh-family-taskrunner-ai
     restart: unless-stopped
     network_mode: host
     user: "${USER_UID:-0}:${USER_GID:-0}"
     volumes:
-      - /opt/yj-family/data:/app/data
-      - /opt/yj-family/logs:/app/logs
-      - /opt/yj-family/config/taskrunner-ai:/app/config:ro
+      - /opt/bh-family/data:/app/data
+      - /opt/bh-family/logs:/app/logs
+      - /opt/bh-family/config/taskrunner-ai:/app/config:ro
       - ${VAULTS_DIR:-/home/lumin/Vaults}:${VAULTS_DIR:-/home/lumin/Vaults}
     environment:
       - YJ_DATA_DIR=/app/data
@@ -196,13 +196,13 @@ services:
     # 可观测性服务（日志/指标），非核心，默认不自动启动
     profiles: ["observability"]
     image: public.ecr.aws/zinclabs/openobserve:latest
-    container_name: yj-family-openobserve
+    container_name: bh-family-openobserve
     restart: unless-stopped
     ports:
       - "5082:5080"
       - "5083:5081"
     volumes:
-      - /opt/yj-family/data/openobserve:/data
+      - /opt/bh-family/data/openobserve:/data
     environment:
       ZO_ROOT_USER_EMAIL: root@localhost.com
       ZO_ROOT_USER_PASSWORD: Complexpass#123

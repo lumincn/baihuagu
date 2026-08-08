@@ -8,7 +8,7 @@
 
 | 决策项 | 结论 |
 |--------|------|
-| 容器命名 | 统一改为 `baihua-*`（从 `yj-family-*` 渐进改名，Nginx 先行） |
+| 容器命名 | 统一改为 `baihua-*`（从 `bh-family-*` 渐进改名，Nginx 先行） |
 | 监听端口 | 默认 **80**（被占用时可 `.env` 改 `BAIHUA_NGINX_PORT`） |
 | Nginx 启用方式 | 默认 `docker compose up` 就拉起，不放 profile |
 | PathBase 与花记 SDK | **不拼前缀**。花记 SDK 中的 `/mg/*` 等路径永远相对根，配对二维码只写 `scheme://host[:port]`，SDK 自己拼路径 |
@@ -398,7 +398,7 @@ WebUI 当前 `appsettings.json`：
 ```yaml
   nginx:
     image: nginx:1.27-alpine
-    container_name: baihua-nginx   # 从 yj-family-* 改成 baihua-*，统一命名
+    container_name: baihua-nginx   # 从 bh-family-* 改成 baihua-*，统一命名
     restart: unless-stopped
     network_mode: host             # 保持 host 网络：能直连 127.0.0.1 四个服务
     # ports:                       # 用 host 网络时 ports: 无效（直接占宿主机端口）

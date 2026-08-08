@@ -1,0 +1,126 @@
+# 百花 - Windows Docker Desktop 专用 Override
+# 使用: docker compose -f docker-compose.yml -f docker-compose.windows.yml up -d
+# 与 docker-compose.yml 合并，适配 Windows 路径、网络、端口映射
+
+services:
+  taskrunner:
+    # Windows Docker Desktop 不支持 Linux 式 network_mode: host，改用 bridge + ports
+    network_mode: ""
+    networks:
+      - baihua-net
+    ports:
+      - "8788:8788"
+    # 允许容器访问宿主机（如需调用 Windows 侧本地工具）
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    user: ""   # Windows 容器卷不需要 Linux UID/GID
+    volumes:
+      # 数据/日志/配置：映射到 Windows 本地
+      - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/data:/app/data
+      - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/logs:/app/logs
+      - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/config/taskrunner:/app/config:ro
+      # 知识库路径（Windows → 容器内保持一致路径，避免路径重写问题）
+      - ${VAULTS_DIR:-C:/Users/lumin/Vaults}:${VAULTS_DIR:-C:/Users/lumin/Vaults}
+    environment:
+      # 容器内访问 Vault/AI/WebUI 同主机通过 bridge 网络服务名
+      - TASKRUNNER_VAULT_URL=http://taskrunner-vault:8790
+      - TASKRUNNER_AI_URL=http://taskrunner-ai:8791
+      - TASKRUNNER_WEBUI_URL=http://webui:5177
+      # Windows Docker 下 OpenObserve 通过 host-gateway 访问
+      - OpenObserve__WebUrl=http://host.docker.internal:5082/
+    depends_on:
+      taskrunner-vault:
+        condition: service_healthy
+
+  taskrunner-vault:
+    network_mode: ""
+    networks:
+      - baihua-net
+    ports:
+      - "8790:8790"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    user: ""
+    volumes:
+      - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/data:/app/data
+      - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/logs:/app/logs
+      - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/config/taskrunner-vault:/app/config:ro
+      - ${VAULTS_DIR:-C:/Users/lumin/Vaults}:${VAULTS_DIR:-C:/Users/lumin/Vaults}
+    environment:
+      - OpenObserve__WebUrl=http://host.docker.internal:5082/
+
+  taskrunner-ai:
+    network_mode: ""
+    networks:
+      - baihua-net
+    ports:
+      - "8791:8791"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    user: ""
+    volumes:
+      - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/data:/app/data
+      - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/logs:/app/logs
+      - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/config/taskrunner-ai:/app/config:ro
+      - ${VAULTS_DIR:-C:/Users/lumin/Vaults}:${VAULTS_DIR:-C:/Users/lumin/Vaults}
+    environment:
+      - OpenObserve__WebUrl=http://host.docker.internal:5082/
+
+  webui:
+    network_mode: ""
+    networks:
+      - baihua-net
+    ports:
+      - "5177:5177"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    user: ""
+    volumes:
+      - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/data:/app/data
+      - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/logs:/app/logs
+      - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/config/webui:/app/config:ro
+      - ${VAULTS_DIR:-C:/Users/lumin/Vaults}:${VAULTS_DIR:-C:/Users/lumin/Vaults}
+    environment:
+      # WebUI 通过 bridge 网络调用各后端服务（服务名 DNS）
+      - TaskRunnerApi__BaseUrl=http://taskrunner:8788/
+      - TaskRunnerAiApi__BaseUrl=http://taskrunner-ai:8791/
+      - TaskRunnerVaultApi__BaseUrl=http://taskrunner-vault:8790/
+      - OpenObserve__WebUrl=http://host.docker.internal:5082/
+    depends_on:
+      taskrunner:
+        condition: service_healthy
+      taskrunner-ai:
+        condition: service_healthy
+      taskrunner-vault:
+        condition: service_healthy
+
+  nginx:
+    network_mode: ""
+    networks:
+      - baihua-net
+    ports:
+      - "${BAIHUA_NGINX_PORT:-80}:${BAIHUA_NGINX_PORT:-80}"
+    # Windows 下用专门为 bridge 网络写的模板（upstream 用服务名而非 127.0.0.1）
+    volumes:
+      - ./nginx/default.conf.windows.template:/etc/nginx/templates/default.conf.template:ro
+      - ./nginx/family-proxy-headers.conf:/etc/nginx/family-proxy-headers.conf:ro
+      - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/logs/nginx:/var/log/nginx
+    depends_on:
+      taskrunner:
+        condition: service_healthy
+      taskrunner-ai:
+        condition: service_healthy
+      taskrunner-vault:
+        condition: service_healthy
+      webui:
+        condition: service_healthy
+
+  openobserve:
+    # Windows 下 OpenObserve 也挂在 baihua-net（可选，默认 observability profile）
+    networks:
+      - baihua-net
+
+networks:
+  baihua-net:
+    name: baihua-net
+    driver: bridge

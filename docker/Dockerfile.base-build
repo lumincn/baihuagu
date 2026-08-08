@@ -2,7 +2,7 @@
 # 用于加速 TaskRunner 和 WebUI 的编译
 #
 # 构建命令：
-#   docker build -f Dockerfile.base-build -t yj-family/base-build:latest ..
+#   docker build -f Dockerfile.base-build -t bh-family/base-build:latest ..
 #
 # 更新频率：
 #   - 仅当 .NET SDK 版本更新时需要重建
@@ -10,6 +10,13 @@
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0
 WORKDIR /src
+
+# 使用华为云镜像源（解决容器内无法访问 archive.ubuntu.com 的问题）
+RUN sed -i 's|http://archive.ubuntu.com|https://mirrors.huaweicloud.com|g' /etc/apt/sources.list.d/ubuntu.sources 2>/dev/null; \
+    sed -i 's|http://security.ubuntu.com|https://mirrors.huaweicloud.com|g' /etc/apt/sources.list.d/ubuntu.sources 2>/dev/null; \
+    sed -i 's|http://archive.ubuntu.com|https://mirrors.huaweicloud.com|g' /etc/apt/sources.list 2>/dev/null; \
+    sed -i 's|http://security.ubuntu.com|https://mirrors.huaweicloud.com|g' /etc/apt/sources.list 2>/dev/null; \
+    true
 
 # 预安装常用工具
 RUN apt-get update && \

@@ -1,41 +1,46 @@
 ﻿<#
-百花 Family 版 - Windows (PowerShell) 轻量 CLI
+百花 Family 版 - Windows (PowerShell) CLI — 全 Docker 模式
+不再启动本地 dotnet 进程，全部服务通过 docker compose 管理。
+
 用法: .\bh.ps1 [command] [args]
-  bh.ps1                  打开 dashboard（自动检测代码更新，有新提交时重编译重启）
-  bh.ps1 setup            首次配置（交互）
-  bh.ps1 start            启动服务（在后台运行 dotnet run）
-  bh.ps1 stop [name]      停止服务（不指定则停止全部）
-  bh.ps1 restart [name]   重启服务（不指定则重启全部）
-  bh.ps1 status           查看服务状态（含端口/日志路径）
-  bh.ps1 logs <name> [lines]   查看日志（默认最近 50 行，加 -f 跟随）
-  bh.ps1 open             打开 Web 管理界面 (http://localhost:5177)
-  bh.ps1 dev              开发模式（dotnet watch，改代码自动热重载）
-  bh.ps1 observe          启动 OpenObserve 可观测平台（Docker）并打开 Web UI
-  bh.ps1 all              启动全部服务（.NET 服务 + OpenObserve + hostmetrics）
-  bh.ps1 version          显示脚本版本
-  bh.ps1 help             显示帮助
+  bh.ps1                    打开 dashboard（自动 docker compose up -d，健康后自动登录打开浏览器）
+  bh.ps1 dashboard          同上
+  bh.ps1 start              启动所有服务（docker compose up -d，按需 build）
+  bh.ps1 stop [name]        停止服务（不指定则停止全部）
+  bh.ps1 restart [name]     重启服务（不指定则 down + up -d）
+  bh.ps1 status             查看容器状态 + 健康检查
+  bh.ps1 logs <name> [n]   查看某个服务日志（默认最近 50 行；末尾加 -f 跟随）
+  bh.ps1 open               打开 Web 管理界面（Nginx 统一入口，默认 http://localhost/）
+  bh.ps1 build              构建/重建 Docker 镜像（代码修改后执行）
+  bh.ps1 down               停止并移除所有容器、网络（数据卷保留）
+  bh.ps1 dev                开发模式（等价于 start + 跟随 webui 日志）
+  bh.ps1 observe            启动 OpenObserve 可观测性（Docker profile: observability）
+  bh.ps1 all                启动全部服务 + OpenObserve
+  bh.ps1 setup              首次配置（交互：知识库路径）
+  bh.ps1 version            显示脚本版本
+  bh.ps1 help               显示帮助
 
 说明:
-- 该脚本为简易移植，依赖 PowerShell (推荐 pwsh 7+) 和 dotnet SDK
-- 后台进程 PID 与日志保存在 $env:TEMP\bh-[service].*
-- dashboard 命令会比较当前 git HEAD 与上次启动时的 commit，不同则自动重编译重启
-- dev 命令用 dotnet watch run 启动每个服务（Debug 配置），改 .cs/.razor 自动热重载/重启
-- observe 命令使用 docker compose 启动 OpenObserve（端口 5082/5083）
-- all 命令启动所有 .NET 服务（ai, vault, family, webui）和 Docker 监控容器
+- 全 Docker 模式：.NET 4 服务 (taskrunner / taskrunner-vault / taskrunner-ai / webui)
+  + Nginx (baihua-nginx) + 可选 OpenObserve 全部通过 docker compose 管理
+- 镜像: bh-family/taskrunner, bh-family/taskrunner-vault, bh-family/taskrunner-ai, bh-family/webui
+- 数据持久化: ${env:LOCALAPPDATA}\baihua\ (data, logs, config)
+- Windows Docker Desktop (WSL2 后端) 必须运行中
+- Nginx 对外端口: 由环境变量 BAIHUA_NGINX_PORT 控制，默认 80
 #>
 [CmdletBinding()]
 param(
-	[string]$Command = 'dashboard',
-	[string]$Arg,
-	[string]$Browser = '',
-	[switch]$NoLogin
+    [string]$Command = 'dashboard',
+    [string]$Arg,
+    [string]$Browser = '',
+    [switch]$NoLogin
 )
 
-# PowerShell 5.1 兼容性检查（编码/特性差异，推荐 pwsh 7+）
+# PowerShell 5.1 兼容性检查（推荐 pwsh 7+）
 if ($PSVersionTable.PSVersion.Major -lt 7) {
-	Write-Host "[i] 检测到 Windows PowerShell $($PSVersionTable.PSVersion)（旧版）" -ForegroundColor Yellow
-	Write-Host "    推荐使用 PowerShell 7+ (pwsh)：支持 UTF-8 无 BOM、并发等现代特性" -ForegroundColor Yellow
-	Write-Host "    安装: winget install Microsoft.PowerShell" -ForegroundColor DarkGray
+    Write-Host "[i] 检测到 Windows PowerShell $($PSVersionTable.PSVersion)（旧版）" -ForegroundColor Yellow
+    Write-Host "    推荐使用 PowerShell 7+ (pwsh)：支持 UTF-8 无 BOM、并发等现代特性" -ForegroundColor Yellow
+    Write-Host "    安装: winget install Microsoft.PowerShell" -ForegroundColor DarkGray
 }
 
 chcp 65001 | Out-Null
@@ -44,1008 +49,688 @@ chcp 65001 | Out-Null
 $OutputEncoding = [System.Text.Encoding]::UTF8
 Set-StrictMode -Version Latest
 
-$SCRIPT_VERSION = '2.0.0'
+$SCRIPT_VERSION = '3.0.0-docker'
 
+# ============================ 路径 & 环境 ============================
 function Get-HgRoot {
-	if ($PSScriptRoot) { return $PSScriptRoot }
-	if ($MyInvocation -and $MyInvocation.MyCommand -and $MyInvocation.MyCommand.Path) {
-		return Split-Path -Parent $MyInvocation.MyCommand.Path
-	}
-	return (Get-Location).Path
+    if ($PSScriptRoot) { return $PSScriptRoot }
+    if ($MyInvocation -and $MyInvocation.MyCommand -and $MyInvocation.MyCommand.Path) {
+        return Split-Path -Parent $MyInvocation.MyCommand.Path
+    }
+    return (Get-Location).Path
 }
 
 $HG_ROOT = Get-HgRoot
-$TEMP_DIR = $env:TEMP
+$DOCKER_DIR = Join-Path $HG_ROOT 'docker'
+$COMPOSE_BASE = Join-Path $DOCKER_DIR 'docker-compose.yml'
+$COMPOSE_WIN  = Join-Path $DOCKER_DIR 'docker-compose.windows.yml'
 
-# 启动顺序：被依赖的先启动（AI → Vault → Family → WebUI）
-$ServiceOrder = @('ai', 'vault', 'family', 'webui')
-# 停止顺序：依赖别人的先停止（WebUI → Family → Vault → AI）
-$StopOrder = @('webui', 'family', 'vault', 'ai')
-
-# 统一服务配置：路径 / 健康检查 / 端口（单一数据源，避免改端口要改多处）
-function Get-ServiceConfig {
-	return @{
-		ai         = @{ Project = "services/Baihua.AI";     Health = 'http://127.0.0.1:8791/api/ai/config/providers'; Port = 8791; OpenUrl = '' }
-		vault      = @{ Project = "services/Baihua.Vault";  Health = 'http://127.0.0.1:8790/mg/vaults'; Port = 8790; OpenUrl = '' }
-		family     = @{ Project = "services/Baihua.Family"; Health = 'http://127.0.0.1:8788/api/capability'; Port = 8788; OpenUrl = '' }
-		webui      = @{ Project = "services/Baihua.Web";    Health = 'http://127.0.0.1:5177/login'; Port = 5177; OpenUrl = 'http://127.0.0.1:5177' }
-	}
+# 服务顺序（dashboard/start 里健康检查按此顺序等待）
+$ServiceOrder = @('taskrunner-ai', 'taskrunner-vault', 'taskrunner', 'webui', 'nginx')
+$DockerServiceMap = @{
+    'ai'     = 'taskrunner-ai'
+    'vault'  = 'taskrunner-vault'
+    'family' = 'taskrunner'
+    'taskrunner' = 'taskrunner'
+    'webui'  = 'webui'
+    'nginx'  = 'nginx'
+    'openobserve' = 'openobserve'
+}
+$DisplayNameMap = @{
+    'taskrunner-ai'    = 'AI'
+    'taskrunner-vault' = 'Vault'
+    'taskrunner'       = 'Family'
+    'webui'            = 'WebUI'
+    'nginx'            = 'Nginx'
+    'openobserve'      = 'OpenObserve'
+}
+$HealthUrls = @{
+    'taskrunner-ai'    = 'http://127.0.0.1:8791/health'
+    'taskrunner-vault' = 'http://127.0.0.1:8790/health'
+    'taskrunner'       = 'http://127.0.0.1:8788/health'
+    'webui'            = 'http://127.0.0.1:5177/'
+    'nginx'            = $null   # Nginx 通过 /mg/health 间接检查
+    'openobserve'      = 'http://127.0.0.1:5082/'
 }
 
-# webui 打开地址（Open-Dashboard 用）
-function Get-WebUrl { return (Get-ServiceConfig)['webui'].OpenUrl }
-# webui 登录页（健康检查/等待就绪用）
-function Get-LoginUrl { return (Get-ServiceConfig)['webui'].Health }
-# cli-token 接口地址（自动登录用）
-function Get-CliTokenUrl { return (Get-WebUrl) + '/api/auth/cli-token' }
-# 带 cli-token 的 dashboard 地址
-function Get-DashboardUrl($token) { return (Get-WebUrl) + "/?cli-token=$token" }
+# Docker compose 公共参数
+$Global:ComposeArgs = @(
+    'compose',
+    '-f', $COMPOSE_BASE,
+    '-f', $COMPOSE_WIN,
+    '--project-directory', $DOCKER_DIR
+)
 
-function Get-LogPath($name){ Join-Path $TEMP_DIR "bh-$name.log" }
-function Get-PidPath($name){ Join-Path $TEMP_DIR "bh-$name.pid" }
-function Get-CommitPath{ Join-Path $TEMP_DIR "bh-git-commit.txt" }
-
-function Get-CurrentGitCommit{
-	try {
-		$commit = git -C $HG_ROOT rev-parse HEAD 2>$null
-		if ($commit) { return $commit.Trim() }
-	} catch {}
-	return $null
+# ============================ Docker / 环境检测 ============================
+function Get-DockerCmd {
+    foreach ($cmd in @('docker', 'docker.exe')) {
+        try { Get-Command $cmd -ErrorAction Stop | Out-Null; return $cmd } catch {}
+    }
+    return $null
 }
 
-function Get-SavedGitCommit{
-	$path = Get-CommitPath
-	if (Test-Path $path) {
-		$content = Get-Content $path -ErrorAction SilentlyContinue
-		if ($content) { return $content.Trim() }
-	}
-	return $null
+function Test-DockerRunning {
+    $docker = Get-DockerCmd
+    if (-not $docker) { return $false }
+    try {
+        $null = & $docker info 2>&1
+        return ($LASTEXITCODE -eq 0)
+    } catch { return $false }
 }
 
-function Save-GitCommit{
-	$commit = Get-CurrentGitCommit
-	if ($commit) {
-		Set-Content -Path (Get-CommitPath) -Value $commit -Force
-	}
+function Ensure-DockerReady {
+    $docker = Get-DockerCmd
+    if (-not $docker) {
+        Write-Host "[X] Docker 命令未找到。请先安装并启动 Docker Desktop for Windows。" -ForegroundColor Red
+        Write-Host "    下载: https://www.docker.com/products/docker-desktop/" -ForegroundColor DarkGray
+        return $false
+    }
+    if (-not (Test-DockerRunning)) {
+        Write-Host "[X] Docker daemon 未运行。请先启动 Docker Desktop，等待状态变为 running。" -ForegroundColor Red
+        return $false
+    }
+    if (-not (Test-Path $COMPOSE_BASE)) {
+        Write-Host "[X] Compose 文件不存在: $COMPOSE_BASE" -ForegroundColor Red
+        return $false
+    }
+    if (-not (Test-Path $COMPOSE_WIN)) {
+        Write-Host "[X] Windows compose override 不存在: $COMPOSE_WIN" -ForegroundColor Red
+        return $false
+    }
+    return $true
 }
 
-function Test-NeedsRebuild{
-	$current = Get-CurrentGitCommit
-	$saved = Get-SavedGitCommit
-	if (-not $current) { return $false }
-	if (-not $saved) { return $true }
-	if ($current -ne $saved) { return $true }
-	try {
-		$dirty = git -C $HG_ROOT status --short 2>$null
-		if ($dirty -and $dirty.Trim().Length -gt 0) { return $true }
-	} catch {}
-	return $false
+# ============================ 环境变量（注入 compose）============================
+function Set-BaihuaEnv {
+    # Windows 默认值（仅当未设置时才赋值，不覆盖用户显式设置）
+    if ([string]::IsNullOrWhiteSpace($env:BAIHUA_HOME)) {
+        $env:BAIHUA_HOME = Join-Path $env:LOCALAPPDATA 'baihua'
+    }
+    if ([string]::IsNullOrWhiteSpace($env:BAIHUA_NGINX_PORT)) {
+        $env:BAIHUA_NGINX_PORT = '80'
+    }
+    if ([string]::IsNullOrWhiteSpace($env:BAIHUA_WEBUI_PREFIX)) {
+        $env:BAIHUA_WEBUI_PREFIX = ''
+    }
+    if ([string]::IsNullOrWhiteSpace($env:BAIHUA_NGINX_CLIENT_MAX_BODY_SIZE)) {
+        $env:BAIHUA_NGINX_CLIENT_MAX_BODY_SIZE = '100M'
+    }
+    if ([string]::IsNullOrWhiteSpace($env:VAULTS_DIR)) {
+        $env:VAULTS_DIR = Join-Path $env:USERPROFILE 'Vaults'
+    }
+
+    # Windows Docker Desktop 通过 NGINX_ENVSUBST_FILTER 只渲染 BAIHUA_* 变量
+    if ([string]::IsNullOrWhiteSpace($env:NGINX_ENVSUBST_FILTER)) {
+        $env:NGINX_ENVSUBST_FILTER = '^BAIHUA_'
+    }
+
+    # 创建必需目录（容器卷挂载要求父目录存在；即使容器内用 root，Windows 侧也需创建）
+    $dirs = @(
+        (Join-Path $env:BAIHUA_HOME 'data'),
+        (Join-Path $env:BAIHUA_HOME 'logs'),
+        (Join-Path $env:BAIHUA_HOME 'logs\nginx'),
+        (Join-Path $env:BAIHUA_HOME 'config\taskrunner'),
+        (Join-Path $env:BAIHUA_HOME 'config\taskrunner-vault'),
+        (Join-Path $env:BAIHUA_HOME 'config\taskrunner-ai'),
+        (Join-Path $env:BAIHUA_HOME 'config\webui')
+    )
+    foreach ($d in $dirs) {
+        if (-not (Test-Path $d)) {
+            New-Item -ItemType Directory -Path $d -Force | Out-Null
+        }
+    }
+    if (-not (Test-Path $env:VAULTS_DIR)) {
+        New-Item -ItemType Directory -Path $env:VAULTS_DIR -Force | Out-Null
+        Write-Host "[i] 已创建知识库目录: $env:VAULTS_DIR" -ForegroundColor DarkGray
+    }
 }
 
-# 查找服务可执行文件（支持任意 TFM，不再硬编码 net10.0）
-function Find-ServiceExe($name, $projPath, $preferConfig){
-	$cfg = (Get-ServiceConfig)[$name]
-	if (-not $cfg) { return $null }
-	$port = $cfg.Port
-	# 优先 preferConfig 对应的 exe（默认 Release），否则回退另一配置
-	$patterns = @(
-		"$projPath\bin\$preferConfig\*\bh-$name.exe",
-		"$projPath\bin\$preferConfig\*\bh-$name.dll"
-	)
-	if ($preferConfig -eq 'Release') {
-		$patterns += "$projPath\bin\Debug\*\bh-$name.exe"
-		$patterns += "$projPath\bin\Debug\*\bh-$name.dll"
-	} else {
-		$patterns += "$projPath\bin\Release\*\bh-$name.exe"
-		$patterns += "$projPath\bin\Release\*\bh-$name.dll"
-	}
-	foreach ($p in $patterns) {
-		$hit = Get-ChildItem -Path $p -ErrorAction SilentlyContinue | Where-Object { $_.Name -match "^bh-$name\.(exe|dll)$" } | Select-Object -First 1
-		if ($hit) { return $hit.FullName }
-	}
-	return $null
+# ============================ Compose 调用包装 ============================
+function Invoke-Compose {
+    param([string[]]$Arguments)
+    $docker = Get-DockerCmd
+    $allArgs = $Global:ComposeArgs + $Arguments
+    & $docker @allArgs
+    return $LASTEXITCODE
 }
 
-function Start-ServiceProc($name, $projRelPath, $preferConfig = 'Release'){
-	$projPath = Join-Path $HG_ROOT $projRelPath
-	if (-not (Test-Path $projPath)){
-		Write-Host "[!] 项目未找到: $projPath" -ForegroundColor Yellow
-		return
-	}
-	$log = Get-LogPath $name
-	$errLog = "$log.err"
-	$pidFile = Get-PidPath $name
-
-	if (Test-Path $pidFile) {
-		$existingPid = Get-Content $pidFile -ErrorAction SilentlyContinue
-		if ($existingPid -and (Get-Process -Id $existingPid -ErrorAction SilentlyContinue)) {
-			Write-Host "[INFO] $name is already running (PID $existingPid)"
-			return
-		} else {
-			Remove-Item $pidFile -ErrorAction SilentlyContinue
-		}
-	}
-
-	$cfg = (Get-ServiceConfig)[$name]
-	$port = $cfg.Port
-	if ($port) {
-		$portProc = netstat -ano 2>$null | Select-String ":${port}\s" | Select-String "LISTENING"
-		if ($portProc) {
-			Write-Host "[WARN] Port :${port} already in use, attempting to free..." -ForegroundColor Yellow
-			Stop-ServiceByPort $name
-			Start-Sleep -Seconds 1
-		}
-	}
-
-	Write-Host "Starting $name -> $projPath"
-	$args = @('run', '--project', "$projPath", '--no-launch-profile')
-
-	try {
-		$prevEnv = $env:ASPNETCORE_ENVIRONMENT
-		$env:ASPNETCORE_ENVIRONMENT = 'Development'
-		# 优先用 preferConfig 对应的 exe（默认 Release），否则回退 dotnet run
-		# 2026-08-06 踩坑：dotnet build -c Release 编译，但只查 bin\Debug → 修复没生效
-		$exePath = Find-ServiceExe $name $projPath $preferConfig
-		if ($exePath) {
-			if ($port) { $env:ASPNETCORE_URLS = "http://0.0.0.0:$port" }
-			$proc = Start-Process -FilePath $exePath -RedirectStandardOutput $log -RedirectStandardError $errLog -NoNewWindow -PassThru
-		} else {
-			if ($port) { $env:ASPNETCORE_URLS = "http://0.0.0.0:$port" }
-			$proc = Start-Process -FilePath 'dotnet' -ArgumentList $args -RedirectStandardOutput $log -RedirectStandardError $errLog -NoNewWindow -PassThru
-		}
-		if ($null -ne $prevEnv) { $env:ASPNETCORE_ENVIRONMENT = $prevEnv } else { Remove-Item Env:\ASPNETCORE_ENVIRONMENT -ErrorAction SilentlyContinue }
-		Start-Sleep -Milliseconds 200
-		$procId = $proc.Id
-		Set-Content -Path $pidFile -Value $procId
-		Write-Host "Started $name (PID $procId), log: $log (stderr: $errLog)"
-	} catch {
-		Write-Host "ERROR: failed to start ${name}: ${_}"
-	}
+function Invoke-ComposeOutput {
+    param([string[]]$Arguments)
+    $docker = Get-DockerCmd
+    $allArgs = $Global:ComposeArgs + $Arguments
+    return (& $docker @allArgs 2>&1)
 }
 
-function Start-WatchProc($name, $projRelPath){
-	$projPath = Join-Path $HG_ROOT $projRelPath
-	if (-not (Test-Path $projPath)){
-		Write-Host "[!] 项目未找到: $projPath" -ForegroundColor Yellow
-		return
-	}
-	$log = Get-LogPath $name
-	$errLog = "$log.err"
-	$pidFile = Get-PidPath $name
-
-	# 清理旧 PID 文件（若进程已死）
-	if (Test-Path $pidFile) {
-		$existingPid = Get-Content $pidFile -ErrorAction SilentlyContinue
-		if ($existingPid -and (Get-Process -Id $existingPid -ErrorAction SilentlyContinue)) {
-			Write-Host "[INFO] $name 已在运行 (PID $existingPid)"
-			return
-		} else {
-			Remove-Item $pidFile -ErrorAction SilentlyContinue
-		}
-	}
-
-	$cfg = (Get-ServiceConfig)[$name]
-	$port = $cfg.Port
-	if ($port) {
-		$portProc = netstat -ano 2>$null | Select-String ":${port}\s" | Select-String "LISTENING"
-		if ($portProc) {
-			Write-Host "[WARN] Port :${port} 被占用，尝试释放..." -ForegroundColor Yellow
-			Stop-ServiceByPort $name
-			Start-Sleep -Seconds 1
-		}
-	}
-
-	Write-Host "Starting $name (dotnet watch) -> $projPath"
-	$prevEnv = $env:ASPNETCORE_ENVIRONMENT
-	$env:ASPNETCORE_ENVIRONMENT = 'Development'
-	if ($port) { $env:ASPNETCORE_URLS = "http://0.0.0.0:$port" }
-
-	# dotnet watch run：监听项目源文件，热重载/自动重启
-	# --non-interactive 防止等待键盘输入（后台运行时必须）
-	# --no-launch-profile 忽略 launchSettings.json（端口由 ASPNETCORE_URLS 控制）
-	$watchArgs = @('watch', 'run', '--project', "$projPath", '--no-launch-profile', '--non-interactive', '-c', 'Debug')
-	$proc = Start-Process -FilePath 'dotnet' -ArgumentList $watchArgs -RedirectStandardOutput $log -RedirectStandardError $errLog -NoNewWindow -PassThru
-	if ($null -ne $prevEnv) { $env:ASPNETCORE_ENVIRONMENT = $prevEnv } else { Remove-Item Env:\ASPNETCORE_ENVIRONMENT -ErrorAction SilentlyContinue }
-	Start-Sleep -Milliseconds 300
-	Set-Content -Path $pidFile -Value $proc.Id
-	Write-Host "Started $name (watch PID $($proc.Id)), log: $log (stderr: $errLog)"
+function Test-ContainerRunning($svcName) {
+    $lines = Invoke-ComposeOutput @('ps', '--format', '{{.Service}} {{.State}}', $svcName)
+    foreach ($line in $lines) {
+        if ($line -match "^$svcName\s+(running|healthy)") { return $true }
+    }
+    return $false
 }
 
-function Stop-ServiceProc($name){
-	$pidFile = Get-PidPath $name
-	if (-not (Test-Path $pidFile)){
-		Write-Host "[i] $name 未运行 (无 PID 文件)" -ForegroundColor Yellow
-		return
-	}
-	$existingPid = Get-Content $pidFile -ErrorAction SilentlyContinue
-	if ($existingPid -and (Get-Process -Id $existingPid -ErrorAction SilentlyContinue)) {
-		try {
-			# 优先杀进程树（dotnet watch 会 spawn 子进程，只杀父进程会残留）
-			$isWatch = (Get-Process -Id $existingPid -ErrorAction SilentlyContinue).ProcessName -eq 'dotnet'
-			if ($isWatch) {
-				taskkill /T /F /PID $existingPid 2>$null | Out-Null
-			} else {
-				Stop-Process -Id $existingPid -Force -ErrorAction Stop
-			}
-			$sw = [System.Diagnostics.Stopwatch]::StartNew()
-			while ((Get-Process -Id $existingPid -ErrorAction SilentlyContinue) -and $sw.Elapsed.TotalSeconds -lt 10) {
-				Start-Sleep -Milliseconds 200
-			}
-			Remove-Item $pidFile -ErrorAction SilentlyContinue
-			if (Get-Process -Id $existingPid -ErrorAction SilentlyContinue) {
-				Write-Host "Stopped ${name} (PID $existingPid) - process still exiting..." -ForegroundColor Yellow
-			} else {
-				Write-Host "Stopped ${name} (PID $existingPid)"
-			}
-		} catch {
-			Write-Host "ERROR: failed to stop ${name} by PID: ${_}" -ForegroundColor Red
-			Stop-ServiceByPort $name
-		}
-	} else {
-		Remove-Item $pidFile -ErrorAction SilentlyContinue
-		Write-Host "$name is not running (cleaned pidfile)"
-	}
+function Resolve-ServiceName($name) {
+    if ([string]::IsNullOrWhiteSpace($name)) { return $null }
+    $n = $name.ToLower()
+    if ($DockerServiceMap.ContainsKey($n)) { return $DockerServiceMap[$n] }
+    # 用户直接写 compose 服务名（taskrunner / taskrunner-ai 等）
+    if ($DockerServiceMap.Values -contains $n) { return $n }
+    return $null
 }
 
-function Stop-ServiceByPort($name){
-	$cfg = (Get-ServiceConfig)[$name]
-	$port = $cfg.Port
-	if (-not $port) { return }
-	$connections = netstat -ano 2>$null | Select-String ":${port}\s" | Select-String "LISTENING"
-	foreach ($conn in $connections) {
-		$parts = $conn.ToString().Trim() -split '\s+'
-		$foundPid = $parts[-1]
-		if ($foundPid -match '^\d+$' -and $foundPid -ne '0') {
-			try {
-				$proc = Get-Process -Id $foundPid -ErrorAction Stop
-				if ($proc.ProcessName -eq 'svchost') {
-					Write-Host "  Port :${port} held by svchost (PID $foundPid), skipping" -ForegroundColor Yellow
-					continue
-				}
-				Write-Host "  Killing process on port :${port} (PID $foundPid, $($proc.ProcessName))" -ForegroundColor Yellow
-				Stop-Process -Id $foundPid -Force -ErrorAction Stop
-				Start-Sleep -Milliseconds 500
-			} catch {
-				Write-Host "  Failed to kill PID $foundPid on port :${port}: ${_}" -ForegroundColor Red
-			}
-		}
-	}
-	Remove-Item (Get-PidPath $name) -ErrorAction SilentlyContinue
+# ============================ 工具函数 ============================
+function Test-TcpPort([string]$hostname, [int]$port, [int]$timeoutMs = 2000) {
+    try {
+        $tcp = New-Object System.Net.Sockets.TcpClient
+        $async = $tcp.BeginConnect($hostname, $port, $null, $null)
+        $wait = $async.AsyncWaitHandle.WaitOne($timeoutMs, $false)
+        if ($wait -and $tcp.Connected) { $tcp.Close(); return $true }
+        $tcp.Close(); return $false
+    } catch { return $false }
 }
 
-function Get-RealServicePid($name){
-	$cfg = (Get-ServiceConfig)[$name]
-	$port = $cfg.Port
-	if (-not $port) { return $null }
-	$connections = netstat -ano 2>$null | Select-String ":${port}\s" | Select-String "LISTENING"
-	foreach ($conn in $connections) {
-		$parts = $conn.ToString().Trim() -split '\s+'
-		$foundPid = $parts[-1]
-		if ($foundPid -match '^\d+$' -and $foundPid -ne '0') {
-			try {
-				$proc = Get-Process -Id $foundPid -ErrorAction Stop
-				if ($proc.ProcessName -ne 'svchost') { return $foundPid }
-			} catch {}
-		}
-	}
-	return $null
+function Wait-For-Url([string]$url, [int]$timeoutSec = 60, [int]$intervalSec = 2) {
+    $sw = [System.Diagnostics.Stopwatch]::StartNew()
+    while ($sw.Elapsed.TotalSeconds -lt $timeoutSec) {
+        try {
+            $resp = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 3 -ErrorAction Stop
+            if ($resp.StatusCode -ge 200 -and $resp.StatusCode -lt 500) { return $true }
+        } catch {}
+        Start-Sleep -Seconds $intervalSec
+    }
+    return $false
 }
 
-function Test-ServiceRunning($name){
-	$pidFile = Get-PidPath $name
-	if (Test-Path $pidFile) {
-		$existingPid = Get-Content $pidFile -ErrorAction SilentlyContinue
-		if ($existingPid -and (Get-Process -Id $existingPid -ErrorAction SilentlyContinue)) {
-			$proc = Get-Process -Id $existingPid -ErrorAction SilentlyContinue
-			if ($proc.ProcessName -eq 'svchost') {
-				Remove-Item $pidFile -ErrorAction SilentlyContinue
-				Write-Host "  $name : stale PID (svchost), cleaning" -ForegroundColor Yellow
-			} else {
-				return $true
-			}
-		} else {
-			Remove-Item $pidFile -ErrorAction SilentlyContinue
-		}
-	}
-	$realPid = Get-RealServicePid $name
-	if ($realPid) {
-		Set-Content -Path $pidFile -Value $realPid -Force
-		return $true
-	}
-	return $false
+# 启动 Docker 容器前，清理本地 dotnet 进程占用的端口（8788/8790/8791/5177/80）
+# 避免"旧本地进程 + Docker 容器"端口绑定冲突（双实例跑数据目录也会 SQLite 锁冲突）
+function Stop-LocalDotnetServicesIfPortsOccupied {
+    $ports = @(8788, 8790, 8791, 5177)
+    $killedAny = $false
+    foreach ($port in $ports) {
+        try {
+            $conns = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction Stop
+        } catch { continue }
+        foreach ($c in $conns) {
+            $pid = $c.OwningProcess
+            if ($pid -le 4) { continue }   # PID 4 = System (http.sys)，不杀
+            try {
+                $proc = Get-Process -Id $pid -ErrorAction Stop
+                $isDotnetFamily = ($proc.ProcessName -match '^(dotnet|bh-|baihua|taskrunner)$') -or
+                                   ($proc.Path -and $proc.Path -match 'baihuagu|baihua|taskrunner')
+                # 进程名不像 dotnet，但端口是我们的业务端口也提示并 kill
+                if ($isDotnetFamily -or ($port -in @(8788,8790,8791,5177))) {
+                    Write-Host "  [端口清理] 释放 :$port (PID $pid, $($proc.ProcessName))..." -ForegroundColor Yellow
+                    try { taskkill /T /F /PID $pid 2>&1 | Out-Null } catch { Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue }
+                    $killedAny = $true
+                }
+            } catch {}
+        }
+    }
+    if ($killedAny) { Start-Sleep -Seconds 2 }
 }
 
-function Show-Status(){
-	foreach ($k in $ServiceOrder){
-		$status = "$k : stopped" 
-		$color = [ConsoleColor]::DarkYellow
-		if (Test-ServiceRunning $k){
-			$pidFile = Get-PidPath $k
-			$existingPid = Get-Content $pidFile -ErrorAction SilentlyContinue
-			$cfg = (Get-ServiceConfig)[$k]
-			$healthUrl = $cfg.Health
-			$healthy = $false
-			if ($healthUrl) {
-				try {
-					$resp = Invoke-WebRequest -Uri $healthUrl -UseBasicParsing -TimeoutSec 2 -ErrorAction Stop
-					$healthy = $resp.StatusCode -ge 200 -and $resp.StatusCode -lt 400
-				} catch { $healthy = $false }
-			}
-			if ($healthy) {
-				$status = "$k : running (PID $existingPid) ✓ healthy"
-				$color = [ConsoleColor]::Green
-			} else {
-				$status = "$k : running (PID $existingPid) ⚠ not ready"
-				$color = [ConsoleColor]::Yellow
-			}
-			Write-Host $status -ForegroundColor $color
-			Write-Host "       port: $($cfg.Port) | log: $(Get-LogPath $k)" -ForegroundColor DarkGray
-		} else {
-			Write-Host $status -ForegroundColor $color
-		}
-	}
+function Get-WebUrl {
+    $port = if ($env:BAIHUA_NGINX_PORT) { $env:BAIHUA_NGINX_PORT } else { '80' }
+    if ($port -eq '80') { return 'http://localhost/' }
+    return "http://localhost:$port/"
+}
+function Get-LoginUrl { return (Get-WebUrl) }  # WebUI 根路径会自动跳登录页
+function Get-CliTokenUrl {
+    # 通过 Nginx 80 端口调用 WebUI（经 Family 分发 /api/* → taskrunner:8788）
+    $base = Get-WebUrl.TrimEnd('/')
+    return "$base/api/auth/cli-token"
+}
+function Get-DashboardUrl($token) {
+    $base = Get-WebUrl
+    $sep = if ($base -match '\?') { '&' } else { '?' }
+    return "${base}${sep}cli-token=$token"
 }
 
-function Tail-Log($name, [int]$Lines = 50, [switch]$Follow){
-	$log = Get-LogPath $name
-	$errLog = "$log.err"
-	if (-not (Test-Path $log)) { 
-		Write-Host "Log not found: $log" -ForegroundColor Yellow
-		if (Test-Path $errLog){ Write-Host "But stderr exists: $errLog" }
-		return 
-	}
-	if ($Follow) {
-		Write-Host "Tailing log (follow): $log (Ctrl+C to stop)"
-		if (Test-Path $errLog) { Write-Host "Also monitoring stderr: $errLog" }
-		Get-Content -Path $log -Tail $Lines -Wait -Encoding UTF8
-	} else {
-		Write-Host "=== $log (last $Lines lines) ===" -ForegroundColor Cyan
-		Get-Content -Path $log -Tail $Lines -Encoding UTF8
-		if (Test-Path $errLog) {
-			Write-Host "=== $errLog (last $Lines lines) ===" -ForegroundColor Cyan
-			Get-Content -Path $errLog -Tail $Lines -Encoding UTF8
-		}
-	}
+function Open-InBrowser([string]$url) {
+    $browser = $script:Browser
+    if ($browser) {
+        Write-Host "Opening: $url (browser: $browser)"
+        try { Start-Process $browser $url } catch { Write-Host "Cannot launch browser '${browser}': ${_}" }
+    } else {
+        Write-Host "Opening: $url"
+        try { Start-Process $url } catch { Write-Host "Cannot open browser: ${_}" }
+    }
 }
 
-function Cmd-Setup {
-	Write-Host "*** 首次配置向导（简化）" -ForegroundColor Cyan
-	$vault = Read-Host "Enter vault path (e.g. C:\Users\you\MyNotes)"
-	if (-not [string]::IsNullOrWhiteSpace($vault)) {
-		if (-not (Test-Path $vault)) { New-Item -ItemType Directory -Path $vault -Force | Out-Null; Write-Host "Created: $vault" }
-		$cfgPath = Join-Path $HG_ROOT 'local.config.json'
-		$obj = @{ vault = $vault }
-		$obj | ConvertTo-Json | Set-Content -Path $cfgPath -Encoding UTF8
-		Write-Host "Saved config: $cfgPath"
-	} else { Write-Host "Vault not set, abort." }
+function Wait-ServiceReady($svcName, [int]$timeoutSec = 90) {
+    $display = if ($DisplayNameMap.ContainsKey($svcName)) { $DisplayNameMap[$svcName] } else { $svcName }
+    $healthUrl = $HealthUrls[$svcName]
+    if (-not $healthUrl) {
+        # 没有 HTTP 健康检查的服务（如 nginx 本身），等容器进入 running 即可
+        $sw = [System.Diagnostics.Stopwatch]::StartNew()
+        while ($sw.Elapsed.TotalSeconds -lt $timeoutSec) {
+            if (Test-ContainerRunning $svcName) { Write-Host "  ${display}: ✓ container up" -ForegroundColor Green; return $true }
+            Start-Sleep -Seconds 2
+        }
+        Write-Host "  ${display}: ⚠ timeout after ${timeoutSec}s" -ForegroundColor Yellow
+        return $false
+    }
+    Write-Host "  ${display} : " -NoNewline
+    $sw = [System.Diagnostics.Stopwatch]::StartNew()
+    $dots = 0
+    while ($sw.Elapsed.TotalSeconds -lt $timeoutSec) {
+        try {
+            $resp = Invoke-WebRequest -Uri $healthUrl -UseBasicParsing -TimeoutSec 3 -ErrorAction Stop
+            if ($resp.StatusCode -ge 200 -and $resp.StatusCode -lt 500) {
+                Write-Host "✓ ready" -ForegroundColor Green
+                return $true
+            }
+        } catch {}
+        Write-Host "." -NoNewline
+        $dots++
+        if ($dots % 15 -eq 0) { Write-Host ""; Write-Host "  ${display} : " -NoNewline }
+        Start-Sleep -Seconds 2
+    }
+    Write-Host " ⚠ timeout after ${timeoutSec}s" -ForegroundColor Yellow
+    return $false
 }
 
-function Open-InBrowser([string]$url){
-	$browser = $script:Browser
-	if ($browser) {
-		Write-Host "Opening: $url (browser: $browser)"
-		try { Start-Process $browser $url } catch { Write-Host "Cannot launch browser '${browser}': ${_}" }
-	} else {
-		Write-Host "Opening: $url"
-		try { Start-Process $url } catch { Write-Host "Cannot open browser: ${_}" }
-	}
+# ============================ 子命令实现 ============================
+
+function Cmd-Build {
+    Write-Host "=== 构建百花 Docker 镜像 ===" -ForegroundColor Cyan
+    # 不使用 --pull：bh-family/base-build、bh-family/base-runtime 为本地构建镜像，
+    # 强制 pull 会尝试访问 docker.io 导致网络超时
+    $exit = Invoke-Compose @('build')
+    if ($exit -eq 0) { Write-Host "[✓] 镜像构建完成" -ForegroundColor Green }
+    else { Write-Host "[✗] 镜像构建失败 (exit=$exit)" -ForegroundColor Red }
 }
 
-function Open-Dashboard {
-	Open-InBrowser (Get-WebUrl)
-}
-
-function Ensure-ServiceRunning($name){
-	if (Test-ServiceRunning $name) {
-		Write-Host "Service $name already running"
-		return $true
-	}
-	Write-Host "Service $name not running, starting..."
-	Start-ServiceProc $name (Get-ServiceConfig)[$name].Project
-	return $false
-}
-
-function Test-TcpPort([string]$hostname, [int]$port, [int]$timeoutMs = 2000){
-	try {
-		$tcp = New-Object System.Net.Sockets.TcpClient
-		$async = $tcp.BeginConnect($hostname, $port, $null, $null)
-		$wait = $async.AsyncWaitHandle.WaitOne($timeoutMs, $false)
-		if ($wait -and $tcp.Connected) { $tcp.Close(); return $true }
-		$tcp.Close(); return $false
-	} catch { return $false }
-}
-
-function Wait-For-Url([string]$url, [int]$timeoutSec = 30){
-	$sw = [System.Diagnostics.Stopwatch]::StartNew()
-	$firstAttempt = $true
-	while ($sw.Elapsed.TotalSeconds -lt $timeoutSec){
-		try{
-			$resp = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 3 -ErrorAction Stop
-			if ($resp.StatusCode -ge 200 -and $resp.StatusCode -lt 400){
-				return $true
-			}
-		} catch {
-			if ($firstAttempt) {
-				Write-Host "  (waiting for $url ...)" -ForegroundColor DarkGray
-				$firstAttempt = $false
-			}
-		}
-		Start-Sleep -Seconds 2
-	}
-	return $false
-}
-
-function Wait-For-Service([string]$name, [int]$timeoutSec = 20, [bool]$wasJustStarted = $false){
-	$cfg = (Get-ServiceConfig)[$name]
-	$healthUrl = $cfg.Health
-	if (-not $healthUrl) { 
-		Write-Host "  $name : no health check URL, skipping wait"
-		return $true 
-	}
-	# 仅对新启动的服务等待 3 秒让进程稳定（编译+启动）
-	if ($wasJustStarted) {
-		Start-Sleep -Seconds 3
-	}
-	$sw = [System.Diagnostics.Stopwatch]::StartNew()
-	$crashCheckDone = $false
-	while ($sw.Elapsed.TotalSeconds -lt $timeoutSec){
-		if (-not $crashCheckDone) {
-			$realPid = Get-RealServicePid $name
-			if ($realPid) {
-				$pidFile = Get-PidPath $name
-				Set-Content -Path $pidFile -Value $realPid -Force
-			} else {
-				$pidFile = Get-PidPath $name
-				if (Test-Path $pidFile) {
-					$srvPid = Get-Content $pidFile -ErrorAction SilentlyContinue
-					if ($srvPid -and -not (Get-Process -Id $srvPid -ErrorAction SilentlyContinue)) {
-						Write-Host "  $name : ✗ process crashed" -ForegroundColor Red
-						$errLog = "$(Get-LogPath $name).err"
-						if (Test-Path $errLog) {
-							Write-Host "  Last 5 lines of error log:" -ForegroundColor Yellow
-							Get-Content $errLog -Tail 5 -Encoding UTF8 | ForEach-Object { Write-Host "    $_" }
-						}
-						return $false
-					}
-				}
-			}
-			$crashCheckDone = $true
-		}
-		try{
-			$resp = Invoke-WebRequest -Uri $healthUrl -UseBasicParsing -TimeoutSec 2 -ErrorAction Stop
-			if ($resp.StatusCode -ge 200 -and $resp.StatusCode -lt 500){
-				Write-Host "  $name : ✓ ready" -ForegroundColor Green
-				return $true
-			}
-		} catch {
-			# retry
-		}
-		Write-Host "." -NoNewline
-		Start-Sleep -Seconds 1
-	}
-	Write-Host ""
-	Write-Host "  $name : ⚠ timeout after ${timeoutSec}s" -ForegroundColor Yellow
-	return $false
-}
-
-function Invoke-BuildIfNeeded {
-	$needsRebuild = Test-NeedsRebuild
-	if ($needsRebuild) {
-		$curr = Get-CurrentGitCommit
-		$saved = Get-SavedGitCommit
-		Write-Host "[i] 检测到代码更新" -ForegroundColor Yellow
-		if ($saved) {
-			Write-Host "    上次: $($saved.Substring(0,8))"
-			Write-Host "    当前: $($curr.Substring(0,8))"
-		}
-		Write-Host "[...] dotnet build..." -ForegroundColor Cyan
-		$buildResult = dotnet build (Join-Path $HG_ROOT 'services\BaiHua.slnx') -c Release 2>&1
-		$buildExit = $LASTEXITCODE
-		if ($buildExit -ne 0) {
-			Write-Host "[X] 编译失败!" -ForegroundColor Red
-			$buildResult | Select-Object -Last 10 | ForEach-Object { Write-Host "    $_" }
-			return $false
-		}
-		Write-Host "[v] 编译成功" -ForegroundColor Green
-		Save-GitCommit
-	}
-	return $true
+function Cmd-UpCore([switch]$WithObservability) {
+    Set-BaihuaEnv
+    Stop-LocalDotnetServicesIfPortsOccupied
+    $profiles = @()
+    if ($WithObservability) { $profiles += '--profile'; $profiles += 'observability' }
+    $args = $profiles + @('up', '-d', '--remove-orphans')
+    $exit = Invoke-Compose $args
+    if ($exit -ne 0) {
+        Write-Host "[!] 首次启动可能镜像未构建 → 尝试先 build ..." -ForegroundColor Yellow
+        Cmd-Build
+        $exit = Invoke-Compose $args
+    }
+    return $exit
 }
 
 function Cmd-Start {
-	if (-not (Invoke-BuildIfNeeded)) { return }
-	foreach ($k in $ServiceOrder){
-		Start-ServiceProc $k (Get-ServiceConfig)[$k].Project
-		Write-Host "  $k : " -NoNewline
-		if ($k -eq 'webui') {
-			Start-Sleep -Seconds 3
-			if (Wait-For-Url (Get-LoginUrl) 30) {
-				Write-Host "ready" -ForegroundColor Green
-			} else {
-				Write-Host "not ready" -ForegroundColor Red
-			}
-		} else {
-			Wait-For-Service $k 30 -wasJustStarted $true | Out-Null
-		}
-	}
-	if (-not (Test-NeedsRebuild)) { Save-GitCommit }
+    Write-Host "=== 启动百花（全 Docker）===" -ForegroundColor Cyan
+    if (-not (Ensure-DockerReady)) { return }
+    $exit = Cmd-UpCore
+    if ($exit -ne 0) { Write-Host "[✗] 启动失败 (exit=$exit)" -ForegroundColor Red; return }
+    Write-Host ""
+    Write-Host "等待服务就绪..." -ForegroundColor DarkGray
+    foreach ($svc in $ServiceOrder) { Wait-ServiceReady $svc | Out-Null }
 }
 
 function Cmd-Stop {
-	if ($Arg) {
-		$name = $Arg.ToLower()
-		if ($name -in $ServiceOrder) {
-			Write-Host "Stopping $name ..." -ForegroundColor Cyan
-			Stop-ServiceProc $name
-		} elseif ($name -eq 'all') {
-			Cmd-StopAll
-		} else {
-			Write-Host "未知服务: $name（可选: $($ServiceOrder -join ', ') 或 all）" -ForegroundColor Yellow
-		}
-		return
-	}
-	Cmd-StopAll
+    if (-not (Ensure-DockerReady)) { return }
+    Set-BaihuaEnv
+    if ($Arg) {
+        $name = $Arg.ToLower()
+        if ($name -eq 'all') {
+            Write-Host "停止所有服务..." -ForegroundColor Cyan
+            Invoke-Compose @('stop') | Out-Null
+            return
+        }
+        $svc = Resolve-ServiceName $name
+        if (-not $svc) {
+            $valid = ($DockerServiceMap.Keys | Sort-Object) -join ', '
+            Write-Host "[!] 未知服务: $name（可选: $valid, all）" -ForegroundColor Yellow
+            return
+        }
+        Write-Host "停止 $svc ..." -ForegroundColor Cyan
+        Invoke-Compose @('stop', $svc) | Out-Null
+        return
+    }
+    Write-Host "停止所有服务 ..." -ForegroundColor Cyan
+    Invoke-Compose @('stop') | Out-Null
 }
 
-function Cmd-StopAll {
-	Write-Host "Stopping all services in order: $($StopOrder -join ' -> ')" -ForegroundColor Cyan
-	foreach ($k in $StopOrder){ Stop-ServiceProc $k }
+function Cmd-Down {
+    if (-not (Ensure-DockerReady)) { return }
+    Set-BaihuaEnv
+    Write-Host "⚠  这将移除所有容器和网络（数据卷保留在 ${env:BAIHUA_HOME}\）" -ForegroundColor Yellow
+    $confirm = Read-Host "确认? [y/N]"
+    if ($confirm -notmatch '^[yY]') { Write-Host "已取消"; return }
+    Invoke-Compose @('down', '--remove-orphans') | Out-Null
+    Write-Host "[✓] 已移除所有容器（数据保留在 ${env:BAIHUA_HOME}\）" -ForegroundColor Green
 }
 
 function Cmd-Restart {
-	if ($Arg) {
-		$name = $Arg.ToLower()
-		if ($name -in $ServiceOrder) {
-			Write-Host "Restarting $name ..." -ForegroundColor Cyan
-			Stop-ServiceProc $name
-			Start-Sleep -Seconds 1
-			Start-ServiceProc $name (Get-ServiceConfig)[$name].Project
-			Write-Host "  $name : " -NoNewline
-			if ($name -eq 'webui') {
-				Start-Sleep -Seconds 3
-				if (Wait-For-Url (Get-LoginUrl) 30) {
-					Write-Host "ready" -ForegroundColor Green
-				} else {
-					Write-Host "not ready" -ForegroundColor Red
-				}
-			} else {
-				Wait-For-Service $name 30 -wasJustStarted $true | Out-Null
-			}
-		} else {
-			Write-Host "未知服务: $name（可选: $($ServiceOrder -join ', ')）" -ForegroundColor Yellow
-		}
-		return
-	}
-	Cmd-Stop
-	Write-Host "Waiting for ports to release..."
-	Start-Sleep -Seconds 1
-	if (-not (Invoke-BuildIfNeeded)) { return }
-	Cmd-Start
+    if (-not (Ensure-DockerReady)) { return }
+    Set-BaihuaEnv
+    if ($Arg) {
+        $svc = Resolve-ServiceName $Arg.ToLower()
+        if (-not $svc) {
+            $valid = ($DockerServiceMap.Keys | Sort-Object) -join ', '
+            Write-Host "[!] 未知服务: $Arg（可选: $valid）" -ForegroundColor Yellow
+            return
+        }
+        Write-Host "重启 $svc ..." -ForegroundColor Cyan
+        Invoke-Compose @('restart', $svc) | Out-Null
+        Start-Sleep -Seconds 2
+        Wait-ServiceReady $svc | Out-Null
+        return
+    }
+    # 整体重启：stop 再 up -d（保证环境变量和镜像最新）
+    Write-Host "重启所有服务（stop → up -d）..." -ForegroundColor Cyan
+    Invoke-Compose @('stop') | Out-Null
+    Start-Sleep -Seconds 2
+    $exit = Cmd-UpCore
+    if ($exit -ne 0) { Write-Host "[✗] 重启失败 (exit=$exit)" -ForegroundColor Red; return }
+    Write-Host ""
+    foreach ($svc in $ServiceOrder) { Wait-ServiceReady $svc | Out-Null }
+}
+
+function Cmd-Status {
+    if (-not (Ensure-DockerReady)) { return }
+    Set-BaihuaEnv
+    Write-Host ""
+    Write-Host "=== 百花服务状态 (Docker Compose) ===" -ForegroundColor Cyan
+    Write-Host "  BAIHUA_HOME     : $env:BAIHUA_HOME"
+    Write-Host "  VAULTS_DIR      : $env:VAULTS_DIR"
+    Write-Host "  Nginx 入口      : $(Get-WebUrl)"
+    Write-Host ""
+    $lines = Invoke-ComposeOutput @('ps')
+    if (-not $lines -or $lines.Count -eq 0 -or ($lines.Count -eq 1 -and [string]::IsNullOrWhiteSpace($lines[0]))) {
+        Write-Host "  (no containers — 服务未启动。运行: .\bh.ps1 start)" -ForegroundColor Yellow
+        return
+    }
+    $lines | ForEach-Object { Write-Host "  $_" }
+    Write-Host ""
+    Write-Host "--- 健康检查 ---" -ForegroundColor DarkGray
+    foreach ($svc in $ServiceOrder) {
+        $running = Test-ContainerRunning $svc
+        $display = if ($DisplayNameMap.ContainsKey($svc)) { $DisplayNameMap[$svc] } else { $svc }
+        if ($running) {
+            $healthUrl = $HealthUrls[$svc]
+            $ok = $false
+            if ($healthUrl) {
+                try {
+                    $resp = Invoke-WebRequest -Uri $healthUrl -UseBasicParsing -TimeoutSec 2 -ErrorAction Stop
+                    $ok = ($resp.StatusCode -ge 200 -and $resp.StatusCode -lt 500)
+                } catch {}
+            } else { $ok = $true }
+            if ($ok) { Write-Host "  ${display}: ✓ running / healthy" -ForegroundColor Green }
+            else { Write-Host "  ${display}: ⚠ container up, HTTP not ready" -ForegroundColor Yellow }
+        } else {
+            Write-Host "  ${display}: ✗ stopped" -ForegroundColor DarkYellow
+        }
+    }
+}
+
+function Cmd-Logs {
+    if (-not (Ensure-DockerReady)) { return }
+    Set-BaihuaEnv
+
+    $raw = $Arg
+    if ([string]::IsNullOrWhiteSpace($raw)) {
+        $valid = ($DockerServiceMap.Keys | Sort-Object) -join ', '
+        Write-Host "请指定服务名: $valid" -ForegroundColor Yellow
+        Write-Host "示例: .\bh.ps1 logs webui 100     # webui 最近 100 行"
+        Write-Host "示例: .\bh.ps1 logs family -f     # 实时跟随 Family 日志" -ForegroundColor DarkGray
+        return
+    }
+
+    # 解析 -f / lines
+    $follow = $false
+    $lines = 50
+    $svcInput = $null
+    $tokens = @()
+    if (-not [string]::IsNullOrWhiteSpace($raw)) { $tokens += $raw }
+    if (-not [string]::IsNullOrWhiteSpace($Browser)) { $tokens += $Browser }
+    foreach ($t in $tokens) {
+        if ($t -eq '-f' -or $t -eq '--follow') { $follow = $true }
+        elseif ($t -match '^\d+$') { $lines = [int]$t }
+        else { $svcInput = $t }
+    }
+
+    $svc = Resolve-ServiceName $svcInput
+    if (-not $svc) {
+        $valid = ($DockerServiceMap.Keys | Sort-Object) -join ', '
+        Write-Host "[!] 未知服务: $svcInput（可选: $valid）" -ForegroundColor Yellow
+        return
+    }
+
+    $dockerArgs = @('logs', "--tail=$lines")
+    if ($follow) { $dockerArgs += '-f' }
+    $dockerArgs += $svc
+    Write-Host "[i] $svc 日志 (tail=$lines$(if ($follow) {', follow'} else {''}))."
+    Write-Host "    Ctrl+C 退出" -ForegroundColor DarkGray
+    $d = Get-DockerCmd
+    & $d @dockerArgs
 }
 
 function Cmd-Observe {
-	$composeFile = Join-Path $HG_ROOT 'docker\docker-compose.observability.yml'
-	if (-not (Test-Path $composeFile)) {
-		Write-Host "[!] docker-compose.observability.yml not found: $composeFile" -ForegroundColor Red
-		return
-	}
-	$dockerCmd = $null
-	foreach ($cmd in @('docker', 'docker.exe')) {
-		try { Get-Command $cmd -ErrorAction Stop | Out-Null; $dockerCmd = $cmd; break } catch {}
-	}
-	if (-not $dockerCmd) {
-		Write-Host "[!] Docker not found. Install Docker Desktop first." -ForegroundColor Red
-		return
-	}
-	try {
-		$null = & $dockerCmd info 2>&1
-	} catch {
-		Write-Host "[!] Docker daemon not running. Start Docker Desktop first." -ForegroundColor Red
-		return
-	}
-	Write-Host "Starting OpenObserve..." -ForegroundColor Cyan
-	& $dockerCmd compose -f $composeFile up -d openobserve 2>&1 | ForEach-Object { Write-Host "    $_" }
-	if ($LASTEXITCODE -ne 0) {
-		Write-Host "[X] Failed to start OpenObserve" -ForegroundColor Red
-		return
-	}
-	if (Test-TcpPort '127.0.0.1' 5082) {
-		Write-Host "OpenObserve already running at http://127.0.0.1:5082" -ForegroundColor Green
-		Open-InBrowser 'http://127.0.0.1:5082'
-		return
-	}
-	Write-Host "Waiting for OpenObserve to be ready..." -ForegroundColor DarkGray
-	$sw = [System.Diagnostics.Stopwatch]::StartNew()
-	while ($sw.Elapsed.TotalSeconds -lt 60) {
-		if (Test-TcpPort '127.0.0.1' 5082) {
-			Write-Host "OpenObserve ready at http://127.0.0.1:5082" -ForegroundColor Green
-			Open-InBrowser 'http://127.0.0.1:5082'
-			return
-		}
-		Start-Sleep -Seconds 2
-	}
-	Write-Host "[!] OpenObserve not responding on port 5082 after 60s" -ForegroundColor Yellow
-	Write-Host "    Check: docker logs bh-openobserve" -ForegroundColor Yellow
-}
-
-function Cmd-Start-Observability {
-	$composeFile = Join-Path $HG_ROOT 'docker\docker-compose.observability.yml'
-	if (-not (Test-Path $composeFile)) {
-		Write-Host "[!] docker-compose.observability.yml not found: $composeFile" -ForegroundColor Red
-		return $false
-	}
-	$dockerCmd = $null
-	foreach ($cmd in @('docker', 'docker.exe')) {
-		try { Get-Command $cmd -ErrorAction Stop | Out-Null; $dockerCmd = $cmd; break } catch {}
-	}
-	if (-not $dockerCmd) {
-		Write-Host "  Docker: ⚠ not found, skipping observability" -ForegroundColor Yellow
-		return $false
-	}
-	try {
-		$null = & $dockerCmd info 2>&1
-	} catch {
-		Write-Host "  Docker: ⚠ daemon not running, skipping observability" -ForegroundColor Yellow
-		return $false
-	}
-	Write-Host "  Starting OpenObserve + hostmetrics..." -ForegroundColor Cyan
-	& $dockerCmd compose -f $composeFile up -d 2>&1 | ForEach-Object { Write-Host "    $_" }
-	if ($LASTEXITCODE -ne 0) {
-		Write-Host "  Docker: ⚠ failed (network issue or image not available)" -ForegroundColor Yellow
-		Write-Host "  Docker:   Try again later, or start manually: docker compose -f docker/docker-compose.observability.yml up -d" -ForegroundColor DarkGray
-		return $false
-	}
-	return $true
+    if (-not (Ensure-DockerReady)) { return }
+    Set-BaihuaEnv
+    Write-Host "启动 OpenObserve（可观测性, profile: observability）..." -ForegroundColor Cyan
+    $exit = Invoke-Compose @('--profile', 'observability', 'up', '-d', 'openobserve')
+    if ($exit -ne 0) { Write-Host "[✗] OpenObserve 启动失败 (exit=$exit)" -ForegroundColor Red; return }
+    Write-Host "等待 OpenObserve 就绪 (端口 5082)..."
+    if (Wait-For-Url 'http://127.0.0.1:5082/' 60) {
+        Write-Host "[✓] OpenObserve ready: http://127.0.0.1:5082/ (默认 root@localhost.com / Complexpass#123)" -ForegroundColor Green
+        Open-InBrowser 'http://127.0.0.1:5082/'
+    } else {
+        Write-Host "[!] 60s 内未就绪，稍后手动打开: http://127.0.0.1:5082/" -ForegroundColor Yellow
+    }
 }
 
 function Cmd-All {
-	Write-Host "=== 百花 - 启动全部服务 ===" -ForegroundColor Cyan
-	Write-Host ""
+    if (-not (Ensure-DockerReady)) { return }
+    Write-Host "=== 百花 - 启动全部服务（含 OpenObserve）===" -ForegroundColor Cyan
+    $exit = Cmd-UpCore -WithObservability
+    if ($exit -ne 0) { Write-Host "[✗] 启动失败 (exit=$exit)" -ForegroundColor Red; return }
+    Write-Host ""
+    foreach ($svc in $ServiceOrder) { Wait-ServiceReady $svc | Out-Null }
+    if (Wait-For-Url 'http://127.0.0.1:5082/' 60) {
+        Write-Host "  OpenObserve: ✓ ready http://127.0.0.1:5082/" -ForegroundColor Green
+    } else {
+        Write-Host "  OpenObserve: ⚠ 启动中" -ForegroundColor Yellow
+    }
+}
 
-	$needsRebuild = Test-NeedsRebuild
-	if ($needsRebuild) {
-		$curr = Get-CurrentGitCommit
-		$saved = Get-SavedGitCommit
-		Write-Host "[i] 检测到代码更新" -ForegroundColor Yellow
-		if ($saved) {
-			Write-Host "    上次: $($saved.Substring(0,8))"
-			Write-Host "    当前: $($curr.Substring(0,8))"
-		}
-		Write-Host "[...] 停止旧服务并重新编译..." -ForegroundColor Cyan
-		Cmd-Stop
-		Start-Sleep -Seconds 1
+function Cmd-Setup {
+    Write-Host "*** 百花首次配置（Docker 版）***" -ForegroundColor Cyan
+    $vault = Read-Host "知识库路径 (默认: $env:USERPROFILE\Vaults)"
+    if (-not [string]::IsNullOrWhiteSpace($vault)) {
+        if (-not (Test-Path $vault)) { New-Item -ItemType Directory -Path $vault -Force | Out-Null; Write-Host "已创建: $vault" }
+        # 保存为永久用户环境变量（下次打开终端也生效）
+        [Environment]::SetEnvironmentVariable('VAULTS_DIR', $vault, 'User')
+        $env:VAULTS_DIR = $vault
+        Write-Host "[✓] 已永久设置 VAULTS_DIR=$vault（用户环境变量）" -ForegroundColor Green
+    } else {
+        Write-Host "(未设置，使用默认: $env:USERPROFILE\Vaults)"
+    }
+    $port = Read-Host "Nginx 对外端口 (默认: 80)"
+    if (-not [string]::IsNullOrWhiteSpace($port)) {
+        $pInt = 0
+        if ([int]::TryParse($port, [ref]$pInt) -and $pInt -gt 0 -and $pInt -lt 65536) {
+            [Environment]::SetEnvironmentVariable('BAIHUA_NGINX_PORT', $port, 'User')
+            $env:BAIHUA_NGINX_PORT = $port
+            Write-Host "[✓] 已永久设置 BAIHUA_NGINX_PORT=$port" -ForegroundColor Green
+        } else { Write-Host "[!] 端口无效，保留默认 80" -ForegroundColor Yellow }
+    }
+    $home = Read-Host "数据/日志根目录 (默认: $env:LOCALAPPDATA\baihua)"
+    if (-not [string]::IsNullOrWhiteSpace($home)) {
+        [Environment]::SetEnvironmentVariable('BAIHUA_HOME', $home, 'User')
+        $env:BAIHUA_HOME = $home
+        Write-Host "[✓] 已永久设置 BAIHUA_HOME=$home" -ForegroundColor Green
+    }
+    Set-BaihuaEnv
+    Write-Host ""
+    Write-Host "配置完成。下次启动生效。立即启动: .\bh.ps1 start" -ForegroundColor Green
+}
 
-		Write-Host "[...] dotnet build..." -ForegroundColor Cyan
-		$buildResult = dotnet build (Join-Path $HG_ROOT 'services\BaiHua.slnx') -c Release 2>&1
-		$buildExit = $LASTEXITCODE
-		if ($buildExit -ne 0) {
-			Write-Host "[X] 编译失败!" -ForegroundColor Red
-			$buildResult | Select-Object -Last 10 | ForEach-Object { Write-Host "    $_" }
-			return
-		}
-		Write-Host "[v] 编译成功" -ForegroundColor Green
-		Save-GitCommit
-	}
+function Cmd-Dev {
+    # Docker 版 dev：先 start（镜像若过期先 build），然后跟随 webui 日志
+    Write-Host "=== 百花 Dev Mode (Docker，不支持热重载) ===" -ForegroundColor Cyan
+    Write-Host "  注意：Docker 模式下改 .cs/.razor 不会自动热重载。" -ForegroundColor Yellow
+    Write-Host "  修改代码后：先 .\bh.ps1 build 再 .\bh.ps1 restart [webui|family|...]" -ForegroundColor Yellow
+    if (-not (Ensure-DockerReady)) { return }
+    $exit = Cmd-UpCore
+    if ($exit -ne 0) { Write-Host "[✗] 启动失败 (exit=$exit)" -ForegroundColor Red; return }
+    Write-Host ""
+    foreach ($svc in $ServiceOrder) { Wait-ServiceReady $svc | Out-Null }
+    if (-not $NoLogin) { Cmd-OpenDashboardCore }
+    Write-Host ""
+    Write-Host "[i] 进入跟随 webui 日志（Ctrl+C 退出，服务不受影响）" -ForegroundColor DarkGray
+    $d = Get-DockerCmd
+    & $d @('logs', '-f', '--tail=50', 'webui')
+}
 
-	foreach ($name in $ServiceOrder) {
-		Test-ServiceRunning $name | Out-Null
-	}
+function Cmd-OpenDashboardCore {
+    Write-Host "准备打开管理面板..." -ForegroundColor DarkGray
+    $loginUrl = Get-LoginUrl
+    if (-not (Wait-For-Url $loginUrl 30)) {
+        Write-Host "[!] WebUI 尚未就绪，直接打开浏览器" -ForegroundColor Yellow
+        Open-InBrowser (Get-WebUrl)
+        return
+    }
+    try {
+        $resp = Invoke-WebRequest -Uri (Get-CliTokenUrl) -Method POST -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
+        if ($resp.StatusCode -eq 200) {
+            $json = $resp.Content | ConvertFrom-Json
+            $token = $json.token
+            if ($token) {
+                $url = Get-DashboardUrl $token
+                Write-Host "[i] 已获取 CLI token，自动登录..."
+                Open-InBrowser $url
+                return
+            }
+        }
+    } catch {
+        Write-Host "[!] 获取 CLI token 失败: $($_.Exception.Message)" -ForegroundColor Yellow
+    }
+    Open-InBrowser (Get-WebUrl)
+}
 
-	Write-Host ""
-	Write-Host "[1/2] 启动 .NET 服务..." -ForegroundColor Cyan
-	$failedServices = @()
-	foreach ($name in @('ai', 'vault', 'family')) {
-		$wasRunning = Ensure-ServiceRunning $name
-		Write-Host "  $name : " -NoNewline
-		if (-not (Wait-For-Service $name 30 -wasJustStarted:(-not $wasRunning))) { $failedServices += $name }
-	}
-
-	$webuiWasRunning = Ensure-ServiceRunning 'webui'
-	Write-Host "  webui : " -NoNewline
-	if (-not $webuiWasRunning) { Start-Sleep -Seconds 3 }
-	if (-not (Wait-For-Url (Get-LoginUrl) 20)){
-		Write-Host "X not ready" -ForegroundColor Red
-		$failedServices += 'webui'
-	} else {
-		Write-Host "v ready" -ForegroundColor Green
-	}
-
-	if (-not $needsRebuild) { Save-GitCommit }
-
-	Write-Host ""
-	Write-Host "[2/2] 启动可观测性服务 (Docker)..." -ForegroundColor Cyan
-	if (Cmd-Start-Observability) {
-		if (Test-TcpPort '127.0.0.1' 5082) {
-			Write-Host "  OpenObserve: v running at http://127.0.0.1:5082" -ForegroundColor Green
-		} else {
-			Write-Host "  OpenObserve: ⚠ starting..." -ForegroundColor Yellow
-		}
-	}
-
-	Write-Host ""
-	try {
-		$resp = Invoke-WebRequest -Uri (Get-CliTokenUrl) -Method POST -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
-		$json = $resp.Content | ConvertFrom-Json
-		$token = $json.token
-		if ($token) {
-			$dashboardUrl = Get-DashboardUrl $token
-			Write-Host "Opening dashboard with CLI token..."
-			Open-InBrowser $dashboardUrl
-		} else {
-			Open-Dashboard
-		}
-	} catch {
-		Write-Host "Failed to get CLI token, opening without auto-login"
-		Open-Dashboard
-	}
-
-	if ($failedServices.Count -gt 0) {
-		Write-Host ""
-		Write-Host "! Some services failed: $($failedServices -join ', ')" -ForegroundColor Yellow
-		Write-Host "  Check logs: .\bh.ps1 logs <name>" -ForegroundColor Yellow
-	}
+function Cmd-Dashboard {
+    Write-Host "=== 百花 Dashboard (Docker 模式) ===" -ForegroundColor Cyan
+    if (-not (Ensure-DockerReady)) { return }
+    $exit = Cmd-UpCore
+    if ($exit -ne 0) { Write-Host "[✗] 启动失败 (exit=$exit)" -ForegroundColor Red; return }
+    Write-Host ""
+    foreach ($svc in $ServiceOrder) { Wait-ServiceReady $svc | Out-Null }
+    if ($NoLogin) {
+        Write-Host "[i] --nologin: 服务已就绪 → $(Get-WebUrl)" -ForegroundColor DarkGray
+        return
+    }
+    Cmd-OpenDashboardCore
 }
 
 function Show-Help {
-	Write-Host ""
-	Write-Host "百花 Family 版 - Windows (PowerShell) 轻量 CLI  v$SCRIPT_VERSION" -ForegroundColor Cyan
-	Write-Host "================================================="
-	Write-Host ""
-	Write-Host "用法: .\bh.ps1 [command] [args]"
-	Write-Host ""
-	Write-Host "Commands:"
-	Write-Host "  dashboard             打开管理面板（默认，自动检测更新重编译）
-  dashboard --nologin   同上但跳过打开浏览器登录（测试/CI 用）"
-	Write-Host "  setup                 首次配置（交互）"
-	Write-Host "  start                 启动服务（后台运行 dotnet run）"
-	Write-Host "  stop [name]           停止服务（不指定则停止全部）"
-	Write-Host "  restart [name]        重启服务（不指定则重启全部）"
-	Write-Host "  status                查看服务状态（含端口/日志路径）"
-	Write-Host "  logs <name> [lines]   查看日志（默认 50 行；加 -f 跟随）"
-	Write-Host "  open                  打开 Web 管理界面 (http://localhost:$((Get-ServiceConfig)['webui'].Port))"
-	Write-Host "  dev                   开发模式（dotnet watch，改代码自动热重载）"
-	Write-Host "  observe               启动 OpenObserve 可观测平台（Docker）"
-	Write-Host "  all                   启动全部服务（.NET + OpenObserve + hostmetrics）"
-	Write-Host "  version               显示脚本版本"
-	Write-Host "  help                  显示帮助"
-	Write-Host ""
-	Write-Host "服务名: $($ServiceOrder -join ', ')"
-	Write-Host ""
-	Write-Host "说明:"
-	Write-Host "  - 日志与 PID 文件保存在 $env:TEMP\bh-[service].*"
-	Write-Host "  - dashboard 命令会比较 git HEAD，有更新时自动重编译重启"
-	Write-Host "  - 推荐使用 PowerShell 7+ (pwsh)；Windows PowerShell 5.1 也可用但功能受限"
-	Write-Host ""
+    Set-BaihuaEnv
+    Write-Host ""
+    Write-Host "百花 Family 版 CLI - 全 Docker 模式  v$SCRIPT_VERSION" -ForegroundColor Cyan
+    Write-Host "============================================"
+    Write-Host ""
+    Write-Host "用法: .\bh.ps1 [command] [args]"
+    Write-Host ""
+    Write-Host "Commands:"
+    Write-Host "  dashboard             启动容器并打开面板（默认）"
+    Write-Host "  dashboard --nologin   同上但跳过浏览器自动登录"
+    Write-Host "  start                 docker compose up -d 所有核心服务"
+    Write-Host "  build                 docker compose build 重建镜像（改代码后）"
+    Write-Host "  stop [name|all]       停止某个或所有服务（默认 all）"
+    Write-Host "  restart [name]        重启某个或所有服务"
+    Write-Host "  down                  停止并移除所有容器（数据卷保留）"
+    Write-Host "  status                显示所有容器状态与健康检查"
+    Write-Host "  logs <name> [lines]   查看日志（默认 50 行；末尾加 -f 跟随）"
+    Write-Host "  open                  打开 WebUI（Nginx 统一入口 $(Get-WebUrl)）"
+    Write-Host "  dev                   启动并跟随 webui 日志（改代码需先 build + restart）"
+    Write-Host "  observe               启动 OpenObserve (端口 5082)"
+    Write-Host "  all                   启动核心服务 + OpenObserve"
+    Write-Host "  setup                 首次配置（知识库/端口/数据目录）"
+    Write-Host "  version               显示版本"
+    Write-Host "  help                  显示帮助"
+    Write-Host ""
+    Write-Host "服务名映射（name 参数）:"
+    foreach ($k in ($DockerServiceMap.Keys | Sort-Object)) {
+        $v = $DockerServiceMap[$k]
+        $display = if ($DisplayNameMap.ContainsKey($v)) { "=$($DisplayNameMap[$v])" } else { "" }
+        Write-Host "  $k -> $v ${display}"
+    }
+    Write-Host ""
+    Write-Host "环境变量（可永久写入用户环境变量）:"
+    Write-Host "  BAIHUA_HOME              数据/日志/配置根  （默认: $env:LOCALAPPDATA\baihua）"
+    Write-Host "  VAULTS_DIR               知识库根目录      （默认: $env:USERPROFILE\Vaults）"
+    Write-Host "  BAIHUA_NGINX_PORT        Nginx 对外端口    （默认: 80）"
+    Write-Host "  BAIHUA_WEBUI_PREFIX      WebUI 路径前缀    （默认: 空）"
+    Write-Host ""
 }
 
+# ============================ 主入口 ============================
 function Main {
-	param([string]$CommandName, [string]$ServiceArg, [string]$LineArg, [string]$BrowserArg, [switch]$NoLogin)
+    param(
+        [string]$CommandName,
+        [string]$ServiceArg,
+        [string]$LineArg,
+        [string]$BrowserArg,
+        [switch]$NoLoginFlag
+    )
 
-	switch ($CommandName.ToLower()){
-		'help' { Show-Help; break }
-		'version' { Write-Host "bh.ps1 v$SCRIPT_VERSION"; break }
-		'setup' { Cmd-Setup; break }
-		'start' {
-			Cmd-Start
-			break
-		}
-		'stop' {
-			Cmd-Stop
-			break
-		}
-		'restart' {
-			Cmd-Restart
-			break
-		}
-		'status' { Show-Status; break }
-		'logs' {
-			# 支持: bh.ps1 logs <name> [lines] [-f]
-			$svc = $ServiceArg
-			if (-not $svc){ 
-				Write-Host "请指定服务名: $($ServiceOrder -join ', ')" -ForegroundColor Yellow
-				Write-Host "示例: .\bh.ps1 logs webui 100" -ForegroundColor DarkGray
-				break 
-			}
-			if ($svc -notin $ServiceOrder) {
-				Write-Host "未知服务: $svc（可选: $($ServiceOrder -join ', ')）" -ForegroundColor Yellow
-				break
-			}
-			$lines = 50
-			if ($LineArg -and $LineArg -match '^\d+$') { $lines = [int]$LineArg }
-			if ($LineArg -eq '-f' -or $ServiceArg -eq '-f') {
-				Tail-Log $svc -Lines $lines -Follow
-			} else {
-				Tail-Log $svc -Lines $lines
-			}
-			break
-		}
-		'open' { Open-Dashboard; break }
-		'observe' { Cmd-Observe; break }
-		'all' { Cmd-All; break }
-		'dashboard' {
-			Write-Host "=== 百花 Dashboard ===" -ForegroundColor Cyan
+    # logs 特判：位置参数 arg1=服务名 arg2=lines/-f 或 Browser=lines/-f
+    $isLogs = ($CommandName -ieq 'logs')
+    if ($isLogs) {
+        # 重写 Arg 作为 svc，Browser 作为 lines/-f
+        $script:Arg = $ServiceArg
+        $script:Browser = if ($LineArg) { $LineArg } else { $BrowserArg }
+        $CommandName = 'logs'
+    }
 
-			# 检测是否需要重新编译
-			$needsRebuild = Test-NeedsRebuild
-			if ($needsRebuild) {
-				$curr = Get-CurrentGitCommit
-				$saved = Get-SavedGitCommit
-				Write-Host ""
-				if ($saved) {
-					Write-Host "[i] 检测到代码更新" -ForegroundColor Yellow
-					Write-Host "    上次: $($saved.Substring(0,8))"
-					Write-Host "    当前: $($curr.Substring(0,8))"
-				} else {
-					Write-Host "[i] 首次运行或无构建记录" -ForegroundColor Yellow
-				}
-				Write-Host "[...] 停止旧服务并重新编译..." -ForegroundColor Cyan
-				Cmd-Stop
-				Write-Host "Waiting for ports to release..."
-				Start-Sleep -Seconds 1
-
-				Write-Host "[...] dotnet build..." -ForegroundColor Cyan
-				$buildResult = dotnet build (Join-Path $HG_ROOT 'services\BaiHua.slnx') -c Release 2>&1
-				$buildExit = $LASTEXITCODE
-				if ($buildExit -ne 0) {
-					Write-Host "[X] 编译失败!" -ForegroundColor Red
-					$buildResult | Select-Object -Last 10 | ForEach-Object { Write-Host "    $_" }
-					break
-				}
-				Write-Host "[v] 编译成功" -ForegroundColor Green
-				Save-GitCommit
-			}
-
-			# 清理僵尸进程 & 修正 PID
-			foreach ($name in $ServiceOrder) {
-				Test-ServiceRunning $name | Out-Null
-			}
-
-			# 按顺序启动并等待每个后端服务就绪
-			Write-Host ""
-			$failedServices = @()
-			foreach ($name in @('ai', 'vault', 'family')) {
-				$wasRunning = Ensure-ServiceRunning $name
-				Write-Host "  $name : " -NoNewline
-				if (-not (Wait-For-Service $name 30 -wasJustStarted:(-not $wasRunning))) { $failedServices += $name }
-			}
-
-			# 启动 WebUI
-			$webuiWasRunning = Ensure-ServiceRunning 'webui'
-			Write-Host "  webui : " -NoNewline
-			if (-not $webuiWasRunning) { Start-Sleep -Seconds 3 }
-			if (-not (Wait-For-Url (Get-LoginUrl) 20)){
-				Write-Host "  webui : X not ready. Check: .\bh.ps1 logs webui" -ForegroundColor Red
-				$failedServices += 'webui'
-			} else {
-				Write-Host "  webui : v ready" -ForegroundColor Green
-			}
-
-			# 首次启动保存 commit
-			if (-not $needsRebuild) { Save-GitCommit }
-
-			# 获取 CLI token 并打开浏览器（--nologin 跳过）
-			Write-Host ""
-			if ($NoLogin) {
-				Write-Host "[i] --nologin: 跳过打开浏览器（服务已就绪: http://localhost:$((Get-ServiceConfig)['webui'].Port)）" -ForegroundColor DarkGray
-			} else {
-				try {
-					$resp = Invoke-WebRequest -Uri (Get-CliTokenUrl) -Method POST -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
-					$json = $resp.Content | ConvertFrom-Json
-					$token = $json.token
-					if ($token) {
-						$dashboardUrl = Get-DashboardUrl $token
-						Write-Host "Opening dashboard with CLI token..."
-						Open-InBrowser $dashboardUrl
-					} else {
-						Open-Dashboard
-					}
-				} catch {
-					Write-Host "Failed to get CLI token, opening without auto-login"
-					Open-Dashboard
-				}
-			}
-
-			if ($failedServices.Count -gt 0) {
-				Write-Host ""
-				Write-Host "! Some services failed: $($failedServices -join ', ')" -ForegroundColor Yellow
-				Write-Host "  Check logs: .\bh.ps1 logs <name>" -ForegroundColor Yellow
-			}
-			break
-		}
-		'dev' {
-			Write-Host "=== 百花 Dev Mode (dotnet watch, auto hot-reload) ===" -ForegroundColor Cyan
-			Write-Host "  Watching: each service project (.cs/.razor, native dotnet watch)" -ForegroundColor DarkGray
-			Write-Host "  Press Ctrl+C to stop" -ForegroundColor DarkGray
-			Write-Host ""
-
-			# 停止旧服务，清理 PID/端口（dev 用 dotnet watch 启动）
-			Cmd-Stop
-			Start-Sleep -Seconds 1
-
-			foreach ($k in $ServiceOrder){
-				Start-WatchProc $k (Get-ServiceConfig)[$k].Project
-				if ($k -ne 'webui') {
-					Write-Host "  $k : " -NoNewline
-					Wait-For-Service $k 60 -wasJustStarted $true | Out-Null
-				}
-			}
-			Start-Sleep -Seconds 3
-			Write-Host "  webui : " -NoNewline
-			if (Wait-For-Url (Get-LoginUrl) 20) {
-				Write-Host "v ready" -ForegroundColor Green
-				if ($NoLogin) {
-					Write-Host "[i] --nologin: 跳过打开浏览器（服务已就绪: http://localhost:$((Get-ServiceConfig)['webui'].Port)）" -ForegroundColor DarkGray
-				} else {
-					# 自动登录
-					Write-Host "[i] Auto-login with CLI token..." -ForegroundColor DarkGray
-					try {
-						$resp = Invoke-WebRequest -Uri (Get-CliTokenUrl) -Method POST -UseBasicParsing -TimeoutSec 5
-						if ($resp.StatusCode -eq 200) {
-							$token = ($resp.Content | ConvertFrom-Json).token
-							$dashboardUrl = Get-DashboardUrl $token
-							Write-Host "[v] Auto-login OK" -ForegroundColor Green
-							Start-Process $dashboardUrl
-						} else {
-							Write-Host "[!] Auto-login failed (status $($resp.StatusCode)), open manually" -ForegroundColor Yellow
-							Start-Process (Get-WebUrl)
-						}
-					} catch {
-						Write-Host "[!] Auto-login failed: $($_.Exception.Message), open manually" -ForegroundColor Yellow
-						Start-Process (Get-WebUrl)
-					}
-				}
-			} else {
-				Write-Host "X not ready" -ForegroundColor Red
-			}
-
-			Write-Host "[v] dotnet watch running: edit code, hot-reload auto-applies (per-service)" -ForegroundColor Green
-			try {
-				while ($true) { Start-Sleep -Seconds 1 }
-			} finally {
-				Cmd-Stop
-			}
-			break
-		}
-		default {
-			Write-Host "未知命令: $CommandName" -ForegroundColor Red
-			Write-Host "输入 .\bh.ps1 help 查看可用命令" -ForegroundColor Yellow
-			break
-		}
-	}
+    switch ($CommandName.ToLower()) {
+        'help'       { Show-Help; break }
+        'version'    { Write-Host "bh.ps1 (全 Docker) v$SCRIPT_VERSION"; break }
+        'setup'      { Cmd-Setup; break }
+        'build'      { Cmd-Build; break }
+        'start'      { Cmd-Start; break }
+        'stop'       { Cmd-Stop; break }
+        'restart'    { Cmd-Restart; break }
+        'down'       { Cmd-Down; break }
+        'status'     { Cmd-Status; break }
+        'logs'       { Cmd-Logs; break }
+        'open'       { if (-not (Ensure-DockerReady)) { return }; Set-BaihuaEnv; Open-InBrowser (Get-WebUrl); break }
+        'observe'    { Cmd-Observe; break }
+        'all'        { Cmd-All; break }
+        'dev'        { Cmd-Dev; break }
+        'dashboard'  { Cmd-Dashboard; break }
+        default {
+            Write-Host "[X] 未知命令: $CommandName" -ForegroundColor Red
+            Write-Host "输入 .\bh.ps1 help 查看可用命令" -ForegroundColor Yellow
+        }
+    }
 }
 
-# 主入口守卫：dot-source / Import-Module 时只加载函数，不执行
+# dot-source 导入时不执行
 if ($MyInvocation.InvocationName -eq '.') { return }
 
-# 位置参数解析：
-#   .\bh.ps1 <cmd> <arg1> <arg2>
-#   cmd=logs 时 arg2=行数 或 -f（跟随）；其他 cmd 时 arg2 视为浏览器路径
-#   $Browser 兼作：logs 的行数/-f / 浏览器路径（命名参数 -Browser 也支持）
-# --nologin 兼容：位置参数形式 .\bh.ps1 dashboard --nologin（$Arg 或 $Browser 携带）
+# 位置参数解析
 if (-not $NoLogin -and ($Arg -eq '--nologin' -or $Browser -eq '--nologin')) {
-	$NoLogin = $true
-	if ($Arg -eq '--nologin') { $Arg = '' }
-	if ($Browser -eq '--nologin') { $Browser = '' }
+    $NoLogin = $true
+    if ($Arg -eq '--nologin') { $Arg = '' }
+    if ($Browser -eq '--nologin') { $Browser = '' }
 }
 $cmd = $Command
 $svcArg = $Arg
-if ($Browser -match '^-f$' -or $Browser -match '^\d+$') {
-	# logs 的行数或 -f
-	$lineArg = $Browser
-	$browserArg = ''
+if ($Browser -match '^-f$|^--follow$|^\d+$') {
+    $lineArg = $Browser
+    $browserArg = ''
 } else {
-	$lineArg = ''
-	$browserArg = $Browser
+    $lineArg = ''
+    $browserArg = $Browser
 }
-# --nologin 兼容：位置参数形式 .\bh.ps1 dashboard --nologin（$Arg 或 $Browser 携带）
 if (-not $NoLogin -and ($svcArg -eq '--nologin' -or $browserArg -eq '--nologin')) {
-	$NoLogin = $true
-	if ($svcArg -eq '--nologin') { $svcArg = '' }
-	if ($browserArg -eq '--nologin') { $browserArg = '' }
+    $NoLogin = $true
+    if ($svcArg -eq '--nologin') { $svcArg = '' }
+    if ($browserArg -eq '--nologin') { $browserArg = '' }
 }
-# 写回脚本作用域，供 Open-InBrowser 读取
 $script:Browser = $browserArg
 
-Main -CommandName $cmd -ServiceArg $svcArg -LineArg $lineArg -BrowserArg $browserArg -NoLogin:$NoLogin
+Main -CommandName $cmd -ServiceArg $svcArg -LineArg $lineArg -BrowserArg $browserArg -NoLoginFlag:$NoLogin
 
 exit 0

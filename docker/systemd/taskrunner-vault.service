@@ -4,14 +4,14 @@ After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/opt/yj-family/TaskRunner.Vault
+WorkingDirectory=/opt/bh-family/TaskRunner.Vault
 EnvironmentFile=/etc/systemd/system/taskrunner-vault.env
-Environment=YJ_DATA_DIR=/opt/yj-family/data
+Environment=YJ_DATA_DIR=/opt/bh-family/data
 ExecStart=/usr/bin/dotnet TaskRunner.Vault.dll --urls http://0.0.0.0:8790
 Restart=always
 RestartSec=5
-StandardOutput=append:/opt/yj-family/logs/taskrunner-vault.log
-StandardError=append:/opt/yj-family/logs/taskrunner-vault.log
+StandardOutput=append:/opt/bh-family/logs/taskrunner-vault.log
+StandardError=append:/opt/bh-family/logs/taskrunner-vault.log
 
 [Install]
 WantedBy=multi-user.target

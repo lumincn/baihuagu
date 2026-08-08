@@ -400,7 +400,7 @@ builder.Services.AddOpenObserveTelemetry(
 
 
 // 配置反向代理头部转发（支持 nginx 等反向代理）
-// 仅信任来自 loopback 的代理头，防止客户端伪造 X-Forwarded-For 绕过访问控制
+// 信任来自 loopback + Docker 桥接网段的代理头，防止客户端伪造 X-Forwarded-For 绕过访问控制
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
@@ -409,6 +409,10 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     // 显式添加受信任的代理：loopback（nginx 通常与后端在同一主机）
     options.KnownProxies.Add(IPAddress.Loopback);
     options.KnownProxies.Add(IPAddress.IPv6Loopback);
+    // Docker Desktop / Docker Engine 桥接网段
+    // Nginx 容器从 172.17.0.1 等地址转发请求时，必须信任该网段才能正确应用 X-Forwarded-For
+    // 覆盖 172.16.0.0 ~ 172.31.255.255（Docker 默认 172.17.0.0/16 也在此范围）
+    options.KnownIPNetworks.Add(new System.Net.IPNetwork(IPAddress.Parse("172.16.0.0"), 12));
 });
 
 var app = builder.Build();
