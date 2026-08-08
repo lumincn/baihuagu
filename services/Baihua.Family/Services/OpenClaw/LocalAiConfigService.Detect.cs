@@ -247,6 +247,9 @@ public partial class LocalAiConfigService
             return result;
         }
 
+        // 探测可用推理设备（CPU/GPU/NPU），供前端回填
+        result.Devices = await ProbeOpenVinoDevicesAsync();
+
         var checkUrl = $"{openvino.BaseUrl.TrimEnd('/')}/v1/models";
 
         // 1. 检测服务是否已运行
@@ -267,31 +270,19 @@ public partial class LocalAiConfigService
             // 未运行，继续尝试启动
         }
 
-        // 2. 尝试启动服务
-        result.AttemptedStart = true;
-
-        // 优先使用用户配置的 binaryPath；否则尝试常见路径
-        var binaryPath = openvino.BinaryPath;
-        if (string.IsNullOrWhiteSpace(binaryPath))
+        // 2. 解析启动命令（优先用户配置；否则自动探测 python + openvino_genai + 随发布拷贝的脚本）
+        var (commandLine, displayCmd) = await BuildOpenVinoStartCommandAsync(openvino);
+        if (string.IsNullOrWhiteSpace(commandLine))
         {
-            // 尝试常见路径
-            var candidates = new[]
-            {
-                "openvino-genai-server",
-                "python -m openvino_genai.chat_utils",
-            };
-            binaryPath = candidates[0]; // 默认
+            result.Message = displayCmd;
+            return result;
         }
+        result.CommandLine = displayCmd;
+        result.AttemptedStart = true;
 
         try
         {
-            var args = $"--model-path \"{openvino.ModelPath}\" --device {openvino.Device} --port {openvino.Port}";
-            if (!string.IsNullOrWhiteSpace(openvino.ExtraArgs))
-                args += " " + openvino.ExtraArgs.Trim();
-
-            var shellCmd = $"{binaryPath} {args}";
-
-            logger.LogInformation("正在启动 OpenVINO: {Cmd}", shellCmd);
+            logger.LogInformation("正在启动 OpenVINO: {Cmd}", displayCmd);
 
             var isWindows = Environment.OSVersion.Platform == PlatformID.Win32NT;
             ProcessStartInfo startInfo;
@@ -300,7 +291,7 @@ public partial class LocalAiConfigService
                 startInfo = new ProcessStartInfo
                 {
                     FileName = "cmd",
-                    Arguments = $"/c {shellCmd}",
+                    Arguments = $"/c {commandLine}",
                     UseShellExecute = false,
                     CreateNoWindow = true,
                 };
@@ -310,7 +301,7 @@ public partial class LocalAiConfigService
                 startInfo = new ProcessStartInfo
                 {
                     FileName = "/bin/bash",
-                    Arguments = $"-c \"{shellCmd}\"",
+                    Arguments = $"-c \"{commandLine}\"",
                     UseShellExecute = false,
                     CreateNoWindow = true,
                 };
@@ -323,11 +314,11 @@ public partial class LocalAiConfigService
                 return result;
             }
 
-            // OpenVINO 加载模型需要较长时间
-            await Task.Delay(TimeSpan.FromSeconds(5));
+            // OpenVINO 冷加载模型需要 10-30 秒，先等 8 秒再轮询
+            await Task.Delay(TimeSpan.FromSeconds(8));
 
-            // 轮询检测服务是否就绪
-            for (int i = 0; i < 30; i++)
+            // 轮询检测服务是否就绪（最多 60 秒）
+            for (int i = 0; i < 60; i++)
             {
                 await Task.Delay(TimeSpan.FromSeconds(1));
                 try
@@ -346,8 +337,8 @@ public partial class LocalAiConfigService
                 catch (Exception ex) { logger.LogDebug(ex, "探测 OpenVINO 启动状态失败"); }
             }
 
-            result.Message = "OpenVINO 启动超时（模型加载可能需要更长时间）";
-            logger.LogWarning("OpenVINO 启动后未就绪");
+            result.Message = "OpenVINO 启动超时（模型冷加载可能需要更长时间，请查看启动命令手动验证）";
+            logger.LogWarning("OpenVINO 启动后未就绪: {Cmd}", displayCmd);
         }
         catch (Exception ex)
         {
@@ -356,6 +347,116 @@ public partial class LocalAiConfigService
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// 构造 OpenVINO 启动命令。返回 (可直接执行的命令行, 用于展示的脱敏版本)。
+    /// 优先级：用户配置的 BinaryPath（.py 脚本 / 可执行文件）→ 自动探测 python+openvino_genai+随发布脚本。
+    /// </summary>
+    private async Task<(string? CommandLine, string Display)> BuildOpenVinoStartCommandAsync(OpenClawOpenVinoConfigDto openvino)
+    {
+        var scriptPath = Path.Combine(AppContext.BaseDirectory, "LocalVision", "openvino_llm_server.py");
+        var baseArgs = $"--model \"{openvino.ModelPath}\" --device {openvino.Device} --port {openvino.Port} --max-context-size {openvino.ContextSize}";
+        if (!string.IsNullOrWhiteSpace(openvino.ExtraArgs))
+            baseArgs += " " + openvino.ExtraArgs.Trim();
+
+        var userBinary = openvino.BinaryPath?.Trim();
+        if (!string.IsNullOrWhiteSpace(userBinary))
+        {
+            // 用户显式配置：.py 脚本用 python 跑，其余按可执行文件/命令处理
+            if (userBinary.EndsWith(".py", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!File.Exists(userBinary))
+                    return (null, $"服务脚本不存在: {userBinary}");
+                var python = await FindPythonWithOpenVinoAsync();
+                if (python == null)
+                    return (null, "未找到可用的 Python 环境（需要安装 openvino-genai，见文档）");
+                return ($"{python} \"{userBinary}\" {baseArgs}", $"{python} \"{userBinary}\" {baseArgs}");
+            }
+            return (userBinary.EndsWith(".bat", StringComparison.OrdinalIgnoreCase)
+                ? $"\"{userBinary}\" {baseArgs}"
+                : $"{userBinary} {baseArgs}", $"{userBinary} {baseArgs}");
+        }
+
+        // 自动探测：随发布拷贝的 openvino_llm_server.py + python + openvino_genai
+        if (!File.Exists(scriptPath))
+        {
+            // 开发环境兜底：从源码目录找
+            var devPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "services", "Baihua.AI", "LocalVision", "openvino_llm_server.py");
+            if (File.Exists(devPath)) scriptPath = Path.GetFullPath(devPath);
+        }
+        if (!File.Exists(scriptPath))
+            return (null, "未找到 openvino_llm_server.py（随发布拷贝缺失），请手动填写服务脚本路径");
+
+        var py = await FindPythonWithOpenVinoAsync();
+        if (py == null)
+            return (null, "未找到可用的 Python 环境（需要 pip install openvino-genai，见文档 §安装）");
+
+        return ($"{py} \"{scriptPath}\" {baseArgs}", $"{py} \"{scriptPath}\" {baseArgs}");
+    }
+
+    /// <summary>探测 python 可执行文件，并确认能 import openvino_genai</summary>
+    private async Task<string?> FindPythonWithOpenVinoAsync()
+    {
+        var candidates = new[] { "python", "py -3", "python3" };
+        foreach (var candidate in candidates)
+        {
+            try
+            {
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = candidate.Split(' ')[0],
+                    Arguments = candidate.Contains(' ') ? candidate.Split(' ', 2)[1] + " -c \"import openvino_genai\"" : "-c \"import openvino_genai\"",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                };
+                using var process = Process.Start(startInfo);
+                if (process == null) continue;
+                var stderr = await process.StandardError.ReadToEndAsync();
+                await process.WaitForExitAsync();
+                if (process.ExitCode == 0)
+                    return candidate.Split(' ')[0];
+                logger.LogDebug("Python 候选 {Candidate} 无 openvino_genai: {Err}", candidate, stderr.Trim());
+            }
+            catch (Exception ex)
+            {
+                logger.LogDebug(ex, "探测 Python {Candidate} 失败", candidate);
+            }
+        }
+        return null;
+    }
+
+    /// <summary>通过 openvino.Core 探测真实可用设备（如 CPU/GPU/NPU）</summary>
+    private async Task<List<string>> ProbeOpenVinoDevicesAsync()
+    {
+        try
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "python",
+                Arguments = "-c \"import openvino as ov; print(','.join(ov.Core().available_devices))\"",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            };
+            using var process = Process.Start(startInfo);
+            if (process == null) return new List<string>();
+            var stdout = await process.StandardOutput.ReadToEndAsync();
+            await process.WaitForExitAsync();
+            if (process.ExitCode != 0) return new List<string>();
+            return stdout.Trim().Split(',')
+                .Select(x => x.Trim())
+                .Where(x => x.Length > 0)
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            logger.LogDebug(ex, "探测 OpenVINO 设备失败");
+            return new List<string>();
+        }
     }
 
     #endregion

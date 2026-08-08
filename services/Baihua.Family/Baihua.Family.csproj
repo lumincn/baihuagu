@@ -57,6 +57,8 @@
   <ItemGroup>
     <!-- 本地视觉推理服务（OpenVINO），随发布拷贝 -->
     <None Include="..\Baihua.AI\LocalVision\vision_server.py" Link="LocalVision\vision_server.py" CopyToOutputDirectory="PreserveNewest" />
+    <!-- OpenVINO OpenAI 兼容推理服务（OpenClaw 本地 AI 配置启动用），随发布拷贝 -->
+    <None Include="..\Baihua.AI\LocalVision\openvino_llm_server.py" Link="LocalVision\openvino_llm_server.py" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

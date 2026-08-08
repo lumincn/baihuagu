@@ -364,18 +364,25 @@
                                     @_openVinoStatusMessage
                                 </div>
                             }
+                            @if (!string.IsNullOrEmpty(_openVinoCommandLine))
+                            {
+                                <div class="mb-3">
+                                    <label class="form-label">启动命令（可复制到命令行手动运行）</label>
+                                    <code class="d-block p-2 border rounded bg-dark text-light" style="white-space: pre-wrap; word-break: break-all;">@_openVinoCommandLine</code>
+                                </div>
+                            }
                             @if (_openVinoConfig.Enabled)
                             {
                                 <div class="alert alert-light border mb-3">
                                     <i class="bi bi-info-circle me-1"></i>
-                                    Intel OpenVINO 推理引擎，支持 CPU/GPU/NPU 加速。需先安装 OpenVINO GenAI Server。
+                                    Intel OpenVINO 推理引擎，支持 CPU/GPU/NPU 加速。需安装 Python 环境 + <code>pip install openvino-genai</code>，服务由随百花发布的 <code>openvino_llm_server.py</code>（OpenAI 兼容）提供。
                                 </div>
                                 <div class="row mb-3">
                                     <div class="col-md-6">
                                         <label class="form-label">服务脚本路径</label>
                                         <input type="text" class="form-control" @bind="_openVinoConfig.BinaryPath"
-                                               placeholder="openvino-genai-server" />
-                                        <div class="form-text">OpenVINO GenAI Server 可执行文件或 Python 命令</div>
+                                               placeholder="留空自动探测（随发布自带 openvino_llm_server.py）" />
+                                        <div class="form-text">Python 脚本路径或可执行命令；留空时自动探测 python + openvino_genai</div>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">模型目录路径</label>
@@ -388,10 +395,16 @@
                                     <div class="col-md-3">
                                         <label class="form-label">推理设备</label>
                                         <select class="form-select" @bind="_openVinoConfig.Device">
-                                            <option value="CPU">CPU</option>
-                                            <option value="GPU">GPU</option>
-                                            <option value="NPU">NPU</option>
+                                            @foreach (var d in _openVinoDevices)
+                                            {
+                                                <option value="@d">@d</option>
+                                            }
+                                            @if (!_openVinoDevices.Contains("CPU")) { <option value="CPU">CPU</option> }
+                                            @if (!_openVinoDevices.Contains("GPU")) { <option value="GPU">GPU</option> }
+                                            @if (!_openVinoDevices.Contains("NPU")) { <option value="NPU">NPU</option> }
+                                            @if (!_openVinoDevices.Contains("AUTO")) { <option value="AUTO">AUTO</option> }
                                         </select>
+                                        <div class="form-text">检测到：@(string.Join(" / ", _openVinoDevices))</div>
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label">端口</label>
@@ -857,6 +870,8 @@
     private string? _lmStudioStatusMessage;
     private string? _llamaCppStatusMessage;
     private string? _openVinoStatusMessage;
+    private List<string> _openVinoDevices = new();
+    private string? _openVinoCommandLine;
     private OpenClawLocalProviderConfigDto _ollamaConfig = new();
     private OpenClawLocalProviderConfigDto _lmStudioConfig = new();
     private OpenClawLlamaCppConfigDto _llamaCppConfig = new();
@@ -1166,6 +1181,17 @@
             else if (provider == "openvino")
             {
                 _openVinoStatusMessage = status.Message;
+                if (status.Devices?.Count > 0)
+                {
+                    _openVinoDevices = status.Devices;
+                    // 若当前设备不在探测列表中且已有值，保持用户选择；否则取第一个真实设备
+                    if (string.IsNullOrWhiteSpace(_openVinoConfig.Device) ||
+                        (!_openVinoDevices.Contains(_openVinoConfig.Device) && _openVinoConfig.Device == "CPU" && !_openVinoDevices.Contains("CPU")))
+                    {
+                        _openVinoConfig.Device = _openVinoDevices[0];
+                    }
+                }
+                _openVinoCommandLine = status.CommandLine;
                 if (status.IsRunning)
                 {
                     await ScanModelsAsync("openvino");

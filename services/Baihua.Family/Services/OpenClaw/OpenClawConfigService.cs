@@ -227,7 +227,57 @@ public class OpenClawConfigService(ILogger<OpenClawConfigService> logger)
     {
         try
         {
-            var startInfo = new ProcessStartInfo
+            // 两个坑（均已实测验证）：
+            // 1. openclaw 是 npm 安装的 .cmd shim，.NET Process.Start(UseShellExecute=false)
+            //    无法直接启动 batch 文件（CreateProcess 不解析 .cmd/.bat），必须用 cmd.exe /c 包装。
+            // 2. 内联 JSON 经 cmd 传递时引号转义不可靠（" → \" 或 ^" 都会丢失/破坏 JSON），
+            //    因此 Windows 上用 --batch-file 临时文件传递，完全避开引号转义问题。
+            // 之前文档记录的“Node 版本不足导致 CLI 失败”实际根因是启动方式错误。
+            var isWindows = Environment.OSVersion.Platform == PlatformID.Win32NT;
+            if (isWindows)
+            {
+                var tempFile = Path.Combine(Path.GetTempPath(), $"openclaw-set-{Guid.NewGuid():N}.json");
+                try
+                {
+                    var batch = new JsonArray
+                    {
+                        new JsonObject
+                        {
+                            ["path"] = path,
+                            ["value"] = JsonNode.Parse(jsonValue) ?? new JsonObject(),
+                        }
+                    }.ToJsonString(JsonHelper.Compact);
+                    await File.WriteAllTextAsync(tempFile, batch);
+
+                    var startInfo = new ProcessStartInfo
+                    {
+                        FileName = "cmd.exe",
+                        Arguments = $"/c openclaw config set --batch-file \"{tempFile}\"",
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                    };
+                    using var process = Process.Start(startInfo);
+                    if (process == null) return false;
+                    var stderr = await process.StandardError.ReadToEndAsync();
+                    await process.WaitForExitAsync();
+                    if (process.ExitCode != 0)
+                    {
+                        logger.LogWarning("openclaw config set 失败 ({Path}): {Stderr}", path, stderr);
+                        return false;
+                    }
+                    logger.LogInformation("openclaw config set 成功: {Path}", path);
+                    return true;
+                }
+                finally
+                {
+                    try { File.Delete(tempFile); } catch { /* 清理失败忽略 */ }
+                }
+            }
+
+            // 非 Windows（Linux/macOS）：openclaw 是可执行脚本，直接启动
+            var startInfo2 = new ProcessStartInfo
             {
                 FileName = "openclaw",
                 RedirectStandardOutput = true,
@@ -235,20 +285,19 @@ public class OpenClawConfigService(ILogger<OpenClawConfigService> logger)
                 UseShellExecute = false,
                 CreateNoWindow = true,
             };
-            startInfo.ArgumentList.Add("config");
-            startInfo.ArgumentList.Add("set");
-            startInfo.ArgumentList.Add(path);
-            startInfo.ArgumentList.Add(jsonValue);
-            startInfo.ArgumentList.Add("--strict-json");
-            startInfo.ArgumentList.Add("--merge");
-
-            using var process = Process.Start(startInfo);
-            if (process == null) return false;
-            var stderr = await process.StandardError.ReadToEndAsync();
-            await process.WaitForExitAsync();
-            if (process.ExitCode != 0)
+            startInfo2.ArgumentList.Add("config");
+            startInfo2.ArgumentList.Add("set");
+            startInfo2.ArgumentList.Add(path);
+            startInfo2.ArgumentList.Add(jsonValue);
+            startInfo2.ArgumentList.Add("--strict-json");
+            startInfo2.ArgumentList.Add("--merge");
+            using var process2 = Process.Start(startInfo2);
+            if (process2 == null) return false;
+            var stderr2 = await process2.StandardError.ReadToEndAsync();
+            await process2.WaitForExitAsync();
+            if (process2.ExitCode != 0)
             {
-                logger.LogWarning("openclaw config set 失败 ({Path}): {Stderr}", path, stderr);
+                logger.LogWarning("openclaw config set 失败 ({Path}): {Stderr}", path, stderr2);
                 return false;
             }
             logger.LogInformation("openclaw config set 成功: {Path}", path);
@@ -265,18 +314,38 @@ public class OpenClawConfigService(ILogger<OpenClawConfigService> logger)
     {
         try
         {
-            var startInfo = new ProcessStartInfo
+            var isWindows = Environment.OSVersion.Platform == PlatformID.Win32NT;
+            ProcessStartInfo startInfo;
+            if (isWindows)
             {
-                FileName = "openclaw",
-                Arguments = $"config unset {path}",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-            };
+                startInfo = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = $"/c openclaw config unset {path}",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                };
+            }
+            else
+            {
+                startInfo = new ProcessStartInfo
+                {
+                    FileName = "openclaw",
+                    Arguments = $"config unset {path}",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                };
+            }
             using var process = Process.Start(startInfo);
             if (process == null) return false;
+            var stderr = await process.StandardError.ReadToEndAsync();
             await process.WaitForExitAsync();
+            if (process.ExitCode != 0)
+                logger.LogWarning("openclaw config unset 失败 ({Path}): {Stderr}", path, stderr);
             return process.ExitCode == 0;
         }
         catch (Exception ex)
@@ -345,22 +414,23 @@ public class OpenClawConfigService(ILogger<OpenClawConfigService> logger)
 
     public static JsonObject BuildLlamaCppProviderJson(OpenClawLlamaCppConfigDto config)
     {
+        // OpenClaw 的 models.providers.<id> schema 只接受标准键：baseUrl/api/models[]，
+        // 自定义字段（modelPath/ngpuLayers 等）留在 llamacpp-config.json 独立文件，
+        // 否则 openclaw config set --strict-json 会校验失败。
         return new JsonObject
         {
             ["baseUrl"] = config.BaseUrl,
-            ["modelPath"] = config.ModelPath,
-            ["binaryPath"] = config.BinaryPath,
-            ["enabled"] = config.Enabled,
-            ["nGpuLayers"] = config.NGpuLayers,
-            ["contextSize"] = config.ContextSize,
-            ["port"] = config.Port,
-            ["apiType"] = config.ApiType,
-            ["extraArgs"] = config.ExtraArgs,
-            ["threads"] = config.Threads,
-            ["batchSize"] = config.BatchSize,
-            ["cacheTypeK"] = config.CacheTypeK,
-            ["cacheTypeV"] = config.CacheTypeV,
-            ["useContBatching"] = config.UseContBatching,
+            ["api"] = string.IsNullOrWhiteSpace(config.ApiType) ? "openai-completions" : config.ApiType,
+            ["models"] = new JsonArray
+            {
+                new JsonObject
+                {
+                    ["id"] = Path.GetFileNameWithoutExtension(config.ModelPath).Replace(".", "-").ToLowerInvariant(),
+                    ["name"] = Path.GetFileNameWithoutExtension(config.ModelPath),
+                    ["input"] = new JsonArray("text"),
+                    ["contextWindow"] = config.ContextSize,
+                }
+            },
         };
     }
 
@@ -390,17 +460,24 @@ public class OpenClawConfigService(ILogger<OpenClawConfigService> logger)
 
     public static JsonObject BuildOpenVinoProviderJson(OpenClawOpenVinoConfigDto config)
     {
+        // 同上：只写 OpenClaw schema 认可的标准键；OpenVINO 自定义字段
+        // （modelPath/device/port/extraArgs 等）留在 openvino-config.json 独立文件。
+        // 模型列表尽量从已扫描结果带过来，否则至少带上配置目录名推导的模型。
+        var modelId = Path.GetFileName(config.ModelPath.TrimEnd('/', '\\')).Replace(".", "-").ToLowerInvariant();
         return new JsonObject
         {
             ["baseUrl"] = config.BaseUrl,
-            ["modelPath"] = config.ModelPath,
-            ["binaryPath"] = config.BinaryPath,
-            ["enabled"] = config.Enabled,
-            ["port"] = config.Port,
-            ["device"] = config.Device,
-            ["contextSize"] = config.ContextSize,
-            ["apiType"] = config.ApiType,
-            ["extraArgs"] = config.ExtraArgs,
+            ["api"] = string.IsNullOrWhiteSpace(config.ApiType) ? "openai-completions" : config.ApiType,
+            ["models"] = new JsonArray
+            {
+                new JsonObject
+                {
+                    ["id"] = modelId,
+                    ["name"] = Path.GetFileName(config.ModelPath.TrimEnd('/', '\\')),
+                    ["input"] = new JsonArray("text", "image"),
+                    ["contextWindow"] = config.ContextSize,
+                }
+            },
         };
     }
 

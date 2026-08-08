@@ -271,10 +271,12 @@ public class OpenClawModelProfileService : IOpenClawModelProfileService
             }
             if (localConfig.OpenVino?.Enabled == true && !string.IsNullOrWhiteSpace(localConfig.OpenVino.ModelPath))
             {
-                var modelName = System.IO.Path.GetFileName(localConfig.OpenVino.ModelPath.TrimEnd('/', '\\'));
-                var modelId = modelName.Replace(".", "-").ToLowerInvariant();
-                var key = $"openvino/{modelId}";
-                if (seen.Add(key)) result.AvailableModels.Add(key);
+                // 与 Scan 侧保持一致：目录本身 + 子目录多模型识别，id 与 server 的 model_id() 对齐
+                foreach (var m in await _localAiConfig.ScanLocalModelsAsync("openvino"))
+                {
+                    var key = $"openvino/{m.Id}";
+                    if (seen.Add(key)) result.AvailableModels.Add(key);
+                }
             }
         }
         catch (Exception ex)

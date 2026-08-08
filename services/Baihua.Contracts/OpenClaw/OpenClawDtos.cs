@@ -112,6 +112,10 @@ public class LocalAiServiceStatusDto
     public bool AttemptedStart { get; set; }
     public bool StartSuccess { get; set; }
     public string? Message { get; set; }
+    /// <summary>本次检测到的可用推理设备（如 CPU/GPU/NPU），前端回填下拉框</summary>
+    public List<string> Devices { get; set; } = new();
+    /// <summary>实际执行的启动命令（排查问题时可直接复制到命令行手动运行）</summary>
+    public string? CommandLine { get; set; }
 }
 
 /// <summary>OpenClaw 默认模型信息</summary>
