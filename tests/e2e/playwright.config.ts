@@ -66,5 +66,7 @@ export default defineConfig({
     { name: 'messages', testDir: './tests/messages', testMatch: /.*\.spec\.ts/ },
     // 记忆卡片：知识库选择、搜索、统计（本地）
     { name: 'cards', testDir: './tests/cards', testMatch: /.*\.spec\.ts/ },
+    // 迁移验证：OneHop 路径删除、Nginx 端口、设备管理页、OpenClaw 默认模型
+    { name: 'migration', testDir: './tests/migration', testMatch: /.*\.spec\.ts/ },
   ],
 });
