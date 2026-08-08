@@ -13,7 +13,7 @@
 | Nginx 启用方式 | 默认 `docker compose up` 就拉起，不放 profile |
 | PathBase 与花记 SDK | **不拼前缀**。花记 SDK 中的 `/mg/*` 等路径永远相对根，配对二维码只写 `scheme://host[:port]`，SDK 自己拼路径 |
 | Nginx 日志目录 | 放 `$BAIHUA_HOME/logs/nginx`（与 .NET 日志同根，`bh.ps1 logs nginx` 统一查看） |
-| **OneHop 端口**（第二轮修订） | **保持动态推导，不要硬编码**。服务端 `OneHopService.GetAvailablePort()` 默认 8792、从 QR 地址取 `uri.Port + 1`；ArkTS 端 `QRCodeService.ets:87-88` 的 `httpPort + 1` 与之镜像。改为固定 8789 会破坏配对（详见 §11.3.4 修订） |
+| **OneHop 端口**（第二轮修订） | **保持动态推导，不要硬编码**。服务端 `OneHopService.GetAvailablePort()` 默认 8792、从 QR 地址取 `uri.Port + 1`；ArkTS 端 `QRCodeService.ets:87-88` 的 `httpPort + 1` 与之镜像。改为固定 8789 会破坏配对（详见 §11.3.4 修订）<br>✅ **第三轮定稿（2026-08-08）**：项目未上线，**不做兼容**——OneHop 组件整体删除（含命名），`/mg/onehop/register-device` 改名 `/mg/register-device`，TCP 监听删除。本节端口推导**作废**，详见 [ONEHOP_SIMPLIFICATION_PLAN.md](https://github.com/luminsw/project-manager/blob/master/docs/ONEHOP_SIMPLIFICATION_PLAN.md) |
 
 ---
 
@@ -144,12 +144,11 @@ WebSocket（Program.cs）：
 | 子路径前缀 | 上游服务 | 说明 | 可配？ |
 |-----------|---------|------|-------|
 | **`/`** | **WebUI :5177** | Blazor Server 根路径（用户需求） | ✅ 可加前缀（默认无前缀） |
-| `/mg/*` | Family :8788 | 花记 SDK 写死前缀：manifest/file/cards/vaults/auth/config/pair/code/onehop/register-device/devices/push-pending | ❌ **不可改**（移动端硬约束） |
-| `/onehop/*` | Family :8788 | 一跳配对（控制器 Route 同时注册 `api/onehop` 与 `mg/onehop`） | ❌ 不可改 |
+| `/mg/*` | Family :8788 | 花记 SDK 写死前缀：manifest/file/cards/vaults/auth/config/pair/code/register-device/devices/push-pending | ❌ **不可改**（移动端硬约束） |
+| `/mg/register-device` | Family :8788 | 扫码配对注册（原 `/mg/onehop/register-device` 改名，OneHop 精简后） | ❌ 不可改 |
 | `/pair`、`/pair/code`、`/pair/code/refresh` | Family :8788 | 配对页面/配对码（PairController 同时注册 `/pair`、`/vault/pair`、`/mg/pair` 三份路由） | ❌ 不可改 |
 | `/vault/pair`、`/vault/pair/code` | Family :8788 | 配对码别名（同一 PairController） | ❌ 不可改 |
 | `/ws/devices` | Family :8788 | 移动端设备推送 WebSocket（Upgrade）——**注意不是 `/ws/push`** | ❌ 不可改 |
-| `/api/onehop/*` | Family :8788 | OneHop 控制 API（status/devices/discovery/start/stop），`/api/discovery` 单独端点**不存在** | ❌ 不可改 |
 | `/api/ai/chat/*` | Family :8788 | AI 对话 + SSE 流式（Family HMAC 授权后转发 :8791） | ⚠️ 仅管理侧前缀可配 |
 | `/api/*` | Family :8788 | 管理侧 API（Family 再分发到 Vault/AI） | ⚠️ 可改前缀仅限管理侧部分 |
 | `/hubs/status` | WebUI :5177 | Blazor SignalR 状态 hub（**最长匹配优先于 Family 的 /hubs/**） | ❌ 不可改 |
@@ -179,9 +178,8 @@ WebSocket（Program.cs）：
 |-------------------|-------------------|
 | `http://ip:8788/mg/manifest` | `http://ip/mg/manifest` |
 | `http://ip:8788/mg/vaults` | `http://ip/mg/vaults` |
-| `http://ip:8788/mg/onehop/register-device` | `http://ip/mg/onehop/register-device` |
+| `http://ip:8788/mg/onehop/register-device` | `http://ip/mg/register-device` |
 | `http://ip:8788/pair` | `http://ip/pair` |
-| `http://ip:8788/api/onehop/status` | `http://ip/api/onehop/status` |
 | `ws://ip:8788/ws/devices` | `ws://ip/ws/devices` |
 
 ---
@@ -276,10 +274,6 @@ server {
         proxy_pass http://127.0.0.1:8788/mg/;
         include /etc/nginx/family-proxy-headers.conf;
         proxy_read_timeout 600;   # 大文件同步 10 分钟
-    }
-    location /onehop/ {
-        proxy_pass http://127.0.0.1:8788/onehop/;
-        include /etc/nginx/family-proxy-headers.conf;
     }
     # 配对码/配对页（PairController 同时注册 /pair /vault/pair /mg/pair）
     location = /pair {
@@ -483,7 +477,7 @@ BAIHUA_NGINX_CLIENT_MAX_BODY_SIZE=100M
 | R2 | `X-Forwarded-For` 伪造，绕过 Family 的 loopback 白名单（管理员 UI） | 非本机 IP 访问管理面板 | 现有 Family Program.cs 的 ForwardedHeadersOptions 已**仅信任 loopback**，Nginx 在 host 网络，请求来源 IP 对 Family 来说就是 127.0.0.1 → 转发后 X-Forwarded-For 的第一个真实客户端 IP 正确，不会信任客户端直送的头部 |
 | R3 | 端口 80 被家庭路由器的 Web 管理面板占用 | Nginx 启动失败（Address already in use） | `BAIHUA_NGINX_PORT` 默认 80，用户可在 `.env` 改成 8000/8080 任意端口，文档给常见场景指引 |
 | R4 | `BAIHUA_WEBUI_PREFIX` 非空时 WebUI 链接失效 | 静态 404、SignalR 连不上 | ① WebUI 的 `BasePath` 配置注入 + 已实现的 `UsePathBase` 严格测试；② Nginx `proxy_pass` 尾部 `/` 的前缀剥离在集成测试中单独覆盖；③ Blazor `<base href>` 渲染结果验证 |
-| R5 | 容器崩溃时 Nginx 没起来，WebUI 也“失联” | 用户不知道还能 `http://ip:5177` 直达 | 文档首页醒目写入“直达端口号兜底地址”；Family 侧 `/api/onehop/status` 返回所有直达 URL（含端口），让配对失败时移动端能做 fallback |
+| R5 | 容器崩溃时 Nginx 没起来，WebUI 也“失联” | 用户不知道还能 `http://ip:5177` 直达 | 文档首页醒目写入“直达端口号兜底地址”；Family 侧 `/api/onehop/status` 的直达地址能力迁移到 `/health` 或设备管理 API，让配对失败时移动端能做 fallback |
 
 ---
 
@@ -742,6 +736,8 @@ private int GetAvailablePort()
 
 **附带发现**：`OneHopManager.cs` L308/317 有 `ExtractPortFromUrl` 兜底返回 8788，属服务端内部逻辑（URL 解析失败时），与移动端无直接关系，但改端口时建议一并从配置读取。
 
+> **✅ 第三轮定稿（2026-08-08）**：本节基于“OneHop TCP 通道继续存在”的前提，**已作废**。项目未上线、不做兼容，OneHop 组件整体删除：TCP 监听删除、`/mg/onehop/register-device` 改名 `/mg/register-device`、OneHopService/OneHopManager/OneHopController/三端 contract 全部删除（见 [ONEHOP_SIMPLIFICATION_PLAN.md](https://github.com/luminsw/project-manager/blob/master/docs/ONEHOP_SIMPLIFICATION_PLAN.md)）。对 Nginx 方案影响：**无**——Nginx 只代理 HTTP（`/mg/*`、`/api/*`、`/ws/devices`），改名后路径表更新为 `/mg/register-device` 即可，且少一个 TCP 端口更简洁
+
 ### 11.4 Kotlin App 层 PushWebSocketService 不一致修复
 
 Kotlin App 层 `app/.../sync/PushWebSocketService.kt:78` 有一个**私有** `normalizeBaseUrl`，与 SDK 的行为不一致——它只补 scheme 不补端口：
@@ -792,6 +788,7 @@ private fun normalizeBaseUrl(url: String): String {
 | C10 | Nginx healthcheck 探 `/health` | `/health` 是上游 .NET 端点（Family/AI/Vault 有，nginx 自身无） | §7.1 healthcheck 改为探测 nginx 自身根路径；上游聚合探活归 Phase 3 |
 | C11 | Family/AI/Vault ForwardedHeaders 需补 | 三个服务**均已配置**（仅信任 loopback） | §6.2 改为“现有配置不用改”+ bridge 网络切换警示 |
 | C12 | 验证用例假设 `/mg/vaults` 无签名必 401 | HMAC 签名中间件**条件启用**（Program.cs L84：仅配置 `MobileAuth:SharedSecret` 时验证；L456-540：未配置时跳过）。无签名时的防线是访问控制中间件的公开白名单（/mg/vaults 在列） | Phase 1 验证用例改为“视配置而定”，强调验证点是“经 Family 而非直连 Vault” |
+| C13 | 首版/二版假设 OneHop TCP 通道继续存在（§11.3.4 端口推导） | 移动端已删自动发现；扫码注册已由 HTTP（`/mg/onehop/register-device`）完整承担；TCP 只做重叠的上线通知（失败无害）；三端 OneHop contract 为死代码/仅旧传输使用 | **第三轮定稿：项目未上线不做兼容，OneHop 组件与命名整体删除**（TCP 监听、OneHopController/Manager/Service/DTO/Adapter、`/onehop/*` 路径改名），详见 ONEHOP_SIMPLIFICATION_PLAN.md；§11.3.4 作废 |
 
 ### 核对过的代码位置（证据）
 
@@ -818,3 +815,4 @@ private fun normalizeBaseUrl(url: String): String {
 |------|------|------|
 | v1 | 2026-08-08 | 首次设计评审（状态 ✅） |
 | v2 | 2026-08-08 | 代码核对修订：修正 `/ws/devices`、`/api/onehop/*`、UsePathBase 已有、OneHop 动态端口（保留推导勿硬编码）、hub 精确路径、PathValidator 遗漏、healthcheck、ForwardedHeaders 已配；补充 §12 核对记录与证据位置 |
+| v3 | 2026-08-08 | OneHop 精简定稿：项目未上线不做兼容，OneHop 组件与命名整体删除（TCP 监听、OneHopController/Manager/Service、`/mg/onehop/` 路径改名 `/mg/register-device`），详见 ONEHOP_SIMPLIFICATION_PLAN.md；对 Nginx 方案无影响 |
