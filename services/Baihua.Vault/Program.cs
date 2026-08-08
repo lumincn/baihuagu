@@ -276,7 +276,17 @@ app.Use(async (context, next) =>
     }
 
     var remoteIp = context.Connection.RemoteIpAddress;
-    if (remoteIp != null && (IPAddress.IsLoopback(remoteIp) || remoteIp.ToString() == "127.0.0.1" || remoteIp.ToString() == "::1"))
+    // Docker 部署：WebUI 等容器通过 bridge 网络直连（172.16.0.0/12），需放行（与 Family 一致）
+    var isDockerNetwork = false;
+    if (remoteIp != null)
+    {
+        try
+        {
+            isDockerNetwork = new System.Net.IPNetwork(IPAddress.Parse("172.16.0.0"), 12).Contains(remoteIp);
+        }
+        catch { isDockerNetwork = false; }
+    }
+    if (remoteIp != null && (IPAddress.IsLoopback(remoteIp) || remoteIp.ToString() == "127.0.0.1" || remoteIp.ToString() == "::1" || isDockerNetwork))
     {
         await next();
         return;

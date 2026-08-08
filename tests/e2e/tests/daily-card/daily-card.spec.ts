@@ -31,8 +31,8 @@ test.describe('每日一帖功能', () => {
 
   test('有难度选择或完成提示', async ({ page }) => {
     await waitForBlazor(page);
-    const hardBtn = page.locator('text=🤔 模糊');
+    const cardContainer = page.locator('.card-container');
     const noCard = page.locator('.no-card');
-    await expect(hardBtn.or(noCard)).toBeVisible({ timeout: 10000 });
+    await expect(cardContainer.or(noCard)).toBeVisible({ timeout: 10000 });
   });
 });

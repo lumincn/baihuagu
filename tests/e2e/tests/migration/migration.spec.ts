@@ -106,11 +106,12 @@ test.describe('【设备管理页】OneHop Discover Tab 移除验证', () => {
   });
 
   test('页面含 Pending Devices 区域', async ({ page }) => {
-    await expect(page.locator('text=Pending Devices').first()).toBeVisible({ timeout: 15000 });
+    // 本地化无关：中英文标题都接受（zh-CN: 待授权设备, en: Pending Devices）
+    await expect(page.getByText(/待授权设备|Pending Devices/).first()).toBeVisible({ timeout: 15000 });
   });
 
   test('页面含 Authorized Devices 区域', async ({ page }) => {
-    await expect(page.locator('text=Authorized Devices').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText(/已授权设备|Authorized Devices/).first()).toBeVisible({ timeout: 15000 });
   });
 
   test('OneHop Discovery / Discover / OneHop 字样不应出现在页面标题中', async ({ page }) => {

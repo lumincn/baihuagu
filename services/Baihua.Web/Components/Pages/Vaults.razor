@@ -629,7 +629,7 @@
 
                                 <div class="form-check mb-3">
                                     <input class="form-check-input" type="checkbox" @bind="restoreOverwrite" id="restoreOverwrite" />
-                                    <label class="form-check-label" for="restoreOverwrite">L["Vaults_OverwriteData"]</label>
+                                    <label class="form-check-label" for="restoreOverwrite">@L["Vaults_OverwriteData"]</label>
                                 </div>
 
                                 @if (restoreValidation != null)
@@ -638,7 +638,7 @@
                                         <strong>@L["Vaults_BackupInfo"]</strong><br />
                                         @L["Vaults_Version"]@restoreValidation.Version<br />
                                         @L["Vaults_CreatedAtLabel"]@(restoreValidation.CreatedAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? @L["Vaults_Unknown"])<br />
-                                        L["Vaults_SourcePlatform"]@restoreValidation.SourceOS<br />
+                                        @L["Vaults_SourcePlatform"]@restoreValidation.SourceOS<br />
                                         @if (restoreValidation.HasPassword)
                                         {
                                             <span class="text-warning">🔒 @L["Vaults_PasswordProtected"]</span><br />
@@ -656,7 +656,7 @@
                                         {
                                             <span class="spinner-border spinner-border-sm me-1"></span>
                                         }
-                                        L["Vaults_DoRestore"]
+                                        @L["Vaults_DoRestore"]
                                     </button>
                                 </div>
 

@@ -22,6 +22,9 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
     storageState: './storage-state.json',
+    // 固定中文 UI：WebUI 本地化会按 Accept-Language 返回语言（默认 zh-CN，含 en），
+    // Playwright 默认 locale=en-US 会导致页面渲染英文、中文断言全挂
+    locale: 'zh-CN',
     // Ubuntu 26.04 下 Playwright 无法自动下载浏览器，使用系统 Chromium
     // On Linux use system Chromium when PW_CHROMIUM_PATH is not set; on other OS leave undefined so Playwright uses its own browsers
     launchOptions: (() => {

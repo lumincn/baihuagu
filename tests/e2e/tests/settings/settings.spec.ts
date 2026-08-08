@@ -7,7 +7,7 @@ test.describe('AI配置功能', () => {
   });
 
   test('AI配置页面加载成功', async ({ page }) => {
-    await expect(page.locator('h1')).toContainText('AI配置', { timeout: 15000 });
+    await expect(page.locator('h1')).toContainText(/AI\s*配置/, { timeout: 15000 });
   });
 
   test('显示设置表单区域', async ({ page }) => {
