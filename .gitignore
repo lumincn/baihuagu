@@ -230,3 +230,7 @@ tests/TaskRunner.Family.Tests/prompt-templates.json
 # Playwright test results (root tests)
 tests/test-results/
 tests/.last-run.json
+
+# Playwright 截图产物
+tests/e2e/screenshots/
+

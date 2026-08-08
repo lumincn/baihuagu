@@ -564,9 +564,22 @@ app.Use(async (context, next) =>
         path, remoteIp?.ToString(), remoteIp != null && IPAddress.IsLoopback(remoteIp));
 
     // 非公开路径仅允许本机访问（WebUI 通过 loopback 调用 TaskRunner）
-    if (remoteIp != null && (IPAddress.IsLoopback(remoteIp) || remoteIp.ToString() == "127.0.0.1" || remoteIp.ToString() == "::1"))
+    // Docker 部署时：nginx/WebUI 容器通过 bridge 网络访问（172.16.0.0/12 Docker 默认网段），
+    // 因此同时放行 Docker 桥接网段（与上方 ForwardedHeaders KnownIPNetworks 保持一致）。
+    var isDockerNetwork = false;
+    if (remoteIp != null)
     {
-        logger.LogInformation("[AccessControl] Allowing local request for path: {Path}", path);
+        try
+        {
+            var dockerNet = new System.Net.IPNetwork(IPAddress.Parse("172.16.0.0"), 12);
+            isDockerNetwork = dockerNet.Contains(remoteIp);
+        }
+        catch { isDockerNetwork = false; }
+    }
+    if (remoteIp != null && (IPAddress.IsLoopback(remoteIp) || remoteIp.ToString() == "127.0.0.1" || remoteIp.ToString() == "::1" || isDockerNetwork))
+    {
+        logger.LogInformation("[AccessControl] Allowing local request for path: {Path} (loopback={IsLoopback}, dockerNet={IsDockerNet})",
+            path, IPAddress.IsLoopback(remoteIp), isDockerNetwork);
         await next();
         return;
     }

@@ -1,15 +1,15 @@
-# TaskRunner.Vault - 鐧捐姳鐭ヨ瘑搴撳井鏈嶅姟
-# 鍩轰簬棰勬瀯寤虹殑鍩虹闀滃儚锛屽姞閫熸瀯寤鸿繃绋?
+# TaskRunner.Vault - 百花知识库微服务
+# 基于预构建的基础镜像，加速构建过程
 #
-# 棣栨鏋勫缓鍓嶉渶瑕佸厛鏋勫缓鍩虹闀滃儚锛?
+# 首次构建前需要先构建基础镜像：
 #   docker build -f Dockerfile.base-build -t bh-family/base-build:latest ..
 #   docker build -f Dockerfile.base-runtime -t bh-family/base-runtime:latest ..
 
-# ==================== Build 闃舵 ====================
+# ==================== Build 阶段 ====================
 FROM bh-family/base-build:latest AS build
 WORKDIR /src
 
-# 鍏堝鍒堕」鐩枃浠朵互鍒╃敤 Docker 缂撳瓨灞?
+# 先复制项目文件以利用 Docker 缓存层
 COPY services/Baihua.Contracts/Baihua.Contracts.csproj services/Baihua.Contracts/
 COPY services/Baihua.Data/Baihua.Data.csproj services/Baihua.Data/
 COPY services/Baihua.Core/Baihua.Core.csproj services/Baihua.Core/
@@ -18,13 +18,13 @@ COPY NuGet.config .
 COPY nuget-local/ nuget-local/
 RUN dotnet restore services/Baihua.Vault/Baihua.Vault.csproj
 
-# 澶嶅埗鍏ㄩ儴婧愮爜骞跺彂甯?
+# 复制全部源码并发布
 COPY services/ services/
 COPY libs/ libs/
 RUN dotnet publish services/Baihua.Vault/Baihua.Vault.csproj \
     -c Release -o /app/publish --no-restore
 
-# ==================== Runtime 闃舵 ====================
+# ==================== Runtime 阶段 ====================
 FROM bh-family/base-runtime:latest AS runtime
 WORKDIR /app
 
@@ -44,4 +44,4 @@ ENV TASKRUNNER_SKIP_MUTEX=true
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8790/health || exit 1
 
-ENTRYPOINT ["dotnet", "TaskRunner.Vault.dll"]
+ENTRYPOINT ["dotnet", "bh-vault.dll"]

@@ -21,8 +21,8 @@ services:
       - /opt/bh-family/logs:/app/logs
       # 可选：宿主机自定义配置覆盖容器内配置（只读）
       - /opt/bh-family/config/taskrunner:/app/config:ro
-      # 知识库根路径（通过 TASKRUNNER_VAULT_ROOT 环境变量指定）
-      - ${VAULTS_DIR:-/home/lumin/Vaults}:${VAULTS_DIR:-/home/lumin/Vaults}
+      # 知识库根路径（宿主机 VAULTS_DIR → 容器内固定 /vaults）
+      - ${VAULTS_DIR:-/home/lumin/Vaults}:/vaults
     environment:
       - YJ_DATA_DIR=/app/data
       - TASKRUNNER_SKIP_MUTEX=true
@@ -30,8 +30,8 @@ services:
       # OpenObserve 通过宿主机 localhost 访问
       - OpenObserve__WebUrl=http://127.0.0.1:5082/
       - OpenObserve__Enabled=true
-      # 知识库根路径（与宿主机实际路径保持一致）
-      - TASKRUNNER_VAULT_ROOT=${VAULTS_DIR:-/home/lumin/Vaults}
+      # 知识库根路径（容器内挂载点）
+      - TASKRUNNER_VAULT_ROOT=/vaults
       # 固定加密密钥（可选）
       # 程序会自动在 /app/data/.yj-key 生成并管理密钥，容器重建后仍然可用
       # 高级用户可通过环境变量手动指定，覆盖自动生成的密钥
@@ -68,7 +68,7 @@ services:
       - /opt/bh-family/logs:/app/logs
       - /opt/bh-family/config/webui:/app/config:ro
       # 知识库路径（WebUI 需要在容器内验证路径是否存在）
-      - ${VAULTS_DIR:-/home/lumin/Vaults}:${VAULTS_DIR:-/home/lumin/Vaults}
+      - ${VAULTS_DIR:-/home/lumin/Vaults}:/vaults
     environment:
       - WEBUI_CONFIG_DIR=/app/data
       - ASPNETCORE_URLS=http://0.0.0.0:5177
@@ -105,7 +105,7 @@ services:
       # 公共 include（静态，无变量）
       - ./nginx/family-proxy-headers.conf:/etc/nginx/family-proxy-headers.conf:ro
       # 对外访问日志（排查配对/同步问题时有用），与 .NET 日志同根
-      - ${BAIHUA_HOME:-/opt/baihua}/logs/nginx:/var/log/nginx
+      - ${BAIHUA_HOME:-/opt/bh-family}/logs/nginx:/var/log/nginx
     environment:
       # 传给 entrypoint envsubst 的变量，必须白名单列出
       - BAIHUA_NGINX_PORT=${BAIHUA_NGINX_PORT:-80}
@@ -123,7 +123,7 @@ services:
         condition: service_healthy
     healthcheck:
       # 探测 nginx 自身是否响应（根路径由 WebUI location 处理，200/404 都说明 nginx 活着）
-      test: ["CMD-SHELL", "curl -fs http://127.0.0.1:${BAIHUA_NGINX_PORT:-80}/ || curl -fs -o /dev/null http://127.0.0.1:${BAIHUA_NGINX_PORT:-80}/ || exit 1"]
+      test: ["CMD-SHELL", "curl -fs http://127.0.0.1:${BAIHUA_NGINX_PORT:-80}/ > /dev/null || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -145,13 +145,13 @@ services:
       - /opt/bh-family/data:/app/data
       - /opt/bh-family/logs:/app/logs
       - /opt/bh-family/config/taskrunner-vault:/app/config:ro
-      - ${VAULTS_DIR:-/home/lumin/Vaults}:${VAULTS_DIR:-/home/lumin/Vaults}
+      - ${VAULTS_DIR:-/home/lumin/Vaults}:/vaults
     environment:
       - YJ_DATA_DIR=/app/data
       - ASPNETCORE_URLS=http://0.0.0.0:8790
       - OpenObserve__WebUrl=http://127.0.0.1:5082/
       - OpenObserve__Enabled=true
-      - TASKRUNNER_VAULT_ROOT=${VAULTS_DIR:-/home/lumin/Vaults}
+      - TASKRUNNER_VAULT_ROOT=/vaults
       - YJ_ENCRYPTION_KEY=${YJ_ENCRYPTION_KEY:-}
       - MobileAuth__SharedSecret=${MOBILE_AUTH_SECRET:-}
     healthcheck:
@@ -177,13 +177,13 @@ services:
       - /opt/bh-family/data:/app/data
       - /opt/bh-family/logs:/app/logs
       - /opt/bh-family/config/taskrunner-ai:/app/config:ro
-      - ${VAULTS_DIR:-/home/lumin/Vaults}:${VAULTS_DIR:-/home/lumin/Vaults}
+      - ${VAULTS_DIR:-/home/lumin/Vaults}:/vaults
     environment:
       - YJ_DATA_DIR=/app/data
       - ASPNETCORE_URLS=http://0.0.0.0:8791
       - OpenObserve__WebUrl=http://127.0.0.1:5082/
       - OpenObserve__Enabled=true
-      - TASKRUNNER_VAULT_ROOT=${VAULTS_DIR:-/home/lumin/Vaults}
+      - TASKRUNNER_VAULT_ROOT=/vaults
       - YJ_ENCRYPTION_KEY=${YJ_ENCRYPTION_KEY:-}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:8791/health"]

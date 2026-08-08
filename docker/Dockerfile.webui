@@ -1,31 +1,31 @@
-# WebUI.Family - 瀹跺涵鐗堢鐞嗗悗鍙帮紙Blazor Server锛?
-# 鍩轰簬棰勬瀯寤虹殑鍩虹闀滃儚锛屽姞閫熸瀯寤鸿繃绋?
+# WebUI.Family - 百花家庭版管理后台（Blazor Server）
+# 基于预构建的基础镜像，加速构建过程
 #
-# 棣栨鏋勫缓鍓嶉渶瑕佸厛鏋勫缓鍩虹闀滃儚锛?
+# 首次构建前需要先构建基础镜像：
 #   docker build -f Dockerfile.base-build -t bh-family/base-build:latest ..
 #   docker build -f Dockerfile.base-runtime -t bh-family/base-runtime:latest ..
 
-# ==================== Build 闃舵 ====================
+# ==================== Build 阶段 ====================
 FROM bh-family/base-build:latest AS build
 WORKDIR /src
 
-# 鍏堝鍒堕」鐩枃浠朵互鍒╃敤 Docker 缂撳瓨灞?
+# 先复制项目文件以利用 Docker 缓存层
 COPY NuGet.config .
 COPY nuget-local/ nuget-local/
 COPY services/Baihua.Contracts/Baihua.Contracts.csproj services/Baihua.Contracts/
 COPY services/Baihua.Web/Baihua.Web.csproj services/Baihua.Web/
 RUN dotnet restore services/Baihua.Web/Baihua.Web.csproj
 
-# 澶嶅埗鍏ㄩ儴婧愮爜骞跺彂甯?
+# 复制全部源码并发布
 COPY services/ services/
-# 娓呯悊瀹夸富鏈哄彲鑳藉甫鍏ョ殑 bin/obj 缂撳瓨锛岀‘淇?dotnet publish 瀹屾暣鐢熸垚鎵€鏈夋枃浠讹紙鍖呮嫭 _framework锛?
+# 清理宿主机可能带入的 bin/obj 缓存，确保 dotnet publish 完整生成所有文件（包括 _framework）
 RUN find /src/services -type d -name bin -exec rm -rf {} + 2>/dev/null; \
     find /src/services -type d -name obj -exec rm -rf {} + 2>/dev/null; \
     dotnet restore services/Baihua.Web/Baihua.Web.csproj && \
     dotnet publish services/Baihua.Web/Baihua.Web.csproj \
     -c Release -o /app/publish
 
-# ==================== Runtime 闃舵 ====================
+# ==================== Runtime 阶段 ====================
 FROM bh-family/base-runtime:latest AS runtime
 WORKDIR /app
 
@@ -40,13 +40,13 @@ EXPOSE 5177
 
 ENV ASPNETCORE_URLS=http://0.0.0.0:5177
 ENV WEBUI_CONFIG_DIR=/app/data
-# Docker 缃戠粶鍐呴€氳繃鏈嶅姟鍚嶈闂?TaskRunner
-# host 缃戠粶妯″紡涓嬮€氳繃 localhost 璁块棶 TaskRunner
-# bridge 缃戠粶妯″紡涓嬫敼涓?http://taskrunner:8788/
+# Docker 网络内通过服务名访问 TaskRunner
+# host 网络模式下通过 localhost 访问 TaskRunner
+# bridge 网络模式下改为 http://taskrunner:8788/
 ENV TaskRunnerApi__BaseUrl=http://127.0.0.1:8788/
 ENV TaskRunnerVaultApi__BaseUrl=http://127.0.0.1:8790/
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:5177/ || exit 1
 
-ENTRYPOINT ["dotnet", "WebUI.Family.dll"]
+ENTRYPOINT ["dotnet", "bh-webui.dll"]

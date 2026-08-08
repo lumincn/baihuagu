@@ -16,16 +16,19 @@ services:
     user: ""   # Windows 容器卷不需要 Linux UID/GID
     volumes:
       # 数据/日志/配置：映射到 Windows 本地
-      - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/data:/app/data
+      - ${BAIHUA_HOME:-C:/Users/lumin/.baihua}:/app/data
       - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/logs:/app/logs
       - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/config/taskrunner:/app/config:ro
-      # 知识库路径（Windows → 容器内保持一致路径，避免路径重写问题）
-      - ${VAULTS_DIR:-C:/Users/lumin/Vaults}:${VAULTS_DIR:-C:/Users/lumin/Vaults}
+      # 知识库路径：宿主机 Windows 路径 → 容器内固定 /vaults
+      # （不能用 C:\...:C:\... 双向 Windows 路径，Docker 会报 invalid mode）
+      - ${VAULTS_DIR:-C:/Users/lumin/Vaults}:/vaults
     environment:
       # 容器内访问 Vault/AI/WebUI 同主机通过 bridge 网络服务名
       - TASKRUNNER_VAULT_URL=http://taskrunner-vault:8790
       - TASKRUNNER_AI_URL=http://taskrunner-ai:8791
       - TASKRUNNER_WEBUI_URL=http://webui:5177
+      # 知识库根指向容器内挂载点
+      - TASKRUNNER_VAULT_ROOT=/vaults
       # Windows Docker 下 OpenObserve 通过 host-gateway 访问
       - OpenObserve__WebUrl=http://host.docker.internal:5082/
     depends_on:
@@ -42,12 +45,13 @@ services:
       - "host.docker.internal:host-gateway"
     user: ""
     volumes:
-      - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/data:/app/data
+      - ${BAIHUA_HOME:-C:/Users/lumin/.baihua}:/app/data
       - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/logs:/app/logs
       - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/config/taskrunner-vault:/app/config:ro
-      - ${VAULTS_DIR:-C:/Users/lumin/Vaults}:${VAULTS_DIR:-C:/Users/lumin/Vaults}
+      - ${VAULTS_DIR:-C:/Users/lumin/Vaults}:/vaults
     environment:
       - OpenObserve__WebUrl=http://host.docker.internal:5082/
+      - TASKRUNNER_VAULT_ROOT=/vaults
 
   taskrunner-ai:
     network_mode: ""
@@ -59,12 +63,13 @@ services:
       - "host.docker.internal:host-gateway"
     user: ""
     volumes:
-      - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/data:/app/data
+      - ${BAIHUA_HOME:-C:/Users/lumin/.baihua}:/app/data
       - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/logs:/app/logs
       - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/config/taskrunner-ai:/app/config:ro
-      - ${VAULTS_DIR:-C:/Users/lumin/Vaults}:${VAULTS_DIR:-C:/Users/lumin/Vaults}
+      - ${VAULTS_DIR:-C:/Users/lumin/Vaults}:/vaults
     environment:
       - OpenObserve__WebUrl=http://host.docker.internal:5082/
+      - TASKRUNNER_VAULT_ROOT=/vaults
 
   webui:
     network_mode: ""
@@ -76,10 +81,10 @@ services:
       - "host.docker.internal:host-gateway"
     user: ""
     volumes:
-      - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/data:/app/data
+      - ${BAIHUA_HOME:-C:/Users/lumin/.baihua}:/app/data
       - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/logs:/app/logs
       - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/config/webui:/app/config:ro
-      - ${VAULTS_DIR:-C:/Users/lumin/Vaults}:${VAULTS_DIR:-C:/Users/lumin/Vaults}
+      - ${VAULTS_DIR:-C:/Users/lumin/Vaults}:/vaults
     environment:
       # WebUI 通过 bridge 网络调用各后端服务（服务名 DNS）
       - TaskRunnerApi__BaseUrl=http://taskrunner:8788/
@@ -119,6 +124,9 @@ services:
     # Windows 下 OpenObserve 也挂在 baihua-net（可选，默认 observability profile）
     networks:
       - baihua-net
+    # 数据落到 Windows 本地（base 里是 /opt/bh-family/data/openobserve，Windows 会写进 WSL）
+    volumes:
+      - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/data/openobserve:/data
 
 networks:
   baihua-net:

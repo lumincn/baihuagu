@@ -33,7 +33,8 @@ param(
     [string]$Command = 'dashboard',
     [string]$Arg,
     [string]$Browser = '',
-    [switch]$NoLogin
+    [switch]$NoLogin,
+    [switch]$Force
 )
 
 # PowerShell 5.1 兼容性检查（推荐 pwsh 7+）
@@ -243,6 +244,7 @@ function Wait-For-Url([string]$url, [int]$timeoutSec = 60, [int]$intervalSec = 2
 
 # 启动 Docker 容器前，清理本地 dotnet 进程占用的端口（8788/8790/8791/5177/80）
 # 避免"旧本地进程 + Docker 容器"端口绑定冲突（双实例跑数据目录也会 SQLite 锁冲突）
+# 注意：只杀真正的本地 dotnet 服务进程；wslrelay/com.docker.backend 等 Docker 端口转发进程绝不能杀
 function Stop-LocalDotnetServicesIfPortsOccupied {
     $ports = @(8788, 8790, 8791, 5177)
     $killedAny = $false
@@ -251,16 +253,18 @@ function Stop-LocalDotnetServicesIfPortsOccupied {
             $conns = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction Stop
         } catch { continue }
         foreach ($c in $conns) {
-            $pid = $c.OwningProcess
-            if ($pid -le 4) { continue }   # PID 4 = System (http.sys)，不杀
+            $procId = $c.OwningProcess
+            if ($procId -le 4) { continue }   # PID 4 = System (http.sys)，不杀
             try {
-                $proc = Get-Process -Id $pid -ErrorAction Stop
+                $proc = Get-Process -Id $procId -ErrorAction Stop
+                # 仅杀百花/dotnet 本地服务进程；Docker 转发进程(wslrelay/com.docker.backend)直接跳过
                 $isDotnetFamily = ($proc.ProcessName -match '^(dotnet|bh-|baihua|taskrunner)$') -or
                                    ($proc.Path -and $proc.Path -match 'baihuagu|baihua|taskrunner')
-                # 进程名不像 dotnet，但端口是我们的业务端口也提示并 kill
-                if ($isDotnetFamily -or ($port -in @(8788,8790,8791,5177))) {
-                    Write-Host "  [端口清理] 释放 :$port (PID $pid, $($proc.ProcessName))..." -ForegroundColor Yellow
-                    try { taskkill /T /F /PID $pid 2>&1 | Out-Null } catch { Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue }
+                $isDockerProxy = $proc.ProcessName -match '^(wslrelay|com\.docker\.backend|com\.docker\.service|vpnkit|docker)$'
+                if ($isDockerProxy) { continue }
+                if ($isDotnetFamily) {
+                    Write-Host "  [端口清理] 释放 :$port (PID $procId, $($proc.ProcessName))..." -ForegroundColor Yellow
+                    try { taskkill /T /F /PID $procId 2>&1 | Out-Null } catch { Stop-Process -Id $procId -Force -ErrorAction SilentlyContinue }
                     $killedAny = $true
                 }
             } catch {}
@@ -276,9 +280,9 @@ function Get-WebUrl {
 }
 function Get-LoginUrl { return (Get-WebUrl) }  # WebUI 根路径会自动跳登录页
 function Get-CliTokenUrl {
-    # 通过 Nginx 80 端口调用 WebUI（经 Family 分发 /api/* → taskrunner:8788）
-    $base = Get-WebUrl.TrimEnd('/')
-    return "$base/api/auth/cli-token"
+    # CLI token 端点在 WebUI(5177)，不是 Family(8788)
+    # Docker 模式直接访问 WebUI 容器映射端口；Nginx 会把 /api/* 转发到 Family，到不了 WebUI
+    return 'http://127.0.0.1:5177/api/auth/cli-token'
 }
 function Get-DashboardUrl($token) {
     $base = Get-WebUrl
@@ -332,26 +336,115 @@ function Wait-ServiceReady($svcName, [int]$timeoutSec = 90) {
 
 # ============================ 子命令实现 ============================
 
+# 宿主机 dotnet 路径
+function Get-DotnetCmd {
+    foreach ($cmd in @('dotnet', 'dotnet.exe')) {
+        try { Get-Command $cmd -ErrorAction Stop | Out-Null; return $cmd } catch {}
+    }
+    # 尝试默认安装路径
+    $defaultPath = Join-Path $env:ProgramFiles 'dotnet\dotnet.exe'
+    if (Test-Path $defaultPath) { return $defaultPath }
+    return $null
+}
+
 function Cmd-Build {
     Write-Host "=== 构建百花 Docker 镜像 ===" -ForegroundColor Cyan
-    # 不使用 --pull：bh-family/base-build、bh-family/base-runtime 为本地构建镜像，
-    # 强制 pull 会尝试访问 docker.io 导致网络超时
-    $exit = Invoke-Compose @('build')
-    if ($exit -eq 0) { Write-Host "[✓] 镜像构建完成" -ForegroundColor Green }
-    else { Write-Host "[✗] 镜像构建失败 (exit=$exit)" -ForegroundColor Red }
+
+    $dotnet = Get-DotnetCmd
+    if (-not $dotnet) {
+        Write-Host "[!] 未找到 dotnet，回退到容器内构建（可能较慢）" -ForegroundColor Yellow
+        $exit = Invoke-Compose @('build')
+        if ($exit -eq 0) { Write-Host "[✓] 镜像构建完成" -ForegroundColor Green }
+        else { Write-Host "[✗] 镜像构建失败 (exit=$exit)" -ForegroundColor Red }
+        return
+    }
+
+    # ---- 预构建模式：宿主机 publish → Docker 仅打包 ----
+    Write-Host "[i] 使用预构建模式（宿主机 dotnet publish + Docker 打包）" -ForegroundColor DarkGray
+    $publishRoot = Join-Path $DOCKER_DIR 'publish'
+
+    $projects = @(
+        @{ Name = 'Family'; Csproj = 'services\Baihua.Family\Baihua.Family.csproj'; Out = 'family';    Dockerfile = 'Dockerfile.taskrunner.prebuilt';     Image = 'bh-family/taskrunner:latest' }
+        @{ Name = 'Vault';  Csproj = 'services\Baihua.Vault\Baihua.Vault.csproj';  Out = 'vault';     Dockerfile = 'Dockerfile.vault.prebuilt';          Image = 'bh-family/taskrunner-vault:latest' }
+        @{ Name = 'AI';     Csproj = 'services\Baihua.AI\Baihua.AI.csproj';         Out = 'ai';        Dockerfile = 'Dockerfile.taskrunner.ai.prebuilt';  Image = 'bh-family/taskrunner-ai:latest' }
+        @{ Name = 'WebUI';  Csproj = 'services\Baihua.Web\Baihua.Web.csproj';      Out = 'webui';     Dockerfile = 'Dockerfile.webui.prebuilt';           Image = 'bh-family/webui:latest' }
+    )
+
+    # 确保基础镜像存在
+    $needBase = $false
+    foreach ($img in @('bh-family/base-build:latest', 'bh-family/base-runtime:latest')) {
+        $check = docker images --format '{{.Repository}}:{{.Tag}}' $img 2>$null
+        if (-not $check) { $needBase = $true; break }
+    }
+    if ($needBase) {
+        Write-Host "构建基础镜像..." -ForegroundColor DarkGray
+        Push-Location $HG_ROOT
+        try {
+            docker build -f (Join-Path $DOCKER_DIR 'Dockerfile.base-build') -t bh-family/base-build:latest . 2>&1 | Write-Host
+            docker build -f (Join-Path $DOCKER_DIR 'Dockerfile.base-runtime') -t bh-family/base-runtime:latest . 2>&1 | Write-Host
+        } finally { Pop-Location }
+    }
+
+    $allOk = $true
+    foreach ($p in $projects) {
+        $outDir = Join-Path $publishRoot $p.Out
+        $csprojPath = Join-Path $HG_ROOT $p.Csproj
+
+        Write-Host ""
+        Write-Host "--- $($p.Name) ---" -ForegroundColor Cyan
+        Write-Host "  publish: $csprojPath → $outDir"
+        & $dotnet publish $csprojPath -c Release -o $outDir --nologo 2>&1 | ForEach-Object {
+            if ($_ -match 'error|Error') { Write-Host "  $_" -ForegroundColor Red }
+            elseif ($_ -match '->') { Write-Host "  $_" -ForegroundColor DarkGray }
+        }
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "  [✗] $($p.Name) publish 失败" -ForegroundColor Red
+            $allOk = $false
+            continue
+        }
+
+        Write-Host "  docker build: $($p.Dockerfile) → $($p.Image)"
+        Push-Location $DOCKER_DIR
+        try {
+            docker build -f $p.Dockerfile -t $p.Image . 2>&1 | ForEach-Object {
+                if ($_ -match '^#[0-9]') { Write-Host "  $_" -ForegroundColor DarkGray }
+                elseif ($_ -match 'ERROR|error') { Write-Host "  $_" -ForegroundColor Red }
+                elseif ($_ -match 'naming to|DONE') { Write-Host "  $_" -ForegroundColor DarkGray }
+            }
+        } finally { Pop-Location }
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "  [✗] $($p.Name) Docker 镜像构建失败" -ForegroundColor Red
+            $allOk = $false
+        } else {
+            Write-Host "  [✓] $($p.Name) 镜像构建完成" -ForegroundColor Green
+        }
+    }
+
+    if ($allOk) { Write-Host "`n[✓] 全部镜像构建完成" -ForegroundColor Green }
+    else { Write-Host "`n[✗] 部分镜像构建失败，请检查上方日志" -ForegroundColor Red }
 }
 
 function Cmd-UpCore([switch]$WithObservability) {
     Set-BaihuaEnv
     Stop-LocalDotnetServicesIfPortsOccupied
+    # 镜像不存在时先走预构建（宿主 publish 快），避免 compose 自动容器内编译（慢/易超时）
+    $missing = @()
+    foreach ($img in @('bh-family/taskrunner:latest', 'bh-family/taskrunner-vault:latest', 'bh-family/taskrunner-ai:latest', 'bh-family/webui:latest')) {
+        $check = docker images --format '{{.Repository}}:{{.Tag}}' $img 2>$null
+        if (-not $check) { $missing += $img }
+    }
+    if ($missing.Count -gt 0) {
+        Write-Host "[i] 缺少镜像: $($missing -join ', ') → 先 build ..." -ForegroundColor Yellow
+        Cmd-Build
+    }
     $profiles = @()
     if ($WithObservability) { $profiles += '--profile'; $profiles += 'observability' }
-    $args = $profiles + @('up', '-d', '--remove-orphans')
-    $exit = Invoke-Compose $args
+    $upArgs = $profiles + @('up', '-d', '--remove-orphans')
+    $exit = Invoke-Compose $upArgs
     if ($exit -ne 0) {
-        Write-Host "[!] 首次启动可能镜像未构建 → 尝试先 build ..." -ForegroundColor Yellow
+        Write-Host "[!] 启动失败，尝试先 build 再启动 ..." -ForegroundColor Yellow
         Cmd-Build
-        $exit = Invoke-Compose $args
+        $exit = Invoke-Compose $upArgs
     }
     return $exit
 }
@@ -394,8 +487,10 @@ function Cmd-Down {
     if (-not (Ensure-DockerReady)) { return }
     Set-BaihuaEnv
     Write-Host "⚠  这将移除所有容器和网络（数据卷保留在 ${env:BAIHUA_HOME}\）" -ForegroundColor Yellow
-    $confirm = Read-Host "确认? [y/N]"
-    if ($confirm -notmatch '^[yY]') { Write-Host "已取消"; return }
+    if (-not $script:Force) {
+        $confirm = Read-Host "确认? [y/N]"
+        if ($confirm -notmatch '^[yY]') { Write-Host "已取消"; return }
+    }
     Invoke-Compose @('down', '--remove-orphans') | Out-Null
     Write-Host "[✓] 已移除所有容器（数据保留在 ${env:BAIHUA_HOME}\）" -ForegroundColor Green
 }
@@ -411,7 +506,8 @@ function Cmd-Restart {
             return
         }
         Write-Host "重启 $svc ..." -ForegroundColor Cyan
-        Invoke-Compose @('restart', $svc) | Out-Null
+        # 用 up --force-recreate 而不是 restart：restart 不会应用新构建的镜像
+        Invoke-Compose @('up', '-d', '--no-deps', '--force-recreate', $svc) | Out-Null
         Start-Sleep -Seconds 2
         Wait-ServiceReady $svc | Out-Null
         return
@@ -496,13 +592,12 @@ function Cmd-Logs {
         return
     }
 
-    $dockerArgs = @('logs', "--tail=$lines")
-    if ($follow) { $dockerArgs += '-f' }
-    $dockerArgs += $svc
+    $composeArgs = @('logs', "--tail=$lines")
+    if ($follow) { $composeArgs += '-f' }
+    $composeArgs += $svc
     Write-Host "[i] $svc 日志 (tail=$lines$(if ($follow) {', follow'} else {''}))."
     Write-Host "    Ctrl+C 退出" -ForegroundColor DarkGray
-    $d = Get-DockerCmd
-    & $d @dockerArgs
+    Invoke-Compose $composeArgs
 }
 
 function Cmd-Observe {
@@ -579,8 +674,7 @@ function Cmd-Dev {
     if (-not $NoLogin) { Cmd-OpenDashboardCore }
     Write-Host ""
     Write-Host "[i] 进入跟随 webui 日志（Ctrl+C 退出，服务不受影响）" -ForegroundColor DarkGray
-    $d = Get-DockerCmd
-    & $d @('logs', '-f', '--tail=50', 'webui')
+    Invoke-Compose @('logs', '-f', '--tail=50', 'webui')
 }
 
 function Cmd-OpenDashboardCore {
@@ -671,7 +765,8 @@ function Main {
         [string]$ServiceArg,
         [string]$LineArg,
         [string]$BrowserArg,
-        [switch]$NoLoginFlag
+        [switch]$NoLoginFlag,
+        [switch]$ForceFlag
     )
 
     # logs 特判：位置参数 arg1=服务名 arg2=lines/-f 或 Browser=lines/-f
@@ -730,7 +825,8 @@ if (-not $NoLogin -and ($svcArg -eq '--nologin' -or $browserArg -eq '--nologin')
     if ($browserArg -eq '--nologin') { $browserArg = '' }
 }
 $script:Browser = $browserArg
+$script:Force = $Force
 
-Main -CommandName $cmd -ServiceArg $svcArg -LineArg $lineArg -BrowserArg $browserArg -NoLoginFlag:$NoLogin
+Main -CommandName $cmd -ServiceArg $svcArg -LineArg $lineArg -BrowserArg $browserArg -NoLoginFlag:$NoLogin -ForceFlag:$Force
 
 exit 0

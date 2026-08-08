@@ -1,0 +1,19 @@
+# 预构建模式：宿主机 dotnet publish 后，仅将产物打包为 Docker 镜像
+
+FROM bh-family/base-runtime:latest AS runtime
+WORKDIR /app
+
+COPY publish/webui .
+
+EXPOSE 5177
+
+ENV ASPNETCORE_URLS=http://0.0.0.0:5177
+ENV WEBUI_CONFIG_DIR=/app/data
+ENV TaskRunnerApi__BaseUrl=http://127.0.0.1:8788/
+ENV TaskRunnerVaultApi__BaseUrl=http://127.0.0.1:8790/
+ENV TaskRunnerAiApi__BaseUrl=http://127.0.0.1:8791/
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:5177/ || exit 1
+
+ENTRYPOINT ["dotnet", "bh-webui.dll"]

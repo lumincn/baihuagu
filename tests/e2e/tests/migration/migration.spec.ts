@@ -133,8 +133,7 @@ test.describe('【设备管理页】OneHop Discover Tab 移除验证', () => {
     expect(res.status()).toBe(200);
     const json = await res.json();
     expect(Array.isArray(json)).toBeTruthy();
-    // 环境中至少有一个已授权设备（松风笔/寻芳居/安卓等）
-    expect(json.length, '至少有一台已授权设备').toBeGreaterThan(0);
+    // 端点契约：返回数组即可（空数组=全新环境无设备，属正常；有设备时长度>0）
   });
 
   test('待授权设备 API：端点正常返回数组', async ({ request }) => {

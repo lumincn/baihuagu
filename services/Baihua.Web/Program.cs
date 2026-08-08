@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
@@ -405,11 +406,21 @@ app.MapControllers();
 // Map SignalR Hub
 app.MapHub<Baihua.Web.Hubs.StatusHub>("/hubs/status");
 
-// CLI 一次性令牌端点：仅供本机 loopback 调用，用于命令行一键授权
+// CLI 一次性令牌端点：仅供本机/宿主机调用，用于命令行一键授权
 app.MapPost("/api/auth/cli-token", (HttpContext context, Baihua.Web.Services.AuthService authService) =>
 {
     var remoteIp = context.Connection.RemoteIpAddress;
-    if (remoteIp != null && !System.Net.IPAddress.IsLoopback(remoteIp))
+    // Docker Desktop 端口映射后容器内看到的是网管/桥接网段（172.x），非 loopback，需一并放行
+    var isDockerNet = false;
+    if (remoteIp != null)
+    {
+        try
+        {
+            isDockerNet = new System.Net.IPNetwork(IPAddress.Parse("172.16.0.0"), 12).Contains(remoteIp);
+        }
+        catch { isDockerNet = false; }
+    }
+    if (remoteIp != null && !IPAddress.IsLoopback(remoteIp) && !isDockerNet)
     {
         return Results.Json(new { error = "Forbidden", message = "CLI token 仅允许本机请求" }, statusCode: 403);
     }
