@@ -372,7 +372,7 @@ function Cmd-Build {
 
     # 确保基础镜像存在
     $needBase = $false
-    foreach ($img in @('bh-family/base-build:latest', 'bh-family/base-runtime:latest')) {
+    foreach ($img in @('bh/base-build:latest', 'bh/base-runtime:latest')) {
         $check = docker images --format '{{.Repository}}:{{.Tag}}' $img 2>$null
         if (-not $check) { $needBase = $true; break }
     }
@@ -380,8 +380,8 @@ function Cmd-Build {
         Write-Host "构建基础镜像..." -ForegroundColor DarkGray
         Push-Location $HG_ROOT
         try {
-            docker build -f (Join-Path $DOCKER_DIR 'Dockerfile.base-build') -t bh-family/base-build:latest . 2>&1 | Write-Host
-            docker build -f (Join-Path $DOCKER_DIR 'Dockerfile.base-runtime') -t bh-family/base-runtime:latest . 2>&1 | Write-Host
+            docker build -f (Join-Path $DOCKER_DIR 'Dockerfile.base-build') -t bh/base-build:latest . 2>&1 | Write-Host
+            docker build -f (Join-Path $DOCKER_DIR 'Dockerfile.base-runtime') -t bh/base-runtime:latest . 2>&1 | Write-Host
         } finally { Pop-Location }
     }
 
