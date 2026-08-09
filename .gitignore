@@ -234,3 +234,6 @@ tests/.last-run.json
 # Playwright 截图产物
 tests/e2e/screenshots/
 
+
+# 原生部署构建产物（bh-*-native 脚本）
+out/
