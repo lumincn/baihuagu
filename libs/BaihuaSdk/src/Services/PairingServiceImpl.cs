@@ -107,6 +107,7 @@ public class PairingServiceImpl : IPairingService, IDeviceRegistrationService
                     Authorized = GetBool(root, "authorized"),
                     SharedSecret = GetString(root, "sharedSecret"),
                     RequestId = GetString(root, "requestId"),
+                    ServerId = GetString(root, "serverId"),
                     DeviceName = GetString(root, "serverName") ?? GetString(root, "deviceName"),
                     AccessToken = GetString(root, "accessToken")
                 };

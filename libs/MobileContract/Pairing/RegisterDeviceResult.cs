@@ -14,6 +14,9 @@ public record RegisterDeviceResult
 
     public string? RequestId { get; init; }
 
+    /// <summary>服务器实例 ID（用于服务器唯一标识，WebSocket 握手 serverId 匹配）</summary>
+    public string? ServerId { get; init; }
+
     public string? DeviceName { get; init; }
 
     public string? AccessToken { get; init; }

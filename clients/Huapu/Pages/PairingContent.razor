@@ -118,9 +118,23 @@
         StateHasChanged();
         try
         {
-            var url = BaihuaSdk.Transport.HttpTransport.NormalizeBaseUrl(_manualUrl);
+            var input = _manualUrl.Trim();
+            if (input.Length == 0) { _manualError = "请输入服务器地址"; return; }
+
+            // 支持粘贴二维码 JSON（含 serverId/baseUrl）或纯 URL
+            var isJson = input.StartsWith("{");
+            var parsed = isJson ? BaihuaSdk.Services.PairingServiceImpl.ParseQrCode(input) : null;
+            if (isJson && parsed == null) { _manualError = "无法解析二维码内容"; return; }
+
+            var url = isJson
+                ? BaihuaSdk.Transport.HttpTransport.NormalizeBaseUrl(parsed!.HttpUrl ?? parsed.ServerUrl ?? "")
+                : BaihuaSdk.Transport.HttpTransport.NormalizeBaseUrl(input);
             _result = await DeviceRegistration.RegisterDeviceAsync(url);
-            var serverId = $"manual-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+
+            // 服务器 id 优先用服务端实例 ID（WebSocket serverId 匹配，避免知识库被误判 IP 撞车隐藏）
+            var serverId = _result.ServerId
+                ?? (isJson && !string.IsNullOrEmpty(parsed!.DeviceId) ? parsed!.DeviceId! : null)
+                ?? $"manual-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
             await SaveResult(serverId, new Uri(url).Host, url);
         }
         catch (Exception ex) { _manualError = ex.Message; }
