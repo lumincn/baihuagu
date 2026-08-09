@@ -124,7 +124,7 @@ services:
     # Windows 下 OpenObserve 也挂在 baihua-net（可选，默认 observability profile）
     networks:
       - baihua-net
-    # 数据落到 Windows 本地（base 里是 /opt/bh-family/data/openobserve，Windows 会写进 WSL）
+    # 数据落到 Windows 本地（base 里是 /opt/baihua/data/openobserve，Windows 会写进 WSL）
     volumes:
       - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/data/openobserve:/data
 

@@ -1,6 +1,6 @@
 # 预构建模式：宿主机 dotnet publish 后，仅将产物打包为 Docker 镜像
 
-FROM bh-family/base-runtime:latest AS runtime
+FROM bh/base-runtime:latest AS runtime
 WORKDIR /app
 
 COPY publish/webui .

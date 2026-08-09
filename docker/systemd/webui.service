@@ -4,15 +4,15 @@ After=network.target taskrunner.service taskrunner-ai.service taskrunner-vault.s
 
 [Service]
 Type=simple
-WorkingDirectory=/opt/bh-family/webui
+WorkingDirectory=/opt/baihua/webui
 EnvironmentFile=/etc/systemd/system/webui.env
-Environment=WEBUI_CONFIG_DIR=/opt/yj/data
+Environment=WEBUI_CONFIG_DIR=/opt/baihua/data
 Environment=ASPNETCORE_URLS=http://0.0.0.0:5177
 ExecStart=/usr/bin/dotnet WebUI.Family.dll --urls http://0.0.0.0:5177
 Restart=always
 RestartSec=5
-StandardOutput=append:/opt/bh-family/logs/webui.log
-StandardError=append:/opt/bh-family/logs/webui.log
+StandardOutput=append:/opt/baihua/logs/webui.log
+StandardError=append:/opt/baihua/logs/webui.log
 
 [Install]
 WantedBy=multi-user.target

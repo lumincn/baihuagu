@@ -6,10 +6,10 @@ namespace Baihua.Core.Security;
 /// <summary>
 /// AES-256-GCM 加密方案 - 用于 API Key 的加密
 ///
-/// 密钥管理策略（对非专业人员友好）：
-/// 1. 首次启动时自动生成 256-bit 随机密钥，持久化到 /app/data/.baihua-key
+/// 密钥管理策略：
+/// 1. 首次启动时自动生成 256-bit 随机密钥，持久化到 db/.baihua-key
 /// 2. 容器重建后从文件读取固定密钥，避免机器指纹变化导致无法解密
-/// 3. 高级用户仍可通过 BAIHUA_ENCRYPTION_KEY 环境变量覆盖
+/// 3. 高级用户可通过 BAIHUA_ENCRYPTION_KEY 环境变量覆盖
 /// 4. 支持自动迁移：检测到旧密钥（机器指纹）加密的 API Key 时，
 ///    用旧密钥解密后用新密钥重新加密
 ///
@@ -20,34 +20,16 @@ namespace Baihua.Core.Security;
 /// </summary>
 public static class AesApiKeyEncryption
 {
-    // 版本标识，用于将来升级加密算法时识别
     private const byte Version = 0x01;
-
-    // 密钥派生参数
-    private const int KeySize = 32; // 256 bits
+    private const int KeySize = 32;   // 256 bits
     private const int NonceSize = 12; // 96 bits for GCM
-    private const int TagSize = 16; // 128 bits for GCM
+    private const int TagSize = 16;   // 128 bits for GCM
 
     /// <summary>
-    /// 密钥文件路径（挂载到宿主机，容器重建后仍然存在）
+    /// 密钥文件路径（委托 BaihuaPaths.KeyFile）
     /// </summary>
-    public static string KeyFilePath
-    {
-        get
-        {
-            // 兼容旧环境变量 YJ_DATA_DIR（测试与历史部署使用）
-            var legacy = Environment.GetEnvironmentVariable("YJ_DATA_DIR");
-            if (!string.IsNullOrWhiteSpace(legacy))
-            {
-                return Path.Combine(legacy.TrimEnd('/', '\\'), ".yj-key");
-            }
+    public static string KeyFilePath => Baihua.Contracts.BaihuaPaths.KeyFile;
 
-            return Baihua.Contracts.BaihuaPaths.KeyFile;
-        }
-    }
-
-    /// <summary>
-    /// <summary>
     /// <summary>
     /// 机器指纹（用于密钥文件丢失时的兜底）
     ///
@@ -64,7 +46,6 @@ public static class AesApiKeyEncryption
         if (!string.IsNullOrEmpty(stableId))
             return SHA256.HashData(Encoding.UTF8.GetBytes(stableId));
 
-        // 回退：机器名 + CPU 核数（只要不重命名主机/换 CPU，就稳定）
         var fallback = $"{Environment.MachineName}|{Environment.ProcessorCount}";
         return SHA256.HashData(Encoding.UTF8.GetBytes(fallback));
     }
@@ -119,9 +100,6 @@ public static class AesApiKeyEncryption
         return null;
     }
 
-    /// <summary>
-    /// 派生加密密钥
-    /// </summary>
     private static byte[] DeriveKey(byte[] fingerprint)
     {
         using var hmac = new HMACSHA256(fingerprint);
@@ -130,7 +108,7 @@ public static class AesApiKeyEncryption
 
     /// <summary>
     /// 解析加密密钥
-    /// 优先级：持久化密钥文件 > BAIHUA_ENCRYPTION_KEY 环境变量 > 旧版机器指纹
+    /// 优先级：持久化密钥文件 &gt; BAIHUA_ENCRYPTION_KEY 环境变量 &gt; 机器指纹
     /// </summary>
     public static byte[] ResolveFingerprint()
     {
@@ -145,21 +123,14 @@ public static class AesApiKeyEncryption
             }
         }
 
-        // 2. 其次使用 BAIHUA_ENCRYPTION_KEY 环境变量（高级用户手动配置）
+        // 2. BAIHUA_ENCRYPTION_KEY 环境变量（高级用户手动配置）
         var envKey = Environment.GetEnvironmentVariable("BAIHUA_ENCRYPTION_KEY");
         if (!string.IsNullOrWhiteSpace(envKey))
         {
             return SHA256.HashData(Encoding.UTF8.GetBytes(envKey.Trim()));
         }
 
-        // 兼容旧环境变量 YJ_ENCRYPTION_KEY（测试与历史部署使用）
-        var legacyEnv = Environment.GetEnvironmentVariable("YJ_ENCRYPTION_KEY");
-        if (!string.IsNullOrWhiteSpace(legacyEnv))
-        {
-            return SHA256.HashData(Encoding.UTF8.GetBytes(legacyEnv.Trim()));
-        }
-
-        // 3. 回退到机器指纹（密钥文件丢失时的兜底）
+        // 3. 回退：机器指纹（密钥文件丢失时的兜底）
         return GetMachineFingerprint();
     }
 
@@ -178,9 +149,6 @@ public static class AesApiKeyEncryption
         return randomKey;
     }
 
-    /// <summary>
-    /// 确保密钥文件所在目录存在
-    /// </summary>
     private static void EnsureKeyFileDirectory()
     {
         var dir = Path.GetDirectoryName(KeyFilePath);
@@ -190,9 +158,6 @@ public static class AesApiKeyEncryption
         }
     }
 
-    /// <summary>
-    /// 限制密钥文件权限（仅所有者可读写）
-    /// </summary>
     private static void RestrictFilePermissions(string path)
     {
         try
@@ -342,7 +307,6 @@ public static class AesApiKeyEncryption
             return "";
         }
     }
-
 }
 
 /// <summary>

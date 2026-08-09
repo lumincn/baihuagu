@@ -35,14 +35,6 @@ public static class BaihuaPaths
                     return _home;
                 }
 
-                // 兼容旧环境变量 YJ_DATA_DIR
-                var legacy = Environment.GetEnvironmentVariable("YJ_DATA_DIR");
-                if (!string.IsNullOrWhiteSpace(legacy))
-                {
-                    _home = legacy.TrimEnd('/', '\\');
-                    return _home;
-                }
-
                 _home = GetDefaultHome();
                 return _home;
             }
@@ -52,6 +44,10 @@ public static class BaihuaPaths
     public static string Vaults => Path.Combine(Home, "vaults");
     public static string Db => Path.Combine(Home, "db");
     public static string Logs => Path.Combine(Home, "logs");
+
+    /// <summary>
+    /// 主密钥文件：db/.baihua-key
+    /// </summary>
     public static string KeyFile => Path.Combine(Db, ".baihua-key");
 
     public static void Reset() { lock (_lock) { _home = null; } }

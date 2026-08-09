@@ -21,9 +21,9 @@
   bh.ps1 help               显示帮助
 
 说明:
-- 全 Docker 模式：.NET 4 服务 (taskrunner / taskrunner-vault / taskrunner-ai / webui)
-  + Nginx (baihua-nginx) + 可选 OpenObserve 全部通过 docker compose 管理
-- 镜像: bh-family/taskrunner, bh-family/taskrunner-vault, bh-family/taskrunner-ai, bh-family/webui
+- 全 Docker 模式：.NET 4 服务 (bh-family / bh-vault / bh-ai / bh-webui)
+  + Nginx (bh-nginx) + 可选 OpenObserve 全部通过 docker compose 管理
+- 镜像: bh-family, bh-vault, bh-ai, bh-webui（裸名，不带仓库斜杠前缀）
 - 数据持久化: ${env:LOCALAPPDATA}\baihua\ (data, logs, config)
 - Windows Docker Desktop (WSL2 后端) 必须运行中
 - Nginx 对外端口: 由环境变量 BAIHUA_NGINX_PORT 控制，默认 80
@@ -364,10 +364,10 @@ function Cmd-Build {
     $publishRoot = Join-Path $DOCKER_DIR 'publish'
 
     $projects = @(
-        @{ Name = 'Family'; Csproj = 'services\Baihua.Family\Baihua.Family.csproj'; Out = 'family';    Dockerfile = 'Dockerfile.taskrunner.prebuilt';     Image = 'bh-family/taskrunner:latest' }
-        @{ Name = 'Vault';  Csproj = 'services\Baihua.Vault\Baihua.Vault.csproj';  Out = 'vault';     Dockerfile = 'Dockerfile.vault.prebuilt';          Image = 'bh-family/taskrunner-vault:latest' }
-        @{ Name = 'AI';     Csproj = 'services\Baihua.AI\Baihua.AI.csproj';         Out = 'ai';        Dockerfile = 'Dockerfile.taskrunner.ai.prebuilt';  Image = 'bh-family/taskrunner-ai:latest' }
-        @{ Name = 'WebUI';  Csproj = 'services\Baihua.Web\Baihua.Web.csproj';      Out = 'webui';     Dockerfile = 'Dockerfile.webui.prebuilt';           Image = 'bh-family/webui:latest' }
+        @{ Name = 'Family'; Csproj = 'services\Baihua.Family\Baihua.Family.csproj'; Out = 'family';    Dockerfile = 'Dockerfile.taskrunner.prebuilt';     Image = 'bh-family:latest' }
+        @{ Name = 'Vault';  Csproj = 'services\Baihua.Vault\Baihua.Vault.csproj';  Out = 'vault';     Dockerfile = 'Dockerfile.vault.prebuilt';          Image = 'bh-vault:latest' }
+        @{ Name = 'AI';     Csproj = 'services\Baihua.AI\Baihua.AI.csproj';         Out = 'ai';        Dockerfile = 'Dockerfile.taskrunner.ai.prebuilt';  Image = 'bh-ai:latest' }
+        @{ Name = 'WebUI';  Csproj = 'services\Baihua.Web\Baihua.Web.csproj';      Out = 'webui';     Dockerfile = 'Dockerfile.webui.prebuilt';           Image = 'bh-webui:latest' }
     )
 
     # 确保基础镜像存在
@@ -429,7 +429,7 @@ function Cmd-UpCore([switch]$WithObservability) {
     Stop-LocalDotnetServicesIfPortsOccupied
     # 镜像不存在时先走预构建（宿主 publish 快），避免 compose 自动容器内编译（慢/易超时）
     $missing = @()
-    foreach ($img in @('bh-family/taskrunner:latest', 'bh-family/taskrunner-vault:latest', 'bh-family/taskrunner-ai:latest', 'bh-family/webui:latest')) {
+    foreach ($img in @('bh-family:latest', 'bh-vault:latest', 'bh-ai:latest', 'bh-webui:latest')) {
         $check = docker images --format '{{.Repository}}:{{.Tag}}' $img 2>$null
         if (-not $check) { $missing += $img }
     }
@@ -445,6 +445,18 @@ function Cmd-UpCore([switch]$WithObservability) {
         Write-Host "[!] 启动失败，尝试先 build 再启动 ..." -ForegroundColor Yellow
         Cmd-Build
         $exit = Invoke-Compose $upArgs
+    }
+    if ($exit -eq 0) {
+        # 强制重启 Nginx：Docker bridge 网络下，后端容器重建后 IP 会变，
+        # Nginx 启动时缓存的 DNS 解析（webui/taskrunner 等服务名）可能指向过期 IP，
+        # 导致 502 Bad Gateway（upstream Connection refused）。重启 Nginx 会
+        # 重新通过 Docker DNS 解析服务名到当前真实 IP。
+        $nginxName = 'bh-nginx'
+        $running = Invoke-ComposeOutput @('ps', '--format', '{{.Service}} {{.State}}', 'nginx')
+        if ($running -match "^nginx\s+(running|healthy)") {
+            Write-Host "  [Nginx DNS 刷新] 重启 $nginxName（确保 upstream IP 为当前真实值）..." -ForegroundColor DarkGray
+            try { docker restart $nginxName 2>&1 | Out-Null } catch {}
+        }
     }
     return $exit
 }

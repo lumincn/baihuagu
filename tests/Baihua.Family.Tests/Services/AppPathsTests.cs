@@ -5,11 +5,19 @@ namespace Baihua.Family.Tests.Services;
 
 public class AppPathsTests
 {
+    private static readonly string[] _knownEnvVars = new[] { "BAIHUA_DATA_DIR", "BAIHUA_HOME" };
+
+    private static void ClearKnown()
+    {
+        foreach (var v in _knownEnvVars) Environment.SetEnvironmentVariable(v, null);
+    }
+
     [Fact]
-    public void GetConfigDirectory_WithEnvVar_ReturnsEnvDir()
+    public void GetConfigDirectory_WithBaihuaDataDir_ReturnsEnvDir()
     {
         var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        Environment.SetEnvironmentVariable("YJ_DATA_DIR", tempDir);
+        ClearKnown();
+        Environment.SetEnvironmentVariable("BAIHUA_DATA_DIR", tempDir);
         try
         {
             var result = AppPaths.GetConfigDirectory();
@@ -18,7 +26,7 @@ public class AppPathsTests
         }
         finally
         {
-            Environment.SetEnvironmentVariable("YJ_DATA_DIR", null);
+            ClearKnown();
             if (Directory.Exists(tempDir)) Directory.Delete(tempDir);
         }
     }
@@ -26,7 +34,7 @@ public class AppPathsTests
     [Fact]
     public void GetConfigDirectory_WithoutEnvVar_ReturnsBaseDirectory()
     {
-        Environment.SetEnvironmentVariable("YJ_DATA_DIR", null);
+        ClearKnown();
         var result = AppPaths.GetConfigDirectory();
         Assert.Equal(AppDomain.CurrentDomain.BaseDirectory, result);
     }
@@ -34,9 +42,10 @@ public class AppPathsTests
     [Fact]
     public void GetConfigDirectory_WithEmptyEnvVar_FallsBackToBase()
     {
-        Environment.SetEnvironmentVariable("YJ_DATA_DIR", "  ");
+        ClearKnown();
+        Environment.SetEnvironmentVariable("BAIHUA_DATA_DIR", "  ");
         var result = AppPaths.GetConfigDirectory();
         Assert.Equal(AppDomain.CurrentDomain.BaseDirectory, result);
-        Environment.SetEnvironmentVariable("YJ_DATA_DIR", null);
+        ClearKnown();
     }
 }

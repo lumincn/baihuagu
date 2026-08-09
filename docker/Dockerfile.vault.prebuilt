@@ -1,6 +1,6 @@
 # 预构建模式：宿主机 dotnet publish 后，仅将产物打包为 Docker 镜像
 
-FROM bh-family/base-runtime:latest AS runtime
+FROM bh/base-runtime:latest AS runtime
 WORKDIR /app
 
 COPY publish/vault .
@@ -8,7 +8,7 @@ COPY publish/vault .
 EXPOSE 8790
 
 ENV ASPNETCORE_URLS=http://0.0.0.0:8790
-ENV YJ_DATA_DIR=/app/data
+ENV BAIHUA_HOME=/app/data
 ENV TASKRUNNER_SKIP_MUTEX=true
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \

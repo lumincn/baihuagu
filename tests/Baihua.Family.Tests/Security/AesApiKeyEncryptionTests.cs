@@ -9,40 +9,43 @@ namespace Baihua.Family.Tests.Security;
 [Collection("AesApiKeyEncryption")]
 public class AesApiKeyEncryptionTests : IDisposable
 {
-    private readonly string _originalEnvVar;
-    private readonly string _originalDataDir;
+    private readonly string? _originalEncKey;
+    private readonly string? _originalHome;
     private readonly string _testKeyFilePath;
-    private readonly string _testDataDir;
+    private readonly string _testHome;
 
     public AesApiKeyEncryptionTests()
     {
-        _originalEnvVar = Environment.GetEnvironmentVariable("YJ_ENCRYPTION_KEY");
-        _originalDataDir = Environment.GetEnvironmentVariable("YJ_DATA_DIR");
+        _originalEncKey = Environment.GetEnvironmentVariable("BAIHUA_ENCRYPTION_KEY");
+        _originalHome = Environment.GetEnvironmentVariable("BAIHUA_HOME");
 
-        _testDataDir = Path.Combine(Path.GetTempPath(), $"aes_test_{Guid.NewGuid():N}");
-        Directory.CreateDirectory(_testDataDir);
-        _testKeyFilePath = Path.Combine(_testDataDir, ".yj-key");
+        // 用 BAIHUA_HOME 指向临时目录，BaihuaPaths.KeyFile = $HOME/db/.baihua-key
+        _testHome = Path.Combine(Path.GetTempPath(), $"bh_test_{Guid.NewGuid():N}");
+        var testDb = Path.Combine(_testHome, "db");
+        Directory.CreateDirectory(testDb);
+        _testKeyFilePath = Path.Combine(testDb, ".baihua-key");
 
-        Environment.SetEnvironmentVariable("YJ_DATA_DIR", _testDataDir);
-        Environment.SetEnvironmentVariable("YJ_ENCRYPTION_KEY", null);
+        Environment.SetEnvironmentVariable("BAIHUA_HOME", _testHome);
+        Environment.SetEnvironmentVariable("BAIHUA_ENCRYPTION_KEY", null);
+        Baihua.Contracts.BaihuaPaths.Reset();
     }
 
     public void Dispose()
     {
-        Environment.SetEnvironmentVariable("YJ_ENCRYPTION_KEY", _originalEnvVar);
-        Environment.SetEnvironmentVariable("YJ_DATA_DIR", _originalDataDir);
+        Environment.SetEnvironmentVariable("BAIHUA_ENCRYPTION_KEY", _originalEncKey);
+        Environment.SetEnvironmentVariable("BAIHUA_HOME", _originalHome);
 
-        if (Directory.Exists(_testDataDir))
+        if (Directory.Exists(_testHome))
         {
-            Directory.Delete(_testDataDir, recursive: true);
+            Directory.Delete(_testHome, recursive: true);
         }
 
         GC.SuppressFinalize(this);
     }
 
-    private void SetEncryptionKey(string key)
+    private static void SetEncryptionKey(string key)
     {
-        Environment.SetEnvironmentVariable("YJ_ENCRYPTION_KEY", key);
+        Environment.SetEnvironmentVariable("BAIHUA_ENCRYPTION_KEY", key);
     }
 
     [Fact]
@@ -212,7 +215,7 @@ public class AesApiKeyEncryptionTests : IDisposable
     public void ResolveFingerprint_PreferEnvVarOverFile()
     {
         var envKey = "environment-variable-key";
-        Environment.SetEnvironmentVariable("YJ_ENCRYPTION_KEY", envKey);
+        Environment.SetEnvironmentVariable("BAIHUA_ENCRYPTION_KEY", envKey);
 
         var fingerprint = AesApiKeyEncryption.ResolveFingerprint();
         var expectedFingerprint = SHA256.HashData(Encoding.UTF8.GetBytes(envKey));
@@ -221,9 +224,9 @@ public class AesApiKeyEncryptionTests : IDisposable
     }
 
     [Fact]
-    public void ResolveFingerprint_FallsBackToLegacy()
+    public void ResolveFingerprint_FallsBackToMachine()
     {
-        Environment.SetEnvironmentVariable("YJ_ENCRYPTION_KEY", null);
+        Environment.SetEnvironmentVariable("BAIHUA_ENCRYPTION_KEY", null);
 
         var fingerprint = AesApiKeyEncryption.ResolveFingerprint();
 

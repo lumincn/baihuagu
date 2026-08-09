@@ -4,14 +4,14 @@ After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/opt/bh-family/TaskRunner.AI
+WorkingDirectory=/opt/baihua/TaskRunner.AI
 EnvironmentFile=/etc/systemd/system/taskrunner-ai.env
-Environment=YJ_DATA_DIR=/opt/bh-family/data
+Environment=BAIHUA_HOME=/opt/baihua/data
 ExecStart=/usr/bin/dotnet TaskRunner.AI.dll --urls http://0.0.0.0:8791
 Restart=always
 RestartSec=5
-StandardOutput=append:/opt/bh-family/logs/taskrunner-ai.log
-StandardError=append:/opt/bh-family/logs/taskrunner-ai.log
+StandardOutput=append:/opt/baihua/logs/taskrunner-ai.log
+StandardError=append:/opt/baihua/logs/taskrunner-ai.log
 
 [Install]
 WantedBy=multi-user.target

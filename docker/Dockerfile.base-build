@@ -2,7 +2,7 @@
 # 用于加速 TaskRunner 和 WebUI 的编译
 #
 # 构建命令：
-#   docker build -f Dockerfile.base-build -t bh-family/base-build:latest ..
+#   docker build -f Dockerfile.base-build -t bh/base-build:latest ..
 #
 # 更新频率：
 #   - 仅当 .NET SDK 版本更新时需要重建
