@@ -158,6 +158,24 @@ def generate(prompt: str, image_bytes, cfg):
     return str(pipe.generate(prompt, generation_config=cfg))
 
 
+def generate_stream(prompt: str, image_bytes, cfg, on_token):
+    """SSE 流式生成：on_token(subword) 逐 token 回调（openvino-genai streamer）"""
+    pipe = get_pipe()
+
+    def streamer(subword: str) -> bool:
+        on_token(subword)
+        return False  # False=继续生成
+
+    if image_bytes:
+        from PIL import Image
+        import numpy as np
+        img = Image.open(io.BytesIO(image_bytes)).convert('RGB')
+        tensor = OV_CORE.Tensor(np.array(img))
+        pipe.generate(prompt, images=[tensor], generation_config=cfg, streamer=streamer)
+    else:
+        pipe.generate(prompt, generation_config=cfg, streamer=streamer)
+
+
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):  # 静默访问日志
         pass
@@ -224,7 +242,36 @@ class Handler(BaseHTTPRequestHandler):
                     return
                 cfg = build_config(req)
                 log(f'chat request: model={model_id()} prompt_len={len(prompt)} '
-                    f'image={"yes" if image_bytes else "no"} max_tokens={cfg.max_new_tokens}')
+                    f'image={"yes" if image_bytes else "no"} max_tokens={cfg.max_new_tokens} '
+                    f'stream={bool(req.get("stream"))}')
+                if req.get('stream'):
+                    # SSE 流式（OpenAI 兼容：data: {...} 块 + [DONE]）
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'text/event-stream; charset=utf-8')
+                    self.send_header('Cache-Control', 'no-cache')
+                    self.send_header('X-Accel-Buffering', 'no')
+                    self.end_headers()
+
+                    def emit(chunk_text: str):
+                        data = json.dumps({
+                            'id': 'chatcmpl-openvino',
+                            'object': 'chat.completion.chunk',
+                            'model': model_id(),
+                            'choices': [{'index': 0, 'delta': {'content': chunk_text}, 'finish_reason': None}],
+                        }, ensure_ascii=False)
+                        self.wfile.write(f'data: {data}\n\n'.encode('utf-8'))
+                        self.wfile.flush()
+
+                    generate_stream(prompt, image_bytes, cfg, emit)
+                    final = json.dumps({
+                        'id': 'chatcmpl-openvino',
+                        'object': 'chat.completion.chunk',
+                        'model': model_id(),
+                        'choices': [{'index': 0, 'delta': {}, 'finish_reason': 'stop'}],
+                    }, ensure_ascii=False)
+                    self.wfile.write(f'data: {final}\n\ndata: [DONE]\n\n'.encode('utf-8'))
+                    self.wfile.flush()
+                    return
                 text = generate(prompt, image_bytes, cfg)
                 self._send_json(200, {
                     'id': 'chatcmpl-openvino',
@@ -258,5 +305,5 @@ if __name__ == '__main__':
         sys.exit(1)
     log(f'starting openvino server on port {PORT}, device={DEVICE}, vl={IS_VL}')
     log(f'model: {MODEL_DIR}')
-    server = ThreadingHTTPServer(('127.0.0.1', PORT), Handler)
+    server = ThreadingHTTPServer(('0.0.0.0', PORT), Handler)
     server.serve_forever()
