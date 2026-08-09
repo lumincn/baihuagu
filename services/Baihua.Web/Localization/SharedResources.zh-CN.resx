@@ -2090,6 +2090,18 @@
   <data name="Onboarding_ApiKeyLabel" xml:space="preserve">
     <value>API Key</value>
   </data>
+  <data name="Onboarding_ApiKeyOptionalHint" xml:space="preserve">
+    <value>本地模型通常不需要 API Key，可留空</value>
+  </data>
+  <data name="Onboarding_CustomUrlHint" xml:space="preserve">
+    <value>OpenAI 兼容接口地址，如 http://192.168.1.100:11434/v1（本地 Ollama）或 http://localhost:1234/v1（LM Studio）</value>
+  </data>
+  <data name="Onboarding_ModelLabel" xml:space="preserve">
+    <value>模型名</value>
+  </data>
+  <data name="Onboarding_CustomModelHint" xml:space="preserve">
+    <value>填实际加载的模型名，如 qwen3:14b 或 llama3.2:latest</value>
+  </data>
   <data name="Onboarding_ApiKeyHint" xml:space="preserve">
     <value>API Key 将加密存储在本地，不会上传到任何服务器</value>
   </data>

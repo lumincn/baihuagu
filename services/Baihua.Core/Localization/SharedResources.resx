@@ -1675,6 +1675,9 @@ Duration: {1}</value>
     <value>Update failed: {0}</value>
   </data>
   <!-- AiConfig Preset Keys -->
+  <data name="AiConfig_PresetCustom" xml:space="preserve">
+    <value>Custom (OpenAI-compatible, e.g. local Ollama / LM Studio)</value>
+  </data>
   <data name="AiConfig_PresetAliyun" xml:space="preserve">
     <value>Alibaba Cloud Bailian</value>
   </data>

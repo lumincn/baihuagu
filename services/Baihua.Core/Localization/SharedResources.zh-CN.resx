@@ -1680,6 +1680,9 @@ Status: {2}
     <value>更新失败: {0}</value>
   </data>
   <!-- AiConfig Preset Keys -->
+  <data name="AiConfig_PresetCustom" xml:space="preserve">
+    <value>自定义 (OpenAI 兼容，如本地 Ollama / LM Studio)</value>
+  </data>
   <data name="AiConfig_PresetAliyun" xml:space="preserve">
     <value>阿里云百炼 (Aliyun Bailian)</value>
   </data>

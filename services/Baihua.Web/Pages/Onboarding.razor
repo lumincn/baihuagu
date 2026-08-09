@@ -120,9 +120,24 @@
                         <div class="form-group">
                             <label>@L["Onboarding_ApiKeyLabel"]</label>
                             <input type="password" class="form-control" @bind="apiKey" @bind:event="oninput" placeholder="sk-..." />
-                            <small class="form-text">@L["Onboarding_ApiKeyHint"]</small>
+                            <small class="form-text">@(IsCustom ? L["Onboarding_ApiKeyOptionalHint"] : L["Onboarding_ApiKeyHint"])</small>
                         </div>
 
+                        @if (IsCustom)
+                        {
+                            <div class="form-group">
+                                <label>@L["Onboarding_ApiUrlLabel"]</label>
+                                <input type="text" class="form-control" @bind="customBaseUrl" @bind:event="oninput" placeholder="http://192.168.1.100:11434/v1" />
+                                <small class="form-text">@L["Onboarding_CustomUrlHint"]</small>
+                            </div>
+                            <div class="form-group">
+                                <label>@L["Onboarding_ModelLabel"]</label>
+                                <input type="text" class="form-control" @bind="customModel" @bind:event="oninput" placeholder="qwen3:14b" />
+                                <small class="form-text">@L["Onboarding_CustomModelHint"]</small>
+                            </div>
+                        }
+                        else
+                        {
                         <div class="preset-info">
                             <div class="info-row">
                                 <span class="info-label">@L["Onboarding_ProviderLabel"]</span>
@@ -137,6 +152,7 @@
                                 <span class="info-value">@selectedPresetModel</span>
                             </div>
                         </div>
+                        }
 
                         <div class="help-links">
                             <p>@L["Onboarding_GetApiKey"]</p>
@@ -651,7 +667,16 @@
     private string selectedPresetUrl => providerPresets.FirstOrDefault(p => p.Id == selectedPresetId)?.BaseUrl ?? "";
     private string selectedPresetModel => providerPresets.FirstOrDefault(p => p.Id == selectedPresetId)?.Models?.FirstOrDefault(m => m.IsMain)?.Name ?? "";
 
-    private bool CanSave => !string.IsNullOrWhiteSpace(selectedPresetId) && !string.IsNullOrWhiteSpace(apiKey) && !isSaving;
+    private string customBaseUrl = "";
+    private string customModel = "";
+
+    private bool CanSave =>
+        !string.IsNullOrWhiteSpace(selectedPresetId) &&
+        !isSaving &&
+        (!string.IsNullOrWhiteSpace(apiKey) || IsCustom) &&
+        (!IsCustom || (!string.IsNullOrWhiteSpace(customBaseUrl) && !string.IsNullOrWhiteSpace(customModel)));
+
+    private bool IsCustom => selectedPresetId == "custom";
 
     protected override async Task OnInitializedAsync()
     {
@@ -712,14 +737,16 @@
             {
                 Id = preset.Id,
                 Name = preset.Name,
-                BaseUrl = preset.BaseUrl,
+                BaseUrl = IsCustom ? customBaseUrl.Trim() : preset.BaseUrl,
                 IsMain = true,
-                Models = preset.Models.Select(m => new AiModelRequest
-                {
-                    Name = m.Name,
-                    IsPaid = m.IsPaid,
-                    IsMain = m.IsMain
-                }).ToList(),
+                Models = IsCustom
+                    ? new List<AiModelRequest> { new() { Name = customModel.Trim(), IsMain = true } }
+                    : preset.Models.Select(m => new AiModelRequest
+                    {
+                        Name = m.Name,
+                        IsPaid = m.IsPaid,
+                        IsMain = m.IsMain
+                    }).ToList(),
                 ApiKey = apiKey.Trim()
             };
 

@@ -20,6 +20,16 @@ public partial class AiConfigController
         {
             new()
             {
+                Id = "custom",
+                Name = _loc["AiConfig_PresetCustom"],
+                BaseUrl = "",
+                Models = new()
+                {
+                    new() { Name = "", IsMain = true }
+                }
+            },
+            new()
+            {
                 Id = "zhipu",
                 Name = _loc["AiConfig_PresetZhipu"],
                 BaseUrl = "https://open.bigmodel.cn/api/paas/v4",
