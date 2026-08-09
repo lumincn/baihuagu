@@ -101,23 +101,28 @@ build_images() {
 
     log "构建服务镜像 ..."
 
+    # prebuilt 镜像的 Dockerfile 里 `COPY publish/<svc> .` 是相对 docker/ 目录的，
+    # 所以 context 必须用 DOCKER_DIR（用项目根会报 "/publish/<svc>: not found"）
+    local prebuilt_ctx="$DOCKER_DIR"
+
     # Vault
     log "  构建 bh-vault:latest ..."
-    docker build -f "$DOCKER_DIR/Dockerfile.vault.prebuilt" -t bh-vault:latest "$PROJECT_ROOT"
+    docker build -f "$DOCKER_DIR/Dockerfile.vault.prebuilt" -t bh-vault:latest "$prebuilt_ctx"
 
     # AI
     log "  构建 bh-ai:latest ..."
-    docker build -f "$DOCKER_DIR/Dockerfile.taskrunner.ai.prebuilt" -t bh-ai:latest "$PROJECT_ROOT"
+    docker build -f "$DOCKER_DIR/Dockerfile.taskrunner.ai.prebuilt" -t bh-ai:latest "$prebuilt_ctx"
 
     # WebUI
     log "  构建 bh-webui:latest ..."
-    docker build -f "$DOCKER_DIR/Dockerfile.webui.prebuilt" -t bh-webui:latest "$PROJECT_ROOT"
+    docker build -f "$DOCKER_DIR/Dockerfile.webui.prebuilt" -t bh-webui:latest "$prebuilt_ctx"
 
     # Family (轻量版，不含 OpenVINO)
     log "  构建 bh-family:latest（轻量版，OpenVINO 已拆分到独立容器）..."
-    docker build -f "$DOCKER_DIR/Dockerfile.family.prebuilt" -t bh-family:latest "$PROJECT_ROOT"
+    docker build -f "$DOCKER_DIR/Dockerfile.family.prebuilt" -t bh-family:latest "$prebuilt_ctx"
 
     # OpenVINO 推理服务器（独立容器，含 GPU 支持）
+    # 注意：该 Dockerfile 拷的是 services/... 和 docker/... 下的源文件，context 必须用项目根
     log "  构建 bh-openvino:latest（OpenVINO + Intel GPU 推理服务）..."
     docker build -f "$DOCKER_DIR/Dockerfile.openvino-server.prebuilt" -t bh-openvino:latest "$PROJECT_ROOT"
 
