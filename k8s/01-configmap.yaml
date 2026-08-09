@@ -35,3 +35,6 @@ data:
   # 设为非 localhost 时，Family 跳过本地 Python 进程启动
   OPENVINO_LLM_URL: "http://bh-openvino:8000"
   OPENVINO_VISION_URL: "http://bh-openvino:8801"
+
+  # OpenVINO LLM 托管服务（宿主机 openvino_host.py：8000/8001 实例的启停/状态）
+  OPENVINO_HOST_URL: "http://192.168.3.9:8866"

@@ -1975,6 +1975,75 @@ else
         </div>
         }
     </div>
+
+    <!-- OpenVINO LLM 服务（宿主机托管） -->
+    <div class="load-model-section">
+        <div class="section-header" style="cursor:pointer;" @onclick="() => ToggleSection(ref _showOpenVinoLlm)">
+            <h3>@(_showOpenVinoLlm ? "▼" : "▶") 🤖 @L["LocalModels_OpenVinoLlmTitle"]</h3>
+            <button class="btn btn-secondary btn-sm" @onclick="LoadOpenVinoLlmStatus" disabled="@isLoadingOpenVinoLlm" title="刷新" style="margin-left:0.5rem;">
+                @(isLoadingOpenVinoLlm ? "⏳" : "🔄")
+            </button>
+        </div>
+        @if (_showOpenVinoLlm)
+        {
+            @if (openVinoLlmError != null)
+            {
+                <div class="alert alert-warning" style="margin-top:0.5rem;">@openVinoLlmError</div>
+            }
+            @if (openVinoLlmInstances.Count == 0 && openVinoLlmError == null)
+            {
+                <div class="alert alert-info" style="margin-top:0.5rem;">@L["LocalModels_OpenVinoLlmEmpty"]</div>
+            }
+            <div class="downloaded-models-table" style="margin-top:0.5rem;">
+                <div class="downloaded-table-header">
+                    <span>端口</span><span>名称</span><span>模型</span><span>状态</span><span>PID</span><span>操作</span>
+                </div>
+                @foreach (var inst in openVinoLlmInstances)
+                {
+                    <div class="downloaded-table-row">
+                        <span><code>@inst.Port</code></span>
+                        <span>@inst.Name</span>
+                        <span style="font-size:0.75rem;color:#888;">@(inst.Model.Replace("C:\\Users\\lumin\\", "~/"))</span>
+                        <span>
+                            @if (inst.Running && inst.Healthy)
+                            {
+                                <span class="badge" style="background:#2e7d32;color:#fff;">运行中</span>
+                            }
+                            else if (inst.Running)
+                            {
+                                <span class="badge" style="background:#f9a825;color:#fff;">启动中</span>
+                            }
+                            else
+                            {
+                                <span class="badge" style="background:#757575;color:#fff;">已停止</span>
+                            }
+                            @if (inst.Managed)
+                            {
+                                <span style="font-size:0.7rem;color:#888;">(托管)</span>
+                            }
+                        </span>
+                        <span style="font-size:0.75rem;color:#888;">@(inst.Pid?.ToString() ?? "-")</span>
+                        <span>
+                            @if (inst.Running)
+                            {
+                                <button class="btn btn-secondary btn-sm" @onclick='() => ControlOpenVinoLlm("stop", inst.Port)' disabled="@isControllingOpenVinoLlm">停止</button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-primary btn-sm" @onclick='() => ControlOpenVinoLlm("start", inst.Port)' disabled="@isControllingOpenVinoLlm">启动</button>
+                            }
+                        </span>
+                    </div>
+                }
+            </div>
+            @if (!string.IsNullOrEmpty(openVinoLlmMessage))
+            {
+                <div class="load-message @(openVinoLlmSuccess ? "text-success" : "text-error")" style="margin-top:0.5rem;">
+                    @openVinoLlmMessage
+                </div>
+            }
+        }
+    </div>
     }
 
 
@@ -2004,6 +2073,15 @@ else
     private bool _showLocalTools = false;
     private bool _showLlamaCpp = false;
     private bool _showRecommendations = true;
+    private bool _showOpenVinoLlm = true;
+
+    // OpenVINO LLM 托管服务（宿主机 openvino_host.py）
+    private List<OpenVinoLlmInstanceDto> openVinoLlmInstances = new();
+    private string? openVinoLlmError;
+    private string openVinoLlmMessage = "";
+    private bool openVinoLlmSuccess = true;
+    private bool isLoadingOpenVinoLlm;
+    private bool isControllingOpenVinoLlm;
 
     private void ToggleSection(ref bool flag) => flag = !flag;
 
@@ -2099,7 +2177,8 @@ else
             var recTask = LoadRecommendationsAsync();
             var modelsTask = RefreshRunningModels();
             var downloadedTask = RefreshDownloadedModels();
-            await Task.WhenAll(configTask, recTask, modelsTask, downloadedTask);
+            var openvinoLlmTask = LoadOpenVinoLlmStatus();
+            await Task.WhenAll(configTask, recTask, modelsTask, downloadedTask, openvinoLlmTask);
         }
         catch (Exception ex)
         {
@@ -2441,6 +2520,54 @@ else
         finally
         {
             isRefreshingLibrary = false;
+        }
+    }
+
+    private async Task LoadOpenVinoLlmStatus()
+    {
+        isLoadingOpenVinoLlm = true;
+        openVinoLlmError = null;
+        try
+        {
+            var status = await ApiService.GetOpenVinoLlmStatusAsync();
+            if (status == null)
+            {
+                openVinoLlmError = "无法获取 OpenVINO 托管服务状态（宿主机 8866 未运行？）";
+                openVinoLlmInstances = new();
+            }
+            else
+            {
+                openVinoLlmInstances = status.Instances;
+            }
+        }
+        catch (Exception ex)
+        {
+            openVinoLlmError = ex.Message;
+        }
+        finally
+        {
+            isLoadingOpenVinoLlm = false;
+        }
+    }
+
+    private async Task ControlOpenVinoLlm(string action, int port)
+    {
+        isControllingOpenVinoLlm = true;
+        try
+        {
+            var (success, message) = await ApiService.ControlOpenVinoLlmAsync(action, port);
+            openVinoLlmSuccess = success;
+            openVinoLlmMessage = message;
+            await LoadOpenVinoLlmStatus();
+        }
+        catch (Exception ex)
+        {
+            openVinoLlmSuccess = false;
+            openVinoLlmMessage = ex.Message;
+        }
+        finally
+        {
+            isControllingOpenVinoLlm = false;
         }
     }
 

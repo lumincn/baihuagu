@@ -4087,6 +4087,12 @@ Shift+Enter 换行，Enter 发送</value>
   <data name="LocalModels_DownloadedOpenVino" xml:space="preserve">
     <value>OpenVINO 模型</value>
   </data>
+  <data name="LocalModels_OpenVinoLlmTitle" xml:space="preserve">
+    <value>OpenVINO LLM 服务（宿主机托管）</value>
+  </data>
+  <data name="LocalModels_OpenVinoLlmEmpty" xml:space="preserve">
+    <value>暂无实例配置（宿主机 openvino_host.py 未返回数据）</value>
+  </data>
   <data name="LocalModels_LoadOpenVinoTitle" xml:space="preserve">
     <value>加载 OpenVINO 模型</value>
   </data>

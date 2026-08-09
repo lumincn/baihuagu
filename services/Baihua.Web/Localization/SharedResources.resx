@@ -4088,6 +4088,12 @@ Shift+Enter new line, Enter to send</value>
   <data name="LocalModels_DownloadedOpenVino" xml:space="preserve">
     <value>OpenVINO Models</value>
   </data>
+  <data name="LocalModels_OpenVinoLlmTitle" xml:space="preserve">
+    <value>OpenVINO LLM Services (host-managed)</value>
+  </data>
+  <data name="LocalModels_OpenVinoLlmEmpty" xml:space="preserve">
+    <value>No instances configured (host openvino_host.py returned no data)</value>
+  </data>
   <data name="LocalModels_LoadOpenVinoTitle" xml:space="preserve">
     <value>Load OpenVINO Model</value>
   </data>
