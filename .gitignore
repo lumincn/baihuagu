@@ -238,3 +238,5 @@ tests/e2e/screenshots/
 # 原生部署构建产物（bh-*-native 脚本）
 out/
 tests/Baihua.Web.E2e/test-results/
+
+k8s-test-data/
