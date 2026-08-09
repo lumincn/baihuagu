@@ -3,32 +3,33 @@
 ## 架构概览
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    K8s Cluster (baihua namespace)            │
-│                                                               │
-│  ┌──────────┐     ┌──────────┐     ┌──────────────────────┐ │
-│  │ bh-nginx │────▶│ bh-webui │────▶│ bh-family            │ │
-│  │ :30080   │     │ :5177    │     │ :8788 (OpenVINO+GPU) │ │
-│  │ NodePort │     │ Blazor   │     │ .NET + Python        │ │
-│  └──────────┘     └──────────┘     └──────┬───────────────┘ │
-│                                            │                  │
-│                   ┌──────────┐     ┌──────▼──────┐          │
-│                   │ bh-ai    │     │ bh-vault    │          │
-│                   │ :8791    │     │ :8790       │          │
-│                   │ AI 代理  │     │ 知识库管理  │          │
-│                   └──────────┘     └─────────────┘          │
-│                                                               │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │ Intel GPU Device Plugin (DaemonSet, kube-system)      │  │
-│  │ → 注册 intel.com/gpu 扩展资源                          │  │
-│  │ → 自动挂载 /dev/dri/renderD128 到 Pod                  │  │
-│  └───────────────────────────────────────────────────────┘  │
-│                                                               │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐    │
-│  │ data PVC │  │ logs PVC │  │ vaults   │  │ models   │    │
-│  │ 10Gi     │  │ 5Gi      │  │ 50Gi     │  │ 50Gi     │    │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘    │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                    K8s Cluster (baihua namespace)                │
+│                                                                  │
+│  ┌──────────┐     ┌──────────┐     ┌──────────────────────┐     │
+│  │ bh-nginx │────▶│ bh-webui │────▶│ bh-family            │     │
+│  │ :30080   │     │ :5177    │     │ :8788 (轻量, 无GPU)  │     │
+│  │ NodePort │     │ Blazor   │     │ .NET only            │     │
+│  └──────────┘     └──────────┘     └──────┬───────────────┘     │
+│                                            │ HTTP                │
+│                   ┌──────────┐     ┌──────▼──────────────┐      │
+│                   │ bh-ai    │     │ bh-openvino         │      │
+│                   │ :8791    │     │ :8000 LLM  :8801 VS │      │
+│                   │ AI 代理  │     │ OpenVINO + Intel GPU│      │
+│                   └──────────┘     └─────────────────────┘      │
+│                                                                  │
+│  ┌──────────┐     ┌──────────┐                                  │
+│  │ bh-vault │     │  GPU     │ ← intel.com/gpu (Device Plugin)  │
+│  │ :8790    │     │ 8Gi RAM  │                                  │
+│  └──────────┘     └──────────┘                                  │
+│                                                                  │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐        │
+│  │ data PVC │  │ logs PVC │  │ vaults   │  │ models   │        │
+│  │ 10Gi     │  │ 5Gi      │  │ 50Gi     │  │ 50Gi     │        │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘        │
+│                                              ↑ ↑                 │
+│                                    RW(OpenVINO) RO(Family scan) │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ## 文件清单
@@ -36,18 +37,50 @@
 | 文件 | 说明 |
 |------|------|
 | `00-namespace.yaml` | 命名空间 |
-| `01-configmap.yaml` | 共享配置（非敏感） |
+| `01-configmap.yaml` | 共享配置（含 OpenVINO 服务 URL） |
 | `02-secret.yaml` | 敏感配置（密码、密钥） |
 | `03-pvc.yaml` | 持久化存储（data/logs/vaults/models） |
 | `10-intel-gpu-plugin.yaml` | Intel GPU Device Plugin DaemonSet |
 | `20-vault.yaml` | bh-vault Deployment + Service |
 | `21-ai.yaml` | bh-ai Deployment + Service |
-| `22-family.yaml` | bh-family Deployment + Service（含 GPU） |
+| **`22a-openvino.yaml`** | **bh-openvino Deployment + Service（GPU 推理）** |
+| `22-family.yaml` | bh-family Deployment + Service（轻量, 无 GPU） |
 | `23-webui.yaml` | bh-webui Deployment + Service |
 | `24-nginx-configmap.yaml` | Nginx 配置（K8s DNS 适配） |
 | `25-nginx.yaml` | Nginx Deployment + NodePort Service |
 | `deploy.sh` | 一键部署脚本 |
-| `../docker/Dockerfile.family-openvino.prebuilt` | 含 OpenVINO 的 Family 镜像 |
+| `../docker/Dockerfile.openvino-server.prebuilt` | OpenVINO 独立推理容器 |
+| `../docker/Dockerfile.family.prebuilt` | Family 轻量容器（无 OpenVINO） |
+
+## 架构设计：OpenVINO 独立容器
+
+### 为什么拆分？
+
+| 维度 | 之前（嵌入 Family） | 之后（独立容器） |
+|------|---------------------|------------------|
+| Family 镜像大小 | ~3GB（.NET + Python + OpenVINO） | ~800MB（.NET only） |
+| GPU 资源 | 绑定在 Family Pod | 仅 OpenVINO Pod |
+| 升级 OpenVINO | 需重建 Family 镜像 | 独立重建 OpenVINO 镜像 |
+| 扩缩容 | Family + GPU 一起扩 | 可独立扩 OpenVINO |
+| 代码改动 | — | 极小（HTTP 接口不变） |
+
+### 通信方式
+
+Family 服务**已经通过 HTTP** 调用 OpenVINO（`openvino_llm_server.py` 的 `/v1/chat/completions`）。
+改造只是把 `localhost:8000` 换成 `http://bh-openvino:8000`（K8s Service DNS）。
+
+- **本地模式**（Docker Compose / 开发环境）：Family 通过 `Process.Start` 拉起本地 Python 服务
+- **远程模式**（K8s）：设置 `OPENVINO_LLM_URL=http://bh-openvino:8000`，Family 跳过进程启动，直接调用远程 API
+
+### 模型文件存储
+
+```
+PVC: baihua-models-pvc (50Gi, hostPath: /opt/baihua/models)
+├── bh-openvino Pod:  挂载 /models (RW) — 推理读取
+└── bh-family Pod:    挂载 /opt/baihua/models (RO) — 模型扫描（UI 列表）
+```
+
+单节点用 RWO hostPath 即可；多节点需改为 NFS + RWX。
 
 ## 前提条件
 
@@ -56,11 +89,11 @@
 需要原生 Linux K8s 集群（不能用 WSL2 内的 Docker Desktop）：
 
 ```bash
-# 方式 A: kind（推荐，开发用）
-kind create cluster --name baihua
+# 方式 A: k3s（推荐，单节点，轻量）
+curl -sfL https://get.k3s.io | sh -
 
-# 方式 B: minikube
-minikube start --driver=docker
+# 方式 B: kind（开发用，但 GPU 不可用）
+kind create cluster --name baihua
 
 # 方式 C: 生产集群（kubeadm / RKE / 云托管 K8s）
 # 确保节点有 Intel GPU 驱动
@@ -106,11 +139,12 @@ chmod +x deploy.sh
 ./deploy.sh build
 ```
 
-构建 4 个镜像：
+构建 5 个镜像：
 - `bh-vault:latest` — 标准镜像
 - `bh-ai:latest` — 标准镜像
 - `bh-webui:latest` — 标准镜像
-- `bh-family-openvino:latest` — **含 OpenVINO + Intel GPU 运行时**
+- `bh-family:latest` — **轻量镜像（无 OpenVINO）**
+- `bh-openvino:latest` — **OpenVINO 推理服务 + Intel GPU 运行时**
 
 #### 2. 加载镜像到集群
 
@@ -118,8 +152,8 @@ chmod +x deploy.sh
 # kind
 ./deploy.sh load
 
-# 或手动
-kind load docker-image bh-vault:latest bh-ai:latest bh-webui:latest bh-family-openvino:latest
+# k3s（本地节点，镜像已在 docker 中）
+# k3s 自动从 containerd 拉取本地镜像，无需额外操作
 ```
 
 #### 3. 填写 Secret
@@ -143,7 +177,22 @@ openssl rand -base64 32
 ./deploy.sh deploy
 ```
 
-#### 5. 验证 GPU
+#### 5. 下载模型
+
+```bash
+# 在节点上创建模型目录
+sudo mkdir -p /opt/baihua/models
+
+# 下载 OpenVINO 模型（示例: Qwen2.5-VL-7B）
+# 使用 HuggingFace + optimum-cli 转换
+pip install optimum[openvino]
+optimum-cli export openvino --model Qwen/Qwen2.5-VL-7B-Instruct --task image-text-to-text --weight-format int4 /opt/baihua/models/Qwen2.5-VL-7B-Instruct-int4-ov
+
+# 或直接下载预转换模型
+# https://huggingface.co/OpenVINO/qwen2-vl-7b-instruct-int4-ov
+```
+
+#### 6. 验证 GPU + OpenVINO
 
 ```bash
 ./deploy.sh verify-gpu
@@ -151,8 +200,12 @@ openssl rand -base64 32
 
 预期输出：
 ```
-OpenVINO 可用设备: ['CPU', 'GPU']
-✅ Intel GPU 可用
+1. Device Plugin 已部署
+2. 节点有 1 个 Intel GPU
+3. OpenVINO 可用设备: ['CPU', 'GPU']
+   Intel GPU 可用
+4. 模型: Qwen2.5-VL-7B-Instruct-int4-ov, 设备: GPU, VL: True
+5. Family → OpenVINO 连通性: OK
 ```
 
 ## 验证部署
@@ -166,6 +219,7 @@ OpenVINO 可用设备: ['CPU', 'GPU']
 
 # 查看日志
 ./deploy.sh logs bh-family 100
+./deploy.sh logs bh-openvino 100
 ```
 
 ## Intel GPU 配置详解
@@ -177,33 +231,34 @@ OpenVINO 可用设备: ['CPU', 'GPU']
 3. 向 K8s 注册 `intel.com/gpu` 扩展资源
 4. Pod 声明 `resources.limits.intel.com/gpu: 1` 时，自动挂载 GPU 设备
 
-### bh-family Pod GPU 访问链路
+### bh-openvino Pod GPU 访问链路
+
+```
+Pod (bh-openvino)
+├── /dev/dri/renderD128  ← Intel GPU Device Plugin 自动挂载
+├── Python + openvino-genai
+│   └── Core().available_devices → ['CPU', 'GPU', 'NPU']
+├── openvino_llm_server.py  ← OpenAI 兼容推理服务 (:8000)
+│   └── --device GPU  ← 使用 Intel GPU 推理
+├── vision_server.py        ← 视觉推理服务 (:8801)
+│   └── Qwen2.5-VL 3B/7B
+└── /models/ ← PVC 挂载（模型文件）
+```
+
+### bh-family Pod（无 GPU）
 
 ```
 Pod (bh-family)
-├── /dev/dri/renderD128  ← Intel GPU Device Plugin 自动挂载
-├── Python + openvino-genai
-│   └── Core().available_devices → ['CPU', 'GPU']
-├── openvino_llm_server.py  ← OpenAI 兼容推理服务
-│   └── --device GPU  ← 使用 Intel GPU 推理
-└── .NET bh-family.dll
-    └── CapabilityService → 检测到 GPU → OpenClaw 菜单显示
+├── .NET bh-family.dll
+│   ├── OPENVINO_LLM_URL=http://bh-openvino:8000 (ConfigMap)
+│   ├── DetectAndStartOpenVinoAsync()
+│   │   └── 检测到远程 URL → 跳过本地 Python 启动
+│   ├── ProbeOpenVinoDevicesAsync()
+│   │   └── 调用 http://bh-openvino:8000/health 获取设备
+│   └── ScanOpenVinoModelsAsync()
+│       └── 扫描 /opt/baihua/models/ (RO PVC) → UI 模型列表
+└── /opt/baihua/models/ ← PVC 只读挂载（模型扫描）
 ```
-
-### OpenVINO 推理服务
-
-bh-family Pod 内通过 `openvino_llm_server.py` 提供 OpenAI 兼容 API：
-
-- 模型路径：`/opt/baihua/models/<model-dir>`（PVC 挂载）
-- 端口：8000（Pod 内部）
-- 设备：GPU（环境变量 `OPENVINO_DEVICE=GPU`）
-- API：`/v1/models`, `/v1/chat/completions`
-
-在 WebUI 的 OpenClaw 页面配置 OpenVINO provider 时：
-- BinaryPath 留空（自动探测）
-- ModelPath 填 `/opt/baihua/models/Qwen2.5-VL-7B-Instruct-int4-ov`
-- Device 选 `GPU`
-- Port 填 `8000`
 
 ## 与 Docker Compose 对比
 
@@ -212,6 +267,7 @@ bh-family Pod 内通过 `openvino_llm_server.py` 提供 OpenAI 兼容 API：
 | 网络 | host (Linux) / bridge (Windows) | Service DNS |
 | GPU 访问 | `--gpus all` (仅 NVIDIA) | `intel.com/gpu` (Device Plugin) |
 | OpenVINO | ❌ WSL2 不支持 Intel GPU | ✅ 原生 Linux |
+| OpenVINO 架构 | 嵌入 Family 容器 | 独立 bh-openvino 容器 |
 | 持久化 | bind mount | PVC |
 | 配置 | .env 文件 | ConfigMap + Secret |
 | 反向代理 | nginx container (host net) | nginx Pod (NodePort) |
@@ -224,7 +280,7 @@ bh-family Pod 内通过 `openvino_llm_server.py` 提供 OpenAI 兼容 API：
 ### Pod 无法调度（GPU 不足）
 
 ```bash
-kubectl -n baihua describe pod -l app=bh-family
+kubectl -n baihua describe pod -l app=bh-openvino
 # 如果看到 "0/1 nodes are available: 1 Insufficient intel.com/gpu"
 # 说明 Device Plugin 未注册 GPU，检查:
 kubectl -n kube-system get pods -l app=intel-gpu-plugin
@@ -234,8 +290,8 @@ kubectl get nodes -o custom-columns=NAME:.metadata.name,GPU:.status.capacity.'in
 ### OpenVINO 检测不到 GPU
 
 ```bash
-# 进入 Pod 检查
-kubectl -n baihua exec -it deployment/bh-family -- bash
+# 进入 OpenVINO Pod 检查
+kubectl -n baihua exec -it deployment/bh-openvino -- bash
 
 # 检查设备节点
 ls -la /dev/dri/
@@ -248,10 +304,24 @@ clinfo | head -20
 python3 -c "from openvino.runtime import Core; print(Core().available_devices)"
 ```
 
+### Family 无法连接 OpenVINO
+
+```bash
+# 检查 Service
+kubectl -n baihua get svc bh-openvino
+# 应有 Endpoints
+
+# 从 Family Pod 测试连通性
+kubectl -n baihua exec deployment/bh-family -- curl -s http://bh-openvino:8000/health
+```
+
 ### 模型文件缺失
 
 ```bash
-# 检查模型目录
+# 检查 OpenVINO Pod 的模型目录
+kubectl -n baihua exec deployment/bh-openvino -- ls -la /models/
+
+# 检查 Family Pod 的模型目录（只读）
 kubectl -n baihua exec deployment/bh-family -- ls -la /opt/baihua/models/
 
 # 如果为空，需要将模型上传到节点的 /opt/baihua/models/
@@ -276,23 +346,4 @@ kubectl -n baihua get endpoints
 4. **监控**：部署 DCGM exporter + Prometheus（Intel GPU 指标）
 5. **日志**：Fluentd/Fluent Bit 收集到 OpenObserve
 6. **镜像仓库**：使用 Harbor / ACR 推送镜像，避免 `imagePullPolicy: IfNotPresent`
-
-## 附录：CapabilityService GPU 检测链路
-
-```
-K8s Pod (bh-family)
-├── /dev/dri/renderD128 ← Device Plugin 挂载
-├── HardwareInfoService.Gpu.cs
-│   └── DetectGpu()
-│       ├── lspci | grep -i vga → "Intel Corporation Arc 130T"
-│       ├── 判断 IsIntegratedGpu → false（Arc 是独显）
-│       └── GetHardwareTier → LowEndGpu 或 MidRangeGpu
-├── CapabilityService.cs
-│   └── GetCapability()
-│       ├── cap >= LowEndGpu → true
-│       ├── OpenClawLocalConfig → available ✅
-│       ├── LocalModelDeployment → available ✅
-│       └── LocalAiInference → available ✅
-└── WebUI FamilyNavMenu.razor
-    └── OpenClaw 菜单显示 ✅
-```
+7. **OpenVINO 扩缩容**：多 GPU 节点时可 `kubectl scale deployment/bh-openvino --replicas=N`

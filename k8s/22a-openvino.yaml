@@ -1,0 +1,116 @@
+# bh-openvino: 独立 OpenVINO 推理服务
+# 提供 LLM 推理 (端口 8000) + 视觉推理 (端口 8801)
+# 这是唯一需要 Intel GPU 的服务 — 通过 resources.limits.intel.com/gpu 请求 GPU
+# Family 服务通过 K8s Service DNS (http://bh-openvino:8000) 调用，无需本地 Python
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bh-openvino
+  namespace: baihua
+  labels:
+    app: bh-openvino
+    app.kubernetes.io/part-of: baihua
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bh-openvino
+  template:
+    metadata:
+      labels:
+        app: bh-openvino
+    spec:
+      # 限制调度到有 Intel GPU 的节点
+      # nodeSelector:
+      #   intel-gpu: "true"
+      containers:
+        - name: bh-openvino
+          image: bh-openvino:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              name: llm
+            - containerPort: 8801
+              name: vision
+          env:
+            - name: OPENVINO_MODEL_PATH
+              value: "/models/Qwen2.5-VL-7B-Instruct-int4-ov"
+            - name: OPENVINO_DEVICE
+              value: "GPU"
+            - name: OPENVINO_LLM_PORT
+              value: "8000"
+            - name: OPENVINO_VISION_PORT
+              value: "8801"
+            - name: OPENVINO_MAX_CONTEXT
+              value: "4096"
+            - name: START_VISION
+              value: "true"
+            - name: VISION_MODEL_3B
+              value: "/models/Qwen2.5-VL-3B-Instruct-int4-ov"
+            - name: VISION_MODEL_7B
+              value: "/models/Qwen2.5-VL-7B-Instruct-int4-ov"
+          volumeMounts:
+            - name: models
+              mountPath: /models
+              readOnly: false
+            # Intel GPU 设备节点（由 intel-gpu-plugin 自动注入）
+            - name: dri
+              mountPath: /dev/dri
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 3
+          resources:
+            limits:
+              # 请求 1 个 Intel GPU（由 intel-gpu-plugin 分配）
+              intel.com/gpu: 1
+              memory: 8Gi
+            requests:
+              cpu: 1000m
+              memory: 2Gi
+          securityContext:
+            privileged: false
+            allowPrivilegeEscalation: false
+            # supplementalGroups: [44]  # video group on most Linux distros
+      volumes:
+        - name: models
+          persistentVolumeClaim:
+            claimName: baihua-models-pvc
+        # /dev/dri 由 Intel GPU Device Plugin 自动注入
+        # hostPath 作为 fallback（当 Device Plugin 未部署时）
+        - name: dri
+          hostPath:
+            path: /dev/dri
+            type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bh-openvino
+  namespace: baihua
+  labels:
+    app: bh-openvino
+    app.kubernetes.io/part-of: baihua
+spec:
+  selector:
+    app: bh-openvino
+  ports:
+    - name: llm
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+    - name: vision
+      port: 8801
+      targetPort: 8801
+      protocol: TCP

@@ -6,7 +6,7 @@
 #   ./deploy.sh status   # 查看部署状态
 #   ./deploy.sh logs     # 查看日志
 #   ./deploy.sh destroy  # 删除所有资源
-#   ./deploy.sh all      # build + deploy
+#   ./deploy.sh all      # build + load + deploy + verify-gpu
 set -euo pipefail
 
 # ============================================================
@@ -24,7 +24,8 @@ IMAGES=(
     "bh-vault:latest"
     "bh-ai:latest"
     "bh-webui:latest"
-    "bh-family-openvino:latest"
+    "bh-family:latest"
+    "bh-openvino:latest"
 )
 
 # ============================================================
@@ -112,12 +113,16 @@ build_images() {
     log "  构建 bh-webui:latest ..."
     docker build -f "$DOCKER_DIR/Dockerfile.webui.prebuilt" -t bh-webui:latest "$PROJECT_ROOT"
 
-    # Family with OpenVINO
-    log "  构建 bh-family-openvino:latest（包含 OpenVINO + Intel GPU 支持）..."
-    docker build -f "$DOCKER_DIR/Dockerfile.family-openvino.prebuilt" -t bh-family-openvino:latest "$PROJECT_ROOT"
+    # Family (轻量版，不含 OpenVINO)
+    log "  构建 bh-family:latest（轻量版，OpenVINO 已拆分到独立容器）..."
+    docker build -f "$DOCKER_DIR/Dockerfile.family.prebuilt" -t bh-family:latest "$PROJECT_ROOT"
+
+    # OpenVINO 推理服务器（独立容器，含 GPU 支持）
+    log "  构建 bh-openvino:latest（OpenVINO + Intel GPU 推理服务）..."
+    docker build -f "$DOCKER_DIR/Dockerfile.openvino-server.prebuilt" -t bh-openvino:latest "$PROJECT_ROOT"
 
     log "所有镜像构建完成"
-    docker images | grep -E "bh-(vault|ai|webui|family)" | head -10
+    docker images | grep -E "bh-(vault|ai|webui|family|openvino)" | head -10
 }
 
 # ============================================================
@@ -155,6 +160,7 @@ deploy() {
         "10-intel-gpu-plugin.yaml"
         "20-vault.yaml"
         "21-ai.yaml"
+        "22a-openvino.yaml"
         "22-family.yaml"
         "23-webui.yaml"
         "24-nginx-configmap.yaml"
@@ -200,6 +206,8 @@ status() {
     if [ -n "$NODE_IP" ]; then
         info "  WebUI:  http://$NODE_IP:30080"
         info "  Family: http://$NODE_IP:30080 (via nginx)"
+        info "  OpenVINO LLM:    http://bh-openvino:8000 (集群内)"
+        info "  OpenVINO Vision: http://bh-openvino:8801 (集群内)"
     fi
 }
 
@@ -252,18 +260,29 @@ verify_gpu() {
         info "  请检查: 1) 节点有 /dev/dri/renderD128  2) Device Plugin Pod 正常运行"
     fi
 
-    # 检查 bh-family Pod 的 GPU
-    log "3. 检查 bh-family Pod GPU 访问 ..."
-    kubectl -n "$NAMESPACE" exec deployment/bh-family -- python3 -c "
+    # 检查 bh-openvino Pod 的 GPU
+    log "3. 检查 bh-openvino Pod GPU 访问 ..."
+    kubectl -n "$NAMESPACE" exec deployment/bh-openvino -- python3 -c "
 from openvino.runtime import Core
 core = Core()
 devices = core.available_devices
 print(f'  OpenVINO 可用设备: {devices}')
 if 'GPU' in devices:
-    print('  ✅ Intel GPU 可用')
+    print('  Intel GPU 可用')
 else:
-    print('  ⚠️ GPU 未检测到（可能 /dev/dri 未挂载或驱动未安装）')
-" 2>&1 || err "  无法在 bh-family Pod 中执行 OpenVINO 检测"
+    print('  GPU 未检测到（可能 /dev/dri 未挂载或驱动未安装）')
+" 2>&1 || err "  无法在 bh-openvino Pod 中执行 OpenVINO 检测"
+
+    # 检查 LLM 服务健康
+    log "4. 检查 OpenVINO LLM 服务 ..."
+    kubectl -n "$NAMESPACE" exec deployment/bh-openvino -- curl -s http://localhost:8000/health 2>&1 | \
+        python3 -c "import sys,json; d=json.load(sys.stdin); print(f'  模型: {d.get(\"model\",\"?\")}, 设备: {d.get(\"device\",\"?\")}, VL: {d.get(\"vl\",False)}')" 2>/dev/null || \
+        warn "  LLM 服务未就绪（模型可能仍在加载中）"
+
+    # 检查 Family → OpenVINO 连通性
+    log "5. 检查 Family → OpenVINO 连通性 ..."
+    kubectl -n "$NAMESPACE" exec deployment/bh-family -- curl -s http://bh-openvino:8000/health 2>&1 | head -1 || \
+        warn "  Family 无法连接到 bh-openvino:8000"
 }
 
 # ============================================================
@@ -303,12 +322,12 @@ case "${1:-help}" in
         echo "用法: $0 <command> [args]"
         echo ""
         echo "命令:"
-        echo "  build        构建 Docker 镜像（含 OpenVINO）"
+        echo "  build        构建 Docker 镜像（含独立 OpenVINO 容器）"
         echo "  deploy       部署到 K8s 集群"
         echo "  load         加载镜像到 kind/minikube 集群"
         echo "  status       查看部署状态"
         echo "  logs <svc>   查看服务日志 (默认: bh-family)"
-        echo "  verify-gpu   验证 Intel GPU 可用性"
+        echo "  verify-gpu   验证 Intel GPU + OpenVINO 服务可用性"
         echo "  destroy      删除所有 K8s 资源"
         echo "  all          build + load + deploy + verify-gpu"
         ;;

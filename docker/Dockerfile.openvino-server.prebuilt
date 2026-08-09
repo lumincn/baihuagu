@@ -1,0 +1,60 @@
+# bh-openvino: 独立 OpenVINO 推理服务器
+# 提供 OpenAI 兼容的 LLM 推理 API (端口 8000) + 视觉推理 API (端口 8801)
+# 需要 Intel GPU Device Plugin 注入 /dev/dri 设备
+#
+# 构建命令（由 deploy.sh 调用）：
+#   docker build -f docker/Dockerfile.openvino-server.prebuilt -t bh-openvino:latest .
+#
+# 与 Dockerfile.family-openvino.prebuilt 的区别：
+#   1. 不含 .NET 运行时 — 纯 Python 推理服务
+#   2. 镜像更小 (~1.5GB vs ~3GB)
+#   3. 独立生命周期 — 可单独升级 OpenVINO 不影响 Family 服务
+#   4. Family 服务通过 K8s Service DNS (http://bh-openvino:8000) 调用
+
+FROM python:3.12-slim AS runtime
+
+# 国内镜像源加速
+RUN sed -i 's|http://deb.debian.org|https://mirrors.huaweicloud.com|g' /etc/apt/sources.list.d/debian.sources 2>/dev/null; \
+    sed -i 's|http://security.debian.org|https://mirrors.huaweicloud.com|g' /etc/apt/sources.list.d/debian.sources 2>/dev/null; \
+    true
+
+# 安装 Intel GPU 运行时 + 系统依赖
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        intel-opencl-icd level-zero-dev libigdgmm12 clinfo pciutils \
+        curl tini \
+    && rm -rf /var/lib/apt/lists/*
+
+# 安装 OpenVINO GenAI + 依赖
+RUN pip3 install --break-system-packages \
+        -i https://mirrors.huaweicloud.com/repository/pypi/simple \
+        --trusted-host mirrors.huaweicloud.com \
+        openvino-genai==2026.2.1 openvino==2026.2.1 fastapi uvicorn numpy
+
+# 验证安装
+RUN python3 -c "from openvino.runtime import Core; print('OpenVINO installed, devices:', Core().available_devices)" || \
+    echo "OpenVINO installed (GPU will be available when /dev/dri is mounted)"
+
+WORKDIR /app
+
+# 拷贝 Python 推理脚本
+COPY services/Baihua.AI/LocalVision/openvino_llm_server.py /app/
+COPY services/Baihua.AI/LocalVision/vision_server.py /app/
+
+# 拷贝启动脚本
+COPY docker/openvino-server-entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+EXPOSE 8000 8801
+
+ENV OPENVINO_DEVICE=GPU
+ENV OPENVINO_LLM_PORT=8000
+ENV OPENVINO_VISION_PORT=8801
+ENV OPENVINO_MAX_CONTEXT=4096
+ENV START_VISION=true
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+ENTRYPOINT ["tini", "--"]
+CMD ["/app/entrypoint.sh"]

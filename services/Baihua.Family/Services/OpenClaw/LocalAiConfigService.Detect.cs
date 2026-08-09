@@ -241,6 +241,43 @@ public partial class LocalAiConfigService
             return result;
         }
 
+        // ── 远程模式（K8s 独立 OpenVINO 容器）──
+        // 当 OPENVINO_LLM_URL 环境变量指向非 localhost 时，跳过本地进程启动
+        var remoteLlmUrl = Environment.GetEnvironmentVariable("OPENVINO_LLM_URL");
+        if (!string.IsNullOrWhiteSpace(remoteLlmUrl) &&
+            !remoteLlmUrl.Contains("localhost") &&
+            !remoteLlmUrl.Contains("127.0.0.1"))
+        {
+            openvino.BaseUrl = remoteLlmUrl.TrimEnd('/');
+            logger.LogInformation("OpenVINO 远程模式: {Url}", openvino.BaseUrl);
+
+            result.Devices = await ProbeOpenVinoDevicesAsync();
+            result.CommandLine = $"(remote) {openvino.BaseUrl}";
+
+            try
+            {
+                using var httpClient = httpClientFactory.CreateClient();
+                httpClient.Timeout = TimeSpan.FromSeconds(5);
+                var response = await httpClient.GetAsync($"{openvino.BaseUrl}/v1/models");
+                if (response.IsSuccessStatusCode)
+                {
+                    result.IsRunning = true;
+                    result.Message = "OpenVINO 远程服务正在运行";
+                }
+                else
+                {
+                    result.Message = $"OpenVINO 远程服务返回 {response.StatusCode}";
+                }
+            }
+            catch (Exception ex)
+            {
+                result.Message = $"OpenVINO 远程服务不可达: {openvino.BaseUrl} ({ex.Message})";
+                logger.LogWarning(ex, "OpenVINO 远程服务不可达");
+            }
+            return result;
+        }
+
+        // ── 本地模式（Docker Compose / 开发环境）──
         if (string.IsNullOrWhiteSpace(openvino.ModelPath) || !Directory.Exists(openvino.ModelPath))
         {
             result.Message = $"模型目录不存在: {openvino.ModelPath}";
@@ -428,14 +465,57 @@ public partial class LocalAiConfigService
         return null;
     }
 
-    /// <summary>通过 openvino.Core 探测真实可用设备（如 CPU/GPU/NPU）</summary>
+    /// <summary>探测可用推理设备（CPU/GPU/NPU）。
+    /// 远程模式：调用 OpenVINO 服务的 /health 端点获取当前设备。
+    /// 本地模式：通过 openvino.Core().available_devices 获取全部设备列表。
+    /// </summary>
     private async Task<List<string>> ProbeOpenVinoDevicesAsync()
     {
+        // 远程模式：查询 OpenVINO 服务的 /health 端点
+        var remoteLlmUrl = Environment.GetEnvironmentVariable("OPENVINO_LLM_URL");
+        if (!string.IsNullOrWhiteSpace(remoteLlmUrl) &&
+            !remoteLlmUrl.Contains("localhost") &&
+            !remoteLlmUrl.Contains("127.0.0.1"))
+        {
+            try
+            {
+                using var client = httpClientFactory.CreateClient();
+                client.Timeout = TimeSpan.FromSeconds(5);
+                var response = await client.GetAsync($"{remoteLlmUrl.TrimEnd('/')}/health");
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    using var doc = JsonDocument.Parse(json);
+                    if (doc.RootElement.TryGetProperty("device", out var deviceProp))
+                    {
+                        var device = deviceProp.GetString() ?? "";
+                        return string.IsNullOrEmpty(device)
+                            ? new List<string>()
+                            : new List<string> { device };
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogDebug(ex, "探测远程 OpenVINO 设备失败");
+            }
+            return new List<string>();
+        }
+
+        // 本地模式：通过 python + openvino 探测设备
+        // 修复：使用 FindPythonWithOpenVinoAsync() 而非硬编码 "python"
+        var python = await FindPythonWithOpenVinoAsync();
+        if (python == null)
+        {
+            logger.LogDebug("未找到带 openvino 的 Python，跳过设备探测");
+            return new List<string>();
+        }
+
         try
         {
             var startInfo = new ProcessStartInfo
             {
-                FileName = "python",
+                FileName = python,
                 Arguments = "-c \"import openvino as ov; print(','.join(ov.Core().available_devices))\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,

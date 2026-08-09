@@ -1,6 +1,7 @@
 # bh-family: 核心家庭服务（端口 8788）
-# 这是唯一需要 Intel GPU 的服务 — OpenVINO 本地 AI 推理
-# 通过 resources.limits.intel.com/gpu 请求 GPU
+# OpenVINO 推理已拆分到 bh-openvino 独立服务
+# Family 通过 K8s Service DNS (http://bh-openvino:8000) 调用 OpenVINO API
+# 不再需要 Intel GPU 资源
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -20,12 +21,9 @@ spec:
       labels:
         app: bh-family
     spec:
-      # 如有 GPU 节点，可加 nodeSelector 限制调度到有 GPU 的节点
-      # nodeSelector:
-      #   intel-gpu: "true"
       containers:
         - name: bh-family
-          image: bh-family-openvino:latest
+          image: bh-family:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8788
@@ -40,9 +38,12 @@ spec:
               value: "http://0.0.0.0:8788"
             - name: TASKRUNNER_SKIP_MUTEX
               value: "true"
-            # OpenVINO 设备选择（GPU / CPU / NPU / AUTO）
-            - name: OPENVINO_DEVICE
-              value: "GPU"
+            # OpenVINO 远程服务 URL（K8s Service DNS）
+            # 设为非 localhost 时，Family 跳过本地 Python 进程启动，直接调用远程 API
+            - name: OPENVINO_LLM_URL
+              value: "http://bh-openvino:8000"
+            - name: OPENVINO_VISION_URL
+              value: "http://bh-openvino:8801"
           volumeMounts:
             - name: data
               mountPath: /app/data
@@ -50,13 +51,10 @@ spec:
               mountPath: /app/logs
             - name: vaults
               mountPath: /vaults
-            # OpenVINO 模型目录
+            # OpenVINO 模型目录（只读挂载，用于扫描可用模型列表）
             - name: models
               mountPath: /opt/baihua/models
-            # Intel GPU 设备节点（由 intel-gpu-plugin 自动注入）
-            # Device Plugin 会自动挂载 /dev/dri，这里显式声明用于可读性
-            - name: dri
-              mountPath: /dev/dri
+              readOnly: true
           readinessProbe:
             httpGet:
               path: /health
@@ -73,18 +71,13 @@ spec:
             failureThreshold: 3
           resources:
             limits:
-              # 请求 1 个 Intel GPU（由 intel-gpu-plugin 分配）
-              intel.com/gpu: 1
-              memory: 4Gi
+              memory: 2Gi
             requests:
               cpu: 500m
-              memory: 1Gi
+              memory: 512Mi
           securityContext:
-            # 需要访问 /dev/dri 设备节点
             privileged: false
             allowPrivilegeEscalation: false
-            # 如需直接访问 GPU 设备，可能需要 supplementalGroups
-            # supplementalGroups: [44]  # video group on most Linux distros
       volumes:
         - name: data
           persistentVolumeClaim:
@@ -98,12 +91,6 @@ spec:
         - name: models
           persistentVolumeClaim:
             claimName: baihua-models-pvc
-        # /dev/dri 由 Intel GPU Device Plugin 自动注入
-        # 这里声明 hostPath 作为 fallback（当 Device Plugin 未部署时）
-        - name: dri
-          hostPath:
-            path: /dev/dri
-            type: DirectoryOrCreate
 ---
 apiVersion: v1
 kind: Service
