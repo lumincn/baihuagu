@@ -320,6 +320,9 @@ h1:focus {
     background: #e8eef2;
     padding: 0.75rem 1rem;
     border-radius: 12px;
+    min-width: 0;            /* flex 子项允许收缩，防止长内容把气泡撑出容器 */
+    max-width: 100%;         /* 不超出 .message 的 80% 上限 */
+    overflow-wrap: anywhere; /* 长 URL/长单词强制换行，避免文字溢出背景 */
 }
 
 .message.user .message-content {
@@ -329,6 +332,9 @@ h1:focus {
 
 .message-text {
     margin-bottom: 0.25rem;
+    min-width: 0;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .message-time {

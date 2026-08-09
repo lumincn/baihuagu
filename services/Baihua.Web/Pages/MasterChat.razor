@@ -381,6 +381,7 @@
     }
     .message-content {
         max-width: 75%;
+        min-width: 0; /* flex 子项允许收缩，防止长内容撑破气泡 */
     }
     [data-bs-theme="dark"] .message-content {
         background: transparent;
@@ -390,6 +391,9 @@
         border-radius: 8px;
         line-height: 1.5;
         font-size: 0.9rem;
+        min-width: 0;
+        word-break: break-word;
+        overflow-wrap: anywhere;
     }
     .message.user .message-content {
         background: transparent;
@@ -581,6 +585,8 @@
         padding: 0.75rem;
         border-radius: 6px;
         overflow-x: auto;
+        max-width: 100%;
+        overflow-x: auto;
         border: 1px solid #d8e2e8;
     }
     .message.master .message-text pre code {
@@ -598,7 +604,7 @@
     .message.master .message-text strong { color: #333333; }
     .message.master .message-text a { color: #2e8baf; }
     .message.master .message-text hr { border: none; border-top: 1px solid #d8e2e8; margin: 0.5rem 0; }
-    .message.master .message-text table { border-collapse: collapse; width: 100%; margin: 0.3rem 0; }
+    .message.master .message-text table { border-collapse: collapse; width: 100%; max-width: 100%; margin: 0.3rem 0; }
     .message.master .message-text th,
     .message.master .message-text td {
         border: 1px solid #d8e2e8;
