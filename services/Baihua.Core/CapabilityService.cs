@@ -87,7 +87,8 @@ public class CapabilityService
             LocalComputeFeature.LocalModelDeployment => cap >= MachineCapability.LowEndGpu,
             LocalComputeFeature.LocalAiInference => cap >= MachineCapability.LowEndGpu,
             LocalComputeFeature.HardwareBenchmark => true,
-            LocalComputeFeature.OpenClawLocalConfig => cap >= MachineCapability.LowEndGpu,
+            // OpenClaw 不依赖本地 GPU — 即使没有显卡也能运行（云端 AI / 任务管理等功能均可正常使用）
+            LocalComputeFeature.OpenClawLocalConfig => true,
             LocalComputeFeature.SettingsLocalModelDownload => cap >= MachineCapability.CpuOnly,
             LocalComputeFeature.MessagesLocalModelSelector => cap >= MachineCapability.LowEndGpu,
             LocalComputeFeature.AiConfigLocalProviderPresets => cap >= MachineCapability.LowEndGpu,
