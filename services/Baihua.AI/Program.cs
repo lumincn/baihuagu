@@ -207,6 +207,10 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownProxies.Clear();
     options.KnownProxies.Add(IPAddress.Loopback);
     options.KnownProxies.Add(IPAddress.IPv6Loopback);
+    // RFC1918 私有网段（Docker 172.x / kind 10.244.x / k3s 10.42.x）
+    options.KnownIPNetworks.Add(new System.Net.IPNetwork(IPAddress.Parse("10.0.0.0"), 8));
+    options.KnownIPNetworks.Add(new System.Net.IPNetwork(IPAddress.Parse("172.16.0.0"), 12));
+    options.KnownIPNetworks.Add(new System.Net.IPNetwork(IPAddress.Parse("192.168.0.0"), 16));
 });
 
 var app = builder.Build();
@@ -246,13 +250,17 @@ app.Use(async (context, next) =>
     }
 
     var remoteIp = context.Connection.RemoteIpAddress;
-    // Docker 部署：WebUI 等容器通过 bridge 网络直连（172.16.0.0/12），需放行（与 Family 一致）
+    // Docker 部署：WebUI 等容器通过 bridge 网络直连（172.16.0.0/12）；
+    // kind/k3s 下是 Pod 网段（10.244.x / 10.42.x）。RFC1918 私有网段全部放行（与 Family 一致）
     var isDockerNetwork = false;
     if (remoteIp != null)
     {
         try
         {
-            isDockerNetwork = new System.Net.IPNetwork(IPAddress.Parse("172.16.0.0"), 12).Contains(remoteIp);
+            isDockerNetwork =
+                new System.Net.IPNetwork(IPAddress.Parse("10.0.0.0"), 8).Contains(remoteIp) ||
+                new System.Net.IPNetwork(IPAddress.Parse("172.16.0.0"), 12).Contains(remoteIp) ||
+                new System.Net.IPNetwork(IPAddress.Parse("192.168.0.0"), 16).Contains(remoteIp);
         }
         catch { isDockerNetwork = false; }
     }
