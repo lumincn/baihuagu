@@ -16,9 +16,9 @@ test.describe('听知识库功能', () => {
     await page.goto(`/browse?cli-token=${token}`);
     await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {});
     
-    await expect(page.locator('h2', { hasText: '知识库浏览' })).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('h2', { hasText: /知识库浏览|Vault Browser/ })).toBeVisible({ timeout: 15000 });
     
-    const listenButtons = page.locator('button', { hasText: '听' });
+    const listenButtons = page.locator('button', { hasText: /听|Listen/ });
     const buttonCount = await listenButtons.count();
     console.log(`找到 ${buttonCount} 个听按钮`);
     
@@ -35,7 +35,7 @@ test.describe('听知识库功能', () => {
     
     await page.waitForTimeout(2000);
     
-    const modal = page.locator('.modal-overlay');
+    const modal = page.locator('.modal.show, .modal-overlay');
     const modalVisible = await modal.isVisible().catch(() => false);
     console.log(`模态框可见: ${modalVisible}`);
     
@@ -55,9 +55,9 @@ test.describe('听知识库功能', () => {
     await page.goto(`/browse?cli-token=${token}`);
     await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {});
     
-    await expect(page.locator('h2', { hasText: '知识库浏览' })).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('h2', { hasText: /知识库浏览|Vault Browser/ })).toBeVisible({ timeout: 15000 });
     
-    const listenButtons = page.locator('button', { hasText: '听' });
+    const listenButtons = page.locator('button', { hasText: /听|Listen/ });
     const buttonCount = await listenButtons.count();
     
     if (buttonCount === 0) {
@@ -68,7 +68,7 @@ test.describe('听知识库功能', () => {
     await listenButtons.first().click();
     await page.waitForTimeout(3000);
     
-    const modal = page.locator('.modal-overlay');
+    const modal = page.locator('.modal.show, .modal-overlay');
     await expect(modal).toBeVisible({ timeout: 10000 });
     
     const playlistItems = page.locator('.playlist-item');
@@ -90,9 +90,9 @@ test.describe('听知识库功能', () => {
     await page.goto(`/browse?cli-token=${token}`);
     await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {});
     
-    await expect(page.locator('h2', { hasText: '知识库浏览' })).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('h2', { hasText: /知识库浏览|Vault Browser/ })).toBeVisible({ timeout: 15000 });
     
-    const listenButtons = page.locator('button', { hasText: '听' });
+    const listenButtons = page.locator('button', { hasText: /听|Listen/ });
     const buttonCount = await listenButtons.count();
     
     if (buttonCount === 0) {
@@ -103,10 +103,10 @@ test.describe('听知识库功能', () => {
     await listenButtons.first().click();
     await page.waitForTimeout(3000);
     
-    const modal = page.locator('.modal-overlay');
+    const modal = page.locator('.modal.show, .modal-overlay');
     await expect(modal).toBeVisible({ timeout: 10000 });
     
-    const playButton = page.locator('button', { hasText: '播放' });
+    const playButton = page.locator('button', { hasText: /播放|Play/ });
     const playButtonVisible = await playButton.isVisible().catch(() => false);
     console.log('播放按钮可见:', playButtonVisible);
     

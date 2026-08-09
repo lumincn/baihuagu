@@ -5,7 +5,7 @@
 #
 # Usage: ./bh-linux-k8s.sh <command> [args]
 #   build       docker build 5 images (docker/ prebuilt context)
-#   load        load images into kind (k3s: images usually already local)
+#   load        load images into k3s/kind (k3s: docker save | ctr import)
 #   deploy      kubectl apply k8s/ manifests + wait ready
 #   up          load + deploy
 #   status      pods / svc / pvc overview
@@ -20,28 +20,30 @@ K8S_DIR="$ROOT/k8s"
 DOCKER_DIR="$ROOT/docker"
 NAMESPACE="baihua"
 
-# kubectl: PATH first, then common Windows/kind locations (WSL shares the Windows FS)
-KUBECTL=""
-for c in kubectl /mnt/c/Program\ Files/Docker/Docker/resources/bin/kubectl.exe; do
-    if command -v "$c" >/dev/null 2>&1 || [ -x "$c" ]; then KUBECTL="$c"; break; fi
-done
-[ -z "$KUBECTL" ] && { echo "[k8s] kubectl not found"; exit 1; }
-
-# kubeconfig: prefer explicit, then linux home, then Windows home
-if [ -z "${KUBECONFIG:-}" ]; then
-    if [ -f "$HOME/.kube/config" ]; then KUBECONFIG="$HOME/.kube/config"
-    elif [ -f /mnt/c/Users/lumin/.kube/config ]; then KUBECONFIG=/mnt/c/Users/lumin/.kube/config
-    fi
-    [ -n "${KUBECONFIG:-}" ] && export KUBECONFIG
-fi
-
 IMAGES="bh-vault:latest bh-ai:latest bh-webui:latest bh-family:latest bh-openvino:latest"
+
+# kubectl 封装：优先 k3s 自带 kubectl（k3s kubectl），再 PATH 里的 kubectl，最后 Windows 侧 kubectl.exe
+K3S_MODE=0
+if command -v k3s >/dev/null 2>&1; then
+    K3S_MODE=1
+    if [ -z "${KUBECONFIG:-}" ] && [ -f /etc/rancher/k3s/k3s.yaml ]; then
+        export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+    fi
+    k() { k3s kubectl "$@"; }
+elif command -v kubectl >/dev/null 2>&1; then
+    k() { kubectl "$@"; }
+elif [ -x "/mnt/c/Program Files/Docker/Docker/resources/bin/kubectl.exe" ]; then
+    k() { "/mnt/c/Program Files/Docker/Docker/resources/bin/kubectl.exe" "$@"; }
+else
+    echo "[k8s] 未找到 k3s / kubectl"; exit 1
+fi
 
 help_text() {
     sed -n 's/^#   //p' "$0" | sed -n '2,12p'
 }
 
 build_all() {
+    # 注意：需在能访问 docker 的环境执行（Windows 或启用了 WSL 集成的发行版）
     docker build -f "$DOCKER_DIR/Dockerfile.vault.prebuilt"          -t bh-vault:latest    "$DOCKER_DIR" >/dev/null || exit 1
     echo "[build] bh-vault"
     docker build -f "$DOCKER_DIR/Dockerfile.taskrunner.ai.prebuilt"  -t bh-ai:latest       "$DOCKER_DIR" >/dev/null || exit 1
@@ -56,10 +58,21 @@ build_all() {
 }
 
 load_all() {
-    if command -v kind >/dev/null 2>&1; then
+    if [ "$K3S_MODE" = 1 ]; then
+        # k3s：docker save | k3s ctr images import（若 WSL 内 docker 不可用，见下方提示）
+        if ! docker info >/dev/null 2>&1; then
+            echo "[load] WSL 内 docker 不可用（Docker Desktop 未启用此发行版 WSL 集成）。"
+            echo "       请在 Windows 侧执行："
+            echo "       docker save $IMAGES | wsl -e bash -lc 'k3s ctr images import -'"
+            exit 1
+        fi
+        for img in $IMAGES; do
+            docker save "$img" | k3s ctr images import - >/dev/null 2>&1 && echo "[load] $img" || echo "[load] FAILED: $img"
+        done
+    elif command -v kind >/dev/null 2>&1; then
         for img in $IMAGES; do kind load docker-image "$img" >/dev/null 2>&1 && echo "[load] $img"; done
     else
-        echo "[load] kind CLI not found; if using k3s images are usually already visible, skipping"
+        echo "[load] 未检测到 k3s/kind，跳过"
     fi
 }
 
@@ -67,28 +80,28 @@ deploy_all() {
     for m in 00-namespace.yaml 01-configmap.yaml 02-secret.yaml 03-pvc.yaml 10-intel-gpu-plugin.yaml \
              20-vault.yaml 21-ai.yaml 22a-openvino.yaml 22-family.yaml 23-webui.yaml 24-nginx-configmap.yaml 25-nginx.yaml; do
         echo "[deploy] $m"
-        "$KUBECTL" apply -f "$K8S_DIR/$m" >/dev/null || exit 1
+        k apply -f "$K8S_DIR/$m" >/dev/null || exit 1
     done
     echo "[deploy] waiting for pods ..."
-    "$KUBECTL" -n "$NAMESPACE" wait --for=condition=ready pod -l app.kubernetes.io/part-of=baihua --timeout=300s || echo "[deploy] some pods not ready (see status)"
+    k -n "$NAMESPACE" wait --for=condition=ready pod -l app.kubernetes.io/part-of=baihua --timeout=300s || echo "[deploy] some pods not ready (see status)"
     status_all
 }
 
 status_all() {
     echo "=== pods ==="
-    "$KUBECTL" -n "$NAMESPACE" get pods -o wide
+    k -n "$NAMESPACE" get pods -o wide
     echo ""
     echo "=== svc ==="
-    "$KUBECTL" -n "$NAMESPACE" get svc
+    k -n "$NAMESPACE" get svc
     echo ""
     echo "=== pvc ==="
-    "$KUBECTL" -n "$NAMESPACE" get pvc
+    k -n "$NAMESPACE" get pvc
     echo ""
     echo "entry: http://localhost:30080"
 }
 
 show_logs() {
-    "$KUBECTL" -n "$NAMESPACE" logs -l "app=${1:-bh-family}" --tail="${2:-50}" --all-containers=true
+    k -n "$NAMESPACE" logs -l "app=${1:-bh-family}" --tail="${2:-50}" --all-containers=true
 }
 
 case "${1:-help}" in
@@ -98,7 +111,7 @@ case "${1:-help}" in
     up)        load_all; deploy_all ;;
     status)    status_all ;;
     logs)      show_logs "${2:-bh-family}" "${3:-50}" ;;
-    destroy)   "$KUBECTL" delete namespace "$NAMESPACE"; echo "[destroy] done" ;;
+    destroy)   k delete namespace "$NAMESPACE"; echo "[destroy] done" ;;
     dashboard) (xdg-open http://localhost:30080 >/dev/null 2>&1 &) || true ;;
     help)      help_text ;;
     *)         help_text ;;

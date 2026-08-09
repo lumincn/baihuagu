@@ -35,7 +35,7 @@ test.describe('冒烟测试 - Family 版', () => {
     await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {});
     await expect(page.locator('main')).toBeVisible({ timeout: 20000 });
     // 首页可能显示 FamilyHome 或 Onboarding 首次配置页，两者都算正常
-    const hasHome = await page.locator('text=少就是多').first().isVisible().catch(() => false);
+    const hasHome = await page.locator('text=/少就是多|Less is more/').first().isVisible().catch(() => false);
     const hasOnboarding = await page.locator('text=首次配置').first().isVisible().catch(() => false);
     expect(hasHome || hasOnboarding, '首页应显示家庭首页或首次配置').toBe(true);
   });
@@ -58,20 +58,16 @@ test.describe('冒烟测试 - Family 版', () => {
     expect(critical404s, `关键资源 404: ${critical404s.join(', ')}`).toHaveLength(0);
   });
 
-  test('侧边栏导航 - 系统菜单展开', async ({ page }) => {
+  test('侧边栏导航 - 点击 OpenClaw 跳转', async ({ page }) => {
     const token = await getCliToken();
     await page.goto(`/?cli-token=${token}`);
     await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {});
     await expect(page.locator('main')).toBeVisible({ timeout: 20000 });
-    // 首次配置（Onboarding）页面没有系统菜单，跳过
-    const isOnboarding = await page.locator('text=首次配置').first().isVisible().catch(() => false);
-    if (isOnboarding) {
-      test.skip('首次配置页面无系统菜单');
-      return;
-    }
-    const systemMenu = page.locator('summary', { hasText: '系统' });
-    await systemMenu.click();
-    await expect(page.locator('a[href="log-settings"]')).toBeVisible({ timeout: 10000 });
+    const ocLink = page.locator('nav a[href="openclaw"], aside a[href="openclaw"], a[href="openclaw"]').first();
+    await expect(ocLink).toBeVisible({ timeout: 10000 });
+    await ocLink.click();
+    await expect(page).toHaveURL(/openclaw/);
+    await expect(page.locator('body')).toContainText(/OpenClaw/);
   });
 
   test('知识库页面加载完成', async ({ page }) => {
@@ -105,58 +101,58 @@ test.describe('冒烟测试 - Family 版', () => {
     const token = await getCliToken();
     await page.goto(`/log-settings?cli-token=${token}`);
     await expect(page.locator('main')).toBeVisible({ timeout: 15000 });
-    await expect(page.locator('h1', { hasText: '日志配置' })).toBeVisible();
+    await expect(page.locator('h1', { hasText: /日志配置|Log Settings/ })).toBeVisible();
   });
 
   test('AI 设置页面加载', async ({ page }) => {
     const token = await getCliToken();
     await page.goto(`/settings?cli-token=${token}`);
     await expect(page.locator('main')).toBeVisible({ timeout: 15000 });
-    await expect(page.locator('text=AI 提供商配置')).toBeVisible();
+    await expect(page.locator('text=/AI 提供商配置|AI Settings/').first()).toBeVisible();
   });
 
   test('每日一帖页面加载', async ({ page }) => {
     const token = await getCliToken();
     await page.goto(`/daily-card?cli-token=${token}`);
     await expect(page.locator('main')).toBeVisible({ timeout: 15000 });
-    await expect(page.locator('h1', { hasText: '每日一帖' })).toBeVisible();
+    await expect(page.locator('h1', { hasText: /每日一帖|Daily Card/ })).toBeVisible();
   });
 
   test('成就墙页面加载', async ({ page }) => {
     const token = await getCliToken();
     await page.goto(`/achievements?cli-token=${token}`);
     await expect(page.locator('main')).toBeVisible({ timeout: 15000 });
-    await expect(page.locator('h1', { hasText: '成就墙' })).toBeVisible();
+    await expect(page.locator('h1', { hasText: /成就墙|Achievements/ })).toBeVisible();
   });
 
   test('赛舟榜页面加载', async ({ page }) => {
     const token = await getCliToken();
     await page.goto(`/leaderboard?cli-token=${token}`);
     await expect(page.locator('main')).toBeVisible({ timeout: 15000 });
-    await expect(page.locator('h1', { hasText: '家庭赛舟榜' })).toBeVisible();
+    await expect(page.locator('h1', { hasText: /家庭赛舟榜|Regatta/ })).toBeVisible();
   });
 
   test('家长看板页面加载', async ({ page }) => {
     const token = await getCliToken();
     await page.goto(`/dashboard?cli-token=${token}`);
     await expect(page.locator('main')).toBeVisible({ timeout: 15000 });
-    await expect(page.locator('h1', { hasText: '家长看板' })).toBeVisible();
+    await expect(page.locator('h1', { hasText: /家长看板|Dashboard/ })).toBeVisible();
   });
 
   test('AI 对话页面加载', async ({ page }) => {
     const token = await getCliToken();
     await page.goto(`/messages?cli-token=${token}`);
     await expect(page.locator('main')).toBeVisible({ timeout: 15000 });
-    await expect(page.locator('h1', { hasText: 'AI 对话' })).toBeVisible();
+    await expect(page.locator('h1', { hasText: /AI 对话|AI Chat/ })).toBeVisible();
   });
 
   test('硬件评测页面显示 INT8/INT4 算力', async ({ page }) => {
     const token = await getCliToken();
     await page.goto(`/hardware-benchmark?cli-token=${token}`);
     await expect(page.locator('main')).toBeVisible({ timeout: 15000 });
-    await expect(page.locator('th', { hasText: 'INT8 算力' })).toBeVisible();
-    await expect(page.locator('th', { hasText: 'INT4 算力' })).toBeVisible();
-    const fp16Cells = page.locator('th', { hasText: 'FP16 算力' });
+    await expect(page.locator('th', { hasText: /INT8 算力|INT8 TFLOPS/ })).toBeVisible();
+    await expect(page.locator('th', { hasText: /INT4 算力|INT4 TFLOPS/ })).toBeVisible();
+    const fp16Cells = page.locator('th', { hasText: /FP16 算力|FP16 TFLOPS/ });
     await expect(fp16Cells).toHaveCount(0);
   });
 
@@ -169,7 +165,7 @@ test.describe('冒烟测试 - Family 版', () => {
     await page.goto('/search?q=%E9%BC%BB%E6%B8%8A');
     await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
     // 搜索框应显示关键字的初始值
-    const searchInput = page.locator('input[placeholder*="搜索"]');
+    const searchInput = page.locator('input[placeholder*="搜索"], input[placeholder*="Search"]');
     await expect(searchInput).toHaveValue('鼻渊', { timeout: 15000 });
     // 等待片刻后检查关键字仍保留（表示无意外刷新丢失状态）
     await page.waitForTimeout(2000);
@@ -180,17 +176,18 @@ test.describe('冒烟测试 - Family 版', () => {
     const token = await getCliToken();
     await page.goto(`/openclaw?cli-token=${token}`);
     await expect(page.locator('main')).toBeVisible({ timeout: 15000 });
-    await expect(page.locator('text=OpenClaw 任务委派')).toBeVisible();
+    await expect(page.locator('text=/OpenClaw 任务委派|OpenClaw Task Delegation/')).toBeVisible();
   });
 
   test('能力评估 API 返回正确格式', async ({ request }) => {
     const resp = await request.get(`${TASKRUNNER_BASE}/api/capability`);
     expect(resp.status()).toBe(200);
-    const data = await resp.json();
-    expect(data).toHaveProperty('level');
-    expect(data).toHaveProperty('availableFeatures');
-    expect(data).toHaveProperty('restrictedFeatures');
-    expect(Array.isArray(data.availableFeatures)).toBe(true);
+    const data: any = await resp.json();
+    // 兼容 PascalCase（当前）与 camelCase（旧版）
+    expect(data.Level ?? data.level).toBeTruthy();
+    expect(data.AvailableFeatures ?? data.availableFeatures).toBeTruthy();
+    expect(Array.isArray(data.AvailableFeatures ?? data.availableFeatures)).toBe(true);
+    expect(data.RestrictedFeatures ?? data.restrictedFeatures).toBeTruthy();
   });
 
   test('模型推荐只返回 INT4/INT8 模型', async ({ request }) => {
@@ -200,9 +197,9 @@ test.describe('冒烟测试 - Family 版', () => {
     expect(Array.isArray(models)).toBe(true);
     expect(models.length).toBeGreaterThan(0);
     for (const m of models) {
-      const q = (m.quantization || '').toUpperCase();
+      const q = ((m.quantization ?? m.Quantization) || '').toUpperCase();
       const isInt4Or8 = q.includes('Q4') || q.includes('Q8') || q.includes('INT4') || q.includes('INT8');
-      expect(isInt4Or8, `模型 ${m.name} 的精度 ${m.quantization} 不是 INT4/INT8`).toBe(true);
+      expect(isInt4Or8, `模型 ${m.name ?? m.Name} 的精度 ${m.quantization ?? m.Quantization} 不是 INT4/INT8`).toBe(true);
     }
   });
 
