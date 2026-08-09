@@ -3,7 +3,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Text.Json;
 using System.Security.Cryptography;
-using Baihua.Family.Helpers;
+using Baihua.AI.Provider;
 using System.Collections.Generic;
 using Microsoft.Extensions.AI;
 using Baihua.Family.Models;

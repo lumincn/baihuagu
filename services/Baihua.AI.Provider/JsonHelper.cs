@@ -2,7 +2,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Unicode;
 
-namespace Baihua.Family.Helpers
+namespace Baihua.AI.Provider
 {
     /// <summary>
     /// JSON 辅助方法

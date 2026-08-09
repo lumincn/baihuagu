@@ -1,7 +1,8 @@
 using Microsoft.Extensions.Configuration;
 using System.Runtime.InteropServices;
+using Baihua.Family.Services;
 
-namespace Baihua.Family.Services;
+namespace Baihua.AI.Provider;
 
 /// <summary>
 /// 本地模型运行时配置服务：管理下载目录、镜像偏好等本地模型相关设置。

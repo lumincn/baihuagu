@@ -45,6 +45,7 @@
     <PackageReference Include="AnkiGen.Core" Version="1.0.0" />
     <ProjectReference Include="..\Baihua.Data\Baihua.Data.csproj" />
     <ProjectReference Include="..\Baihua.Core\Baihua.Core.csproj" />
+    <ProjectReference Include="..\Baihua.AI.Provider\Baihua.AI.Provider.csproj" />
     <ProjectReference Include="..\Baihua.Contracts\Baihua.Contracts.csproj" />
     <ProjectReference Include="..\..\libs\MobileContract\MobileContract.csproj" />
   </ItemGroup>

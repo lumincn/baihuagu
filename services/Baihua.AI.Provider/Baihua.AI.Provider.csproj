@@ -23,6 +23,7 @@
     <PackageReference Include="LLamaSharp.Backend.Cuda12" Version="0.26.0" />
     <PackageReference Include="Microsoft.ML.OnnxRuntimeGenAI.DirectML" Version="0.13.1" />
     <!-- 基础设施 -->
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.6" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.4" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.6" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.6" />
@@ -30,6 +31,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Baihua.Contracts\Baihua.Contracts.csproj" />
+    <ProjectReference Include="..\Baihua.Core\Baihua.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

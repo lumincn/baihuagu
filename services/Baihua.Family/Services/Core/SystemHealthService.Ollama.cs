@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Net.Http;
 using System.Runtime.InteropServices;
+using Baihua.AI.Provider;
 using ComponentStatus = Baihua.Contracts.Health.ComponentStatusDto;
 
 namespace Baihua.Family.Services

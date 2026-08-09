@@ -4,6 +4,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Baihua.Contracts.LocalModels;
 using Baihua.Contracts.OpenClaw;
 using Baihua.Data.Entities;
+using Baihua.AI.Provider;
 using Baihua.Family.Models;
 
 namespace Baihua.Family.Services;

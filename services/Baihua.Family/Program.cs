@@ -29,6 +29,7 @@ using Baihua.Contracts.Metrics;
 using Baihua.Family.Middleware;
 using Microsoft.AspNetCore.Localization;
 using System.Globalization;
+using Baihua.AI.Provider;
 
 // Initialize native SQLite provider early to avoid Microsoft.Data.Sqlite type initializer issues
 try
@@ -256,9 +257,9 @@ builder.Services.AddSingleton<OllamaService>();
 builder.Services.AddSingleton<LmStudioDownloadService>();
 builder.Services.AddSingleton<LmStudioService>();
 builder.Services.AddSingleton<LlamaCppService>();
-builder.Services.Configure<Baihua.Family.Services.OpenVinoToolOptions>(
+builder.Services.Configure<Baihua.AI.Provider.OpenVinoToolOptions>(
     builder.Configuration.GetSection("LocalVision"));
-builder.Services.AddSingleton<Baihua.Family.Services.OpenVinoToolService>();
+builder.Services.AddSingleton<Baihua.AI.Provider.OpenVinoToolService>();
 builder.Services.AddSingleton<LocalModelDeploymentService>();
 builder.Services.AddSingleton<AiMetricsService>();
 builder.Services.AddSingleton<BenchmarkRepository>();

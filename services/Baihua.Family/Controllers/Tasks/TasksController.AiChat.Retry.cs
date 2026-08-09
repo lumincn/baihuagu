@@ -2,7 +2,7 @@ using Baihua.Core;
 using Baihua.Core.Localization;
 using Baihua.Family.Services;
 using System.Text.Json;
-using Baihua.Family.Helpers;
+using Baihua.AI.Provider;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Localization;

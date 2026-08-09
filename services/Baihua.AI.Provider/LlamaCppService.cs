@@ -2,10 +2,8 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Baihua.Contracts.LocalModels;
 using Baihua.Contracts.OpenClaw;
-using Baihua.Family.Helpers;
-using Baihua.Family.Models;
 
-namespace Baihua.Family.Services
+namespace Baihua.AI.Provider
 {
     /// <summary>
     /// llama.cpp 本地模型服务：处理 llama.cpp 的检测、运行、模型管理

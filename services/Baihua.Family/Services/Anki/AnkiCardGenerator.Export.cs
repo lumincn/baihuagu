@@ -1,8 +1,9 @@
 using System.Text;
 using System.Text.Json;
 using Baihua.Contracts.Anki;
-using Baihua.Family.Helpers;
+using Baihua.AI.Provider;
 using AnkiGen.Core;
+using Baihua.AI.Provider;
 
 namespace Baihua.Family.Services
 {

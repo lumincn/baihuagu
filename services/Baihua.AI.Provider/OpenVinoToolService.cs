@@ -5,7 +5,7 @@ using System.Text.Json;
 using Baihua.Contracts.LocalModels;
 using Microsoft.Extensions.Options;
 
-namespace Baihua.Family.Services;
+namespace Baihua.AI.Provider;
 
 /// <summary>
 /// OpenVINO 工具配置（与 Baihua.AI 的 LocalVision 配置同名同结构）

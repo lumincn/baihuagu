@@ -3,11 +3,12 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Text.Json;
 using System.Security.Cryptography;
-using Baihua.Family.Helpers;
+using Baihua.AI.Provider;
 using System.Collections.Generic;
 using Microsoft.Extensions.AI;
 using Baihua.Family.Models;
 using Baihua.Contracts.Scene;
+using Baihua.AI.Provider;
 
 namespace Baihua.Family.Services;
 

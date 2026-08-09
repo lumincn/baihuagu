@@ -2,10 +2,8 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Baihua.Contracts.LocalModels;
 using Baihua.Contracts.OpenClaw;
-using Baihua.Family.Helpers;
-using Baihua.Family.Models;
 
-namespace Baihua.Family.Services
+namespace Baihua.AI.Provider
 {
 
     public partial class LlamaCppService

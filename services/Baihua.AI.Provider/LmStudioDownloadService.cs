@@ -2,11 +2,10 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Baihua.Contracts.LocalModels;
 using Baihua.Core.Localization;
-using Baihua.Family.Helpers;
-using Baihua.Family.Models;
 using Microsoft.Extensions.Localization;
+using Baihua.AI.Provider;
 
-namespace Baihua.Family.Services;
+namespace Baihua.AI.Provider;
 
 /// <summary>
 /// LM Studio 模型下载服务

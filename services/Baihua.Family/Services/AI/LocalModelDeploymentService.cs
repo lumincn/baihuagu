@@ -7,6 +7,7 @@ using Baihua.Core.Localization;
 using Baihua.Data.Entities;
 using Baihua.Family.Models;
 using Microsoft.Extensions.Localization;
+using Baihua.AI.Provider;
 
 namespace Baihua.Family.Services;
     /// <summary>

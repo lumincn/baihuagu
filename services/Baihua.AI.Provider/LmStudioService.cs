@@ -1,10 +1,8 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Baihua.Contracts.LocalModels;
-using Baihua.Family.Helpers;
-using Baihua.Family.Models;
 
-namespace Baihua.Family.Services;
+namespace Baihua.AI.Provider;
     /// <summary>
     /// LM Studio 本地模型服务：处理 LM Studio 的检测、部署、运行、模型管理
     /// </summary>

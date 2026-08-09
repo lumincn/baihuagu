@@ -3,6 +3,7 @@ using Microsoft.Extensions.Localization;
 using Baihua.Contracts.Health;
 using Baihua.Core.Localization;
 using Baihua.Family.Services;
+using Baihua.AI.Provider;
 
 namespace Baihua.Family.Controllers;
     /// <summary>
@@ -15,7 +16,7 @@ namespace Baihua.Family.Controllers;
         private readonly Services.SystemHealthService _healthService;
         private readonly Services.AiSettingsService _aiSettings;
         private readonly Services.LocalAiAutoStarter _localAiAutoStarter;
-        private readonly Services.ILocalAiConfigService _localAiConfig;
+        private readonly Baihua.AI.Provider.ILocalAiConfigService _localAiConfig;
         private readonly ILogger<HealthController> _logger;
         private readonly IStringLocalizer<SharedResources> _loc;
 
@@ -23,7 +24,7 @@ namespace Baihua.Family.Controllers;
             Services.SystemHealthService healthService,
             Services.AiSettingsService aiSettings,
             Services.LocalAiAutoStarter localAiAutoStarter,
-            Services.ILocalAiConfigService localAiConfig,
+            Baihua.AI.Provider.ILocalAiConfigService localAiConfig,
             ILogger<HealthController> logger,
             IStringLocalizer<SharedResources> loc)
         {

@@ -4,6 +4,7 @@ using Baihua.Contracts.OpenClaw;
 using Baihua.Core.Localization;
 using Baihua.Family.Services;
 using Microsoft.Extensions.Localization;
+using Baihua.AI.Provider;
 
 namespace Baihua.Family.Controllers;
     /// <summary>

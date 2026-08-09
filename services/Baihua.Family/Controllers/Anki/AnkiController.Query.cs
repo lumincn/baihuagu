@@ -1,7 +1,7 @@
 using Baihua.Core;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using Baihua.Family.Helpers;
+using Baihua.AI.Provider;
 using Baihua.Contracts.Anki;
 
 namespace Baihua.Family.Controllers;

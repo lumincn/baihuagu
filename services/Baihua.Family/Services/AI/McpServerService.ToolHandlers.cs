@@ -4,8 +4,9 @@ using System.Text.Json.Nodes;
 using Microsoft.Extensions.AI;
 using Baihua.Contracts.Mcp;
 using Baihua.Contracts.OpenClaw;
-using Baihua.Family.Helpers;
+using Baihua.AI.Provider;
 using Baihua.Family.Models;
+using Baihua.AI.Provider;
 
 namespace Baihua.Family.Services;
 

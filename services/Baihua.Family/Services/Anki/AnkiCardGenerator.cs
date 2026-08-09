@@ -2,12 +2,13 @@ using System.Text;
 using System.Text.Json;
 using Baihua.Contracts.Anki;
 using Baihua.Core.Localization;
-using Baihua.Family.Helpers;
+using Baihua.AI.Provider;
 using AnkiGen.Core;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Localization;
 using Baihua.Family.Models;
 using Baihua.Core;
+using Baihua.AI.Provider;
 
 namespace Baihua.Family.Services
 {

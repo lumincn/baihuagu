@@ -7,6 +7,7 @@ using Microsoft.Extensions.Localization;
 using Baihua.Contracts.Mcp;
 using Baihua.Contracts.OpenClaw;
 using Baihua.Family.Models;
+using Baihua.AI.Provider;
 
 namespace Baihua.Family.Services;
 

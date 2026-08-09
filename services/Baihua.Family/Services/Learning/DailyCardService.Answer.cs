@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 using Baihua.Contracts.Anki;
-using Baihua.Family.Helpers;
+using Baihua.AI.Provider;
 using Microsoft.EntityFrameworkCore;
 using Baihua.Data;
 using Baihua.Data.Entities;

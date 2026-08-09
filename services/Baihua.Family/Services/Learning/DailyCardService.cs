@@ -3,7 +3,7 @@ using System.Text.Json;
 using Baihua.Contracts.Anki;
 using Baihua.Core.Localization;
 using Baihua.Core.Time;
-using Baihua.Family.Helpers;
+using Baihua.AI.Provider;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Baihua.Data;
