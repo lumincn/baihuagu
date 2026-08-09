@@ -1,0 +1,123 @@
+# bh-family: 核心家庭服务（端口 8788）
+# 这是唯一需要 Intel GPU 的服务 — OpenVINO 本地 AI 推理
+# 通过 resources.limits.intel.com/gpu 请求 GPU
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bh-family
+  namespace: baihua
+  labels:
+    app: bh-family
+    app.kubernetes.io/part-of: baihua
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bh-family
+  template:
+    metadata:
+      labels:
+        app: bh-family
+    spec:
+      # 如有 GPU 节点，可加 nodeSelector 限制调度到有 GPU 的节点
+      # nodeSelector:
+      #   intel-gpu: "true"
+      containers:
+        - name: bh-family
+          image: bh-family-openvino:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8788
+              name: http
+          envFrom:
+            - configMapRef:
+                name: baihua-config
+            - secretRef:
+                name: baihua-secret
+          env:
+            - name: ASPNETCORE_URLS
+              value: "http://0.0.0.0:8788"
+            - name: TASKRUNNER_SKIP_MUTEX
+              value: "true"
+            # OpenVINO 设备选择（GPU / CPU / NPU / AUTO）
+            - name: OPENVINO_DEVICE
+              value: "GPU"
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+            - name: logs
+              mountPath: /app/logs
+            - name: vaults
+              mountPath: /vaults
+            # OpenVINO 模型目录
+            - name: models
+              mountPath: /opt/baihua/models
+            # Intel GPU 设备节点（由 intel-gpu-plugin 自动注入）
+            # Device Plugin 会自动挂载 /dev/dri，这里显式声明用于可读性
+            - name: dri
+              mountPath: /dev/dri
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8788
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8788
+            initialDelaySeconds: 40
+            periodSeconds: 30
+            failureThreshold: 3
+          resources:
+            limits:
+              # 请求 1 个 Intel GPU（由 intel-gpu-plugin 分配）
+              intel.com/gpu: 1
+              memory: 4Gi
+            requests:
+              cpu: 500m
+              memory: 1Gi
+          securityContext:
+            # 需要访问 /dev/dri 设备节点
+            privileged: false
+            allowPrivilegeEscalation: false
+            # 如需直接访问 GPU 设备，可能需要 supplementalGroups
+            # supplementalGroups: [44]  # video group on most Linux distros
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: baihua-data-pvc
+        - name: logs
+          persistentVolumeClaim:
+            claimName: baihua-logs-pvc
+        - name: vaults
+          persistentVolumeClaim:
+            claimName: baihua-vaults-pvc
+        - name: models
+          persistentVolumeClaim:
+            claimName: baihua-models-pvc
+        # /dev/dri 由 Intel GPU Device Plugin 自动注入
+        # 这里声明 hostPath 作为 fallback（当 Device Plugin 未部署时）
+        - name: dri
+          hostPath:
+            path: /dev/dri
+            type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bh-family
+  namespace: baihua
+  labels:
+    app: bh-family
+    app.kubernetes.io/part-of: baihua
+spec:
+  selector:
+    app: bh-family
+  ports:
+    - name: http
+      port: 8788
+      targetPort: 8788
+      protocol: TCP

@@ -1,0 +1,31 @@
+# 百花服务共享配置（非敏感）
+# 所有服务共享的配置项，通过 ConfigMap 注入环境变量
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: baihua-config
+  namespace: baihua
+  labels:
+    app.kubernetes.io/part-of: baihua
+data:
+  # 知识库根路径（容器内挂载点，与 PVC 挂载路径一致）
+  TASKRUNNER_VAULT_ROOT: "/vaults"
+  BAIHUA_HOME: "/app/data"
+
+  # OpenObserve 可观测性（如有部署则填实际 URL）
+  OpenObserve__WebUrl: "http://openobserve:5080/"
+  OpenObserve__Enabled: "true"
+
+  # Nginx 配置
+  BAIHUA_NGINX_PORT: "80"
+  BAIHUA_WEBUI_PREFIX: ""
+  BAIHUA_NGINX_CLIENT_MAX_BODY_SIZE: "100M"
+
+  # Family → Vault/AI 内部通信（K8s Service DNS）
+  TASKRUNNER_VAULT_URL: "http://bh-vault:8790"
+  TASKRUNNER_AI_URL: "http://bh-ai:8791"
+
+  # WebUI → 后端服务（K8s Service DNS）
+  TaskRunnerApi__BaseUrl: "http://bh-family:8788/"
+  TaskRunnerAiApi__BaseUrl: "http://bh-ai:8791/"
+  TaskRunnerVaultApi__BaseUrl: "http://bh-vault:8790/"

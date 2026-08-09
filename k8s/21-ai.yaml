@@ -1,0 +1,91 @@
+# bh-ai: AI 推理服务（端口 8791）
+# 无 GPU 需求（云端 AI 代理），纯 .NET 服务
+# 如需本地 AI 推理，由 bh-family 的 OpenVINO 集成处理
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bh-ai
+  namespace: baihua
+  labels:
+    app: bh-ai
+    app.kubernetes.io/part-of: baihua
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bh-ai
+  template:
+    metadata:
+      labels:
+        app: bh-ai
+    spec:
+      containers:
+        - name: bh-ai
+          image: bh-ai:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8791
+              name: http
+          envFrom:
+            - configMapRef:
+                name: baihua-config
+            - secretRef:
+                name: baihua-secret
+          env:
+            - name: ASPNETCORE_URLS
+              value: "http://0.0.0.0:8791"
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+            - name: logs
+              mountPath: /app/logs
+            - name: vaults
+              mountPath: /vaults
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8791
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8791
+            initialDelaySeconds: 40
+            periodSeconds: 30
+            failureThreshold: 3
+          resources:
+            limits:
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: baihua-data-pvc
+        - name: logs
+          persistentVolumeClaim:
+            claimName: baihua-logs-pvc
+        - name: vaults
+          persistentVolumeClaim:
+            claimName: baihua-vaults-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bh-ai
+  namespace: baihua
+  labels:
+    app: bh-ai
+    app.kubernetes.io/part-of: baihua
+spec:
+  selector:
+    app: bh-ai
+  ports:
+    - name: http
+      port: 8791
+      targetPort: 8791
+      protocol: TCP

@@ -1,0 +1,315 @@
+#!/bin/bash
+# 百花服务 K8s 部署脚本
+# 用法:
+#   ./deploy.sh build    # 构建 Docker 镜像
+#   ./deploy.sh deploy   # 部署到 K8s 集群
+#   ./deploy.sh status   # 查看部署状态
+#   ./deploy.sh logs     # 查看日志
+#   ./deploy.sh destroy  # 删除所有资源
+#   ./deploy.sh all      # build + deploy
+set -euo pipefail
+
+# ============================================================
+# 配置
+# ============================================================
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+DOCKER_DIR="$PROJECT_ROOT/docker"
+K8S_DIR="$SCRIPT_DIR"
+NAMESPACE="baihua"
+REGISTRY="${REGISTRY:-}"  # 如有远程镜像仓库，设置 REGISTRY=registry.example.com/
+
+# 镜像列表
+IMAGES=(
+    "bh-vault:latest"
+    "bh-ai:latest"
+    "bh-webui:latest"
+    "bh-family-openvino:latest"
+)
+
+# ============================================================
+# 颜色输出
+# ============================================================
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+log() { echo -e "${GREEN}[$(date '+%H:%M:%S')]${NC} $*"; }
+warn() { echo -e "${YELLOW}[WARN]${NC} $*"; }
+err() { echo -e "${RED}[ERROR]${NC} $*" >&2; }
+info() { echo -e "${BLUE}[INFO]${NC} $*"; }
+
+# ============================================================
+# 1. 构建基础镜像
+# ============================================================
+build_base() {
+    log "构建基础镜像 bh/base-runtime:latest ..."
+    docker build -f "$DOCKER_DIR/Dockerfile.base-runtime" -t bh/base-runtime:latest "$PROJECT_ROOT"
+    log "基础镜像构建完成"
+}
+
+# ============================================================
+# 2. 发布 .NET 项目（prebuilt 模式）
+# ============================================================
+publish_dotnet() {
+    log "发布 .NET 项目到 publish/ 目录 ..."
+
+    # NuGet 中文镜像源
+    export NUGET_PACKAGES="$PROJECT_ROOT/.nuget/packages"
+    local NUGET_SOURCE="https://nuget.cdn.azure.cn/v3/index.json"
+
+    # Family
+    log "  发布 Baihua.Family ..."
+    dotnet publish "$PROJECT_ROOT/services/Baihua.Family" \
+        -c Release -o "$DOCKER_DIR/publish/family" \
+        --source "$NUGET_SOURCE" \
+        /p:UseAppHost=false 2>&1 | tail -5
+
+    # Vault
+    log "  发布 Baihua.Vault ..."
+    dotnet publish "$PROJECT_ROOT/services/Baihua.Vault" \
+        -c Release -o "$DOCKER_DIR/publish/vault" \
+        --source "$NUGET_SOURCE" \
+        /p:UseAppHost=false 2>&1 | tail -5
+
+    # AI
+    log "  发布 Baihua.AI ..."
+    dotnet publish "$PROJECT_ROOT/services/Baihua.AI" \
+        -c Release -o "$DOCKER_DIR/publish/ai" \
+        --source "$NUGET_SOURCE" \
+        /p:UseAppHost=false 2>&1 | tail -5
+
+    # WebUI
+    log "  发布 Baihua.Web ..."
+    dotnet publish "$PROJECT_ROOT/services/Baihua.Web" \
+        -c Release -o "$DOCKER_DIR/publish/webui" \
+        --source "$NUGET_SOURCE" \
+        /p:UseAppHost=false 2>&1 | tail -5
+
+    log ".NET 发布完成"
+}
+
+# ============================================================
+# 3. 构建 Docker 镜像
+# ============================================================
+build_images() {
+    build_base
+    publish_dotnet
+
+    log "构建服务镜像 ..."
+
+    # Vault
+    log "  构建 bh-vault:latest ..."
+    docker build -f "$DOCKER_DIR/Dockerfile.vault.prebuilt" -t bh-vault:latest "$PROJECT_ROOT"
+
+    # AI
+    log "  构建 bh-ai:latest ..."
+    docker build -f "$DOCKER_DIR/Dockerfile.taskrunner.ai.prebuilt" -t bh-ai:latest "$PROJECT_ROOT"
+
+    # WebUI
+    log "  构建 bh-webui:latest ..."
+    docker build -f "$DOCKER_DIR/Dockerfile.webui.prebuilt" -t bh-webui:latest "$PROJECT_ROOT"
+
+    # Family with OpenVINO
+    log "  构建 bh-family-openvino:latest（包含 OpenVINO + Intel GPU 支持）..."
+    docker build -f "$DOCKER_DIR/Dockerfile.family-openvino.prebuilt" -t bh-family-openvino:latest "$PROJECT_ROOT"
+
+    log "所有镜像构建完成"
+    docker images | grep -E "bh-(vault|ai|webui|family)" | head -10
+}
+
+# ============================================================
+# 4. 加载镜像到集群（kind / minikube）
+# ============================================================
+load_images() {
+    if command -v kind &>/dev/null; then
+        log "检测到 kind，加载镜像到集群 ..."
+        for img in "${IMAGES[@]}"; do
+            kind load docker-image "$img" 2>/dev/null && log "  已加载: $img" || warn "  加载失败: $img"
+        done
+    elif command -v minikube &>/dev/null; then
+        log "检测到 minikube，加载镜像到集群 ..."
+        for img in "${IMAGES[@]}"; do
+            minikube image load "$img" 2>/dev/null && log "  已加载: $img" || warn "  加载失败: $img"
+        done
+    else
+        info "未检测到 kind / minikube，假设镜像已在节点上可用"
+        info "如使用远程仓库，请先 docker push 镜像"
+    fi
+}
+
+# ============================================================
+# 5. 部署到 K8s
+# ============================================================
+deploy() {
+    log "部署到 K8s 集群 (namespace: $NAMESPACE) ..."
+
+    # 按顺序应用清单
+    local manifests=(
+        "00-namespace.yaml"
+        "01-configmap.yaml"
+        "02-secret.yaml"
+        "03-pvc.yaml"
+        "10-intel-gpu-plugin.yaml"
+        "20-vault.yaml"
+        "21-ai.yaml"
+        "22-family.yaml"
+        "23-webui.yaml"
+        "24-nginx-configmap.yaml"
+        "25-nginx.yaml"
+    )
+
+    for manifest in "${manifests[@]}"; do
+        log "  应用 $manifest ..."
+        kubectl apply -f "$K8S_DIR/$manifest" 2>&1 | sed 's/^/    /'
+    done
+
+    log "等待 Pod 就绪 ..."
+    kubectl -n "$NAMESPACE" wait --for=condition=ready pod -l app.kubernetes.io/part-of=baihua --timeout=300s 2>&1 || \
+        warn "部分 Pod 未在 300s 内就绪，请用 'status' 命令查看详情"
+
+    log "部署完成！"
+    status
+}
+
+# ============================================================
+# 6. 查看状态
+# ============================================================
+status() {
+    log "=== Pod 状态 ==="
+    kubectl -n "$NAMESPACE" get pods -o wide
+
+    echo ""
+    log "=== Service 状态 ==="
+    kubectl -n "$NAMESPACE" get svc
+
+    echo ""
+    log "=== PVC 状态 ==="
+    kubectl -n "$NAMESPACE" get pvc
+
+    echo ""
+    log "=== Intel GPU 资源 ==="
+    kubectl get nodes -o custom-columns=NAME:.metadata.name,GPU:.status.capacity.'intel\.com/gpu' 2>/dev/null || \
+        info "无 Intel GPU 资源（Device Plugin 未部署或节点无 GPU）"
+
+    echo ""
+    log "=== 访问地址 ==="
+    local NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}' 2>/dev/null)
+    if [ -n "$NODE_IP" ]; then
+        info "  WebUI:  http://$NODE_IP:30080"
+        info "  Family: http://$NODE_IP:30080 (via nginx)"
+    fi
+}
+
+# ============================================================
+# 7. 查看日志
+# ============================================================
+show_logs() {
+    local service="${1:-bh-family}"
+    local tail="${2:-50}"
+    log "=== $service 日志 (最后 $tail 行) ==="
+    kubectl -n "$NAMESPACE" logs -l app="$service" --tail="$tail" --all-containers=true
+}
+
+# ============================================================
+# 8. 删除部署
+# ============================================================
+destroy() {
+    warn "即将删除 namespace: $NAMESPACE 及其所有资源"
+    read -p "确认删除? (y/N): " confirm
+    if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
+        kubectl delete namespace "$NAMESPACE"
+        log "已删除 namespace $NAMESPACE"
+    else
+        info "已取消"
+    fi
+}
+
+# ============================================================
+# 9. 验证 GPU 可用性
+# ============================================================
+verify_gpu() {
+    log "=== 验证 Intel GPU 可用性 ==="
+
+    # 检查 Device Plugin
+    log "1. 检查 Intel GPU Device Plugin ..."
+    if kubectl -n kube-system get ds intel-gpu-plugin &>/dev/null; then
+        log "  Device Plugin 已部署"
+    else
+        err "  Device Plugin 未部署"
+        return 1
+    fi
+
+    # 检查节点 GPU 资源
+    log "2. 检查节点 GPU 资源 ..."
+    local gpu_count=$(kubectl get nodes -o jsonpath='{.items[0].status.capacity}' 2>/dev/null | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('intel.com/gpu','0'))" 2>/dev/null || echo "0")
+    if [ "$gpu_count" -gt 0 ]; then
+        log "  节点有 $gpu_count 个 Intel GPU"
+    else
+        warn "  节点未注册 Intel GPU 资源"
+        info "  请检查: 1) 节点有 /dev/dri/renderD128  2) Device Plugin Pod 正常运行"
+    fi
+
+    # 检查 bh-family Pod 的 GPU
+    log "3. 检查 bh-family Pod GPU 访问 ..."
+    kubectl -n "$NAMESPACE" exec deployment/bh-family -- python3 -c "
+from openvino.runtime import Core
+core = Core()
+devices = core.available_devices
+print(f'  OpenVINO 可用设备: {devices}')
+if 'GPU' in devices:
+    print('  ✅ Intel GPU 可用')
+else:
+    print('  ⚠️ GPU 未检测到（可能 /dev/dri 未挂载或驱动未安装）')
+" 2>&1 || err "  无法在 bh-family Pod 中执行 OpenVINO 检测"
+}
+
+# ============================================================
+# 主入口
+# ============================================================
+case "${1:-help}" in
+    build)
+        build_images
+        ;;
+    deploy)
+        deploy
+        ;;
+    load)
+        load_images
+        ;;
+    status)
+        status
+        ;;
+    logs)
+        show_logs "${2:-}" "${3:-50}"
+        ;;
+    destroy)
+        destroy
+        ;;
+    verify-gpu)
+        verify_gpu
+        ;;
+    all)
+        build_images
+        load_images
+        deploy
+        verify_gpu
+        ;;
+    *)
+        echo "百花服务 K8s 部署工具"
+        echo ""
+        echo "用法: $0 <command> [args]"
+        echo ""
+        echo "命令:"
+        echo "  build        构建 Docker 镜像（含 OpenVINO）"
+        echo "  deploy       部署到 K8s 集群"
+        echo "  load         加载镜像到 kind/minikube 集群"
+        echo "  status       查看部署状态"
+        echo "  logs <svc>   查看服务日志 (默认: bh-family)"
+        echo "  verify-gpu   验证 Intel GPU 可用性"
+        echo "  destroy      删除所有 K8s 资源"
+        echo "  all          build + load + deploy + verify-gpu"
+        ;;
+esac
