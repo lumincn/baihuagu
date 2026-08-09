@@ -418,8 +418,8 @@ public partial class LocalAiConfigService
         // 自动探测：随发布拷贝的 openvino_llm_server.py + python + openvino_genai
         if (!File.Exists(scriptPath))
         {
-            // 开发环境兜底：从源码目录找
-            var devPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "services", "Baihua.AI", "LocalVision", "openvino_llm_server.py");
+            // 开发环境兜底：从源码目录找（Baihua.AI.Provider 项目）
+            var devPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "services", "Baihua.AI.Provider", "LocalVision", "openvino_llm_server.py");
             if (File.Exists(devPath)) scriptPath = Path.GetFullPath(devPath);
         }
         if (!File.Exists(scriptPath))

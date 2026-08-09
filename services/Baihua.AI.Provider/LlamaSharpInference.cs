@@ -5,7 +5,7 @@ using LLama;
 using LLama.Common;
 using LLama.Sampling;
 
-namespace Baihua.Family.Services.LocalAI;
+namespace Baihua.AI.Provider;
 
 /// <summary>
 /// GGUF 本地模型推理（基于 LLamaSharp / llama.cpp）

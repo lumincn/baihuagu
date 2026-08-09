@@ -1,4 +1,4 @@
-namespace Baihua.Family.Services.LocalAI;
+namespace Baihua.AI.Provider;
 
 /// <summary>
 /// 本地模型推理接口（GGUF / ONNX 等格式）

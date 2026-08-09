@@ -257,8 +257,8 @@ public class OpenVinoToolService
         var candidates = new[]
         {
             Path.Combine(AppContext.BaseDirectory, "LocalVision", "vision_server.py"),
-            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "Baihua.AI", "LocalVision", "vision_server.py"),
-            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "services", "Baihua.AI", "LocalVision", "vision_server.py"),
+            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "Baihua.AI.Provider", "LocalVision", "vision_server.py"),
+            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "services", "Baihua.AI.Provider", "LocalVision", "vision_server.py"),
         };
         foreach (var c in candidates)
         {

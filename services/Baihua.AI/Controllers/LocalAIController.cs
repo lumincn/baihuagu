@@ -4,7 +4,7 @@ using Baihua.Core.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Baihua.Contracts.Ai;
-using Baihua.Family.Services.LocalAI;
+using Baihua.AI.Provider;
 
 namespace Baihua.Family.Controllers;
 

@@ -1,5 +1,5 @@
 using Baihua.Contracts.Ai;
-using Baihua.Family.Services.LocalAI;
+using Baihua.AI.Provider;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Baihua.Family.Controllers;

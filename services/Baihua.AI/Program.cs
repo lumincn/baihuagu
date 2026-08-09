@@ -76,15 +76,15 @@ builder.Services.AddSingleton<Baihua.Family.Services.HardwareInfoService>();
 builder.Services.AddSingleton<Baihua.Family.Services.CapabilityService>();
 builder.Services.AddAiClientServices();
 
-// 本地模型推理后端（GGUF / ONNX）
-builder.Services.AddSingleton<Baihua.Family.Services.LocalAI.ILocalModelInference, Baihua.Family.Services.LocalAI.LlamaSharpInference>();
-builder.Services.AddSingleton<Baihua.Family.Services.LocalAI.ILocalModelInference, Baihua.Family.Services.LocalAI.OnnxRuntimeGenAIInference>();
-builder.Services.AddSingleton<Baihua.Family.Services.LocalAI.ILocalModelInference, Baihua.Family.Services.LocalAI.OpenVinoChatInference>();
+// 本地模型推理后端（GGUF / ONNX），实现位于 Baihua.AI.Provider
+builder.Services.AddSingleton<Baihua.AI.Provider.ILocalModelInference, Baihua.AI.Provider.LlamaSharpInference>();
+builder.Services.AddSingleton<Baihua.AI.Provider.ILocalModelInference, Baihua.AI.Provider.OnnxRuntimeGenAIInference>();
+builder.Services.AddSingleton<Baihua.AI.Provider.ILocalModelInference, Baihua.AI.Provider.OpenVinoChatInference>();
 
 // 本地视觉分析（Qwen2.5-VL + OpenVINO）
-builder.Services.Configure<Baihua.Family.Services.LocalAI.LocalVisionOptions>(
+builder.Services.Configure<Baihua.AI.Provider.LocalVisionOptions>(
     builder.Configuration.GetSection("LocalVision"));
-builder.Services.AddSingleton<Baihua.Family.Services.LocalAI.OpenVinoVisionService>();
+builder.Services.AddSingleton<Baihua.AI.Provider.OpenVinoVisionService>();
 
 
 

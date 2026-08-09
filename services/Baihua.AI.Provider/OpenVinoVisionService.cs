@@ -5,7 +5,7 @@ using System.Text.Json;
 using Baihua.Contracts.Ai;
 using Microsoft.Extensions.Options;
 
-namespace Baihua.Family.Services.LocalAI;
+namespace Baihua.AI.Provider;
 
 /// <summary>
 /// 本地视觉推理配置（Qwen2.5-VL + OpenVINO，通过常驻 Python 服务调用）
@@ -174,12 +174,12 @@ public class OpenVinoVisionService
         if (!string.IsNullOrWhiteSpace(_options.ScriptPath) && File.Exists(_options.ScriptPath))
             return _options.ScriptPath;
 
-        // 默认：Baihua.AI 内容根目录/LocalVision/vision_server.py
+        // 默认：Baihua.AI.Provider 内容根目录/LocalVision/vision_server.py
         var candidates = new[]
         {
             Path.Combine(AppContext.BaseDirectory, "LocalVision", "vision_server.py"),
-            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "Baihua.AI", "LocalVision", "vision_server.py"),
-            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "services", "Baihua.AI", "LocalVision", "vision_server.py"),
+            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "Baihua.AI.Provider", "LocalVision", "vision_server.py"),
+            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "services", "Baihua.AI.Provider", "LocalVision", "vision_server.py"),
         };
         foreach (var c in candidates)
         {

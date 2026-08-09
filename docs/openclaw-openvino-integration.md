@@ -39,8 +39,8 @@ OpenVINO 与 llama.cpp 架构对齐：**独立 JSON 配置文件 + CLI `config s
 | **Baihua.Family** | `Services/OpenClaw/LocalAiConfigService.Sync.cs` | 同步到 openclaw.json providers（走修复后的 CLI 调用） |
 | **Baihua.Family** | `Services/OpenClaw/OpenClawModelProfileService.cs` | OpenVINO 模型收集改为复用 `ScanLocalModelsAsync`（多模型 + id 对齐） |
 | **Baihua.Family** | `Baihua.Family.csproj` | 打包 `openvino_llm_server.py` 随发布拷贝 |
-| **Baihua.AI** | `LocalVision/openvino_llm_server.py`（新增） | OpenAI 兼容推理服务（VLMPipeline 自动判别、懒加载、chunked 兼容） |
-| **Baihua.AI** | `Baihua.AI.csproj` | 打包 `openvino_llm_server.py` |
+| **Baihua.AI.Provider** | `LocalVision/openvino_llm_server.py` | OpenAI 兼容推理服务（VLMPipeline 自动判别、懒加载、chunked 兼容） |
+| **Baihua.AI.Provider** | `Baihua.AI.Provider.csproj` | 本地 AI 引擎（LlamaSharp/ONNX/OpenVINO），打包 py 脚本随发布拷贝 |
 | **Baihua.Web** | `Pages/OpenClaw.razor` + `Localization/SharedResources*.resx` | OpenVINO 卡片：Device 下拉动态化、启动命令预览、文案修正 |
 
 ---
