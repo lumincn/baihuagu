@@ -208,7 +208,7 @@ NOTES.local.md
 
 # 本地模型文件（大文件，不提交）
 /models/
-tests/e2e/test-results/
+tests/e2e/test-results*/
 tests/e2e/test-results.json
 tests/e2e/playwright-artifacts-*/
 tests/e2e/storage-state.json
