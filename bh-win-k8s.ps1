@@ -1,4 +1,4 @@
-#requires -Version 5.1
+﻿#requires -Version 5.1
 <#
   baihua - Windows + k8s CLI
   Cell of the matrix: OS=windows, deployment=k8s
@@ -12,7 +12,7 @@
     status              pods / svc / pvc overview
     logs <svc> [n]      tail pod logs (default 50)
     destroy             delete namespace baihua
-    dashboard           open browser to http://localhost:30080
+    dashboard           open browser with cli-token auto-login
     help                this help
 #>
 [CmdletBinding()]
@@ -47,6 +47,21 @@ function Get-KindNode {
 }
 
 function Invoke-Build {
+    # 先 dotnet publish 到 docker/publish/<svc>（prebuilt Dockerfile 的 COPY 源；docker/publish 不入 git）
+    $publishTargets = @(
+        @{ Name = 'vault';  Project = Join-Path $Root 'services\Baihua.Vault\Baihua.Vault.csproj' },
+        @{ Name = 'ai';     Project = Join-Path $Root 'services\Baihua.AI\Baihua.AI.csproj' },
+        @{ Name = 'webui';  Project = Join-Path $Root 'services\Baihua.Web\Baihua.Web.csproj' },
+        @{ Name = 'family'; Project = Join-Path $Root 'services\Baihua.Family\Baihua.Family.csproj' }
+    )
+    foreach ($p in $publishTargets) {
+        Write-Host "[publish] $($p.Name) ..."
+        $prev = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
+        & dotnet publish $p.Project -c Release -o (Join-Path $DockerDir "publish\$($p.Name)") 2>&1 | Out-Null
+        $code = $LASTEXITCODE
+        $ErrorActionPreference = $prev
+        if ($code -ne 0) { throw "publish failed: $($p.Name)" }
+    }
     $images = @(
         @{ Name = 'bh-vault:latest';  Dockerfile = 'Dockerfile.vault.prebuilt';           Context = $DockerDir },
         @{ Name = 'bh-ai:latest';     Dockerfile = 'Dockerfile.taskrunner.ai.prebuilt';   Context = $DockerDir },
@@ -56,8 +71,12 @@ function Invoke-Build {
     )
     foreach ($img in $images) {
         Write-Host "[build] $($img.Name) ..."
+        # PS 5.1：docker build 把进度写 stderr，2>&1 在 $ErrorActionPreference='Stop' 下会抛 NativeCommandError
+        $prev = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
         & docker build -f (Join-Path $DockerDir $img.Dockerfile) -t $img.Name $img.Context 2>&1 | Out-Null
-        if ($LASTEXITCODE -ne 0) { throw "docker build failed: $($img.Name)" }
+        $code = $LASTEXITCODE
+        $ErrorActionPreference = $prev
+        if ($code -ne 0) { throw "docker build failed: $($img.Name)" }
     }
     Write-Host '[build] 5 images done'
 }
@@ -67,13 +86,21 @@ function Invoke-Load {
     $node = Get-KindNode
     if ($kindCli) {
         foreach ($img in @('bh-vault:latest','bh-ai:latest','bh-webui:latest','bh-family:latest','bh-openvino:latest')) {
+            $prev = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
             & kind load docker-image $img 2>&1 | Out-Null
+            $code = $LASTEXITCODE
+            $ErrorActionPreference = $prev
+            if ($code -ne 0) { throw "kind load failed: $img" }
             Write-Host "[load] $img"
         }
     } else {
         foreach ($img in @('bh-vault:latest','bh-ai:latest','bh-webui:latest','bh-family:latest','bh-openvino:latest')) {
             Write-Host "[load] $img (ctr import via $node)"
+            $prev = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
             docker save $img | docker exec -i $node ctr --namespace k8s.io images import - 2>&1 | Out-Null
+            $code = $LASTEXITCODE
+            $ErrorActionPreference = $prev
+            if ($code -ne 0) { throw "ctr import failed: $img" }
         }
     }
     Write-Host '[load] done'
@@ -109,6 +136,18 @@ function Show-Logs($svc, $n) {
     & $Kubectl -n $Namespace logs -l app=$svc --tail=$n --all-containers=true
 }
 
+function Open-Dashboard {
+    try {
+        $resp = Invoke-WebRequest -Uri 'http://localhost:30080/api/auth/cli-token' -Method POST -UseBasicParsing -TimeoutSec 5
+        $token = ($resp.Content | ConvertFrom-Json).token
+        Start-Process "http://localhost:30080/?cli-token=$token"
+        Write-Host '[dashboard] opened with cli-token'
+    } catch {
+        Write-Host "[dashboard] cli-token failed ($($_.Exception.Message)), opening plain URL"
+        Start-Process 'http://localhost:30080'
+    }
+}
+
 switch ($Command.ToLower()) {
     'build'     { Invoke-Build }
     'load'      { Invoke-Load }
@@ -117,7 +156,7 @@ switch ($Command.ToLower()) {
     'status'    { Show-Status }
     'logs'      { $count = 50; if ($Arg2) { $count = [int]$Arg2 }; Show-Logs $Arg1 $count }
     'destroy'   { & $Kubectl delete namespace $Namespace; Write-Host '[destroy] done' }
-    'dashboard' { Start-Process 'http://localhost:30080' }
+    'dashboard' { Open-Dashboard }
     'help'      { Get-Content $PSCommandPath | Where-Object { $_ -match '^\s{4}[a-z]' } | ForEach-Object { $_.Trim() } }
     default     { Get-Content $PSCommandPath | Where-Object { $_ -match '^\s{4}[a-z]' } | ForEach-Object { $_.Trim() } }
 }

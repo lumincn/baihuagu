@@ -413,7 +413,10 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     // Docker Desktop / Docker Engine 桥接网段
     // Nginx 容器从 172.17.0.1 等地址转发请求时，必须信任该网段才能正确应用 X-Forwarded-For
     // 覆盖 172.16.0.0 ~ 172.31.255.255（Docker 默认 172.17.0.0/16 也在此范围）
+    // kind/k3s Pod 网段（10.244.x / 10.42.x）同属 RFC1918，一并信任
+    options.KnownIPNetworks.Add(new System.Net.IPNetwork(IPAddress.Parse("10.0.0.0"), 8));
     options.KnownIPNetworks.Add(new System.Net.IPNetwork(IPAddress.Parse("172.16.0.0"), 12));
+    options.KnownIPNetworks.Add(new System.Net.IPNetwork(IPAddress.Parse("192.168.0.0"), 16));
 });
 
 var app = builder.Build();
@@ -566,14 +569,16 @@ app.Use(async (context, next) =>
 
     // 非公开路径仅允许本机访问（WebUI 通过 loopback 调用 TaskRunner）
     // Docker 部署时：nginx/WebUI 容器通过 bridge 网络访问（172.16.0.0/12 Docker 默认网段），
-    // 因此同时放行 Docker 桥接网段（与上方 ForwardedHeaders KnownIPNetworks 保持一致）。
+    // kind/k3s 下是 Pod 网段（10.244.x / 10.42.x）。RFC1918 私有网段全部放行（与 KnownIPNetworks 一致）。
     var isDockerNetwork = false;
     if (remoteIp != null)
     {
         try
         {
-            var dockerNet = new System.Net.IPNetwork(IPAddress.Parse("172.16.0.0"), 12);
-            isDockerNetwork = dockerNet.Contains(remoteIp);
+            isDockerNetwork =
+                new System.Net.IPNetwork(IPAddress.Parse("10.0.0.0"), 8).Contains(remoteIp) ||
+                new System.Net.IPNetwork(IPAddress.Parse("172.16.0.0"), 12).Contains(remoteIp) ||
+                new System.Net.IPNetwork(IPAddress.Parse("192.168.0.0"), 16).Contains(remoteIp);
         }
         catch { isDockerNetwork = false; }
     }

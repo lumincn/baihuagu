@@ -11,7 +11,7 @@
 #   status      pods / svc / pvc overview
 #   logs <svc> [n]   tail pod logs (default 50)
 #   destroy     delete namespace baihua
-#   dashboard   open browser to http://localhost:30080
+#   dashboard   open browser with cli-token auto-login
 #   help        this help
 set -u
 
@@ -104,6 +104,18 @@ show_logs() {
     k -n "$NAMESPACE" logs -l "app=${1:-bh-family}" --tail="${2:-50}" --all-containers=true
 }
 
+open_dashboard() {
+    local token
+    token=$(curl -s -X POST http://localhost:30080/api/auth/cli-token | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
+    if [ -n "$token" ]; then
+        (xdg-open "http://localhost:30080/?cli-token=$token" >/dev/null 2>&1 &) || true
+        echo "[dashboard] opened with cli-token"
+    else
+        echo "[dashboard] cli-token failed, opening plain URL"
+        (xdg-open http://localhost:30080 >/dev/null 2>&1 &) || true
+    fi
+}
+
 case "${1:-help}" in
     build)     build_all ;;
     load)      load_all ;;
@@ -112,7 +124,7 @@ case "${1:-help}" in
     status)    status_all ;;
     logs)      show_logs "${2:-bh-family}" "${3:-50}" ;;
     destroy)   k delete namespace "$NAMESPACE"; echo "[destroy] done" ;;
-    dashboard) (xdg-open http://localhost:30080 >/dev/null 2>&1 &) || true ;;
+    dashboard) open_dashboard ;;
     help)      help_text ;;
     *)         help_text ;;
 esac

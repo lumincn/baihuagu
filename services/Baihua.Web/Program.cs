@@ -410,17 +410,21 @@ app.MapHub<Baihua.Web.Hubs.StatusHub>("/hubs/status");
 app.MapPost("/api/auth/cli-token", (HttpContext context, Baihua.Web.Services.AuthService authService) =>
 {
     var remoteIp = context.Connection.RemoteIpAddress;
-    // Docker Desktop 端口映射后容器内看到的是网管/桥接网段（172.x），非 loopback，需一并放行
-    var isDockerNet = false;
+    // 容器网络放行：Docker Desktop 端口映射后容器内看到的是网管/桥接网段（172.x），
+    // kind/k3s Pod 网段（10.244.x / 10.42.x）等——全部属 RFC1918 私有网段，一并放行
+    var isPrivateNet = false;
     if (remoteIp != null)
     {
         try
         {
-            isDockerNet = new System.Net.IPNetwork(IPAddress.Parse("172.16.0.0"), 12).Contains(remoteIp);
+            isPrivateNet =
+                new System.Net.IPNetwork(IPAddress.Parse("10.0.0.0"), 8).Contains(remoteIp) ||
+                new System.Net.IPNetwork(IPAddress.Parse("172.16.0.0"), 12).Contains(remoteIp) ||
+                new System.Net.IPNetwork(IPAddress.Parse("192.168.0.0"), 16).Contains(remoteIp);
         }
-        catch { isDockerNet = false; }
+        catch { isPrivateNet = false; }
     }
-    if (remoteIp != null && !IPAddress.IsLoopback(remoteIp) && !isDockerNet)
+    if (remoteIp != null && !IPAddress.IsLoopback(remoteIp) && !isPrivateNet)
     {
         return Results.Json(new { error = "Forbidden", message = "CLI token 仅允许本机请求" }, statusCode: 403);
     }
