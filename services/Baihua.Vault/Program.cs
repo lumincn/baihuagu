@@ -53,14 +53,14 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddDbContext<Baihua.Data.VaultDbContext>(options =>
 {
     var dbPath = Baihua.Data.VaultDbContext.GetDbPath();
-    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;", sqlite => sqlite.MigrationsAssembly("TaskRunner.Data"))
+    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;", sqlite => sqlite.MigrationsAssembly("Baihua.Data"))
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Scoped, ServiceLifetime.Singleton);
 
 builder.Services.AddDbContextFactory<Baihua.Data.VaultDbContext>(options =>
 {
     var dbPath = Baihua.Data.VaultDbContext.GetDbPath();
-    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;", sqlite => sqlite.MigrationsAssembly("TaskRunner.Data"))
+    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;", sqlite => sqlite.MigrationsAssembly("Baihua.Data"))
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Singleton);
 
@@ -68,14 +68,14 @@ builder.Services.AddDbContextFactory<Baihua.Data.VaultDbContext>(options =>
 builder.Services.AddDbContext<Baihua.Data.FamilyDbContext>(options =>
 {
     var dbPath = Baihua.Data.FamilyDbContext.GetDbPath();
-    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;")
+    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;", sqlite => sqlite.MigrationsAssembly("Baihua.Data"))
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Scoped, ServiceLifetime.Singleton);
 
 builder.Services.AddDbContextFactory<Baihua.Data.FamilyDbContext>(options =>
 {
     var dbPath = Baihua.Data.FamilyDbContext.GetDbPath();
-    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;")
+    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;", sqlite => sqlite.MigrationsAssembly("Baihua.Data"))
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Singleton);
 

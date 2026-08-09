@@ -39,6 +39,19 @@ namespace Baihua.Family.Services
                 if (connection.State != System.Data.ConnectionState.Open)
                     connection.Open();
 
+                // 全新空库（无任何业务表）：不要用裸 SQL 建表，交给 EF Migrate 统一建 schema，
+                // 否则会和迁移里的 CREATE TABLE 冲突，导致全新部署迁移失败（EnsureCreated 兜底又会因库非空而罢工）。
+                using (var probeCmd = connection.CreateCommand())
+                {
+                    probeCmd.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '__EF%'";
+                    var userTableCount = Convert.ToInt32(probeCmd.ExecuteScalar());
+                    if (userTableCount == 0)
+                    {
+                        _logger.LogDebug("全新数据库，跳过裸 SQL 建表（由 EF Migrate 创建 schema）");
+                        return;
+                    }
+                }
+
                 using var command = connection.CreateCommand();
                 command.CommandText = @"
                     CREATE TABLE IF NOT EXISTS ServerAddressSettings (

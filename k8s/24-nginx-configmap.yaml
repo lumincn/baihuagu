@@ -17,11 +17,12 @@ data:
 
         # K8s DNS 解析（kube-dns / CoreDNS）
         # 使用变量形式 proxy_pass 避免启动时 DNS 缓存
+        # 注意：必须用 FQDN（短名会被 CoreDNS 转发到上游导致超时）
         resolver kube-dns.kube-system.svc.cluster.local valid=10s ipv6=off;
         resolver_timeout 3s;
 
-        set $bh_family_upstream http://bh-family:8788;
-        set $bh_webui_upstream  http://bh-webui:5177;
+        set $bh_family_upstream http://bh-family.baihua.svc.cluster.local:8788;
+        set $bh_webui_upstream  http://bh-webui.baihua.svc.cluster.local:5177;
 
         # 安全头部
         add_header X-Frame-Options "SAMEORIGIN" always;
