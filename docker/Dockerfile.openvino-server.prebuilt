@@ -13,15 +13,15 @@
 
 FROM python:3.12-slim AS runtime
 
-# 国内镜像源加速
-RUN sed -i 's|http://deb.debian.org|https://mirrors.huaweicloud.com|g' /etc/apt/sources.list.d/debian.sources 2>/dev/null; \
-    sed -i 's|http://security.debian.org|https://mirrors.huaweicloud.com|g' /etc/apt/sources.list.d/debian.sources 2>/dev/null; \
-    true
+# 国内镜像源加速：debian.sources 是 deb822 格式，整段重写为华为云（含 main contrib non-free）
+RUN printf 'Types: deb\nURIs: https://mirrors.huaweicloud.com/debian\nSuites: bookworm bookworm-updates\nComponents: main contrib non-free\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n' > /etc/apt/sources.list.d/debian.sources && \
+    printf 'Types: deb\nURIs: https://mirrors.huaweicloud.com/debian-security\nSuites: bookworm-security\nComponents: main contrib non-free\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n' > /etc/apt/sources.list.d/debian-security.sources
 
 # 安装 Intel GPU 运行时 + 系统依赖
+# intel-opencl-icd / libigdgmm12 在 bookworm main；level-zero 无 Debian 包（GPU 走 OpenCL 即可）
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        intel-opencl-icd level-zero-dev libigdgmm12 clinfo pciutils \
+        intel-opencl-icd libigdgmm12 clinfo pciutils \
         curl tini \
     && rm -rf /var/lib/apt/lists/*
 

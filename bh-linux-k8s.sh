@@ -47,6 +47,7 @@ help_text() {
 }
 
 # nerdctl 直接构建进 k3s containerd（构建即入库，无 docker）
+# -o type=image：产物直接写入 containerd（默认 tarball 导出在 containerd worker 下会报 content not found）
 build_all() {
     if ! command -v nerdctl >/dev/null 2>&1; then
         echo "[build] 未找到 nerdctl（需单独安装：https://github.com/containerd/nerdctl）"
@@ -58,15 +59,15 @@ build_all() {
         echo "        请确认 k3s 已运行，且 nerdctl 已安装"
         exit 1
     fi
-    n build -f "$DOCKER_DIR/Dockerfile.vault.prebuilt"          -t bh-vault:latest    "$DOCKER_DIR" >/dev/null || exit 1
+    n build -o type=image -f "$DOCKER_DIR/Dockerfile.vault.prebuilt"          -t bh-vault:latest    "$DOCKER_DIR" >/dev/null || exit 1
     echo "[build] bh-vault"
-    n build -f "$DOCKER_DIR/Dockerfile.ai.prebuilt"             -t bh-ai:latest       "$DOCKER_DIR" >/dev/null || exit 1
+    n build -o type=image -f "$DOCKER_DIR/Dockerfile.ai.prebuilt"             -t bh-ai:latest       "$DOCKER_DIR" >/dev/null || exit 1
     echo "[build] bh-ai"
-    n build -f "$DOCKER_DIR/Dockerfile.webui.prebuilt"          -t bh-webui:latest    "$DOCKER_DIR" >/dev/null || exit 1
+    n build -o type=image -f "$DOCKER_DIR/Dockerfile.webui.prebuilt"          -t bh-webui:latest    "$DOCKER_DIR" >/dev/null || exit 1
     echo "[build] bh-webui"
-    n build -f "$DOCKER_DIR/Dockerfile.family.prebuilt"         -t bh-family:latest   "$DOCKER_DIR" >/dev/null || exit 1
+    n build -o type=image -f "$DOCKER_DIR/Dockerfile.family.prebuilt"         -t bh-family:latest   "$DOCKER_DIR" >/dev/null || exit 1
     echo "[build] bh-family"
-    n build -f "$DOCKER_DIR/Dockerfile.openvino-server.prebuilt" -t bh-openvino:latest "$ROOT" >/dev/null || exit 1
+    n build -o type=image -f "$DOCKER_DIR/Dockerfile.openvino-server.prebuilt" -t bh-openvino:latest "$ROOT" >/dev/null || exit 1
     echo "[build] bh-openvino"
     echo "[build] 5 images done (已直接进入 k3s containerd，无需 load)"
 }
