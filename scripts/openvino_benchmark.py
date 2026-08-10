@@ -16,7 +16,7 @@ Usage:
   # Windows (PowerShell)
   py -3.12 scripts/openvino_benchmark.py --devices CPU GPU NPU --output out-win.json
 
-  # WSL2 (Arch)
+  # WSL2 (Ubuntu-24.04)
   python3 ~/openvino_benchmark.py --devices CPU GPU --output out-wsl.json
   # (or mount and run directly)
 """
