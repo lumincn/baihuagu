@@ -89,7 +89,7 @@ PVC: baihua-models-pvc (50Gi, hostPath: /opt/baihua/models)
 | 依赖 | 用途 | 自动安装 | 触发 |
 |------|------|---------|------|
 | nerdctl | k8s 镜像构建（直连 containerd） | ✅ `bh.sh build` 自动装（GitHub release → /usr/local/bin） | build 时 |
-| buildkitd | nerdctl build 的后端守护进程 | ✅ 同上 | build 时 |
+| buildkit（buildkitd+buildctl） | nerdctl build 的守护进程 + 客户端 | ✅ 同上，一次下载装两个 | build 时 |
 | .NET SDK 10 | native 部署/构建（linux-native） | ✅ `bh.sh build` 自动装（dotnet-install.sh → ~/.dotnet） | build 时 |
 | .NET SDK 10 | native 部署/构建（win-native/win-docker） | ✅ winget 自动装 | build 时 |
 | k3s | K8s 运行时 | ❌ 需 root + 网络，手动装 | 见 1 |
@@ -127,13 +127,14 @@ sudo apt install -y intel-opencl-icd level-zero-dev libigdgmm12
 
 ### 3. 构建依赖（自动安装）
 
-`bh.sh build` 会自动下载安装缺失的 nerdctl 与 buildkitd（官方 GitHub release → /usr/local/bin，需 root/sudo）。
+`bh.sh build` 会自动下载安装缺失的 nerdctl 与 buildkit（buildkitd 守护进程 + buildctl 客户端，官方 GitHub release → /usr/local/bin，需 root/sudo）。
 dotnet（native 部署用）由 `bh-linux-native.sh build` 自动装到 ~/.dotnet。无需手动装：
 
 ```bash
 # 验证（已安装时）
 nerdctl --version      # 2.3.5+
 buildkitd --version    # 0.32.x
+buildctl --version     # 0.32.x（nerdctl build 需要）
 dotnet --version       # 10.0+
 ```
 
