@@ -5,7 +5,7 @@
 # 镜像构建用 nerdctl 直连 k3s 的 containerd socket（/run/k3s/containerd/containerd.sock），
 # 构建完镜像直接落在 k3s 的 containerd 存储里，无需 docker build / docker save / ctr import。
 # 前置：k3s 已安装运行（k3s 无法自动安装，见 k8s/README.md 前提条件）。
-# nerdctl / buildkitd 缺失时 build 会自动下载安装（GitHub release → /usr/local/bin）。
+# nerdctl / buildkit（buildkitd+buildctl）缺失时 build 会自动下载安装（GitHub release → /usr/local/bin）。
 #
 # Usage: ./tools/bh/linux/k8s/bh.sh <command> [args]
 #   build       nerdctl 构建 5 个镜像（直接进 k3s containerd）
@@ -109,6 +109,60 @@ install_tool() {
     echo "[deps] $name 安装完成"
 }
 
+# buildkit 全家桶：buildkitd（守护进程）+ buildctl（客户端，nerdctl build 需要）同在一个 tarball
+install_buildkit() {
+    local url="https://github.com/moby/buildkit/releases/download/v${BUILDKIT_VERSION}/buildkit-v${BUILDKIT_VERSION}.linux-${ARCH}.tar.gz"
+    echo "[deps] buildkit 缺失，自动下载安装（buildkitd + buildctl，$url）..."
+    local tmp
+    tmp="$(mktemp -d)"
+    local ok=0
+    if curl -fsSL -o "$tmp/tool.tar.gz" "$url"; then
+        ok=1
+    else
+        for mirror in "https://mirror.ghproxy.com/" "https://ghfast.top/" "https://ghproxy.net/"; do
+            echo "[deps] GitHub 直连失败，尝试镜像: $mirror"
+            if curl -fsSL -o "$tmp/tool.tar.gz" "$mirror$url"; then
+                ok=1
+                break
+            fi
+        done
+    fi
+    if [ "$ok" != "1" ]; then
+        echo "[deps] 下载失败（直连+镜像均不可达），请手动安装 buildkit（见 k8s/README.md）"
+        rm -rf "$tmp"
+        exit 1
+    fi
+    if ! tar -tzf "$tmp/tool.tar.gz" >/dev/null 2>&1; then
+        echo "[deps] 下载的 tarball 损坏（网络截断），请手动安装 buildkit 后重试"
+        rm -rf "$tmp"
+        exit 1
+    fi
+    tar -xzf "$tmp/tool.tar.gz" -C "$tmp" 2>/dev/null || true
+    local install_one
+    install_one() {
+        local bin="$1"
+        local found
+        found="$(find "$tmp" -name "$bin" -type f | head -1)"
+        [ -z "$found" ] && { echo "[deps] tarball 里找不到 $bin"; return 1; }
+        local target="/usr/local/bin/$bin"
+        if command -v sudo >/dev/null 2>&1; then
+            sudo install -m 0755 "$found" "$target"
+        elif [ "$(id -u)" = "0" ]; then
+            install -m 0755 "$found" "$target"
+        else
+            echo "[deps] 需要 root 权限安装到 /usr/local/bin，请手动执行:"
+            echo "        sudo install -m 0755 $found $target"
+            return 1
+        fi
+    }
+    if ! install_one buildkitd || ! install_one buildctl; then
+        rm -rf "$tmp"
+        exit 1
+    fi
+    rm -rf "$tmp"
+    echo "[deps] buildkitd + buildctl 安装完成"
+}
+
 ensure_deps() {
     # nerdctl：k3s 不附带，自动装
     if ! command -v nerdctl >/dev/null 2>&1; then
@@ -116,11 +170,9 @@ ensure_deps() {
             "https://github.com/containerd/nerdctl/releases/download/v${NERDCTL_VERSION}/nerdctl-${NERDCTL_VERSION}-linux-${ARCH}.tar.gz" \
             "nerdctl"
     fi
-    # buildkitd：nerdctl build 的后端守护进程，自动装
-    if ! command -v buildkitd >/dev/null 2>&1; then
-        install_tool buildkitd \
-            "https://github.com/moby/buildkit/releases/download/v${BUILDKIT_VERSION}/buildkit-v${BUILDKIT_VERSION}.linux-${ARCH}.tar.gz" \
-            "buildkitd"
+    # buildkit：buildkitd（守护进程）+ buildctl（客户端，nerdctl build 需要），一次下载装俩
+    if ! command -v buildkitd >/dev/null 2>&1 || ! command -v buildctl >/dev/null 2>&1; then
+        install_buildkit
     fi
     # buildkitd 必须运行（socket 可达），否则给出启动指引
     if ! command -v buildkitd >/dev/null 2>&1; then return 0; fi
