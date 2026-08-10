@@ -6,7 +6,7 @@
 # 构建完镜像直接落在 k3s 的 containerd 存储里，无需 docker build / docker save / ctr import。
 # 前置：k3s 已安装运行；nerdctl 已安装（k3s 不附带，需单独装）。
 #
-# Usage: ./bh-linux-k8s.sh <command> [args]
+# Usage: ./tools/bh/linux/k8s/bh.sh <command> [args]
 #   build       nerdctl 构建 5 个镜像（直接进 k3s containerd）
 #   deploy      kubectl apply k8s/ manifests + wait ready
 #   up          build + deploy
@@ -17,7 +17,7 @@
 #   help        this help
 set -u
 
-ROOT="$(cd "$(dirname "$0")" && pwd)"
+ROOT="$(cd "$(dirname "$0")/../../../.." && pwd)"  # tools/bh/linux/k8s → 仓库根
 K8S_DIR="$ROOT/k8s"
 DOCKER_DIR="$ROOT/docker"
 NAMESPACE="baihua"
@@ -97,7 +97,13 @@ status_all() {
 }
 
 show_logs() {
-    k -n "$NAMESPACE" logs -l "app=${1:-bh-family}" --tail="${2:-50}" --all-containers=true
+    local svc="${1:-bh-family}"
+    # 自动补 bh- 前缀：logs vault → app=bh-vault
+    case "$svc" in
+        bh-*) ;;            # 已带前缀
+        *) svc="bh-$svc" ;;
+    esac
+    k -n "$NAMESPACE" logs -l "app=$svc" --tail="${2:-50}" --all-containers=true
 }
 
 open_dashboard() {

@@ -48,7 +48,7 @@ C:\Users\lumin\DevecostudioProjects\
 
 | 项目 | Linux/Mac | Windows |
 |------|-----------|---------|
-| 百花 | `./bh` | `.\bh.ps1` |
+| 百花 | `./tools/bh/linux/k8s/bh.sh`（或 `linux/native/bh.sh`） | `tools\bh\win\docker\bh.ps1`（或 `win/native/bh.ps1`） |
 | 花阁 | `./hg` | `.\hg.ps1` |
 
 > 当前架构已从单体后台拆分为 3 个独立后端服务：
@@ -77,7 +77,7 @@ C:\Users\lumin\DevecostudioProjects\
 - `services/Baihua.Core/`：共享服务层（含 VaultSettingsService、DeviceService 等）
 - `services/Baihua.Data/`：共享 EF Core 数据层
 - `services/BaiHua.slnx`：服务端解决方案（包含所有 services/ 项目及 libs/MobileContract）
-- `services/bh` / `services/bh.ps1`：极简 CLI 工具（Linux/Mac / Windows）
+- `tools/bh/`：极简 CLI 工具（Linux: k8s/native，Windows: docker/native，均统一命令名 `bh`）
 - `libs/BaihuaSdk/`：跨平台移动端 SDK（net9.0;net10.0，零 MAUI 依赖，主要 target net10.0）
 - `libs/MobileContract/`：移动端契约（DTO、接口定义）
 - `clients/Huapu/`：花圃（BaiHua.Nursery）— 移动端技术实验与验证工具（非正式发布 App，详见下方说明）
@@ -145,7 +145,7 @@ dotnet build services/BaiHua.slnx -c Release
 | 数据库文件 | `family.db` | `ai.db` | `vault.db` | — |
 
 **部署形态**：
-- **Windows**（`bh-win-docker.ps1`）：`ai` 服务 **native 运行**（Windows 进程，直接访问 Arc GPU 做 LlamaSharp/ONNX/OpenVINO 推理），`family`/`vault`/`webui`/`nginx` 走 docker compose；compose 里 `ai` 带 `profiles: ["docker-ai"]`（默认不启动容器），容器通过 `host.docker.internal:8791` 访问 native ai
+- **Windows**（`tools/bh/win/docker/bh.ps1`）：`ai` 服务 **native 运行**（Windows 进程，直接访问 Arc GPU 做 LlamaSharp/ONNX/OpenVINO 推理），`family`/`vault`/`webui`/`nginx` 走 docker compose；compose 里 `ai` 带 `profiles: ["docker-ai"]`（默认不启动容器），容器通过 `host.docker.internal:8791` 访问 native ai
 - **Linux**（`deploy-docker.sh`）：全部容器化，`docker compose --profile docker-ai up -d` 启动含 ai
 
 **例外（名实相符，保留原名）**：

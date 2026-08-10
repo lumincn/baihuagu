@@ -3,7 +3,7 @@
 # Cell of the matrix: OS=linux, deployment=dotnet-native
 # Manages the 4 .NET services (vault/ai/family/webui) as local processes.
 #
-# Usage: ./bh-linux-native.sh <command> [args]
+# Usage: ./tools/bh/linux/native/bh.sh <command> [args]
 #   build       dotnet publish the 4 services to out/native/
 #   start       start all 4 services (nohup + pid files)
 #   stop        stop all 4 services
@@ -15,7 +15,7 @@
 #   help        this help
 set -u
 
-ROOT="$(cd "$(dirname "$0")" && pwd)"
+ROOT="$(cd "$(dirname "$0")/../../../.." && pwd)"  # tools/bh/linux/native → 仓库根
 OUT_DIR="$ROOT/out/native"
 PID_DIR="$OUT_DIR/pids"
 LOG_DIR="$OUT_DIR/logs"
@@ -96,11 +96,11 @@ status_all() {
         IFS=: read -r name proj exe port <<<"$entry"
         local state=stopped pid=""
         if [ -f "$PID_DIR/$name.pid" ]; then
-            pid=$(cat "$PID_DIR/$name.pid")
+            pid=$(cat "$PID_DIR/$name.pid" | tr -d "\r")
             kill -0 "$pid" 2>/dev/null && state=proc-alive
         fi
         port_open "$port" && state=RUNNING
-        printf "%-8s port=%-5s %s%s\n" "$name" "$port" "$state" "${pid:+ (pid=$pid)}"
+        printf "%-8s port=%-5s %s%s\n" "$name" "$port" "$state" "${pid:+ (pid=${pid})}"
     done
 }
 

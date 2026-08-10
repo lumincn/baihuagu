@@ -121,7 +121,7 @@ nerdctl --version
 ```
 
 > 镜像构建用 `nerdctl -a /run/k3s/containerd/containerd.sock build`，构建完直接进入 k3s 的 containerd，
-> 无需 docker，也无需 load/import。日常入口：`../bh-linux-k8s.sh`（build/up/status/logs）。
+> 无需 docker，也无需 load/import。日常入口：`../tools/bh/linux/k8s/bh.sh`（build/up/status/logs）。
 
 ## 部署步骤
 

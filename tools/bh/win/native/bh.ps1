@@ -1,10 +1,10 @@
-#requires -Version 5.1
+﻿#requires -Version 5.1
 <#
   baihua - Windows + dotnet native CLI
   Cell of the matrix: OS=windows, deployment=dotnet-native
   Manages the 4 .NET services (vault/ai/family/webui) as local processes.
 
-  Usage: .\bh-win-native.ps1 <command> [args]
+  Usage: .\tools\bh\win\native\bh.ps1 <command> [args]
     build               dotnet publish the 4 services to out/native/
     start               start all 4 services (processes, pid files)
     stop                stop all 4 services
@@ -27,6 +27,10 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $Root = Split-Path -Parent $PSCommandPath
+$Root = Split-Path -Parent $Root
+$Root = Split-Path -Parent $Root
+$Root = Split-Path -Parent $Root
+$Root = Split-Path -Parent $Root
 $OutDir = Join-Path $Root 'out\native'
 $PidDir = Join-Path $OutDir 'pids'
 $LogDir = Join-Path $OutDir 'logs'

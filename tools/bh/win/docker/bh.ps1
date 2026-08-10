@@ -1,4 +1,4 @@
-#requires -Version 5.1
+﻿#requires -Version 5.1
 <#
   baihua - Windows + Docker compose + native AI CLI
   Cell of the matrix: OS=windows, deployment=docker (ai runs native for GPU)
@@ -8,7 +8,7 @@
   docker compose。compose 里 ai 服务带 profile "docker-ai"（默认不启动），容器通过
   host.docker.internal:8791 访问 native ai。
 
-  Usage: .\bh-win-docker.ps1 <command> [args]
+  Usage: .\tools\bh\win\docker\bh.ps1 <command> [args]
     build               dotnet publish ai + docker compose build (family/vault/webui)
     start               start native ai + compose up -d (family/vault/webui/nginx)
     stop                stop native ai + compose down
@@ -31,11 +31,15 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $Root = Split-Path -Parent $PSCommandPath
+$Root = Split-Path -Parent $Root
+$Root = Split-Path -Parent $Root
+$Root = Split-Path -Parent $Root
+$Root = Split-Path -Parent $Root
 $DockerDir = Join-Path $Root 'docker'
 $Compose = Join-Path $DockerDir 'docker-compose.yml'
 $ComposeWin = Join-Path $DockerDir 'docker-compose.windows.yml'
 
-# native ai 进程管理（与 bh-win-native.ps1 同套 pid/日志约定）
+# native ai 进程管理（与 tools/bh/win/native/bh.ps1 同套 pid/日志约定）
 $AiOutDir = Join-Path $Root 'out\native\ai'
 $AiPidFile = Join-Path $Root 'out\native\pids\ai.pid'
 $AiLogFile = Join-Path $Root 'out\native\logs\ai.log'
