@@ -84,6 +84,20 @@ PVC: baihua-models-pvc (50Gi, hostPath: /opt/baihua/models)
 
 ## 前提条件
 
+依赖分两类：**bh 命令能自动安装的**（缺失时 build 自动下载安装）与**需手动安装的**（系统级/交互式，见下文各节）：
+
+| 依赖 | 用途 | 自动安装 | 触发 |
+|------|------|---------|------|
+| nerdctl | k8s 镜像构建（直连 containerd） | ✅ `bh.sh build` 自动装（GitHub release → /usr/local/bin） | build 时 |
+| buildkitd | nerdctl build 的后端守护进程 | ✅ 同上 | build 时 |
+| .NET SDK 10 | native 部署/构建（linux-native） | ✅ `bh.sh build` 自动装（dotnet-install.sh → ~/.dotnet） | build 时 |
+| .NET SDK 10 | native 部署/构建（win-native/win-docker） | ✅ winget 自动装 | build 时 |
+| k3s | K8s 运行时 | ❌ 需 root + 网络，手动装 | 见 1 |
+| Docker Desktop | win-docker 部署 | ❌ GUI 交互安装 | 见 4 |
+| Intel GPU 驱动 | openvino GPU 推理 | ❌ 系统级 | 见 2 |
+
+> 注意：buildkitd 自动安装后**不会自动启动**（无 systemd 环境）。首次 build 会提示启动命令。
+
 ### 1. K8s 集群
 
 推荐 k3s（单节点、轻量、自带 containerd，不依赖 docker）：
@@ -111,17 +125,37 @@ lspci | grep -i vga
 sudo apt install -y intel-opencl-icd level-zero-dev libigdgmm12
 ```
 
-### 3. .NET SDK + nerdctl
+### 3. 构建依赖（自动安装）
+
+`bh.sh build` 会自动下载安装缺失的 nerdctl 与 buildkitd（官方 GitHub release → /usr/local/bin，需 root/sudo）。
+dotnet（native 部署用）由 `bh-linux-native.sh build` 自动装到 ~/.dotnet。无需手动装：
 
 ```bash
-dotnet --version   # 10.0+
-# nerdctl 直连 k3s 的 containerd 构建镜像（k3s 不附带，需单独安装）
-# https://github.com/containerd/nerdctl
-nerdctl --version
+# 验证（已安装时）
+nerdctl --version      # 2.3.5+
+buildkitd --version    # 0.32.x
+dotnet --version       # 10.0+
 ```
+
+> buildkitd 是 nerdctl build 的后端守护进程，安装后需运行（无 systemd 环境手动启动）：
+> ```bash
+> nohup buildkitd -config /etc/buildkit/buildkitd.toml > /tmp/buildkitd.log 2>&1 &
+> ```
 
 > 镜像构建用 `nerdctl -a /run/k3s/containerd/containerd.sock build`，构建完直接进入 k3s 的 containerd，
 > 无需 docker，也无需 load/import。日常入口：`../tools/bh/linux/k8s/bh.sh`（build/up/status/logs）。
+
+### 4. Docker Desktop（仅 Windows docker 部署用）
+
+`bh-win-docker.ps1` 需要 Docker Desktop。需 GUI 交互安装（无法自动完成）：
+
+```powershell
+winget install --id Docker.DockerDesktop
+# 或手动下载: https://www.docker.com/products/docker-desktop/
+# 安装后启动 Docker Desktop，等待引擎就绪（docker info 可用）
+```
+
+> Linux k8s 部署**不需要** docker（nerdctl 直连 containerd）。Windows 纯 native 部署（`bh-win-native.ps1`）也不需要。
 
 ## 部署步骤
 

@@ -50,6 +50,7 @@ $Services = @('family', 'vault', 'webui', 'nginx', 'openobserve')
 
 function Invoke-Compose {
     param([string[]]$ComposeArgs)
+    Ensure-Docker
     Push-Location $DockerDir
     try {
         $prev = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
@@ -69,7 +70,29 @@ function Test-PortOpen($port) {
 
 # ---- native ai ----
 
+function Ensure-Dotnet {
+    if (Get-Command dotnet -ErrorAction SilentlyContinue) { return }
+    Write-Host '[deps] dotnet 缺失，自动安装（winget install Microsoft.DotNet.SDK.10）...'
+    & winget install --id Microsoft.DotNet.SDK.10 --accept-source-agreements --accept-package-agreements --silent
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host '[deps] winget 安装失败，请手动安装 .NET SDK 10: https://dotnet.microsoft.com/download'
+        exit 1
+    }
+    $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
+    Write-Host '[deps] dotnet 安装完成'
+}
+
+function Ensure-Docker {
+    if (Get-Command docker -ErrorAction SilentlyContinue) { return }
+    Write-Host '[deps] docker 缺失。Docker Desktop 需 GUI 交互安装，无法自动完成：'
+    Write-Host '        winget install --id Docker.DockerDesktop'
+    Write-Host '        或手动下载: https://www.docker.com/products/docker-desktop/'
+    Write-Host '        安装后需启动 Docker Desktop 并等待引擎就绪'
+    exit 1
+}
+
 function Invoke-Build-Ai {
+    Ensure-Dotnet
     Write-Host '[build] ai (native publish) ...'
     & dotnet publish (Join-Path $Root 'services\Baihua.AI\Baihua.AI.csproj') -c Release -r win-x64 --self-contained false -o $AiOutDir 2>&1 | Out-Null
     if ($LASTEXITCODE -ne 0) { throw 'publish failed: ai' }

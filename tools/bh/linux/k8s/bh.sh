@@ -4,7 +4,8 @@
 #
 # 镜像构建用 nerdctl 直连 k3s 的 containerd socket（/run/k3s/containerd/containerd.sock），
 # 构建完镜像直接落在 k3s 的 containerd 存储里，无需 docker build / docker save / ctr import。
-# 前置：k3s 已安装运行；nerdctl 已安装（k3s 不附带，需单独装）。
+# 前置：k3s 已安装运行（k3s 无法自动安装，见 k8s/README.md 前提条件）。
+# nerdctl / buildkitd 缺失时 build 会自动下载安装（GitHub release → /usr/local/bin）。
 #
 # Usage: ./tools/bh/linux/k8s/bh.sh <command> [args]
 #   build       nerdctl 构建 5 个镜像（直接进 k3s containerd）
@@ -46,17 +47,74 @@ help_text() {
     sed -n 's/^#   //p' "$0" | sed -n '2,14p'
 }
 
+# 自动安装缺失的构建依赖（nerdctl / buildkitd）
+# 策略：GitHub release 官方 tarball → /usr/local/bin（需 root；有 sudo 自动用，否则提示）
+# 不能自动安装的（k3s 系统服务）在 k8s/README.md 前提条件章节有指引
+NERDCTL_VERSION="2.3.5"
+BUILDKIT_VERSION="0.32.2"
+ARCH="$(uname -m | sed 's/x86_64/amd64/; s/aarch64/arm64/')"
+
+install_tool() {
+    # $1=工具名 $2=下载URL $3=tarball 内二进制名
+    local name="$1" url="$2" bin="$3"
+    echo "[deps] $name 缺失，自动下载安装（$url）..."
+    local tmp
+    tmp="$(mktemp -d)"
+    if ! curl -fsSL -o "$tmp/tool.tar.gz" "$url"; then
+        echo "[deps] 下载失败，请手动安装 $name 后重试（见 k8s/README.md）"
+        rm -rf "$tmp"
+        exit 1
+    fi
+    if ! tar -xzf "$tmp/tool.tar.gz" -C "$tmp" "$bin" 2>/dev/null; then
+        tar -xzf "$tmp/tool.tar.gz" -C "$tmp" || true
+    fi
+    local found
+    found="$(find "$tmp" -name "$bin" -type f | head -1)"
+    local target="/usr/local/bin/$name"
+    if command -v sudo >/dev/null 2>&1; then
+        sudo install -m 0755 "$found" "$target"             || { echo "[deps] 安装失败（权限？），请手动安装 $name"; rm -rf "$tmp"; exit 1; }
+    elif [ "$(id -u)" = "0" ]; then
+        install -m 0755 "$found" "$target"             || { echo "[deps] 安装失败，请手动安装 $name"; rm -rf "$tmp"; exit 1; }
+    else
+        echo "[deps] 需要 root 权限安装到 /usr/local/bin，请手动执行:"
+        echo "        sudo install -m 0755 $found $target"
+        rm -rf "$tmp"
+        exit 1
+    fi
+    rm -rf "$tmp"
+    echo "[deps] $name 安装完成"
+}
+
+ensure_deps() {
+    # nerdctl：k3s 不附带，自动装
+    if ! command -v nerdctl >/dev/null 2>&1; then
+        install_tool nerdctl \
+            "https://github.com/containerd/nerdctl/releases/download/v${NERDCTL_VERSION}/nerdctl-${NERDCTL_VERSION}-linux-${ARCH}.tar.gz" \
+            "nerdctl"
+    fi
+    # buildkitd：nerdctl build 的后端守护进程，自动装
+    if ! command -v buildkitd >/dev/null 2>&1; then
+        install_tool buildkitd \
+            "https://github.com/moby/buildkit/releases/download/v${BUILDKIT_VERSION}/buildkit-v${BUILDKIT_VERSION}.linux-${ARCH}.tar.gz" \
+            "buildkitd"
+    fi
+    # buildkitd 必须运行（socket 可达），否则给出启动指引
+    if ! command -v buildkitd >/dev/null 2>&1; then return 0; fi
+    if [ ! -S /run/buildkit/buildkitd.sock ]; then
+        echo "[deps] buildkitd 未运行。无 systemd 环境请手动启动："
+        echo "        nohup buildkitd -config /etc/buildkit/buildkitd.toml > /tmp/buildkitd.log 2>&1 &"
+        echo "        （systemd 环境: sudo systemctl enable --now buildkit）"
+        exit 1
+    fi
+}
+
 # nerdctl 直接构建进 k3s containerd（构建即入库，无 docker）
 # -o type=image：产物直接写入 containerd（默认 tarball 导出在 containerd worker 下会报 content not found）
 build_all() {
-    if ! command -v nerdctl >/dev/null 2>&1; then
-        echo "[build] 未找到 nerdctl（需单独安装：https://github.com/containerd/nerdctl）"
-        echo "        k3s 不附带 nerdctl，仅自带 containerd 与 k3s ctr（ctr 不能构建镜像）"
-        exit 1
-    fi
+    ensure_deps
     if ! n info >/dev/null 2>&1; then
         echo "[build] 无法连接 k3s containerd（$K3S_CONTAINERD_SOCK）"
-        echo "        请确认 k3s 已运行，且 nerdctl 已安装"
+        echo "        请确认 k3s 已运行（k3s 安装见 k8s/README.md 前提条件）"
         exit 1
     fi
     # base-runtime：prebuilt 镜像的基础（vault/ai/webui/family 的 FROM）

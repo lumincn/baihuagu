@@ -40,8 +40,25 @@ wait_port() {
     return 1
 }
 
+ensure_dotnet() {
+    if command -v dotnet >/dev/null 2>&1; then return 0; fi
+    echo "[deps] dotnet 缺失，自动安装到 ~/.dotnet（dotnet-install.sh）..."
+    local tmp
+    tmp="$(mktemp -d)"
+    if ! curl -fsSL -o "$tmp/dotnet-install.sh" https://dot.net/v1/dotnet-install.sh; then
+        echo "[deps] 下载 dotnet-install.sh 失败，请手动安装 .NET SDK 10（见 README）"
+        rm -rf "$tmp"
+        exit 1
+    fi
+    bash "$tmp/dotnet-install.sh" --channel 10.0 --install-dir "$HOME/.dotnet"         || { echo "[deps] dotnet 安装失败，请手动安装"; rm -rf "$tmp"; exit 1; }
+    rm -rf "$tmp"
+    echo "[deps] dotnet 已安装到 ~/.dotnet，请将以下加入 shell 配置（~/.bashrc）："
+    echo '        export PATH="$HOME/.dotnet:$PATH"'
+    export PATH="$HOME/.dotnet:$PATH"
+}
+
 build_all() {
-    if ! command -v dotnet >/dev/null; then echo "[build] dotnet not found"; exit 1; fi
+    ensure_dotnet
     for entry in $SERVICES; do
         IFS=: read -r name proj exe port <<<"$entry"
         echo "[build] $name ..."

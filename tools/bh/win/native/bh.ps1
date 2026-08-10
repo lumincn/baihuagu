@@ -47,7 +47,20 @@ function Help-Text {
     Get-Content $PSCommandPath | Where-Object { $_ -match '^\s{4}[a-z]' } | ForEach-Object { $_.Trim() }
 }
 
+function Ensure-Dotnet {
+    if (Get-Command dotnet -ErrorAction SilentlyContinue) { return }
+    Write-Host '[deps] dotnet 缺失，自动安装（winget install Microsoft.DotNet.SDK.10）...'
+    & winget install --id Microsoft.DotNet.SDK.10 --accept-source-agreements --accept-package-agreements --silent
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host '[deps] winget 安装失败，请手动安装 .NET SDK 10: https://dotnet.microsoft.com/download'
+        exit 1
+    }
+    $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
+    Write-Host '[deps] dotnet 安装完成'
+}
+
 function Invoke-Build {
+    Ensure-Dotnet
     foreach ($svc in $Services) {
         Write-Host "[build] $($svc.Name) ..."
         & dotnet publish $svc.Project -c Release -r win-x64 --self-contained false -o (Join-Path $OutDir $svc.Name) 2>&1 | Out-Null
