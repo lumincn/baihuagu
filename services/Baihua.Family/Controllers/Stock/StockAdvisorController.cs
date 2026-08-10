@@ -32,12 +32,13 @@ public class StockAdvisorController : ControllerBase
         [FromQuery] string? industry = null,
         [FromQuery] string? horizon = null,
         [FromQuery] string? prompt = null,
+        [FromQuery] string? direction = null,
         [FromQuery] bool refresh = false,
         CancellationToken ct = default)
     {
         try
         {
-            var result = await _stockAdvisor.GetRecommendationsAsync(providerId, model, strategy, industry, horizon, prompt, refresh, ct);
+            var result = await _stockAdvisor.GetRecommendationsAsync(providerId, model, strategy, industry, horizon, prompt, direction, refresh, ct);
             return Ok(result);
         }
         catch (Exception ex)

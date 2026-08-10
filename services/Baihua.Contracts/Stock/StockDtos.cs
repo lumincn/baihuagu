@@ -36,6 +36,9 @@ public class StockRecommendationResponse
     /// <summary>持有周期：short/long</summary>
     public string? Horizon { get; set; }
 
+    /// <summary>分析方向：buy 建议买入 / sell 建议卖出（默认 buy）</summary>
+    public string? Direction { get; set; }
+
     /// <summary>用户附加提示词（回显）</summary>
     public string? Prompt { get; set; }
 

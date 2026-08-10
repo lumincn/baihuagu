@@ -308,6 +308,13 @@ builder.Services.AddHttpClient("FamilyApi", client =>
 }).AddPolicyHandler(retryPolicy)
  .AddHttpMessageHandler<Baihua.Web.Middleware.MetricsRecordingHandler>();
 
+// 长耗时接口（AI 分析类，如股票建议）：避开 FamilyApi 的 30s 硬超时
+builder.Services.AddHttpClient("FamilyApiLong", client =>
+{
+    client.BaseAddress = new Uri(familyBaseUrl);
+    client.Timeout = TimeSpan.FromMinutes(5);
+}).AddHttpMessageHandler<Baihua.Web.Middleware.MetricsRecordingHandler>();
+
 var aiBaseUrl = builder.Configuration["AiApi:BaseUrl"] ?? "http://127.0.0.1:8791/";
 builder.Services.AddHttpClient("AiApi", client =>
 {

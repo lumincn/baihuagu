@@ -64,7 +64,11 @@
                 </select>
             </div>
         </div>
-        <div class="mt-3">
+        <div class="mt-3 d-flex align-items-center">
+            <div class="btn-group me-3" role="group">
+                <button class="btn btn-sm @(_tab == "buy" ? "btn-primary" : "btn-outline-primary")" @onclick='() => SwitchTabAsync("buy")'>🛒 建议买入</button>
+                <button class="btn btn-sm @(_tab == "sell" ? "btn-danger" : "btn-outline-danger")" @onclick='() => SwitchTabAsync("sell")'>🚨 建议卖出</button>
+            </div>
             <button class="btn btn-primary" disabled="@_loading" @onclick="LoadRecommendationsAsync">
                 @(_loading ? "分析中…" : "🔄 开始分析")
             </button>
@@ -96,7 +100,7 @@ else
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span>
-                🛒 建议购买 TOP 10
+                @(_tab == "sell" ? "🚨 建议卖出 TOP 10" : "🛒 建议购买 TOP 10")
                 <span class="badge bg-secondary ms-2">@ConditionLabel()</span>
             </span>
             <span class="text-muted small">模型：@(_result?.Model)｜@(_result?.GeneratedAt.ToString("HH:mm:ss"))</span>
@@ -131,12 +135,12 @@ else
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
                                         <div class="progress flex-grow-1" style="height:10px">
-                                            <div class="progress-bar @color" style="width:@(r.Score)%"></div>
+                                            <div class="progress-bar @(_tab == "sell" ? "bg-danger" : color)" style="width:@(r.Score)%"></div>
                                         </div>
                                         <span class="small fw-bold">@r.Score</span>
                                     </div>
                                 </td>
-                                <td><span class="badge bg-danger">@r.Action</span></td>
+                                <td><span class="badge @(_tab == "sell" ? "bg-danger" : "bg-primary")">@r.Action</span></td>
                                 <td class="small">@r.Reason</td>
                             </tr>
                         }
@@ -208,6 +212,7 @@ else
     private string _strategy = "";
     private string _industry = "";
     private string _horizon = "";
+    private string _tab = "buy";
     private string _prompt = DefaultPrompt;
     private string _selectedHistory = "";
     private List<string> _promptHistory = new();
@@ -280,6 +285,13 @@ else
         return string.Join(" ｜ ", parts);
     }
 
+    private async Task SwitchTabAsync(string tab)
+    {
+        if (_tab == tab) return;
+        _tab = tab;
+        await LoadRecommendationsCoreAsync(refresh: false);
+    }
+
     private async Task LoadRecommendationsAsync()
     {
         await LoadRecommendationsCoreAsync(refresh: false);
@@ -299,7 +311,7 @@ else
         try
         {
             SavePromptToHistory(_prompt);
-            _result = await ApiService.GetStockRecommendationsAsync(_strategy, _industry, _horizon, _prompt, refresh);
+            _result = await ApiService.GetStockRecommendationsAsync(_strategy, _industry, _horizon, _prompt, _tab, refresh);
         }
         catch (Exception ex)
         {

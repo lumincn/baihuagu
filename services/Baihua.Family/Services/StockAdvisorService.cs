@@ -259,16 +259,17 @@ public class StockAdvisorService
         return (provider, resolvedModel);
     }
 
-    /// <summary>AI 推荐 10 只股票（按建议度排名，支持策略/行业/周期/自定义提示词过滤；结果 10min 缓存，refresh 绕过）</summary>
+    /// <summary>AI 推荐 10 只股票（按建议度排名，支持方向/策略/行业/周期/自定义提示词；结果 10min 缓存，refresh 绕过）</summary>
     public async Task<StockRecommendationResponse> GetRecommendationsAsync(
         string? providerId, string? model, string? strategy, string? industry, string? horizon,
-        string? prompt, bool refresh = false, CancellationToken ct = default)
+        string? prompt, string? direction, bool refresh = false, CancellationToken ct = default)
     {
-        // 缓存 key：条件 + 提示词摘要（提示词变化 → 不同结果）
+        var isSell = direction?.ToLowerInvariant() == "sell";
+        // 缓存 key：方向 + 条件 + 提示词摘要（提示词变化 → 不同结果）
         var promptKey = string.IsNullOrWhiteSpace(prompt)
             ? ""
             : "|p:" + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(prompt)))[..16];
-        var cacheKey = $"stock:rec:{strategy ?? ""}|{industry?.Trim() ?? ""}|{horizon ?? ""}{promptKey}";
+        var cacheKey = $"stock:rec:{(isSell ? "sell" : "buy")}|{strategy ?? ""}|{industry?.Trim() ?? ""}|{horizon ?? ""}{promptKey}";
         if (!refresh)
         {
             var cached = await _cache.GetStringAsync(cacheKey, ct);
@@ -301,6 +302,14 @@ public class StockAdvisorService
             $"{i + 1}. {q.Code} {q.Name} [{q.Industry}] 现价{q.Price:N2} 涨跌{q.ChangePercent:+#.##;-#.##;0}% " +
             $"换手{q.TurnoverRate:F2}% PE{q.Pe:F1} PB{q.Pb:F2} 市值{q.MarketCapYi:F0}亿"));
 
+        var taskInstruction = isSell
+            ? "请从以上候选池中选出 10 只当前建议卖出或规避的股票（基本面转弱、估值过高、技术破位或量能异常），按卖出紧迫度从高到低排序。"
+            : "请从以上候选池中选出 10 只当前最值得买入的股票，按建议度从高到低排序。";
+        var jsonExample = isSell
+            ? "[{\"code\":\"600519\",\"name\":\"贵州茅台\",\"score\":85,\"action\":\"卖出\",\"reason\":\"...\"}]"
+            : "[{\"code\":\"600519\",\"name\":\"贵州茅台\",\"score\":85,\"action\":\"买入\",\"reason\":\"...\"}]";
+        var scoreDesc = isSell ? "score 为 0-100 整数（卖出紧迫度）。" : "score 为 0-100 整数（建议度）。";
+
         var promptText = $$"""
             你是 A 股分析师。以下是候选股票的实时行情快照：
             {{table}}
@@ -310,12 +319,12 @@ public class StockAdvisorService
             行业范围：{{industryText}}
             {{(userPrompt != null ? "用户附加要求：" + userPrompt : "")}}
 
-            请从以上候选池中选出 10 只当前最值得买入的股票，按建议度从高到低排序。
+            {{taskInstruction}}
             依据：遵循上述分析策略与持有周期，结合行情指标（估值、量能、趋势）与你的基本面知识综合判断。
             股票只能从上面的候选列表中选取，代码必须与列表严格一致，禁止编造候选列表之外的股票。
             只输出一个 JSON 数组（不要 markdown 代码块，不要任何其他文字）：
-            [{"code":"600519","name":"贵州茅台","score":85,"action":"买入","reason":"..."}]
-            score 为 0-100 整数（建议度）。reason 控制在 25 字以内。
+            {{jsonExample}}
+            {{scoreDesc}} reason 控制在 25 字以内。
             """;
 
         var messages = new List<ChatMessage>
@@ -337,6 +346,7 @@ public class StockAdvisorService
             Strategy = strategy,
             Industry = string.IsNullOrWhiteSpace(industry) ? null : industry.Trim(),
             Horizon = horizon,
+            Direction = isSell ? "sell" : "buy",
             Prompt = userPrompt,
             GeneratedAt = DateTime.Now,
             Raw = text

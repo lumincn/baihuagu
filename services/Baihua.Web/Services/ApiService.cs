@@ -44,7 +44,7 @@ namespace Baihua.Web.Services
         Task<bool> CompleteOnboardingAsync();
         Task<VaultGenerationResponse> CreateVaultGenerationTaskAsync(string industry, string keyword, string? model = null, int noteCount = 30, bool generateCards = false);
         Task<List<AiProviderInfo>> GetAiProvidersAsync();
-        Task<StockRecommendationResponse> GetStockRecommendationsAsync(string? strategy = null, string? industry = null, string? horizon = null, string? prompt = null, bool refresh = false, CancellationToken cancellationToken = default);
+        Task<StockRecommendationResponse> GetStockRecommendationsAsync(string? strategy = null, string? industry = null, string? horizon = null, string? prompt = null, string? direction = null, bool refresh = false, CancellationToken cancellationToken = default);
         Task<List<string>> GetStockIndustriesAsync(CancellationToken cancellationToken = default);
         Task<StockEvaluationResponse> EvaluateStockAsync(string code, bool refresh = false, CancellationToken cancellationToken = default);
         Task<SearchResponse> SearchAsync(string query, string vaultId);
@@ -248,6 +248,7 @@ namespace Baihua.Web.Services
         private static readonly JsonSerializerOptions _caseInsensitiveJsonOptions = new() { PropertyNameCaseInsensitive = true };
 
         private readonly HttpClient _httpClient;
+        private readonly HttpClient _longHttpClient;
         private readonly HttpClient _aiHttpClient;
         private readonly HttpClient _vaultHttpClient;
         private readonly SettingsService _settingsService;
@@ -264,6 +265,7 @@ namespace Baihua.Web.Services
             _logger = logger;
             _loc = loc;
             _httpClient = httpClientFactory.CreateClient("FamilyApi");
+            _longHttpClient = httpClientFactory.CreateClient("FamilyApiLong");
             _aiHttpClient = httpClientFactory.CreateClient("AiApi");
             _vaultHttpClient = httpClientFactory.CreateClient("VaultApi");
             
@@ -348,11 +350,12 @@ namespace Baihua.Web.Services
                    code == System.Net.HttpStatusCode.NotFound;
         }
 
-        private async Task<HttpResponseMessage> GetWithFallbackAsync(string path, CancellationToken cancellationToken = default)
+        private async Task<HttpResponseMessage> GetWithFallbackAsync(string path, CancellationToken cancellationToken = default, HttpClient? client = null)
         {
             EnsurePrimaryBaseAddress();
             var primaryBaseUrl = GetPrimaryBaseUrl();
-            var response = await _httpClient.GetAsync(path, cancellationToken);
+            var http = client ?? _httpClient;
+            var response = await http.GetAsync(path, cancellationToken);
             if (!ShouldFallback(response.StatusCode) || primaryBaseUrl == _fallbackBaseUrl)
             {
                 return response;
@@ -365,11 +368,12 @@ namespace Baihua.Web.Services
             return await fallbackClient.GetAsync(path, cancellationToken);
         }
 
-        private async Task<HttpResponseMessage> PostWithFallbackAsync(string path, HttpContent? body, CancellationToken cancellationToken = default)
+        private async Task<HttpResponseMessage> PostWithFallbackAsync(string path, HttpContent? body, CancellationToken cancellationToken = default, HttpClient? client = null)
         {
             EnsurePrimaryBaseAddress();
             var primaryBaseUrl = GetPrimaryBaseUrl();
-            var response = await _httpClient.PostAsync(path, body, cancellationToken);
+            var http = client ?? _httpClient;
+            var response = await http.PostAsync(path, body, cancellationToken);
             if (!ShouldFallback(response.StatusCode) || primaryBaseUrl == _fallbackBaseUrl)
             {
                 return response;
@@ -521,19 +525,20 @@ namespace Baihua.Web.Services
             }
         }
 
-        public async Task<StockRecommendationResponse> GetStockRecommendationsAsync(string? strategy = null, string? industry = null, string? horizon = null, string? prompt = null, bool refresh = false, CancellationToken cancellationToken = default)
+        public async Task<StockRecommendationResponse> GetStockRecommendationsAsync(string? strategy = null, string? industry = null, string? horizon = null, string? prompt = null, string? direction = null, bool refresh = false, CancellationToken cancellationToken = default)
         {
             var query = new List<string>();
             if (!string.IsNullOrWhiteSpace(strategy)) query.Add($"strategy={Uri.EscapeDataString(strategy)}");
             if (!string.IsNullOrWhiteSpace(industry)) query.Add($"industry={Uri.EscapeDataString(industry)}");
             if (!string.IsNullOrWhiteSpace(horizon)) query.Add($"horizon={Uri.EscapeDataString(horizon)}");
             if (!string.IsNullOrWhiteSpace(prompt)) query.Add($"prompt={Uri.EscapeDataString(prompt)}");
+            if (!string.IsNullOrWhiteSpace(direction)) query.Add($"direction={Uri.EscapeDataString(direction)}");
             if (refresh) query.Add("refresh=true");
             var qs = query.Count > 0 ? "?" + string.Join('&', query) : "";
 
             using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
-            var response = await GetWithMetricsAsync("/api/stock/recommendations" + qs, linked.Token);
+            var response = await GetWithMetricsAsync("/api/stock/recommendations" + qs, linked.Token, _longHttpClient);
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<StockRecommendationResponse>(linked.Token)
                    ?? new StockRecommendationResponse();
@@ -554,7 +559,7 @@ namespace Baihua.Web.Services
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
             var qs = refresh ? "?refresh=true" : "";
             var response = await PostWithMetricsAsync("/api/stock/evaluate" + qs,
-                JsonContent.Create(new StockEvaluationRequest { Code = code }));
+                JsonContent.Create(new StockEvaluationRequest { Code = code }), linked.Token, _longHttpClient);
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<StockEvaluationResponse>(linked.Token)
                    ?? new StockEvaluationResponse();
@@ -1517,12 +1522,12 @@ namespace Baihua.Web.Services
         /// <summary>
         /// 包装 GET 请求并记录指标
         /// </summary>
-        private async Task<HttpResponseMessage> GetWithMetricsAsync(string endpoint, CancellationToken cancellationToken = default)
+        private async Task<HttpResponseMessage> GetWithMetricsAsync(string endpoint, CancellationToken cancellationToken = default, HttpClient? client = null)
         {
             var stopwatch = Stopwatch.StartNew();
             try
             {
-                var response = await GetWithFallbackAsync(endpoint, cancellationToken);
+                var response = await GetWithFallbackAsync(endpoint, cancellationToken, client);
                 stopwatch.Stop();
                 RecordApiCall(endpoint, "GET", stopwatch.ElapsedMilliseconds, response.IsSuccessStatusCode, (int)response.StatusCode);
                 return response;
@@ -1538,12 +1543,12 @@ namespace Baihua.Web.Services
         /// <summary>
         /// 包装 POST 请求并记录指标
         /// </summary>
-        private async Task<HttpResponseMessage> PostWithMetricsAsync(string endpoint, HttpContent? content, CancellationToken cancellationToken = default)
+        private async Task<HttpResponseMessage> PostWithMetricsAsync(string endpoint, HttpContent? content, CancellationToken cancellationToken = default, HttpClient? client = null)
         {
             var stopwatch = Stopwatch.StartNew();
             try
             {
-                var response = await PostWithFallbackAsync(endpoint, content, cancellationToken);
+                var response = await PostWithFallbackAsync(endpoint, content, cancellationToken, client);
                 stopwatch.Stop();
                 RecordApiCall(endpoint, "POST", stopwatch.ElapsedMilliseconds, response.IsSuccessStatusCode, (int)response.StatusCode);
                 return response;
