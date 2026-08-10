@@ -125,6 +125,12 @@ lspci | grep -i vga
 sudo apt install -y intel-opencl-icd level-zero-dev libigdgmm12
 ```
 
+> **GPU 后端覆盖**：镜像已内置各推理后端的 GPU 运行时（无需额外配置）：
+> - **OpenVINO**（bh-openvino 容器）：intel-opencl-icd（NEO）→ /dev/dri（真机）或 /dev/dxg（WSL2）
+> - **LlamaSharp**（bh-ai 容器）：Vulkan 运行时（mesa-vulkan-drivers + libvulkan1）→ /dev/dri（真机）
+> - **ONNX**（bh-ai 容器）：OpenVINO EP 自动检测 → 复用 OpenCL 通路
+> WSL2 注意：LlamaSharp Vulkan 需 Intel 专用驱动（WSL2 不可用，自动回退 CPU）；OpenVINO/ONNX 走 /dev/dxg 正常
+
 ### 3. 构建依赖（自动安装）
 
 `bh.sh build` 会自动下载安装缺失的 nerdctl 与 buildkit（buildkitd 守护进程 + buildctl 客户端，官方 GitHub release → /usr/local/bin，需 root/sudo）。

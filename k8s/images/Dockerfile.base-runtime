@@ -22,11 +22,15 @@ RUN sed -i 's|http://archive.ubuntu.com|https://mirrors.huaweicloud.com|g' /etc/
 # - libgomp1: LLamaSharp (OpenMP 支持)
 # - curl: 健康检查
 # - ca-certificates: HTTPS 证书
+# - Vulkan 运行时: LLamaSharp Vulkan backend（真机 /dev/dri GPU 推理）
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         libgomp1 \
         curl \
-        ca-certificates && \
+        ca-certificates \
+        libvulkan1 \
+        mesa-vulkan-drivers \
+        vulkan-tools && \
     rm -rf /var/lib/apt/lists/*
 
 # 创建数据/日志目录

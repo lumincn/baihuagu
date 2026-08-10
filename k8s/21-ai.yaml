@@ -42,6 +42,9 @@ spec:
               mountPath: /app/logs
             - name: vaults
               mountPath: /vaults
+            # Intel GPU（LlamaSharp Vulkan 后端，真机 /dev/dri 场景）
+            - name: dri
+              mountPath: /dev/dri
           readinessProbe:
             httpGet:
               path: /health
@@ -72,6 +75,11 @@ spec:
         - name: vaults
           persistentVolumeClaim:
             claimName: baihua-vaults-pvc
+        # Intel GPU 设备（真机场景；WSL2 无 /dev/dri 时为空目录，不影响启动）
+        - name: dri
+          hostPath:
+            path: /dev/dri
+            type: DirectoryOrCreate
 ---
 apiVersion: v1
 kind: Service
