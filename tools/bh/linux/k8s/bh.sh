@@ -177,6 +177,7 @@ ensure_deps() {
     # buildkitd 必须运行（socket 可达），否则给出启动指引
     if ! command -v buildkitd >/dev/null 2>&1; then return 0; fi
     if [ ! -S /run/buildkit/buildkitd.sock ]; then
+        ensure_registry
         echo "[deps] buildkitd 未运行。无 systemd 环境请手动启动："
         echo "        nohup buildkitd -config /etc/buildkit/buildkitd.toml > /tmp/buildkitd.log 2>&1 &"
         echo "        （systemd 环境: sudo systemctl enable --now buildkit）"
@@ -184,10 +185,47 @@ ensure_deps() {
     fi
 }
 
+# 自动配置国内镜像加速（幂等：已存在则不动）：
+#   1. /etc/rancher/k3s/registries.yaml —— k3s containerd 拉镜像走 daocloud（实测 pause/nginx 直连 docker.io 超时）
+#   2. /etc/buildkit/buildkitd.toml —— buildkitd 构建时拉基础镜像走 daocloud
+ensure_registry() {
+    local wrote=0
+    # k3s registries.yaml
+    if [ ! -f /etc/rancher/k3s/registries.yaml ]; then
+        mkdir -p /etc/rancher/k3s
+        cat > /etc/rancher/k3s/registries.yaml << 'EOF'
+mirrors:
+  docker.io:
+    endpoint:
+      - "https://docker.m.daocloud.io"
+      - "https://docker.1ms.run"
+      - "https://registry-1.docker.io"
+EOF
+        echo "[deps] 已写入 /etc/rancher/k3s/registries.yaml（daocloud 镜像加速）"
+        echo "        k3s 重启后生效（systemctl restart k3s 或重新拉起 k3s server）"
+        wrote=1
+    fi
+    # buildkitd.toml（仅当 buildkitd 存在时写）
+    if command -v buildkitd >/dev/null 2>&1 && [ ! -f /etc/buildkit/buildkitd.toml ]; then
+        mkdir -p /etc/buildkit
+        cat > /etc/buildkit/buildkitd.toml << 'EOF'
+[worker.containerd]
+address = "/run/k3s/containerd/containerd.sock"
+namespace = "k8s.io"
+[registry."docker.io"]
+mirrors = ["docker.m.daocloud.io", "docker.1ms.run"]
+EOF
+        echo "[deps] 已写入 /etc/buildkit/buildkitd.toml（daocloud 镜像加速 + k8s.io namespace）"
+        wrote=1
+    fi
+    return "$wrote"
+}
+
 # nerdctl 直接构建进 k3s containerd（构建即入库，无 docker）
 # -o type=image：产物直接写入 containerd（默认 tarball 导出在 containerd worker 下会报 content not found）
 build_all() {
     ensure_deps
+    ensure_registry
     if ! n info >/dev/null 2>&1; then
         echo "[build] 无法连接 k3s containerd（$K3S_CONTAINERD_SOCK）"
         echo "        请确认 k3s 已运行（k3s 安装见 k8s/README.md 前提条件）"

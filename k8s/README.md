@@ -148,6 +148,9 @@ dotnet --version       # 10.0+
 > ```bash
 > nohup buildkitd -config /etc/buildkit/buildkitd.toml > /tmp/buildkitd.log 2>&1 &
 > ```
+> `bh.sh build` 会自动生成 buildkitd.toml（daocloud 镜像加速 + k8s.io namespace）和
+> `/etc/rancher/k3s/registries.yaml`（k3s 拉镜像走 daocloud，解决 pause/nginx 直连 docker.io 超时）。
+> 已存在的配置文件不会被覆盖（幂等）。k3s 的 registries.yaml 写入后需重启 k3s 生效。
 
 > 镜像构建用 `nerdctl -a /run/k3s/containerd/containerd.sock build`，构建完直接进入 k3s 的 containerd，
 > 无需 docker，也无需 load/import。日常入口：`../tools/bh/linux/k8s/bh.sh`（build/up/status/logs）。
