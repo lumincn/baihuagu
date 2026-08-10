@@ -16,8 +16,7 @@ COPY services/Baihua.Core/Baihua.Core.csproj services/Baihua.Core/
 COPY services/Baihua.Vault/Baihua.Vault.csproj services/Baihua.Vault/
 COPY NuGet.config .
 COPY nuget-local/ nuget-local/
-RUN dotnet restore services/Baihua.Vault/Baihua.Vault.csproj
-
+RUN dotnet restore services/Baihua.Vault/Baihua.Vault.csproj -r linux-x64
 # 复制全部源码并发布
 COPY services/ services/
 COPY libs/ libs/
