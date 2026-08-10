@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using Baihua.Contracts.Ai;
+using Baihua.Contracts.Budget;
 using Baihua.Contracts.Stock;
 using Microsoft.Extensions.Localization;
 using Baihua.Contracts.Anki;
@@ -47,6 +48,10 @@ namespace Baihua.Web.Services
         Task<StockRecommendationResponse> GetStockRecommendationsAsync(string? strategy = null, string? industry = null, string? horizon = null, string? prompt = null, string? direction = null, bool refresh = false, CancellationToken cancellationToken = default);
         Task<List<string>> GetStockIndustriesAsync(CancellationToken cancellationToken = default);
         Task<StockEvaluationResponse> EvaluateStockAsync(string code, bool refresh = false, CancellationToken cancellationToken = default);
+        Task<List<BudgetTransaction>> GetBudgetTransactionsAsync(int? year = null, int? month = null, CancellationToken cancellationToken = default);
+        Task<BudgetTransaction> AddBudgetTransactionAsync(BudgetCreateRequest request, CancellationToken cancellationToken = default);
+        Task<bool> DeleteBudgetTransactionAsync(Guid id, CancellationToken cancellationToken = default);
+        Task<BudgetSummary> GetBudgetSummaryAsync(int? year = null, int? month = null, CancellationToken cancellationToken = default);
         Task<SearchResponse> SearchAsync(string query, string vaultId);
         Task<IndexStatusDto> GetIndexStatusAsync(string vaultId);
         Task<bool> RebuildIndexAsync(string vaultId, CancellationToken cancellationToken = default);
@@ -563,6 +568,58 @@ namespace Baihua.Web.Services
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<StockEvaluationResponse>(linked.Token)
                    ?? new StockEvaluationResponse();
+        }
+
+        public async Task<List<BudgetTransaction>> GetBudgetTransactionsAsync(int? year = null, int? month = null, CancellationToken cancellationToken = default)
+        {
+            var qs = (year.HasValue || month.HasValue)
+                ? "?" + string.Join('&', new[]
+                {
+                    year.HasValue ? $"year={year}" : "",
+                    month.HasValue ? $"month={month}" : ""
+                }.Where(s => s != ""))
+                : "";
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            var response = await GetWithMetricsAsync("/api/budget/transactions" + qs, linked.Token);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<List<BudgetTransaction>>(linked.Token) ?? new List<BudgetTransaction>();
+        }
+
+        public async Task<BudgetTransaction> AddBudgetTransactionAsync(BudgetCreateRequest request, CancellationToken cancellationToken = default)
+        {
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            var response = await PostWithMetricsAsync("/api/budget/transactions", JsonContent.Create(request), linked.Token);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<BudgetTransaction>(linked.Token) ?? new BudgetTransaction();
+        }
+
+        public async Task<bool> DeleteBudgetTransactionAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            EnsurePrimaryBaseAddress();
+            var response = await _httpClient.DeleteAsync($"/api/budget/transactions/{id}", linked.Token);
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return false;
+            response.EnsureSuccessStatusCode();
+            return true;
+        }
+
+        public async Task<BudgetSummary> GetBudgetSummaryAsync(int? year = null, int? month = null, CancellationToken cancellationToken = default)
+        {
+            var qs = (year.HasValue || month.HasValue)
+                ? "?" + string.Join('&', new[]
+                {
+                    year.HasValue ? $"year={year}" : "",
+                    month.HasValue ? $"month={month}" : ""
+                }.Where(s => s != ""))
+                : "";
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            var response = await GetWithMetricsAsync("/api/budget/summary" + qs, linked.Token);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<BudgetSummary>(linked.Token) ?? new BudgetSummary();
         }
 
         public async Task<List<AiProviderInfo>> GetAiProvidersAsync()

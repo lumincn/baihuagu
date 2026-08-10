@@ -179,6 +179,7 @@ builder.Services.AddSingleton<DefaultPromptProvider>();
 builder.Services.AddAiClientServices();
 builder.Services.AddSingleton<AiFunctionService>();
 builder.Services.AddSingleton<StockAdvisorService>();
+builder.Services.AddSingleton<FamilyBudgetService>();
 builder.Services.AddHttpClient<Baihua.Core.Services.ComfyUiClient>();
 
 

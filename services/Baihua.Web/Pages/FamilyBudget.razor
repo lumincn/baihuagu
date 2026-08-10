@@ -1,0 +1,273 @@
+@page "/family-budget"
+@rendermode InteractiveServer
+@using Baihua.Contracts.Budget
+@using System.Globalization
+@inject Baihua.Web.Services.IApiService ApiService
+
+<PageTitle>家庭记账</PageTitle>
+
+<h1>💰 家庭记账</h1>
+<p class="text-muted">记录家庭的每一笔收支，自动汇总月度账单与分类统计。</p>
+
+@if (_loading)
+{
+    <div class="loading-spinner">加载中…</div>
+}
+else
+{
+    <div class="d-flex align-items-center gap-3 mb-3">
+        <button class="btn btn-outline-secondary btn-sm" @onclick='() => ChangeMonth(-1)'>◀ 上月</button>
+        <h4 class="mb-0">@(_year) 年 @(_month) 月</h4>
+        <button class="btn btn-outline-secondary btn-sm" @onclick='() => ChangeMonth(1)'>下月 ▶</button>
+        <button class="btn btn-outline-primary btn-sm ms-2" @onclick="LoadAsync">刷新</button>
+    </div>
+
+    <!-- 月度概览 -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <div class="text-muted small">本月收入</div>
+                    <div class="fs-4 text-success fw-bold">+@_summary.MonthIncome.ToString("N2")</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-danger">
+                <div class="card-body text-center">
+                    <div class="text-muted small">本月支出</div>
+                    <div class="fs-4 text-danger fw-bold">-@_summary.MonthExpense.ToString("N2")</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card @(_summary.MonthBalance >= 0 ? "border-primary" : "border-warning")">
+                <div class="card-body text-center">
+                    <div class="text-muted small">本月结余</div>
+                    <div class="fs-4 fw-bold @(_summary.MonthBalance >= 0 ? "text-primary" : "text-warning")">
+                        @(_summary.MonthBalance >= 0 ? "+" : "")@_summary.MonthBalance.ToString("N2")
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <!-- 新增记录 -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">✏️ 记一笔</div>
+                <div class="card-body">
+                    <div class="btn-group w-100 mb-3" role="group">
+                        <button class="btn btn-sm @(_newType == "expense" ? "btn-danger" : "btn-outline-danger")" @onclick='() => SetType("expense")'>支出</button>
+                        <button class="btn btn-sm @(_newType == "income" ? "btn-success" : "btn-outline-success")" @onclick='() => SetType("income")'>收入</button>
+                    </div>
+                    <div class="mb-2">
+                        <input class="form-control" type="number" step="0.01" min="0.01" placeholder="金额"
+                               @bind="_newAmount" />
+                    </div>
+                    <div class="mb-2">
+                        <select class="form-select" @bind="_newCategory">
+                            <option value="">选择分类…</option>
+                            @foreach (var c in Categories)
+                            {
+                                <option value="@c">@c</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <input class="form-control" type="date" @bind="_newDate" />
+                    </div>
+                    <div class="mb-3">
+                        <input class="form-control" placeholder="备注（可选）" @bind="_newNote" />
+                    </div>
+                    <button class="btn btn-primary w-100" disabled="@_saving" @onclick="AddAsync">
+                        @(_saving ? "保存中…" : "保存")
+                    </button>
+                    @if (!string.IsNullOrEmpty(_formError))
+                    {
+                        <div class="text-danger small mt-2">@_formError</div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- 分类统计 -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">📊 本月支出分类</div>
+                <div class="card-body">
+                    @if (_summary.CategoryStats.Count == 0)
+                    {
+                        <div class="text-muted small">本月暂无支出记录</div>
+                    }
+                    else
+                    {
+                        var max = _summary.CategoryStats.Max(s => s.Amount);
+                        @foreach (var s in _summary.CategoryStats)
+                        {
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between small">
+                                    <span>@s.Category <span class="text-muted">×@s.Count</span></span>
+                                    <span class="fw-bold">@s.Amount.ToString("N2")</span>
+                                </div>
+                                <div class="progress" style="height:8px">
+                                    <div class="progress-bar bg-danger" style="width:@(max > 0 ? s.Amount / max * 100 : 0)%"></div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    <hr />
+                    <div class="small text-muted">
+                        累计收入 <b class="text-success">@_summary.TotalIncome.ToString("N2")</b> ｜
+                        累计支出 <b class="text-danger">@_summary.TotalExpense.ToString("N2")</b>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 明细列表 -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>📋 本月明细（@_transactions.Count 笔）</span>
+                </div>
+                <div class="card-body p-0" style="max-height:520px;overflow-y:auto">
+                    @if (_transactions.Count == 0)
+                    {
+                        <div class="text-muted small p-3">本月还没有记录</div>
+                    }
+                    else
+                    {
+                        <ul class="list-group list-group-flush">
+                            @foreach (var t in _transactions)
+                            {
+                                var income = t.Type == "income";
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div>
+                                            <span class="badge @(income ? "bg-success" : "bg-danger") me-1">@t.Category</span>
+                                            <span class="small text-muted">@t.Date.ToString("MM-dd")</span>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(t.Note))
+                                        {
+                                            <div class="small text-muted">@t.Note</div>
+                                        }
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="fw-bold @(income ? "text-success" : "text-danger")">
+                                            @(income ? "+" : "-")@t.Amount.ToString("N2")
+                                        </span>
+                                        <button class="btn btn-sm btn-outline-danger" title="删除" @onclick='() => DeleteAsync(t.Id)'>×</button>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<BudgetTransaction> _transactions = new();
+    private BudgetSummary _summary = new();
+    private bool _loading = true;
+    private bool _saving;
+
+    private int _year = DateTime.Now.Year;
+    private int _month = DateTime.Now.Month;
+
+    private string _newType = "expense";
+    private decimal _newAmount;
+    private string _newCategory = "";
+    private DateTime? _newDate = DateTime.Today;
+    private string _newNote = "";
+    private string? _formError;
+
+    private string[] Categories => _newType == "income" ? BudgetCategories.Income : BudgetCategories.Expense;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private void SetType(string type)
+    {
+        _newType = type;
+        _newCategory = "";
+    }
+
+    private async Task ChangeMonth(int delta)
+    {
+        var d = new DateTime(_year, _month, 1).AddMonths(delta);
+        _year = d.Year;
+        _month = d.Month;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        StateHasChanged();
+        try
+        {
+            var txTask = ApiService.GetBudgetTransactionsAsync(_year, _month);
+            var sumTask = ApiService.GetBudgetSummaryAsync(_year, _month);
+            await Task.WhenAll(txTask, sumTask);
+            _transactions = await txTask;
+            _summary = await sumTask;
+        }
+        catch (Exception ex)
+        {
+            _formError = "加载失败：" + ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task AddAsync()
+    {
+        _formError = null;
+        if (_newAmount <= 0) { _formError = "请输入金额"; return; }
+        if (string.IsNullOrEmpty(_newCategory)) { _formError = "请选择分类"; return; }
+
+        _saving = true;
+        StateHasChanged();
+        try
+        {
+            await ApiService.AddBudgetTransactionAsync(new BudgetCreateRequest
+            {
+                Type = _newType,
+                Amount = _newAmount,
+                Category = _newCategory,
+                Note = string.IsNullOrWhiteSpace(_newNote) ? null : _newNote,
+                Date = _newDate ?? DateTime.Today
+            });
+            _newAmount = 0;
+            _newCategory = "";
+            _newNote = "";
+            _newDate = DateTime.Today;
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            _formError = "保存失败：" + ex.Message;
+        }
+        finally
+        {
+            _saving = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeleteAsync(Guid id)
+    {
+        await ApiService.DeleteBudgetTransactionAsync(id);
+        await LoadAsync();
+    }
+}
