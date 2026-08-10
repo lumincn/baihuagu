@@ -49,8 +49,8 @@
 | `24-nginx-configmap.yaml` | Nginx 配置（K8s DNS 适配） |
 | `25-nginx.yaml` | Nginx Deployment + NodePort Service |
 | `deploy.sh` | 一键部署脚本 |
-| `../docker/Dockerfile.openvino-server.prebuilt` | OpenVINO 独立推理容器 |
-| `../docker/Dockerfile.family.prebuilt` | Family 轻量容器（无 OpenVINO） |
+| `./images/Dockerfile.openvino-server.prebuilt` | OpenVINO 独立推理容器 |
+| `./images/Dockerfile.family.prebuilt` | Family 轻量容器（无 OpenVINO） |
 
 ## 架构设计：OpenVINO 独立容器
 

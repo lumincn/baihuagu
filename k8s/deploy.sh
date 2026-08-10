@@ -47,7 +47,7 @@ info() { echo -e "${BLUE}[INFO]${NC} $*"; }
 # ============================================================
 build_base() {
     log "构建基础镜像 bh/base-runtime:latest ..."
-    docker build -f "$DOCKER_DIR/Dockerfile.base-runtime" -t bh/base-runtime:latest "$PROJECT_ROOT"
+    docker build -f "$K8S_DIR/images/Dockerfile.base-runtime" -t bh/base-runtime:latest "$PROJECT_ROOT"
     log "基础镜像构建完成"
 }
 
@@ -101,30 +101,30 @@ build_images() {
 
     log "构建服务镜像 ..."
 
-    # prebuilt 镜像的 Dockerfile 里 `COPY publish/<svc> .` 是相对 docker/ 目录的，
-    # 所以 context 必须用 DOCKER_DIR（用项目根会报 "/publish/<svc>: not found"）
+    # prebuilt 镜像在 k8s/images/，Dockerfile 内 COPY publish/<svc> 相对 docker/ 目录
+    # （publish 产物在 docker/publish/），所以 context 用 DOCKER_DIR
     local prebuilt_ctx="$DOCKER_DIR"
 
     # Vault
     log "  构建 bh-vault:latest ..."
-    docker build -f "$DOCKER_DIR/Dockerfile.vault.prebuilt" -t bh-vault:latest "$prebuilt_ctx"
+    docker build -f "$K8S_DIR/images/Dockerfile.vault.prebuilt" -t bh-vault:latest "$prebuilt_ctx"
 
     # AI
     log "  构建 bh-ai:latest ..."
-    docker build -f "$DOCKER_DIR/Dockerfile.ai.prebuilt" -t bh-ai:latest "$prebuilt_ctx"
+    docker build -f "$K8S_DIR/images/Dockerfile.ai.prebuilt" -t bh-ai:latest "$prebuilt_ctx"
 
     # WebUI
     log "  构建 bh-webui:latest ..."
-    docker build -f "$DOCKER_DIR/Dockerfile.webui.prebuilt" -t bh-webui:latest "$prebuilt_ctx"
+    docker build -f "$K8S_DIR/images/Dockerfile.webui.prebuilt" -t bh-webui:latest "$prebuilt_ctx"
 
     # Family (轻量版，不含 OpenVINO)
     log "  构建 bh-family:latest（轻量版，OpenVINO 已拆分到独立容器）..."
-    docker build -f "$DOCKER_DIR/Dockerfile.family.prebuilt" -t bh-family:latest "$prebuilt_ctx"
+    docker build -f "$K8S_DIR/images/Dockerfile.family.prebuilt" -t bh-family:latest "$prebuilt_ctx"
 
     # OpenVINO 推理服务器（独立容器，含 GPU 支持）
     # 注意：该 Dockerfile 拷的是 services/... 和 docker/... 下的源文件，context 必须用项目根
     log "  构建 bh-openvino:latest（OpenVINO + Intel GPU 推理服务）..."
-    docker build -f "$DOCKER_DIR/Dockerfile.openvino-server.prebuilt" -t bh-openvino:latest "$PROJECT_ROOT"
+    docker build -f "$K8S_DIR/images/Dockerfile.openvino-server.prebuilt" -t bh-openvino:latest "$PROJECT_ROOT"
 
     log "所有镜像构建完成"
     docker images | grep -E "bh-(vault|ai|webui|family|openvino)" | head -10
