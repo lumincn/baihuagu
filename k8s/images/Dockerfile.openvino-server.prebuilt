@@ -11,18 +11,24 @@
 #   3. 独立生命周期 — 可单独升级 OpenVINO 不影响 Family 服务
 #   4. Family 服务通过 K8s Service DNS (http://bh-openvino:8000) 调用
 
-FROM python:3.12-slim AS runtime
+# Ubuntu 24.04 基础：宿主机同系，可用 Intel 官方源装 NEO compute runtime（WSL2 /dev/dxg 支持）
+FROM ubuntu:24.04 AS runtime
 
-# 国内镜像源加速：debian.sources 是 deb822 格式，整段重写为华为云（含 main contrib non-free）
-RUN printf 'Types: deb\nURIs: https://mirrors.huaweicloud.com/debian\nSuites: bookworm bookworm-updates\nComponents: main contrib non-free\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n' > /etc/apt/sources.list.d/debian.sources && \
-    printf 'Types: deb\nURIs: https://mirrors.huaweicloud.com/debian-security\nSuites: bookworm-security\nComponents: main contrib non-free\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n' > /etc/apt/sources.list.d/debian-security.sources
+# 国内镜像源加速：Ubuntu 24.04 deb822 格式（ubuntu.sources）换华为云
+RUN printf 'Types: deb\nURIs: http://mirrors.huaweicloud.com/ubuntu/\nSuites: noble noble-updates noble-backports\nComponents: main restricted universe multiverse\nSigned-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg\n\nTypes: deb\nURIs: http://mirrors.huaweicloud.com/ubuntu/\nSuites: noble-security\nComponents: main restricted universe multiverse\nSigned-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg\n' > /etc/apt/sources.list.d/ubuntu.sources
 
-# 安装 Intel GPU 运行时 + 系统依赖
-# intel-opencl-icd / libigdgmm12 在 bookworm main；level-zero 无 Debian 包（GPU 走 OpenCL 即可）
+# Intel 官方 GPU 源（NEO compute runtime 25.x，支持 WSL2 /dev/dxg 与真机 /dev/dri）
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates gpg && \
+    curl -fsSL https://repositories.intel.com/gpu/intel-graphics.key -o /tmp/intel-key.gpg && \
+    gpg --batch --yes --dearmor -o /usr/share/keyrings/intel-gpu-keyring.gpg /tmp/intel-key.gpg && \
+    echo 'deb [signed-by=/usr/share/keyrings/intel-gpu-keyring.gpg] https://repositories.intel.com/gpu/ubuntu noble unified' > /etc/apt/sources.list.d/intel-gpu.list
+
+# 安装 Intel NEO GPU 运行时（走 /dev/dxg=WSL2 / /dev/dri=真机）+ 系统依赖
+# python3-pip：ubuntu:24.04 基础镜像不带 pip
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        intel-opencl-icd libigdgmm12 clinfo pciutils \
-        curl tini \
+        intel-opencl-icd clinfo pciutils \
+        curl tini ca-certificates python3-pip python3-venv \
     && rm -rf /var/lib/apt/lists/*
 
 # 安装 OpenVINO GenAI + 依赖

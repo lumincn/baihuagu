@@ -57,6 +57,13 @@ spec:
             # Intel GPU 设备节点（由 intel-gpu-plugin 自动注入）
             - name: dri
               mountPath: /dev/dri
+            # WSL2 GPU 半虚拟化设备（NEO 驱动走此设备）
+            - name: dxg
+              mountPath: /dev/dxg
+            # 微软 GPU-PV 用户态库 + Intel WSL compute helper（NEO 驱动访问 /dev/dxg 必需）
+            - name: wsl-lib
+              mountPath: /usr/lib/wsl
+              readOnly: true
           readinessProbe:
             httpGet:
               path: /health
@@ -73,25 +80,31 @@ spec:
             failureThreshold: 3
           resources:
             limits:
-              # 请求 1 个 Intel GPU（由 intel-gpu-plugin 分配）
-              intel.com/gpu: 1
               memory: 8Gi
             requests:
               cpu: 1000m
               memory: 2Gi
           securityContext:
-            privileged: false
-            allowPrivilegeEscalation: false
-            # supplementalGroups: [44]  # video group on most Linux distros
+            # WSL2 下访问 /dev/dxg（GPU-PV 设备）需要特权；真机 /dev/dri 不需要但无妨
+            privileged: true
+            allowPrivilegeEscalation: true
       volumes:
         - name: models
           persistentVolumeClaim:
             claimName: baihua-models-pvc
-        # /dev/dri 由 Intel GPU Device Plugin 自动注入
-        # hostPath 作为 fallback（当 Device Plugin 未部署时）
+        # /dev/dri 由 Intel GPU Device Plugin 自动注入（真机场景）
         - name: dri
           hostPath:
             path: /dev/dri
+            type: DirectoryOrCreate
+        # /dev/dxg = WSL2 GPU 半虚拟化设备（WSL2 场景，Intel NEO 驱动走此设备）
+        - name: dxg
+          hostPath:
+            path: /dev/dxg
+        # 微软 GPU-PV 用户态库 + Intel WSL compute helper（WSL2 场景，NEO 驱动依赖）
+        - name: wsl-lib
+          hostPath:
+            path: /usr/lib/wsl
             type: DirectoryOrCreate
 ---
 apiVersion: v1
