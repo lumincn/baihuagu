@@ -42,10 +42,32 @@ public class OnnxRuntimeGenAIInference : ILocalModelInference, IDisposable
         var cached = _modelCache.GetOrAdd(modelPath, path =>
         {
             _logger.LogInformation("正在加载 ONNX 模型: {Path}", path);
-            // 默认 CPU 执行器（Phi-3 int4 在 DirectML 下算子不兼容会崩）；
-            // 设置环境变量 LOCAL_AI_DML=1 可尝试 DirectML GPU
+            // 执行器选择（按优先级尝试，全部失败回退 CPU）：
+            //   LOCAL_AI_OPENVINO=1  → OpenVINO EP（Linux/WSL2 GPU 正路，走 OpenCL→/dev/dxg）
+            //   LOCAL_AI_DML=1       → DirectML EP（Windows 原生 GPU；Phi-3 int4 算子不兼容会崩，需验证）
+            //   默认                  → CPU
             Model model;
-            if (Environment.GetEnvironmentVariable("LOCAL_AI_DML") == "1")
+            var openvino = Environment.GetEnvironmentVariable("LOCAL_AI_OPENVINO") == "1";
+            var dml = Environment.GetEnvironmentVariable("LOCAL_AI_DML") == "1";
+
+            if (openvino)
+            {
+                try
+                {
+                    var config = new Config(path);
+                    config.ClearProviders();
+                    // 优先 GPU，失败回退 CPU（OpenVINO EP 的设备名）
+                    config.AppendProvider("OpenVINO");
+                    model = new Model(config);
+                    _logger.LogInformation("ONNX using OpenVINO EP (GPU if available)");
+                }
+                catch (Exception ovEx)
+                {
+                    _logger.LogWarning(ovEx, "OpenVINO EP init failed, fallback to CPU");
+                    model = new Model(path);
+                }
+            }
+            else if (dml)
             {
                 try
                 {
