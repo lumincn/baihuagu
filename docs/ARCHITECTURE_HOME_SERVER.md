@@ -91,7 +91,7 @@ services/
 
 **规则：**
 - `Baihua.Contracts` 仅包含 `record` DTO 和 `interface` 定义，**无任何实现**
-- WebUI 项目不直接引用 TaskRunner 项目，仅引用 Contracts 获取 DTO 类型
+- WebUI 项目不直接引用 Baihua.Family 项目，仅引用 Contracts 获取 DTO 类型
 - 运行时通信通过配置的 `FamilyApi:BaseUrl` 进行 HTTP 调用
 
 ### 3.3 家庭版部署拓扑（Home Server）

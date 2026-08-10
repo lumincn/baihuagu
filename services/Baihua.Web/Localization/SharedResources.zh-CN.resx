@@ -3307,7 +3307,7 @@ Shift+Enter 换行，Enter 发送</value>
     <value>后台服务连接失败</value>
   </data>
   <data name="ServiceUnavailable_Description" xml:space="preserve">
-    <value>无法连接到 TaskRunner 后台服务（端口 8788）。&lt;br/&gt;部分功能（任务管理、AI 对话、搜索等）暂时不可用。</value>
+    <value>无法连接到 Baihua.Family 后台服务（端口 8788）。&lt;br/&gt;部分功能（任务管理、AI 对话、搜索等）暂时不可用。</value>
   </data>
   <data name="ServiceUnavailable_HelpTitle" xml:space="preserve">
     <value>请尝试以下步骤：</value>
@@ -3322,7 +3322,7 @@ Shift+Enter 换行，Enter 发送</value>
     <value>点击下方的"重试连接"按钮</value>
   </data>
   <data name="ServiceUnavailable_ReleaseHint" xml:space="preserve">
-    <value>请运行 TaskRunner 可执行文件，确保端口 8788 可用。</value>
+    <value>请运行 bh-family 可执行文件，确保端口 8788 可用。</value>
   </data>
   <data name="ServiceUnavailable_Checking" xml:space="preserve">
     <value>正在检测...</value>
@@ -3508,7 +3508,7 @@ Shift+Enter 换行，Enter 发送</value>
     <value>暂无 API 调用数据</value>
   </data>
   <data name="ApiCallPerf_NoDataHint" xml:space="preserve">
-    <value>数据会在 WebUI 调用 TaskRunner API 时自动收集</value>
+    <value>数据会在 WebUI 调用 Baihua API 时自动收集</value>
   </data>
   <data name="ApiCallPerf_PerfTips" xml:space="preserve">
     <value>性能优化建议</value>

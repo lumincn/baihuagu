@@ -7,7 +7,7 @@ public class ComponentStatusDto
     public string? Version { get; set; }
     public string Message { get; set; } = string.Empty;
 
-    /// <summary>该项检测耗时（毫秒），由 Task Runner 在并行检测中各自计时。</summary>
+    /// <summary>该项检测耗时（毫秒），由 Baihua 服务在并行检测中各自计时。</summary>
     public long CheckDurationMs { get; set; }
 }
 

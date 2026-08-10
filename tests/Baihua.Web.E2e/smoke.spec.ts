@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 const WEBUI_BASE = 'http://127.0.0.1:5177';
-const TASKRUNNER_BASE = 'http://127.0.0.1:8788';
+const FAMILY_BASE = 'http://127.0.0.1:8788';
 
 // 获取 CLI token 用于自动认证
 async function getCliToken(): Promise<string> {
@@ -13,8 +13,8 @@ async function getCliToken(): Promise<string> {
 
 test.describe('冒烟测试 - Family 版', () => {
 
-  test('TaskRunner 健康检查', async ({ request }) => {
-    const resp = await request.get(`${TASKRUNNER_BASE}/health`);
+  test('Baihua.Family 健康检查', async ({ request }) => {
+    const resp = await request.get(`${FAMILY_BASE}/health`);
     expect(resp.status()).toBe(200);
   });
 
@@ -180,7 +180,7 @@ test.describe('冒烟测试 - Family 版', () => {
   });
 
   test('能力评估 API 返回正确格式', async ({ request }) => {
-    const resp = await request.get(`${TASKRUNNER_BASE}/api/capability`);
+    const resp = await request.get(`${FAMILY_BASE}/api/capability`);
     expect(resp.status()).toBe(200);
     const data: any = await resp.json();
     // 兼容 PascalCase（当前）与 camelCase（旧版）
@@ -191,7 +191,7 @@ test.describe('冒烟测试 - Family 版', () => {
   });
 
   test('模型推荐只返回 INT4/INT8 模型', async ({ request }) => {
-    const resp = await request.get(`${TASKRUNNER_BASE}/api/local-models/recommend`);
+    const resp = await request.get(`${FAMILY_BASE}/api/local-models/recommend`);
     expect(resp.status()).toBe(200);
     const models = await resp.json();
     expect(Array.isArray(models)).toBe(true);

@@ -3308,7 +3308,7 @@ Shift+Enter new line, Enter to send</value>
     <value>Backend Service Connection Failed</value>
   </data>
   <data name="ServiceUnavailable_Description" xml:space="preserve">
-    <value>Cannot connect to the TaskRunner backend service (port 8788).&lt;br/&gt;Some features (task management, AI chat, search, etc.) are temporarily unavailable.</value>
+    <value>Cannot connect to the Baihua.Family backend service (port 8788).&lt;br/&gt;Some features (task management, AI chat, search, etc.) are temporarily unavailable.</value>
   </data>
   <data name="ServiceUnavailable_HelpTitle" xml:space="preserve">
     <value>Please try the following steps:</value>
@@ -3323,7 +3323,7 @@ Shift+Enter new line, Enter to send</value>
     <value>Click the "Retry Connection" button below</value>
   </data>
   <data name="ServiceUnavailable_ReleaseHint" xml:space="preserve">
-    <value>Please run the TaskRunner executable and ensure port 8788 is available.</value>
+    <value>Please run the bh-family executable and ensure port 8788 is available.</value>
   </data>
   <data name="ServiceUnavailable_Checking" xml:space="preserve">
     <value>Checking...</value>
@@ -3509,7 +3509,7 @@ Shift+Enter new line, Enter to send</value>
     <value>No API call data</value>
   </data>
   <data name="ApiCallPerf_NoDataHint" xml:space="preserve">
-    <value>Data is collected automatically when WebUI calls the TaskRunner API</value>
+    <value>Data is collected automatically when WebUI calls the Baihua API</value>
   </data>
   <data name="ApiCallPerf_PerfTips" xml:space="preserve">
     <value>Performance Optimization Tips</value>

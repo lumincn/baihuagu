@@ -180,7 +180,7 @@ var openobservePass = builder.Configuration["OpenObserve:Password"] ?? "";
 
         otelBuilder.WithMetrics(metrics =>
         {
-            metrics.AddMeter("Baihua.AI")
+            metrics.AddMeter("Baihua.Vault")
                    .AddView("search.latency_ms", new OpenTelemetry.Metrics.ExplicitBucketHistogramConfiguration
                    {
                        Boundaries = new double[] { 0, 10, 25, 50, 100, 250, 500, 1000, 2500 }

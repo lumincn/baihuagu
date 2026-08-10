@@ -20,7 +20,7 @@ public class SettingsService
         get => _data.AiApiUrl; 
         set { 
             _data.AiApiUrl = value; 
-            // 同步到环境变量供 Task Runner 使用
+            // 同步到环境变量供 Baihua 服务使用
             Environment.SetEnvironmentVariable("TASK_RUNNER_AI_API_URL", value);
             Save(); 
         }

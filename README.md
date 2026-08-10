@@ -6,7 +6,7 @@
 
 ```
 services/
-  Baihua.Family/    # 家庭版 Task Runner（API 服务）
+  Baihua.Family/    # 家庭版主服务（API 服务）
   Baihua.AI/        # AI 模型、聊天、配置管理
   Baihua.Vault/     # 知识库、同步、搜索、索引
   WebUI.Family/         # 家庭版 Web 界面（Blazor Server）

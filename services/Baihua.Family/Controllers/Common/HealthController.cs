@@ -75,7 +75,7 @@ namespace Baihua.Family.Controllers;
             {
                 status = "healthy",
                 timestamp = DateTime.UtcNow.ToString("o"),
-                message = "Task Runner Service is running"
+                message = "Baihua Family Service is running"
             };
         }
 

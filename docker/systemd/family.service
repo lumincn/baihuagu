@@ -4,10 +4,10 @@ After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/opt/baihua/Baihua.Family
+WorkingDirectory=/opt/baihua/family
 EnvironmentFile=/etc/systemd/system/family.env
 Environment=BAIHUA_HOME=/opt/baihua/data
-ExecStart=/usr/bin/dotnet Baihua.Family.dll --urls http://0.0.0.0:8788
+ExecStart=/usr/bin/dotnet bh-family.dll --urls http://0.0.0.0:8788
 Restart=always
 RestartSec=5
 StandardOutput=append:/opt/baihua/logs/baihua-family.log

@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// 冒烟测试配置：先启动 TaskRunner + WebUI，再跑测试
+// 冒烟测试配置：先启动 Baihua.Family + WebUI，再跑测试
 export default defineConfig({
   testDir: '.',
   testMatch: '*.spec.ts',
@@ -18,7 +18,7 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: 'dotnet run --project ../../services/TaskRunner.Family --no-launch-profile',
+      command: 'dotnet run --project ../../services/Baihua.Family --no-launch-profile',
       port: 8788,
       reuseExistingServer: true,
       timeout: 60000,

@@ -708,7 +708,7 @@
     <value>Filter by status: Pending, Running, Success, Failed, Timeout</value>
   </data>
   <data name="Mcp_GetSystemHealth" xml:space="preserve">
-    <value>Get the TaskRunner system health report, including Git, Obsidian, Ollama, Python, Node.js, API Key, Vault, and other component status.</value>
+    <value>Get the Baihua system health report, including Git, Obsidian, Ollama, Python, Node.js, API Key, Vault, and other component status.</value>
   </data>
   <data name="Mcp_ListLocalAiModels" xml:space="preserve">
     <value>Scan and list available models on local AI services (Ollama, LM Studio, llama.cpp).</value>

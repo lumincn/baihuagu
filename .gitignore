@@ -110,8 +110,8 @@ services/task_runner/.venv/
 **/.vs/
 services/task_runner_csharp/bin/
 services/task_runner_csharp/obj/
-services/TaskRunner.Family/secrets.json
-services/TaskRunner.Family/appsettings.local.json
+services/Baihua.Family/secrets.json
+services/Baihua.Family/appsettings.local.json
 services/WebUI/bin/
 services/WebUI/obj/
 # 本地开发覆盖配置（含敏感信息，不提交）
@@ -212,9 +212,9 @@ tests/e2e/test-results*/
 tests/e2e/test-results.json
 tests/e2e/playwright-artifacts-*/
 tests/e2e/storage-state.json
-tests/TaskRunner.Family.Tests/TestResults/
-tests/TaskRunner.Family.Tests/*.coverage
-tests/TaskRunner.Family.Tests/prompt-templates.json
+tests/Baihua.Family.Tests/TestResults/
+tests/Baihua.Family.Tests/*.coverage
+tests/Baihua.Family.Tests/prompt-templates.json
 /playwright/.cache/
 
 # 临时测试和调试文件

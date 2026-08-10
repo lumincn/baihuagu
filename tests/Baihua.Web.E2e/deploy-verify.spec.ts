@@ -7,17 +7,17 @@ import { test, expect } from '@playwright/test';
  */
 
 const WEBUI_BASE = 'http://127.0.0.1:5177';
-const TASKRUNNER_BASE = 'http://127.0.0.1:8788';
+const FAMILY_BASE = 'http://127.0.0.1:8788';
 
 test.describe('Family 版部署验证', () => {
 
-  test('TaskRunner 健康检查', async ({ request }) => {
-    const resp = await request.get(`${TASKRUNNER_BASE}/health`);
+  test('Baihua.Family 健康检查', async ({ request }) => {
+    const resp = await request.get(`${FAMILY_BASE}/health`);
     expect(resp.status()).toBe(200);
   });
 
-  test('TaskRunner API 能力评估', async ({ request }) => {
-    const resp = await request.get(`${TASKRUNNER_BASE}/api/capability`);
+  test('Baihua.Family API 能力评估', async ({ request }) => {
+    const resp = await request.get(`${FAMILY_BASE}/api/capability`);
     expect(resp.status()).toBe(200);
     const data: any = await resp.json();
     // 兼容 PascalCase（当前）与 camelCase（旧版）
@@ -39,7 +39,7 @@ test.describe('Family 版部署验证', () => {
   });
 
   test('知识库列表 API 可访问', async ({ request }) => {
-    const resp = await request.get(`${TASKRUNNER_BASE}/api/vaults`);
+    const resp = await request.get(`${FAMILY_BASE}/api/vaults`);
     expect([200, 401]).toContain(resp.status());
   });
 

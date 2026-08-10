@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 const API_URL = 'http://127.0.0.1:8788';
 
-// Note: TaskRunner API uses PascalCase JSON (PropertyNamingPolicy = null)
+// Note: Baihua API uses PascalCase JSON (PropertyNamingPolicy = null)
 
 test.describe('虚拟师父 - 拜师功能', () => {
 

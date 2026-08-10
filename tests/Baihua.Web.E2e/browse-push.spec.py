@@ -14,7 +14,7 @@ import json
 from playwright.async_api import async_playwright
 
 WEBUI_BASE = "http://127.0.0.1:5177"
-TASKRUNNER_BASE = "http://127.0.0.1:8788"
+FAMILY_BASE = "http://127.0.0.1:8788"
 
 
 async def get_cli_token():

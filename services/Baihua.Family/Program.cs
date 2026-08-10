@@ -107,7 +107,7 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
     {
-        Title = "Task Runner API",
+        Title = "Baihua Family API",
         Version = "v1",
         Description = "Baihua Backend Service - Health Check & Runtime Status API"
     });
@@ -429,7 +429,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Task Runner API V1");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Baihua Family API V1");
         c.RoutePrefix = "swagger";
     });
 }
@@ -848,7 +848,7 @@ app.MapGet("/health", (Baihua.Family.Services.ServerAddressService sas) =>
     {
         status = "healthy",
         timestamp = DateTime.UtcNow.ToString("o"),
-        message = "Task Runner Service is running",
+        message = "Baihua Family Service is running",
         serverId = settings.ServerInstanceId,
         serverName = settings.DisplayName
     });
@@ -910,7 +910,7 @@ var startupMonitor = Baihua.Family.Services.StartupMonitor.Instance;
 startupMonitor.RecordStartup();
 
 logger.LogInformation("===========================================");
-logger.LogInformation("Task Runner Service Starting...");
+logger.LogInformation("Baihua Family Service Starting...");
 logger.LogInformation("Start time: {StartTime}", startupMonitor.StartTime.ToString("yyyy-MM-dd HH:mm:ss"));
 logger.LogInformation("PID: {ProcessId}", Environment.ProcessId);
 logger.LogInformation("Content Root: {ContentRoot}", host);
@@ -989,19 +989,19 @@ app.Lifetime.ApplicationStarted.Register(() =>
 });
 
 logger.LogInformation("===========================================");
-logger.LogInformation("Task Runner is running at {ListenUrl} (log hints use {DisplayUrl})", listenUrlForLog, displayBaseUrl);
+logger.LogInformation("Baihua Family is running at {ListenUrl} (log hints use {DisplayUrl})", listenUrlForLog, displayBaseUrl);
 logger.LogInformation("Health Dashboard: {BaseUrl}/swagger", displayBaseUrl);
 logger.LogInformation("Full Health Report: {BaseUrl}/api/health/full", displayBaseUrl);
 
 // 优雅关闭
 app.Lifetime.ApplicationStopping.Register(() =>
 {
-    logger.LogInformation("Task Runner Service Stopping...");
+    logger.LogInformation("Baihua Family Service Stopping...");
 });
 
 app.Lifetime.ApplicationStopped.Register(() =>
 {
-    logger.LogInformation("Task Runner Service Stopped");
+    logger.LogInformation("Baihua Family Service Stopped");
 });
 
 // 监听地址由 Kestrel 配置（appsettings*.json）、ASPNETCORE_URLS、命令行 --urls 等决定，勿在此硬编码

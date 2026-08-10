@@ -711,7 +711,7 @@
     <value>按状态过滤：Pending、Running、Success、Failed、Timeout</value>
   </data>
   <data name="Mcp_GetSystemHealth" xml:space="preserve">
-    <value>获取 TaskRunner 系统健康状态报告，包括 Git、Obsidian、Ollama、Python、Node.js、API Key、知识库等组件的状态。</value>
+    <value>获取 Baihua 系统健康状态报告，包括 Git、Obsidian、Ollama、Python、Node.js、API Key、知识库等组件的状态。</value>
   </data>
   <data name="Mcp_ListLocalAiModels" xml:space="preserve">
     <value>扫描并列出本地 AI 服务（Ollama、LM Studio、llama.cpp）上的可用模型。</value>
