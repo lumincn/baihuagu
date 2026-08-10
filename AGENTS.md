@@ -144,6 +144,10 @@ dotnet build services/BaiHua.slnx -c Release
 | 配置目录 | `/opt/baihua/config/family` | `/opt/baihua/config/ai` | `/opt/baihua/config/vault` | `/opt/baihua/config/webui` |
 | 数据库文件 | `family.db` | `ai.db` | `vault.db` | — |
 
+**部署形态**：
+- **Windows**（`bh-win-docker.ps1`）：`ai` 服务 **native 运行**（Windows 进程，直接访问 Arc GPU 做 LlamaSharp/ONNX/OpenVINO 推理），`family`/`vault`/`webui`/`nginx` 走 docker compose；compose 里 `ai` 带 `profiles: ["docker-ai"]`（默认不启动容器），容器通过 `host.docker.internal:8791` 访问 native ai
+- **Linux**（`deploy-docker.sh`）：全部容器化，`docker compose --profile docker-ai up -d` 启动含 ai
+
 **例外（名实相符，保留原名）**：
 - `TaskRunner.Cloud` — 官网版（mdyj-cloud 仓库）的真实项目名，与本仓库无关
 - 历史文档/测试报告中的旧名 — 记录当时的客观状态

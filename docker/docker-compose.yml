@@ -83,8 +83,6 @@ services:
     depends_on:
       family:
         condition: service_healthy
-      ai:
-        condition: service_healthy
       vault:
         condition: service_healthy
     healthcheck:
@@ -114,8 +112,6 @@ services:
       - NGINX_ENVSUBST_FILTER=^BAIHUA_   # 官方 entrypoint 只替换 BAIHUA_* 前缀
     depends_on:
       family:
-        condition: service_healthy
-      ai:
         condition: service_healthy
       vault:
         condition: service_healthy
@@ -162,6 +158,8 @@ services:
       start_period: 40s
 
   ai:
+    # ai 默认不进容器（Windows 下 native 跑以获取 GPU；Linux 部署用 --profile docker-ai 启用）
+    profiles: ["docker-ai"]
     build:
       context: ..
       dockerfile: docker/Dockerfile.ai

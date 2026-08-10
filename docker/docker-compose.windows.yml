@@ -25,7 +25,7 @@ services:
     environment:
       # 容器内访问 Vault/AI/WebUI 同主机通过 bridge 网络服务名
       - BAIHUA_VAULT_URL=http://vault:8790
-      - BAIHUA_AI_URL=http://ai:8791
+      - BAIHUA_AI_URL=http://host.docker.internal:8791
       - BAIHUA_WEBUI_URL=http://webui:5177
       # 知识库根指向容器内挂载点
       - BAIHUA_VAULT_ROOT=/vaults
@@ -88,13 +88,11 @@ services:
     environment:
       # WebUI 通过 bridge 网络调用各后端服务（服务名 DNS）
       - FamilyApi__BaseUrl=http://family:8788/
-      - AiApi__BaseUrl=http://ai:8791/
+      - AiApi__BaseUrl=http://host.docker.internal:8791/
       - VaultApi__BaseUrl=http://vault:8790/
       - OpenObserve__WebUrl=http://host.docker.internal:5082/
     depends_on:
       family:
-        condition: service_healthy
-      ai:
         condition: service_healthy
       vault:
         condition: service_healthy
@@ -112,8 +110,6 @@ services:
       - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/logs/nginx:/var/log/nginx
     depends_on:
       family:
-        condition: service_healthy
-      ai:
         condition: service_healthy
       vault:
         condition: service_healthy

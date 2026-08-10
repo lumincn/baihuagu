@@ -156,7 +156,7 @@ ssh ${SSH_OPTS} "${SERVER}" bash -s "${REMOTE_SRC_DIR}" << 'REMOTE_SCRIPT'
     # 启动容器
     cd "${SRC_DIR}/family/docker"
     docker compose down 2>/dev/null || true
-    docker compose up -d --remove-orphans
+    docker compose --profile docker-ai up -d --remove-orphans
 REMOTE_SCRIPT
 
 echo "      容器已启动"
