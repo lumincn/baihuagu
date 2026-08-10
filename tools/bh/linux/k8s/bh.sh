@@ -29,7 +29,8 @@ IMAGES="bh-vault:latest bh-ai:latest bh-webui:latest bh-family:latest bh-openvin
 K3S_CONTAINERD_SOCK="/run/k3s/containerd/containerd.sock"
 
 # nerdctl 封装：直连 k3s containerd（在 build 时才检查，help/status 等不依赖）
-n() { nerdctl -a "$K3S_CONTAINERD_SOCK" "$@"; }
+# -n k8s.io：k3s 的镜像 namespace（否则 nerdctl 默认 default，看不到 k3s 的镜像）
+n() { nerdctl -a "$K3S_CONTAINERD_SOCK" -n k8s.io "$@"; }
 
 # kubectl 封装：优先 k3s 自带 kubectl（k3s kubectl），再 PATH 里的 kubectl
 # 惰性解析——help 等不实际用 kubectl 的命令在 k3s 缺失时也能跑
@@ -141,7 +142,7 @@ build_all() {
         exit 1
     fi
     # base-runtime：prebuilt 镜像的基础（vault/ai/webui/family 的 FROM）
-    if ! n images | grep -q 'bh/base-runtime:latest'; then
+    if ! n images | grep -qE 'bh/base-runtime\s+latest'; then
         n build -o type=image -f "$IMAGE_DIR/Dockerfile.base-runtime" -t bh/base-runtime:latest "$IMAGE_DIR" >/dev/null || exit 1
         echo "[build] bh/base-runtime"
     fi
