@@ -18,7 +18,7 @@ public partial class LogsController : ControllerBase
 
         var logFile = !string.IsNullOrEmpty(file)
             ? Path.Combine(_logsDir, file)
-            : Path.Combine(_logsDir, $"taskrunner-{DateTime.Now:yyyyMMdd}.log");
+            : Path.Combine(_logsDir, $"baihua-family-{DateTime.Now:yyyyMMdd}.log");
 
         if (!System.IO.File.Exists(logFile))
         {

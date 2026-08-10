@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -12,7 +12,7 @@
     <GenerateResource>false</GenerateResource>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
     <RootNamespace>Baihua.Vault</RootNamespace>
-    <UserSecretsId>baihua-family-taskrunner-vault-2026</UserSecretsId>
+    <UserSecretsId>baihua-vault-2026</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

@@ -6,13 +6,13 @@
 
 ```
 services/
-  TaskRunner.Family/    # 家庭版 Task Runner（API 服务）
-  TaskRunner.AI/        # AI 模型、聊天、配置管理
-  TaskRunner.Vault/     # 知识库、同步、搜索、索引
+  Baihua.Family/    # 家庭版 Task Runner（API 服务）
+  Baihua.AI/        # AI 模型、聊天、配置管理
+  Baihua.Vault/     # 知识库、同步、搜索、索引
   WebUI.Family/         # 家庭版 Web 界面（Blazor Server）
-  TaskRunner.Contracts/ # 共享 DTO 与接口契约
+  Baihua.Contracts/ # 共享 DTO 与接口契约
   Core.Shared/          # 共享服务层
-  TaskRunner.Data/      # 共享 EF Core 数据层
+  Baihua.Data/      # 共享 EF Core 数据层
 libs/
   BaihuaSdk/          # 跨平台移动端 SDK（net9.0;net10.0，零 MAUI 依赖）
   MobileContract/       # 移动端契约（DTO、接口定义）
@@ -35,7 +35,7 @@ tests/
 ./bh dashboard
 
 # 手动启动
-cd services/TaskRunner.Family && dotnet run
+cd services/Baihua.Family && dotnet run
 cd services/WebUI.Family && dotnet run
 ```
 
@@ -51,9 +51,9 @@ cd services/WebUI.Family && dotnet run
 
 | 服务 | 端口 | 说明 |
 |------|------|------|
-| TaskRunner.Family | 8788 | 家庭/亲子功能（任务、成就、OpenClaw、设备配对） |
-| TaskRunner.AI | 8791 | AI 模型、聊天、配置管理 |
-| TaskRunner.Vault | 8790 | 知识库、同步、搜索、索引 |
+| Baihua.Family | 8788 | 家庭/亲子功能（任务、成就、OpenClaw、设备配对） |
+| Baihua.AI | 8791 | AI 模型、聊天、配置管理 |
+| Baihua.Vault | 8790 | 知识库、同步、搜索、索引 |
 | WebUI.Family | 5177 | Blazor Server 管理后台 |
 ## Windows (PowerShell) 运行
 
@@ -105,8 +105,8 @@ pwsh -ExecutionPolicy Bypass -File .\bh.ps1 dashboard
 # 打开管理面板（浏览器）
 .\bh.ps1 dashboard
 
-# 查看实时日志（例如 taskrunner）
-.\bh.ps1 logs taskrunner
+# 查看实时日志（例如 family）
+.\bh.ps1 logs family
 
 # 开发模式（监听文件变动自动重编译）
 .\bh.ps1 dev

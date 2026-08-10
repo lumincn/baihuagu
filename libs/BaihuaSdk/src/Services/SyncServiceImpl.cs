@@ -9,7 +9,7 @@ namespace BaihuaSdk.Services;
 /// <summary>
 /// 知识库同步服务实现。
 /// 封装 manifest 拉取、文件下载、知识库列表、同步循环。
-/// 与 Kotlin TaskRunnerSyncClient.kt 逻辑对齐。
+/// 与 Kotlin 端同步客户端 逻辑对齐。
 /// </summary>
 public class SyncServiceImpl : ISyncService
 {

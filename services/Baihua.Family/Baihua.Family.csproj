@@ -12,7 +12,7 @@
     <GenerateResource>false</GenerateResource>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
     <RootNamespace>Baihua.Family</RootNamespace>
-    <UserSecretsId>baihua-family-taskrunner-2026</UserSecretsId>
+    <UserSecretsId>baihua-family-2026</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

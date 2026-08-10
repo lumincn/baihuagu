@@ -56,10 +56,10 @@ start_one() {
     [ -x "$bin" ] || { echo "[$name] not built: $bin (run build first)"; exit 1; }
     port_open "$port" && { echo "[$name] port $port already in use, skip"; return; }
     mkdir -p "$PID_DIR" "$LOG_DIR" "$DATA_HOME"
-    local envs=(BAIHUA_HOME="$DATA_HOME" TASKRUNNER_SKIP_MUTEX=true ASPNETCORE_URLS="http://127.0.0.1:$port" OpenObserve__Enabled=false)
+    local envs=(BAIHUA_HOME="$DATA_HOME" BAIHUA_SKIP_MUTEX=true ASPNETCORE_URLS="http://127.0.0.1:$port" OpenObserve__Enabled=false)
     case "$name" in
-        family) envs+=(TASKRUNNER_VAULT_URL=http://127.0.0.1:8790 TASKRUNNER_AI_URL=http://127.0.0.1:8791) ;;
-        webui)  envs+=(WEBUI_CONFIG_DIR="$DATA_HOME" TaskRunnerApi__BaseUrl=http://127.0.0.1:8788/ TaskRunnerAiApi__BaseUrl=http://127.0.0.1:8791/ TaskRunnerVaultApi__BaseUrl=http://127.0.0.1:8790/) ;;
+        family) envs+=(BAIHUA_VAULT_URL=http://127.0.0.1:8790 BAIHUA_AI_URL=http://127.0.0.1:8791) ;;
+        webui)  envs+=(WEBUI_CONFIG_DIR="$DATA_HOME" FamilyApi__BaseUrl=http://127.0.0.1:8788/ AiApi__BaseUrl=http://127.0.0.1:8791/ VaultApi__BaseUrl=http://127.0.0.1:8790/) ;;
     esac
     nohup env "${envs[@]}" "$bin" >>"$LOG_DIR/$name.log" 2>&1 &
     echo $! >"$PID_DIR/$name.pid"

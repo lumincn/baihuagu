@@ -1,15 +1,15 @@
 services:
-  taskrunner:
+  family:
     build:
       context: ..
-      dockerfile: docker/Dockerfile.taskrunner
+      dockerfile: docker/Dockerfile.family
       args:
         - GIT_COMMIT=${GIT_COMMIT:-unknown}
         - GIT_BRANCH=${GIT_BRANCH:-unknown}
     image: bh-family:latest
     container_name: bh-family
     restart: unless-stopped
-    # 使用 host 网络：WebUI 可直接通过 127.0.0.1:8788 访问 TaskRunner，
+    # 使用 host 网络：WebUI 可直接通过 127.0.0.1:8788 访问 Baihua.Family，
     # 且 nginx 反向代理配置无需修改。
     # 家庭版需 host 网络，以便 mDNS 服务发现在局域网中正常工作。
     network_mode: host
@@ -25,13 +25,13 @@ services:
       - ${VAULTS_DIR:-/home/lumin/Vaults}:/vaults
     environment:
       - BAIHUA_HOME=/app/data
-      - TASKRUNNER_SKIP_MUTEX=true
+      - BAIHUA_SKIP_MUTEX=true
       - ASPNETCORE_URLS=http://0.0.0.0:8788
       # OpenObserve 通过宿主机 localhost 访问
       - OpenObserve__WebUrl=http://127.0.0.1:5082/
       - OpenObserve__Enabled=true
       # 知识库根路径（容器内挂载点）
-      - TASKRUNNER_VAULT_ROOT=/vaults
+      - BAIHUA_VAULT_ROOT=/vaults
       # 固定加密密钥（可选）
       # 程序会自动在 /app/data/db/.baihua-key 生成并管理密钥，容器重建后仍然可用
       # 高级用户可通过环境变量手动指定，覆盖自动生成的密钥
@@ -42,7 +42,7 @@ services:
       # 移动端 HMAC 签名密钥（配对后自动生成，通常无需手动配置）
       - MobileAuth__SharedSecret=${MOBILE_AUTH_SECRET:-}
     depends_on:
-      taskrunner-vault:
+      vault:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:8788/health"]
@@ -72,20 +72,20 @@ services:
     environment:
       - WEBUI_CONFIG_DIR=/app/data
       - ASPNETCORE_URLS=http://0.0.0.0:5177
-      # 通过宿主机 localhost 访问 TaskRunner（host 网络）
-      - TaskRunnerApi__BaseUrl=http://127.0.0.1:8788/
-      - TaskRunnerAiApi__BaseUrl=http://127.0.0.1:8791/
-      - TaskRunnerVaultApi__BaseUrl=http://127.0.0.1:8790/
+      # 通过宿主机 localhost 访问 Baihua.Family（host 网络）
+      - FamilyApi__BaseUrl=http://127.0.0.1:8788/
+      - AiApi__BaseUrl=http://127.0.0.1:8791/
+      - VaultApi__BaseUrl=http://127.0.0.1:8790/
       - OpenObserve__WebUrl=http://127.0.0.1:5082/
       - OpenObserve__Enabled=true
       - ADMIN_PASSWORD_HASH=${ADMIN_PASSWORD_HASH:-}
       - ADMIN_IP_WHITELIST=${ADMIN_IP_WHITELIST:-}
     depends_on:
-      taskrunner:
+      family:
         condition: service_healthy
-      taskrunner-ai:
+      ai:
         condition: service_healthy
-      taskrunner-vault:
+      vault:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:5177/"]
@@ -113,11 +113,11 @@ services:
       - BAIHUA_NGINX_CLIENT_MAX_BODY_SIZE=${BAIHUA_NGINX_CLIENT_MAX_BODY_SIZE:-100M}
       - NGINX_ENVSUBST_FILTER=^BAIHUA_   # 官方 entrypoint 只替换 BAIHUA_* 前缀
     depends_on:
-      taskrunner:
+      family:
         condition: service_healthy
-      taskrunner-ai:
+      ai:
         condition: service_healthy
-      taskrunner-vault:
+      vault:
         condition: service_healthy
       webui:
         condition: service_healthy
@@ -129,7 +129,7 @@ services:
       retries: 3
       start_period: 10s
 
-  taskrunner-vault:
+  vault:
     build:
       context: ..
       dockerfile: docker/Dockerfile.vault
@@ -151,7 +151,7 @@ services:
       - ASPNETCORE_URLS=http://0.0.0.0:8790
       - OpenObserve__WebUrl=http://127.0.0.1:5082/
       - OpenObserve__Enabled=true
-      - TASKRUNNER_VAULT_ROOT=/vaults
+      - BAIHUA_VAULT_ROOT=/vaults
       - BAIHUA_ENCRYPTION_KEY=${BAIHUA_ENCRYPTION_KEY:-}
       - MobileAuth__SharedSecret=${MOBILE_AUTH_SECRET:-}
     healthcheck:
@@ -161,10 +161,10 @@ services:
       retries: 3
       start_period: 40s
 
-  taskrunner-ai:
+  ai:
     build:
       context: ..
-      dockerfile: docker/Dockerfile.taskrunner.ai
+      dockerfile: docker/Dockerfile.ai
       args:
         - GIT_COMMIT=${GIT_COMMIT:-unknown}
         - GIT_BRANCH=${GIT_BRANCH:-unknown}
@@ -183,7 +183,7 @@ services:
       - ASPNETCORE_URLS=http://0.0.0.0:8791
       - OpenObserve__WebUrl=http://127.0.0.1:5082/
       - OpenObserve__Enabled=true
-      - TASKRUNNER_VAULT_ROOT=/vaults
+      - BAIHUA_VAULT_ROOT=/vaults
       - BAIHUA_ENCRYPTION_KEY=${BAIHUA_ENCRYPTION_KEY:-}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:8791/health"]

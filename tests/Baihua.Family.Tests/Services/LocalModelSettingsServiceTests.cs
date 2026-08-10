@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Baihua.Family.Services;
+using Baihua.AI.Provider;
 using Xunit;
 
 namespace Baihua.Family.Tests.Services;

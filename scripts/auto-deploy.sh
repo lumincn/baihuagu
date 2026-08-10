@@ -4,7 +4,7 @@ set -e
 # 百花 - 本地自动构建与部署脚本
 # 用法: ./scripts/auto-deploy.sh [--force] [--all]
 #   --force: 跳过防抖，立即构建
-#   --all:   强制构建所有服务（taskrunner + webui），忽略增量判断
+#   --all:   强制构建所有服务（family + webui），忽略增量判断
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -25,12 +25,12 @@ detect_services_to_build() {
     changed_files=$(cd "$PROJECT_ROOT" && git diff --name-only HEAD~1 HEAD 2>/dev/null || true)
 
     if [[ -z "$changed_files" ]]; then
-        echo "⚠️  未检测到变更文件，默认构建 taskrunner + webui" >&2
-        echo "taskrunner webui"
+        echo "⚠️  未检测到变更文件，默认构建 family + webui" >&2
+        echo "family webui"
         return
     fi
 
-    local build_taskrunner=false
+    local build_family=false
     local build_webui=false
     local build_ai=false
     local build_vault=false
@@ -39,16 +39,16 @@ detect_services_to_build() {
     while IFS= read -r file; do
         [[ -z "$file" ]] && continue
         case "$file" in
-            services/TaskRunner.Family/*|services/Core.Shared/*|services/TaskRunner.Contracts/*|services/TaskRunner.Data/*|libs/*|libs/MobileContract/*|docker/Dockerfile.taskrunner|docker/Dockerfile.base-build|docker/Dockerfile.base-runtime)
-                build_taskrunner=true
+            services/Baihua.Family/*|services/Baihua.Core/*|services/Baihua.Contracts/*|services/Baihua.Data/*|libs/*|libs/MobileContract/*|docker/Dockerfile.family|docker/Dockerfile.base-build|docker/Dockerfile.base-runtime)
+                build_family=true
                 ;;
-            services/TaskRunner.AI/*|services/Core.Shared/*|services/TaskRunner.Contracts/*|services/TaskRunner.Data/*|libs/*|libs/MobileContract/*|docker/Dockerfile.taskrunner.ai|docker/Dockerfile.base-build|docker/Dockerfile.base-runtime)
+            services/Baihua.AI/*|services/Baihua.Core/*|services/Baihua.Contracts/*|services/Baihua.Data/*|libs/*|libs/MobileContract/*|docker/Dockerfile.ai|docker/Dockerfile.base-build|docker/Dockerfile.base-runtime)
                 build_ai=true
                 ;;
-            services/TaskRunner.Vault/*|services/Core.Shared/*|services/TaskRunner.Contracts/*|services/TaskRunner.Data/*|libs/*|libs/MobileContract/*|docker/Dockerfile.vault|docker/Dockerfile.base-build|docker/Dockerfile.base-runtime)
+            services/Baihua.Vault/*|services/Baihua.Core/*|services/Baihua.Contracts/*|services/Baihua.Data/*|libs/*|libs/MobileContract/*|docker/Dockerfile.vault|docker/Dockerfile.base-build|docker/Dockerfile.base-runtime)
                 build_vault=true
                 ;;
-            services/WebUI.Family/*|services/TaskRunner.Contracts/*|services/TaskRunner.Data/*|libs/*|libs/MobileContract/*|docker/Dockerfile.webui|docker/Dockerfile.base-build|docker/Dockerfile.base-runtime)
+            services/Baihua.Web/*|services/Baihua.Contracts/*|services/Baihua.Data/*|libs/*|libs/MobileContract/*|docker/Dockerfile.webui|docker/Dockerfile.base-build|docker/Dockerfile.base-runtime)
                 build_webui=true
                 ;;
             docker/nginx/*|docker/docker-compose.yml)
@@ -59,7 +59,7 @@ detect_services_to_build() {
     done <<< "$changed_files"
 
     # 如果没有匹配到任何服务，但变更在仓库内，安全起见全部构建
-    if [[ "$build_taskrunner" == false && "$build_ai" == false && "$build_vault" == false && "$build_webui" == false ]]; then
+    if [[ "$build_family" == false && "$build_ai" == false && "$build_vault" == false && "$build_webui" == false ]]; then
         # 检查变更是否在仓库内（排除 docs/ 等）
         local has_code_change=false
         while IFS= read -r file; do
@@ -71,7 +71,7 @@ detect_services_to_build() {
 
         if [[ "$has_code_change" == true ]]; then
             echo "📋 检测到代码变更，但无法精确匹配服务，安全起见构建全部服务" >&2
-            build_taskrunner=true
+            build_family=true
             build_ai=true
             build_vault=true
             build_webui=true
@@ -83,9 +83,9 @@ detect_services_to_build() {
     fi
 
     local services=""
-    [[ "$build_taskrunner" == true ]] && services="taskrunner"
-    [[ "$build_ai" == true ]] && services="${services:+$services }taskrunner-ai"
-    [[ "$build_vault" == true ]] && services="${services:+$services }taskrunner-vault"
+    [[ "$build_family" == true ]] && services="family"
+    [[ "$build_ai" == true ]] && services="${services:+$services }family-ai"
+    [[ "$build_vault" == true ]] && services="${services:+$services }family-vault"
     [[ "$build_webui" == true ]] && services="${services:+$services }webui"
     echo "$services"
 }
@@ -134,7 +134,7 @@ export GIT_BRANCH=$(cd "$PROJECT_ROOT" && git rev-parse --abbrev-ref HEAD 2>/dev
 # 判断需要构建哪些服务
 build_nginx=false  # 全局标记：nginx 是否需要重启
 if [[ "$1" == "--all" || "$2" == "--all" ]]; then
-    SERVICES="taskrunner taskrunner-ai taskrunner-vault webui"
+    SERVICES="family family-ai family-vault webui"
     log "🔨 强制构建所有服务: $SERVICES"
 else
     # 不使用 $(...) 捕获以避免 subshell 丢失 build_nginx 变量

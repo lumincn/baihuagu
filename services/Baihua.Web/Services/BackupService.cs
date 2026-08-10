@@ -19,7 +19,7 @@ public class BackupService
     /// </summary>
     public async Task<FullBackupResponse> CreateFullBackupAsync(string? backupDir = null, string? password = null)
     {
-        var client = _httpClientFactory.CreateClient("TaskRunnerApi");
+        var client = _httpClientFactory.CreateClient("FamilyApi");
         var request = new { BackupDir = backupDir, Password = password };
         var response = await client.PostAsJsonAsync("api/backup/full", request);
         response.EnsureSuccessStatusCode();
@@ -35,7 +35,7 @@ public class BackupService
         string? vaultRootPathOverride = null,
         bool overwrite = true)
     {
-        var client = _httpClientFactory.CreateClient("TaskRunnerApi");
+        var client = _httpClientFactory.CreateClient("FamilyApi");
         var request = new { BackupPath = backupPath, Password = password, VaultRootPathOverride = vaultRootPathOverride, Overwrite = overwrite };
         var response = await client.PostAsJsonAsync("api/backup/restore", request);
         response.EnsureSuccessStatusCode();
@@ -47,7 +47,7 @@ public class BackupService
     /// </summary>
     public async Task<ValidateBackupResponse> ValidateBackupAsync(string backupPath, string? password = null)
     {
-        var client = _httpClientFactory.CreateClient("TaskRunnerApi");
+        var client = _httpClientFactory.CreateClient("FamilyApi");
         var request = new { BackupPath = backupPath, Password = password };
         var response = await client.PostAsJsonAsync("api/backup/validate", request);
         response.EnsureSuccessStatusCode();
@@ -59,7 +59,7 @@ public class BackupService
     /// </summary>
     public async Task<BackupListResponse> GetBackupListAsync(string? backupPath = null)
     {
-        var client = _httpClientFactory.CreateClient("TaskRunnerApi");
+        var client = _httpClientFactory.CreateClient("FamilyApi");
         var url = string.IsNullOrEmpty(backupPath) ? "api/backup/list" : $"api/backup/list?backupPath={Uri.EscapeDataString(backupPath)}";
         var response = await client.GetAsync(url);
         response.EnsureSuccessStatusCode();

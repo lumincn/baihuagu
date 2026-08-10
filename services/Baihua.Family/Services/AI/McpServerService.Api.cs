@@ -28,7 +28,7 @@ public partial class McpServerService
             },
             ServerInfo = new McpImplementationInfo
             {
-                Name = "taskrunner-mcp",
+                Name = "baihua-family-mcp",
                 Version = "1.1.0"
             }
         };

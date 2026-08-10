@@ -74,19 +74,19 @@ function Start-One($svc) {
     if (Test-PortOpen $svc.Port) { Write-Warning "[$($svc.Name)] port $($svc.Port) already in use, skip"; return }
     $envBlock = @{
         BAIHUA_HOME = $DataHome
-        TASKRUNNER_SKIP_MUTEX = 'true'
+        BAIHUA_SKIP_MUTEX = 'true'
         ASPNETCORE_URLS = "http://127.0.0.1:$($svc.Port)"
         OpenObserve__Enabled = 'false'
     }
     if ($svc.Name -eq 'family') {
-        $envBlock['TASKRUNNER_VAULT_URL'] = 'http://127.0.0.1:8790'
-        $envBlock['TASKRUNNER_AI_URL'] = 'http://127.0.0.1:8791'
+        $envBlock['BAIHUA_VAULT_URL'] = 'http://127.0.0.1:8790'
+        $envBlock['BAIHUA_AI_URL'] = 'http://127.0.0.1:8791'
     }
     if ($svc.Name -eq 'webui') {
         $envBlock['WEBUI_CONFIG_DIR'] = $DataHome
-        $envBlock['TaskRunnerApi__BaseUrl'] = 'http://127.0.0.1:8788/'
-        $envBlock['TaskRunnerAiApi__BaseUrl'] = 'http://127.0.0.1:8791/'
-        $envBlock['TaskRunnerVaultApi__BaseUrl'] = 'http://127.0.0.1:8790/'
+        $envBlock['FamilyApi__BaseUrl'] = 'http://127.0.0.1:8788/'
+        $envBlock['AiApi__BaseUrl'] = 'http://127.0.0.1:8791/'
+        $envBlock['VaultApi__BaseUrl'] = 'http://127.0.0.1:8790/'
     }
     foreach ($k in $envBlock.Keys) { Set-Item -Path ('Env:' + $k) -Value $envBlock[$k] }
     New-Item -ItemType Directory -Force -Path $PidDir, $LogDir | Out-Null

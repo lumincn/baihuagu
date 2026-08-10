@@ -111,7 +111,7 @@ build_images() {
 
     # AI
     log "  构建 bh-ai:latest ..."
-    docker build -f "$DOCKER_DIR/Dockerfile.taskrunner.ai.prebuilt" -t bh-ai:latest "$prebuilt_ctx"
+    docker build -f "$DOCKER_DIR/Dockerfile.ai.prebuilt" -t bh-ai:latest "$prebuilt_ctx"
 
     # WebUI
     log "  构建 bh-webui:latest ..."

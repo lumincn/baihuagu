@@ -219,7 +219,7 @@
     {
         try
         {
-            var apiClient = HttpClientFactory.CreateClient("TaskRunnerApi");
+            var apiClient = HttpClientFactory.CreateClient("FamilyApi");
             var result = await apiClient.GetFromJsonAsync<AutoAuthStatusResponse>("api/devices/auto-auth");
             _autoAuthorizeEnabled = result?.Enabled ?? false;
             StateHasChanged();
@@ -236,7 +236,7 @@
         _isTogglingAutoAuth = true;
         try
         {
-            var apiClient = HttpClientFactory.CreateClient("TaskRunnerApi");
+            var apiClient = HttpClientFactory.CreateClient("FamilyApi");
             var response = await apiClient.PostAsJsonAsync("api/devices/auto-auth",
                 new { enabled = _autoAuthorizeEnabled });
             if (!response.IsSuccessStatusCode)
@@ -265,7 +265,7 @@
         _aiKeyQRError = "";
         try
         {
-            var aiClient = HttpClientFactory.CreateClient("TaskRunnerAiApi");
+            var aiClient = HttpClientFactory.CreateClient("AiApi");
             _aiKeyQRCode = await aiClient.GetFromJsonAsync<AiKeyQRResponse>("api/ai/config/main-apikey");
             if (_aiKeyQRCode != null && !string.IsNullOrEmpty(_aiKeyQRCode.ApiKey))
             {
@@ -289,7 +289,7 @@
         _serverQRError = "";
         try
         {
-            var apiClient = HttpClientFactory.CreateClient("TaskRunnerApi");
+            var apiClient = HttpClientFactory.CreateClient("FamilyApi");
             _serverQRCode = await apiClient.GetFromJsonAsync<ServerQRResponse>("api/pairing/qrcode");
             await RenderServerQRCodeAsync();
         }
@@ -366,7 +366,7 @@
         _nameSaveMessage = "";
         try
         {
-            var apiClient = HttpClientFactory.CreateClient("TaskRunnerApi");
+            var apiClient = HttpClientFactory.CreateClient("FamilyApi");
             var response = await apiClient.PostAsJsonAsync("api/server-address", new { displayName = _editingName.Trim() });
             if (response.IsSuccessStatusCode)
             {

@@ -1211,7 +1211,7 @@
         isLoading = true;
         try
         {
-            var client = HttpClientFactory.CreateClient("TaskRunnerApi");
+            var client = HttpClientFactory.CreateClient("FamilyApi");
             var vaultIdParam = activeVault != null
                 ? $"?vaultId={Uri.EscapeDataString(activeVault.Id)}"
                 : "";
@@ -1821,7 +1821,7 @@
         
         try
         {
-            var client = HttpClientFactory.CreateClient("TaskRunnerApi");
+            var client = HttpClientFactory.CreateClient("FamilyApi");
             var url = $"api/git/commit?vaultId={Uri.EscapeDataString(activeVault.Id)}";
             var resp = await client.PostAsJsonAsync(url, new { message = commitMessage });
             var result = await resp.Content.ReadFromJsonAsync<GitResultResponse>();
@@ -1857,7 +1857,7 @@
         
         try
         {
-            var client = HttpClientFactory.CreateClient("TaskRunnerApi");
+            var client = HttpClientFactory.CreateClient("FamilyApi");
             var url = $"api/git/push?vaultId={Uri.EscapeDataString(activeVault.Id)}";
             var resp = await client.PostAsync(url, null);
             var result = await resp.Content.ReadFromJsonAsync<GitResultResponse>();
@@ -1892,7 +1892,7 @@
         
         try
         {
-            var client = HttpClientFactory.CreateClient("TaskRunnerApi");
+            var client = HttpClientFactory.CreateClient("FamilyApi");
             var url = $"api/git/pull?vaultId={Uri.EscapeDataString(activeVault.Id)}";
             var resp = await client.PostAsync(url, null);
             var result = await resp.Content.ReadFromJsonAsync<GitResultResponse>();
@@ -1938,7 +1938,7 @@
         
         try
         {
-            var client = HttpClientFactory.CreateClient("TaskRunnerApi");
+            var client = HttpClientFactory.CreateClient("FamilyApi");
             var url = $"api/git/discard?vaultId={Uri.EscapeDataString(activeVault.Id)}";
             var resp = await client.PostAsync(url, null);
             var result = await resp.Content.ReadFromJsonAsync<GitResultResponse>();

@@ -12,7 +12,7 @@ namespace Baihua.Family.Services;
 /// </summary>
 public class AiMetricsService : IDisposable
 {
-    public static readonly string MeterName = "TaskRunner.AI";
+    public static readonly string MeterName = "Baihua.AI";
 
     private readonly Meter _meter;
 

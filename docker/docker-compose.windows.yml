@@ -3,7 +3,7 @@
 # 与 docker-compose.yml 合并，适配 Windows 路径、网络、端口映射
 
 services:
-  taskrunner:
+  family:
     # Windows Docker Desktop 不支持 Linux 式 network_mode: host，改用 bridge + ports
     network_mode: ""
     networks:
@@ -24,18 +24,18 @@ services:
       - ${VAULTS_DIR:-C:/Users/lumin/Vaults}:/vaults
     environment:
       # 容器内访问 Vault/AI/WebUI 同主机通过 bridge 网络服务名
-      - TASKRUNNER_VAULT_URL=http://taskrunner-vault:8790
-      - TASKRUNNER_AI_URL=http://taskrunner-ai:8791
-      - TASKRUNNER_WEBUI_URL=http://webui:5177
+      - BAIHUA_VAULT_URL=http://vault:8790
+      - BAIHUA_AI_URL=http://ai:8791
+      - BAIHUA_WEBUI_URL=http://webui:5177
       # 知识库根指向容器内挂载点
-      - TASKRUNNER_VAULT_ROOT=/vaults
+      - BAIHUA_VAULT_ROOT=/vaults
       # Windows Docker 下 OpenObserve 通过 host-gateway 访问
       - OpenObserve__WebUrl=http://host.docker.internal:5082/
     depends_on:
-      taskrunner-vault:
+      vault:
         condition: service_healthy
 
-  taskrunner-vault:
+  vault:
     network_mode: ""
     networks:
       - baihua-net
@@ -51,9 +51,9 @@ services:
       - ${VAULTS_DIR:-C:/Users/lumin/Vaults}:/vaults
     environment:
       - OpenObserve__WebUrl=http://host.docker.internal:5082/
-      - TASKRUNNER_VAULT_ROOT=/vaults
+      - BAIHUA_VAULT_ROOT=/vaults
 
-  taskrunner-ai:
+  ai:
     network_mode: ""
     networks:
       - baihua-net
@@ -69,7 +69,7 @@ services:
       - ${VAULTS_DIR:-C:/Users/lumin/Vaults}:/vaults
     environment:
       - OpenObserve__WebUrl=http://host.docker.internal:5082/
-      - TASKRUNNER_VAULT_ROOT=/vaults
+      - BAIHUA_VAULT_ROOT=/vaults
 
   webui:
     network_mode: ""
@@ -87,16 +87,16 @@ services:
       - ${VAULTS_DIR:-C:/Users/lumin/Vaults}:/vaults
     environment:
       # WebUI 通过 bridge 网络调用各后端服务（服务名 DNS）
-      - TaskRunnerApi__BaseUrl=http://taskrunner:8788/
-      - TaskRunnerAiApi__BaseUrl=http://taskrunner-ai:8791/
-      - TaskRunnerVaultApi__BaseUrl=http://taskrunner-vault:8790/
+      - FamilyApi__BaseUrl=http://family:8788/
+      - AiApi__BaseUrl=http://ai:8791/
+      - VaultApi__BaseUrl=http://vault:8790/
       - OpenObserve__WebUrl=http://host.docker.internal:5082/
     depends_on:
-      taskrunner:
+      family:
         condition: service_healthy
-      taskrunner-ai:
+      ai:
         condition: service_healthy
-      taskrunner-vault:
+      vault:
         condition: service_healthy
 
   nginx:
@@ -111,11 +111,11 @@ services:
       - ./nginx/family-proxy-headers.conf:/etc/nginx/family-proxy-headers.conf:ro
       - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/logs/nginx:/var/log/nginx
     depends_on:
-      taskrunner:
+      family:
         condition: service_healthy
-      taskrunner-ai:
+      ai:
         condition: service_healthy
-      taskrunner-vault:
+      vault:
         condition: service_healthy
       webui:
         condition: service_healthy

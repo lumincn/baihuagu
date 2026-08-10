@@ -5,7 +5,7 @@
 # 构建命令（prebuilt 模式，由 deploy.sh 调用）：
 #   docker build -f docker/Dockerfile.family-openvino.prebuilt -t bh-family-openvino:latest .
 #
-# 与标准 Dockerfile.taskrunner.prebuilt 的区别：
+# 与标准 Dockerfile.family.win-prebuilt 的区别：
 #   1. 基础镜像加装 Python 3.12 + Intel GPU 运行时库
 #   2. 安装 openvino-genai + openvino（支持 CPU/GPU/NPU 推理）
 #   3. 安装 level-zero / intel-opencl-icd（GPU 设备访问）
@@ -71,7 +71,7 @@ EXPOSE 8788
 
 ENV ASPNETCORE_URLS=http://0.0.0.0:8788
 ENV BAIHUA_HOME=/app/data
-ENV TASKRUNNER_SKIP_MUTEX=true
+ENV BAIHUA_SKIP_MUTEX=true
 ENV OPENVINO_DEVICE=GPU
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \

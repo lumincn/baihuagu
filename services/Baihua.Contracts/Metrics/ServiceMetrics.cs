@@ -9,7 +9,7 @@ namespace Baihua.Contracts.Metrics;
 /// </summary>
 public class ServiceMetrics : IDisposable
 {
-    public const string MeterName = "doctor.taskrunner.service";
+    public const string MeterName = "baihua.family";
 
     private readonly Meter _meter;
 

@@ -94,7 +94,7 @@ public sealed class Fam22SettingsRouteFixture : IDisposable
         Baihua.Contracts.BaihuaPaths.Reset();
 
         _vaultStub = new StubVaultServer();
-        Environment.SetEnvironmentVariable("TASKRUNNER_VAULT_URL", _vaultStub.BaseUrl);
+        Environment.SetEnvironmentVariable("BAIHUA_VAULT_URL", _vaultStub.BaseUrl);
 
         // 预建库表（同 AiChatEndpointsAuthTests：ServerAddressService 会抢先建表，
         // 测试环境在 host 创建前先 EnsureCreated 建全表，避免 Migrate 撞表）
@@ -106,8 +106,8 @@ public sealed class Fam22SettingsRouteFixture : IDisposable
         _factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
             {
-                builder.UseSetting("TASKRUNNER_SKIP_MUTEX", "true");
-                builder.UseSetting("TASKRUNNER_SKIP_ACCESS_CONTROL", "true");
+                builder.UseSetting("BAIHUA_SKIP_MUTEX", "true");
+                builder.UseSetting("BAIHUA_SKIP_ACCESS_CONTROL", "true");
             });
         Client = _factory.CreateClient();
     }

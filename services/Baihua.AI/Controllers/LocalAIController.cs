@@ -32,7 +32,7 @@ public class LocalAIController : ControllerBase
         _logger = logger;
         _loc = loc;
         _httpClientFactory = httpClientFactory;
-        _familyBaseUrl = (configuration["TaskRunnerApi:BaseUrl"] ?? "http://127.0.0.1:8788").TrimEnd('/');
+        _familyBaseUrl = (configuration["FamilyApi:BaseUrl"] ?? "http://127.0.0.1:8788").TrimEnd('/');
     }
 
     /// <summary>

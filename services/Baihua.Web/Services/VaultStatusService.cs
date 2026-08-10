@@ -38,7 +38,7 @@ public class VaultStatusService
     {
         try
         {
-            var client = _httpClientFactory.CreateClient("TaskRunnerVaultApi");
+            var client = _httpClientFactory.CreateClient("VaultApi");
             return await client.GetFromJsonAsync<VaultsResponse>("api/settings/vaults") ?? new VaultsResponse();
         }
         catch (Exception ex)
@@ -80,7 +80,7 @@ public class VaultStatusService
                 // 则认为已配置（可以在该路径下创建知识库）。优先使用后端的偏好设置以避免误报。
                 try
                 {
-                    var client = _httpClientFactory.CreateClient("TaskRunnerVaultApi");
+                    var client = _httpClientFactory.CreateClient("VaultApi");
                     var pref = await client.GetFromJsonAsync<VaultRootPathPreferenceResponse>("api/settings/vault-root-path-preference", _caseInsensitiveOptions);
                     var rootPath = pref?.VaultRootPath ?? string.Empty;
 

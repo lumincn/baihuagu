@@ -468,7 +468,7 @@
         try
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-            var client = HttpClientFactory.CreateClient("TaskRunnerAiApi");
+            var client = HttpClientFactory.CreateClient("AiApi");
             var response = await client.GetAsync("api/ai/config/providers", cts.Token);
             if (response.IsSuccessStatusCode)
             {
@@ -485,7 +485,7 @@
         try
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-            var client = HttpClientFactory.CreateClient("TaskRunnerApi");
+            var client = HttpClientFactory.CreateClient("FamilyApi");
             var response = await client.GetAsync("api/server-address", cts.Token);
             if (response.IsSuccessStatusCode)
             {

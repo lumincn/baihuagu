@@ -1,4 +1,4 @@
-﻿#requires -Version 5.1
+#requires -Version 5.1
 <#
   baihua - Windows + k8s CLI
   Cell of the matrix: OS=windows, deployment=k8s
@@ -64,9 +64,9 @@ function Invoke-Build {
     }
     $images = @(
         @{ Name = 'bh-vault:latest';  Dockerfile = 'Dockerfile.vault.prebuilt';           Context = $DockerDir },
-        @{ Name = 'bh-ai:latest';     Dockerfile = 'Dockerfile.taskrunner.ai.prebuilt';   Context = $DockerDir },
+        @{ Name = 'bh-ai:latest';     Dockerfile = 'Dockerfile.ai.prebuilt';   Context = $DockerDir },
         @{ Name = 'bh-webui:latest';  Dockerfile = 'Dockerfile.webui.prebuilt';           Context = $DockerDir },
-        @{ Name = 'bh-family:latest'; Dockerfile = 'Dockerfile.family.prebuilt';          Context = $DockerDir },
+        @{ Name = 'bh-family:latest'; Dockerfile = 'Dockerfile.family.win-prebuilt';          Context = $DockerDir },
         @{ Name = 'bh-openvino:latest'; Dockerfile = 'Dockerfile.openvino-server.prebuilt'; Context = $Root }
     )
     foreach ($img in $images) {

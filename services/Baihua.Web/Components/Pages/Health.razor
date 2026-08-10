@@ -593,12 +593,12 @@
             report = await ApiService.GetFullHealthAsync();
             connectivityCheckSw.Stop();
             
-            // 插入 WebUI→TaskRunner 连通性检查结果到报告开头
+            // 插入 WebUI→Baihua 连通性检查结果到报告开头
             if (report?.Components != null)
             {
                 var connectivityStatus = new Baihua.Contracts.Health.ComponentStatusDto
                 {
-                    Name = "WebUI→TaskRunner",
+                    Name = "WebUI→Baihua",
                     Status = "healthy",
                     Message = string.Format(L["Health_WebuiConnectivityOk"], connectivityCheckSw.ElapsedMilliseconds),
                     CheckDurationMs = connectivityCheckSw.ElapsedMilliseconds
@@ -621,7 +621,7 @@
                 {
                     new Baihua.Contracts.Health.ComponentStatusDto
                     {
-                        Name = "WebUI→TaskRunner",
+                        Name = "WebUI→Baihua",
                         Status = "critical",
                         Message = string.Format(L["Health_WebuiConnectivityFailed"], ex.Message),
                         CheckDurationMs = connectivityCheckSw.ElapsedMilliseconds

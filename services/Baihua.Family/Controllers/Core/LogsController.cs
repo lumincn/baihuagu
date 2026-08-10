@@ -64,7 +64,7 @@ public partial class LogsController : ControllerBase
             if (!Directory.Exists(_logsDir))
                 return Ok(Array.Empty<object>());
 
-            var files = Directory.GetFiles(_logsDir, "taskrunner-*.log")
+            var files = Directory.GetFiles(_logsDir, "baihua-family-*.log")
                 .Select(f => new FileInfo(f))
                 .OrderByDescending(f => f.LastWriteTime)
                 .Select(f => new

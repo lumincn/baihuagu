@@ -80,7 +80,7 @@ public class RequestSignatureService
     {
         if (!IsConfigured)
         {
-            _logger.LogWarning("[Signature] MobileAuth secret not configured, rejecting request. Set TASKRUNNER_MOBILE_AUTH_SECRET env var.");
+            _logger.LogWarning("[Signature] MobileAuth secret not configured, rejecting request. Set BAIHUA_MOBILE_AUTH_SECRET env var.");
             return false;
         }
 

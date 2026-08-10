@@ -286,7 +286,7 @@ else
 
     private async Task StartHubConnectionAsync()
     {
-        var baseUrl = TaskRunnerEndpointHelper.NormalizeOutboundBaseUrl(SettingsService.BackendUrl);
+        var baseUrl = BaihuaEndpointHelper.NormalizeOutboundBaseUrl(SettingsService.BackendUrl);
         var hubUrl = $"{baseUrl}/hubs/task-progress";
 
         _hubConnection = new HubConnectionBuilder()

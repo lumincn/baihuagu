@@ -1,6 +1,6 @@
 namespace Baihua.Contracts.Health;
 
-public interface ITaskRunnerHealthApi
+public interface IBaihuaHealthApi
 {
     Task<SystemHealthReportDto> GetFullHealthAsync(CancellationToken cancellationToken = default);
 }

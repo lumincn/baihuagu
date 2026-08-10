@@ -10,10 +10,10 @@
 
 ```
 services/
-├── TaskRunner.Core/      ← 共享库（服务逻辑）
+├── Baihua.Core/      ← 共享库（服务逻辑）
 ├── WebUI.Core/           ← 共享库（Razor 组件 + 页面）
 ├── TaskRunner.Cloud/     ← 官网版入口
-├── TaskRunner.Family/    ← 家庭版入口
+├── Baihua.Family/    ← 家庭版入口
 ├── WebUI.Cloud/          ← 官网版入口
 └── WebUI.Family/         ← 家庭版入口
 ```
@@ -27,7 +27,7 @@ services/
 
 ## 2. 设计原则
 
-1. **零共享代码**：Cloud 与 Family 之间不共享任何项目（除 `TaskRunner.Contracts` 接口契约）
+1. **零共享代码**：Cloud 与 Family 之间不共享任何项目（除 `Baihua.Contracts` 接口契约）
 2. **独立部署**：每个服务可独立构建、独立运行、独立升级
 3. **显式接口**：服务间通信仅通过 HTTP API + 共享 DTO 契约
 4. **简化单体**：家庭版不拆微服务，保持单体应用以降低运维复杂度
@@ -39,7 +39,7 @@ services/
 
 ```
 services/
-├── TaskRunner.Contracts/     # 仅含 DTO 与接口定义（零实现）
+├── Baihua.Contracts/     # 仅含 DTO 与接口定义（零实现）
 │   ├── DTOs/
 │   └── Interfaces/
 │
@@ -54,7 +54,7 @@ services/
 │   ├── Pages/
 │   └── ... 全部 Razor 代码
 │
-├── TaskRunner.Family/        # 家庭版后台（完整独立）
+├── Baihua.Family/        # 家庭版后台（完整独立）
 │   ├── Program.cs
 │   ├── appsettings.json
 │   └── ... 全部业务代码
@@ -66,7 +66,7 @@ services/
     └── ... 全部 Razor 代码
 ```
 
-**删除：** `TaskRunner.Core`、`WebUI.Core`
+**删除：** `Baihua.Core`、`WebUI.Core`
 
 ### 3.2 依赖关系
 
@@ -79,20 +79,20 @@ services/
          └──────────────┬───────────────────────┘
                         │
               ┌─────────▼─────────┐
-              │ TaskRunner.Contracts│
+              │ Baihua.Contracts│
               └─────────┬─────────┘
                         │
          ┌──────────────┴───────────────────────┐
          │         引用（仅 DTO）                │
 ┌─────────────────┐                    ┌─────────────────┐
-│  WebUI.Family   │ ◄────────────────► │ TaskRunner.Family│
+│  WebUI.Family   │ ◄────────────────► │ Baihua.Family│
 └─────────────────┘      HTTP API      └─────────────────┘
 ```
 
 **规则：**
-- `TaskRunner.Contracts` 仅包含 `record` DTO 和 `interface` 定义，**无任何实现**
+- `Baihua.Contracts` 仅包含 `record` DTO 和 `interface` 定义，**无任何实现**
 - WebUI 项目不直接引用 TaskRunner 项目，仅引用 Contracts 获取 DTO 类型
-- 运行时通信通过配置的 `TaskRunnerApi:BaseUrl` 进行 HTTP 调用
+- 运行时通信通过配置的 `FamilyApi:BaseUrl` 进行 HTTP 调用
 
 ### 3.3 家庭版部署拓扑（Home Server）
 
@@ -102,7 +102,7 @@ services/
 │  (Raspberry Pi / NUC / 旧笔记本 / WSL)                             │
 │                                                                   │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐           │
-│  │ WebUI.Family │  │TaskRunner.AI │  │TaskRunner.Vault           │
+│  │ WebUI.Family │  │Baihua.AI │  │Baihua.Vault           │
 │  │    :5177     │  │    :8791     │  │    :8790     │           │
 │  │ (Blazor SSR) │  │(ASP.NET Core)│  │(ASP.NET Core)│           │
 │  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘           │
@@ -111,7 +111,7 @@ services/
 │         │    │                                                    │
 │         │    ▼                                                    │
 │         │  ┌─────────────────┐                                    │
-│         └──┤ TaskRunner.Family│                                   │
+│         └──┤ Baihua.Family│                                   │
 │            │     :8788        │                                   │
 │            │  (ASP.NET Core)  │                                   │
 │            └────────┬─────────┘                                   │
@@ -125,8 +125,8 @@ services/
 │  ┌─────────────────────────────────────────────────────────┐     │
 │  │  Nginx (可选)                                            │     │
 │  │  - 端口 80 → 反向代理到 WebUI.Family:5177                │     │
-│  │  - /api/search/ → TaskRunner.Vault:8790                  │     │
-│  │  - /vault/ → TaskRunner.Vault:8790                       │     │
+│  │  - /api/search/ → Baihua.Vault:8790                  │     │
+│  │  - /vault/ → Baihua.Vault:8790                       │     │
 │  └─────────────────────────────────────────────────────────┘     │
 └──────────────────────────────────────────────────────────────────┘
                               │
@@ -138,7 +138,7 @@ services/
 ```
 
 **说明：**
-- 家庭版为 **3 后端 + 1 前端** 架构：TaskRunner.Family (8788) + TaskRunner.AI (8791) + TaskRunner.Vault (8790) + WebUI.Family (5177)
+- 家庭版为 **3 后端 + 1 前端** 架构：Baihua.Family (8788) + Baihua.AI (8791) + Baihua.Vault (8790) + WebUI.Family (5177)
 - 数据库使用 SQLite（零配置、单文件、备份简单），Family 与 Vault 共享 `taskrunner.db`，AI 使用独立的 `ai.db`
 - Nginx 可选，用于提供统一入口和静态缓存
 - 移动端通过局域网 IP 连接 `:8788`，Family 自动将 Vault 域 API 转发到 `:8790`
@@ -164,7 +164,7 @@ services/
 ```
 移动端 App ──mDNS──► 发现 Home Server IP
        │
-       └──HTTP──► TaskRunner.Family:8788
+       └──HTTP──► Baihua.Family:8788
               │
               ├──► 接收增量变更 (JSON)
               ├──► 返回知识库数据
@@ -178,9 +178,9 @@ services/
     │
     ├──► Blazor SSR 渲染页面
     ├──► JS Interop 调用本地 API
-    ├──► WebUI ──HTTP──► TaskRunner.Family:8788  (任务、成就、设备)
-    ├──► WebUI ──HTTP──► TaskRunner.AI:8791     (AI 配置、对话)
-    └──► WebUI ──HTTP──► TaskRunner.Vault:8790  (知识库、搜索、同步)
+    ├──► WebUI ──HTTP──► Baihua.Family:8788  (任务、成就、设备)
+    ├──► WebUI ──HTTP──► Baihua.AI:8791     (AI 配置、对话)
+    └──► WebUI ──HTTP──► Baihua.Vault:8790  (知识库、搜索、同步)
 ```
 
 ## 6. 配置策略
@@ -194,13 +194,13 @@ services/
       "Http": { "Url": "http://0.0.0.0:5177" }
     }
   },
-  "TaskRunnerApi": {
+  "FamilyApi": {
     "BaseUrl": "http://127.0.0.1:8788/"
   },
-  "TaskRunnerAiApi": {
+  "AiApi": {
     "BaseUrl": "http://127.0.0.1:8791/"
   },
-  "TaskRunnerVaultApi": {
+  "VaultApi": {
     "BaseUrl": "http://127.0.0.1:8790/"
   },
   "AllowedHosts": "*"
@@ -216,13 +216,13 @@ services/
       "Http": { "Url": "http://0.0.0.0:5177" }
     }
   },
-  "TaskRunnerApi": {
+  "FamilyApi": {
     "BaseUrl": "http://127.0.0.1:8788/"
   },
-  "TaskRunnerAiApi": {
+  "AiApi": {
     "BaseUrl": "http://127.0.0.1:8791/"
   },
-  "TaskRunnerVaultApi": {
+  "VaultApi": {
     "BaseUrl": "http://127.0.0.1:8790/"
   },
   "BasePath": "/admin/",
@@ -233,12 +233,12 @@ services/
 ## 7. 迁移计划
 
 ### 阶段一：代码复制 ✅ 已完成
-1. ~~将 `TaskRunner.Core` 的全部代码复制到 `TaskRunner.Cloud` 和 `TaskRunner.Family`~~
+1. ~~将 `Baihua.Core` 的全部代码复制到 `TaskRunner.Cloud` 和 `Baihua.Family`~~
 2. ~~将 `WebUI.Core` 的全部代码复制到 `WebUI.Cloud` 和 `WebUI.Family`~~
-3. ~~删除 `TaskRunner.Core` 和 `WebUI.Core` 项目~~
+3. ~~删除 `Baihua.Core` 和 `WebUI.Core` 项目~~
 4. ~~调整命名空间，确保编译通过~~
 
-**验证结果**：`TaskRunner.Cloud`、`TaskRunner.Family`、`WebUI.Cloud`、`WebUI.Family` 四项目 `dotnet build` 和 `dotnet publish` 均通过。
+**验证结果**：`TaskRunner.Cloud`、`Baihua.Family`、`WebUI.Cloud`、`WebUI.Family` 四项目 `dotnet build` 和 `dotnet publish` 均通过。
 
 ### 阶段二：去耦合 ✅ 已完成（核心部分）
 1. ~~策略分离~~ ✅：Program.cs 中 Cloud 固定注册 Cloud 策略，Family 固定注册 Family 策略；删除对方策略文件
@@ -246,7 +246,7 @@ services/
 3. ~~部署模式固化~~ ✅：Cloud 和 Family 拆分为独立仓库后，部署模式在编译期即已确定，`IDeploymentContext` 及 `DeploymentMode` 环境变量已移除
 4. ~~WebUI 页面/导航简化~~ ✅：Home.razor 和 NavMenu.razor 去掉条件分支，直接渲染对应组件；删除对方模式的页面和导航组件
 5. 待后续演进：进一步删除各项目中不需要的 Controller/Service/Entity（需配合 DbContext 和 Migration 调整，建议在独立演进阶段逐步进行）
-6. 待后续演进：将公共 DTO 提取到 `TaskRunner.Contracts`（目前 Contracts 已包含 DTO，两边直接引用即可）
+6. 待后续演进：将公共 DTO 提取到 `Baihua.Contracts`（目前 Contracts 已包含 DTO，两边直接引用即可）
 
 ### 阶段三：独立演进（持续）
 1. Cloud 版可按需引入 PostgreSQL、Redis、Kubernetes
@@ -290,10 +290,10 @@ services/
 
 | 当前 | 目标 |
 |------|------|
-| `services/TaskRunner.Core/` | **删除** |
+| `services/Baihua.Core/` | **删除** |
 | `services/WebUI.Core/` | **删除** |
-| `services/TaskRunner.Cloud/` | 保留，包含完整代码 |
-| `services/TaskRunner.Family/` | 保留，包含完整代码 |
+| `services/Baihua.Cloud/` | 保留，包含完整代码 |
+| `services/Baihua.Family/` | 保留，包含完整代码 |
 | `services/WebUI.Cloud/` | 保留，包含完整代码 |
 | `services/WebUI.Family/` | 保留，包含完整代码 |
-| `services/TaskRunner.Contracts/` | 保留，精简为仅 DTO |
+| `services/Baihua.Contracts/` | 保留，精简为仅 DTO |

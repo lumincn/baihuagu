@@ -46,7 +46,7 @@ build_all() {
     # 注意：需在能访问 docker 的环境执行（Windows 或启用了 WSL 集成的发行版）
     docker build -f "$DOCKER_DIR/Dockerfile.vault.prebuilt"          -t bh-vault:latest    "$DOCKER_DIR" >/dev/null || exit 1
     echo "[build] bh-vault"
-    docker build -f "$DOCKER_DIR/Dockerfile.taskrunner.ai.prebuilt"  -t bh-ai:latest       "$DOCKER_DIR" >/dev/null || exit 1
+    docker build -f "$DOCKER_DIR/Dockerfile.ai.prebuilt"  -t bh-ai:latest       "$DOCKER_DIR" >/dev/null || exit 1
     echo "[build] bh-ai"
     docker build -f "$DOCKER_DIR/Dockerfile.webui.prebuilt"          -t bh-webui:latest    "$DOCKER_DIR" >/dev/null || exit 1
     echo "[build] bh-webui"

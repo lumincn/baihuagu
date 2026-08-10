@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Baihua.Family.Helpers;
+using Baihua.AI.Provider;
 using Xunit;
 
 namespace Baihua.Family.Tests.Helpers;

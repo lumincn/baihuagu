@@ -1,5 +1,5 @@
 # 基础镜像 - Runtime 阶段（包含运行时依赖）
-# 用于加速 TaskRunner 和 WebUI 的最终镜像构建
+# 用于加速 Baihua 服务构建和 WebUI 的最终镜像构建
 #
 # 构建命令：
 #   docker build -f Dockerfile.base-runtime -t bh/base-runtime:latest ..

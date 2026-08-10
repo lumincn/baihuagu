@@ -11,7 +11,7 @@ EXPOSE 8788
 
 ENV ASPNETCORE_URLS=http://0.0.0.0:8788
 ENV BAIHUA_HOME=/app/data
-ENV TASKRUNNER_SKIP_MUTEX=true
+ENV BAIHUA_SKIP_MUTEX=true
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8788/health || exit 1

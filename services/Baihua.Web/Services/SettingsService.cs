@@ -39,7 +39,7 @@ public class SettingsService
         {
             var next = string.IsNullOrWhiteSpace(value)
                 ? "http://127.0.0.1:8788"
-                : TaskRunnerEndpointHelper.NormalizeOutboundBaseUrl(value);
+                : BaihuaEndpointHelper.NormalizeOutboundBaseUrl(value);
             _data.BackendUrl = next;
             Save();
         }
@@ -105,7 +105,7 @@ public class SettingsService
     /// <summary>将配置文件里的 localhost / ::1 写回为 127.0.0.1，避免后续仍走 IPv6 回环。</summary>
     private void PersistBackendUrlIfLoopbackNormalized()
     {
-        var n = TaskRunnerEndpointHelper.NormalizeOutboundBaseUrl(_data.BackendUrl);
+        var n = BaihuaEndpointHelper.NormalizeOutboundBaseUrl(_data.BackendUrl);
         if (string.Equals(n, _data.BackendUrl, StringComparison.Ordinal))
             return;
         _data.BackendUrl = n;
@@ -118,6 +118,6 @@ public class SettingsService
         public string AiApiUrl { get; set; } = string.Empty;
         public string AiModel { get; set; } = string.Empty;
         public string BackendUrl { get; set; } = "http://127.0.0.1:8788";
-        // 注意：AdminPasswordHash 不再本地存储，改为从 TaskRunner API 获取
+        // 注意：AdminPasswordHash 不再本地存储，改为从 Baihua.Family API 获取
     }
 }

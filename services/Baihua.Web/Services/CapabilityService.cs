@@ -14,7 +14,7 @@ public class CapabilityService
 
     public CapabilityService(IHttpClientFactory httpClientFactory)
     {
-        _httpClient = httpClientFactory.CreateClient("TaskRunnerApi");
+        _httpClient = httpClientFactory.CreateClient("FamilyApi");
     }
 
     /// <summary>

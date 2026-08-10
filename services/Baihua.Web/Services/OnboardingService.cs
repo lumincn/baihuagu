@@ -34,7 +34,7 @@ public class OnboardingService
 
         try
         {
-            var client = _httpClientFactory.CreateClient("TaskRunnerApi");
+            var client = _httpClientFactory.CreateClient("FamilyApi");
             var response = await client.GetFromJsonAsync<OnboardingStatusDto>("api/onboarding/status");
             _cachedStatus = response ?? new OnboardingStatusDto();
             _lastStatusFetch = DateTime.UtcNow;
@@ -54,7 +54,7 @@ public class OnboardingService
     {
         try
         {
-            var client = _httpClientFactory.CreateClient("TaskRunnerApi");
+            var client = _httpClientFactory.CreateClient("FamilyApi");
             var response = await client.PostAsync("api/onboarding/complete", null);
             if (response.IsSuccessStatusCode)
             {
@@ -82,7 +82,7 @@ public class OnboardingService
 
         try
         {
-            var client = _httpClientFactory.CreateClient("TaskRunnerApi");
+            var client = _httpClientFactory.CreateClient("FamilyApi");
             var response = await client.GetFromJsonAsync<InitTasksResponse>("api/onboarding/tasks");
             _cachedTasks = response ?? new InitTasksResponse();
             _lastTasksFetch = DateTime.UtcNow;
@@ -102,7 +102,7 @@ public class OnboardingService
     {
         try
         {
-            var client = _httpClientFactory.CreateClient("TaskRunnerApi");
+            var client = _httpClientFactory.CreateClient("FamilyApi");
             var response = await client.PostAsync($"api/onboarding/tasks/{taskId}/complete", null);
             if (response.IsSuccessStatusCode)
             {
@@ -126,7 +126,7 @@ public class OnboardingService
     {
         try
         {
-            var client = _httpClientFactory.CreateClient("TaskRunnerApi");
+            var client = _httpClientFactory.CreateClient("FamilyApi");
             var response = await client.PostAsJsonAsync("api/onboarding/create-sample-vault", new
             {
                 vaultName,

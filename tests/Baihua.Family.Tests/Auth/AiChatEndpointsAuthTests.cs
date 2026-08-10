@@ -159,8 +159,8 @@ public sealed class AiChatEndpointsAuthFixture : IDisposable
     {
         // ---- 环境变量隔离：不污染真实数据目录 ----
         _oldBaihuaHome = Environment.GetEnvironmentVariable("BAIHUA_HOME") ?? "";
-        _oldVaultUrl = Environment.GetEnvironmentVariable("TASKRUNNER_VAULT_URL") ?? "";
-        _oldAiUrl = Environment.GetEnvironmentVariable("TASKRUNNER_AI_URL") ?? "";
+        _oldVaultUrl = Environment.GetEnvironmentVariable("BAIHUA_VAULT_URL") ?? "";
+        _oldAiUrl = Environment.GetEnvironmentVariable("BAIHUA_AI_URL") ?? "";
         _oldAiApiUrl = Environment.GetEnvironmentVariable("TASK_RUNNER_AI_API_URL") ?? "";
 
         _tempHome = Path.Combine(Path.GetTempPath(), "baihua-ai01-test-" + Guid.NewGuid().ToString("N"));
@@ -180,8 +180,8 @@ public sealed class AiChatEndpointsAuthFixture : IDisposable
             ["/mg/manifest"] = (200, "application/json", "{\"cursor\":0,\"minSeq\":1,\"files\":[]}"),
         });
 
-        Environment.SetEnvironmentVariable("TASKRUNNER_VAULT_URL", _vaultStub.BaseUrl);
-        Environment.SetEnvironmentVariable("TASKRUNNER_AI_URL", _aiStub.BaseUrl);
+        Environment.SetEnvironmentVariable("BAIHUA_VAULT_URL", _vaultStub.BaseUrl);
+        Environment.SetEnvironmentVariable("BAIHUA_AI_URL", _aiStub.BaseUrl);
         Environment.SetEnvironmentVariable("TASK_RUNNER_AI_API_URL", _aiStub.BaseUrl);
 
         // ---- 预建库表 ----
@@ -198,8 +198,8 @@ public sealed class AiChatEndpointsAuthFixture : IDisposable
             .WithWebHostBuilder(builder =>
             {
                 builder.UseSetting("MobileAuth:SharedSecret", TestSecret);
-                builder.UseSetting("TASKRUNNER_SKIP_MUTEX", "true");
-                builder.UseSetting("TaskRunnerAiApi:BaseUrl", _aiStub.BaseUrl + "/");
+                builder.UseSetting("BAIHUA_SKIP_MUTEX", "true");
+                builder.UseSetting("AiApi:BaseUrl", _aiStub.BaseUrl + "/");
             });
         Client = _factory.CreateClient();
 
@@ -244,8 +244,8 @@ public sealed class AiChatEndpointsAuthFixture : IDisposable
         _aiStub.Dispose();
         _vaultStub.Dispose();
         Environment.SetEnvironmentVariable("BAIHUA_HOME", _oldBaihuaHome);
-        Environment.SetEnvironmentVariable("TASKRUNNER_VAULT_URL", _oldVaultUrl);
-        Environment.SetEnvironmentVariable("TASKRUNNER_AI_URL", _oldAiUrl);
+        Environment.SetEnvironmentVariable("BAIHUA_VAULT_URL", _oldVaultUrl);
+        Environment.SetEnvironmentVariable("BAIHUA_AI_URL", _oldAiUrl);
         Environment.SetEnvironmentVariable("TASK_RUNNER_AI_API_URL", _oldAiApiUrl);
         Baihua.Contracts.BaihuaPaths.Reset();
         try { Directory.Delete(_tempHome, recursive: true); } catch { }

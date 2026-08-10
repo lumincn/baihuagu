@@ -30,7 +30,7 @@ namespace Baihua.Web.Services
         public Dictionary<string, object?>? ToolArguments { get; set; }
     }
 
-    public interface IApiService : ITaskRunnerHealthApi
+    public interface IApiService : IBaihuaHealthApi
     {
         /// <summary>快速健康检查，后台不可用时抛出异常（3秒超时）</summary>
         Task CheckHealthFastAsync(CancellationToken cancellationToken = default);
@@ -52,7 +52,7 @@ namespace Baihua.Web.Services
         IAsyncEnumerable<string> StreamChatAsync(string message, string providerId, string model, List<(bool IsUser, string Content)>? history = null, CancellationToken cancellationToken = default);
         IAsyncEnumerable<ChatStreamEvent> StreamChatWithEventsAsync(string message, string providerId, string model, List<(bool IsUser, string Content)>? history = null, string? sessionId = null, CancellationToken cancellationToken = default);
 
-        // 直接调用 TaskRunner.AI（纯 AI，无 RAG/记忆/Function Calling）
+        // 直接调用 Baihua.AI（纯 AI，无 RAG/记忆/Function Calling）
         Task<ChatResponse> ChatDirectAsync(string message, string? providerId = null, string? model = null, CancellationToken cancellationToken = default);
         IAsyncEnumerable<string> StreamChatDirectAsync(string message, string? providerId = null, string? model = null, List<(bool IsUser, string Content)>? history = null, CancellationToken cancellationToken = default);        IAsyncEnumerable<string> StreamLocalChatAsync(string message, string modelPath, string modelType, List<(bool IsUser, string Content)>? history = null, CancellationToken cancellationToken = default);
         IAsyncEnumerable<string> StreamChatWithVaultAsync(string message, string model, List<(bool IsUser, string Content)>? history = null, CancellationToken cancellationToken = default);
@@ -259,9 +259,9 @@ namespace Baihua.Web.Services
             _settingsService = settingsService;
             _logger = logger;
             _loc = loc;
-            _httpClient = httpClientFactory.CreateClient("TaskRunnerApi");
-            _aiHttpClient = httpClientFactory.CreateClient("TaskRunnerAiApi");
-            _vaultHttpClient = httpClientFactory.CreateClient("TaskRunnerVaultApi");
+            _httpClient = httpClientFactory.CreateClient("FamilyApi");
+            _aiHttpClient = httpClientFactory.CreateClient("AiApi");
+            _vaultHttpClient = httpClientFactory.CreateClient("VaultApi");
             
             // 延迟获取服务避免循环依赖
             _metricsService = serviceProvider.GetService<ApiCallMetricsService>();
@@ -319,14 +319,14 @@ namespace Baihua.Web.Services
 
         private string GetPrimaryBaseUrl()
         {
-            // Docker 部署：compose 通过环境变量注入 TaskRunnerApi__BaseUrl（服务名 DNS），
+            // Docker 部署：compose 通过环境变量注入 FamilyApi__BaseUrl（服务名 DNS），
             // 必须优先于 settings 文件，否则容器内会回退到 127.0.0.1 导致 connection refused
-            var envBase = Environment.GetEnvironmentVariable("TaskRunnerApi__BaseUrl");
+            var envBase = Environment.GetEnvironmentVariable("FamilyApi__BaseUrl");
             if (!string.IsNullOrWhiteSpace(envBase))
             {
-                return TaskRunnerEndpointHelper.NormalizeOutboundBaseUrl(envBase, _fallbackBaseUrl);
+                return BaihuaEndpointHelper.NormalizeOutboundBaseUrl(envBase, _fallbackBaseUrl);
             }
-            return TaskRunnerEndpointHelper.NormalizeOutboundBaseUrl(_settingsService.BackendUrl, _fallbackBaseUrl);
+            return BaihuaEndpointHelper.NormalizeOutboundBaseUrl(_settingsService.BackendUrl, _fallbackBaseUrl);
         }
 
         private void EnsurePrimaryBaseAddress()

@@ -102,7 +102,7 @@
         IsProcessing = true;
         try
         {
-            var client = HttpClientFactory.CreateClient("TaskRunnerApi");
+            var client = HttpClientFactory.CreateClient("FamilyApi");
             var response = await client.PostAsJsonAsync("api/pairing/authorize", new
             {
                 challenge = CurrentRequest.Challenge,
@@ -147,7 +147,7 @@
         IsProcessing = true;
         try
         {
-            var client = HttpClientFactory.CreateClient("TaskRunnerApi");
+            var client = HttpClientFactory.CreateClient("FamilyApi");
             var response = await client.PostAsJsonAsync("api/pairing/reject", new
             {
                 challenge = CurrentRequest.Challenge

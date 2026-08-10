@@ -42,7 +42,7 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
     {
-        Title = "TaskRunner AI API",
+        Title = "Baihua AI API",
         Version = "v1",
         Description = "Baihua AI Service - Models, Chat, Search, Metrics"
     });
@@ -121,7 +121,7 @@ builder.Logging.AddDebug();
 
 var serilogConfig = new Serilog.LoggerConfiguration()
     .MinimumLevel.Is(Serilog.Events.LogEventLevel.Information)
-    .Enrich.WithProperty("Service", "TaskRunner.AI")
+    .Enrich.WithProperty("Service", "Baihua.AI")
     .Filter.ByExcluding(e => e.Properties.ContainsKey("SourceContext") &&
         ((Serilog.Events.LogEventPropertyValue)e.Properties["SourceContext"]).ToString()
             .StartsWith("\"Microsoft.AspNetCore") ||
@@ -136,7 +136,7 @@ builder.Logging.SetMinimumLevel(builder.Environment.IsDevelopment() ? LogLevel.D
 builder.Logging.AddFilter("Microsoft.AspNetCore", LogLevel.Warning);
 builder.Logging.AddFilter("System.Net.Http", LogLevel.Warning);
 builder.Logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
-builder.Logging.AddFilter("TaskRunner.AI", LogLevel.Information);
+builder.Logging.AddFilter("Baihua.AI", LogLevel.Information);
 
 // OpenTelemetry 导出到 OpenObserve
 var openobserveEnabled = builder.Configuration.GetValue<bool?>("OpenObserve:Enabled") ?? true;
@@ -146,7 +146,7 @@ var openobservePass = builder.Configuration["OpenObserve:Password"] ?? "";
 
 {
     var otelBuilder = builder.Services.AddOpenTelemetry()
-        .ConfigureResource(resource => resource.AddService("TaskRunner.AI"));
+        .ConfigureResource(resource => resource.AddService("Baihua.AI"));
 
     if (openobserveEnabled && !string.IsNullOrWhiteSpace(openobserveUrl))
     {
@@ -157,7 +157,7 @@ var openobservePass = builder.Configuration["OpenObserve:Password"] ?? "";
 
         otelBuilder.WithMetrics(metrics =>
         {
-            metrics.AddMeter("TaskRunner.AI")
+            metrics.AddMeter("Baihua.AI")
                    .AddView("ai.latency_ms", new OpenTelemetry.Metrics.ExplicitBucketHistogramConfiguration
                    {
                        Boundaries = new double[] { 0, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 30000, 60000 }
@@ -183,7 +183,7 @@ var openobservePass = builder.Configuration["OpenObserve:Password"] ?? "";
         .WithTracing(tracing =>
         {
             tracing
-                .AddSource("TaskRunner.AI")
+                .AddSource("Baihua.AI")
                 .SetSampler(isDevelopment
                     ? new AlwaysOnSampler()
                     : new ParentBasedSampler(new TraceIdRatioBasedSampler(0.1)))
@@ -223,7 +223,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "TaskRunner AI API V1");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Baihua AI API V1");
         c.RoutePrefix = "swagger";
     });
 }
@@ -315,7 +315,7 @@ catch (Exception ex)
     logger.LogWarning(ex, "AI 数据库迁移失败（不影响启动，表已存在则跳过）");
 }
 logger.LogInformation("===========================================");
-logger.LogInformation("TaskRunner.AI Service Starting...");
+logger.LogInformation("Baihua.AI Service Starting...");
 logger.LogInformation("Environment: {Environment}", app.Environment.EnvironmentName);
 logger.LogInformation("Health: /health");
 logger.LogInformation("===========================================");
@@ -329,7 +329,7 @@ catch (Exception ex)
     try
     {
         var logger2 = app.Services.GetService<ILogger<Program>>();
-        logger2?.LogCritical(ex, "TaskRunner.AI terminated unexpectedly");
+        logger2?.LogCritical(ex, "Baihua.AI terminated unexpectedly");
     }
     catch { }
     throw;

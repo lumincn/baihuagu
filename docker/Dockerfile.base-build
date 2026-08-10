@@ -1,5 +1,5 @@
 # 基础镜像 - Build 阶段（包含 .NET SDK）
-# 用于加速 TaskRunner 和 WebUI 的编译
+# 用于加速 Baihua 服务构建和 WebUI 的编译
 #
 # 构建命令：
 #   docker build -f Dockerfile.base-build -t bh/base-build:latest ..

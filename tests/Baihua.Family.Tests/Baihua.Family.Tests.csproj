@@ -27,6 +27,7 @@
   <ItemGroup>
     <ProjectReference Include="../../services/Baihua.Family/Baihua.Family.csproj" />
     <ProjectReference Include="../../services/Baihua.Core/Baihua.Core.csproj" />
+    <ProjectReference Include="../../services/Baihua.AI.Provider/Baihua.AI.Provider.csproj" />
   </ItemGroup>
 
 </Project>

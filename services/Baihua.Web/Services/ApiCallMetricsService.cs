@@ -4,7 +4,7 @@ using System.Diagnostics;
 namespace Baihua.Web.Services;
 
 /// <summary>
-/// WebUI → TaskRunner API 调用性能统计服务
+/// WebUI → Baihua API 调用性能统计服务
 /// </summary>
 public class ApiCallMetricsService
 {

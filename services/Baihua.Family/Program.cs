@@ -48,10 +48,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Prevent multiple instances from running and binding the same ports
 // (skip in test environment)
 Mutex? _singleInstanceMutex = null;
-var skipMutex = builder.Configuration.GetValue<bool>("TASKRUNNER_SKIP_MUTEX", false);
+var skipMutex = builder.Configuration.GetValue<bool>("BAIHUA_SKIP_MUTEX", false);
 if (!skipMutex)
 {
-    var mutexName = "TaskRunner_Service_Mutex";
+    var mutexName = "Baihua_Family_Mutex";
     var createdNew = false;
     try
     {
@@ -64,7 +64,7 @@ if (!skipMutex)
 
     if (!createdNew)
     {
-        Console.WriteLine("Another TaskRunner instance is already running. Exiting to avoid port conflicts.");
+        Console.WriteLine("Another Baihua.Family instance is already running. Exiting to avoid port conflicts.");
         return;
     }
 }
@@ -242,7 +242,7 @@ builder.Services.AddHttpClient("OllamaLibrary", c => c.Timeout = TimeSpan.FromSe
 builder.Services.AddHttpClient("SystemHealth", c =>
 {
     c.Timeout = TimeSpan.FromSeconds(1);
-    c.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "TaskRunner-Health/1.0");
+    c.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "Baihua-Family/1.0");
 });
 
 // 添加内存缓存（用于本地模型页等高频查询）
@@ -286,7 +286,7 @@ builder.Services.AddRateLimiter(options =>
 // 注册后台服务
 builder.Services.AddHostedService<TaskCleanupService>();
 builder.Services.AddHostedService<ObsidianWarmupHostedService>();
-// VaultIndexSchedulerService 已在 TaskRunner.Vault 中注册，避免两个进程同时重建索引
+// VaultIndexSchedulerService 已在 Baihua.Vault 中注册，避免两个进程同时重建索引
 builder.Services.AddHostedService<BackupSchedulerService>();
 builder.Services.AddHostedService<LocalModelsCacheWarmupService>();
 
@@ -329,7 +329,7 @@ builder.Logging.AddDebug();
 var logsDir = Path.Combine(builder.Environment.ContentRootPath ?? AppContext.BaseDirectory, "logs");
 var fileLogMinLevel = builder.Environment.IsDevelopment() ? LogLevel.Debug : LogLevel.Information;
 builder.Logging.AddProvider(new Baihua.Family.Logging.JsonLineLoggerProvider(
-    logsDir, "taskrunner", retentionDays: 7,
+    logsDir, "baihua-family", retentionDays: 7,
     globalMinimumLevel: fileLogMinLevel,
     categoryFilters: new Dictionary<string, LogLevel>
     {
@@ -337,7 +337,7 @@ builder.Logging.AddProvider(new Baihua.Family.Logging.JsonLineLoggerProvider(
         { "System.Net.Http", LogLevel.Warning },
         { "Microsoft.EntityFrameworkCore", LogLevel.Warning },
         { "Microsoft.Extensions.Http", LogLevel.Warning },
-        { "TaskRunner", LogLevel.Information },
+        { "Baihua.Family", LogLevel.Information },
     }));
 
 // 配置日志级别（生产环境减少噪音）
@@ -347,7 +347,7 @@ builder.Logging.SetMinimumLevel(builder.Environment.IsDevelopment() ? LogLevel.D
 builder.Logging.AddFilter("Microsoft.AspNetCore", LogLevel.Warning);      // 减少 ASP.NET 内部日志
 builder.Logging.AddFilter("System.Net.Http", LogLevel.Warning);           // 减少 HTTP 客户端日志
 builder.Logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning); // 减少数据库日志
-builder.Logging.AddFilter("TaskRunner", LogLevel.Information);            // 确保 TaskRunner 命名空间的日志可见
+builder.Logging.AddFilter("Baihua.Family", LogLevel.Information);            // 确保 Baihua 命名空间的日志可见
 
 // OpenObserve 结构化日志：通过 OpenTelemetry OTLP 导出到 OpenObserve
 // 先创建配置实例（DI 容器尚未 Build，无法注入），后续注册为 Singleton
@@ -366,7 +366,7 @@ if (!string.IsNullOrEmpty(envPass)) ooConfig.Password = envPass;
 // Serilog 仅用于控制台结构化输出
 var serilogConfig = new Serilog.LoggerConfiguration()
     .MinimumLevel.Is(Serilog.Events.LogEventLevel.Information)
-    .Enrich.WithProperty("Service", "TaskRunner")
+    .Enrich.WithProperty("Service", "Baihua.Family")
     .Filter.ByExcluding(e => e.Properties.ContainsKey("SourceContext") &&
         ((Serilog.Events.LogEventPropertyValue)e.Properties["SourceContext"]).ToString()
             .StartsWith("\"Microsoft.AspNetCore") ||
@@ -389,7 +389,7 @@ builder.Services.AddSingleton<ServiceMetrics>();
 
 // 配置 OpenTelemetry（Metrics + Logs + Traces），通过 OTLP 推送到 OpenObserve（受 openobserveEnabled 控制）
 builder.Services.AddOpenObserveTelemetry(
-    serviceName: "TaskRunner",
+    serviceName: "Baihua.Family",
     meterNames: new[] { AiMetricsService.MeterName, ServiceMetrics.MeterName },
     webUrl: ooBaseUrl,
     user: ooConfig.User,
@@ -524,8 +524,8 @@ app.Use(async (context, next) =>
     var path = context.Request.Path.Value?.ToLowerInvariant() ?? "";
     var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
 
-    // 测试环境跳过 loopback 限制（与 TASKRUNNER_SKIP_MUTEX 同模式；TestServer 无真实 socket，RemoteIpAddress 为 null）
-    var skipAccessControl = builder.Configuration.GetValue<bool>("TASKRUNNER_SKIP_ACCESS_CONTROL", false);
+    // 测试环境跳过 loopback 限制（与 BAIHUA_SKIP_MUTEX 同模式；TestServer 无真实 socket，RemoteIpAddress 为 null）
+    var skipAccessControl = builder.Configuration.GetValue<bool>("BAIHUA_SKIP_ACCESS_CONTROL", false);
     if (skipAccessControl)
     {
         await next();
@@ -567,7 +567,7 @@ app.Use(async (context, next) =>
     logger.LogInformation("[AccessControl] Path: {Path}, RemoteIP: {RemoteIP}, IsLoopback: {IsLoopback}",
         path, remoteIp?.ToString(), remoteIp != null && IPAddress.IsLoopback(remoteIp));
 
-    // 非公开路径仅允许本机访问（WebUI 通过 loopback 调用 TaskRunner）
+    // 非公开路径仅允许本机访问（WebUI 通过 loopback 调用 Baihua.Family）
     // Docker 部署时：nginx/WebUI 容器通过 bridge 网络访问（172.16.0.0/12 Docker 默认网段），
     // kind/k3s 下是 Pod 网段（10.244.x / 10.42.x）。RFC1918 私有网段全部放行（与 KnownIPNetworks 一致）。
     var isDockerNetwork = false;
@@ -600,7 +600,7 @@ app.Use(async (context, next) =>
 
 app.UseAuthorization();
 
-// 将移动端同步 API 转发到 TaskRunner.Vault（8790）
+// 将移动端同步 API 转发到 Baihua.Vault（8790）
 // VaultController/SyncController 已迁移到独立服务，但移动端仍通过 8788 发现服务器
 app.Use(async (context, next) =>
 {
@@ -616,7 +616,7 @@ app.Use(async (context, next) =>
     };
     if (vaultPaths.Any(p => path.StartsWith(p)))
     {
-        var vaultBase = Environment.GetEnvironmentVariable("TASKRUNNER_VAULT_URL") ?? "http://127.0.0.1:8790";
+        var vaultBase = Environment.GetEnvironmentVariable("BAIHUA_VAULT_URL") ?? "http://127.0.0.1:8790";
         var targetUrl = vaultBase.TrimEnd('/') + path + context.Request.QueryString;
         try
         {
@@ -738,7 +738,7 @@ app.Use(async (context, next) =>
     var aiChatPaths = new[] { "/api/ai/chat" };
     if (aiChatPaths.Any(p => path.StartsWith(p, StringComparison.OrdinalIgnoreCase)))
     {
-        var aiBase = Environment.GetEnvironmentVariable("TASKRUNNER_AI_URL")
+        var aiBase = Environment.GetEnvironmentVariable("BAIHUA_AI_URL")
             ?? Environment.GetEnvironmentVariable("TASK_RUNNER_AI_API_URL")
             ?? "http://127.0.0.1:8791";
         var targetUrl = aiBase.TrimEnd('/') + path + context.Request.QueryString;

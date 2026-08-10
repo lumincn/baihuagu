@@ -76,7 +76,7 @@ public partial class McpController : ControllerBase
             protocol = "mcp",
             version = "2024-11-05",
             endpoints = new { jsonrpc = "/mcp", health = "/health" },
-            message = "TaskRunner MCP Server is running. Use POST /mcp with JSON-RPC 2.0 payloads."
+            message = "Baihua Family MCP Server is running. Use POST /mcp with JSON-RPC 2.0 payloads."
         });
     }
 }

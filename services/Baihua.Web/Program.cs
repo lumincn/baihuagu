@@ -114,7 +114,7 @@ builder.Services.AddSignalR(options =>
 
 // Add API service
 builder.Services.AddSingleton<Baihua.Web.Services.IApiService, Baihua.Web.Services.ApiService>();
-builder.Services.AddSingleton<Baihua.Contracts.Health.ITaskRunnerHealthApi>(sp => sp.GetRequiredService<Baihua.Web.Services.IApiService>());
+builder.Services.AddSingleton<Baihua.Contracts.Health.IBaihuaHealthApi>(sp => sp.GetRequiredService<Baihua.Web.Services.IApiService>());
 
 // Add Settings service
 builder.Services.AddSingleton<Baihua.Web.Services.SettingsService>();
@@ -164,7 +164,7 @@ builder.Services.AddScoped<Baihua.Web.Services.GlobalStateService>();
 builder.Services.AddScoped<Baihua.Web.Services.SimpleStatusService>();
 
 // OpenTelemetry Metrics 导出到 OpenObserve（仅在明确启用时配置 exporter）
-// 使用与 TaskRunner 相同的安全保护：先构建基础的 OpenTelemetry builder，若未启用或 WebUrl 为空则直接返回，不配置导出器。
+// 使用与 Baihua 服务相同的安全保护：先构建基础的 OpenTelemetry builder，若未启用或 WebUrl 为空则直接返回，不配置导出器。
 {
     var otelBuilder = builder.Services.AddOpenTelemetry()
         .ConfigureResource(resource => resource.AddService("WebUI"));
@@ -177,7 +177,7 @@ builder.Services.AddScoped<Baihua.Web.Services.SimpleStatusService>();
         // 仅在配置了用户凭证时添加 Basic Auth 头，避免发送空的 "Basic :"
         otelBuilder.WithMetrics(metrics =>
         {
-            metrics.AddMeter("TaskRunner.WebUI")
+            metrics.AddMeter("Baihua.Web")
                    .AddView("http.request.duration_ms", new ExplicitBucketHistogramConfiguration
                    {
                        Boundaries = new double[] { 0, 10, 25, 50, 100, 200, 500, 1000, 2000, 5000, 10000 }
@@ -265,7 +265,7 @@ builder.Services.AddScoped<Baihua.Web.Services.SimpleStatusService>();
 // Add Request Metrics service (WebUI incoming requests)
 builder.Services.AddSingleton<Baihua.Web.Services.RequestMetricsService>();
 
-// Add API Call Metrics service (WebUI → TaskRunner calls)
+// Add API Call Metrics service (WebUI → Family/AI/Vault calls)
 builder.Services.AddSingleton<Baihua.Web.Services.ApiCallMetricsService>();
 
 // Add End-to-End Performance Monitoring service
@@ -298,33 +298,33 @@ var retryPolicy = HttpPolicyExtensions
     .HandleTransientHttpError()
     .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.5, retryAttempt - 1)));
 
-var taskRunnerBaseUrl = builder.Configuration["TaskRunnerApi:BaseUrl"] ?? "http://127.0.0.1:8788/";
+var familyBaseUrl = builder.Configuration["FamilyApi:BaseUrl"] ?? "http://127.0.0.1:8788/";
 builder.Services.AddTransient<Baihua.Web.Middleware.MetricsRecordingHandler>();
 
-builder.Services.AddHttpClient("TaskRunnerApi", client =>
+builder.Services.AddHttpClient("FamilyApi", client =>
 {
-    client.BaseAddress = new Uri(taskRunnerBaseUrl);
+    client.BaseAddress = new Uri(familyBaseUrl);
     client.Timeout = TimeSpan.FromSeconds(30);
 }).AddPolicyHandler(retryPolicy)
  .AddHttpMessageHandler<Baihua.Web.Middleware.MetricsRecordingHandler>();
 
-var taskRunnerAiBaseUrl = builder.Configuration["TaskRunnerAiApi:BaseUrl"] ?? "http://127.0.0.1:8791/";
-builder.Services.AddHttpClient("TaskRunnerAiApi", client =>
+var aiBaseUrl = builder.Configuration["AiApi:BaseUrl"] ?? "http://127.0.0.1:8791/";
+builder.Services.AddHttpClient("AiApi", client =>
 {
-    client.BaseAddress = new Uri(taskRunnerAiBaseUrl);
+    client.BaseAddress = new Uri(aiBaseUrl);
     client.Timeout = TimeSpan.FromSeconds(30);
 }).AddPolicyHandler(retryPolicy)
  .AddHttpMessageHandler<Baihua.Web.Middleware.MetricsRecordingHandler>();
 
-var taskRunnerVaultBaseUrl = builder.Configuration["TaskRunnerVaultApi:BaseUrl"] ?? "http://127.0.0.1:8790/";
-builder.Services.AddHttpClient("TaskRunnerVaultApi", client =>
+var vaultBaseUrl = builder.Configuration["VaultApi:BaseUrl"] ?? "http://127.0.0.1:8790/";
+builder.Services.AddHttpClient("VaultApi", client =>
 {
-    client.BaseAddress = new Uri(taskRunnerVaultBaseUrl);
+    client.BaseAddress = new Uri(vaultBaseUrl);
     client.Timeout = TimeSpan.FromSeconds(30);
 }).AddPolicyHandler(retryPolicy)
  .AddHttpMessageHandler<Baihua.Web.Middleware.MetricsRecordingHandler>();
 
-builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("TaskRunnerApi"));
+builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("FamilyApi"));
 
 // Add HttpContextAccessor for accessing HttpContext in Blazor components
 builder.Services.AddHttpContextAccessor();
@@ -474,7 +474,7 @@ app.MapPost("/api/metrics/clear", (Baihua.Web.Services.RequestMetricsService met
     return Results.Ok(new { message = "统计数据已清空" });
 });
 
-// 内部通知回调：供 TaskRunner 在状态变化时主动推送
+// 内部通知回调：供 Baihua 后端在状态变化时主动推送
 // 仅允许 loopback 访问，防止外部滥用
 app.MapPost("/api/internal/notify-state-change", (HttpContext context, Baihua.Web.Hubs.StatusUpdateService status, [Microsoft.AspNetCore.Mvc.FromBody] NotifyStateChangeRequest request) =>
 {

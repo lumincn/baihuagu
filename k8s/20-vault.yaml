@@ -34,7 +34,7 @@ spec:
           env:
             - name: ASPNETCORE_URLS
               value: "http://0.0.0.0:8790"
-            - name: TASKRUNNER_SKIP_MUTEX
+            - name: BAIHUA_SKIP_MUTEX
               value: "true"
           volumeMounts:
             - name: data

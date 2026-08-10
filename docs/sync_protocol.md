@@ -117,7 +117,7 @@
 
 ## 与当前实现的对应关系（task_runner v1）
 
-当前 `services/TaskRunner.Family` 已实现以下最小接口（详见对应服务文档）：
+当前 `services/Baihua.Family` 已实现以下最小接口（详见对应服务文档）：
 
 - `GET /vault/manifest?vaultId=...&since=`（`since` 为空或 `0` 返回当前全部 `.md` 快照；`since` 为上次 `cursor` 时返回增量 `upsert`/`delete`；响应含 `incremental` 布尔字段）
 - `GET /vault/file?vaultId=...`（v1：仅 `.md` 文本）

@@ -28,7 +28,7 @@ public class DevicesService
         try
         {
             _logger.LogInformation("[DevicesService] 获取待授权设备列表...");
-            var client = _httpClientFactory.CreateClient("TaskRunnerApi");
+            var client = _httpClientFactory.CreateClient("FamilyApi");
             var response = await client.GetAsync("api/devices/pending");
             
             if (!response.IsSuccessStatusCode)
@@ -59,7 +59,7 @@ public class DevicesService
         try
         {
             _logger.LogInformation("[DevicesService] 获取已授权设备列表...");
-            var client = _httpClientFactory.CreateClient("TaskRunnerApi");
+            var client = _httpClientFactory.CreateClient("FamilyApi");
             var response = await client.GetAsync("api/devices/authorized");
             
             if (!response.IsSuccessStatusCode)
@@ -89,7 +89,7 @@ public class DevicesService
     {
         try
         {
-            var client = _httpClientFactory.CreateClient("TaskRunnerApi");
+            var client = _httpClientFactory.CreateClient("FamilyApi");
             var response = await client.PostAsJsonAsync("api/devices/authorize", new { requestId });
             
             if (response.IsSuccessStatusCode)
@@ -114,7 +114,7 @@ public class DevicesService
     {
         try
         {
-            var client = _httpClientFactory.CreateClient("TaskRunnerApi");
+            var client = _httpClientFactory.CreateClient("FamilyApi");
             var response = await client.PostAsJsonAsync("api/devices/reject", new { requestId });
             
             if (response.IsSuccessStatusCode)
@@ -139,7 +139,7 @@ public class DevicesService
     {
         try
         {
-            var client = _httpClientFactory.CreateClient("TaskRunnerApi");
+            var client = _httpClientFactory.CreateClient("FamilyApi");
             var response = await client.PostAsJsonAsync("api/devices/revoke", new { deviceId });
             
             if (response.IsSuccessStatusCode)

@@ -40,11 +40,11 @@ EXPOSE 5177
 
 ENV ASPNETCORE_URLS=http://0.0.0.0:5177
 ENV WEBUI_CONFIG_DIR=/app/data
-# Docker 网络内通过服务名访问 TaskRunner
-# host 网络模式下通过 localhost 访问 TaskRunner
-# bridge 网络模式下改为 http://taskrunner:8788/
-ENV TaskRunnerApi__BaseUrl=http://127.0.0.1:8788/
-ENV TaskRunnerVaultApi__BaseUrl=http://127.0.0.1:8790/
+# Docker 网络内通过服务名访问 Baihua 服务
+# host 网络模式下通过 localhost 访问 Baihua 服务
+# bridge 网络模式下改为 http://family:8788/
+ENV FamilyApi__BaseUrl=http://127.0.0.1:8788/
+ENV VaultApi__BaseUrl=http://127.0.0.1:8790/
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:5177/ || exit 1

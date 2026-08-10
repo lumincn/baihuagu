@@ -35,7 +35,7 @@ public class LocalModelSettingsService
             if (!string.IsNullOrEmpty(_localModelDownloadDirectory))
                 return _localModelDownloadDirectory;
 
-            var envDir = Environment.GetEnvironmentVariable("TASKRUNNER_LOCAL_MODEL_DIR");
+            var envDir = Environment.GetEnvironmentVariable("BAIHUA_LOCAL_MODEL_DIR");
             if (!string.IsNullOrEmpty(envDir))
                 return envDir;
 

@@ -379,9 +379,9 @@ if (basePath != "/")
 
 WebUI 当前 `appsettings.json`：
 ```json
-"TaskRunnerApi":      { "BaseUrl": "http://127.0.0.1:8788/" },
-"TaskRunnerAiApi":    { "BaseUrl": "http://127.0.0.1:8791/" },
-"TaskRunnerVaultApi": { "BaseUrl": "http://127.0.0.1:8790/" }
+"FamilyApi":      { "BaseUrl": "http://127.0.0.1:8788/" },
+"AiApi":    { "BaseUrl": "http://127.0.0.1:8791/" },
+"VaultApi": { "BaseUrl": "http://127.0.0.1:8790/" }
 ```
 
 **建议继续保持直连端口，不经过 Nginx**。理由：
@@ -417,11 +417,11 @@ WebUI 当前 `appsettings.json`：
       - BAIHUA_NGINX_CLIENT_MAX_BODY_SIZE=${BAIHUA_NGINX_CLIENT_MAX_BODY_SIZE:-100M}
       - NGINX_ENVSUBST_FILTER=^BAIHUA_   # 官方 entrypoint 只替换 BAIHUA_* 前缀
     depends_on:
-      taskrunner:
+      family:
         condition: service_healthy
-      taskrunner-ai:
+      ai:
         condition: service_healthy
-      taskrunner-vault:
+      vault:
         condition: service_healthy
       webui:
         condition: service_healthy

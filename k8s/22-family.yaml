@@ -36,7 +36,7 @@ spec:
           env:
             - name: ASPNETCORE_URLS
               value: "http://0.0.0.0:8788"
-            - name: TASKRUNNER_SKIP_MUTEX
+            - name: BAIHUA_SKIP_MUTEX
               value: "true"
             # OpenVINO 远程服务 URL（K8s Service DNS）
             # 设为非 localhost 时，Family 跳过本地 Python 进程启动，直接调用远程 API

@@ -47,12 +47,12 @@ cmd /c mklink /J "C:\Users\lumin\.baihua" "D:\BaihuaData"
 
 | 变量 | 用途 | 默认值 |
 |------|------|--------|
-| `TASKRUNNER_VAULT_URL` | Vault 服务地址（Family 内部调用） | `http://127.0.0.1:8790` |
-| `TASKRUNNER_EMBEDDING_URL` | Embedding 服务地址 | 空（从 DB 配置读取） |
-| `TASKRUNNER_EMBEDDING_MODEL` | Embedding 模型名 | 空（从 DB 配置读取） |
-| `TASKRUNNER_LOCAL_MODEL_DIR` | 本地模型下载目录 | 空（使用 LocalAI 配置） |
-| `TASKRUNNER_OBSIDIAN_EXE_PATH` | Obsidian 可执行文件路径 | 自动检测 |
-| `TASKRUNNER_OBSIDIAN_EXE` | Obsidian 可执行文件路径（备用名） | 自动检测 |
+| `BAIHUA_VAULT_URL` | Vault 服务地址（Family 内部调用） | `http://127.0.0.1:8790` |
+| `BAIHUA_EMBEDDING_URL` | Embedding 服务地址 | 空（从 DB 配置读取） |
+| `BAIHUA_EMBEDDING_MODEL` | Embedding 模型名 | 空（从 DB 配置读取） |
+| `BAIHUA_LOCAL_MODEL_DIR` | 本地模型下载目录 | 空（使用 LocalAI 配置） |
+| `BAIHUA_OBSIDIAN_EXE_PATH` | Obsidian 可执行文件路径 | 自动检测 |
+| `BAIHUA_OBSIDIAN_EXE` | Obsidian 可执行文件路径（备用名） | 自动检测 |
 | `WEBUI_CONFIG_DIR` | WebUI 配置文件目录 | `BAIHUA_HOME/db` |
 | `USE_AVAHI` | Linux 下强制使用 Avahi mDNS | 空（自动检测） |
 | `DOTNET_RUNNING_IN_CONTAINER` | Docker 环境检测（自动设置） | 空 |
@@ -100,9 +100,9 @@ API Key 明文
 
 | 存储位置 | 数据内容 | 读写方 |
 |----------|----------|--------|
-| `family.db` | 家庭任务、成就、设备授权、Onboarding 状态等 | TaskRunner.Family |
-| `vault.db` | 知识库配置、同步状态、搜索索引 | TaskRunner.Vault |
-| `ai.db` | AI Provider 配置（加密 API Key）、Embedding 配置、模型列表 | TaskRunner.AI |
+| `family.db` | 家庭任务、成就、设备授权、Onboarding 状态等 | Baihua.Family |
+| `vault.db` | 知识库配置、同步状态、搜索索引 | Baihua.Vault |
+| `ai.db` | AI Provider 配置（加密 API Key）、Embedding 配置、模型列表 | Baihua.AI |
 | `.baihua-key` | AES-256 加密密钥 | AiConfigService |
 | `webui.settings.json` | WebUI 后端 URL 配置 | WebUI |
 | `user_preferences.json` | 用户偏好（字体、主题） | WebUI |
@@ -113,9 +113,9 @@ API Key 明文
 
 | 服务 | 端口 | 说明 |
 |------|------|------|
-| TaskRunner.Family | 8788 | 家庭/亲子/设备管理 API |
-| TaskRunner.AI | 8791 | AI 模型、聊天、配置 API |
-| TaskRunner.Vault | 8790 | 知识库、同步、搜索 API |
+| Baihua.Family | 8788 | 家庭/亲子/设备管理 API |
+| Baihua.AI | 8791 | AI 模型、聊天、配置 API |
+| Baihua.Vault | 8790 | 知识库、同步、搜索 API |
 | WebUI.Family | 5177 | Blazor Server 管理面板 |
 
 ## 备份与恢复

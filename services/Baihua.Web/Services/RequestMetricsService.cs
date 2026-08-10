@@ -9,7 +9,7 @@ namespace Baihua.Web.Services;
 /// </summary>
 public class RequestMetricsService : IDisposable
 {
-    public const string MeterName = "TaskRunner.WebUI";
+    public const string MeterName = "Baihua.Web";
 
     // 保留最近的 1000 条请求记录（内存限制，供 WebUI 本地查询）
     private readonly ConcurrentQueue<RequestMetric> _metrics = new();

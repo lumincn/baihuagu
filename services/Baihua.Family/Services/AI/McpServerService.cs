@@ -13,7 +13,7 @@ namespace Baihua.Family.Services;
 
 /// <summary>
 /// MCP (Model Context Protocol) Server 服务：暴露 JSON-RPC 工具接口
-/// 使 Claude/Cursor/VS Code 等客户端可通过标准 MCP 协议调用 TaskRunner 功能
+/// 使 Claude/Cursor/VS Code 等客户端可通过标准 MCP 协议调用 Baihua Family 功能
 /// </summary>
 public partial class McpServerService
 {

@@ -1,11 +1,11 @@
 namespace Baihua.Web.Services;
 
 /// <summary>
-/// 出站连接 Task Runner 时的基址处理。Windows 上 <c>localhost</c> 常优先解析为 <c>::1</c>，
+/// 出站连接 Baihua 后端时的基址处理。Windows 上 <c>localhost</c> 常优先解析为 <c>::1</c>，
 /// 而 Kestrel 绑定 <c>localhost</c> 时常见仅为 IPv4 监听，会导致连接失败与重试，延迟可达数秒。
 /// 因此把本机回环统一成显式 IPv4 <c>127.0.0.1</c>，避免走 <c>::1</c>。
 /// </summary>
-public static class TaskRunnerEndpointHelper
+public static class BaihuaEndpointHelper
 {
     public static string NormalizeOutboundBaseUrl(string? url, string fallback = "http://127.0.0.1:8788")
     {

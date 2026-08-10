@@ -27,7 +27,7 @@ var urls = builder.Configuration["urls"]
 builder.WebHost.UseUrls(urls);
 
 // 百花统一数据根目录 BAIHUA_HOME 由 Core.Shared.BaihuaPaths 管理
-// 已迁移至 BAIHUA_HOME，详见 services/TaskRunner.Contracts/BaihuaPaths.cs
+// 已迁移至 BAIHUA_HOME，详见 services/Baihua.Contracts/BaihuaPaths.cs
 
 // 添加控制器与 JSON 序列化
 builder.Services.AddLocalization();
@@ -43,7 +43,7 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
     {
-        Title = "TaskRunner Vault API",
+        Title = "Baihua Vault API",
         Version = "v1",
         Description = "Baihua Vault Service - Vault, Sync, Search"
     });
@@ -144,7 +144,7 @@ builder.Logging.AddDebug();
 
 var serilogConfig = new Serilog.LoggerConfiguration()
     .MinimumLevel.Is(Serilog.Events.LogEventLevel.Information)
-    .Enrich.WithProperty("Service", "TaskRunner.Vault")
+    .Enrich.WithProperty("Service", "Baihua.Vault")
     .Filter.ByExcluding(e => e.Properties.ContainsKey("SourceContext") &&
         ((Serilog.Events.LogEventPropertyValue)e.Properties["SourceContext"]).ToString()
             .StartsWith("\"Microsoft.AspNetCore") ||
@@ -159,7 +159,7 @@ builder.Logging.SetMinimumLevel(builder.Environment.IsDevelopment() ? LogLevel.D
 builder.Logging.AddFilter("Microsoft.AspNetCore", LogLevel.Warning);
 builder.Logging.AddFilter("System.Net.Http", LogLevel.Warning);
 builder.Logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
-builder.Logging.AddFilter("TaskRunner.Vault", LogLevel.Information);
+builder.Logging.AddFilter("Baihua.Vault", LogLevel.Information);
 
 // OpenTelemetry 导出到 OpenObserve
 var openobserveEnabled = builder.Configuration.GetValue<bool?>("OpenObserve:Enabled") ?? true;
@@ -169,7 +169,7 @@ var openobservePass = builder.Configuration["OpenObserve:Password"] ?? "";
 
 {
     var otelBuilder = builder.Services.AddOpenTelemetry()
-        .ConfigureResource(resource => resource.AddService("TaskRunner.Vault"));
+        .ConfigureResource(resource => resource.AddService("Baihua.Vault"));
 
     if (openobserveEnabled && !string.IsNullOrWhiteSpace(openobserveUrl))
     {
@@ -180,7 +180,7 @@ var openobservePass = builder.Configuration["OpenObserve:Password"] ?? "";
 
         otelBuilder.WithMetrics(metrics =>
         {
-            metrics.AddMeter("TaskRunner.AI")
+            metrics.AddMeter("Baihua.AI")
                    .AddView("search.latency_ms", new OpenTelemetry.Metrics.ExplicitBucketHistogramConfiguration
                    {
                        Boundaries = new double[] { 0, 10, 25, 50, 100, 250, 500, 1000, 2500 }
@@ -210,7 +210,7 @@ var openobservePass = builder.Configuration["OpenObserve:Password"] ?? "";
         .WithTracing(tracing =>
         {
             tracing
-                .AddSource("TaskRunner.Vault")
+                .AddSource("Baihua.Vault")
                 .SetSampler(isDevelopment
                     ? new AlwaysOnSampler()
                     : new ParentBasedSampler(new TraceIdRatioBasedSampler(0.1)))
@@ -246,7 +246,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "TaskRunner Vault API V1");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Baihua Vault API V1");
         c.RoutePrefix = "swagger";
     });
 }
@@ -341,7 +341,7 @@ catch (Exception ex)
 }
 
 logger.LogInformation("===========================================");
-logger.LogInformation("TaskRunner.Vault Service Starting...");
+logger.LogInformation("Baihua.Vault Service Starting...");
 logger.LogInformation("Environment: {Environment}", app.Environment.EnvironmentName);
 logger.LogInformation("Health: /health");
 logger.LogInformation("===========================================");
@@ -355,7 +355,7 @@ catch (Exception ex)
     try
     {
         var logger2 = app.Services.GetService<ILogger<Program>>();
-        logger2?.LogCritical(ex, "TaskRunner.Vault terminated unexpectedly");
+        logger2?.LogCritical(ex, "Baihua.Vault terminated unexpectedly");
     }
     catch { }
     throw;

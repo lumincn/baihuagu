@@ -1,0 +1,17 @@
+[Unit]
+Description=Baihua AI
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/baihua/Baihua.AI
+EnvironmentFile=/etc/systemd/system/ai.env
+Environment=BAIHUA_HOME=/opt/baihua/data
+ExecStart=/usr/bin/dotnet Baihua.AI.dll --urls http://0.0.0.0:8791
+Restart=always
+RestartSec=5
+StandardOutput=append:/opt/baihua/logs/baihua-ai.log
+StandardError=append:/opt/baihua/logs/baihua-ai.log
+
+[Install]
+WantedBy=multi-user.target
