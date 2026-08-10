@@ -32,16 +32,20 @@ K3S_CONTAINERD_SOCK="/run/k3s/containerd/containerd.sock"
 n() { nerdctl -a "$K3S_CONTAINERD_SOCK" "$@"; }
 
 # kubectl 封装：优先 k3s 自带 kubectl（k3s kubectl），再 PATH 里的 kubectl
-if command -v k3s >/dev/null 2>&1; then
-    if [ -z "${KUBECONFIG:-}" ] && [ -f /etc/rancher/k3s/k3s.yaml ]; then
-        export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+# 惰性解析——help 等不实际用 kubectl 的命令在 k3s 缺失时也能跑
+k() {
+    if command -v k3s >/dev/null 2>&1; then
+        if [ -z "${KUBECONFIG:-}" ] && [ -f /etc/rancher/k3s/k3s.yaml ]; then
+            export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+        fi
+        k3s kubectl "$@"
+    elif command -v kubectl >/dev/null 2>&1; then
+        kubectl "$@"
+    else
+        echo "[k8s] 未找到 k3s / kubectl（k3s 安装见 k8s/README.md 前提条件）" >&2
+        return 1
     fi
-    k() { k3s kubectl "$@"; }
-elif command -v kubectl >/dev/null 2>&1; then
-    k() { kubectl "$@"; }
-else
-    echo "[k8s] 未找到 k3s / kubectl"; exit 1
-fi
+}
 
 help_text() {
     sed -n 's/^#   //p' "$0" | sed -n '2,14p'
@@ -60,8 +64,27 @@ install_tool() {
     echo "[deps] $name 缺失，自动下载安装（$url）..."
     local tmp
     tmp="$(mktemp -d)"
-    if ! curl -fsSL -o "$tmp/tool.tar.gz" "$url"; then
-        echo "[deps] 下载失败，请手动安装 $name 后重试（见 k8s/README.md）"
+    # GitHub 直连失败时自动换镜像加速（国内网络友好）
+    local ok=0
+    if curl -fsSL -o "$tmp/tool.tar.gz" "$url"; then
+        ok=1
+    else
+        for mirror in "https://mirror.ghproxy.com/" "https://ghfast.top/" "https://ghproxy.net/"; do
+            echo "[deps] GitHub 直连失败，尝试镜像: $mirror"
+            if curl -fsSL -o "$tmp/tool.tar.gz" "$mirror$url"; then
+                ok=1
+                break
+            fi
+        done
+    fi
+    if [ "$ok" != "1" ]; then
+        echo "[deps] 下载失败（直连+镜像均不可达），请手动安装 $name 后重试（见 k8s/README.md）"
+        rm -rf "$tmp"
+        exit 1
+    fi
+    # 完整性校验（tarball 可能被截断）
+    if ! tar -tzf "$tmp/tool.tar.gz" >/dev/null 2>&1; then
+        echo "[deps] 下载的 tarball 损坏（网络截断），请手动安装 $name 后重试"
         rm -rf "$tmp"
         exit 1
     fi
