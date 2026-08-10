@@ -76,7 +76,11 @@ public static class MauiProgram
         builder.Services.AddSingleton(sp =>
         {
             var client = sp.GetRequiredService<HttpClient>();
-            var pushService = new PushWebSocketService(client);
+            var pushService = new PushWebSocketService(client)
+            {
+                // 定向推送：服务端按 deviceId 推送授权/撤销事件，避免多设备互相收到广播
+                DeviceId = DeviceInfoHelper.GetDeviceId()
+            };
             return pushService;
         });
         builder.Services.AddTransient<AuthorizationWatcher>(sp =>

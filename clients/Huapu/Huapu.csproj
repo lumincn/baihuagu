@@ -16,7 +16,7 @@
     <AndroidEnableCompressionInNativeLibraries>false</AndroidEnableCompressionInNativeLibraries>
     <AndroidEnableFastDeployment>false</AndroidEnableFastDeployment>
     <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
-    <ApplicationTitle>百花</ApplicationTitle>
+    <ApplicationTitle>花圃</ApplicationTitle>
     <ApplicationId>com.lumin.baihua</ApplicationId>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>

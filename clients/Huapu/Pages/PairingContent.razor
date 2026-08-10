@@ -6,10 +6,12 @@
 @inject MobileApp.Maui.Services.IQrScanner QrScanner
 @inject BaihuaSdk.Push.PushWebSocketService PushService
 
+@implements IDisposable
+
 <div class="pair-methods">
     <div class="method-card">
         <h3>扫码连接</h3>
-        <p>扫描百花管理后台的二维码</p>
+        <p>扫描花圃管理后台的二维码</p>
         <button class="btn primary" @onclick="ScanQrCode" disabled="@_isLoading">
             @(_isLoading ? "打开相机..." : "扫描二维码")
         </button>
@@ -26,7 +28,7 @@
 
     <div class="method-card">
         <h3>手动输入</h3>
-        <p>直接输入百花服务器地址</p>
+        <p>直接输入花圃服务器地址</p>
         <input @bind="_manualUrl" placeholder="例如: http://192.168.1.100" />
         <button class="btn primary" @onclick="ManualRegister" disabled="@_isLoading">
             @(_isLoading ? "注册中..." : "注册设备")
@@ -50,6 +52,13 @@
         {
             <p>设备已授权! SharedSecret 已保存。</p>
         }
+        @if (!_result.Authorized && !string.IsNullOrEmpty(_pendingUrl))
+        {
+            <p>已注册，等待 WebUI 批准；批准后 WebSocket 推送将自动完成授权。</p>
+            <span class="ws-badge @(_pushConnected ? "ws-on" : "ws-off")">
+                @(_pushConnected ? "WebSocket 已连接，实时等待授权" : "WebSocket 未连接")
+            </span>
+        }
         @if (!string.IsNullOrEmpty(_result.DeviceName))
         {
             <p>服务器: @_result.DeviceName</p>
@@ -64,6 +73,62 @@
     private string? _manualError;
     private bool _isLoading;
     private MobileContract.Pairing.RegisterDeviceResult? _result;
+    private EventHandler? _pushAuthorizedHandler;
+    private string? _pendingUrl;
+    private bool _pushConnected;
+
+    /// <summary>订阅 WebSocket 授权推送：WebUI 批准后自动重新注册拿到 SharedSecret，无需手动再点注册。</summary>
+    private void SubscribeToAuthorized(string httpUrl)
+    {
+        UnsubscribeFromAuthorized();
+        _pendingUrl = httpUrl;
+        _pushAuthorizedHandler = async (s, e) =>
+        {
+            try
+            {
+                var url = _pendingUrl;
+                if (string.IsNullOrEmpty(url)) return;
+
+                // 收到授权推送 → 重新注册（已授权设备会直接返回 SharedSecret）
+                var result = await DeviceRegistration.RegisterDeviceAsync(url);
+                if (result is { Success: true, Authorized: true, SharedSecret: not null })
+                {
+                    Signer.SetServerSecret(url, result.SharedSecret);
+                    await SecureStore.SetAsync($"secret_{url}", result.SharedSecret);
+                    _result = result;
+                    await InvokeAsync(StateHasChanged);
+                    UnsubscribeFromAuthorized();
+                }
+            }
+            catch (Exception ex)
+            {
+                _manualError = $"授权后自动获取密钥失败: {ex.Message}";
+                await InvokeAsync(StateHasChanged);
+            }
+        };
+        PushService.Authorized += _pushAuthorizedHandler;
+    }
+
+    private void UnsubscribeFromAuthorized()
+    {
+        if (_pushAuthorizedHandler != null)
+        {
+            PushService.Authorized -= _pushAuthorizedHandler;
+            _pushAuthorizedHandler = null;
+        }
+    }
+
+    private void OnPushConnectionStateChanged(bool connected)
+    {
+        _pushConnected = connected;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        UnsubscribeFromAuthorized();
+        PushService.ConnectionStateChanged -= OnPushConnectionStateChanged;
+    }
 
     private async Task ScanQrCode()
     {
@@ -157,6 +222,18 @@
             HttpUrl = httpUrl, IsOnline = true, LastUsedAt = DateTimeOffset.UtcNow
         });
 
+        // WebSocket 实时等待授权：WebUI 批准后推送到达，自动完成授权拿 SharedSecret
+        PushService.ConnectionStateChanged -= OnPushConnectionStateChanged;
+        PushService.ConnectionStateChanged += OnPushConnectionStateChanged;
         await PushService.ConnectAsync(httpUrl, DeviceInfoHelper.GetDeviceName());
+        if (!_result.Authorized)
+        {
+            SubscribeToAuthorized(httpUrl);
+        }
+        else
+        {
+            UnsubscribeFromAuthorized();
+            _pendingUrl = null;
+        }
     }
 }

@@ -29,6 +29,9 @@ public class PushWebSocketService : IDisposable
     private string _deviceName = "";
     private string? _pendingPollUrl;
 
+    /// <summary>设备 id（ANDROID_ID 等），用于服务端定向推送授权/撤销事件；不设置时服务端降级为全量广播。</summary>
+    public string? DeviceId { get; set; }
+
     /// <summary>收到同步推送时触发（vaultId, vaultName, action）</summary>
     public Func<string, string, string, CancellationToken, Task>? OnSyncRequest
     {
@@ -66,6 +69,8 @@ public class PushWebSocketService : IDisposable
         var wsUrl = _serverBaseUrl.Replace("https://", "wss://")
             .Replace("http://", "ws://")
             + $"/ws/devices?deviceName={Uri.EscapeDataString(deviceName)}";
+        if (!string.IsNullOrEmpty(DeviceId))
+            wsUrl += $"&deviceId={Uri.EscapeDataString(DeviceId)}";
 
         Log($"PushWebSocket connecting to {wsUrl}");
         _pendingPollUrl = null;
@@ -217,6 +222,8 @@ public class PushWebSocketService : IDisposable
                 var wsUrl = _serverBaseUrl.Replace("https://", "wss://")
                     .Replace("http://", "ws://")
                     + $"/ws/devices?deviceName={Uri.EscapeDataString(_deviceName)}";
+                if (!string.IsNullOrEmpty(DeviceId))
+                    wsUrl += $"&deviceId={Uri.EscapeDataString(DeviceId)}";
                 await ConnectLoopAsync(wsUrl, ct);
             }
         }
