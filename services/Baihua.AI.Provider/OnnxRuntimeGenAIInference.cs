@@ -42,32 +42,33 @@ public class OnnxRuntimeGenAIInference : ILocalModelInference, IDisposable
         var cached = _modelCache.GetOrAdd(modelPath, path =>
         {
             _logger.LogInformation("正在加载 ONNX 模型: {Path}", path);
-            // 执行器选择（按优先级尝试，全部失败回退 CPU）：
-            //   LOCAL_AI_OPENVINO=1  → OpenVINO EP（Linux/WSL2 GPU 正路，走 OpenCL→/dev/dxg）
-            //   LOCAL_AI_DML=1       → DirectML EP（Windows 原生 GPU；Phi-3 int4 算子不兼容会崩，需验证）
-            //   默认                  → CPU
-            Model model;
-            var openvino = Environment.GetEnvironmentVariable("LOCAL_AI_OPENVINO") == "1";
+            // 执行器选择（自动检测，全部失败回退 CPU）：
+            //   1. OpenVINO EP —— 自动尝试（Linux/WSL2 GPU 正路：OpenCL→/dev/dxg；有 GPU 自动用，无则 CPU）
+            //   2. DirectML EP —— LOCAL_AI_DML=1 强制（Windows 原生 GPU）
+            //   3. CPU（默认回退）
+            //   LOCAL_AI_OPENVINO=0 可显式禁用 OpenVINO EP
+            Model model = null;
+            var openvinoDisabled = Environment.GetEnvironmentVariable("LOCAL_AI_OPENVINO") == "0";
             var dml = Environment.GetEnvironmentVariable("LOCAL_AI_DML") == "1";
 
-            if (openvino)
+            if (!openvinoDisabled)
             {
                 try
                 {
                     var config = new Config(path);
                     config.ClearProviders();
-                    // 优先 GPU，失败回退 CPU（OpenVINO EP 的设备名）
+                    // OpenVINO EP 自动选择设备：有 GPU 用 GPU，无则 CPU
                     config.AppendProvider("OpenVINO");
                     model = new Model(config);
-                    _logger.LogInformation("ONNX using OpenVINO EP (GPU if available)");
+                    _logger.LogInformation("ONNX using OpenVINO EP (auto device)");
                 }
                 catch (Exception ovEx)
                 {
-                    _logger.LogWarning(ovEx, "OpenVINO EP init failed, fallback to CPU");
-                    model = new Model(path);
+                    _logger.LogDebug(ovEx, "OpenVINO EP not available, try next");
                 }
             }
-            else if (dml)
+
+            if (model == null && dml)
             {
                 try
                 {
@@ -79,11 +80,11 @@ public class OnnxRuntimeGenAIInference : ILocalModelInference, IDisposable
                 }
                 catch (Exception dmlEx)
                 {
-                    _logger.LogWarning(dmlEx, "DirectML init failed, fallback to default");
-                    model = new Model(path);
+                    _logger.LogWarning(dmlEx, "DirectML init failed, fallback to CPU");
                 }
             }
-            else
+
+            if (model == null)
             {
                 model = new Model(path);
                 _logger.LogInformation("ONNX using CPU executor");
