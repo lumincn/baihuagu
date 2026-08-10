@@ -1,6 +1,0 @@
-feat(ai): ONNX 推理加 OpenVINO EP 支持（LOCAL_AI_OPENVINO=1）
-
-WSL2/容器里 ONNX 的 GPU 正路（实测 onnxruntime-openvino GPU 推理 3.3ms）：
-- 新增 LOCAL_AI_OPENVINO=1 开关，AppendProvider OpenVINO（复用已打通的 OpenCL 通路）
-- 优先级：OpenVINO > DirectML(Windows) > CPU，失败自动回退
-- 验证：GenAI 0.13.1 Linux 版已编译 OpenVINO EP（运行时动态加载 libopenvino）
