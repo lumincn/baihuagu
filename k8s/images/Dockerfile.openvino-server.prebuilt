@@ -42,7 +42,7 @@ COPY services/Baihua.AI.Provider/LocalVision/openvino_llm_server.py /app/
 COPY services/Baihua.AI.Provider/LocalVision/vision_server.py /app/
 
 # 拷贝启动脚本
-COPY docker/openvino-server-entrypoint.sh /app/entrypoint.sh
+COPY k8s/images/openvino-server-entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
 EXPOSE 8000 8801

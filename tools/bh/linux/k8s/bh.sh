@@ -19,8 +19,7 @@ set -u
 
 ROOT="$(cd "$(dirname "$0")/../../../.." && pwd)"  # tools/bh/linux/k8s → 仓库根
 K8S_DIR="$ROOT/k8s"
-IMAGE_DIR="$ROOT/k8s/images"
-DOCKER_DIR="$ROOT/docker"   # 构建上下文：publish 产物在 docker/publish/
+IMAGE_DIR="$ROOT/k8s/images"   # prebuilt 配方 + publish 产物 + entrypoint 全在这里
 NAMESPACE="baihua"
 
 IMAGES="bh-vault:latest bh-ai:latest bh-webui:latest bh-family:latest bh-openvino:latest"
@@ -62,18 +61,18 @@ build_all() {
     fi
     # base-runtime：prebuilt 镜像的基础（vault/ai/webui/family 的 FROM）
     if ! n images | grep -q 'bh/base-runtime:latest'; then
-        n build -o type=image -f "$IMAGE_DIR/Dockerfile.base-runtime" -t bh/base-runtime:latest "$ROOT" >/dev/null || exit 1
+        n build -o type=image -f "$IMAGE_DIR/Dockerfile.base-runtime" -t bh/base-runtime:latest "$IMAGE_DIR" >/dev/null || exit 1
         echo "[build] bh/base-runtime"
     fi
-    n build -o type=image -f "$IMAGE_DIR/Dockerfile.vault.prebuilt"          -t bh-vault:latest    "$DOCKER_DIR" >/dev/null || exit 1
+    n build -o type=image -f "$IMAGE_DIR/Dockerfile.vault.prebuilt"          -t bh-vault:latest    "$IMAGE_DIR" >/dev/null || exit 1
     echo "[build] bh-vault"
-    n build -o type=image -f "$IMAGE_DIR/Dockerfile.ai.prebuilt"             -t bh-ai:latest       "$DOCKER_DIR" >/dev/null || exit 1
+    n build -o type=image -f "$IMAGE_DIR/Dockerfile.ai.prebuilt"             -t bh-ai:latest       "$IMAGE_DIR" >/dev/null || exit 1
     echo "[build] bh-ai"
-    n build -o type=image -f "$IMAGE_DIR/Dockerfile.webui.prebuilt"          -t bh-webui:latest    "$DOCKER_DIR" >/dev/null || exit 1
+    n build -o type=image -f "$IMAGE_DIR/Dockerfile.webui.prebuilt"          -t bh-webui:latest    "$IMAGE_DIR" >/dev/null || exit 1
     echo "[build] bh-webui"
-    n build -o type=image -f "$IMAGE_DIR/Dockerfile.family.prebuilt"         -t bh-family:latest   "$DOCKER_DIR" >/dev/null || exit 1
+    n build -o type=image -f "$IMAGE_DIR/Dockerfile.family.prebuilt"         -t bh-family:latest   "$IMAGE_DIR" >/dev/null || exit 1
     echo "[build] bh-family"
-    n build -o type=image -f "$IMAGE_DIR/Dockerfile.openvino-server.prebuilt" -t bh-openvino:latest "$ROOT" >/dev/null || exit 1
+    n build -o type=image -f "$IMAGE_DIR/Dockerfile.openvino-server.prebuilt" -t bh-openvino:latest "$ROOT" >/dev/null || exit 1  # COPY services/... 需仓库根上下文
     echo "[build] bh-openvino"
     echo "[build] 5 images done (已直接进入 k3s containerd，无需 load)"
 }

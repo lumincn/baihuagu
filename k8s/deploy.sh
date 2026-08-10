@@ -14,7 +14,6 @@ set -euo pipefail
 # ============================================================
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-DOCKER_DIR="$PROJECT_ROOT/docker"
 K8S_DIR="$SCRIPT_DIR"
 NAMESPACE="baihua"
 REGISTRY="${REGISTRY:-}"  # 如有远程镜像仓库，设置 REGISTRY=registry.example.com/
@@ -55,7 +54,7 @@ build_base() {
 # 2. 发布 .NET 项目（prebuilt 模式）
 # ============================================================
 publish_dotnet() {
-    log "发布 .NET 项目到 publish/ 目录 ..."
+    log "发布 .NET 项目到 k8s/images/publish/ 目录 ..."
 
     # NuGet 中文镜像源
     export NUGET_PACKAGES="$PROJECT_ROOT/.nuget/packages"
@@ -64,28 +63,28 @@ publish_dotnet() {
     # Family
     log "  发布 Baihua.Family ..."
     dotnet publish "$PROJECT_ROOT/services/Baihua.Family" \
-        -c Release -o "$DOCKER_DIR/publish/family" \
+        -c Release -o "$K8S_DIR/images/publish/family" \
         --source "$NUGET_SOURCE" \
         /p:UseAppHost=false 2>&1 | tail -5
 
     # Vault
     log "  发布 Baihua.Vault ..."
     dotnet publish "$PROJECT_ROOT/services/Baihua.Vault" \
-        -c Release -o "$DOCKER_DIR/publish/vault" \
+        -c Release -o "$K8S_DIR/images/publish/vault" \
         --source "$NUGET_SOURCE" \
         /p:UseAppHost=false 2>&1 | tail -5
 
     # AI
     log "  发布 Baihua.AI ..."
     dotnet publish "$PROJECT_ROOT/services/Baihua.AI" \
-        -c Release -o "$DOCKER_DIR/publish/ai" \
+        -c Release -o "$K8S_DIR/images/publish/ai" \
         --source "$NUGET_SOURCE" \
         /p:UseAppHost=false 2>&1 | tail -5
 
     # WebUI
     log "  发布 Baihua.Web ..."
     dotnet publish "$PROJECT_ROOT/services/Baihua.Web" \
-        -c Release -o "$DOCKER_DIR/publish/webui" \
+        -c Release -o "$K8S_DIR/images/publish/webui" \
         --source "$NUGET_SOURCE" \
         /p:UseAppHost=false 2>&1 | tail -5
 
@@ -101,9 +100,9 @@ build_images() {
 
     log "构建服务镜像 ..."
 
-    # prebuilt 镜像在 k8s/images/，Dockerfile 内 COPY publish/<svc> 相对 docker/ 目录
-    # （publish 产物在 docker/publish/），所以 context 用 DOCKER_DIR
-    local prebuilt_ctx="$DOCKER_DIR"
+    # prebuilt 镜像在 k8s/images/，Dockerfile 内 COPY publish/<svc> 相对 k8s/images/ 目录
+    # （publish 产物在 k8s/images/publish/），所以 context 用 K8S_DIR/images
+    local prebuilt_ctx="$K8S_DIR/images"
 
     # Vault
     log "  构建 bh-vault:latest ..."
@@ -122,7 +121,7 @@ build_images() {
     docker build -f "$K8S_DIR/images/Dockerfile.family.prebuilt" -t bh-family:latest "$prebuilt_ctx"
 
     # OpenVINO 推理服务器（独立容器，含 GPU 支持）
-    # 注意：该 Dockerfile 拷的是 services/... 和 docker/... 下的源文件，context 必须用项目根
+    # 注意：该 Dockerfile 拷的是 services/...（仓库根）和 k8s/images/ 下的源文件，context 必须用项目根
     log "  构建 bh-openvino:latest（OpenVINO + Intel GPU 推理服务）..."
     docker build -f "$K8S_DIR/images/Dockerfile.openvino-server.prebuilt" -t bh-openvino:latest "$PROJECT_ROOT"
 
