@@ -54,9 +54,13 @@ namespace Baihua.Web.Services
 
         // 直接调用 TaskRunner.AI（纯 AI，无 RAG/记忆/Function Calling）
         Task<ChatResponse> ChatDirectAsync(string message, string? providerId = null, string? model = null, CancellationToken cancellationToken = default);
-        IAsyncEnumerable<string> StreamChatDirectAsync(string message, string? providerId = null, string? model = null, List<(bool IsUser, string Content)>? history = null, CancellationToken cancellationToken = default);
-        IAsyncEnumerable<string> StreamLocalChatAsync(string message, string modelPath, string modelType, List<(bool IsUser, string Content)>? history = null, CancellationToken cancellationToken = default);
+        IAsyncEnumerable<string> StreamChatDirectAsync(string message, string? providerId = null, string? model = null, List<(bool IsUser, string Content)>? history = null, CancellationToken cancellationToken = default);        IAsyncEnumerable<string> StreamLocalChatAsync(string message, string modelPath, string modelType, List<(bool IsUser, string Content)>? history = null, CancellationToken cancellationToken = default);
         IAsyncEnumerable<string> StreamChatWithVaultAsync(string message, string model, List<(bool IsUser, string Content)>? history = null, CancellationToken cancellationToken = default);
+
+        // 编程 Agent（Microsoft Agent Framework）
+        Task<CodeAgentResponse> RunCodeAgentAsync(CodeAgentRequest request, CancellationToken cancellationToken = default);
+        IAsyncEnumerable<string> StreamCodeAgentAsync(CodeAgentRequest request, CancellationToken cancellationToken = default);
+        Task<List<CodeAgentProviderInfo>> GetCodeAgentProvidersAsync(CancellationToken cancellationToken = default);
         Task<List<LocalModelInfo>> ScanLocalModelsAsync(string? directory = null);
 
         // 本地视觉识别（Qwen2.5-VL + OpenVINO）
@@ -1057,6 +1061,88 @@ namespace Baihua.Web.Services
                     currentEvent = null;
                 }
             }
+        }
+
+        public async Task<CodeAgentResponse> RunCodeAgentAsync(CodeAgentRequest request, CancellationToken cancellationToken = default)
+        {
+            var json = JsonSerializer.Serialize(request);
+            var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _aiHttpClient.PostAsync("/api/ai/code/agent", httpContent, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<CodeAgentResponse>(cancellationToken: cancellationToken)
+                   ?? new CodeAgentResponse { Success = false };
+        }
+
+        public async IAsyncEnumerable<string> StreamCodeAgentAsync(
+            CodeAgentRequest request,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            var json = JsonSerializer.Serialize(request);
+            var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+
+            using var response = await _aiHttpClient.SendAsync(
+                new HttpRequestMessage(HttpMethod.Post, "/api/ai/code/agent/stream") { Content = httpContent },
+                HttpCompletionOption.ResponseHeadersRead,
+                cancellationToken);
+
+            response.EnsureSuccessStatusCode();
+
+            var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            using var reader = new StreamReader(stream, Encoding.UTF8);
+
+            string? currentEvent = null;
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var line = await reader.ReadLineAsync(cancellationToken);
+                if (line == null) break;
+
+                if (line.StartsWith("event: "))
+                {
+                    currentEvent = line.Substring(7).Trim();
+                }
+                else if (line.StartsWith("data: "))
+                {
+                    var data = line.Substring(6);
+                    if (currentEvent == "delta")
+                    {
+                        var text = TryExtractContent(data);
+                        if (!string.IsNullOrEmpty(text))
+                        {
+                            yield return text;
+                        }
+                    }
+                    else if (currentEvent == "done")
+                    {
+                        yield break;
+                    }
+                    else if (currentEvent == "error")
+                    {
+                        throw new InvalidOperationException(_loc["Api_StreamError", data!]);
+                    }
+                }
+                else if (string.IsNullOrEmpty(line))
+                {
+                    currentEvent = null;
+                }
+            }
+        }
+
+        public async Task<List<CodeAgentProviderInfo>> GetCodeAgentProvidersAsync(CancellationToken cancellationToken = default)
+        {
+            var providers = await GetAiProvidersAsync();
+            var result = new List<CodeAgentProviderInfo>();
+            foreach (var p in providers)
+            {
+                result.Add(new CodeAgentProviderInfo
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    IsMain = p.IsMain,
+                    Models = p.Models,
+                    Model = p.Models?.FirstOrDefault(m => m.IsMain)?.Name ?? p.Models?.FirstOrDefault()?.Name ?? ""
+                });
+            }
+            return result;
         }
 
         private static ChatStreamEvent? ParseToolCallEvent(string data)

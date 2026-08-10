@@ -4128,4 +4128,61 @@ Shift+Enter new line, Enter to send</value>
   <data name="Messages_OnnxEngineInfo" xml:space="preserve">
     <value>Engine: ONNX Runtime GenAI (Microsoft, GPU accel) · loads ONNX model dirs</value>
   </data>
+  <data name="CodeAgent_PageTitle" xml:space="preserve">
+    <value>Code Agent</value>
+  </data>
+  <data name="CodeAgent_Title" xml:space="preserve">
+    <value>Code Agent (Microsoft Agent Framework)</value>
+  </data>
+  <data name="CodeAgent_Subtitle" xml:space="preserve">
+    <value>Generate and review code with local coding models, orchestrated by Microsoft Agent Framework (MAF).</value>
+  </data>
+  <data name="CodeAgent_InputTitle" xml:space="preserve">
+    <value>Describe your requirement</value>
+  </data>
+  <data name="CodeAgent_Language" xml:space="preserve">
+    <value>Language / Stack</value>
+  </data>
+  <data name="CodeAgent_LanguageAuto" xml:space="preserve">
+    <value>Auto detect</value>
+  </data>
+  <data name="CodeAgent_Provider" xml:space="preserve">
+    <value>AI Provider</value>
+  </data>
+  <data name="CodeAgent_Model" xml:space="preserve">
+    <value>Model</value>
+  </data>
+  <data name="CodeAgent_ModelAuto" xml:space="preserve">
+    <value>Provider default</value>
+  </data>
+  <data name="CodeAgent_Prompt" xml:space="preserve">
+    <value>Requirement</value>
+  </data>
+  <data name="CodeAgent_PromptPlaceholder" xml:space="preserve">
+    <value>e.g. Write a C# console bookkeeping app with income/expense records, category stats, balance query, JSON file storage…</value>
+  </data>
+  <data name="CodeAgent_Generate" xml:space="preserve">
+    <value>Generate</value>
+  </data>
+  <data name="CodeAgent_Running" xml:space="preserve">
+    <value>Generating…</value>
+  </data>
+  <data name="CodeAgent_Stop" xml:space="preserve">
+    <value>Stop</value>
+  </data>
+  <data name="CodeAgent_Copy" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="CodeAgent_Download" xml:space="preserve">
+    <value>Download</value>
+  </data>
+  <data name="CodeAgent_OutputTitle" xml:space="preserve">
+    <value>Output</value>
+  </data>
+  <data name="CodeAgent_Streaming" xml:space="preserve">
+    <value>Streaming</value>
+  </data>
+  <data name="CodeAgent_File" xml:space="preserve">
+    <value>File</value>
+  </data>
 </root>

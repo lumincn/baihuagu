@@ -76,6 +76,9 @@ builder.Services.AddSingleton<Baihua.Family.Services.HardwareInfoService>();
 builder.Services.AddSingleton<Baihua.Family.Services.CapabilityService>();
 builder.Services.AddAiClientServices();
 
+// 编程 Agent（Microsoft Agent Framework）
+builder.Services.AddSingleton<Baihua.AI.Services.CodeAgentService>();
+
 // 本地模型推理后端（GGUF / ONNX），实现位于 Baihua.AI.Provider
 builder.Services.AddSingleton<Baihua.AI.Provider.ILocalModelInference, Baihua.AI.Provider.LlamaSharpInference>();
 builder.Services.AddSingleton<Baihua.AI.Provider.ILocalModelInference, Baihua.AI.Provider.OnnxRuntimeGenAIInference>();

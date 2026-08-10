@@ -240,3 +240,7 @@ out/
 tests/Baihua.Web.E2e/test-results/
 
 k8s-test-data/
+
+# nuget-local 离线包源：只跟踪 AnkiGen 自制包，其余由 scripts/sync-nuget-local.ps1 生成
+nuget-local/*.nupkg
+!nuget-local/AnkiGen.Core.1.0.0.nupkg

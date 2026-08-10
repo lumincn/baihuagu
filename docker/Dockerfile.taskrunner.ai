@@ -14,9 +14,10 @@ COPY services/Baihua.Contracts/Baihua.Contracts.csproj services/Baihua.Contracts
 COPY services/Baihua.Data/Baihua.Data.csproj services/Baihua.Data/
 COPY services/Baihua.Core/Baihua.Core.csproj services/Baihua.Core/
 COPY services/Baihua.AI/Baihua.AI.csproj services/Baihua.AI/
+COPY services/Baihua.AI.Provider/Baihua.AI.Provider.csproj services/Baihua.AI.Provider/
 COPY NuGet.config .
 COPY nuget-local/ nuget-local/
-RUN dotnet restore services/Baihua.AI/Baihua.AI.csproj
+RUN dotnet restore services/Baihua.AI/Baihua.AI.csproj -r linux-x64
 
 # 复制全部源码并发布
 COPY services/ services/

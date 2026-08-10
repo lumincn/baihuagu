@@ -1,0 +1,250 @@
+@page "/code-agent"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.Web
+@using Baihua.Web.Services
+@using Microsoft.JSInterop
+@inject IApiService ApiService
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
+@implements IDisposable
+
+<PageTitle>@L["CodeAgent_PageTitle"]</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="bi bi-code-square"></i> @L["CodeAgent_Title"]</h2>
+            <p class="text-muted">@L["CodeAgent_Subtitle"]</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <i class="bi bi-robot"></i> @L["CodeAgent_InputTitle"]
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">@L["CodeAgent_Language"]</label>
+                            <select class="form-select" @bind="_language">
+                                <option value="">@L["CodeAgent_LanguageAuto"]</option>
+                                <option value="C# console (.NET)">C# Console (.NET)</option>
+                                <option value="Python">Python</option>
+                                <option value="C# ASP.NET Core Web API">C# ASP.NET Core Web API</option>
+                                <option value="Blazor (C#)">Blazor (C#)</option>
+                                <option value="SQL">SQL</option>
+                                <option value="Shell / PowerShell">Shell / PowerShell</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">@L["CodeAgent_Provider"]</label>
+                            <select class="form-select" @bind="_providerId">
+                                @foreach (var p in _providers)
+                                {
+                                    <option value="@p.Id">@p.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">@L["CodeAgent_Model"]</label>
+                            <select class="form-select" @bind="_model">
+                                <option value="">@L["CodeAgent_ModelAuto"]</option>
+                                @foreach (var p in _providers.Where(p => p.Id == _providerId))
+                                {
+                                    @foreach (var m in p.Models)
+                                    {
+                                        <option value="@m.Name">@m.Name</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <label class="form-label">@L["CodeAgent_Prompt"]</label>
+                        <textarea class="form-control" rows="4" @bind="_prompt"
+                                  placeholder="@L["CodeAgent_PromptPlaceholder"]"></textarea>
+                    </div>
+
+                    <div class="mt-3 d-flex align-items-center gap-2">
+                        <button class="btn btn-primary" @onclick="GenerateAsync" disabled="@(isRunning || string.IsNullOrWhiteSpace(_prompt))">
+                            @(isRunning ? L["CodeAgent_Running"] : L["CodeAgent_Generate"])
+                        </button>
+                        @if (isRunning)
+                        {
+                            <button class="btn btn-outline-danger" @onclick="StopAsync">@L["CodeAgent_Stop"]</button>
+                        }
+                        @if (!string.IsNullOrEmpty(_output))
+                        {
+                            <button class="btn btn-outline-secondary" @onclick="CopyOutputAsync">@L["CodeAgent_Copy"]</button>
+                            <button class="btn btn-outline-secondary" @onclick="DownloadOutputAsync">@L["CodeAgent_Download"]</button>
+                        }
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(_error))
+                    {
+                        <div class="alert alert-danger mt-3 mb-0">@_error</div>
+                    }
+                    @if (!string.IsNullOrEmpty(_fileName))
+                    {
+                        <div class="alert alert-info mt-3 mb-0">
+                            <i class="bi bi-file-earmark-code"></i> @L["CodeAgent_File"]: <code>@_fileName</code>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(_output) || isRunning)
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-terminal"></i> @L["CodeAgent_OutputTitle"]</span>
+                        @if (isRunning)
+                        {
+                            <span class="badge bg-info"><span class="spinner-border spinner-border-sm me-1" style="width:0.7rem;height:0.7rem;"></span>@L["CodeAgent_Streaming"]</span>
+                        }
+                    </div>
+                    <div class="card-body p-0">
+                        <pre class="code-output mb-0" id="code-output"><code>@_output</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .code-output {
+        max-height: 60vh;
+        overflow: auto;
+        background: #1e1e2e;
+        color: #e6e6e6;
+        padding: 1rem;
+        font-size: 0.85rem;
+        line-height: 1.5;
+        border-radius: 0 0 0.375rem 0.375rem;
+        white-space: pre-wrap;
+        word-break: break-all;
+    }
+</style>
+
+@code {
+    private string _prompt = "";
+    private string _language = "";
+    private string _providerId = "";
+    private string _model = "";
+    private string _output = "";
+    private string? _error;
+    private string? _fileName;
+    private bool isRunning;
+    private CancellationTokenSource? _cts;
+    private List<CodeAgentProviderInfo> _providers = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var providers = await ApiService.GetCodeAgentProvidersAsync();
+            _providers = providers.ToList();
+            // 默认选本地编程模型（ID 含 coder），否则主提供方
+            var coder = _providers.FirstOrDefault(p => p.Id?.Contains("coder", StringComparison.OrdinalIgnoreCase) == true);
+            var selected = coder ?? _providers.FirstOrDefault(p => p.IsMain) ?? _providers.FirstOrDefault();
+            if (selected != null)
+            {
+                _providerId = selected.Id;
+                _model = selected.Model;
+            }
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+    }
+
+    private async Task GenerateAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_prompt) || isRunning) return;
+        _error = null;
+        _fileName = null;
+        _output = "";
+        isRunning = true;
+        _cts = new CancellationTokenSource();
+        StateHasChanged();
+
+        try
+        {
+            var request = new CodeAgentRequest
+            {
+                Prompt = _prompt,
+                Language = string.IsNullOrWhiteSpace(_language) ? null : _language,
+                ProviderId = string.IsNullOrWhiteSpace(_providerId) ? null : _providerId,
+                Model = string.IsNullOrWhiteSpace(_model) ? null : _model,
+                Stream = true
+            };
+
+            await foreach (var delta in ApiService.StreamCodeAgentAsync(request, _cts.Token))
+            {
+                _output += delta;
+                StateHasChanged();
+                await Task.Yield();
+            }
+
+            // 从输出中识别文件名（File: xxx）
+            var fileMatch = System.Text.RegularExpressions.Regex.Match(_output,
+                @"(?i)(?:File|文件名)\s*[:：]\s*([^\r\n`]+)");
+            if (fileMatch.Success)
+            {
+                var candidate = fileMatch.Groups[1].Value.Trim().Trim('"', '\'', '*');
+                if (!string.IsNullOrWhiteSpace(candidate))
+                    _fileName = candidate;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            _output += "\n\n--- " + L["Messages_Stopped"] + " ---";
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            isRunning = false;
+            StateHasChanged();
+        }
+    }
+
+    private void StopAsync()
+    {
+        _cts?.Cancel();
+    }
+
+    private async Task CopyOutputAsync()
+    {
+        if (string.IsNullOrEmpty(_output)) return;
+        await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", _output);
+    }
+
+    private async Task DownloadOutputAsync()
+    {
+        if (string.IsNullOrEmpty(_output)) return;
+        var fileName = string.IsNullOrEmpty(_fileName)
+            ? $"code-{DateTime.Now:yyyyMMdd-HHmmss}.txt"
+            : _fileName;
+        var bytes = System.Text.Encoding.UTF8.GetBytes(_output);
+        var base64 = Convert.ToBase64String(bytes);
+        await JSRuntime.InvokeVoidAsync("downloadFile", fileName, $"data:text/plain;base64,{base64}");
+    }
+
+    public void Dispose()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+    }
+}
