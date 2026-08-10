@@ -118,7 +118,7 @@ services/
 │                     │                                             │
 │            ┌────────▼─────────┐                                   │
 │            │  SQLite (共享)   │                                   │
-│            │  taskrunner.db   │                                   │
+│            │  family.db   │                                   │
 │            │  ai.db           │                                   │
 │            └──────────────────┘                                   │
 │                                                                   │
@@ -139,7 +139,7 @@ services/
 
 **说明：**
 - 家庭版为 **3 后端 + 1 前端** 架构：Baihua.Family (8788) + Baihua.AI (8791) + Baihua.Vault (8790) + WebUI.Family (5177)
-- 数据库使用 SQLite（零配置、单文件、备份简单），Family 与 Vault 共享 `taskrunner.db`，AI 使用独立的 `ai.db`
+- 数据库使用 SQLite（零配置、单文件、备份简单），Family 与 Vault 共享 `family.db`，AI 使用独立的 `ai.db`
 - Nginx 可选，用于提供统一入口和静态缓存
 - 移动端通过局域网 IP 连接 `:8788`，Family 自动将 Vault 域 API 转发到 `:8790`
 - 移动端代码无需任何改动

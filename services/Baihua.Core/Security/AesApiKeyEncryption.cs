@@ -103,7 +103,7 @@ public static class AesApiKeyEncryption
     private static byte[] DeriveKey(byte[] fingerprint)
     {
         using var hmac = new HMACSHA256(fingerprint);
-        return hmac.ComputeHash(Encoding.UTF8.GetBytes("TaskRunner.ApiKey.Encryption.v1"));
+        return hmac.ComputeHash(Encoding.UTF8.GetBytes("Baihua.ApiKey.Encryption.v1"));
     }
 
     /// <summary>

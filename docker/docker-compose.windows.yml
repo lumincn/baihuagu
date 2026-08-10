@@ -18,7 +18,7 @@ services:
       # 数据/日志/配置：映射到 Windows 本地
       - ${BAIHUA_HOME:-C:/Users/lumin/.baihua}:/app/data
       - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/logs:/app/logs
-      - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/config/taskrunner:/app/config:ro
+      - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/config/family:/app/config:ro
       # 知识库路径：宿主机 Windows 路径 → 容器内固定 /vaults
       # （不能用 C:\...:C:\... 双向 Windows 路径，Docker 会报 invalid mode）
       - ${VAULTS_DIR:-C:/Users/lumin/Vaults}:/vaults
@@ -47,7 +47,7 @@ services:
     volumes:
       - ${BAIHUA_HOME:-C:/Users/lumin/.baihua}:/app/data
       - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/logs:/app/logs
-      - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/config/taskrunner-vault:/app/config:ro
+      - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/config/vault:/app/config:ro
       - ${VAULTS_DIR:-C:/Users/lumin/Vaults}:/vaults
     environment:
       - OpenObserve__WebUrl=http://host.docker.internal:5082/
@@ -65,7 +65,7 @@ services:
     volumes:
       - ${BAIHUA_HOME:-C:/Users/lumin/.baihua}:/app/data
       - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/logs:/app/logs
-      - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/config/taskrunner-ai:/app/config:ro
+      - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/config/ai:/app/config:ro
       - ${VAULTS_DIR:-C:/Users/lumin/Vaults}:/vaults
     environment:
       - OpenObserve__WebUrl=http://host.docker.internal:5082/

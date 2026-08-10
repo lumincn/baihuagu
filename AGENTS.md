@@ -126,26 +126,27 @@ dotnet build services/BaiHua.slnx -c Release
 | Baihua.Vault | 8790 | HTTP API（知识库、同步、搜索） |
 | Baihua.Web | 5177 | HTTP Blazor Server |
 
-## 命名约定（历史遗留：TaskRunner → Baihua）
+## 命名约定（TaskRunner → Baihua 已全部统一）
 
-> 本项目早期名为 **TaskRunner**，后按服务域统一改名为 **Baihua.***。
-> 各层命名必须与下表一致，**不得再引入 TaskRunner**：
+> 项目早期名为 **TaskRunner**，现已按服务域全部统一为 **Baihua.***，**代码/配置/部署中不得再出现 TaskRunner**。
+> 各层命名必须与下表一致：
 
 | 层 | 主服务 (8788) | AI (8791) | Vault (8790) | Web (5177) |
 |---|---|---|---|---|
 | 命名空间 / 目录 | `Baihua.Family` | `Baihua.AI` | `Baihua.Vault` | `Baihua.Web` |
 | Docker compose 服务名 | `family` | `ai` | `vault` | `webui` |
 | 容器名 | `bh-family` | `bh-ai` | `bh-vault` | `bh-webui` |
+| 可执行文件 / dll | `bh-family` | `bh-ai` | `bh-vault` | `bh-webui` |
 | HttpClient / 配置键 | `FamilyApi` | `AiApi` | `VaultApi` | — |
 | 环境变量前缀 | `BAIHUA_*` | `BAIHUA_*` | `BAIHUA_*` | — |
 | 日志 / 指标服务名 | `Baihua.Family` | `Baihua.AI` | `Baihua.Vault` | `Baihua.Web` |
 | Dockerfile | `Dockerfile.family` | `Dockerfile.ai` | `Dockerfile.vault` | `Dockerfile.webui` |
+| 配置目录 | `/opt/baihua/config/family` | `/opt/baihua/config/ai` | `/opt/baihua/config/vault` | `/opt/baihua/config/webui` |
+| 数据库文件 | `family.db` | `ai.db` | `vault.db` | — |
 
-**有意保留的旧名（勿改，破坏兼容）**：
-- `TaskRunner.ApiKey.Encryption.v1` — 加密密钥派生标签，改了会导致已存 API Key 无法解密
-- `/opt/baihua/config/taskrunner*` — 已部署环境的持久化配置目录
-- `taskrunner.db` — 历史数据库文件名（文档描述用）
-- `TaskRunner.Cloud` — 官网版（mdyj-cloud 仓库）的历史命名
+**例外（名实相符，保留原名）**：
+- `TaskRunner.Cloud` — 官网版（mdyj-cloud 仓库）的真实项目名，与本仓库无关
+- 历史文档/测试报告中的旧名 — 记录当时的客观状态
 
 ## 移动端兼容
 

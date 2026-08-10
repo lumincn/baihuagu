@@ -17,7 +17,7 @@ fi
 
 # 确保宿主机目录存在
 mkdir -p /opt/baihua/data /opt/baihua/logs \
-         /opt/baihua/config/taskrunner /opt/baihua/config/webui /opt/baihua/config/nginx \
+         /opt/baihua/config/family /opt/baihua/config/ai /opt/baihua/config/vault /opt/baihua/config/webui /opt/baihua/config/nginx \
          /opt/baihua/data/openobserve
 
 # 如果 nginx 配置不存在，从项目复制默认配置

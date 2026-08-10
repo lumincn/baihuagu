@@ -20,7 +20,7 @@ services:
       # 日志持久化到宿主机
       - /opt/baihua/logs:/app/logs
       # 可选：宿主机自定义配置覆盖容器内配置（只读）
-      - /opt/baihua/config/taskrunner:/app/config:ro
+      - /opt/baihua/config/family:/app/config:ro
       # 知识库根路径（宿主机 VAULTS_DIR → 容器内固定 /vaults）
       - ${VAULTS_DIR:-/home/lumin/Vaults}:/vaults
     environment:
@@ -144,7 +144,7 @@ services:
     volumes:
       - /opt/baihua/data:/app/data
       - /opt/baihua/logs:/app/logs
-      - /opt/baihua/config/taskrunner-vault:/app/config:ro
+      - /opt/baihua/config/vault:/app/config:ro
       - ${VAULTS_DIR:-/home/lumin/Vaults}:/vaults
     environment:
       - BAIHUA_HOME=/app/data
@@ -176,7 +176,7 @@ services:
     volumes:
       - /opt/baihua/data:/app/data
       - /opt/baihua/logs:/app/logs
-      - /opt/baihua/config/taskrunner-ai:/app/config:ro
+      - /opt/baihua/config/ai:/app/config:ro
       - ${VAULTS_DIR:-/home/lumin/Vaults}:/vaults
     environment:
       - BAIHUA_HOME=/app/data

@@ -53,7 +53,7 @@ echo "      源码包大小: $(du -h "${TMP_PKG}" | cut -f1)"
 
 # ---------- 2. 上传源码与编排文件 ----------
 echo "[2/7] 上传到服务器..."
-ssh ${SSH_OPTS} "${SERVER}" "mkdir -p ${REMOTE_COMPOSE_DIR} ${REMOTE_CONFIG_DIR}/taskrunner ${REMOTE_CONFIG_DIR}/webui ${REMOTE_CONFIG_DIR}/nginx ${REMOTE_DATA_DIR} ${REMOTE_LOGS_DIR} ${REMOTE_SRC_DIR}"
+ssh ${SSH_OPTS} "${SERVER}" "mkdir -p ${REMOTE_COMPOSE_DIR} ${REMOTE_CONFIG_DIR}/family ${REMOTE_CONFIG_DIR}/ai ${REMOTE_CONFIG_DIR}/vault ${REMOTE_CONFIG_DIR}/webui ${REMOTE_CONFIG_DIR}/nginx ${REMOTE_DATA_DIR} ${REMOTE_LOGS_DIR} ${REMOTE_SRC_DIR}"
 
 # 上传源码
 echo "      上传源码..."
@@ -149,7 +149,7 @@ ssh ${SSH_OPTS} "${SERVER}" bash -s "${REMOTE_SRC_DIR}" << 'REMOTE_SCRIPT'
 
     # 确保数据目录权限正确
     mkdir -p /opt/baihua/data /opt/baihua/logs \
-        /opt/baihua/config/taskrunner /opt/baihua/config/taskrunner-ai /opt/baihua/config/taskrunner-vault \
+        /opt/baihua/config/family /opt/baihua/config/ai /opt/baihua/config/vault \
         /opt/baihua/config/webui /opt/baihua/config/nginx \
         /opt/baihua/data/openobserve
 
