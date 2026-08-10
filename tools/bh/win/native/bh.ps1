@@ -62,6 +62,8 @@ function Ensure-Dotnet {
 
 function Invoke-Build {
     Ensure-Dotnet
+    # 服务进程会锁住 out/native 下的 dll，publish 前必须先停
+    Stop-Services
     foreach ($svc in $Services) {
         Write-Host "[build] $($svc.Name) ..."
         # Project 是相对仓库根的路径，必须 Join-Path $Root（脚本可能从任意目录执行）

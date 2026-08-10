@@ -1,0 +1,338 @@
+@page "/stock-advisor"
+@rendermode InteractiveServer
+@using Baihua.Contracts.Stock
+@using System.Text.Json
+@inject Baihua.Web.Services.IApiService ApiService
+@inject IJSRuntime JSRuntime
+
+<PageTitle>股票 AI 建议</PageTitle>
+
+<h1>📈 股票 AI 建议</h1>
+<p class="text-muted">AI 拉取 A 股实时行情并分析，按你的条件自动推荐 10 只建议购买的股票；输入已购代码评估是否卖出。</p>
+
+<!-- 分析条件 -->
+<div class="card mb-4">
+    <div class="card-header">🎛️ 分析条件</div>
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small text-muted">算法 / 角度</label>
+                <select class="form-select" @bind="_strategy">
+                    <option value="">综合（均衡）</option>
+                    <option value="value">价值投资（低估值/高ROE）</option>
+                    <option value="growth">成长股（高成长赛道）</option>
+                    <option value="technical">技术面（趋势/量能/动量）</option>
+                    <option value="dividend">高股息（防御/分红）</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small text-muted">行业</label>
+                <select class="form-select" @bind="_industry">
+                    <option value="">全部行业</option>
+                    @foreach (var ind in _industries)
+                    {
+                        <option value="@ind">@ind</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small text-muted">持有周期</label>
+                <select class="form-select" @bind="_horizon">
+                    <option value="">中长期（均衡）</option>
+                    <option value="short">短期（数日~数周）</option>
+                    <option value="long">长期（数月~数年）</option>
+                </select>
+            </div>
+        </div>
+        <div class="row g-3 mt-1">
+            <div class="col-md-8">
+                <label class="form-label small text-muted">📝 自定义提示词（附加给 AI 的分析要求）</label>
+                <div class="d-flex gap-2">
+                    <input class="form-control" placeholder="如：侧重高分红、低波动的防御性标的…"
+                           @bind="_prompt" @bind:event="oninput" />
+                    <button class="btn btn-outline-secondary text-nowrap" title="恢复默认提示词" @onclick="ResetPrompt">默认</button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small text-muted">最近使用的提示词（最多 10 条）</label>
+                <select class="form-select" @bind="_selectedHistory" @bind:after="OnHistorySelected">
+                    <option value="">选择历史提示词…</option>
+                    @foreach (var p in _promptHistory)
+                    {
+                        <option value="@p">@(p.Length > 28 ? p[..28] + "…" : p)</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="mt-3">
+            <button class="btn btn-primary" disabled="@_loading" @onclick="LoadRecommendationsAsync">
+                @(_loading ? "分析中…" : "🔄 开始分析")
+            </button>
+            <button class="btn btn-outline-secondary ms-2" disabled="@_loading" @onclick="() => RefreshRecommendationsAsync()">
+                强制刷新（跳过缓存）
+            </button>
+            <span class="small text-muted ms-2">
+                行情缓存 30 秒，AI 结果缓存 10 分钟（按条件+提示词）
+            </span>
+        </div>
+    </div>
+</div>
+
+@if (_loading)
+{
+    <div class="loading-spinner">AI 正在拉取行情并分析，请稍候（约 10-60 秒）…</div>
+}
+else if (!string.IsNullOrEmpty(_error))
+{
+    <div class="alert alert-warning" role="alert">
+        <b>⚠️ 分析失败：</b>@_error
+        <div class="mt-2">
+            <button class="btn btn-sm btn-outline-secondary" @onclick="LoadRecommendationsAsync">重试</button>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>
+                🛒 建议购买 TOP 10
+                <span class="badge bg-secondary ms-2">@ConditionLabel()</span>
+            </span>
+            <span class="text-muted small">模型：@(_result?.Model)｜@(_result?.GeneratedAt.ToString("HH:mm:ss"))</span>
+        </div>
+        <div class="card-body">
+            @if (_result == null || _result.Recommendations.Count == 0)
+            {
+                <div class="text-muted">没有拿到有效的推荐结果（模型输出可能不是有效 JSON，见下方原始输出）。</div>
+            }
+            else
+            {
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width:52px">#</th>
+                            <th>代码</th>
+                            <th>名称</th>
+                            <th style="width:220px">建议度</th>
+                            <th>动作</th>
+                            <th>理由</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < _result.Recommendations.Count; i++)
+                        {
+                            var r = _result.Recommendations[i];
+                            var color = r.Score >= 80 ? "bg-success" : r.Score >= 60 ? "bg-primary" : "bg-warning";
+                            <tr>
+                                <td class="text-muted">@(i + 1)</td>
+                                <td><code>@r.Code</code></td>
+                                <td><b>@r.Name</b></td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="progress flex-grow-1" style="height:10px">
+                                            <div class="progress-bar @color" style="width:@(r.Score)%"></div>
+                                        </div>
+                                        <span class="small fw-bold">@r.Score</span>
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-danger">@r.Action</span></td>
+                                <td class="small">@r.Reason</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">💼 持仓评估：是否卖出？</div>
+        <div class="card-body">
+            <div class="d-flex gap-2 align-items-center">
+                <input class="form-control" style="max-width:200px" placeholder="股票代码，如 600519"
+                       @bind="_holdingCode" @bind:event="oninput" />
+                <button class="btn btn-primary" disabled="@_evaluating" @onclick="() => EvaluateAsync()">
+                    @(_evaluating ? "分析中…" : "分析")
+                </button>
+                <button class="btn btn-outline-secondary" disabled="@_evaluating" @onclick="() => EvaluateAsync(refresh: true)">
+                    强制刷新
+                </button>
+            </div>
+
+            @if (_evaluationError != null)
+            {
+                <div class="alert alert-warning mt-3 mb-0">⚠️ @_evaluationError</div>
+            }
+            @if (_evaluation != null)
+            {
+                var sell = _evaluation.Action == "sell";
+                <div class="alert @(sell ? "alert-danger" : "alert-success") mt-3 mb-0">
+                    <div class="d-flex align-items-center gap-3">
+                        <span style="font-size:1.6rem">@(sell ? "🔴" : "🟢")</span>
+                        <div>
+                            <b>@_evaluation.Name（@_evaluation.Code）建议：@(sell ? "卖出" : "持有")</b>
+                            <span class="badge @(sell ? "bg-danger" : "bg-success") ms-2">置信度 @_evaluation.Confidence</span>
+                            <div class="small mt-1">@_evaluation.Reason</div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@if (_result?.Raw is { Length: > 0 })
+{
+    <details class="small text-muted">
+        <summary>AI 原始输出（调试）</summary>
+        <pre class="mt-2 p-2 bg-light border rounded" style="white-space:pre-wrap;max-height:300px;overflow:auto">@_result.Raw</pre>
+    </details>
+}
+
+<div class="text-muted small mt-4 border-top pt-2">
+    ⚠️ 免责声明：本页面内容由 AI 基于公开行情数据自动生成，仅供学习参考，<b>不构成任何投资建议</b>。
+    股市有风险，投资需谨慎。AI 可能出错，请独立判断。
+</div>
+
+@code {
+    private const string PromptHistoryKey = "stock.promptHistory";
+    private const int PromptHistoryMax = 10;
+    private const string DefaultPrompt =
+        "侧重基本面：优先盈利能力强、估值合理、现金流健康的标的；回避高波动题材股、业绩暴雷风险与高质押公司。";
+
+    private StockRecommendationResponse? _result;
+    private bool _loading = true;
+    private string? _error;
+
+    private string _strategy = "";
+    private string _industry = "";
+    private string _horizon = "";
+    private string _prompt = DefaultPrompt;
+    private string _selectedHistory = "";
+    private List<string> _promptHistory = new();
+    private List<string> _industries = new();
+
+    private string _holdingCode = "";
+    private bool _evaluating;
+    private StockEvaluationResponse? _evaluation;
+    private string? _evaluationError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // 行业下拉选项 + 最近提示词历史 + 默认条件自动分析
+        try { _industries = await ApiService.GetStockIndustriesAsync(); } catch { }
+        await LoadPromptHistoryAsync();
+        await LoadRecommendationsAsync();
+    }
+
+    private async Task LoadPromptHistoryAsync()
+    {
+        try
+        {
+            var json = await JSRuntime.InvokeAsync<string?>("localStorage.getItem", PromptHistoryKey);
+            if (!string.IsNullOrEmpty(json))
+                _promptHistory = JsonSerializer.Deserialize<List<string>>(json) ?? new List<string>();
+        }
+        catch { /* localStorage 不可用时忽略 */ }
+    }
+
+    private void OnHistorySelected()
+    {
+        var selected = _selectedHistory;
+        if (!string.IsNullOrEmpty(selected))
+            _prompt = selected;
+        _selectedHistory = ""; // 选完即复位，避免下拉停在旧值
+    }
+
+    private void ResetPrompt() => _prompt = DefaultPrompt;
+
+    private void SavePromptToHistory(string prompt)
+    {
+        if (string.IsNullOrWhiteSpace(prompt)) return;
+        var p = prompt.Trim();
+        _promptHistory.RemoveAll(x => x == p);
+        _promptHistory.Insert(0, p);
+        if (_promptHistory.Count > PromptHistoryMax)
+            _promptHistory.RemoveRange(PromptHistoryMax, _promptHistory.Count - PromptHistoryMax);
+        _ = JSRuntime.InvokeVoidAsync("localStorage.setItem", PromptHistoryKey,
+            JsonSerializer.Serialize(_promptHistory));
+    }
+
+    private string ConditionLabel()
+    {
+        var parts = new List<string>();
+        parts.Add(_strategy switch
+        {
+            "value" => "价值投资",
+            "growth" => "成长股",
+            "technical" => "技术面",
+            "dividend" => "高股息",
+            _ => "综合"
+        });
+        parts.Add(string.IsNullOrEmpty(_industry) ? "全部行业" : _industry);
+        parts.Add(_horizon switch
+        {
+            "short" => "短期",
+            "long" => "长期",
+            _ => "中长期"
+        });
+        return string.Join(" ｜ ", parts);
+    }
+
+    private async Task LoadRecommendationsAsync()
+    {
+        await LoadRecommendationsCoreAsync(refresh: false);
+    }
+
+    private async Task RefreshRecommendationsAsync()
+    {
+        await LoadRecommendationsCoreAsync(refresh: true);
+    }
+
+    private async Task LoadRecommendationsCoreAsync(bool refresh)
+    {
+        _loading = true;
+        _error = null;
+        _result = null;
+        StateHasChanged();
+        try
+        {
+            SavePromptToHistory(_prompt);
+            _result = await ApiService.GetStockRecommendationsAsync(_strategy, _industry, _horizon, _prompt, refresh);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task EvaluateAsync(bool refresh = false)
+    {
+        var code = _holdingCode.Trim();
+        if (code.Length == 0) return;
+
+        _evaluating = true;
+        _evaluation = null;
+        _evaluationError = null;
+        StateHasChanged();
+        try
+        {
+            _evaluation = await ApiService.EvaluateStockAsync(code, refresh);
+        }
+        catch (Exception ex)
+        {
+            _evaluationError = ex.Message;
+        }
+        finally
+        {
+            _evaluating = false;
+            StateHasChanged();
+        }
+    }
+}

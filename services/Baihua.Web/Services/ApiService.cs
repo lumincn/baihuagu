@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using Baihua.Contracts.Ai;
+using Baihua.Contracts.Stock;
 using Microsoft.Extensions.Localization;
 using Baihua.Contracts.Anki;
 using Baihua.Contracts.Achievements;
@@ -43,6 +44,9 @@ namespace Baihua.Web.Services
         Task<bool> CompleteOnboardingAsync();
         Task<VaultGenerationResponse> CreateVaultGenerationTaskAsync(string industry, string keyword, string? model = null, int noteCount = 30, bool generateCards = false);
         Task<List<AiProviderInfo>> GetAiProvidersAsync();
+        Task<StockRecommendationResponse> GetStockRecommendationsAsync(string? strategy = null, string? industry = null, string? horizon = null, string? prompt = null, bool refresh = false, CancellationToken cancellationToken = default);
+        Task<List<string>> GetStockIndustriesAsync(CancellationToken cancellationToken = default);
+        Task<StockEvaluationResponse> EvaluateStockAsync(string code, bool refresh = false, CancellationToken cancellationToken = default);
         Task<SearchResponse> SearchAsync(string query, string vaultId);
         Task<IndexStatusDto> GetIndexStatusAsync(string vaultId);
         Task<bool> RebuildIndexAsync(string vaultId, CancellationToken cancellationToken = default);
@@ -515,6 +519,45 @@ namespace Baihua.Web.Services
                     existingModels.Add(new AiConfigModel { Name = modelName, IsPaid = false, IsMain = false });
                 }
             }
+        }
+
+        public async Task<StockRecommendationResponse> GetStockRecommendationsAsync(string? strategy = null, string? industry = null, string? horizon = null, string? prompt = null, bool refresh = false, CancellationToken cancellationToken = default)
+        {
+            var query = new List<string>();
+            if (!string.IsNullOrWhiteSpace(strategy)) query.Add($"strategy={Uri.EscapeDataString(strategy)}");
+            if (!string.IsNullOrWhiteSpace(industry)) query.Add($"industry={Uri.EscapeDataString(industry)}");
+            if (!string.IsNullOrWhiteSpace(horizon)) query.Add($"horizon={Uri.EscapeDataString(horizon)}");
+            if (!string.IsNullOrWhiteSpace(prompt)) query.Add($"prompt={Uri.EscapeDataString(prompt)}");
+            if (refresh) query.Add("refresh=true");
+            var qs = query.Count > 0 ? "?" + string.Join('&', query) : "";
+
+            using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
+            var response = await GetWithMetricsAsync("/api/stock/recommendations" + qs, linked.Token);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<StockRecommendationResponse>(linked.Token)
+                   ?? new StockRecommendationResponse();
+        }
+
+        public async Task<List<string>> GetStockIndustriesAsync(CancellationToken cancellationToken = default)
+        {
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            var response = await GetWithMetricsAsync("/api/stock/industries", linked.Token);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<List<string>>(linked.Token) ?? new List<string>();
+        }
+
+        public async Task<StockEvaluationResponse> EvaluateStockAsync(string code, bool refresh = false, CancellationToken cancellationToken = default)
+        {
+            using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
+            var qs = refresh ? "?refresh=true" : "";
+            var response = await PostWithMetricsAsync("/api/stock/evaluate" + qs,
+                JsonContent.Create(new StockEvaluationRequest { Code = code }));
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<StockEvaluationResponse>(linked.Token)
+                   ?? new StockEvaluationResponse();
         }
 
         public async Task<List<AiProviderInfo>> GetAiProvidersAsync()
