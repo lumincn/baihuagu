@@ -86,18 +86,15 @@ PVC: baihua-models-pvc (50Gi, hostPath: /opt/baihua/models)
 
 ### 1. K8s 集群
 
-需要原生 Linux K8s 集群（不能用 WSL2 内的 Docker Desktop）：
+推荐 k3s（单节点、轻量、自带 containerd，不依赖 docker）：
 
 ```bash
-# 方式 A: k3s（推荐，单节点，轻量）
+# 方式 A: k3s（推荐）
 curl -sfL https://get.k3s.io | sh -
-
-# 方式 B: kind（开发用，但 GPU 不可用）
-kind create cluster --name baihua
-
-# 方式 C: 生产集群（kubeadm / RKE / 云托管 K8s）
-# 确保节点有 Intel GPU 驱动
 ```
+
+> 不推荐 kind：kind 依赖 docker 且 GPU 不可用。
+> 生产集群（kubeadm / RKE / 云托管 K8s）同样用 containerd/CRI，无需 docker。
 
 ### 2. 节点 GPU 驱动
 
@@ -114,12 +111,17 @@ lspci | grep -i vga
 sudo apt install -y intel-opencl-icd level-zero-dev libigdgmm12
 ```
 
-### 3. .NET SDK + Docker
+### 3. .NET SDK + nerdctl
 
 ```bash
 dotnet --version   # 10.0+
-docker --version   # 24+
+# nerdctl 直连 k3s 的 containerd 构建镜像（k3s 不附带，需单独安装）
+# https://github.com/containerd/nerdctl
+nerdctl --version
 ```
+
+> 镜像构建用 `nerdctl -a /run/k3s/containerd/containerd.sock build`，构建完直接进入 k3s 的 containerd，
+> 无需 docker，也无需 load/import。日常入口：`../bh-linux-k8s.sh`（build/up/status/logs）。
 
 ## 部署步骤
 

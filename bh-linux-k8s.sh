@@ -1,13 +1,15 @@
 #!/bin/bash
-# baihua - Linux + k8s CLI
-# Cell of the matrix: OS=linux, deployment=k8s
-# Builds images and drives kubectl against the local cluster (k3s/kind).
+# baihua - Linux + k3s CLI
+# Cell of the matrix: OS=linux, deployment=k8s (k3s + containerd, 无 docker 依赖)
+#
+# 镜像构建用 nerdctl 直连 k3s 的 containerd socket（/run/k3s/containerd/containerd.sock），
+# 构建完镜像直接落在 k3s 的 containerd 存储里，无需 docker build / docker save / ctr import。
+# 前置：k3s 已安装运行；nerdctl 已安装（k3s 不附带，需单独装）。
 #
 # Usage: ./bh-linux-k8s.sh <command> [args]
-#   build       docker build 5 images (docker/ prebuilt context)
-#   load        load images into k3s/kind (k3s: docker save | ctr import)
+#   build       nerdctl 构建 5 个镜像（直接进 k3s containerd）
 #   deploy      kubectl apply k8s/ manifests + wait ready
-#   up          load + deploy
+#   up          build + deploy
 #   status      pods / svc / pvc overview
 #   logs <svc> [n]   tail pod logs (default 50)
 #   destroy     delete namespace baihua
@@ -22,58 +24,51 @@ NAMESPACE="baihua"
 
 IMAGES="bh-vault:latest bh-ai:latest bh-webui:latest bh-family:latest bh-openvino:latest"
 
-# kubectl 封装：优先 k3s 自带 kubectl（k3s kubectl），再 PATH 里的 kubectl，最后 Windows 侧 kubectl.exe
-K3S_MODE=0
+# k3s containerd socket（k3s 默认）
+K3S_CONTAINERD_SOCK="/run/k3s/containerd/containerd.sock"
+
+# nerdctl 封装：直连 k3s containerd（在 build 时才检查，help/status 等不依赖）
+n() { nerdctl -a "$K3S_CONTAINERD_SOCK" "$@"; }
+
+# kubectl 封装：优先 k3s 自带 kubectl（k3s kubectl），再 PATH 里的 kubectl
 if command -v k3s >/dev/null 2>&1; then
-    K3S_MODE=1
     if [ -z "${KUBECONFIG:-}" ] && [ -f /etc/rancher/k3s/k3s.yaml ]; then
         export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
     fi
     k() { k3s kubectl "$@"; }
 elif command -v kubectl >/dev/null 2>&1; then
     k() { kubectl "$@"; }
-elif [ -x "/mnt/c/Program Files/Docker/Docker/resources/bin/kubectl.exe" ]; then
-    k() { "/mnt/c/Program Files/Docker/Docker/resources/bin/kubectl.exe" "$@"; }
 else
     echo "[k8s] 未找到 k3s / kubectl"; exit 1
 fi
 
 help_text() {
-    sed -n 's/^#   //p' "$0" | sed -n '2,12p'
+    sed -n 's/^#   //p' "$0" | sed -n '2,14p'
 }
 
+# nerdctl 直接构建进 k3s containerd（构建即入库，无 docker）
 build_all() {
-    # 注意：需在能访问 docker 的环境执行（Windows 或启用了 WSL 集成的发行版）
-    docker build -f "$DOCKER_DIR/Dockerfile.vault.prebuilt"          -t bh-vault:latest    "$DOCKER_DIR" >/dev/null || exit 1
-    echo "[build] bh-vault"
-    docker build -f "$DOCKER_DIR/Dockerfile.ai.prebuilt"  -t bh-ai:latest       "$DOCKER_DIR" >/dev/null || exit 1
-    echo "[build] bh-ai"
-    docker build -f "$DOCKER_DIR/Dockerfile.webui.prebuilt"          -t bh-webui:latest    "$DOCKER_DIR" >/dev/null || exit 1
-    echo "[build] bh-webui"
-    docker build -f "$DOCKER_DIR/Dockerfile.family.prebuilt"         -t bh-family:latest   "$DOCKER_DIR" >/dev/null || exit 1
-    echo "[build] bh-family"
-    docker build -f "$DOCKER_DIR/Dockerfile.openvino-server.prebuilt" -t bh-openvino:latest "$ROOT" >/dev/null || exit 1
-    echo "[build] bh-openvino"
-    echo "[build] 5 images done"
-}
-
-load_all() {
-    if [ "$K3S_MODE" = 1 ]; then
-        # k3s：docker save | k3s ctr images import（若 WSL 内 docker 不可用，见下方提示）
-        if ! docker info >/dev/null 2>&1; then
-            echo "[load] WSL 内 docker 不可用（Docker Desktop 未启用此发行版 WSL 集成）。"
-            echo "       请在 Windows 侧执行："
-            echo "       docker save $IMAGES | wsl -e bash -lc 'k3s ctr images import -'"
-            exit 1
-        fi
-        for img in $IMAGES; do
-            docker save "$img" | k3s ctr images import - >/dev/null 2>&1 && echo "[load] $img" || echo "[load] FAILED: $img"
-        done
-    elif command -v kind >/dev/null 2>&1; then
-        for img in $IMAGES; do kind load docker-image "$img" >/dev/null 2>&1 && echo "[load] $img"; done
-    else
-        echo "[load] 未检测到 k3s/kind，跳过"
+    if ! command -v nerdctl >/dev/null 2>&1; then
+        echo "[build] 未找到 nerdctl（需单独安装：https://github.com/containerd/nerdctl）"
+        echo "        k3s 不附带 nerdctl，仅自带 containerd 与 k3s ctr（ctr 不能构建镜像）"
+        exit 1
     fi
+    if ! n info >/dev/null 2>&1; then
+        echo "[build] 无法连接 k3s containerd（$K3S_CONTAINERD_SOCK）"
+        echo "        请确认 k3s 已运行，且 nerdctl 已安装"
+        exit 1
+    fi
+    n build -f "$DOCKER_DIR/Dockerfile.vault.prebuilt"          -t bh-vault:latest    "$DOCKER_DIR" >/dev/null || exit 1
+    echo "[build] bh-vault"
+    n build -f "$DOCKER_DIR/Dockerfile.ai.prebuilt"             -t bh-ai:latest       "$DOCKER_DIR" >/dev/null || exit 1
+    echo "[build] bh-ai"
+    n build -f "$DOCKER_DIR/Dockerfile.webui.prebuilt"          -t bh-webui:latest    "$DOCKER_DIR" >/dev/null || exit 1
+    echo "[build] bh-webui"
+    n build -f "$DOCKER_DIR/Dockerfile.family.prebuilt"         -t bh-family:latest   "$DOCKER_DIR" >/dev/null || exit 1
+    echo "[build] bh-family"
+    n build -f "$DOCKER_DIR/Dockerfile.openvino-server.prebuilt" -t bh-openvino:latest "$ROOT" >/dev/null || exit 1
+    echo "[build] bh-openvino"
+    echo "[build] 5 images done (已直接进入 k3s containerd，无需 load)"
 }
 
 deploy_all() {
@@ -118,9 +113,8 @@ open_dashboard() {
 
 case "${1:-help}" in
     build)     build_all ;;
-    load)      load_all ;;
     deploy)    deploy_all ;;
-    up)        load_all; deploy_all ;;
+    up)        build_all; deploy_all ;;
     status)    status_all ;;
     logs)      show_logs "${2:-bh-family}" "${3:-50}" ;;
     destroy)   k delete namespace "$NAMESPACE"; echo "[destroy] done" ;;
