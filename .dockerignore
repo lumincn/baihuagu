@@ -43,6 +43,29 @@ docker/stop.bat
 *.tmp
 *.cache
 
+# 本地数据/构建中间产物（多阶段源码构建 context=仓库根，必须排除）
+# nuget-local：已沉入 bh/sdk-offline 基础镜像（Dockerfile.sdk-offline），context 无需再携带
+data
+models
+logs
+out
+tmp
+nuget-local
+k8s-test-data
+.baihua-dev
+.fam35
+.testout
+.artifacts-*
+.arts
+.cache
+.claude
+.codeartsdoer
+.deveco
+.hvigor
+.reasonix
+.trae
+.github
+
 # macOS
 .DS_Store
 

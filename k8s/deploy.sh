@@ -51,86 +51,47 @@ build_base() {
 }
 
 # ============================================================
-# 2. 发布 .NET 项目（prebuilt 模式）
-# ============================================================
-publish_dotnet() {
-    log "发布 .NET 项目到 k8s/images/publish/ 目录 ..."
-
-    # NuGet 中文镜像源
-    export NUGET_PACKAGES="$PROJECT_ROOT/.nuget/packages"
-    local NUGET_SOURCE="https://nuget.cdn.azure.cn/v3/index.json"
-
-    # Family
-    log "  发布 Baihua.Family ..."
-    dotnet publish "$PROJECT_ROOT/services/Baihua.Family" \
-        -c Release -o "$K8S_DIR/images/publish/family" \
-        --source "$NUGET_SOURCE" \
-        /p:UseAppHost=false 2>&1 | tail -5
-
-    # Vault
-    log "  发布 Baihua.Vault ..."
-    dotnet publish "$PROJECT_ROOT/services/Baihua.Vault" \
-        -c Release -o "$K8S_DIR/images/publish/vault" \
-        --source "$NUGET_SOURCE" \
-        /p:UseAppHost=false 2>&1 | tail -5
-
-    # AI
-    log "  发布 Baihua.AI ..."
-    dotnet publish "$PROJECT_ROOT/services/Baihua.AI" \
-        -c Release -o "$K8S_DIR/images/publish/ai" \
-        --source "$NUGET_SOURCE" \
-        /p:UseAppHost=false 2>&1 | tail -5
-
-    # WebUI
-    log "  发布 Baihua.Web ..."
-    dotnet publish "$PROJECT_ROOT/services/Baihua.Web" \
-        -c Release -o "$K8S_DIR/images/publish/webui" \
-        --source "$NUGET_SOURCE" \
-        /p:UseAppHost=false 2>&1 | tail -5
-
-    log ".NET 发布完成"
-}
-
-# ============================================================
-# 3. 构建 Docker 镜像
+# 2. 构建 Docker 镜像
 # ============================================================
 build_images() {
     build_base
-    publish_dotnet
 
     log "构建服务镜像 ..."
 
-    # prebuilt 镜像在 k8s/images/，Dockerfile 内 COPY publish/<svc> 相对 k8s/images/ 目录
-    # （publish 产物在 k8s/images/publish/），所以 context 用 K8S_DIR/images
-    local prebuilt_ctx="$K8S_DIR/images"
+    # 多阶段源码构建：.NET 服务在离线 SDK 镜像（bh/sdk-offline，含 nuget-local 包源）内现场 publish，
+    # 宿主/发布机无需安装 .NET SDK；OpenVINO 镜像纯 Python 源码构建。所有镜像统一使用项目根作为构建上下文。
+
+    # 离线 SDK 基础镜像（nuget-local 包源经 build-context 沉底，仅首次构建传输一次；需 Docker Buildx）
+    log "  构建 bh/sdk-offline:latest（离线 SDK 基础镜像）..."
+    docker buildx build --build-context "nuget=$PROJECT_ROOT/nuget-local" \
+        -f "$K8S_DIR/images/Dockerfile.sdk-offline" -t bh/sdk-offline:latest "$PROJECT_ROOT"
 
     # Vault
     log "  构建 bh-vault:latest ..."
-    docker build -f "$K8S_DIR/images/Dockerfile.vault.prebuilt" -t bh-vault:latest "$prebuilt_ctx"
+    docker build -f "$K8S_DIR/images/Dockerfile.vault" -t bh-vault:latest "$PROJECT_ROOT"
 
     # AI
     log "  构建 bh-ai:latest ..."
-    docker build -f "$K8S_DIR/images/Dockerfile.ai.prebuilt" -t bh-ai:latest "$prebuilt_ctx"
+    docker build -f "$K8S_DIR/images/Dockerfile.ai" -t bh-ai:latest "$PROJECT_ROOT"
 
     # WebUI
     log "  构建 bh-webui:latest ..."
-    docker build -f "$K8S_DIR/images/Dockerfile.webui.prebuilt" -t bh-webui:latest "$prebuilt_ctx"
+    docker build -f "$K8S_DIR/images/Dockerfile.webui" -t bh-webui:latest "$PROJECT_ROOT"
 
     # Family (轻量版，不含 OpenVINO)
     log "  构建 bh-family:latest（轻量版，OpenVINO 已拆分到独立容器）..."
-    docker build -f "$K8S_DIR/images/Dockerfile.family.prebuilt" -t bh-family:latest "$prebuilt_ctx"
+    docker build -f "$K8S_DIR/images/Dockerfile.family" -t bh-family:latest "$PROJECT_ROOT"
 
     # OpenVINO 推理服务器（独立容器，含 GPU 支持）
-    # 注意：该 Dockerfile 拷的是 services/...（仓库根）和 k8s/images/ 下的源文件，context 必须用项目根
     log "  构建 bh-openvino:latest（OpenVINO + Intel GPU 推理服务）..."
-    docker build -f "$K8S_DIR/images/Dockerfile.openvino-server.prebuilt" -t bh-openvino:latest "$PROJECT_ROOT"
+    docker build -f "$K8S_DIR/images/Dockerfile.openvino-server" -t bh-openvino:latest "$PROJECT_ROOT"
 
     log "所有镜像构建完成"
     docker images | grep -E "bh-(vault|ai|webui|family|openvino)" | head -10
 }
 
 # ============================================================
-# 4. 加载镜像到集群（kind / minikube）
+# 3. 加载镜像到集群（kind / minikube）
 # ============================================================
 load_images() {
     if command -v kind &>/dev/null; then
@@ -150,7 +111,7 @@ load_images() {
 }
 
 # ============================================================
-# 5. 部署到 K8s
+# 4. 部署到 K8s
 # ============================================================
 deploy() {
     log "部署到 K8s 集群 (namespace: $NAMESPACE) ..."
@@ -185,7 +146,7 @@ deploy() {
 }
 
 # ============================================================
-# 6. 查看状态
+# 5. 查看状态
 # ============================================================
 status() {
     log "=== Pod 状态 ==="
@@ -216,7 +177,7 @@ status() {
 }
 
 # ============================================================
-# 7. 查看日志
+# 6. 查看日志
 # ============================================================
 show_logs() {
     local service="${1:-bh-family}"
@@ -226,7 +187,7 @@ show_logs() {
 }
 
 # ============================================================
-# 8. 删除部署
+# 7. 删除部署
 # ============================================================
 destroy() {
     warn "即将删除 namespace: $NAMESPACE 及其所有资源"
@@ -240,7 +201,7 @@ destroy() {
 }
 
 # ============================================================
-# 9. 验证 GPU 可用性
+# 8. 验证 GPU 可用性
 # ============================================================
 verify_gpu() {
     log "=== 验证 Intel GPU 可用性 ==="

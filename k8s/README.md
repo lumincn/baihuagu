@@ -49,8 +49,9 @@
 | `24-nginx-configmap.yaml` | Nginx 配置（K8s DNS 适配） |
 | `25-nginx.yaml` | Nginx Deployment + NodePort Service |
 | `deploy.sh` | 一键部署脚本 |
-| `./images/Dockerfile.openvino-server.prebuilt` | OpenVINO 独立推理容器 |
-| `./images/Dockerfile.family.prebuilt` | Family 轻量容器（无 OpenVINO） |
+| `./images/Dockerfile.openvino-server` | OpenVINO 独立推理容器（纯 Python 源码构建） |
+| `./images/Dockerfile.family` | Family 轻量容器（无 OpenVINO） |
+| `./images/Dockerfile.{vault,ai,webui}` | .NET 服务镜像（多阶段源码构建，容器内 publish） |
 
 ## 架构设计：OpenVINO 独立容器
 
@@ -96,6 +97,10 @@ PVC: baihua-models-pvc (50Gi, hostPath: /opt/baihua/models)
 | Docker Desktop | win-docker 部署 | ❌ GUI 交互安装 | 见 4 |
 | Intel GPU 驱动 | openvino GPU 推理 | ❌ 系统级 | 见 2 |
 
+> k8s 镜像构建为**多阶段源码构建**：build 阶段在 `dotnet/sdk` 容器内现场 `dotnet publish`
+> （依赖 nuget-local/ 离线包源，构建全程无需外网），宿主/发布机**无需安装 .NET SDK**，
+> 也无需任何 dotnet publish 产物。
+
 > 注意：buildkitd 自动安装后**不会自动启动**（无 systemd 环境）。首次 build 会提示启动命令。
 
 ### 1. K8s 集群
@@ -134,14 +139,14 @@ sudo apt install -y intel-opencl-icd level-zero-dev libigdgmm12
 ### 3. 构建依赖（自动安装）
 
 `bh.sh build` 会自动下载安装缺失的 nerdctl 与 buildkit（buildkitd 守护进程 + buildctl 客户端，官方 GitHub release → /usr/local/bin，需 root/sudo）。
-dotnet（native 部署用）由 `bh-linux-native.sh build` 自动装到 ~/.dotnet。无需手动装：
+k8s 镜像构建**不需要** .NET SDK（容器内构建，见上表说明）；dotnet 仅 native 部署用，由 `bh-linux-native.sh build` 自动装到 ~/.dotnet。无需手动装：
 
 ```bash
 # 验证（已安装时）
 nerdctl --version      # 2.3.5+
 buildkitd --version    # 0.32.x
 buildctl --version     # 0.32.x（nerdctl build 需要）
-dotnet --version       # 10.0+
+dotnet --version       # 10.0+（仅 native 部署需要，k8s 构建不需要）
 ```
 
 > buildkitd 是 nerdctl build 的后端守护进程，安装后需运行（无 systemd 环境手动启动）：

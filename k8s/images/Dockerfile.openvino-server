@@ -2,10 +2,10 @@
 # 提供 OpenAI 兼容的 LLM 推理 API (端口 8000) + 视觉推理 API (端口 8801)
 # 需要 Intel GPU Device Plugin 注入 /dev/dri 设备
 #
-# 构建命令（由 deploy.sh 调用）：
-#   docker build -f docker/Dockerfile.openvino-server.prebuilt -t bh-openvino:latest .
+# 构建命令（由 deploy.sh / bh.sh 调用，context=仓库根）：
+#   nerdctl build -f k8s/images/Dockerfile.openvino-server -t bh-openvino:latest .
 #
-# 与 Dockerfile.family-openvino.prebuilt 的区别：
+# 与旧版内嵌式（family-openvino）的区别：
 #   1. 不含 .NET 运行时 — 纯 Python 推理服务
 #   2. 镜像更小 (~1.5GB vs ~3GB)
 #   3. 独立生命周期 — 可单独升级 OpenVINO 不影响 Family 服务

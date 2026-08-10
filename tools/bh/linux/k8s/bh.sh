@@ -20,7 +20,7 @@ set -u
 
 ROOT="$(cd "$(dirname "$0")/../../../.." && pwd)"  # tools/bh/linux/k8s → 仓库根
 K8S_DIR="$ROOT/k8s"
-IMAGE_DIR="$ROOT/k8s/images"   # prebuilt 配方 + publish 产物 + entrypoint 全在这里
+IMAGE_DIR="$ROOT/k8s/images"   # Dockerfile 配方 + entrypoint 全在这里
 NAMESPACE="baihua"
 
 IMAGES="bh-vault:latest bh-ai:latest bh-webui:latest bh-family:latest bh-openvino:latest"
@@ -231,20 +231,26 @@ build_all() {
         echo "        请确认 k3s 已运行（k3s 安装见 k8s/README.md 前提条件）"
         exit 1
     fi
-    # base-runtime：prebuilt 镜像的基础（vault/ai/webui/family 的 FROM）
+    # base-runtime：vault/ai/webui/family 的 FROM（运行时基础镜像）
     if ! n images | grep -qE 'bh/base-runtime\s+latest'; then
         n build -o type=image -f "$IMAGE_DIR/Dockerfile.base-runtime" -t bh/base-runtime:latest "$IMAGE_DIR" >/dev/null || exit 1
         echo "[build] bh/base-runtime"
     fi
-    n build -o type=image -f "$IMAGE_DIR/Dockerfile.vault.prebuilt"          -t bh-vault:latest    "$IMAGE_DIR" >/dev/null || exit 1
+    # sdk-offline：离线 SDK 基础镜像（nuget-local 包源经 build-context 沉底，一次性构建），.NET 镜像 build 阶段 FROM 它
+    if ! n images | grep -qE 'bh/sdk-offline\s+latest'; then
+        n build --build-context "nuget=$ROOT/nuget-local" -o type=image -f "$IMAGE_DIR/Dockerfile.sdk-offline" -t bh/sdk-offline:latest "$ROOT" >/dev/null || exit 1
+        echo "[build] bh/sdk-offline"
+    fi
+    # .NET 镜像：多阶段源码构建（容器内 dotnet publish，restore 走 sdk-offline 里的离线包源），context 需仓库根（services/ 源码）
+    n build -o type=image -f "$IMAGE_DIR/Dockerfile.vault"     -t bh-vault:latest    "$ROOT" >/dev/null || exit 1
     echo "[build] bh-vault"
-    n build -o type=image -f "$IMAGE_DIR/Dockerfile.ai.prebuilt"             -t bh-ai:latest       "$IMAGE_DIR" >/dev/null || exit 1
+    n build -o type=image -f "$IMAGE_DIR/Dockerfile.ai"        -t bh-ai:latest       "$ROOT" >/dev/null || exit 1
     echo "[build] bh-ai"
-    n build -o type=image -f "$IMAGE_DIR/Dockerfile.webui.prebuilt"          -t bh-webui:latest    "$IMAGE_DIR" >/dev/null || exit 1
+    n build -o type=image -f "$IMAGE_DIR/Dockerfile.webui"     -t bh-webui:latest    "$ROOT" >/dev/null || exit 1
     echo "[build] bh-webui"
-    n build -o type=image -f "$IMAGE_DIR/Dockerfile.family.prebuilt"         -t bh-family:latest   "$IMAGE_DIR" >/dev/null || exit 1
+    n build -o type=image -f "$IMAGE_DIR/Dockerfile.family"    -t bh-family:latest   "$ROOT" >/dev/null || exit 1
     echo "[build] bh-family"
-    n build -o type=image -f "$IMAGE_DIR/Dockerfile.openvino-server.prebuilt" -t bh-openvino:latest "$ROOT" >/dev/null || exit 1  # COPY services/... 需仓库根上下文
+    n build -o type=image -f "$IMAGE_DIR/Dockerfile.openvino-server" -t bh-openvino:latest "$ROOT" >/dev/null || exit 1  # COPY services/... 需仓库根上下文
     echo "[build] bh-openvino"
     echo "[build] 5 images done (已直接进入 k3s containerd，无需 load)"
 }

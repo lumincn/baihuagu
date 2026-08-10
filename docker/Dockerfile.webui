@@ -10,8 +10,6 @@ FROM bh/base-build:latest AS build
 WORKDIR /src
 
 # 先复制项目文件以利用 Docker 缓存层
-COPY NuGet.config .
-COPY nuget-local/ nuget-local/
 COPY services/Baihua.Contracts/Baihua.Contracts.csproj services/Baihua.Contracts/
 COPY services/Baihua.Web/Baihua.Web.csproj services/Baihua.Web/
 RUN dotnet restore services/Baihua.Web/Baihua.Web.csproj

@@ -18,19 +18,17 @@ RUN sed -i 's|http://archive.ubuntu.com|https://mirrors.huaweicloud.com|g' /etc/
     sed -i 's|http://security.ubuntu.com|https://mirrors.huaweicloud.com|g' /etc/apt/sources.list 2>/dev/null; \
     true
 
-# 安装运行时依赖：
+# 安装运行时依赖（所有 .NET 容器的最小公共集）：
 # - libgomp1: LLamaSharp (OpenMP 支持)
 # - curl: 健康检查
 # - ca-certificates: HTTPS 证书
-# - Vulkan 运行时: LLamaSharp Vulkan backend（真机 /dev/dri GPU 推理）
+# 注意：Vulkan 运行时（LLamaSharp Vulkan backend）只有 bh-ai 需要，
+# 已移至 Dockerfile.ai 的 runtime 阶段，避免所有容器都背 GPU 依赖。
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         libgomp1 \
         curl \
-        ca-certificates \
-        libvulkan1 \
-        mesa-vulkan-drivers \
-        vulkan-tools && \
+        ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
 # 创建数据/日志目录

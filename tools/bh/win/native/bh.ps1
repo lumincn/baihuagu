@@ -44,7 +44,8 @@ $Services = @(
 )
 
 function Help-Text {
-    Get-Content $PSCommandPath | Where-Object { $_ -match '^\s{4}[a-z]' } | ForEach-Object { $_.Trim() }
+    # 只取头部注释里的用法行（4 空格缩进）；否则函数体内的缩进行也会匹配输出
+    Get-Content $PSCommandPath | Select-Object -First 20 | Where-Object { $_ -match '^\s{4}[a-z]' } | ForEach-Object { $_.Trim() }
 }
 
 function Ensure-Dotnet {
@@ -63,8 +64,10 @@ function Invoke-Build {
     Ensure-Dotnet
     foreach ($svc in $Services) {
         Write-Host "[build] $($svc.Name) ..."
-        & dotnet publish $svc.Project -c Release -r win-x64 --self-contained false -o (Join-Path $OutDir $svc.Name) 2>&1 | Out-Null
-        if ($LASTEXITCODE -ne 0) { throw "publish failed: $($svc.Name)" }
+        # Project 是相对仓库根的路径，必须 Join-Path $Root（脚本可能从任意目录执行）
+        $proj = Join-Path $Root $svc.Project
+        $out = & dotnet publish $proj -c Release -r win-x64 --self-contained false -o (Join-Path $OutDir $svc.Name) 2>&1
+        if ($LASTEXITCODE -ne 0) { throw "publish failed: $($svc.Name)`n$($out | Select-Object -Last 6)" }
     }
     Write-Host "[build] done -> $OutDir"
 }
@@ -164,8 +167,13 @@ function Show-Logs($svcName, $n) {
     $log = Join-Path $LogDir "$svcName.log"
     if (-not (Test-Path $log)) { Write-Host "no log yet: $log"; return }
     # 编码容错：Windows 控制台中文环境（GBK）下 Get-Content -Tail 会因非法 UTF-8 静默返回空，
-    # 改为整读 + 严格 UTF-8 解码，失败回退系统 ANSI 代码页
-    $bytes = [System.IO.File]::ReadAllBytes($log)
+    # 改为整读 + 严格 UTF-8 解码，失败回退系统 ANSI 代码页。
+    # FileShare.ReadWrite：服务进程正在写 log 时 ReadAllBytes 会独占失败。
+    $fs = [System.IO.File]::Open($log, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
+    try {
+        $bytes = New-Object byte[] ([int]$fs.Length)
+        [void]$fs.Read($bytes, 0, $bytes.Length)
+    } finally { $fs.Dispose() }
     $utf8 = [System.Text.UTF8Encoding]::new($false, $true)
     try { $text = $utf8.GetString($bytes) }
     catch { $text = [System.Text.Encoding]::GetEncoding([System.Globalization.CultureInfo]::CurrentCulture.TextInfo.ANSICodePage).GetString($bytes) }

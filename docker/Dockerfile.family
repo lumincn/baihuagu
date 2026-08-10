@@ -16,8 +16,6 @@ COPY services/Baihua.Core/Baihua.Core.csproj services/Baihua.Core/
 COPY services/Baihua.Family/Baihua.Family.csproj services/Baihua.Family/
 COPY services/Baihua.AI.Provider/Baihua.AI.Provider.csproj services/Baihua.AI.Provider/
 COPY libs/MobileContract/MobileContract.csproj libs/MobileContract/
-COPY NuGet.config .
-COPY nuget-local/ nuget-local/
 RUN dotnet restore services/Baihua.Family/Baihua.Family.csproj -r linux-x64
 
 # 复制全部源码并发布
