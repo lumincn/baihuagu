@@ -1,0 +1,964 @@
+{
+  "/family": {
+    "ok": true,
+    "url": "http://127.0.0.1:5177/family",
+    "title": "家庭首页",
+    "h1": [
+      "👨‍👩‍👧 👨‍👩‍👧 我们的家"
+    ],
+    "h2": [
+      "家庭成员",
+      "每日卡片",
+      "本周排行榜"
+    ],
+    "h3": [],
+    "buttons": [
+      "☰",
+      "☰",
+      "📚\n知识库",
+      "👨‍👩‍👧\n家庭",
+      "🤖\nAI 实验室",
+      "Retry",
+      "Resume"
+    ],
+    "links": [
+      {
+        "t": "移动端管理",
+        "h": "devices"
+      },
+      {
+        "t": "AI 生成知识库",
+        "h": "generate"
+      },
+      {
+        "t": "家庭首页",
+        "h": "family"
+      },
+      {
+        "t": "家庭记账",
+        "h": "family-budget"
+      },
+      {
+        "t": "学习打卡",
+        "h": "checkin"
+      },
+      {
+        "t": "每日卡片",
+        "h": "daily-card"
+      },
+      {
+        "t": "成就",
+        "h": "achievements"
+      },
+      {
+        "t": "排行榜",
+        "h": "leaderboard"
+      },
+      {
+        "t": "家长看板",
+        "h": "dashboard"
+      },
+      {
+        "t": "🤖\nDeepSeek\ndeepseek-v4-flash\n●",
+        "h": "settings"
+      },
+      {
+        "t": "🃏\n今天的卡片\n点开复习今天的卡片\n➡️",
+        "h": "daily-card"
+      },
+      {
+        "t": "查看全部",
+        "h": "leaderboard"
+      },
+      {
+        "t": "健康检查",
+        "h": "health"
+      },
+      {
+        "t": "日志配置",
+        "h": "log-settings"
+      },
+      {
+        "t": "错误日志",
+        "h": "log-errors"
+      }
+    ],
+    "inputs": [],
+    "bodyText": "移动端管理\nAI 生成知识库\n📚\n知识库\n👨‍👩‍👧\n家庭\n🤖\nAI 实验室\n家庭首页\n家庭记账\n学习打卡\n每日卡片\n成就\n排行榜\n家长看板\n🤖\nDeepSeek\ndeepseek-v4-flash\n●\n百花（寻芳居） - 家庭知识港湾\n👨‍👩‍👧 👨‍👩‍👧 我们的家\n\n一家人一起学习\n\n📚\n0\n本周学习卡片\n🔥\n0\n最长连续打卡\n家庭成员\n🙂\n小明\n0\n本周\n🔥 0\n连续\n🙂\n小明\n0\n本周\n🔥 0\n连续\n每日卡片\n🃏\n今天的卡片\n点开复习今天的卡片\n➡️\n本周排行榜\n查看全部\n🙂\n小明\n0 分\n🙂\n小明\n0 分",
+    "errUi": false,
+    "loading": false,
+    "shot": "b-family.png"
+  },
+  "/dashboard": {
+    "ok": true,
+    "url": "http://127.0.0.1:5177/dashboard",
+    "title": "家长看板",
+    "h1": [
+      "家长看板"
+    ],
+    "h2": [
+      "今日三件事",
+      "连续打卡 🔥",
+      "最新成就",
+      "成长时间线"
+    ],
+    "h3": [],
+    "buttons": [
+      "☰",
+      "☰",
+      "📚\n知识库",
+      "👨‍👩‍👧\n家庭",
+      "🤖\nAI 实验室",
+      "全部成员",
+      "🙂 小明",
+      "🙂 小明",
+      "Retry",
+      "Resume"
+    ],
+    "links": [
+      {
+        "t": "移动端管理",
+        "h": "devices"
+      },
+      {
+        "t": "AI 生成知识库",
+        "h": "generate"
+      },
+      {
+        "t": "家庭首页",
+        "h": "family"
+      },
+      {
+        "t": "家庭记账",
+        "h": "family-budget"
+      },
+      {
+        "t": "学习打卡",
+        "h": "checkin"
+      },
+      {
+        "t": "每日卡片",
+        "h": "daily-card"
+      },
+      {
+        "t": "成就",
+        "h": "achievements"
+      },
+      {
+        "t": "排行榜",
+        "h": "leaderboard"
+      },
+      {
+        "t": "家长看板",
+        "h": "dashboard"
+      },
+      {
+        "t": "🤖\nDeepSeek\ndeepseek-v4-flash\n●",
+        "h": "settings"
+      },
+      {
+        "t": "开始今天的学习吧",
+        "h": "/daily-card"
+      },
+      {
+        "t": "健康检查",
+        "h": "health"
+      },
+      {
+        "t": "日志配置",
+        "h": "log-settings"
+      },
+      {
+        "t": "错误日志",
+        "h": "log-errors"
+      }
+    ],
+    "inputs": [],
+    "bodyText": "移动端管理\nAI 生成知识库\n📚\n知识库\n👨‍👩‍👧\n家庭\n🤖\nAI 实验室\n家庭首页\n家庭记账\n学习打卡\n每日卡片\n成就\n排行榜\n家长看板\n🤖\nDeepSeek\ndeepseek-v4-flash\n●\n百花（寻芳居） - 家庭知识港湾\n家长看板\n成员：\n全部成员\n🙂 小明\n🙂 小明\n今日三件事\n\n今天还没有学习记录\n\n开始今天的学习吧\n连续打卡 🔥\n🔥\n0\n天\n任意成员有学习行为即算当天打卡\n最新成就\n\n完成第一次学习来解锁成就吧\n\n成长时间线\n\n还没有学习记录，开始今天的学习吧",
+    "errUi": false,
+    "loading": false,
+    "shot": "b-dashboard.png"
+  },
+  "/checkin": {
+    "ok": true,
+    "url": "http://127.0.0.1:5177/checkin",
+    "title": "学习打卡",
+    "h1": [
+      "学习打卡"
+    ],
+    "h2": [
+      "今日学习清单"
+    ],
+    "h3": [],
+    "buttons": [
+      "☰",
+      "☰",
+      "📚\n知识库",
+      "👨‍👩‍👧\n家庭",
+      "🤖\nAI 实验室",
+      "Retry",
+      "Resume"
+    ],
+    "links": [
+      {
+        "t": "移动端管理",
+        "h": "devices"
+      },
+      {
+        "t": "AI 生成知识库",
+        "h": "generate"
+      },
+      {
+        "t": "家庭首页",
+        "h": "family"
+      },
+      {
+        "t": "家庭记账",
+        "h": "family-budget"
+      },
+      {
+        "t": "学习打卡",
+        "h": "checkin"
+      },
+      {
+        "t": "每日卡片",
+        "h": "daily-card"
+      },
+      {
+        "t": "成就",
+        "h": "achievements"
+      },
+      {
+        "t": "排行榜",
+        "h": "leaderboard"
+      },
+      {
+        "t": "家长看板",
+        "h": "dashboard"
+      },
+      {
+        "t": "🤖\nDeepSeek\ndeepseek-v4-flash\n●",
+        "h": "settings"
+      },
+      {
+        "t": "前往每日卡片",
+        "h": "/daily-card"
+      },
+      {
+        "t": "健康检查",
+        "h": "health"
+      },
+      {
+        "t": "日志配置",
+        "h": "log-settings"
+      },
+      {
+        "t": "错误日志",
+        "h": "log-errors"
+      }
+    ],
+    "inputs": [],
+    "bodyText": "移动端管理\nAI 生成知识库\n📚\n知识库\n👨‍👩‍👧\n家庭\n🤖\nAI 实验室\n家庭首页\n家庭记账\n学习打卡\n每日卡片\n成就\n排行榜\n家长看板\n🤖\nDeepSeek\ndeepseek-v4-flash\n●\n百花（寻芳居） - 家庭知识港湾\n学习打卡\n🔥\n0\n天连续打卡\n🔥\n05\n⬜\n06\n⬜\n07\n⬜\n补\n08\n⬜\n补\n09\n⬜\n补\n10\n⬜\n11\n今日学习清单\n🌱\n\n今天还没开始学习，点击前往每日卡片\n\n前往每日卡片",
+    "errUi": false,
+    "loading": false,
+    "shot": "b-checkin.png"
+  },
+  "/daily-card": {
+    "ok": true,
+    "url": "http://127.0.0.1:5177/daily-card",
+    "title": "每日一帖",
+    "h1": [
+      "📚 每日一帖"
+    ],
+    "h2": [],
+    "h3": [],
+    "buttons": [
+      "☰",
+      "☰",
+      "📚\n知识库",
+      "👨‍👩‍👧\n家庭",
+      "🤖\nAI 实验室",
+      "中医抗敏",
+      "清涕证治",
+      "鼻渊通",
+      "计算机",
+      "NET开发智库",
+      "岐黄养生",
+      "烘焙初体验",
+      "Retry",
+      "Resume"
+    ],
+    "links": [
+      {
+        "t": "移动端管理",
+        "h": "devices"
+      },
+      {
+        "t": "AI 生成知识库",
+        "h": "generate"
+      },
+      {
+        "t": "家庭首页",
+        "h": "family"
+      },
+      {
+        "t": "家庭记账",
+        "h": "family-budget"
+      },
+      {
+        "t": "学习打卡",
+        "h": "checkin"
+      },
+      {
+        "t": "每日卡片",
+        "h": "daily-card"
+      },
+      {
+        "t": "成就",
+        "h": "achievements"
+      },
+      {
+        "t": "排行榜",
+        "h": "leaderboard"
+      },
+      {
+        "t": "家长看板",
+        "h": "dashboard"
+      },
+      {
+        "t": "🤖\nDeepSeek\ndeepseek-v4-flash\n●",
+        "h": "settings"
+      },
+      {
+        "t": "健康检查",
+        "h": "health"
+      },
+      {
+        "t": "日志配置",
+        "h": "log-settings"
+      },
+      {
+        "t": "错误日志",
+        "h": "log-errors"
+      }
+    ],
+    "inputs": [
+      {
+        "tag": "SELECT",
+        "type": null,
+        "ph": null,
+        "val": "d5c1e389d1ed42f4b030876d1f6baae2"
+      },
+      {
+        "tag": "TEXTAREA",
+        "type": null,
+        "ph": "输入问题...",
+        "val": ""
+      },
+      {
+        "tag": "TEXTAREA",
+        "type": null,
+        "ph": "输入答案...",
+        "val": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "ph": "家长出题",
+        "val": "家长出题"
+      }
+    ],
+    "bodyText": "移动端管理\nAI 生成知识库\n📚\n知识库\n👨‍👩‍👧\n家庭\n🤖\nAI 实验室\n家庭首页\n家庭记账\n学习打卡\n每日卡片\n成就\n排行榜\n家长看板\n🤖\nDeepSeek\ndeepseek-v4-flash\n●\n百花（寻芳居） - 家庭知识港湾\n📚 每日一帖\n知识库： \n中医抗敏\n清涕证治\n鼻渊通\n计算机\nNET开发智库\n岐黄养生\n烘焙初体验\n🔥\n0\n连续 0 天\n0 / 10\n经方\n何谓伏邪？它与外因致敏有何关系？\n点击翻转\n经方\n伏邪指潜伏体内的痰饮、湿热、瘀血等病理产物。六淫外感可引动伏邪，内外合邪而发病，是过敏反复发作的重要机制。\n点击卡片查看答案\n✏️ 家长出题",
+    "errUi": false,
+    "loading": false,
+    "shot": "b-daily-card.png"
+  },
+  "/achievements": {
+    "ok": true,
+    "url": "http://127.0.0.1:5177/achievements",
+    "title": "成就墙",
+    "h1": [
+      "🏆 成就墙"
+    ],
+    "h2": [
+      "🎁 家庭奖励"
+    ],
+    "h3": [],
+    "buttons": [
+      "☰",
+      "☰",
+      "📚\n知识库",
+      "👨‍👩‍👧\n家庭",
+      "🤖\nAI 实验室",
+      "🙂\n小明\n默认",
+      "🙂\n小明\n默认",
+      "+ 添加",
+      "连续打卡天数",
+      "解锁成就数",
+      "学习卡片数",
+      "添加奖励",
+      "Retry",
+      "Resume"
+    ],
+    "links": [
+      {
+        "t": "移动端管理",
+        "h": "devices"
+      },
+      {
+        "t": "AI 生成知识库",
+        "h": "generate"
+      },
+      {
+        "t": "家庭首页",
+        "h": "family"
+      },
+      {
+        "t": "家庭记账",
+        "h": "family-budget"
+      },
+      {
+        "t": "学习打卡",
+        "h": "checkin"
+      },
+      {
+        "t": "每日卡片",
+        "h": "daily-card"
+      },
+      {
+        "t": "成就",
+        "h": "achievements"
+      },
+      {
+        "t": "排行榜",
+        "h": "leaderboard"
+      },
+      {
+        "t": "家长看板",
+        "h": "dashboard"
+      },
+      {
+        "t": "🤖\nDeepSeek\ndeepseek-v4-flash\n●",
+        "h": "settings"
+      },
+      {
+        "t": "健康检查",
+        "h": "health"
+      },
+      {
+        "t": "日志配置",
+        "h": "log-settings"
+      },
+      {
+        "t": "错误日志",
+        "h": "log-errors"
+      }
+    ],
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "ph": "奖励名称（如：冰淇淋）",
+        "val": ""
+      },
+      {
+        "tag": "SELECT",
+        "type": null,
+        "ph": null,
+        "val": "streak_days"
+      },
+      {
+        "tag": "INPUT",
+        "type": "number",
+        "ph": "目标值",
+        "val": "7"
+      }
+    ],
+    "bodyText": "移动端管理\nAI 生成知识库\n📚\n知识库\n👨‍👩‍👧\n家庭\n🤖\nAI 实验室\n家庭首页\n家庭记账\n学习打卡\n每日卡片\n成就\n排行榜\n家长看板\n🤖\nDeepSeek\ndeepseek-v4-flash\n●\n百花（寻芳居） - 家庭知识港湾\n🏆 成就墙\n🙂\n小明\n默认\n🙂\n小明\n默认\n+ 添加\n🎁 家庭奖励\n还没有奖励，家长可在下方添加奖励激励孩子学习\n连续打卡天数\n解锁成就数\n学习卡片数\n添加奖励\n0 / 14\n已解锁\n0\n金牌\n0\n钻石\n🔒\n第一步\n完成首次卡片学习\n🔒\n三日不断\n连续学习 3 天\n🔒\n周周坚持\n连续学习 7 天\n🔒\n月月不辍\n连续学习 30 天\n🔒\n十题小试\n累计学习 10 张卡片\n🔒\n半百精进\n累计学习 50 张卡片\n🔒\n百题大关\n累计学习 100 张卡片\n🔒\n学富五车\n累计学习 500 张卡片\n🔒\n初出茅庐\n首次家长出题\n🔒\n出题能手\n累计出题 10 道\n🔒\n初识岐黄\n首次使用 AI 对话\n🔒\n问道十次\n累计使用 AI 对话 10 次\n🔒\n百发百中\n单日正确率达到 80%\n🔒\n闻鸡起舞\n早上 6 点前完成学习",
+    "errUi": false,
+    "loading": false,
+    "shot": "b-achievements.png"
+  },
+  "/leaderboard": {
+    "ok": true,
+    "url": "http://127.0.0.1:5177/leaderboard",
+    "title": "家庭赛舟榜",
+    "h1": [
+      "🐲 家庭赛舟榜"
+    ],
+    "h2": [],
+    "h3": [],
+    "buttons": [
+      "☰",
+      "☰",
+      "📚\n知识库",
+      "👨‍👩‍👧\n家庭",
+      "🤖\nAI 实验室",
+      "👤 和自己比",
+      "👨‍👩‍👧 家庭排行",
+      "Retry",
+      "Resume"
+    ],
+    "links": [
+      {
+        "t": "移动端管理",
+        "h": "devices"
+      },
+      {
+        "t": "AI 生成知识库",
+        "h": "generate"
+      },
+      {
+        "t": "家庭首页",
+        "h": "family"
+      },
+      {
+        "t": "家庭记账",
+        "h": "family-budget"
+      },
+      {
+        "t": "学习打卡",
+        "h": "checkin"
+      },
+      {
+        "t": "每日卡片",
+        "h": "daily-card"
+      },
+      {
+        "t": "成就",
+        "h": "achievements"
+      },
+      {
+        "t": "排行榜",
+        "h": "leaderboard"
+      },
+      {
+        "t": "家长看板",
+        "h": "dashboard"
+      },
+      {
+        "t": "🤖\nDeepSeek\ndeepseek-v4-flash\n●",
+        "h": "settings"
+      },
+      {
+        "t": "健康检查",
+        "h": "health"
+      },
+      {
+        "t": "日志配置",
+        "h": "log-settings"
+      },
+      {
+        "t": "错误日志",
+        "h": "log-errors"
+      }
+    ],
+    "inputs": [],
+    "bodyText": "移动端管理\nAI 生成知识库\n📚\n知识库\n👨‍👩‍👧\n家庭\n🤖\nAI 实验室\n家庭首页\n家庭记账\n学习打卡\n每日卡片\n成就\n排行榜\n家长看板\n🤖\nDeepSeek\ndeepseek-v4-flash\n●\n百花（寻芳居） - 家庭知识港湾\n🐲 家庭赛舟榜\n👤 和自己比\n👨‍👩‍👧 家庭排行\n本周\n0\n张卡片\n--\n--\n上周\n0\n张卡片\n和自己比，进步看得见 💪",
+    "errUi": false,
+    "loading": false,
+    "shot": "b-leaderboard.png"
+  },
+  "/family/quiz": {
+    "ok": true,
+    "url": "http://127.0.0.1:5177/family/quiz",
+    "title": "亲子互考",
+    "h1": [
+      "🎯 亲子互考"
+    ],
+    "h2": [
+      "选择对战成员"
+    ],
+    "h3": [],
+    "buttons": [
+      "☰",
+      "☰",
+      "📚\n知识库",
+      "👨‍👩‍👧\n家庭",
+      "🤖\nAI 实验室",
+      "🙂 小明",
+      "🙂 小明",
+      "🙂 小明",
+      "🙂 小明",
+      "开始互考",
+      "Retry",
+      "Resume"
+    ],
+    "links": [
+      {
+        "t": "移动端管理",
+        "h": "devices"
+      },
+      {
+        "t": "AI 生成知识库",
+        "h": "generate"
+      },
+      {
+        "t": "家庭首页",
+        "h": "family"
+      },
+      {
+        "t": "家庭记账",
+        "h": "family-budget"
+      },
+      {
+        "t": "学习打卡",
+        "h": "checkin"
+      },
+      {
+        "t": "每日卡片",
+        "h": "daily-card"
+      },
+      {
+        "t": "成就",
+        "h": "achievements"
+      },
+      {
+        "t": "排行榜",
+        "h": "leaderboard"
+      },
+      {
+        "t": "家长看板",
+        "h": "dashboard"
+      },
+      {
+        "t": "🤖\nDeepSeek\ndeepseek-v4-flash\n●",
+        "h": "settings"
+      },
+      {
+        "t": "健康检查",
+        "h": "health"
+      },
+      {
+        "t": "日志配置",
+        "h": "log-settings"
+      },
+      {
+        "t": "错误日志",
+        "h": "log-errors"
+      }
+    ],
+    "inputs": [
+      {
+        "tag": "SELECT",
+        "type": null,
+        "ph": null,
+        "val": "1"
+      },
+      {
+        "tag": "SELECT",
+        "type": null,
+        "ph": null,
+        "val": "2"
+      }
+    ],
+    "bodyText": "移动端管理\nAI 生成知识库\n📚\n知识库\n👨‍👩‍👧\n家庭\n🤖\nAI 实验室\n家庭首页\n家庭记账\n学习打卡\n每日卡片\n成就\n排行榜\n家长看板\n🤖\nDeepSeek\ndeepseek-v4-flash\n●\n百花（寻芳居） - 家庭知识港湾\n🎯 亲子互考\n选择对战成员\n成员 A（先出题）\n🙂 小明\n🙂 小明\n成员 B（先作答）\n🙂 小明\n🙂 小明\n开始互考",
+    "errUi": false,
+    "loading": false,
+    "shot": "b-family_quiz.png"
+  },
+  "/family-budget": {
+    "ok": true,
+    "url": "http://127.0.0.1:5177/family-budget",
+    "title": "家庭记账",
+    "h1": [
+      "💰 家庭记账"
+    ],
+    "h2": [],
+    "h3": [],
+    "buttons": [
+      "☰",
+      "☰",
+      "📚\n知识库",
+      "👨‍👩‍👧\n家庭",
+      "🤖\nAI 实验室",
+      "◀ 上月",
+      "下月 ▶",
+      "刷新",
+      "支出",
+      "收入",
+      "保存",
+      "Retry",
+      "Resume"
+    ],
+    "links": [
+      {
+        "t": "移动端管理",
+        "h": "devices"
+      },
+      {
+        "t": "AI 生成知识库",
+        "h": "generate"
+      },
+      {
+        "t": "家庭首页",
+        "h": "family"
+      },
+      {
+        "t": "家庭记账",
+        "h": "family-budget"
+      },
+      {
+        "t": "学习打卡",
+        "h": "checkin"
+      },
+      {
+        "t": "每日卡片",
+        "h": "daily-card"
+      },
+      {
+        "t": "成就",
+        "h": "achievements"
+      },
+      {
+        "t": "排行榜",
+        "h": "leaderboard"
+      },
+      {
+        "t": "家长看板",
+        "h": "dashboard"
+      },
+      {
+        "t": "🤖\nDeepSeek\ndeepseek-v4-flash\n●",
+        "h": "settings"
+      },
+      {
+        "t": "健康检查",
+        "h": "health"
+      },
+      {
+        "t": "日志配置",
+        "h": "log-settings"
+      },
+      {
+        "t": "错误日志",
+        "h": "log-errors"
+      }
+    ],
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "number",
+        "ph": "金额",
+        "val": "0"
+      },
+      {
+        "tag": "SELECT",
+        "type": null,
+        "ph": null,
+        "val": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "ph": "搜索...",
+        "val": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "date",
+        "ph": null,
+        "val": "2026-08-11"
+      },
+      {
+        "tag": "INPUT",
+        "type": null,
+        "ph": "备注（可选）",
+        "val": ""
+      }
+    ],
+    "bodyText": "移动端管理\nAI 生成知识库\n📚\n知识库\n👨‍👩‍👧\n家庭\n🤖\nAI 实验室\n家庭首页\n家庭记账\n学习打卡\n每日卡片\n成就\n排行榜\n家长看板\n🤖\nDeepSeek\ndeepseek-v4-flash\n●\n百花（寻芳居） - 家庭知识港湾\n💰 家庭记账\n\n记录家庭的每一笔收支，自动汇总月度账单与分类统计。\n\n◀ 上月\n2026 年 8 月\n下月 ▶\n刷新\n本月收入\n+0.00\n本月支出\n-0.00\n本月结余\n+0.00\n✏️ 记一笔\n支出\n收入\n选择分类…\n保存\n📊 本月支出分类\n本月暂无支出记录\n累计收入 0.00 ｜ 累计支出 0.00\n📋 本月明细（0 笔）\n本月还没有记录",
+    "errUi": false,
+    "loading": false,
+    "shot": "b-family-budget.png"
+  },
+  "/onboarding": {
+    "ok": true,
+    "url": "http://127.0.0.1:5177/onboarding",
+    "title": "欢迎使用",
+    "h1": [
+      "配置完成！"
+    ],
+    "h2": [],
+    "h3": [],
+    "buttons": [
+      "☰",
+      "☰",
+      "📚\n知识库",
+      "👨‍👩‍👧\n家庭",
+      "🤖\nAI 实验室",
+      "进入知识库 →",
+      "Retry",
+      "Resume"
+    ],
+    "links": [
+      {
+        "t": "移动端管理",
+        "h": "devices"
+      },
+      {
+        "t": "AI 生成知识库",
+        "h": "generate"
+      },
+      {
+        "t": "首页",
+        "h": ""
+      },
+      {
+        "t": "知识库浏览",
+        "h": "browse"
+      },
+      {
+        "t": "知识库管理",
+        "h": "vaults"
+      },
+      {
+        "t": "记忆卡片",
+        "h": "cards"
+      },
+      {
+        "t": "搜索",
+        "h": "search"
+      },
+      {
+        "t": "任务",
+        "h": "tasks"
+      },
+      {
+        "t": "OpenClaw",
+        "h": "openclaw"
+      },
+      {
+        "t": "🤖\nDeepSeek\ndeepseek-v4-flash\n●",
+        "h": "settings"
+      },
+      {
+        "t": "健康检查",
+        "h": "health"
+      },
+      {
+        "t": "日志配置",
+        "h": "log-settings"
+      },
+      {
+        "t": "错误日志",
+        "h": "log-errors"
+      }
+    ],
+    "inputs": [],
+    "bodyText": "移动端管理\nAI 生成知识库\n📚\n知识库\n👨‍👩‍👧\n家庭\n🤖\nAI 实验室\n首页\n知识库浏览\n知识库管理\n记忆卡片\n搜索\n任务\nOpenClaw\n🤖\nDeepSeek\ndeepseek-v4-flash\n●\n百花（寻芳居） - 家庭知识港湾\n1\n欢迎\n2\nAI配置\n3\n完成\n🎉\n配置完成！\n\n您的家庭知识库已就绪\n\n✅\nAI 服务已配置\n📱\n接下来：添加家庭成员，让他们也能访问知识库\n📚\n接下来：创建「计算机」和「中医」知识库\n🚀 下一步引导\n\n进入首页后，您会看到一个初始化任务清单。完成这些任务，就能让全家人开始使用知识库了！\n\n进入知识库 →",
+    "errUi": false,
+    "loading": false,
+    "shot": "b-onboarding.png"
+  },
+  "/ai-metrics": {
+    "ok": true,
+    "url": "http://127.0.0.1:5177/ai-metrics",
+    "title": "AI 性能监控",
+    "h1": [
+      "📈 AI 性能监控"
+    ],
+    "h2": [],
+    "h3": [
+      "📊 最近 7 天趋势",
+      "🏆 Provider 排行榜",
+      "🤖 模型排行榜",
+      "📝 最近调用记录"
+    ],
+    "buttons": [
+      "☰",
+      "☰",
+      "📚\n知识库",
+      "👨‍👩‍👧\n家庭",
+      "🤖\nAI 实验室",
+      "1 天",
+      "7 天",
+      "30 天",
+      "Retry",
+      "Resume"
+    ],
+    "links": [
+      {
+        "t": "移动端管理",
+        "h": "devices"
+      },
+      {
+        "t": "AI 生成知识库",
+        "h": "generate"
+      },
+      {
+        "t": "AI 对话",
+        "h": "messages"
+      },
+      {
+        "t": "编程 Agent（Microsoft Agent Framework）",
+        "h": "code-agent"
+      },
+      {
+        "t": "虚拟师父",
+        "h": "master-chat"
+      },
+      {
+        "t": "本地模型",
+        "h": "local-models"
+      },
+      {
+        "t": "图片识别",
+        "h": "image-recognition"
+      },
+      {
+        "t": "AI 绘图",
+        "h": "ai-drawing"
+      },
+      {
+        "t": "股票AI建议",
+        "h": "stock-advisor"
+      },
+      {
+        "t": "模型评测",
+        "h": "model-benchmark"
+      },
+      {
+        "t": "AI 性能监控",
+        "h": "ai-metrics"
+      },
+      {
+        "t": "AI数字助理",
+        "h": "assistant"
+      },
+      {
+        "t": "硬件评测",
+        "h": "hardware-benchmark"
+      },
+      {
+        "t": "AI 设置",
+        "h": "settings"
+      },
+      {
+        "t": "提示词模板",
+        "h": "prompt-templates"
+      },
+      {
+        "t": "🤖\nDeepSeek\ndeepseek-v4-flash\n●",
+        "h": "settings"
+      },
+      {
+        "t": "健康检查",
+        "h": "health"
+      },
+      {
+        "t": "日志配置",
+        "h": "log-settings"
+      },
+      {
+        "t": "错误日志",
+        "h": "log-errors"
+      }
+    ],
+    "inputs": [],
+    "bodyText": "移动端管理\nAI 生成知识库\n📚\n知识库\n👨‍👩‍👧\n家庭\n🤖\nAI 实验室\n对话\nAI 对话\n编程 Agent（Microsoft Agent Framework）\n虚拟师父\n研究\n本地模型\n图片识别\nAI 绘图\n股票AI建议\n模型评测\nAI 性能监控\nAI数字助理\n硬件评测\n配置\nAI 设置\n提示词模板\n🤖\nDeepSeek\ndeepseek-v4-flash\n●\n百花（寻芳居） - 家庭知识港湾\n📈 AI 性能监控\n时间范围：1 天7 天30 天\n60\n总调用次数\n12207ms\n平均耗时\n86.7%\n成功率\n103.0K\n总 Token 数\nDeepSeek (官方)\n最佳 Provider (15562.7 tps)\n📊 最近 7 天趋势\n08-07\n08-10\n08-11\n🏆 Provider 排行榜\nProvider\t调用次数\t平均耗时\t平均 TPS\t成功率\t总 Tokens\nDeepSeek (官方)\t44\t9605 ms\t15562.7\t95.5%\t103.0K\nOpenVINO (本地)\t15\t20655 ms\t-\t66.7%\t0\nembedding\t1\t1 ms\t-\t0%\t0\n🤖 模型排行榜\n模型\tProvider\t调用次数\t平均耗时\t平均 TPS\t成功率\ndeepseek-v4-flash\tDeepSeek (官方)\t41\t10051 ms\t16783.6\t95.1%\ndeepseek-v4-flash\tOpenVINO (本地)\t14\t21741 ms\t-\t64.3%\ndeepseek-chat\tDeepSeek (官方)\t3\t3508 ms\t97.7\t100%\n\tembedding\t1\t1 ms\t-\t0%\nqwen2.5-7b-instruct-int4-ov\tOpenVINO (本地)\t1\t5457 ms\t-\t100%\n📝 最近调用记录\n时间\tProvider\t模型\t操作\t耗时\tTokens\tTPS\t状态\n08-11 08:44\tDeepSeek (官方)\tdeepseek-v4-flash\tvault_gen_prompt\t4957 ms\t-\t-\t❌\n08-11 08:44\tDeepSeek (官方)\tdeepseek-v4-flash\tvault_gen_name\t6889 ms\t764\t90.1\t✅\n08-11 08:36\tDeepSeek (官方)\tdeepseek-v4-flash\tvault_gen_content\t9201 ms\t2036\t85.4\t✅\n08-11 08:36\tDeepSeek (官方)\tdeepseek-v4-flash\tvault_gen_content\t17176 ms\t3044\t104.2\t✅\n08-11 08:36\tDeepSeek (官方)\tdeepseek-v4-flash\tvault_gen_content\t6904 ms\t1839\t85.5\t✅\n08-11 08:36\tDeepSeek (官方)\tdeepseek-v4-flash\tvault_gen_content\t16392 ms\t3131\t114.3\t✅\n08-11 08:35\tDeepSeek (官方)\tdeepseek-v4-flash\tvault_gen_content\t9324 ms\t2145\t95.3\t✅\n08-11 08:35\tDeepSeek (官方)\tdeepseek-v4-flash\tvault_gen_content\t4948 ms\t1583\t66.9\t✅\n08-11 08:35\tDeepSeek (官方)\tdeepseek-v4-flash\tvault_gen_content\t12188 ms\t2483\t100.7\t✅\n08-11 08:35\tDeepSeek (官方)\tdeepseek-v4-flash\tvault_gen_content\t8557 ms\t2078\t97.2\t✅\n08-11 08:35\tDeepSeek (官方)\tdeepseek-v4-flash\tvault_gen_outline\t15316 ms\t2362\t108.2\t✅\n08-11 08:35\tDeepSeek (官方)\tdeepseek-v4-flash\tvault_gen_prompt\t26814 ms\t3253\t111.1\t✅\n08-11 08:34\tDeepSeek (官方)\tdeepseek-v4-flash\tvault_gen_name\t5471 ms\t578\t79.5\t✅\n08-11 08:24\tDeepSeek (官方)\tdeepseek-v4-flash\tstock\t8446 ms\t4942\t107.9\t✅\n08-11 08:17\tDeepSeek (官方)\tdeepseek-v4-flash\tvault_gen_content\t10037 ms\t2201\t82.6\t✅\n08-11 08:17\tDeepSeek (官方)\tdeepseek-v4-flash\tvault_gen_content\t5748 ms\t1862\t76.2\t✅\n08-11 08:17\tDeepSeek (官方)\tdeepseek-v4-flash\tvault_gen_content\t10093 ms\t2213\t78.0\t✅\n08-11 08:17\tDeepSeek (官方)\tdeepseek-v4-flash\tvault_gen_content\t16496 ms\t2985\t97.8\t✅\n08-11 08:16\tDeepSeek (官方)\tdeepseek-v4-flash\tvault_gen_outline\t7307 ms\t1705\t124.4\t✅\n08-11 08:16\tDeepSeek (官方)\tdeepseek-v4-flash\tvault_gen_outline\t9822 ms\t1944\t118.5\t✅\n08-11 08:16\tDeepSeek (官方)\tdeepseek-v4-flash\tvault_gen_prompt\t20914 ms\t2712\t116.5\t✅\n08-11 08:16\tDeepSeek (官方)\tdeepseek-v4-flash\tvault_gen_prompt\t7684 ms\t953\t88.0\t✅\n08-11 08:16\tDeepSeek (官方)\tdeepseek-v4-flash\tvault_gen_prompt\t6844 ms\t978\t102.1\t✅\n08-11 08:16\tDeepSeek (官方)\tdeepseek-v4-flash\tvault_gen_name\t8134 ms\t782\t78.2\t✅\n08-11 08:16\tDeepSeek (官方)\tdeepseek-v4-flash\tvault_gen_name\t6161 ms\t558\t66.2\t✅\n08-11 08:16\tDeepSeek (官方)\tdeepseek-v4-flash\tvault_gen_name\t1731 ms\t187\t24.8\t✅\n08-11 08:16\tDeepSeek (官方)\tdeepseek-v4-flash\tassistant\t2848 ms\t505\t69.2\t✅\n08-11 06:58\tDeepSeek (官方)\tdeepseek-v4-flash\tstock\t11 ms\t9679\t513454.5\t✅\n08-11 06:55\tDeepSeek (官方)\tdeepseek-v4-flash\tstock\t21097 ms\t6421\t112.4\t✅\n08-11 06:46\tDeepSeek (官方)\tdeepseek-v4-flash\tstock\t61834 ms\t11637\t123.2\t✅\n08-11 06:46\tDeepSeek (官方)\tdeepseek-v4-flash\tstock\t49914 ms\t9679\t113.2\t✅\n08-11 06:31\tDeepSeek (官方)\tdeepseek-chat\tstock\t3406 ms\t4266\t99.5\t✅\n08-11 06:31\tOpenVINO (本地)\tdeepseek-v4-flash\tstock\t32786 ms\t0\t-\t✅\n08-11 06:28\tOpenVINO (本地)\tdeepseek-v4-flash\tstock\t29757 ms\t-\t-\t❌\n08-11 06:27\tOpenVINO (本地)\tdeepseek-v4-flash\tstock\t29729 ms\t-\t-\t❌\n08-11 06:23\tDeepSeek (官方)\tdeepseek-chat\tstock\t4148 ms\t4298\t85.6\t✅\n08-11 06:23\tDeepSeek (官方)\tdeepseek-chat\tstock\t2970 ms\t4268\t108.1\t✅\n08-11 06:20\tOpenVINO (本地)\tdeepseek-v4-flash\tstock\t29763 ms\t-\t-\t❌\n08-11 06:20\tOpenVINO (本地)\tdeepseek-v4-flash\tstock\t91 ms\t-\t-\t❌\n08-11 06:15\tOpenVINO (本地)\tdeepseek-v4-flash\tstock\t14366 ms\t0\t-\t✅\n08-11 06:14\tOpenVINO (本地)\tdeepseek-v4-flash\tstock\t28697 ms\t0\t-\t✅\n08-11 06:09\tOpenVINO (本地)\tdeepseek-v4-flash\tstock\t29892 ms\t-\t-\t❌\n08-11 06:07\tOpenVINO (本地)\tdeepseek-v4-flash\tstock\t6310 ms\t0\t-\t✅\n08-11 06:07\tOpenVINO (本地)\tdeepseek-v4-flash\tstock\t15280 ms\t0\t-\t✅\n08-11 06:06\tOpenVINO (本地)\tdeepseek-v4-flash\tstock\t30395 ms\t0\t-\t✅\n08-11 06:02\tOpenVINO (本地)\tdeepseek-v4-flash\tstock\t2289 ms\t0\t-\t✅\n08-11 06:02\tOpenVINO (本地)\tdeepseek-v4-flash\tstock\t38635 ms\t0\t-\t✅\n08-10 14:29\tDeepSeek (官方)\tdeepseek-v4-flash\tchat\t2257 ms\t113\t12.4\t✅\n08-10 13:29\tOpenVINO (本地)\tqwen2.5-7b-instruct-int4-ov\tchat\t5457 ms\t0\t-\t✅\n08-10 13:29\tDeepSeek (官方)\tdeepseek-v4-flash\tchat\t868 ms\t102\t16.1\t✅",
+    "errUi": false,
+    "loading": false,
+    "shot": "b-ai-metrics.png"
+  }
+}

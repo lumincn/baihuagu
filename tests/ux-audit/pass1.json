@@ -1,0 +1,653 @@
+{
+  "pages": {
+    "/": {
+      "url": "http://127.0.0.1:5177/",
+      "ok": true,
+      "textLen": 213,
+      "textHead": "移动端管理\nAI 生成知识库\n📚\n知识库\n👨‍👩‍👧\n家庭\n🤖\nAI 实验室\n首页\n知识库浏览\n知识库管理\n记忆卡片\n搜索\n任务\nOpenClaw\n🤖\nDeepSeek\ndeepseek-v4-flash\n●\n百花（寻芳居） - 家庭知识港湾\n少就是多，把知识装进脑子\n📖 最近浏览\n查看更多 →\n\n暂无最近浏览记录\n\n🔍 最近搜索\n\n暂无搜索记录\n\n📱 移动端同步\n📱 设备管理\n\n管理移动设备和扫码配对",
+      "h": [
+        "📖 最近浏览",
+        "🔍 最近搜索",
+        "📱 移动端同步",
+        "📱 设备管理"
+      ],
+      "btns": [
+        "☰",
+        "☰",
+        "📚\n知识库",
+        "👨‍👩‍👧\n家庭",
+        "🤖\nAI 实验室",
+        "切换亮色/暗色模式",
+        "登出",
+        "系统工具",
+        "Retry",
+        "Resume"
+      ],
+      "links": [
+        "移动端管理",
+        "AI 生成知识库",
+        "首页",
+        "知识库浏览",
+        "知识库管理",
+        "记忆卡片",
+        "搜索",
+        "任务",
+        "OpenClaw",
+        "🤖\nDeepSeek\ndeepseek-v4-f",
+        "查看更多 →",
+        "健康检查",
+        "日志配置",
+        "错误日志"
+      ],
+      "inputs": [],
+      "issues": {
+        "ce": [],
+        "pe": [],
+        "fr": []
+      }
+    },
+    "/search": {
+      "url": "http://127.0.0.1:5177/search",
+      "ok": true,
+      "textLen": 295,
+      "textHead": "移动端管理\nAI 生成知识库\n📚\n知识库\n👨‍👩‍👧\n家庭\n🤖\nAI 实验室\n首页\n知识库浏览\n知识库管理\n记忆卡片\n搜索\n任务\nOpenClaw\n🤖\nDeepSeek\ndeepseek-v4-flash\n●\n百花（寻芳居） - 家庭知识港湾\n全文知识搜索\n提示：正在监听剪贴板\n\n如果您使用 Obsidian 管理笔记，推荐安装 Obsidian 以获得更好的体验。 下载 Obsidian\n\n行业\n全部\n计算机\n生活\n中医\n中医养生\nC#编程与.NET开发\n知识库\n所有知识库\n搜索\n搜索提示\n支持全文关键词搜索和语义搜索\n可以使用拼音或英文关键词\n选中知识库可缩小搜索范围",
+      "h": [
+        "全文知识搜索",
+        "搜索提示"
+      ],
+      "btns": [
+        "☰",
+        "☰",
+        "📚\n知识库",
+        "👨‍👩‍👧\n家庭",
+        "🤖\nAI 实验室",
+        "切换亮色/暗色模式",
+        "登出",
+        "🈚",
+        "全部",
+        "计算机",
+        "生活",
+        "中医",
+        "中医养生",
+        "C#编程与.NET开发",
+        "搜索",
+        "系统工具",
+        "Retry",
+        "Resume"
+      ],
+      "links": [
+        "移动端管理",
+        "AI 生成知识库",
+        "首页",
+        "知识库浏览",
+        "知识库管理",
+        "记忆卡片",
+        "搜索",
+        "任务",
+        "OpenClaw",
+        "🤖\nDeepSeek\ndeepseek-v4-f",
+        "下载 Obsidian",
+        "健康检查",
+        "日志配置",
+        "错误日志"
+      ],
+      "inputs": [
+        {
+          "type": "INPUT:text",
+          "ph": "搜索笔记...",
+          "w": 1076,
+          "visible": true
+        }
+      ],
+      "issues": {
+        "ce": [],
+        "pe": [],
+        "fr": []
+      }
+    },
+    "/browse": {
+      "url": "http://127.0.0.1:5177/browse",
+      "ok": true,
+      "textLen": 354,
+      "textHead": "移动端管理\nAI 生成知识库\n📚\n知识库\n👨‍👩‍👧\n家庭\n🤖\nAI 实验室\n首页\n知识库浏览\n知识库管理\n记忆卡片\n搜索\n任务\nOpenClaw\n🤖\nDeepSeek\ndeepseek-v4-flash\n●\n百花（寻芳居） - 家庭知识港湾\n📚 知识库浏览\n🏭 行业：\n全部\n计算机\n生活\n中医\n中医养生\nC#编程与.NET开发\n来源：\n全部\n🏠 本地\n📚\n中医抗敏\n🏠 本地\n中医\n🎧 听\n📚\n清涕证治\n🏠 本地\n中医\n🎧 听\n📚\n鼻渊通\n🏠 本地\n中医\n🎧 听\n📚\n计算机\n🏠 本地\n计算机\n🎧 听\n📚\nNET开发智库\n🏠 本地\nC#编程与.NET开发\n🎧 听\n📚\n岐黄养生\n🏠 本地\n中医养生\n🎧 听\n📚\n烘焙初体验\n🏠 本地\n生活\n🎧 听",
+      "h": [
+        "📚 知识库浏览"
+      ],
+      "btns": [
+        "☰",
+        "☰",
+        "📚\n知识库",
+        "👨‍👩‍👧\n家庭",
+        "🤖\nAI 实验室",
+        "切换亮色/暗色模式",
+        "登出",
+        "全部",
+        "计算机",
+        "生活",
+        "中医",
+        "中医养生",
+        "C#编程与.NET开发",
+        "全部",
+        "🏠 本地",
+        "🎧 听",
+        "🎧 听",
+        "🎧 听",
+        "🎧 听",
+        "🎧 听",
+        "🎧 听",
+        "🎧 听",
+        "系统工具",
+        "Retry",
+        "Resume"
+      ],
+      "links": [
+        "移动端管理",
+        "AI 生成知识库",
+        "首页",
+        "知识库浏览",
+        "知识库管理",
+        "记忆卡片",
+        "搜索",
+        "任务",
+        "OpenClaw",
+        "🤖\nDeepSeek\ndeepseek-v4-f",
+        "健康检查",
+        "日志配置",
+        "错误日志"
+      ],
+      "inputs": [],
+      "issues": {
+        "ce": [],
+        "pe": [],
+        "fr": []
+      }
+    },
+    "/note": {
+      "url": "http://127.0.0.1:5177/note",
+      "ok": true,
+      "textLen": 155,
+      "textHead": "移动端管理\nAI 生成知识库\n📚\n知识库\n👨‍👩‍👧\n家庭\n🤖\nAI 实验室\n首页\n知识库浏览\n知识库管理\n记忆卡片\n搜索\n任务\nOpenClaw\n🤖\nDeepSeek\ndeepseek-v4-flash\n●\n百花（寻芳居） - 家庭知识港湾\n📝 笔记详情\n\n请从搜索结果中选择一个笔记\n\n去搜索",
+      "h": [
+        "📝 笔记详情"
+      ],
+      "btns": [
+        "☰",
+        "☰",
+        "📚\n知识库",
+        "👨‍👩‍👧\n家庭",
+        "🤖\nAI 实验室",
+        "切换亮色/暗色模式",
+        "登出",
+        "去搜索",
+        "系统工具",
+        "Retry",
+        "Resume"
+      ],
+      "links": [
+        "移动端管理",
+        "AI 生成知识库",
+        "首页",
+        "知识库浏览",
+        "知识库管理",
+        "记忆卡片",
+        "搜索",
+        "任务",
+        "OpenClaw",
+        "🤖\nDeepSeek\ndeepseek-v4-f",
+        "健康检查",
+        "日志配置",
+        "错误日志"
+      ],
+      "inputs": [],
+      "issues": {
+        "ce": [],
+        "pe": [],
+        "fr": []
+      }
+    },
+    "/messages": {
+      "url": "http://127.0.0.1:5177/messages",
+      "ok": true,
+      "textLen": 412,
+      "textHead": "移动端管理\nAI 生成知识库\n📚\n知识库\n👨‍👩‍👧\n家庭\n🤖\nAI 实验室\n对话\nAI 对话\n编程 Agent（Microsoft Agent Framework）\n虚拟师父\n研究\n本地模型\n图片识别\nAI 绘图\n股票AI建议\n模型评测\nAI 性能监控\nAI数字助理\n硬件评测\n配置\nAI 设置\n提示词模板\n🤖\nDeepSeek\ndeepseek-v4-flash\n●\n百花（寻芳居） - 家庭知识港湾\n💬 AI 对话\n🏢 DeepSeek\n·\n🤖 deepseek-v4-flash\n模式\n🌐 远程\n🦙 GGUF\n📦 ONNX\n🔧 本地工具暂无运行中的本地工具， 去本地模型部署页启动 →\n提供商\nDeepSeek (官方) (主)\nOpenVINO (本地)\nOpenVINO Coder\n模型\ndeepseek-v4-pro\ndeepseek-v4-flash (默认)\n知识库\n关闭\n发送",
+      "h": [
+        "💬 AI 对话"
+      ],
+      "btns": [
+        "☰",
+        "☰",
+        "📚\n知识库",
+        "👨‍👩‍👧\n家庭",
+        "🤖\nAI 实验室",
+        "切换亮色/暗色模式",
+        "登出",
+        "🌐 远程",
+        "🦙 GGUF",
+        "📦 ONNX",
+        "DeepSeek (官方) (主)",
+        "OpenVINO (本地)",
+        "OpenVINO Coder",
+        "deepseek-v4-pro",
+        "deepseek-v4-flash (默认)",
+        "发送",
+        "系统工具",
+        "Retry",
+        "Resume"
+      ],
+      "links": [
+        "移动端管理",
+        "AI 生成知识库",
+        "AI 对话",
+        "编程 Agent（Microsoft Agent ",
+        "虚拟师父",
+        "本地模型",
+        "图片识别",
+        "AI 绘图",
+        "股票AI建议",
+        "模型评测",
+        "AI 性能监控",
+        "AI数字助理",
+        "硬件评测",
+        "AI 设置",
+        "提示词模板",
+        "🤖\nDeepSeek\ndeepseek-v4-f",
+        "去本地模型部署页启动 →",
+        "健康检查",
+        "日志配置",
+        "错误日志"
+      ],
+      "inputs": [
+        {
+          "type": "INPUT:checkbox",
+          "ph": "",
+          "w": 32,
+          "visible": true
+        },
+        {
+          "type": "TEXTAREA:textarea",
+          "ph": "输入消息...\r\nShift+Enter 换行，Enter 发送",
+          "w": 1050,
+          "visible": true
+        }
+      ],
+      "issues": {
+        "ce": [],
+        "pe": [],
+        "fr": []
+      }
+    },
+    "/assistant": {
+      "url": "http://127.0.0.1:5177/assistant",
+      "ok": true,
+      "textLen": 1005,
+      "textHead": "移动端管理\nAI 生成知识库\n📚\n知识库\n👨‍👩‍👧\n家庭\n🤖\nAI 实验室\n对话\nAI 对话\n编程 Agent（Microsoft Agent Framework）\n虚拟师父\n研究\n本地模型\n图片识别\nAI 绘图\n股票AI建议\n模型评测\nAI 性能监控\nAI数字助理\n硬件评测\n配置\nAI 设置\n提示词模板\n🤖\nDeepSeek\ndeepseek-v4-flash\n●\n百花（寻芳居） - 家庭知识港湾\n🤖 AI 数字助理\n\n助理默默观察你在百花中的输入（聊天/搜索/知识库生成），每天自动分析一次， 推测你可能感兴趣的主题（最多 3 个），并为你自动生成对应的知识库。\n\n助理开关\n开启中：采集输入 + 每日分析 + 自动生成知识库 ｜每日分析时间 23:00 ｜数据保留 30 天\n📅 今日分析\n立即分析\n今日共记录 3 条活动（聊天 3 条）。推测兴趣：中医养生、酒文化历史、C#编程与.NET开发\n🎯 中医养生\n90%\n依据：用户主动询问桂枝汤用法，明确表达学习中医养生意图\n🎯 酒文化历史\n85%\n依据：用户询问酒文化历史，计划周末饮酒并想了解背景\n🎯 C#编程与.NET开发\n90%\n依据：用户明确提出想学C#编程和.NET开发\n📚 已触发生成的知识库（可在\"任务\"页查看进度，完成后出现在知识库列表）：\n中医养生已提交\n酒文化历史已提交\nC#编程与.NET开发",
+      "h": [
+        "🤖 AI 数字助理"
+      ],
+      "btns": [
+        "☰",
+        "☰",
+        "📚\n知识库",
+        "👨‍👩‍👧\n家庭",
+        "🤖\nAI 实验室",
+        "切换亮色/暗色模式",
+        "登出",
+        "立即分析",
+        "系统工具",
+        "Retry",
+        "Resume"
+      ],
+      "links": [
+        "移动端管理",
+        "AI 生成知识库",
+        "AI 对话",
+        "编程 Agent（Microsoft Agent ",
+        "虚拟师父",
+        "本地模型",
+        "图片识别",
+        "AI 绘图",
+        "股票AI建议",
+        "模型评测",
+        "AI 性能监控",
+        "AI数字助理",
+        "硬件评测",
+        "AI 设置",
+        "提示词模板",
+        "🤖\nDeepSeek\ndeepseek-v4-f",
+        "健康检查",
+        "日志配置",
+        "错误日志"
+      ],
+      "inputs": [
+        {
+          "type": "INPUT:checkbox",
+          "ph": "",
+          "w": 45,
+          "visible": true
+        }
+      ],
+      "issues": {
+        "ce": [],
+        "pe": [],
+        "fr": []
+      }
+    },
+    "/master-chat": {
+      "url": "http://127.0.0.1:5177/master-chat",
+      "ok": true,
+      "textLen": 254,
+      "textHead": "移动端管理\nAI 生成知识库\n📚\n知识库\n👨‍👩‍👧\n家庭\n🤖\nAI 实验室\n对话\nAI 对话\n编程 Agent（Microsoft Agent Framework）\n虚拟师父\n研究\n本地模型\n图片识别\nAI 绘图\n股票AI建议\n模型评测\nAI 性能监控\nAI数字助理\n硬件评测\n配置\nAI 设置\n提示词模板\n🤖\nDeepSeek\ndeepseek-v4-flash\n●\n百花（寻芳居） - 家庭知识港湾\n师父\n+ 拜师\n岐伯\n通过鼻炎确有专长考试\n入道\n0/5\n🏛️\n选择一位师父开始学习之旅",
+      "h": [
+        "师父"
+      ],
+      "btns": [
+        "☰",
+        "☰",
+        "📚\n知识库",
+        "👨‍👩‍👧\n家庭",
+        "🤖\nAI 实验室",
+        "切换亮色/暗色模式",
+        "登出",
+        "+ 拜师",
+        "系统工具",
+        "Retry",
+        "Resume"
+      ],
+      "links": [
+        "移动端管理",
+        "AI 生成知识库",
+        "AI 对话",
+        "编程 Agent（Microsoft Agent ",
+        "虚拟师父",
+        "本地模型",
+        "图片识别",
+        "AI 绘图",
+        "股票AI建议",
+        "模型评测",
+        "AI 性能监控",
+        "AI数字助理",
+        "硬件评测",
+        "AI 设置",
+        "提示词模板",
+        "🤖\nDeepSeek\ndeepseek-v4-f",
+        "健康检查",
+        "日志配置",
+        "错误日志"
+      ],
+      "inputs": [],
+      "issues": {
+        "ce": [],
+        "pe": [],
+        "fr": []
+      }
+    },
+    "/master-stage": {
+      "url": "http://127.0.0.1:5177/master-stage",
+      "ok": true,
+      "textLen": 261,
+      "textHead": "移动端管理\nAI 生成知识库\n📚\n知识库\n👨‍👩‍👧\n家庭\n🤖\nAI 实验室\n对话\nAI 对话\n编程 Agent（Microsoft Agent Framework）\n虚拟师父\n研究\n本地模型\n图片识别\nAI 绘图\n股票AI建议\n模型评测\nAI 性能监控\nAI数字助理\n硬件评测\n配置\nAI 设置\n提示词模板\n🤖\nDeepSeek\ndeepseek-v4-flash\n●\n百花（寻芳居） - 家庭知识港湾\n阶段进度\n师父：\n返回对话\n📚 知识库关联\n关联知识库\n尚未关联知识库，关联后师父将参考知识库内容教学",
+      "h": [
+        "阶段进度"
+      ],
+      "btns": [
+        "☰",
+        "☰",
+        "📚\n知识库",
+        "👨‍👩‍👧\n家庭",
+        "🤖\nAI 实验室",
+        "切换亮色/暗色模式",
+        "登出",
+        "返回对话",
+        "关联知识库",
+        "系统工具",
+        "Retry",
+        "Resume"
+      ],
+      "links": [
+        "移动端管理",
+        "AI 生成知识库",
+        "AI 对话",
+        "编程 Agent（Microsoft Agent ",
+        "虚拟师父",
+        "本地模型",
+        "图片识别",
+        "AI 绘图",
+        "股票AI建议",
+        "模型评测",
+        "AI 性能监控",
+        "AI数字助理",
+        "硬件评测",
+        "AI 设置",
+        "提示词模板",
+        "🤖\nDeepSeek\ndeepseek-v4-f",
+        "健康检查",
+        "日志配置",
+        "错误日志"
+      ],
+      "inputs": [],
+      "issues": {
+        "ce": [],
+        "pe": [],
+        "fr": []
+      }
+    },
+    "/generate": {
+      "url": "http://127.0.0.1:5177/generate",
+      "ok": true,
+      "textLen": 913,
+      "textHead": "移动端管理\nAI 生成知识库\n📚\n知识库\n👨‍👩‍👧\n家庭\n🤖\nAI 实验室\n对话\nAI 对话\n编程 Agent（Microsoft Agent Framework）\n虚拟师父\n研究\n本地模型\n图片识别\nAI 绘图\n股票AI建议\n模型评测\nAI 性能监控\nAI数字助理\n硬件评测\n配置\nAI 设置\n提示词模板\n🤖\nDeepSeek\ndeepseek-v4-flash\n●\n百花（寻芳居） - 家庭知识港湾\n🤖 AI 生成知识库\n\n输入主题或问题，AI 将自动生成结构化笔记内容和记忆卡片。\n\n🎯 主题关键词\n输入一个主题，AI 将生成完整的知识库大纲和笔记内容\n🎯 生成方式\n📚 生成完整知识库\n📝 生成单条笔记\n🏷️ 行业\n✨ AI 自动推断\n计算机\n生活\n通用\n中医\n中医养生\nC#编程与.NET开发\n✏️ 自定义\nAI 将根据您输入的主题自动推断所属行业\n🤖 AI 模型\nDeepSeek (官方) (主)\ndeepseek-v4-pro\n付费\ndeepseek-v4-flash\n付费\n默认\nOpenVINO (本地)\ndeepseek-v4-flash\n默认\nqwen2.5-7b-instruct-int4-ov\nOpenVINO Coder\nqwen2.5-coder-7b-instruct-int4-ov\n默认\n📚 目标知识库\n✨ 新建（AI 自动命名）",
+      "h": [
+        "🤖 AI 生成知识库"
+      ],
+      "btns": [
+        "☰",
+        "☰",
+        "📚\n知识库",
+        "👨‍👩‍👧\n家庭",
+        "🤖\nAI 实验室",
+        "切换亮色/暗色模式",
+        "登出",
+        "📚 生成完整知识库",
+        "📝 生成单条笔记",
+        "✨ AI 自动推断",
+        "计算机",
+        "生活",
+        "通用",
+        "中医",
+        "中医养生",
+        "C#编程与.NET开发",
+        "✏️ 自定义",
+        "deepseek-v4-pro\n付费",
+        "deepseek-v4-flash\n付费\n默认",
+        "deepseek-v4-flash\n默认",
+        "qwen2.5-7b-instruct-int4-ov",
+        "qwen2.5-coder-7b-instruct-int4",
+        "✏️ 编辑提示词",
+        "🚀 生成知识库 并创建记忆卡片",
+        "系统工具"
+      ],
+      "links": [
+        "移动端管理",
+        "AI 生成知识库",
+        "AI 对话",
+        "编程 Agent（Microsoft Agent ",
+        "虚拟师父",
+        "本地模型",
+        "图片识别",
+        "AI 绘图",
+        "股票AI建议",
+        "模型评测",
+        "AI 性能监控",
+        "AI数字助理",
+        "硬件评测",
+        "AI 设置",
+        "提示词模板",
+        "🤖\nDeepSeek\ndeepseek-v4-f",
+        "🧠 查看记忆卡片",
+        "健康检查",
+        "日志配置",
+        "错误日志"
+      ],
+      "inputs": [
+        {
+          "type": "INPUT:text",
+          "ph": "例如：Python编程、中医诊断学...",
+          "w": 600,
+          "visible": true
+        },
+        {
+          "type": "INPUT:checkbox",
+          "ph": "",
+          "w": 16,
+          "visible": true
+        },
+        {
+          "type": "INPUT:radio",
+          "ph": "",
+          "w": 16,
+          "visible": true
+        },
+        {
+          "type": "INPUT:radio",
+          "ph": "",
+          "w": 16,
+          "visible": true
+        },
+        {
+          "type": "INPUT:radio",
+          "ph": "",
+          "w": 16,
+          "visible": true
+        }
+      ],
+      "issues": {
+        "ce": [],
+        "pe": [],
+        "fr": []
+      }
+    },
+    "/cards": {
+      "url": "http://127.0.0.1:5177/cards",
+      "ok": true,
+      "textLen": 232,
+      "textHead": "移动端管理\nAI 生成知识库\n📚\n知识库\n👨‍👩‍👧\n家庭\n🤖\nAI 实验室\n首页\n知识库浏览\n知识库管理\n记忆卡片\n搜索\n任务\nOpenClaw\n🤖\nDeepSeek\ndeepseek-v4-flash\n●\n百花（寻芳居） - 家庭知识港湾\n🧠 记忆卡片\n知识库\n全部知识库\n中医抗敏\n清涕证治\n鼻渊通\n计算机\nNET开发智库\n岐黄养生\n烘焙初体验\n🔍\n搜索\n0\n卡片总数\n0\n牌组数\n0\nAI 生成\n📝 卡片列表\n共 0 条\n📝\n\n暂无卡片",
+      "h": [
+        "🧠 记忆卡片"
+      ],
+      "btns": [
+        "☰",
+        "☰",
+        "📚\n知识库",
+        "👨‍👩‍👧\n家庭",
+        "🤖\nAI 实验室",
+        "切换亮色/暗色模式",
+        "登出",
+        "全部知识库",
+        "中医抗敏",
+        "清涕证治",
+        "鼻渊通",
+        "计算机",
+        "NET开发智库",
+        "岐黄养生",
+        "烘焙初体验",
+        "搜索",
+        "系统工具",
+        "Retry",
+        "Resume"
+      ],
+      "links": [
+        "移动端管理",
+        "AI 生成知识库",
+        "首页",
+        "知识库浏览",
+        "知识库管理",
+        "记忆卡片",
+        "搜索",
+        "任务",
+        "OpenClaw",
+        "🤖\nDeepSeek\ndeepseek-v4-f",
+        "健康检查",
+        "日志配置",
+        "错误日志"
+      ],
+      "inputs": [
+        {
+          "type": "INPUT:text",
+          "ph": "搜索卡片内容...",
+          "w": 447,
+          "visible": true
+        }
+      ],
+      "issues": {
+        "ce": [],
+        "pe": [],
+        "fr": []
+      }
+    },
+    "/tasks": {
+      "url": "http://127.0.0.1:5177/tasks",
+      "ok": true,
+      "textLen": 1327,
+      "textHead": "移动端管理\nAI 生成知识库\n📚\n知识库\n👨‍👩‍👧\n家庭\n🤖\nAI 实验室\n首页\n知识库浏览\n知识库管理\n记忆卡片\n搜索\n任务\nOpenClaw\n🤖\nDeepSeek\ndeepseek-v4-flash\n●\n百花（寻芳居） - 家庭知识港湾\n📊 任务管理\n🟢 WebSocket 已连接\n🗑️ 清空历史\n🤖 AI 生成知识库\nCancelled\n4 / 100\n生成系统提示词...\n❌ Task_CancelledByUser\n🤖 deepseek-v4-flash\n🔄 重试\n2026-08-11 08:44:35\n🗑️ 删除\n🤖 AI 生成知识库\nSuccess\n100 / 100\n任务完成\n📝 生成的笔记：\n📄 基础认识/烘焙必备工具清单及用途\n📄 材料知识/低筋、中筋、高筋面粉如何区分\n📄 材料知识/黄油、糖、鸡蛋在配方中的角色\n📄 操作技巧/精确称量：克与毫升的换算门道\n📄 操作技巧/切拌、翻拌、画圈：搅拌手法辨析\n📄 烘烤控制/烤箱预热与烘烤温度控制\n📄 问题解决/戚风蛋糕塌陷与收腰原因排查\n📄 操作技巧/新手首选食谱：黄油饼干全流程\n2026-08-11 08:36:46\n🗑️ 删除\n🤖 AI 生成知识库\nCancelled\n20 / 100\n生成笔记 (3/57): 字符串不可变性与StringBuilder\n❌ Ta",
+      "h": [
+        "📊 任务管理"
+      ],
+      "btns": [
+        "☰",
+        "☰",
+        "📚\n知识库",
+        "👨‍👩‍👧\n家庭",
+        "🤖\nAI 实验室",
+        "切换亮色/暗色模式",
+        "登出",
+        "🗑️ 清空历史",
+        "🔄 重试",
+        "🗑️ 删除",
+        "🗑️ 删除",
+        "🔄 重试",
+        "🗑️ 删除",
+        "🔄 重试",
+        "🗑️ 删除",
+        "🔄 重试",
+        "🗑️ 删除",
+        "🗑️ 删除",
+        "🔄 重试",
+        "🗑️ 删除",
+        "🔄 重试",
+        "🗑️ 删除",
+        "🔄 重试",
+        "🗑️ 删除",
+        "🔄 重试"
+      ],
+      "links": [
+        "移动端管理",
+        "AI 生成知识库",
+        "首页",
+        "知识库浏览",
+        "知识库管理",
+        "记忆卡片",
+        "搜索",
+        "任务",
+        "OpenClaw",
+        "🤖\nDeepSeek\ndeepseek-v4-f",
+        "📄 基础认识/烘焙必备工具清单及用途",
+        "📄 材料知识/低筋、中筋、高筋面粉如何区分",
+        "📄 材料知识/黄油、糖、鸡蛋在配方中的角色",
+        "📄 操作技巧/精确称量：克与毫升的换算门道",
+        "📄 操作技巧/切拌、翻拌、画圈：搅拌手法辨析",
+        "📄 烘烤控制/烤箱预热与烘烤温度控制",
+        "📄 问题解决/戚风蛋糕塌陷与收腰原因排查",
+        "📄 操作技巧/新手首选食谱：黄油饼干全流程",
+        "健康检查",
+        "日志配置",
+        "错误日志"
+      ],
+      "inputs": [],
+      "issues": {
+        "ce": [],
+        "pe": [],
+        "fr": []
+      }
+    }
+  }
+}

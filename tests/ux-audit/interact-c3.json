@@ -1,0 +1,29 @@
+[
+  {
+    "name": "mb_trigger",
+    "count": 0
+  },
+  {
+    "name": "mb_dropdown_opts",
+    "optCount": 0,
+    "optTexts": []
+  },
+  {
+    "name": "mb_after_provider",
+    "provVal": "ERR:TimeoutError: locator.innerText: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.smart-select-value').",
+    "modelOpts": [
+      "-- 请选择 --"
+    ],
+    "modelSel2": "ERR:TimeoutError: locator.innerText: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.smart-select').nth(1)"
+  },
+  {
+    "name": "lm_overview_20s",
+    "stillSpinner": false,
+    "snippet": " - 家庭知识港湾 🖥️ 本地模型部署 📊 概览 🦙 Ollama 💜 LM Studio ⚡ llama.cpp 🧿 OpenVINO ▶ 硬件环境 ▶ ▶️ 运行中模型 🔄 刷新 ▶ 本地工具 ▼ 模型推荐 🔄 刷新模型库 全部 💬 通用对话 🇨🇳 中文优化 📝 笔记 💻 代码编程 🧠 推理思考 🪶 轻量快速 🏢 全部公司 ☁️ 阿里云 👤 Meta 🔍 Google 🪟 Microsoft 🐋 DeepSeek 本机显存: 2.0 GB 💾 4 GB 6 个模型 Qwen 2.5 0.5B 0.4 GB 阿里云通义千问超轻量版，适合极低资源环境和快速响应场景 0.5B Q4_K_M chat chinese lightweight tcm 阿里云 显存: 无要求 内存: 1GB+ 可直接运行 🚀 约 52 tok/s 部署到 Ollama 部署到 LM Studio Llama 3.2 1B 0.8 GB Meta 最新轻量模型，多语言支持好，适合边缘设备 1B Q4_K_M chat lightweight Meta 显存: 无要求 内"
+  },
+  {
+    "name": "lm_ollama_tab_after_load",
+    "stillSpinner": false,
+    "snippet": " - 家庭知识港湾 🖥️ 本地模型部署 📊 概览 🦙 Ollama 💜 LM Studio ⚡ llama.cpp 🧿 OpenVINO ▼ 🦙 Ollama 已下载模型 🔄 刷新 模型 工具 大小 修改时间 状态 操作 共 2 个模型，总大小约 7.4 GB ▶ 📥 加载 Ollama 模型 ▼ 🧠 OpenVINO 模型（Intel Arc GPU） ⬇️ 下载任务 刷新 暂无下载任务 📦 已下载模型 模型 大小 状态 操作 Qwen2.5-14B-Instruct-INT4-OV 7.82GB 未运行 运行删除 Qwen2.5-7B-Instruct-int4-ov 4.17GB 未运行 运行删除 Qwen2.5-Coder-7B-Instruct-int4-ov 4.20GB 未运行 运行删除 🌐 可下载模型（ModelScope 国内源 / HuggingFace 镜像） 模型 参数 大小 用途 Qwen 2.5 7B Instruct 7B INT4 4.7GB 通用聊天主力，中文/多语言均衡，Arc 核显流畅 已安装 Qwen 2.5 14B Instruct 14B INT4 9.0GB 高质量长文本，建议内存 ≥ 16G 已安装 Qwen 2.5 Coder 7B 7B INT4 4.7GB 代码生成/补全/解释，编程 Agent 可用 已安"
+  }
+]

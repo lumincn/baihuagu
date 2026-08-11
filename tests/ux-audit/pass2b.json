@@ -1,0 +1,66 @@
+[
+  {
+    "route": "/search",
+    "msg": "下载Obsidian元素: null"
+  },
+  {
+    "route": "/search",
+    "msg": "搜索\"烘焙\"后: url=http://127.0.0.1:5177/search spinner=false"
+  },
+  {
+    "route": "/search",
+    "msg": "结果文本片段: [\"☰\",\"移动端管理\",\"AI 生成知识库\",\"☰\",\"📚\",\"知识库\",\"👨‍👩‍👧\",\"家庭\",\"🤖\",\"AI 实验室\",\"首页\",\"知识库浏览\",\"知识库管理\",\"记忆卡片\",\"搜索\",\"任务\",\"OpenClaw\",\"🤖\",\"DeepSeek\",\"deepseek-v4-flash\",\"●\",\"百花（寻芳居） - 家庭知识港湾\",\"全文知识搜索\",\"提示：\",\"下载 Obsidian\",\"行业\",\"全部\",\"计算机\",\"生活\",\"中医\",\"中医养生\",\"C#编程与.NET开发\",\"全部\",\"计算机\",\"生活\",\"中医\",\"中医养生\",\"C#编程与.NET开发\",\"知识库\",\"所有知识库\"]"
+  },
+  {
+    "route": "/search",
+    "msg": "无结果时正文: 移动端管理|AI 生成知识库|📚|知识库|👨‍👩‍👧|家庭|🤖|AI 实验室|首页|知识库浏览|知识库管理|记忆卡片|搜索|任务|OpenClaw|🤖|DeepSeek|deepseek-v4-flash|●|百花（寻芳居） - 家庭知识港湾|全文知识搜索|提示：正在监听剪贴板|如果您使用 Obsidian 管理笔记，推荐安装 Obsidian 以获得更好的体验。 下载 Obsidian|行业|全部|计算机|生活|中医|中医养生|C#编程与.NET开发|知识库|所有知识库|搜索|文件扫描|⚠️|未在知识库中找到匹配内容"
+  },
+  {
+    "route": "/search",
+    "msg": "空输入搜索: 移动端管理|AI 生成知识库|📚|知识库|👨‍👩‍👧|家庭|🤖|AI 实验室|首页|知识库浏览|知识库管理|记忆卡片|搜索|任务|OpenClaw|🤖|DeepSeek|deepseek-v4-flash|●|百花（寻芳居） - 家庭知识港湾|全文知识搜索|提示：正在监听剪贴板|如果您使用 Obsidian 管理笔记，推荐安装 Obsidian 以获得更好的体验。 下载 Obsidian|行业|全部|计算机|生活|中医|中医养生|C#编程与.NET开发|知识库|所有知识库|搜索|最近搜索|清空记录|zzzzqq不存在内容|×|文件扫描|⚠️|未在知识库中找到匹配内容"
+  },
+  {
+    "route": "/browse",
+    "msg": "听按钮: [{\"tag\":\"BUTTON\",\"href\":null,\"text\":\"🎧 听\"},{\"tag\":\"BUTTON\",\"href\":null,\"text\":\"🎧 听\"},{\"tag\":\"BUTTON\",\"href\":null,\"text\":\"🎧 听\"},{\"tag\":\"BUTTON\",\"href\":null,\"text\":\"🎧 听\"},{\"tag\":\"BUTTON\",\"href\":null,\"text\":\"🎧 听\"}]"
+  },
+  {
+    "route": "/browse",
+    "msg": "点\"听\"后: url=http://127.0.0.1:5177/browse txt=移动端管理|AI 生成知识库|📚|知识库|👨‍👩‍👧|家庭|🤖|AI 实验室|首页|知识库浏览|知识库管理|记忆卡片|搜索|任务|OpenClaw|🤖|DeepSeek|deepseek-v4-flash|●|百花（寻芳居） - 家庭知识港湾|📚 知识库浏览|🏭 行业：|全部|计算机|生活|中医|中医养生|C#编程与.NET开发|来源：|全部|🏠 本地|📚|中医抗敏|🏠 本地"
+  },
+  {
+    "route": "/browse",
+    "msg": "筛选中医后: 移动端管理|AI 生成知识库|📚|知识库|👨‍👩‍👧|家庭|🤖|AI 实验室|首页|知识库浏览|知识库管理|记忆卡片|搜索|任务|OpenClaw|🤖|DeepSeek|deepseek-v4-flash|●|百花（寻芳居） - 家庭知识港湾|📚 知识库浏览|🏭 行业：|全部|计算机|生活|中医|中医养生|C#编程与.NET开发|来源：|全部|🏠 本地|📚|中医抗敏|🏠 本地|中医|🎧 听|📚|清涕证治|🏠 本地|中医|🎧 听|📚|鼻渊通|🏠 本地|中医|🎧 听"
+  },
+  {
+    "route": "/note",
+    "msg": "真实笔记: {\"url\":\"http://127.0.0.1:5177/note?id=%E5%9F%BA%E7%A1%80%E8%AE%A4%E8%AF%86%2F%E7%83%98%E7%84%99%E5%BF%85%E5%A4%87%E5%B7%A5%E5%85%B7%E6%B8%85%E5%8D%95%E5%8F%8A%E7%94%A8%E9%80%94\",\"hasContent\":801,\"textHead\":\"移动端管理\\nAI 生成知识库\\n📚\\n知识库\\n👨‍👩‍👧\\n家庭\\n🤖\\nAI 实验室\\n首页\\n知识库浏览\\n知识库管理\\n记忆卡片\\n搜索\\n任务\\nOpenClaw\\n🤖\\nDeepSeek\\ndeepseek-v4-flash\\n●\\n百花（寻芳居） - 家庭知识港湾\\n🏠 首页\\n/\\n🔍 搜索\\n/\\n基础认识\\n/\\n烘焙必备工具清单及用途\\n← 返回\\n☆\\n收藏\\n✏️\\n编辑\\n烘焙必备工具清单及用途\\n📁 基础认识/烘焙必备工具清单及用途\\n📅 2026-08-11 08:35\\n\\n\\nai_generated: true\\nai_provider: DeepSeek (官方)\\nai_model: deepseek-v4-flash\\ngenerated_at: 2026-08-11T00:35:30.2681035+00:00\\n\\n\\n烘焙必备工具清单及用途\\n\\n\\n核心定义\\n\\n\\n\\n烘焙必备工具指完成基础烘焙流程所需的设备与器具，覆盖称量、混合、成型、烘烤及冷却环节，是保证配方精准度和成品稳定性的物质基础。\\n\\n\\n\\n关键要点\\n\\n\\n\\n\\n电子秤与量杯、量勺：用于精确称量干湿原料，确保配方比例准确。\\n\\n\\n打蛋器（手动/电动）与搅拌碗：用于打发鸡蛋、奶油及混合面糊。\\n\\n\\n粉筛与刮刀：分别用于过筛粉类去除结块、翻拌面糊避免消泡。\\n\\n\\n烤盘/模具与油纸：承载面糊定型并均匀导热，油纸便于脱模。\\n\\n\\n烤箱温度计与冷却架：校准烤箱实际温度，烘烤后架空散热防止回潮。\\n\\n\\n\\n\\n关联概念\\n\\n\\n\\n\\n烘焙原料比例\\n\\n\\n烘焙流程\\n\\n\\n\\n\\n记忆锚点\\n\\n\\n\\n一秤二筛三打蛋，四模五架六烤箱。\\n\\n\\n\\n典型场景/案例\\n\\n\\n\\n新手制作戚风蛋糕时，使用电子秤\"}"
+  },
+  {
+    "route": "/note",
+    "msg": "去搜索失败 TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button:has-text(\"去搜索\"), a:has-text(\"去搜索\")').first()\u001b[22m\n"
+  },
+  {
+    "route": "/note",
+    "msg": "点\"去搜索\"后 url=http://127.0.0.1:5177/note?id=%E5%9F%BA%E7%A1%80%E8%AE%A4%E8%AF%86%2F%E7%83%98%E7%84%99%E5%BF%85%E5%A4%87%E5%B7%A5%E5%85%B7%E6%B8%85%E5%8D%95%E5%8F%8A%E7%94%A8%E9%80%94"
+  },
+  {
+    "route": "/tasks",
+    "msg": "清空历史后: {\"dialogs\":[{\"cls\":\"modal-overlay\",\"vis\":true,\"txt\":\"⚠️ 确认清空\\n\\n确定要删除所有任务记录吗？此操作不可恢复。\\n\\n取消\\n确认清空\"},{\"cls\":\"modal-content\",\"vis\":true,\"txt\":\"⚠️ 确认清空\\n\\n确定要删除所有任务记录吗？此操作不可恢复。\\n\\n取消\\n确认清空\"},{\"cls\":\"modal-actions\",\"vis\":true,\"txt\":\"取消\\n确认清空\"}],\"native\":\"confirm-exists\",\"bodyText\":\"移动端管理\\nAI 生成知识库\\n📚\\n知识库\\n👨‍👩‍👧\\n家庭\\n🤖\\nAI 实验室\\n首页\\n知识库浏览\\n知识库管理\\n记忆卡片\\n搜索\\n任务\\nOpenClaw\\n🤖\\nDeepSeek\\ndeepseek-v4-flash\\n●\\n百花（寻芳居） - 家庭知识港湾\\n📊 任务管理\\n🟢 WebSocket 已连接\\n🗑️ 清空历史\\n⚠️ 确认清空\\n\\n确定要删除所有任务记录吗？此操作不可恢复。\\n\\n取消\\n确认清空\\n🤖 AI 生成知识库\\nCancelled\\n4 / 100\\n生成系统提示词...\\n❌ Task_CancelledByUser\\n🤖 deepseek-v4-flash\\n🔄 重试\\n2026-08\"}"
+  },
+  {
+    "route": "/tasks",
+    "msg": "点删除失败 TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button:has-text(\"🗑️ 删除\")').first()\u001b[22m\n\u001b[2m    - locator resolved to <button class=\"btn btn-sm btn-outline-danger\">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"modal-overlay\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"modal-overlay\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is not stable\u001b[22m\n\u001b[2m  56 × retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\u001b[2m       - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div class=\"modal-overlay\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 500ms\u001b[22m\n"
+  },
+  {
+    "route": "/tasks",
+    "msg": "删除任务后: {\"dialogs\":[{\"cls\":\"modal-overlay\",\"vis\":true,\"txt\":\"⚠️ 确认清空\\n\\n确定要删除所有任务记录吗？此操作不可恢复。\\n\\n取消\\n确认清空\"},{\"cls\":\"modal-content\",\"vis\":true,\"txt\":\"⚠️ 确认清空\\n\\n确定要删除所有任务记录吗？此操作不可恢复。\\n\\n取消\\n确认清空\"},{\"cls\":\"modal-actions\",\"vis\":true,\"txt\":\"取消\\n确认清空\"}],\"bodyText\":\"移动端管理\\nAI 生成知识库\\n📚\\n知识库\\n👨‍👩‍👧\\n家庭\\n🤖\\nAI 实验室\\n首页\\n知识库浏览\\n知识库管理\\n记忆卡片\\n搜索\\n任务\\nOpenClaw\\n🤖\\nDeepSeek\\ndeepseek-v4-flash\\n●\\n百花（寻芳居） - 家庭知识港湾\\n📊 任务管理\\n🟢 WebSocket 已连接\\n🗑️ 清空历史\\n⚠️ 确认清空\\n\\n确定要删除所有任务记录吗？此操作不可恢复。\\n\\n取消\\n确认清空\\n🤖 AI 生成知识库\\nCancelled\\n4 / 100\\n生成系统提示词...\\n❌ Task_CancelledByUser\\n🤖 deepseek-v4-flash\\n🔄 重试\\n2026-08\"}"
+  },
+  {
+    "route": "/tasks",
+    "msg": "点笔记链接失败 TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('a[href*=\"note?id=\"]').first()\u001b[22m\n\u001b[2m    - locator resolved to <a href=\"note?id=%E5%9F%BA%E7%A1%80%E8%AE%A4%E8%AF%86%2F%E7%83%98%E7%84%99%E5%BF%85%E5%A4%87%E5%B7%A5%E5%85%B7%E6%B8%85%E5%8D%95%E5%8F%8A%E7%94%A8%E9%80%94\">…</a>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"modal-overlay\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not stable\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is not stable\u001b[22m\n\u001b[2m  56 × retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\u001b[2m       - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div class=\"modal-overlay\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 500ms\u001b[22m\n"
+  },
+  {
+    "route": "/tasks",
+    "msg": "点笔记链接后 url=http://127.0.0.1:5177/tasks"
+  }
+]

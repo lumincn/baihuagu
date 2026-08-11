@@ -1,0 +1,110 @@
+[
+  {
+    "route": "/search",
+    "msg": "下载Obsidian: null"
+  },
+  {
+    "route": "/search",
+    "msg": "烘焙搜索6s后: {\"hasResultHeader\":false,\"around\":\"移动端管理\\nAI 生成知识库\\n📚\\n知识库\\n👨‍👩‍👧\\n家庭\\n🤖\\nAI 实验室\\n首页\\n知识库浏览\\n知识库管理\\n记忆卡片\\n搜索\\n任务\\nOpenClaw\\n🤖\\nDeepSeek\\ndeepseek-v4-flash\\n●\\n百花（寻芳居） - 家庭知识港湾\\n全文知识搜索\\n提示：正在监听剪贴板\\n\\n如果您使用 Obsidian 管理笔记，推荐安装 Obsidian 以获得更好的体验。 下载 Obsidian\\n\\n行业\\n全部\\n计算机\\n生活\\n中医\\n中医养生\\nC#编程与.NET开发\\n知识库\\n所有知识库\\n搜索\\n文件扫描\\n⚠️\\n\\n请先创建知识库\\n\\n请先 配置知识库路径 后再搜索\"}"
+  },
+  {
+    "route": "/browse",
+    "msg": "中医抗敏卡片元素: [{\"tag\":\"ARTICLE\",\"cls\":\"content\",\"clickable\":false,\"cursor\":\"auto\",\"role\":null},{\"tag\":\"DIV\",\"cls\":\"container mt-4\",\"clickable\":false,\"cursor\":\"auto\",\"role\":null},{\"tag\":\"DIV\",\"cls\":\"row g-3\",\"clickable\":false,\"cursor\":\"auto\",\"role\":null}]"
+  },
+  {
+    "route": "/browse",
+    "msg": "卡片容器: {\"tag\":\"HTML\",\"cls\":\"\",\"txt\":\"移动端管理\\nAI 生成知识库\\n📚\\n知识库\\n👨‍👩‍👧\\n家庭\\n🤖\\nAI 实验室\\n首页\\n知识库浏览\\n知识库管理\\n记\"}"
+  },
+  {
+    "route": "/browse",
+    "msg": "点击卡片区域后 url=http://127.0.0.1:5177/browse"
+  },
+  {
+    "route": "/master-chat",
+    "msg": "岐伯卡片: [{\"tag\":\"MAIN\",\"cls\":\"\"},{\"tag\":\"ARTICLE\",\"cls\":\"content\"}]"
+  },
+  {
+    "route": "/master-chat",
+    "msg": "点拜师后: {\"url\":\"http://127.0.0.1:5177/master-chat\",\"modal\":[\"⚠️ 免责声明\\n\\n虚拟师父是学习辅助工具，不能替代专业咨询。\\n\\n虚拟师父仅用于学习考证知识，不提供真实的医疗诊断、处方或法律建议。\\n如有真实健康或法律问题，请咨询持证专业人士。\\nAI 生成的内容可能存在错误，请以官方教材和权威资料为准。\\n不同意\\n我已阅读并同意\",\"⚠️ 免责声明\\n\\n虚拟师父是学习辅助工具，不能替代专业咨询。\\n\\n虚拟师父仅用于学习考证知识，不提供真实的医疗诊断、处方或法律建议。\\n如有真实健康或法律问题，请咨询持证专业人士。\\nAI 生成的内容可能存在错误，请以官方教材和权威资料为准。\\n不同意\\n我已阅读并同意\",\"不同意\\n我已阅读并同意\"],\"body\":\"移动端管理\\nAI 生成知识库\\n📚\\n知识库\\n👨‍👩‍👧\\n家庭\\n🤖\\nAI 实验室\\n对话\\nAI 对话\\n编程 Agent（Microsoft Agent Framework）\\n虚拟师父\\n研究\\n本地模型\\n图片识别\\nAI 绘图\\n股票AI建议\\n模型评测\\nAI 性能监控\\nAI数字助理\\n硬件评测\\n配置\\nAI 设置\\n提示词模板\\n🤖\\nDeepSeek\\ndeepseek-v4-flash\\n●\\n百花（寻芳居） - 家庭知识港湾\\n师父\\n+ 拜师\\n岐伯\\n通过鼻炎确有专长考试\\n入道\\n0/5\\n🏛️\\n选择一位师父开始学习之旅\\n⚠️ 免责声明\\n\\n虚拟师父是学习辅助工具，不能替代专业咨询。\\n\\n虚拟师父仅用于学习考证知识，不提供真实的医疗诊断、处方或法律建议。\\n如有真实健康或法律问题，请咨询持证专业人士。\\nAI 生成的内容可能存在错误，请以官方教材和权威资料为准。\\n不同意\\n我已阅读并同意\"}"
+  },
+  {
+    "route": "/master-chat",
+    "msg": "无取消按钮，按Escape"
+  },
+  {
+    "route": "/master-stage",
+    "msg": "师父名区域: {\"around\":\"flash\\n●\\n百花（寻芳居） - 家庭知识港湾\\n阶段进度\\n师父：\\n返回对话\\n📚 知识库关联\\n关联知识库\\n尚未关联知识库，关联后师父将参考知识库内容教学\"}"
+  },
+  {
+    "route": "/master-stage",
+    "msg": "关联modal: NO MODAL"
+  },
+  {
+    "route": "/master-stage",
+    "msg": "返回对话后 url=http://127.0.0.1:5177/master-chat"
+  },
+  {
+    "route": "/generate",
+    "msg": "点生成失败 TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button:has-text(\"生成知识库 并创建记忆卡片\"), button:has-text(\"🚀\")').first()\u001b[22m\n\u001b[2m    - locator resolved to <button disabled class=\"btn btn-primary btn-lg\">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    56 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not enabled\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n"
+  },
+  {
+    "route": "/generate",
+    "msg": "空主题提交: {\"hasAlert\":true,\"bodyAround\":\"移动端管理\\nAI 生成知识库\\n📚\\n知识库\\n👨‍👩‍👧\\n家庭\\n🤖\\nAI 实验室\\n对话\\nAI 对话\\n编程 Agent（Microsoft Agent Framework）\\n虚拟师父\\n研究\\n本地模型\\n图片识别\\nAI 绘图\\n股票AI建议\\n模型评测\\nAI 性能监控\\nAI数字助理\\n硬件评测\\n配置\\nAI 设置\\n提示词模板\"}"
+  },
+  {
+    "route": "/generate",
+    "msg": "自定义行业后inputs: [{\"ph\":\"例如：Python编程、中医诊断学...\",\"w\":600},{\"ph\":\"输入自定义行业名称...\",\"w\":250},{\"ph\":\"搜索...\",\"w\":0},{\"ph\":\"\",\"w\":16},{\"ph\":\"\",\"w\":16},{\"ph\":\"\",\"w\":16},{\"ph\":\"\",\"w\":16}]"
+  },
+  {
+    "route": "/generate",
+    "msg": "提示词modal: NO MODAL"
+  },
+  {
+    "route": "/cards",
+    "msg": "搜索烘焙后: {\"url\":\"http://127.0.0.1:5177/cards\",\"body\":\"移动端管理\\nAI 生成知识库\\n📚\\n知识库\\n👨‍👩‍👧\\n家庭\\n🤖\\nAI 实验室\\n首页\\n知识库浏览\\n知识库管理\\n记忆卡片\\n搜索\\n任务\\nOpenClaw\\n🤖\\nDeepSeek\\ndeepseek-v4-flash\\n●\\n百花（寻芳居） - 家庭知识港湾\\n🧠 记忆卡片\\n知识库\\n全部知识库\\n中医抗敏\\n清涕证治\\n鼻渊通\\n计算机\\nNET开发智库\\n岐黄养生\\n烘焙初体验\\n🔍\\n搜索\\n0\\n卡片总数\\n0\\n牌组数\\n0\\nAI 生成\\n📝 卡片列表\\n共 0 条\\n📝\\n\\n暂无卡片\"}"
+  },
+  {
+    "route": "/cards",
+    "msg": "下拉元素: SELECT:form-select"
+  },
+  {
+    "route": "/cards",
+    "msg": "选择知识库失败 TimeoutError: locator.selectOption: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('select, [class*=dropdown]').first()\u001b[22m\n\u001b[2m    - locator resolved to <select class=\"form-select\" data-enhanced=\"true\">…</select>\u001b[22m\n\u001b[2m  - attempting select option action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible and enabled\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying select option action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible and enabled\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying select option action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    58 × waiting for element to be visible and enabled\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying select option action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n"
+  },
+  {
+    "route": "/cards",
+    "msg": "选择知识库后: 移动端管理|AI 生成知识库|📚|知识库|👨‍👩‍👧|家庭|🤖|AI 实验室|首页|知识库浏览|知识库管理|记忆卡片|搜索|任务|OpenClaw|🤖|DeepSeek|deepseek-v4-flash|●|百花（寻芳居） - 家庭知识港湾|🧠 记忆卡片|知识库|全部知识库|中医抗敏|清涕证治|鼻渊通|计算机|NET开发智库|岐黄养生|烘焙初体验|🔍|搜索|0|卡片总数|0|牌组数|0|AI 生成|📝 卡片列表|共 0 条|📝|暂无卡片"
+  },
+  {
+    "route": "/messages",
+    "msg": "空输入发送按钮: {\"sendDisabled\":true,\"sendTitle\":\"\"}"
+  },
+  {
+    "route": "/messages",
+    "msg": "输入后发送按钮: {\"sendDisabled\":false}"
+  },
+  {
+    "route": "/messages",
+    "msg": "select options: [\"DeepSeek (官方) (主)\",\"OpenVINO (本地)\",\"OpenVINO Coder\"]"
+  },
+  {
+    "route": "/home",
+    "msg": "最近浏览区: 最近浏览|查看更多 →|烘焙必备工具清单及用途|📁 基础认识/烘焙必备工具清单及用途|🔍 最近搜索|zzzzqq不存在内容|📱 移动端同步|📱 设备管理|管理移动设备和扫码配对"
+  },
+  {
+    "route": "/home",
+    "msg": "主题切换后 body class/attr: |dark"
+  },
+  {
+    "route": "/home",
+    "msg": "查看更多后 url=http://127.0.0.1:5177/search"
+  },
+  {
+    "route": "/home",
+    "msg": "设备管理失败 TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('a:has-text(\"设备管理\"), button:has-text(\"设备管理\")').first()\u001b[22m\n"
+  },
+  {
+    "route": "/home",
+    "msg": "设备管理后 url=http://127.0.0.1:5177/"
+  }
+]

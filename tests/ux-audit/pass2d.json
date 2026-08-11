@@ -1,0 +1,90 @@
+[
+  {
+    "route": "/search",
+    "msg": "下载Obsidian元素链: \"NOT FOUND\""
+  },
+  {
+    "route": "/search",
+    "msg": "搜\"中医抗敏\"后: 文件扫描|⚠️|请先创建知识库|请先 配置知识库路径 后再搜索"
+  },
+  {
+    "route": "/search",
+    "msg": "搜\"面粉\"后: 文件扫描|⚠️|未在知识库中找到匹配内容"
+  },
+  {
+    "route": "/search",
+    "msg": "搜\"桂花\"后: 文件扫描|⚠️|未在知识库中找到匹配内容"
+  },
+  {
+    "route": "/search",
+    "msg": "无清空记录按钮"
+  },
+  {
+    "route": "/browse",
+    "msg": "卡片结构: [{\"x\":250,\"y\":101,\"w\":1190,\"h\":739,\"anchors\":[],\"btnCount\":15,\"cursor\":\"auto\",\"txt\":\"📚 知识库浏览|🏭 行业：|全部|计算机|生活|中医|中医养生|C#编程与.NET开发|来源：|全部|🏠 本地|📚|中医抗敏|🏠 本地|中医|🎧 听\"}]"
+  },
+  {
+    "route": "/browse",
+    "msg": "点击第一张卡片中心后 url=http://127.0.0.1:5177/browse"
+  },
+  {
+    "route": "/cards",
+    "msg": "下拉信息: {\"nativeDisplay\":\"none\",\"triggers\":[{\"tag\":\"DIV\",\"cls\":\"scene-selector\",\"txt\":\"📚\\n知识库\\n👨‍👩‍👧\\n家庭\\n🤖\\nAI 实验室\"},{\"tag\":\"DIV\",\"cls\":\"enhanced-select-wrapper enhanced-select-chips-mode\",\"txt\":\"全部知识库\\n中医抗敏\\n清涕证治\\n鼻渊通\\n计算机\\nNET开发智\"},{\"tag\":\"DIV\",\"cls\":\"enhanced-select-chips\",\"txt\":\"全部知识库\\n中医抗敏\\n清涕证治\\n鼻渊通\\n计算机\\nNET开发智\"},{\"tag\":\"BUTTON\",\"cls\":\"enhanced-select-chip selected\",\"txt\":\"全部知识库\"},{\"tag\":\"BUTTON\",\"cls\":\"enhanced-select-chip\",\"txt\":\"中医抗敏\"}]}"
+  },
+  {
+    "route": "/cards",
+    "msg": "下拉触发器候选: {\"tag\":\"BUTTON\",\"cls\":\"enhanced-select-chip selected\"}"
+  },
+  {
+    "route": "/cards",
+    "msg": "点下拉失败 TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('text=全部知识库').first()\u001b[22m\n\u001b[2m    - locator resolved to <option value=\"\">全部知识库</option>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    56 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n"
+  },
+  {
+    "route": "/cards",
+    "msg": "下拉选项: []"
+  },
+  {
+    "route": "/generate",
+    "msg": "元素: {\"hasEdit\":true,\"radios\":[{\"checked\":true,\"label\":\"简洁突出重点\\n约 6-10 篇，每篇 2\"},{\"checked\":false,\"label\":\"适中（推荐）\\n约 12-22 篇，每篇 \"},{\"checked\":false,\"label\":\"详细全面\\n约 28-45 篇，每篇 80\"}]}"
+  },
+  {
+    "route": "/generate",
+    "msg": "切到单条笔记后按钮文案: 📚 生成完整知识库|📝 生成单条笔记|🚀 生成知识库 并创建记忆卡片"
+  },
+  {
+    "route": "/generate",
+    "msg": "提示词modal(JS点击): NO VISIBLE MODAL"
+  },
+  {
+    "route": "/generate",
+    "msg": "目标知识库区: 📚 目标知识库|✨ 新建（AI 自动命名）|📂 知识库根路径：C:\\Users\\lumin\\.baihua\\vaults— 新知识库将在此路径下创建子目录"
+  },
+  {
+    "route": "/home",
+    "msg": "设备管理元素链: [\"DIV.section\",\"DIV.home-container\",\"ARTICLE.content\",\"MAIN.\"]"
+  },
+  {
+    "route": "/home",
+    "msg": "设备管理点击后 url=http://127.0.0.1:5177/"
+  },
+  {
+    "route": "/tasks",
+    "msg": "删除任务modal: NO MODAL"
+  },
+  {
+    "route": "/tasks",
+    "msg": "清空modal打开: true"
+  },
+  {
+    "route": "/tasks",
+    "msg": "Escape后modal仍开: true"
+  },
+  {
+    "route": "/messages",
+    "msg": "模式/知识库按钮: [{\"t\":\"📚\\n知识库\",\"title\":\"\",\"disabled\":false},{\"t\":\"🌐 远程\",\"title\":\"\",\"disabled\":false},{\"t\":\"🦙 GGUF\",\"title\":\"\",\"disabled\":false},{\"t\":\"📦 ONNX\",\"title\":\"\",\"disabled\":false},{\"t\":\"发送\",\"title\":\"\",\"disabled\":true}]"
+  },
+  {
+    "route": "/messages",
+    "msg": "知识库按钮后: 无变化"
+  }
+]

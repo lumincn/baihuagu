@@ -1,0 +1,10 @@
+[
+  {
+    "route": "T",
+    "msg": "有头模式播放后: {\"badge\":\"已暂停\",\"speechSynth\":false,\"voices\":0,\"bodyLen\":1807} 新console错误=1"
+  },
+  {
+    "route": "T",
+    "msg": "点\"下一首\"后弹窗: 🎧 听知识库 - 中医抗敏|1 / 37|已暂停|肺主皮毛理论与过敏症状|ai_generated: true|ai_"
+  }
+]

@@ -1,0 +1,18 @@
+[
+  {
+    "route": "T1",
+    "msg": "点击结果后 url=http://127.0.0.1:5177/search 新console错误=0"
+  },
+  {
+    "route": "T2",
+    "msg": "听+播放后 新console错误=1"
+  },
+  {
+    "route": "T3",
+    "msg": "无参直达: {\"hasEmptyHint\":false,\"masterEmpty\":true} 新错误=0"
+  },
+  {
+    "route": "T4",
+    "msg": "masterId=notexist: 移动端管理|AI 生成知识库|📚|知识库|👨‍👩‍👧|家庭|🤖|AI 实验室|对话|AI 对话|编程 Agent（Microsoft Agent Framework）|虚拟师父|研究|本地模型|图片识别|AI 绘图|股票AI建议|模型评测|AI 性能监控|AI数字助理|硬件评测|配置|AI 设置|提示词模板|🤖|DeepSeek|deepseek-v4-flash|●|百花（寻芳居） - 家庭知识港湾|阶段进度|师父：|返回对话|▶|入道|进行中|确定目标、评估基础、生成初始知识库和任务|0/5 阶段完成|完成此阶段|2|筑基|未开始|建立知识框架、每日任务、养成学习习惯|3|精进 | 新错误=0"
+  }
+]

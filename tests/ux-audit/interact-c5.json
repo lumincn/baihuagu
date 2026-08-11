@@ -1,0 +1,39 @@
+[
+  {
+    "name": "openclaw_counter",
+    "text": "17 字符"
+  },
+  {
+    "name": "openclaw_submit_disabled_with_text",
+    "disabled": false
+  },
+  {
+    "name": "ir_chips",
+    "chips": [
+      "3B（快速，默认）",
+      "7B（更准，小字/复杂图）"
+    ]
+  },
+  {
+    "name": "ir_model_selected",
+    "value": "7b"
+  },
+  {
+    "name": "log_settings_inputs",
+    "pwCount": 1,
+    "inputs": [
+      {
+        "ph": "root@example.com",
+        "type": "text"
+      },
+      {
+        "ph": "通过环境变量 OPENOBSERVE_ROOT_PASSWORD 配置",
+        "type": "password"
+      },
+      {
+        "ph": "http://localhost:5082",
+        "type": "text"
+      }
+    ]
+  }
+]

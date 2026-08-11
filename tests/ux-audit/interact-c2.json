@@ -1,0 +1,92 @@
+[
+  {
+    "name": "lm_tab_📊 概览",
+    "main": " 🖥️ 本地模型部署 📊 概览 🦙 Ollama 💜 LM Studio ⚡ llama.cpp 🧿 OpenVINO 刷新中... ▼ 🧠 OpenVINO 模型（Intel Arc GPU） ⬇️ 下载任务 刷新 暂无下载任务 📦 已下载模型 模型 大小 状态 操作 Qwen2.5-14B-Instruct-INT4-OV 7.82GB 未运行 运行删除 Qwen2.5-7B-Instruct-int4-ov 4.17GB 未运行 运行删除 Qwen2.5-Coder-7B-Instruct-int4-ov 4.20GB 未运行 运行删除 🌐 可下载模型（ModelScope 国内源 / HuggingFace 镜像） 模型 参数 大小 用途 Qwen 2.5 7B Instruct 7B INT4 4.7GB 通用聊天主力，中文/多语言均衡，Arc 核显流畅 已安装 Qwen 2.5 14B Instruct 14B INT4 9.0GB 高质量长文本，建议内存 ≥ 16G 已安装 Qwen 2.5 Coder 7B 7B INT4 4.7GB 代码生成/补全/解释，编程 Agent 可用 已安装 Qwen 2.5 Coder 14B 14B INT4 9.0GB 更强代码能力，建议内存 ≥ 16G 下载 Qwen 2.5 VL 7B（视觉） 👁 7B INT4 5.5GB 图像理解/OCR，接入视觉工具（vision_server） 下载 DeepSeek R1 Distill Qwen 7B 7B INT4 4.7GB 深度推理/数学/逻辑，思维链强"
+  },
+  {
+    "name": "lm_tab_🦙 Ollama",
+    "main": " 🖥️ 本地模型部署 📊 概览 🦙 Ollama 💜 LM Studio ⚡ llama.cpp 🧿 OpenVINO 刷新中... ▼ 🧠 OpenVINO 模型（Intel Arc GPU） ⬇️ 下载任务 刷新 暂无下载任务 📦 已下载模型 模型 大小 状态 操作 Qwen2.5-14B-Instruct-INT4-OV 7.82GB 未运行 运行删除 Qwen2.5-7B-Instruct-int4-ov 4.17GB 未运行 运行删除 Qwen2.5-Coder-7B-Instruct-int4-ov 4.20GB 未运行 运行删除 🌐 可下载模型（ModelScope 国内源 / HuggingFace 镜像） 模型 参数 大小 用途 Qwen 2.5 7B Instruct 7B INT4 4.7GB 通用聊天主力，中文/多语言均衡，Arc 核显流畅 已安装 Qwen 2.5 14B Instruct 14B INT4 9.0GB 高质量长文本，建议内存 ≥ 16G 已安装 Qwen 2.5 Coder 7B 7B INT4 4.7GB 代码生成/补全/解释，编程 Agent 可用 已安装 Qwen 2.5 Coder 14B 14B INT4 9.0GB 更强代码能力，建议内存 ≥ 16G 下载 Qwen 2.5 VL 7B（视觉） 👁 7B INT4 5.5GB 图像理解/OCR，接入视觉工具（vision_server） 下载 DeepSeek R1 Distill Qwen 7B 7B INT4 4.7GB 深度推理/数学/逻辑，思维链强"
+  },
+  {
+    "name": "lm_tab_💜 LM Studio",
+    "main": " 🖥️ 本地模型部署 📊 概览 🦙 Ollama 💜 LM Studio ⚡ llama.cpp 🧿 OpenVINO ▼ 💜 LM Studio 已下载模型 🔄 刷新 模型 工具 大小 修改时间 状态 操作 共 2 个模型，总大小约 7.4 GB ▶ 📥 加载 LM Studio 模型 ▼ 🧠 OpenVINO 模型（Intel Arc GPU） ⬇️ 下载任务 刷新 暂无下载任务 📦 已下载模型 模型 大小 状态 操作 Qwen2.5-14B-Instruct-INT4-OV 7.82GB 未运行 运行删除 Qwen2.5-7B-Instruct-int4-ov 4.17GB 未运行 运行删除 Qwen2.5-Coder-7B-Instruct-int4-ov 4.20GB 未运行 运行删除 🌐 可下载模型（ModelScope 国内源 / HuggingFace 镜像） 模型 参数 大小 用途 Qwen 2.5 7B Instruct 7B INT4 4.7GB 通用聊天主力，中文/多语言均衡，Arc 核显流畅 已安装 Qwen 2.5 14B Instruct 14B INT4 9.0GB 高质量长文本，建议内存 ≥ 16G 已安装 Qwen 2.5 Coder 7B 7B INT4 4.7GB 代码生成/补全/解释，编程 Agent 可用 已安装 Qwen 2.5 Coder 14B 14B INT4 9.0GB 更强代码能力，建议内存 ≥ 16G 下载 Qwen 2.5 VL 7B（视觉） 👁 7B INT4 5.5GB 图像理解/OCR，接"
+  },
+  {
+    "name": "lm_tab_⚡ llama.cpp",
+    "main": " 🖥️ 本地模型部署 📊 概览 🦙 Ollama 💜 LM Studio ⚡ llama.cpp 🧿 OpenVINO ▼ ⚡ llama.cpp 可用模型 🔄 刷新 模型 工具 大小 修改时间 状态 操作 共 2 个模型，总大小约 7.4 GB ▶ 📥 加载 llama.cpp 模型 ▶ 🔥 llama.cpp 配置 ▼ 🧠 OpenVINO 模型（Intel Arc GPU） ⬇️ 下载任务 刷新 暂无下载任务 📦 已下载模型 模型 大小 状态 操作 Qwen2.5-14B-Instruct-INT4-OV 7.82GB 未运行 运行删除 Qwen2.5-7B-Instruct-int4-ov 4.17GB 未运行 运行删除 Qwen2.5-Coder-7B-Instruct-int4-ov 4.20GB 未运行 运行删除 🌐 可下载模型（ModelScope 国内源 / HuggingFace 镜像） 模型 参数 大小 用途 Qwen 2.5 7B Instruct 7B INT4 4.7GB 通用聊天主力，中文/多语言均衡，Arc 核显流畅 已安装 Qwen 2.5 14B Instruct 14B INT4 9.0GB 高质量长文本，建议内存 ≥ 16G 已安装 Qwen 2.5 Coder 7B 7B INT4 4.7GB 代码生成/补全/解释，编程 Agent 可用 已安装 Qwen 2.5 Coder 14B 14B INT4 9.0GB 更强代码能力，建议内存 ≥ 16G 下载 Qwen 2.5 VL 7B（视觉） 👁 7B INT4 "
+  },
+  {
+    "name": "lm_tab_🧿 OpenVINO",
+    "main": " 🖥️ 本地模型部署 📊 概览 🦙 Ollama 💜 LM Studio ⚡ llama.cpp 🧿 OpenVINO ▼ 🧿 OpenVINO 模型 🔄 刷新 模型 工具 大小 修改时间 状态 操作 Qwen2.5-VL-3B-Instruct (INT4) OpenVINO 2.57 GB 2026-08-04 15:13 ⏹ 已停止 加载 详情 Qwen2.5-VL-7B-Instruct (INT4) OpenVINO 4.83 GB 2026-08-04 14:35 ⏹ 已停止 加载 详情 共 2 个模型，总大小约 7.4 GB ▶ 📥 加载 OpenVINO 模型 ▼ 🤖 OpenVINO LLM 服务（宿主机托管） 🔄 无法获取 OpenVINO 托管服务状态（宿主机 8866 未运行？） 端口 名称 模型 状态 PID 操作 ▼ 🧠 OpenVINO 模型（Intel Arc GPU） ⬇️ 下载任务 刷新 暂无下载任务 📦 已下载模型 模型 大小 状态 操作 Qwen2.5-14B-Instruct-INT4-OV 7.82GB 未运行 运行删除 Qwen2.5-7B-Instruct-int4-ov 4.17GB 未运行 运行删除 Qwen2.5-Coder-7B-Instruct-int4-ov 4.20GB 未运行 运行删除 🌐 可下载模型（ModelScope 国内源 / HuggingFace 镜像） 模型 参数 大小 用途 Qwen 2.5 7B Instruct 7B INT4 4.7GB 通用聊天主力，中文/多语言均衡"
+  },
+  {
+    "name": "mb_select0_html",
+    "html": "<select class=\"form-control\" data-enhanced=\"true\" style=\"display: none;\"><option value=\"\">-- 请选择 --</option><option value=\"deepseek\">DeepSeek (官方)</option><option value=\"openvino\">OpenVINO (本地)</option><option value=\"openvino-coder\">OpenVINO Coder</option></select>"
+  },
+  {
+    "name": "mb_select0_opts",
+    "opts": [
+      {
+        "v": "",
+        "t": "-- 请选择 --"
+      },
+      {
+        "v": "deepseek",
+        "t": "DeepSeek (官方)"
+      },
+      {
+        "v": "openvino",
+        "t": "OpenVINO (本地)"
+      },
+      {
+        "v": "openvino-coder",
+        "t": "OpenVINO Coder"
+      }
+    ]
+  },
+  {
+    "name": "mb_select1_after",
+    "opts": [
+      {
+        "v": "",
+        "t": "-- 请选择 --"
+      }
+    ]
+  },
+  {
+    "name": "openclaw_refresh_enabled",
+    "disabled": true
+  },
+  {
+    "name": "openclaw_after_refresh",
+    "tail": " 刷新 ID Prompt 状态 创建时间 完成时间 操作 f3597d7d 请用一句话介绍你自己 失败 08-09 12:08 08-09 12:08 查看错误"
+  },
+  {
+    "name": "openclaw_err_modal",
+    "tail": " 刷新 ID Prompt 状态 创建时间 完成时间 操作 f3597d7d 请用一句话介绍你自己 失败 08-09 12:08 08-09 12:08 查看错误 错误详情 - f3597d7d 任务执行失败 Prompt: 请用一句话介绍你自己 失败时间: 2026-08-09 12:08:08 错误日志 An error occurred trying to start process 'openclaw' with working directory '/app/'. No such file or directory 关闭 复制"
+  },
+  {
+    "name": "ai_drawing_redetect",
+    "tail": " - 家庭知识港湾 🎨 AI 绘图 ⚠️ ComfyUI 服务未运行。请先启动 ComfyUI（127.0.0.1:8188），然后点击 🔄 重新检测 ⚙️ 生成参数 模式 🖼️ 图片 🎬 视频 提示词 风格 默认 风格会追加到提示词末尾 宽度 512 768 1024 高度 512 768 1024 采样步数：20 10 40 ✨ 生成 🕘 历史记录 🔄 刷新 a cute panda eating bamboo, cartoon style 🖼️ 08-05 13:45"
+  },
+  {
+    "name": "hardware_after_refresh",
+    "tail": " - 家庭知识港湾 🖥️ 硬件评测 评估当前机器的 AI 算力水平，与主流 AI 计算平台进行对比，帮助您了解硬件性能定位。 📋 本机配置 💻 当前机器 入门 GPU CPU Unknown X64 CPU 核心数 14 > 内存 31.5 GB 显卡 Intel(R) Arc(TM) 130T GPU (16GB) ~9 tok/s 系统 Windows 磁盘可用 59 GB ⚡ AI 算力对比表 按 Llama-3-8B Q4 估算推理速度排序。数据为理论/实测参考值，供性能定位参考。 排名 平台 GPU / NPU / 加速器 显存 / 统一内存 INT8 算力 INT4 算力 显存带宽 Llama3-8B Q4 估速 典型功耗 参考价格 🥇 🟢 NVIDIA RTX 5090 Blackwell GB202 21760 CUDA >心 32 GB GDDR7 专用显存 ~900 TFLOPS ~1800 TFLOPS ~1792 GB/s ~230 tok/s ~575W ~¥16,000 🥈 ⚪ Apple Mac Studio M3 Ultra 80 > GPU + 32 > NPU Apple Silicon 最高 512 GB 统一内存 ~56 TFLOPS ~112 TFLOPS ~819 GB/s ~131 tok/s ~200-300W ~¥35,"
+  },
+  {
+    "name": "stock_advisor_full",
+    "tail": " - 家庭知识港湾 📈 股票 AI 建议 AI 拉取 A 股实时行情并分析，按你的条件自动推荐 10 只建议购买的股票；输入已购代码评估是否卖出。 🎛️ 分析条件 算法 / 角度 综合（均衡） 价值投资（低估值/高ROE） 成长股（高成长赛道） 技术面（趋势/量能/动量） 高股息（防御/分红） 行业 全部行业 AI AI应用 中药 乳制品 传媒 保险 光伏 光模块 免税 养殖 军工 券商 化工 医疗器械 医疗服务 医药 医药外包 半导体 半导体设备 啤酒 地产 基建 安防 家电 建材 新能源车 有色 机场 汽车 汽车电子 消费电子 港口 煤炭 电力 电池 白酒 石油 稀土 航运 调味品 软件 运营商 通信 钢铁 铁路 银行 锂电材料 食品 持有周期 中长期（均衡） 短期（数日~数周） 长期（数月~数年） 📝 自定义提示词（附加给 AI 的分析要求） 默认 最近使用的提示词（最多 10 条） 选择历史提示词… 侧重基本面：优先盈利能力强、估值合理、现金流健康的标的；… 🛒 建议买入 🚨 建议卖出 🔄 开始分析 强制刷新（跳过缓存） 行情缓存 30 秒，AI 结果缓存 10 分钟（按条件+提示词） 🛒 建议购买 TOP 10 综合 ｜ 全部行业 ｜ 中长期 模型：DeepSeek (官方)/deepseek-v4-flash｜13:25:40 # 代码 名称 建议度 动作 理由 1 600519 贵州茅台 90 买入 品牌壁垒极强，盈利质量优异，估值合理 2 600036 招商银行 89 买入 零售龙头，低估值高股息，资产质量稳健 3 000858 五粮液 87 买入 浓香龙头，估值低盈利强，现金流健康 4 600941 中国移动 86 买入 现金流充沛，高股息，防御属性突出 5 000333 美的集团 85 买入 家电龙头，盈利稳健，估值合理 6 600887 伊利股份 84 买入 乳业龙头，低估值，现金流健康 7 300760 迈瑞医疗 84 买入 医疗器械龙头，成长稳健，盈利质量高 8 600900 长江电力 83 买入 水电稀缺，现金流极强，长期稳定 9 601088 中国神华 82 买入 煤炭龙头，高股息，盈利稳定 10 000538 云南白药 81 买入 中药龙头，低估值，现金充裕 💼 持仓评估：是否卖出？ 分析 强制刷新 AI 原始输出（调"
+  },
+  {
+    "name": "code_agent_full",
+    "tail": " - 家庭知识港湾 编程 Agent（Microsoft Agent Framework） 用本地编程模型生成、审查代码。基于微软 Agent Framework (MAF) 编排。 输入需求 语言 / 技术栈 自动识别 AI 提供方 DeepSeek (官方) OpenVINO (本地) OpenVINO Coder 模型 提供方默认模型 qwen2.5-coder-7b-instruct-int4-ov 需求描述 生成代码"
+  },
+  {
+    "name": "log_settings_full",
+    "tail": " - 家庭知识港湾 📋 OpenObserve 日志配置 OpenObserve 是高性能的可观测性平台，支持日志、指标、追踪。应用通过 OpenTelemetry OTLP 协议推送日志、指标和追踪数据到 OpenObserve 进行集中查询和分析。 OpenObserve 配置 用户名 密码 Web UI 地址 浏览器访问地址 🔗 打开 OpenObserve http://localhost:5082 💾 保存配置 🐳 Docker 部署命令"
+  },
+  {
+    "name": "image_recognition_full",
+    "tail": " - 家庭知识港湾 🖼️ 图片识别（本地 Qwen2.5-VL + OpenVINO） ⚠️ 本地视觉服务未运行 ▶️ 启动服务 选择图片 支持 png / jpg / jpeg / webp / bmp，最大 20MB 🖼️ 模型 3B（快速，默认） 7B（更准，小字/复杂图） 提问（可选） 🔍 识别图片"
+  }
+]

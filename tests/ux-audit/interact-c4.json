@@ -1,0 +1,61 @@
+[
+  {
+    "name": "mb_chips",
+    "chips": [
+      "-- 请选择 --",
+      "DeepSeek (官方)",
+      "OpenVINO (本地)",
+      "OpenVINO Coder",
+      "-- 请选择 --"
+    ]
+  },
+  {
+    "name": "mb_after_deepseek_chip",
+    "chips": [
+      "-- 请选择 --",
+      "DeepSeek (官方)",
+      "OpenVINO (本地)",
+      "OpenVINO Coder",
+      "-- 请选择 --",
+      "deepseek-v4-pro",
+      "deepseek-v4-flash"
+    ],
+    "modelOpts": [
+      "-- 请选择 --",
+      "deepseek-v4-pro",
+      "deepseek-v4-flash"
+    ],
+    "selectedModel": "deepseek-v4-pro"
+  },
+  {
+    "name": "mb_coding_chips",
+    "chips": [
+      "-- 请选择 --",
+      "DeepSeek (官方)",
+      "OpenVINO (本地)",
+      "OpenVINO Coder",
+      "-- 请选择 --",
+      "deepseek-v4-pro",
+      "deepseek-v4-flash"
+    ]
+  },
+  {
+    "name": "code_agent_chips",
+    "chips": [
+      "DeepSeek (官方)",
+      "OpenVINO (本地)",
+      "OpenVINO Coder",
+      "提供方默认模型",
+      "qwen2.5-coder-7b-instruct-int4-ov"
+    ]
+  },
+  {
+    "name": "code_agent_after_ov",
+    "modelOpts": [
+      "提供方默认模型",
+      "deepseek-v4-flash",
+      "qwen2.5-7b-instruct-int4-ov"
+    ],
+    "selected": "deepseek-v4-flash"
+  }
+]

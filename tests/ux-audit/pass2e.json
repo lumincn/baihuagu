@@ -1,0 +1,50 @@
+[
+  {
+    "route": "/tasks",
+    "msg": "任务列表: {\"header\":\"任务管理|🟢 WebSocket 已连接|🗑️ 清空历史|🤖 AI 生成知识库|Cancelled|4 / 100|生成系统提示词...|❌ Task_CancelledByUser|🤖 deepseek-v4-flash|🔄 重试|2026-08-11 08:44:35|🗑️ 删除|🤖 AI 生成知识库|Success|100 / 100|任务完成|📝 生成的笔记：|📄 基础认\",\"items\":[],\"bodyLen\":1327}"
+  },
+  {
+    "route": "/browse",
+    "msg": "KB卡片: [{\"tag\":\"ARTICLE\",\"cls\":\"content\",\"x\":250,\"y\":101,\"w\":1190,\"h\":739,\"hasAnchor\":false,\"anchorHref\":null,\"onclick\":null},{\"tag\":\"DIV\",\"cls\":\"container mt-4\",\"x\":270,\"y\":145,\"w\":1150,\"h\":675,\"hasAnchor\":false,\"anchorHref\":null,\"onclick\":null},{\"tag\":\"DIV\",\"cls\":\"row g-3\",\"x\":274,\"y\":285,\"w\":1142,\"h\":535,\"hasAnchor\":false,\"anchorHref\":null,\"onclick\":null}]"
+  },
+  {
+    "route": "/browse",
+    "msg": "点击卡片(ARTICLE.content)后 url=http://127.0.0.1:5177/browse"
+  },
+  {
+    "route": "/browse",
+    "msg": "听按钮后: {\"audioPlaying\":0,\"speechSynth\":false,\"anyAudio\":0}"
+  },
+  {
+    "route": "/cards",
+    "msg": "点烘焙chip后: {\"around\":\"deepseek-v4-flash|●|百花（寻芳居） - 家庭知识港湾|🧠 记忆卡片|知识库|全部知识库|中医抗敏|清涕证治|鼻渊通|计算机|NET开发智库|岐黄养生|烘焙初体验|🔍|搜索|0|卡片总数|0|牌组数|0|AI 生成|📝 卡片列表|共 0 条|📝|暂无卡片|请在知识库浏览页选择笔记，点击\\\"生成 Anki 卡片\\\"\",\"selChips\":[\"烘焙初体验\"]}"
+  },
+  {
+    "route": "/generate",
+    "msg": "编辑提示词按钮: {\"disabled\":false,\"x\":295,\"y\":1284,\"w\":119,\"h\":31,\"title\":\"\",\"html\":\"<button class=\\\"btn btn-sm btn-outline-secondary\\\">✏️ 编辑提示词</button>\"}"
+  },
+  {
+    "route": "/generate",
+    "msg": "真实点击编辑提示词后: {\"modals\":[],\"bodyChanged\":913}"
+  },
+  {
+    "route": "/search",
+    "msg": "结构: {\"warn\":\"\",\"kbChips\":[\"📚\\n知识库\",\"👨‍👩‍👧\\n家庭\",\"🤖\\nAI 实验室\",\"\",\"\",\"搜索\",\"\"],\"inputs\":[\"搜索笔记...\"]}"
+  },
+  {
+    "route": "/search",
+    "msg": "历史区: {\"has\":false,\"seg\":\"\"}"
+  },
+  {
+    "route": "/note",
+    "msg": "按钮: [{\"t\":\"← 返回\",\"title\":\"\",\"disabled\":false},{\"t\":\"☆\\n收藏\",\"title\":\"\",\"disabled\":false},{\"t\":\"✏️\\n编辑\",\"title\":\"\",\"disabled\":false}]"
+  },
+  {
+    "route": "/note",
+    "msg": "点编辑后: {\"modals\":[],\"hasEditor\":true}"
+  },
+  {
+    "route": "/messages",
+    "msg": "知识库长等后: {\"modals\":[],\"mentions\":[]}"
+  }
+]

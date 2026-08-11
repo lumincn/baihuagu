@@ -1,0 +1,34 @@
+[
+  {
+    "route": "/browse",
+    "msg": "听modal: {\"dialogs\":[\"🎧 听知识库 - 中医抗敏|1 / 37|已暂停|肺主皮毛理论与过敏症状|ai_generated: true|ai_provider: DeepSeek (官方)|ai_model: deepseek-v4-flash|generated_at: 2026-07-18T15:49:14.0325\"],\"overlayCount\":1}"
+  },
+  {
+    "route": "/browse",
+    "msg": "点播放后: 🎧 听知识库 - 中医抗敏|1 / 37|已暂停|肺主皮毛理论与过敏症状|ai_generated: true|ai_provider: DeepSeek (官方)|ai_model: deepseek-v4-flash|generate"
+  },
+  {
+    "route": "/master-stage",
+    "msg": "带masterId=qibo: {\"around\":\"（寻芳居） - 家庭知识港湾|阶段进度|师父：|返回对话|▶|入道|进行中|确定目标、评估基础、生成初始知识库和任务|0/5 阶段完成|完成此阶段|2|筑基|未\",\"hasTimeline\":true,\"isEmpty\":false}"
+  },
+  {
+    "route": "/master-stage",
+    "msg": "关联dialog: {\"dialog\":\"选择知识库|✕|中医抗敏|中医|清涕证治|中医|鼻渊通|中医|计算机|计算机|NET开发智库|C#编程与.NET开发|岐黄养生|中医养生|烘焙初体验|生活|关闭\",\"vaults\":[\"中医抗敏\\n中医\",\"清涕证治\\n中医\",\"鼻渊通\\n中医\",\"计算机\\n计算机\",\"NET开发智库\\nC#编程与.NET开发\",\"岐黄养生\\n中医养生\",\"烘焙初体验\\n生活\"]}"
+  },
+  {
+    "route": "/generate",
+    "msg": "编辑提示词inline: {\"textareas\":1,\"taText\":\"\"}"
+  },
+  {
+    "route": "/search",
+    "msg": "点结果后 url=http://127.0.0.1:5177/search"
+  },
+  {
+    "route": "/search",
+    "msg": "清空记录按钮存在: 1"
+  },
+  {
+    "route": "/search",
+    "msg": "清空后: 最近搜索区已消失/无记录"
+  }
+]
