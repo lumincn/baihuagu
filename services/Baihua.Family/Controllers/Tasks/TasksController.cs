@@ -31,6 +31,7 @@ namespace Baihua.Family.Controllers
         private readonly Services.AnkiCardGenerator _cardGenerator;
         private readonly Services.VaultNoteIndexer _vaultNoteIndexer;
         private readonly Services.UserActivityService _activityService;
+        private readonly Services.AiDetailSettingsService _aiDetailSettings;
         private readonly ILogger<TasksController> _logger;
         private readonly IHostApplicationLifetime _appLifetime;
         private readonly IStringLocalizer<SharedResources> _loc;
@@ -48,6 +49,7 @@ namespace Baihua.Family.Controllers
             Services.AnkiCardGenerator cardGenerator,
             Services.VaultNoteIndexer vaultNoteIndexer,
             Services.UserActivityService activityService,
+            Services.AiDetailSettingsService aiDetailSettings,
             ILogger<TasksController> logger,
             IHostApplicationLifetime appLifetime,
             IStringLocalizer<SharedResources> loc)
@@ -64,6 +66,7 @@ namespace Baihua.Family.Controllers
             _cardGenerator = cardGenerator;
             _vaultNoteIndexer = vaultNoteIndexer;
             _activityService = activityService;
+            _aiDetailSettings = aiDetailSettings;
             _logger = logger;
             _appLifetime = appLifetime;
             _loc = loc;

@@ -184,6 +184,7 @@ builder.Services.AddSingleton<ModelDownloadService>();
 builder.Services.AddSingleton<OpenVinoRuntimeManager>();
 builder.Services.AddSingleton<AssistantService>();
 builder.Services.AddSingleton<UserActivityService>();
+builder.Services.AddSingleton<AiDetailSettingsService>();
 builder.Services.AddHostedService<AssistantDailyWorker>();
 builder.Services.AddHttpClient<Baihua.Core.Services.ComfyUiClient>();
 

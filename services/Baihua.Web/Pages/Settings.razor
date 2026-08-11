@@ -301,6 +301,25 @@
         </p>
     }
 
+    <!-- 全局生成详细度（所有 AI 内容生成默认应用，编程任务除外） -->
+    <div class="embedding-config-section" style="margin-top: 2rem; padding-top: 1.5rem; border-color: var(--master-border, #2d3548);">
+        <h2>📐 全局生成详细度</h2>
+        <p style="color: var(--master-text-muted, #91a0b0);font-size:0.9rem;margin-bottom:1rem;">
+            应用于所有 AI 内容生成（知识库、笔记等），编程任务除外。默认最简洁：省时省钱。
+        </p>
+        <div class="form-group">
+            <label>生成详细度</label>
+            <div class="btn-group btn-group-sm" role="group">
+                <button type="button" class="btn @(_globalDetailLevel == "concise" ? "btn-primary" : "btn-outline-primary")" @onclick='() => SetGlobalDetailLevel("concise")'>简洁突出重点</button>
+                <button type="button" class="btn @(_globalDetailLevel == "balanced" ? "btn-primary" : "btn-outline-primary")" @onclick='() => SetGlobalDetailLevel("balanced")'>适中</button>
+                <button type="button" class="btn @(_globalDetailLevel == "comprehensive" ? "btn-primary" : "btn-outline-primary")" @onclick='() => SetGlobalDetailLevel("comprehensive")'>详细全面</button>
+            </div>
+            <div class="form-text text-muted">
+                @(_globalDetailLevel == "concise" ? "约 6-10 篇笔记，每篇 200-400 字" : _globalDetailLevel == "comprehensive" ? "约 28-45 篇笔记，每篇 800-1500 字" : "约 12-22 篇笔记，每篇 400-800 字")
+            </div>
+        </div>
+    </div>
+
     <!-- Embedding 配置（一级·固本模型） -->
     <div class="embedding-config-section" style="margin-top: 2rem; padding-top: 1.5rem; border-color: var(--master-border, #2d3548);">
         <h2>🔍 @L["Settings_EmbeddingConfig"]</h2>
@@ -743,6 +762,8 @@
 
 @code {
     private bool _canShowLocalModelSettings = false;
+    private string _globalDetailLevel = "concise";
+    private bool _globalDetailSaving;
     
     private List<AiConfigProvider> aiProviders = new();
 
@@ -768,6 +789,28 @@
     {
     }
 
+    private async Task SetGlobalDetailLevel(string level)
+    {
+        if (_globalDetailSaving || _globalDetailLevel == level) return;
+        _globalDetailSaving = true;
+        _globalDetailLevel = level;
+        StateHasChanged();
+        try
+        {
+            await ApiService.SetGlobalDetailLevelAsync(level);
+        }
+        catch (Exception ex)
+        {
+            try { _globalDetailLevel = await ApiService.GetGlobalDetailLevelAsync(); } catch { }
+            editErrorMessage = $"保存失败：{ex.Message}";
+        }
+        finally
+        {
+            _globalDetailSaving = false;
+            StateHasChanged();
+        }
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
@@ -791,6 +834,9 @@
 
             try
             {
+                // 全局生成详细度
+                try { _globalDetailLevel = await ApiService.GetGlobalDetailLevelAsync(); } catch { }
+
                 await Task.WhenAll(
                     LoadAiProviders(),
                     LoadLocalModelConfigAsync(),

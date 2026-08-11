@@ -27,8 +27,10 @@ namespace Baihua.Family.Controllers
             if (noteCount < 1 || noteCount > 50)
                 noteCount = 30;
 
-            // 详细度档位（简洁/适中/详细）：控制篇数范围与每篇篇幅，替代死板的固定数量
-            var detailLevel = Baihua.Contracts.Tasks.VaultGenDetail.Normalize(request.DetailLevel);
+            // 详细度档位（简洁/适中/详细）：控制篇数范围与每篇篇幅，替代死板的固定数量。
+            // 未显式指定时跟随全局设置（默认最简洁；编程任务除外）
+            var detailLevel = Baihua.Contracts.Tasks.VaultGenDetail.Normalize(
+                string.IsNullOrWhiteSpace(request.DetailLevel) ? _aiDetailSettings.GetDetailLevel() : request.DetailLevel);
             var (countHint, lengthHint, maxNotes) = Baihua.Contracts.Tasks.VaultGenDetail.Describe(detailLevel);
 
             try

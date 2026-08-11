@@ -69,6 +69,8 @@ namespace Baihua.Web.Services
         Task<List<AssistantAnalysisDto>> GetAssistantHistoryAsync(int days = 14, CancellationToken cancellationToken = default);
         Task<List<UserActivityDto>> GetAssistantActivitiesAsync(CancellationToken cancellationToken = default);
         Task<Dictionary<string, int>> GetAssistantActivityCountsAsync(int days = 14, CancellationToken cancellationToken = default);
+        Task<string> GetGlobalDetailLevelAsync(CancellationToken cancellationToken = default);
+        Task SetGlobalDetailLevelAsync(string level, CancellationToken cancellationToken = default);
         Task<SearchResponse> SearchAsync(string query, string vaultId);
         Task<IndexStatusDto> GetIndexStatusAsync(string vaultId);
         Task<bool> RebuildIndexAsync(string vaultId, CancellationToken cancellationToken = default);
@@ -791,6 +793,25 @@ namespace Baihua.Web.Services
             var response = await GetWithMetricsAsync($"/api/assistant/activities/counts?days={days}", linked.Token);
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<Dictionary<string, int>>(linked.Token) ?? new();
+        }
+
+        public async Task<string> GetGlobalDetailLevelAsync(CancellationToken cancellationToken = default)
+        {
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            var response = await GetWithMetricsAsync("/api/ai/detail-level", linked.Token);
+            response.EnsureSuccessStatusCode();
+            var result = await response.Content.ReadFromJsonAsync<JsonElement>(linked.Token);
+            return result.TryGetProperty("detailLevel", out var v) ? v.GetString() ?? "concise" : "concise";
+        }
+
+        public async Task SetGlobalDetailLevelAsync(string level, CancellationToken cancellationToken = default)
+        {
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            var response = await PostWithMetricsAsync("/api/ai/detail-level",
+                JsonContent.Create(new { detailLevel = level }), linked.Token);
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task<List<AiProviderInfo>> GetAiProvidersAsync()
