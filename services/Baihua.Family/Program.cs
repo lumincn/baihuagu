@@ -237,6 +237,7 @@ builder.Services.AddSingleton<Baihua.Core.Security.DataEncryptionService>();
 
 builder.Services.AddSingleton<Baihua.Family.Services.RestoreService>();
 builder.Services.AddSingleton<Baihua.Family.Services.BackupService>();
+builder.Services.AddSingleton<Baihua.Family.Services.DeviceBackupService>();
 builder.Services.AddSingleton<Baihua.Family.Services.NotesMdCliService>();
 
 // 注册全局异常过滤器
@@ -476,6 +477,7 @@ app.Use(async (context, next) =>
         "/mg/manifest", "/mg/file", "/mg/cards",
         "/mg/vaults", "/mg/pair",
         "/mg/devices/revoke",
+        "/mg/device-backup", // 花记设备备份（上传/列表/下载/删除）
 
         // AI 对话代理：/api/ai/chat/* 纳入 HMAC 鉴权域（AI-01）
         "/api/ai/chat"
@@ -561,6 +563,7 @@ app.Use(async (context, next) =>
         "/mg/register-device",
         "/mg/auth/config", "/mg/verify-token",
         "/mg/devices/revoke",
+        "/mg/device-backup", // 花记设备备份（上传/列表/下载/删除）
 
         // AI 对话代理：已配对移动端经 HMAC 鉴权后访问（AI-01）
         "/api/ai/chat",

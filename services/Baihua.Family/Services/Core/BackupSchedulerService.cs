@@ -9,6 +9,7 @@ namespace Baihua.Family.Services
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<BackupSchedulerService> _logger;
         private readonly TimeSpan _backupInterval;
+        private readonly TimeSpan _minInterval;
         private readonly int _retainCount;
         private readonly string? _backupDir;
 
@@ -23,6 +24,10 @@ namespace Baihua.Family.Services
             // 默认每天备份一次，保留最近 7 个备份
             var intervalHours = configuration.GetValue<int?>("Backup:IntervalHours") ?? 24;
             _backupInterval = TimeSpan.FromHours(Math.Max(1, intervalHours));
+            // 距上次备份不足该时长则跳过（防开发期频繁重启导致重复备份），默认取间隔的一半
+            var minIntervalHours = configuration.GetValue<double?>("Backup:MinIntervalHours")
+                ?? Math.Max(1, intervalHours / 2.0);
+            _minInterval = TimeSpan.FromHours(minIntervalHours);
             _retainCount = configuration.GetValue<int?>("Backup:RetainCount") ?? 7;
             _backupDir = configuration.GetValue<string?>("Backup:Directory");
         }
@@ -60,6 +65,15 @@ namespace Baihua.Family.Services
 
         private async Task RunBackupAsync(CancellationToken stoppingToken)
         {
+            // 距上次备份不足 _minInterval 则跳过（防开发期频繁重启导致重复备份）
+            var latest = GetLatestBackupTime();
+            if (latest != null && (DateTime.UtcNow - latest.Value) < _minInterval)
+            {
+                _logger.LogInformation("距上次备份不足 {MinHours} 小时（上次: {Latest}），跳过本次自动备份",
+                    _minInterval.TotalHours, latest.Value);
+                return;
+            }
+
             using var scope = _serviceProvider.CreateScope();
             var backupService = scope.ServiceProvider.GetRequiredService<BackupService>();
 
@@ -71,6 +85,34 @@ namespace Baihua.Family.Services
             else
             {
                 _logger.LogError("定时备份失败: {Error}", result.Error);
+            }
+        }
+
+        /// <summary>
+        /// 最近一次自动备份的时间（按文件写入时间 UTC），无备份返回 null。
+        /// </summary>
+        private DateTime? GetLatestBackupTime()
+        {
+            try
+            {
+                var backupDir = string.IsNullOrEmpty(_backupDir)
+                    ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "HuajiBackups")
+                    : _backupDir;
+
+                if (!Directory.Exists(backupDir))
+                    return null;
+
+                var times = Directory.GetFiles(backupDir, "huaji_backup_*.zip")
+                    .Concat(Directory.GetFiles(backupDir, "backup_*.zip"))
+                    .Select(f => new FileInfo(f))
+                    .Select(f => f.LastWriteTimeUtc)
+                    .ToList();
+                return times.Count > 0 ? times.Max() : null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "获取最近备份时间失败");
+                return null;
             }
         }
 

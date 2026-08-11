@@ -17,7 +17,7 @@ public class AchievementEngineTests
     {
         var dbFactory = Mock.Of<IDbContextFactory<FamilyDbContext>>();
         var logger = Mock.Of<ILogger<AchievementEngine>>();
-        return new AchievementEngine(dbFactory, logger, _loc).Definitions;
+        return new AchievementEngine(dbFactory, logger, _loc, Learning.FakeTimeProvider.Beijing20260807_0730()).Definitions;
     }
 
     [Fact]

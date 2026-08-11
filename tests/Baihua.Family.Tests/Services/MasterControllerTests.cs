@@ -122,6 +122,7 @@ public class MasterControllerTests
             new TestDbContextFactory(options),
             vaultSettingsMock.Object,
             vaultIndexerMock.Object,
+            Mock.Of<Baihua.Family.Services.UserActivityService>(),
             mockLoc.Object,
             Mock.Of<ILogger<MasterController>>(),
             stageFactory

@@ -130,7 +130,7 @@ public class RequestSignatureService
         var isValid = CryptographicOperations.FixedTimeEquals(providedBytes, expectedBytes);
         if (!isValid)
         {
-            _logger.LogWarning("[Signature] Invalid signature for {Method} {Path}. signString={SignString}", method, path, signString);
+            _logger.LogWarning("[Signature] Invalid signature for {Method} {Path}. signString={SignString} provided={Provided} expected={Expected}", method, path, signString, parts[1], expectedSignature);
         }
         else
         {
