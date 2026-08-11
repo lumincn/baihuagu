@@ -34,6 +34,15 @@ else
             }
         </div>
     }
+    else
+    {
+        <div class="alert alert-success d-flex align-items-center gap-2">
+            <span>✅ 视觉服务运行中（127.0.0.1:@status.Port）</span>
+            <button class="btn btn-outline-danger btn-sm" @onclick="StopServerAsync" disabled="@isStoppingServer">
+                @(isStoppingServer ? "停止中…" : "⏹ 停止服务")
+            </button>
+        </div>
+    }
 
     <div class="vision-layout">
         <!-- 左：上传与预览 -->
@@ -171,6 +180,7 @@ else
     private long elapsedMs;
     private bool isRecognizing;
     private bool isStartingServer;
+    private bool isStoppingServer;
 
     protected override async Task OnInitializedAsync()
     {
@@ -239,6 +249,28 @@ else
         finally
         {
             isStartingServer = false;
+        }
+    }
+
+    private async Task StopServerAsync()
+    {
+        isStoppingServer = true;
+        try
+        {
+            status = await ApiService.StopVisionServerAsync();
+        }
+        catch (Exception ex)
+        {
+            status = new VisionStatusDto
+            {
+                Enabled = true,
+                ServerRunning = false,
+                Message = $"停止失败：{ex.Message}",
+            };
+        }
+        finally
+        {
+            isStoppingServer = false;
         }
     }
 

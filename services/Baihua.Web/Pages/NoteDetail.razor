@@ -84,8 +84,16 @@ else if (note != null)
                 <button @onclick="EditNote" class="btn btn-secondary">
                     <span>✏️</span> @(isEditing ? L["NoteDetail_CancelEdit"] : L["NoteDetail_Edit"])
                 </button>
+                <button @onclick="GenerateCardsForNote" class="btn btn-outline-info" disabled="@isGeneratingCards">
+                    @(isGeneratingCards ? "⏳ 生成中…" : "🗂️ 生成 Anki 卡片")
+                </button>
             </div>
         </div>
+
+        @if (!string.IsNullOrEmpty(generateCardsMessage))
+        {
+            <div class="alert @(generateCardsMessage.StartsWith("失败") || generateCardsMessage.Contains("失败") ? "alert-danger" : "alert-info") py-2 small">@generateCardsMessage</div>
+        }
 
         <div class="note-content-card">
             <h1 class="note-title">@note?.Title</h1>
@@ -179,6 +187,36 @@ else
     private bool isFavorite = false;
     private double fontSize = 16.0;
     private bool isEditing = false;
+    private bool isGeneratingCards;
+    private string? generateCardsMessage;
+
+    /// <summary>为本笔记所在知识库生成 Anki 卡片（对齐 /cards 空态引导的真实入口）</summary>
+    private async Task GenerateCardsForNote()
+    {
+        if (string.IsNullOrEmpty(noteVaultId))
+        {
+            generateCardsMessage = "未找到知识库，无法生成卡片";
+            return;
+        }
+        isGeneratingCards = true;
+        generateCardsMessage = "";
+        try
+        {
+            var result = await ApiService.GenerateAllCardsAsync(noteVaultId);
+            generateCardsMessage = result != null
+                ? $"已提交卡片生成任务（{(string.IsNullOrEmpty(result.TaskId) ? "请到任务页查看" : $"任务 {result.TaskId[..Math.Min(8, result.TaskId.Length)]}…")}）"
+                : "卡片生成任务创建失败，请稍后重试";
+        }
+        catch (Exception ex)
+        {
+            generateCardsMessage = $"卡片生成失败：{ex.Message}";
+        }
+        finally
+        {
+            isGeneratingCards = false;
+        }
+    }
+
     private string editContent = "";
 
     /// <summary>剥离 YAML frontmatter（AI 生成的笔记含 ai_provider/ai_model 等元数据，阅读视图不应展示）</summary>

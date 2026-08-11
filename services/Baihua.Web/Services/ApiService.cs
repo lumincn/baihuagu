@@ -96,6 +96,7 @@ namespace Baihua.Web.Services
         // 本地视觉识别（Qwen2.5-VL + OpenVINO）
         Task<VisionStatusDto> GetVisionStatusAsync(CancellationToken cancellationToken = default);
         Task<VisionStatusDto> StartVisionServerAsync(CancellationToken cancellationToken = default);
+        Task<VisionStatusDto> StopVisionServerAsync(CancellationToken cancellationToken = default);
         Task<VisionResultDto> RecognizeImageAsync(byte[] imageBytes, string prompt, string model, CancellationToken cancellationToken = default);
 
         // AI 绘图（ComfyUI）
@@ -1099,6 +1100,20 @@ namespace Baihua.Web.Services
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(100));
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
             var response = await _aiHttpClient.PostAsync("/api/local-ai/vision/start", null, linked.Token);
+            if (!response.IsSuccessStatusCode)
+            {
+                var err = await response.Content.ReadFromJsonAsync<VisionStatusDto>(linked.Token);
+                return err ?? new VisionStatusDto { Enabled = false, ServerRunning = false };
+            }
+            return await response.Content.ReadFromJsonAsync<VisionStatusDto>(linked.Token)
+                   ?? new VisionStatusDto();
+        }
+
+        public async Task<VisionStatusDto> StopVisionServerAsync(CancellationToken cancellationToken = default)
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
+            var response = await _aiHttpClient.PostAsync("/api/local-ai/vision/stop", null, linked.Token);
             if (!response.IsSuccessStatusCode)
             {
                 var err = await response.Content.ReadFromJsonAsync<VisionStatusDto>(linked.Token);

@@ -130,11 +130,13 @@
                         <a href="@item.FullUrl" target="_blank">
                             @if (item.Kind == "image")
                             {
-                                <img src="@item.FullUrl" class="card-img-top drawing-thumb" alt="@item.Prompt" loading="lazy" />
+                                <img src="@item.FullUrl" class="card-img-top drawing-thumb" alt="@item.Prompt" loading="lazy"
+                                     onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 120%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23e9ecef%22/><text x=%2250%25%22 y=%2255%25%22 font-size=%2212%22 fill=%22%23999%22 text-anchor=%22middle%22>图片加载失败</text></svg>';" />
                             }
                             else
                             {
-                                <video src="@item.FullUrl" class="card-img-top drawing-thumb" muted preload="metadata"></video>
+                                <video src="@item.FullUrl" class="card-img-top drawing-thumb" muted preload="metadata"
+                                       onerror="this.onerror=null;this.outerHTML='<div class=&quot;drawing-thumb drawing-thumb-fallback&quot;>视频加载失败</div>';"></video>
                             }
                         </a>
                         <div class="card-body py-2">

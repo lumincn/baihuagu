@@ -55,6 +55,7 @@ public class OpenVinoVisionService
     private readonly string _baseUrl;
     private readonly object _startLock = new();
     private bool _started;
+    private System.Diagnostics.Process? _serverProcess;
 
     public OpenVinoVisionService(IOptions<LocalVisionOptions> options, ILogger<OpenVinoVisionService> logger)
     {
@@ -148,6 +149,7 @@ public class OpenVinoVisionService
         var process = Process.Start(psi);
         if (process == null)
             throw new InvalidOperationException("无法启动 Python 视觉服务进程");
+        _serverProcess = process;
 
         // 异步把输出写入日志文件，避免管道阻塞
         _ = Task.Run(async () =>
@@ -196,6 +198,31 @@ public class OpenVinoVisionService
         return OperatingSystem.IsWindows() ? "python" : "python3";
     }
 
+    /// <summary>停止视觉服务进程（幂等：未运行直接返回）</summary>
+    public async Task<bool> StopServerAsync(CancellationToken cancellationToken = default)
+    {
+        var proc = _serverProcess;
+        if (proc == null || proc.HasExited)
+        {
+            _started = false;
+            return false;
+        }
+        try
+        {
+            proc.Kill(entireProcessTree: true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "停止视觉服务进程失败");
+            return false;
+        }
+        try { await proc.WaitForExitAsync(cancellationToken); } catch { }
+        _serverProcess = null;
+        _started = false;
+        _logger.LogInformation("本地视觉服务已停止");
+        return true;
+    }
+
     /// <summary>查询视觉服务运行状态</summary>
     public async Task<bool> IsServerRunningAsync(CancellationToken cancellationToken = default)
     {
@@ -216,7 +243,7 @@ public class OpenVinoVisionService
     /// <summary>获取完整状态（含模型信息）</summary>
     public async Task<VisionStatusDto> GetStatusAsync(CancellationToken cancellationToken = default)
     {
-        var status = new VisionStatusDto { Enabled = Enabled };
+        var status = new VisionStatusDto { Enabled = Enabled, Port = _options.Port };
         var seen = new HashSet<string>();
         foreach (var model in _options.Models)
         {

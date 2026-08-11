@@ -40,10 +40,10 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">@L["CodeAgent_Provider"]</label>
-                            <select class="form-select" @bind="_providerId">
+                            <select class="form-select" @bind="_providerId" @bind:after="OnProviderChanged">
                                 @foreach (var p in _providers)
                                 {
-                                    <option value="@p.Id">@p.Name</option>
+                                    <option value="@p.Id">@p.Name@(IsLocalProvider(p) ? "（本地）" : "（云端）")</option>
                                 }
                             </select>
                         </div>
@@ -55,7 +55,7 @@
                                 {
                                     @foreach (var m in p.Models)
                                     {
-                                        <option value="@m.Name">@m.Name</option>
+                                        <option value="@m.Name">@m.Name@(m.IsPaid ? "（云端）" : "")</option>
                                     }
                                 }
                             </select>
@@ -165,6 +165,21 @@
         {
             _error = ex.Message;
         }
+    }
+
+    /// <summary>切换提供方时重置模型为默认值，避免选中残留上一提供方的模型（如云端模型）</summary>
+    private void OnProviderChanged()
+    {
+        var p = _providers.FirstOrDefault(x => x.Id == _providerId);
+        _model = p?.Model ?? "";
+    }
+
+    /// <summary>本地提供方识别（OpenVINO/Ollama/LM Studio/llama.cpp/coder）——用于提供方下拉标注，避免误用云端</summary>
+    private static bool IsLocalProvider(CodeAgentProviderInfo p)
+    {
+        var s = (p.Id + " " + p.Name).ToLowerInvariant();
+        return s.Contains("openvino") || s.Contains("ollama") || s.Contains("lmstudio")
+            || s.Contains("llamacpp") || s.Contains("local") || s.Contains("coder");
     }
 
     private async Task GenerateAsync()

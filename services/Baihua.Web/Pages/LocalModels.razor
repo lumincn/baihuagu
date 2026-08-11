@@ -38,7 +38,13 @@
 
 @if (isLoading)
 {
-    <div class="loading-spinner">@L["LocalModels_Refreshing"]</div>
+    <div class="loading-spinner">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">加载中</span>
+        </div>
+        <div class="mt-2">@L["LocalModels_Refreshing"]@(!string.IsNullOrEmpty(loadingStatus) ? $"：{loadingStatus}" : "")
+        </div>
+    </div>
 }
 else
 {
@@ -2250,6 +2256,7 @@ else
 
 @code {
     private bool isLoading = true;
+    private string loadingStatus = "";
     private bool isDeploying = false;
     private bool isRefreshingLibrary = false;
     private HardwareInfoDto? hardwareInfo;
@@ -2373,26 +2380,54 @@ else
     {
         try
         {
-            // 并行加载独立的 API 调用
+            // 第一步：硬件 + 本地工具（快），完成后即可先渲染概览，不必等慢的提供方扫描
+            SetLoadingStatus("正在检测硬件环境…");
             var hwTask = ApiService.GetHardwareInfoAsync();
             var toolsTask = ApiService.GetLocalToolsAsync();
             await Task.WhenAll(hwTask, toolsTask);
 
             hardwareInfo = hwTask.Result;
             localTools = toolsTask.Result;
+            await InvokeAsync(() =>
+            {
+                isLoading = false;
+                StateHasChanged();
+            });
 
-            // 配置和推荐模型可以并行
-            var configTask = LoadLlamaCppConfigAsync();
-            var recTask = LoadRecommendationsAsync();
-            var modelsTask = RefreshRunningModels();
-            var downloadedTask = RefreshDownloadedModels();
-            var openvinoLlmTask = LoadOpenVinoLlmStatus();
-            var openVinoTask = LoadOpenVinoAsync();
-            await Task.WhenAll(configTask, recTask, modelsTask, downloadedTask, openvinoLlmTask, openVinoTask);
+            // 第二步：其余数据独立加载、各自容错（Ollama/LM Studio 等不可达时不再拖慢整体）
+            SetLoadingStatus("正在扫描本地模型服务…");
+            var tasks = new List<Task>
+            {
+                SafeLoadAsync(LoadLlamaCppConfigAsync),
+                SafeLoadAsync(() => LoadRecommendationsAsync()),
+                SafeLoadAsync(RefreshRunningModels),
+                SafeLoadAsync(RefreshDownloadedModels),
+                SafeLoadAsync(LoadOpenVinoLlmStatus),
+                SafeLoadAsync(LoadOpenVinoAsync),
+            };
+            await Task.WhenAll(tasks);
         }
         catch (Exception ex)
         {
             Logger.LogWarning(ex, "加载数据失败");
+        }
+    }
+
+    private void SetLoadingStatus(string msg)
+    {
+        loadingStatus = msg;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SafeLoadAsync(Func<Task> fn)
+    {
+        try
+        {
+            await fn();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "分块加载失败");
         }
     }
 

@@ -236,7 +236,9 @@ public class ComfyController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "ComfyUI file fetch failed: {File}", filename);
-            return NotFound(new { error = "文件获取失败" });
+            // 显式 text/plain 404：ApiController 默认会把空 NotFound() 转成 problem+json，
+            // 跨端口 <img> 加载 JSON 响应会触发浏览器 ORB 拦截（ERR_BLOCKED_BY_ORB）
+            return StatusCode(StatusCodes.Status404NotFound, "");
         }
     }
 

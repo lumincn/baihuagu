@@ -44,6 +44,9 @@ public class VisionStatusDto
     /// <summary>Python 视觉服务进程是否在运行</summary>
     public bool ServerRunning { get; set; }
 
+    /// <summary>视觉服务端口（默认 8801）</summary>
+    public int Port { get; set; } = 8801;
+
     /// <summary>错误信息（如 Python 未安装、服务启动失败）</summary>
     public string? Message { get; set; }
 

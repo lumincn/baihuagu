@@ -30,6 +30,24 @@ public class LocalVisionController : ControllerBase
     }
 
     /// <summary>
+    /// 停止视觉服务（手动停止，避免误点后只能去别处关）
+    /// </summary>
+    [HttpPost("stop")]
+    public async Task<ActionResult<VisionStatusDto>> Stop(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _vision.StopServerAsync(cancellationToken);
+            return Ok(await _vision.GetStatusAsync(cancellationToken));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "停止本地视觉服务失败");
+            return StatusCode(500, new VisionStatusDto { Enabled = _vision.Enabled, ServerRunning = false, Message = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// 启动视觉服务（手动触发；正常会自动拉起）
     /// </summary>
     [HttpPost("start")]

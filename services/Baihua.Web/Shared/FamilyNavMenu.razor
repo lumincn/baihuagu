@@ -145,7 +145,23 @@ else if (_activeScene == 0)
         NavigationManager.LocationChanged += OnLocationChanged;
     }
 
-    private void SetScene(int scene) => _activeScene = scene;
+    private void SetScene(int scene)
+    {
+        _activeScene = scene;
+        // 场景切换要真正“到达”该场景：若当前页面不属于目标场景，跳到场景首页
+        // （0=知识库/首页，1=家庭，2=AI 实验室）
+        var currentPath = NavigationManager.ToBaseRelativePath(NavigationManager.Uri).Trim('/');
+        if (InferScene(currentPath) != scene)
+        {
+            var home = scene switch
+            {
+                1 => "family",
+                2 => "messages",
+                _ => ""
+            };
+            NavigationManager.NavigateTo(home);
+        }
+    }
 
     private bool _mobileMenuOpen;
 
