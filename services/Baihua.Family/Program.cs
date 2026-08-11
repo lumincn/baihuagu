@@ -180,6 +180,8 @@ builder.Services.AddAiClientServices();
 builder.Services.AddSingleton<AiFunctionService>();
 builder.Services.AddSingleton<StockAdvisorService>();
 builder.Services.AddSingleton<FamilyBudgetService>();
+builder.Services.AddSingleton<ModelDownloadService>();
+builder.Services.AddSingleton<OpenVinoRuntimeManager>();
 builder.Services.AddHttpClient<Baihua.Core.Services.ComfyUiClient>();
 
 

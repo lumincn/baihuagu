@@ -2046,6 +2046,142 @@ else
     </div>
     }
 
+    <!-- OpenVINO 模型 -->
+    <div class="section-header" style="cursor:pointer;" @onclick="() => ToggleSection(ref _showOpenVino)">
+        <h2>@(_showOpenVino ? "▼" : "▶") 🧠 OpenVINO 模型（Intel Arc GPU）</h2>
+    </div>
+    @if (_showOpenVino)
+    {
+        <!-- 下载任务 -->
+        <div class="mt-3 mb-2">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4>⬇️ 下载任务</h4>
+                <button class="btn btn-sm btn-outline-secondary" @onclick="RefreshOpenVinoAsync">刷新</button>
+            </div>
+            @if (openVinoDownloads.Count == 0)
+            {
+                <div class="text-muted small">暂无下载任务</div>
+            }
+            else
+            {
+                @foreach (var t in openVinoDownloads)
+                {
+                    var active = t.Status is "running" or "pending";
+                    <div class="mb-2 p-2 border rounded">
+                        <div class="d-flex justify-content-between small">
+                            <span><b>@t.ModelName</b>
+                                <span class="badge @(t.Status == "completed" ? "bg-success" : t.Status == "failed" ? "bg-danger" : t.Status == "cancelled" ? "bg-secondary" : "bg-primary")">@t.Status</span>
+                            </span>
+                            <span>
+                                @if (active)
+                                {
+                                    <span class="text-muted">@t.ProgressPercent%@(t.SpeedMBps > 0 ? $" ({t.SpeedMBps:F1}MB/s)" : "")</span>
+                                    <button class="btn btn-sm btn-outline-secondary ms-2" @onclick='() => CancelDownloadAsync(t.TaskId)'>取消</button>
+                                }
+                                else if (t.CompletedAt.HasValue)
+                                {
+                                    <span class="text-muted">@t.CompletedAt.Value.ToString("HH:mm:ss")</span>
+                                }
+                            </span>
+                        </div>
+                        @if (t.TotalBytes > 0)
+                        {
+                            <div class="progress mt-1" style="height:6px">
+                                <div class="progress-bar @(t.Status == "failed" ? "bg-danger" : "") " style="width:@(t.ProgressPercent)%"></div>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(t.CurrentFile))
+                        {
+                            <div class="small text-muted mt-1">@t.CurrentFile</div>
+                        }
+                        @if (!string.IsNullOrEmpty(t.ErrorMessage))
+                        {
+                            <div class="text-danger small mt-1">@t.ErrorMessage</div>
+                        }
+                    </div>
+                }
+            }
+        </div>
+
+        <!-- 已下载模型 -->
+        <div class="mt-3 mb-2">
+            <h4>📦 已下载模型</h4>
+            @if (openVinoInstalled.Count == 0)
+            {
+                <div class="text-muted small">暂无已下载模型（从下方目录下载）</div>
+            }
+            else
+            {
+                <table class="table table-sm">
+                    <thead><tr><th>模型</th><th>大小</th><th>状态</th><th class="text-end">操作</th></tr></thead>
+                    <tbody>
+                        @foreach (var m in openVinoInstalled)
+                        {
+                            <tr>
+                                <td>@m.Name</td>
+                                <td class="small text-muted">@FormatSize(m.SizeBytes)</td>
+                                <td>
+                                    @if (m.IsRunning)
+                                    {
+                                        <span class="badge bg-success">运行中 :@m.Port</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">未运行</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    @if (m.IsRunning)
+                                    {
+                                        <button class="btn btn-sm btn-outline-danger" @onclick='() => StopModelAsync(m.Port!.Value)'>停止</button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-sm btn-primary" @onclick='() => RunModelAsync(m.Path)'>运行</button>
+                                    }
+                                    <button class="btn btn-sm btn-outline-secondary" @onclick='() => DeleteModelAsync(m.Path)'>删除</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+
+        <!-- 可下载目录 -->
+        <div class="mt-3">
+            <h4>🌐 可下载模型（ModelScope 国内源 / HuggingFace 镜像）</h4>
+            <table class="table table-sm">
+                <thead><tr><th>模型</th><th>参数</th><th>大小</th><th>用途</th><th class="text-end"></th></tr></thead>
+                <tbody>
+                    @foreach (var c in openVinoCatalog)
+                    {
+                        <tr>
+                            <td>@c.Name @(c.IsVision ? "👁" : "")</td>
+                            <td>@c.ParameterSize @c.Quantization</td>
+                            <td>@c.SizeGiB.ToString("F1")GB</td>
+                            <td class="small text-muted">@c.Description</td>
+                            <td class="text-end">
+                                @if (c.Installed)
+                                {
+                                    <span class="badge bg-success">已安装</span>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm btn-primary" @onclick='() => StartDownloadAsync(c.Id)'>下载</button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        @if (!string.IsNullOrEmpty(openVinoMessage))
+        {
+            <div class="text-warning small mt-2">@openVinoMessage</div>
+        }
+    }
+
 
 @code {
     private bool isLoading = true;
@@ -2062,6 +2198,14 @@ else
     private string currentScenario = "";
     private string currentCompany = "";
     private System.Timers.Timer? _statusTimer;
+
+    // OpenVINO 模型区
+    private bool _showOpenVino = true;
+    private List<OpenVinoCatalogItemDto> openVinoCatalog = new();
+    private List<OpenVinoInstalledModelDto> openVinoInstalled = new();
+    private List<OpenVinoDownloadTaskDto> openVinoDownloads = new();
+    private string? openVinoMessage;
+    private System.Timers.Timer? _downloadTimer;
 
     private string _activeTab = "overview";
 
@@ -2178,12 +2322,143 @@ else
             var modelsTask = RefreshRunningModels();
             var downloadedTask = RefreshDownloadedModels();
             var openvinoLlmTask = LoadOpenVinoLlmStatus();
-            await Task.WhenAll(configTask, recTask, modelsTask, downloadedTask, openvinoLlmTask);
+            var openVinoTask = LoadOpenVinoAsync();
+            await Task.WhenAll(configTask, recTask, modelsTask, downloadedTask, openvinoLlmTask, openVinoTask);
         }
         catch (Exception ex)
         {
             Logger.LogWarning(ex, "加载数据失败");
         }
+    }
+
+    private async Task LoadOpenVinoAsync()
+    {
+        try
+        {
+            var catTask = ApiService.GetOpenVinoCatalogAsync();
+            var instTask = ApiService.GetOpenVinoInstalledAsync();
+            var dlTask = ApiService.GetOpenVinoDownloadsAsync();
+            await Task.WhenAll(catTask, instTask, dlTask);
+            openVinoCatalog = catTask.Result;
+            openVinoInstalled = instTask.Result;
+            openVinoDownloads = dlTask.Result;
+
+            // 有活跃下载任务则保持定时刷新
+            if (openVinoDownloads.Any(t => t.Status is "running" or "pending"))
+                EnsureDownloadTimer();
+        }
+        catch (Exception ex)
+        {
+            openVinoMessage = "OpenVINO 数据加载失败：" + ex.Message;
+        }
+    }
+
+    private async Task RefreshOpenVinoAsync()
+    {
+        await LoadOpenVinoAsync();
+        StateHasChanged();
+    }
+
+    private void EnsureDownloadTimer()
+    {
+        if (_downloadTimer != null) return;
+        _downloadTimer = new System.Timers.Timer(3000) { AutoReset = true };
+        _downloadTimer.Elapsed += async (_, _) =>
+        {
+            try
+            {
+                await InvokeAsync(async () =>
+                {
+                    await LoadOpenVinoAsync();
+                    StateHasChanged();
+                    if (!openVinoDownloads.Any(t => t.Status is "running" or "pending"))
+                    {
+                        _downloadTimer?.Stop();
+                        _downloadTimer?.Dispose();
+                        _downloadTimer = null;
+                    }
+                });
+            }
+            catch { }
+        };
+        _downloadTimer.Start();
+    }
+
+    private async Task StartDownloadAsync(string modelId)
+    {
+        openVinoMessage = null;
+        try
+        {
+            await ApiService.StartOpenVinoDownloadAsync(modelId);
+            await LoadOpenVinoAsync();
+        }
+        catch (Exception ex)
+        {
+            openVinoMessage = "启动下载失败：" + ex.Message;
+        }
+    }
+
+    private async Task CancelDownloadAsync(string taskId)
+    {
+        try
+        {
+            await ApiService.CancelOpenVinoDownloadAsync(taskId);
+            await LoadOpenVinoAsync();
+        }
+        catch (Exception ex)
+        {
+            openVinoMessage = "取消失败：" + ex.Message;
+        }
+    }
+
+    private async Task RunModelAsync(string path)
+    {
+        openVinoMessage = null;
+        try
+        {
+            var r = await ApiService.RunOpenVinoModelAsync(path);
+            openVinoMessage = r.Success
+                ? $"已启动 :{r.Port}（{r.Endpoint}）"
+                : $"运行失败：{r.Error}";
+            await LoadOpenVinoAsync();
+        }
+        catch (Exception ex)
+        {
+            openVinoMessage = "运行失败：" + ex.Message;
+        }
+    }
+
+    private async Task StopModelAsync(int port)
+    {
+        try
+        {
+            await ApiService.StopOpenVinoModelAsync(port);
+            await LoadOpenVinoAsync();
+        }
+        catch (Exception ex)
+        {
+            openVinoMessage = "停止失败：" + ex.Message;
+        }
+    }
+
+    private async Task DeleteModelAsync(string path)
+    {
+        try
+        {
+            await ApiService.DeleteOpenVinoModelAsync(path);
+            await LoadOpenVinoAsync();
+        }
+        catch (Exception ex)
+        {
+            openVinoMessage = "删除失败：" + ex.Message;
+        }
+    }
+
+    private static string FormatSize(long bytes)
+    {
+        if (bytes >= 1L << 30) return $"{bytes / 1024d / 1024d / 1024d:F2}GB";
+        if (bytes >= 1L << 20) return $"{bytes / 1024d / 1024d:F1}MB";
+        return $"{bytes / 1024d:F0}KB";
     }
 
     private async Task LoadLlamaCppConfigAsync()

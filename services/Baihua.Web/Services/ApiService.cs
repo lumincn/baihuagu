@@ -52,6 +52,15 @@ namespace Baihua.Web.Services
         Task<BudgetTransaction> AddBudgetTransactionAsync(BudgetCreateRequest request, CancellationToken cancellationToken = default);
         Task<bool> DeleteBudgetTransactionAsync(Guid id, CancellationToken cancellationToken = default);
         Task<BudgetSummary> GetBudgetSummaryAsync(int? year = null, int? month = null, CancellationToken cancellationToken = default);
+        Task<List<OpenVinoCatalogItemDto>> GetOpenVinoCatalogAsync(CancellationToken cancellationToken = default);
+        Task<List<OpenVinoInstalledModelDto>> GetOpenVinoInstalledAsync(CancellationToken cancellationToken = default);
+        Task<List<OpenVinoDownloadTaskDto>> GetOpenVinoDownloadsAsync(CancellationToken cancellationToken = default);
+        Task<OpenVinoDownloadTaskDto> StartOpenVinoDownloadAsync(string modelId, CancellationToken cancellationToken = default);
+        Task<OpenVinoDownloadTaskDto> GetOpenVinoDownloadAsync(string taskId, CancellationToken cancellationToken = default);
+        Task CancelOpenVinoDownloadAsync(string taskId, CancellationToken cancellationToken = default);
+        Task<OpenVinoRunResult> RunOpenVinoModelAsync(string modelPath, string device = "GPU", CancellationToken cancellationToken = default);
+        Task<bool> StopOpenVinoModelAsync(int port, CancellationToken cancellationToken = default);
+        Task DeleteOpenVinoModelAsync(string path, CancellationToken cancellationToken = default);
         Task<SearchResponse> SearchAsync(string query, string vaultId);
         Task<IndexStatusDto> GetIndexStatusAsync(string vaultId);
         Task<bool> RebuildIndexAsync(string vaultId, CancellationToken cancellationToken = default);
@@ -620,6 +629,92 @@ namespace Baihua.Web.Services
             var response = await GetWithMetricsAsync("/api/budget/summary" + qs, linked.Token);
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<BudgetSummary>(linked.Token) ?? new BudgetSummary();
+        }
+
+        public async Task<List<OpenVinoCatalogItemDto>> GetOpenVinoCatalogAsync(CancellationToken cancellationToken = default)
+        {
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            var response = await GetWithMetricsAsync("/api/local-models/openvino/catalog", linked.Token);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<List<OpenVinoCatalogItemDto>>(linked.Token) ?? new();
+        }
+
+        public async Task<List<OpenVinoInstalledModelDto>> GetOpenVinoInstalledAsync(CancellationToken cancellationToken = default)
+        {
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            var response = await GetWithMetricsAsync("/api/local-models/openvino/installed", linked.Token);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<List<OpenVinoInstalledModelDto>>(linked.Token) ?? new();
+        }
+
+        public async Task<List<OpenVinoDownloadTaskDto>> GetOpenVinoDownloadsAsync(CancellationToken cancellationToken = default)
+        {
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            var response = await GetWithMetricsAsync("/api/local-models/openvino/downloads", linked.Token);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<List<OpenVinoDownloadTaskDto>>(linked.Token) ?? new();
+        }
+
+        public async Task<OpenVinoDownloadTaskDto> StartOpenVinoDownloadAsync(string modelId, CancellationToken cancellationToken = default)
+        {
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            var response = await PostWithMetricsAsync("/api/local-models/openvino/download",
+                JsonContent.Create(new OpenVinoDownloadRequest { ModelId = modelId }), linked.Token);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<OpenVinoDownloadTaskDto>(linked.Token) ?? new();
+        }
+
+        public async Task<OpenVinoDownloadTaskDto> GetOpenVinoDownloadAsync(string taskId, CancellationToken cancellationToken = default)
+        {
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            var response = await GetWithMetricsAsync($"/api/local-models/openvino/download/{taskId}", linked.Token);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<OpenVinoDownloadTaskDto>(linked.Token) ?? new();
+        }
+
+        public async Task CancelOpenVinoDownloadAsync(string taskId, CancellationToken cancellationToken = default)
+        {
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            var response = await PostWithMetricsAsync($"/api/local-models/openvino/download/{taskId}/cancel", null, linked.Token);
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async Task<OpenVinoRunResult> RunOpenVinoModelAsync(string modelPath, string device = "GPU", CancellationToken cancellationToken = default)
+        {
+            using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(4));
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
+            var response = await PostWithMetricsAsync("/api/local-models/openvino/run",
+                JsonContent.Create(new OpenVinoRunRequest { ModelPath = modelPath, Device = device }), linked.Token, _longHttpClient);
+            if (!response.IsSuccessStatusCode)
+            {
+                var err = await response.Content.ReadFromJsonAsync<OpenVinoRunResult>(linked.Token);
+                return err ?? new OpenVinoRunResult { Success = false, Error = $"HTTP {(int)response.StatusCode}" };
+            }
+            return await response.Content.ReadFromJsonAsync<OpenVinoRunResult>(linked.Token) ?? new OpenVinoRunResult();
+        }
+
+        public async Task<bool> StopOpenVinoModelAsync(int port, CancellationToken cancellationToken = default)
+        {
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            var response = await PostWithMetricsAsync("/api/local-models/openvino/stop",
+                JsonContent.Create(new OpenVinoRunRequest { Port = port }), linked.Token);
+            return response.IsSuccessStatusCode;
+        }
+
+        public async Task DeleteOpenVinoModelAsync(string path, CancellationToken cancellationToken = default)
+        {
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            EnsurePrimaryBaseAddress();
+            var response = await _httpClient.DeleteAsync("/api/local-models/openvino/model?path=" + Uri.EscapeDataString(path), linked.Token);
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task<List<AiProviderInfo>> GetAiProvidersAsync()

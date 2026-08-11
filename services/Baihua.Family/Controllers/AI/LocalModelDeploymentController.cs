@@ -17,6 +17,8 @@ namespace Baihua.Family.Controllers;
         private readonly HardwareInfoService _hardwareInfoService;
         private readonly ModelRecommendationEngine _recommendationEngine;
         private readonly LocalModelDeploymentService _deploymentService;
+        private readonly ModelDownloadService _downloadService;
+        private readonly OpenVinoRuntimeManager _openVinoRuntime;
         private readonly LocalModelSettingsService _localModelSettings;
         private readonly OllamaLibraryClient? _ollamaLibrary;
         private readonly ILogger<LocalModelDeploymentController> _logger;
@@ -26,6 +28,8 @@ namespace Baihua.Family.Controllers;
             HardwareInfoService hardwareInfoService,
             ModelRecommendationEngine recommendationEngine,
             LocalModelDeploymentService deploymentService,
+            ModelDownloadService downloadService,
+            OpenVinoRuntimeManager openVinoRuntime,
             LocalModelSettingsService localModelSettings,
             OllamaLibraryClient? ollamaLibrary,
             ILogger<LocalModelDeploymentController> logger,
@@ -34,6 +38,8 @@ namespace Baihua.Family.Controllers;
             _hardwareInfoService = hardwareInfoService;
             _recommendationEngine = recommendationEngine;
             _deploymentService = deploymentService;
+            _downloadService = downloadService;
+            _openVinoRuntime = openVinoRuntime;
             _localModelSettings = localModelSettings;
             _ollamaLibrary = ollamaLibrary;
             _logger = logger;
