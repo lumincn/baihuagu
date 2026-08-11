@@ -13,7 +13,7 @@
 
 <h1>@L["MasterStage_Title"]</h1>
 
-@if (masterId == null)
+@if (string.IsNullOrEmpty(masterId))
 {
     <div class="empty-state">
         <p>@(new MarkupString(L["MasterStage_NoMasterHint"].Value))</p>

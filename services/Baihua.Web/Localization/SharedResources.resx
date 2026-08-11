@@ -4185,4 +4185,76 @@ Shift+Enter new line, Enter to send</value>
   <data name="CodeAgent_File" xml:space="preserve">
     <value>File</value>
   </data>
+  <data name="LogErrors_ClearedLocalLogs" xml:space="preserve">
+    <value>Cleared {0} local log entries</value>
+  </data>
+  <data name="LogErrors_ClearLocal" xml:space="preserve">
+    <value>Clear Local</value>
+  </data>
+  <data name="LogErrors_ClearOpenObserve" xml:space="preserve">
+    <value>Clear OpenObserve</value>
+  </data>
+  <data name="LogErrors_ConfirmClearLocal" xml:space="preserve">
+    <value>Clear all local error logs? This cannot be undone.</value>
+  </data>
+  <data name="LogErrors_ConfirmClearOpenObserve" xml:space="preserve">
+    <value>Clear all error streams in OpenObserve? This cannot be undone.</value>
+  </data>
+  <data name="LogErrors_CurrentSource" xml:space="preserve">
+    <value>Source: </value>
+  </data>
+  <data name="LogErrors_DeleteFailed" xml:space="preserve">
+    <value>Delete failed (HTTP {0}): {1}</value>
+  </data>
+  <data name="LogErrors_NoErrors" xml:space="preserve">
+    <value>No errors found</value>
+  </data>
+  <data name="LogErrors_OpenObserveErrors" xml:space="preserve">
+    <value>Open OpenObserve Errors</value>
+  </data>
+  <data name="LogErrors_OpenObserveNoErrors" xml:space="preserve">
+    <value>No errors in OpenObserve</value>
+  </data>
+  <data name="LogErrors_OpenObserveNoStream" xml:space="preserve">
+    <value>OpenObserve stream unavailable</value>
+  </data>
+  <data name="LogErrors_OpenObserveQueryFailed" xml:space="preserve">
+    <value>OpenObserve query failed (HTTP {0}): {1}</value>
+  </data>
+  <data name="LogErrors_OpenObserveStreamDeleted" xml:space="preserve">
+    <value>OpenObserve stream deleted</value>
+  </data>
+  <data name="LogErrors_OpenObserveUI" xml:space="preserve">
+    <value>Open OpenObserve UI</value>
+  </data>
+  <data name="LogErrors_PageTitle" xml:space="preserve">
+    <value>Error Logs</value>
+  </data>
+  <data name="LogErrors_QueryFailedEntry" xml:space="preserve">
+    <value>Query failed: {0}</value>
+  </data>
+  <data name="LogErrors_ReadFailedEntry" xml:space="preserve">
+    <value>Failed to read: {0}</value>
+  </data>
+  <data name="LogErrors_RefreshLocal" xml:space="preserve">
+    <value>Refresh Local</value>
+  </data>
+  <data name="LogErrors_RequestFailed" xml:space="preserve">
+    <value>Request failed: {0}</value>
+  </data>
+  <data name="LogErrors_SourceLocalFiles" xml:space="preserve">
+    <value>Local log files</value>
+  </data>
+  <data name="LogErrors_StatusError" xml:space="preserve">
+    <value>Failed to load logs</value>
+  </data>
+  <data name="LogErrors_StatusLocal" xml:space="preserve">
+    <value>{0} local error entries</value>
+  </data>
+  <data name="LogErrors_StatusOpenObserve" xml:space="preserve">
+    <value>{0} error entries from OpenObserve</value>
+  </data>
+  <data name="LogErrors_Title" xml:space="preserve">
+    <value>Error Logs</value>
+  </data>
 </root>

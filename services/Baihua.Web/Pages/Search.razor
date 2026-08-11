@@ -43,6 +43,13 @@
 }
 
 <div class="local-search">
+        @if (isVaultsLoading)
+        {
+            <div class="text-muted small mb-2">
+                <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                知识库列表加载中，请稍候…
+            </div>
+        }
         @if (vaults.Count > 0)
         {
             var industries = vaults.Select(v => v.Industry).Where(i => !string.IsNullOrWhiteSpace(i)).Distinct().OrderBy(i => i).ToList();
@@ -75,7 +82,7 @@
                    @onkeydown="HandleKeyDown"
                    placeholder="@L["Search_Placeholder"]" 
                    class="form-control" />
-            <button @onclick="PerformSearch" class="btn btn-primary">@L["Search_SearchButton"]</button>
+            <button @onclick="PerformSearch" class="btn btn-primary" disabled="@isVaultsLoading">@L["Search_SearchButton"]</button>
         </div>
 
         @if (recentSearches != null && recentSearches.Any() && string.IsNullOrWhiteSpace(searchQuery))
@@ -234,6 +241,7 @@
 
     private ObsidianStatusSummary? obsidianStatus;
     private List<VaultConfig> vaults = new();
+    private bool isVaultsLoading = true;
     private string selectedVaultId = "";
     private string selectedIndustry = "";
     private IndexStatusDto? indexStatus;
@@ -295,6 +303,7 @@
                     var vaultsResponse = loadVaultsTask.Result;
                     vaults = vaultsResponse.Vaults;
                     selectedVaultId = "";
+                    isVaultsLoading = false;
                     StateHasChanged();
                     Logger.LogDebug("UI更新完成");
                 });
@@ -304,6 +313,7 @@
             catch (Exception ex)
             {
                 Logger.LogWarning(ex, "后台加载失败");
+                await InvokeAsync(() => { isVaultsLoading = false; StateHasChanged(); });
             }
         });
     }
@@ -431,6 +441,13 @@
             if (firstVault != null)
             {
                 selectedVaultId = firstVault.Id;
+            }
+            else if (isVaultsLoading)
+            {
+                // 知识库列表还在后台加载（首次打开需 3-5s），提示稍候而非误报"未创建知识库"
+                searchStatus = new SearchStatusInfo { ErrorMessage = "知识库列表加载中，请稍候再试…" };
+                hasSearched = true;
+                return;
             }
             else
             {

@@ -131,7 +131,7 @@ else if (note != null)
                 <div class="note-body" style="font-size: @(fontSize)px; line-height: 1.8;">
                     @if (!string.IsNullOrEmpty(note?.Content))
                     {
-                        var htmlContent = RenderMarkdownWithWikiLinks(note.Content);
+                        var htmlContent = RenderMarkdownWithWikiLinks(StripFrontmatter(note.Content));
                         @((MarkupString)htmlContent)
                     }
                     else
@@ -180,6 +180,18 @@ else
     private double fontSize = 16.0;
     private bool isEditing = false;
     private string editContent = "";
+
+    /// <summary>剥离 YAML frontmatter（AI 生成的笔记含 ai_provider/ai_model 等元数据，阅读视图不应展示）</summary>
+    private static string StripFrontmatter(string content)
+    {
+        if (string.IsNullOrWhiteSpace(content)) return content ?? "";
+        var trimmed = content.TrimStart();
+        if (!trimmed.StartsWith("---", StringComparison.Ordinal)) return content;
+        var end = trimmed.IndexOf("\n---", StringComparison.Ordinal);
+        if (end < 0) return content;
+        var after = trimmed[(end + 4)..];
+        return after.TrimStart('\r', '\n');
+    }
     private bool isGeneratingMissingNote = false;
     private string generateMessage = "";
     private bool generateSuccess = false;

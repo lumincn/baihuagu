@@ -18,11 +18,15 @@ public class CheckinService
 
     private readonly IDbContextFactory<FamilyDbContext> _dbFactory;
     private readonly ITimeProvider _timeProvider;
+    private readonly CardRepository _cardRepository;
+    private readonly ILogger<CheckinService> _logger;
 
-    public CheckinService(IDbContextFactory<FamilyDbContext> dbFactory, ITimeProvider timeProvider)
+    public CheckinService(IDbContextFactory<FamilyDbContext> dbFactory, ITimeProvider timeProvider, CardRepository cardRepository, ILogger<CheckinService> logger)
     {
         _dbFactory = dbFactory;
         _timeProvider = timeProvider;
+        _cardRepository = cardRepository;
+        _logger = logger;
     }
 
     /// <summary>北京时间今日</summary>
@@ -54,6 +58,7 @@ public class CheckinService
                 a.LearnerId,
                 a.ActivityType,
                 a.CardId,
+                a.VaultId,
                 a.Result,
                 Date = ToBeijingDate(a.CreatedAt),
                 a.CreatedAt
@@ -72,6 +77,25 @@ public class CheckinService
 
         // ===== AC1：今日学习清单（按 Learner 分组）=====
         var todayActivities = activities.Where(a => a.Date == today).ToList();
+        // 预加载今日涉及知识库的卡片标题（避免每条记录重复解析卡片文件）
+        var cardFrontByKey = new Dictionary<string, string>();
+        var todayVaultIds = todayActivities.Select(a => a.VaultId).Where(v => !string.IsNullOrWhiteSpace(v)).Distinct();
+        foreach (var vid in todayVaultIds)
+        {
+            try
+            {
+                var cardsPath = _cardRepository.ResolveCardsPath(vid!);
+                if (string.IsNullOrEmpty(cardsPath) || !Directory.Exists(cardsPath)) continue;
+                foreach (var c in _cardRepository.LoadAllCards(cardsPath))
+                {
+                    cardFrontByKey[$"{vid}:{c.Id}"] = c.Front;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "加载知识库卡片失败: {VaultId}", vid);
+            }
+        }
         var records = new List<CheckinRecord>();
         foreach (var act in todayActivities.OrderBy(a => a.CreatedAt))
         {
@@ -80,7 +104,7 @@ public class CheckinService
             records.Add(new CheckinRecord
             {
                 LearnerName = learner?.Name ?? "",
-                Content = ResolveContent(act.CardId, act.ActivityType),
+                Content = ResolveContent(act.CardId, act.ActivityType, act.VaultId, cardFrontByKey),
                 Time = beijingTime,
                 IsCompleted = true, // 有学习记录 = 自动已打卡（AC2）
                 Source = ResolveSource(act.ActivityType),
@@ -269,10 +293,18 @@ public class CheckinService
     }
 
     /// <summary>学习内容名称（AC1）：优先卡片 ID，缺失时按活动类型描述</summary>
-    private static string ResolveContent(string? cardId, string activityType)
+    /// <summary>解析打卡清单内容：优先显示卡片标题（家长能看懂孩子学了什么），否则用活动类型文案</summary>
+    private string ResolveContent(string? cardId, string activityType, string? vaultId, Dictionary<string, string> cardFrontByKey)
     {
-        if (!string.IsNullOrWhiteSpace(cardId))
-            return $"卡片 {cardId}";
+        if (!string.IsNullOrWhiteSpace(cardId) && !string.IsNullOrWhiteSpace(vaultId))
+        {
+            if (cardFrontByKey.TryGetValue($"{vaultId}:{cardId}", out var front))
+            {
+                var title = front.Trim().Replace("\n", " ");
+                return title.Length > 30 ? title[..30] + "…" : title;
+            }
+            return "卡片学习";
+        }
         return activityType switch
         {
             "study" => "每日卡片学习",

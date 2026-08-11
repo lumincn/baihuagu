@@ -4184,4 +4184,76 @@ Shift+Enter 换行，Enter 发送</value>
   <data name="CodeAgent_File" xml:space="preserve">
     <value>识别文件</value>
   </data>
+  <data name="LogErrors_ClearedLocalLogs" xml:space="preserve">
+    <value>已清理 {0} 条本地日志</value>
+  </data>
+  <data name="LogErrors_ClearLocal" xml:space="preserve">
+    <value>清理本地日志</value>
+  </data>
+  <data name="LogErrors_ClearOpenObserve" xml:space="preserve">
+    <value>清理 OpenObserve</value>
+  </data>
+  <data name="LogErrors_ConfirmClearLocal" xml:space="preserve">
+    <value>确定要清理所有本地错误日志吗？此操作不可恢复。</value>
+  </data>
+  <data name="LogErrors_ConfirmClearOpenObserve" xml:space="preserve">
+    <value>确定要清理 OpenObserve 中的错误数据流吗？此操作不可恢复。</value>
+  </data>
+  <data name="LogErrors_CurrentSource" xml:space="preserve">
+    <value>来源：</value>
+  </data>
+  <data name="LogErrors_DeleteFailed" xml:space="preserve">
+    <value>删除失败（HTTP {0}）：{1}</value>
+  </data>
+  <data name="LogErrors_NoErrors" xml:space="preserve">
+    <value>暂无错误记录</value>
+  </data>
+  <data name="LogErrors_OpenObserveErrors" xml:space="preserve">
+    <value>打开 OpenObserve 错误</value>
+  </data>
+  <data name="LogErrors_OpenObserveNoErrors" xml:space="preserve">
+    <value>OpenObserve 中暂无错误</value>
+  </data>
+  <data name="LogErrors_OpenObserveNoStream" xml:space="preserve">
+    <value>OpenObserve 数据流不可用</value>
+  </data>
+  <data name="LogErrors_OpenObserveQueryFailed" xml:space="preserve">
+    <value>OpenObserve 查询失败（HTTP {0}）：{1}</value>
+  </data>
+  <data name="LogErrors_OpenObserveStreamDeleted" xml:space="preserve">
+    <value>OpenObserve 数据流已删除</value>
+  </data>
+  <data name="LogErrors_OpenObserveUI" xml:space="preserve">
+    <value>打开 OpenObserve 界面</value>
+  </data>
+  <data name="LogErrors_PageTitle" xml:space="preserve">
+    <value>错误日志</value>
+  </data>
+  <data name="LogErrors_QueryFailedEntry" xml:space="preserve">
+    <value>查询失败：{0}</value>
+  </data>
+  <data name="LogErrors_ReadFailedEntry" xml:space="preserve">
+    <value>读取失败：{0}</value>
+  </data>
+  <data name="LogErrors_RefreshLocal" xml:space="preserve">
+    <value>刷新本地日志</value>
+  </data>
+  <data name="LogErrors_RequestFailed" xml:space="preserve">
+    <value>请求失败：{0}</value>
+  </data>
+  <data name="LogErrors_SourceLocalFiles" xml:space="preserve">
+    <value>本地日志文件</value>
+  </data>
+  <data name="LogErrors_StatusError" xml:space="preserve">
+    <value>加载日志失败</value>
+  </data>
+  <data name="LogErrors_StatusLocal" xml:space="preserve">
+    <value>本地错误日志 {0} 条</value>
+  </data>
+  <data name="LogErrors_StatusOpenObserve" xml:space="preserve">
+    <value>从 OpenObserve 获取 {0} 条错误</value>
+  </data>
+  <data name="LogErrors_Title" xml:space="preserve">
+    <value>错误日志</value>
+  </data>
 </root>

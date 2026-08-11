@@ -294,9 +294,14 @@
                             </div>
                             <h4 style="margin-top:0;">@listeningPlaylist[listeningCurrentIndex].Title</h4>
                             <div style="color:#666;font-size:14px;max-height:200px;overflow-y:auto;line-height:1.7;white-space:pre-wrap;">
-                                @StripMarkdown(listeningPlaylist[listeningCurrentIndex].Content ?? "")
+                                @StripMarkdown(StripFrontmatter(listeningPlaylist[listeningCurrentIndex].Content ?? ""))
                             </div>
                         </div>
+
+                        @if (!string.IsNullOrEmpty(listeningError))
+                        {
+                            <div class="alert alert-warning py-2 small">⚠️ @listeningError</div>
+                        }
 
                         <div class="mb-3 d-flex justify-content-center gap-2">
                             <button class="btn btn-outline-secondary" @onclick="PlayPrev" disabled="@(listeningCurrentIndex == 0)">
@@ -419,6 +424,13 @@
 </style>
 
 @code {
+    public void Dispose()
+    {
+        // 释放 JS 回调引用的 DotNetObjectReference，避免页面关闭后 JS 回调悬空
+        _dotNetRef?.Dispose();
+        _dotNetRef = null;
+    }
+
     private List<VaultConfig> vaults = new();
     private string selectedVaultId = "";
     private string currentPath = "";
@@ -610,6 +622,7 @@
             listeningCurrentIndex = 0;
             isPlaying = false;
             playedIndices.Clear();
+            listeningError = "";
 
             var batch = await ApiService.GetVaultNotesBatchAsync(vaultId);
             if (batch?.Notes != null)
@@ -636,6 +649,40 @@
     private DotNetObjectReference<BrowseVault>? _dotNetRef = null;
     private int _speakSeq = 0; // 递增序号，防止过快的 onend 回调导致无限循环
     private bool _isPlayingSpeech = false; // 防止 OnSpeechEnded 重入
+    private string listeningError = "";
+
+    /// <summary>剥离 YAML frontmatter（AI 生成的笔记含 ai_provider/ai_model 等元数据，朗读/展示不应出现）</summary>
+    private static string StripFrontmatter(string content)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(content)) return content ?? "";
+            var trimmed = content.TrimStart();
+            if (!trimmed.StartsWith("---", StringComparison.Ordinal)) return content;
+            var end = trimmed.IndexOf("\n---", StringComparison.Ordinal);
+            if (end < 0) return content;
+            var after = trimmed[(end + 4)..];
+            return after.TrimStart('\r', '\n');
+        }
+        catch
+        {
+            // 极端输入兜底：剥离失败就原样返回，绝不影响朗读/展示
+            return content;
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnSpeechFailed(int seq, string message)
+    {
+        if (seq != _speakSeq) return;
+        // 防重入：只有正在播放时才处理失败（避免与 OnSpeechEnded 双重回调竞争）
+        if (!_isPlayingSpeech) return;
+        _speakSeq++; // 使后续回调失效
+        _isPlayingSpeech = false;
+        isPlaying = false;
+        listeningError = message;
+        await InvokeAsync(StateHasChanged);
+    }
 
     private async Task TogglePlayPause()
     {
@@ -672,10 +719,23 @@
         playedIndices.Add(listeningCurrentIndex);
 
         var item = listeningPlaylist[listeningCurrentIndex];
-        var textToSpeak = $"{item.Title}. {StripMarkdown(item.Content ?? "")}";
-
         _dotNetRef ??= DotNetObjectReference.Create(this);
-        await JSRuntime.InvokeVoidAsync("speakText", textToSpeak, _dotNetRef, currentSeq);
+        try
+        {
+            var textToSpeak = $"{item.Title}. {StripMarkdown(StripFrontmatter(item.Content ?? ""))}";
+            await JSRuntime.InvokeVoidAsync("speakText", textToSpeak, _dotNetRef, currentSeq);
+        }
+        catch (Exception ex)
+        {
+            // 语音异常不允许打崩 Blazor circuit：记录日志、停止播放并提示
+            Logger.LogWarning(ex, "speakText 调用失败");
+            _speakSeq++;
+            _isPlayingSpeech = false;
+            isPlaying = false;
+            listeningError = "语音播放失败：" + ex.Message;
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
         isPlaying = true;
         await InvokeAsync(StateHasChanged);
     }

@@ -15,13 +15,20 @@ window.speakText = function(text, dotNetObjRef, seq) {
 
     if (!speechSynthesis) {
         console.warn('浏览器不支持语音合成');
-        return;
+        notifyFailed(dotNetObjRef, seq, '浏览器不支持语音合成');
+        return false;
+    }
+
+    // 无可用语音包（Windows 未安装中文语音）时 speak() 会抛异常打崩 Blazor circuit，提前拦截
+    if (!speechSynthesis.getVoices || speechSynthesis.getVoices().length === 0) {
+        console.warn('当前环境没有可用的语音包');
+        notifyFailed(dotNetObjRef, seq, '当前环境不支持语音合成（未安装语音包）');
+        return false;
     }
 
     if (dotNetObjRef) {
-        if (dotNetRef && dotNetRef !== dotNetObjRef) {
-            try { dotNetRef.dispose(); } catch (e) {}
-        }
+        // 不主动 dispose 旧 ref：旧 utterance 的 onend/onerror 回调可能仍在途，
+        // dispose 会导致 “There is no tracked object” 异常打崩回调；生命周期交给 Blazor 组件 Dispose。
         dotNetRef = dotNetObjRef;
     }
 
@@ -76,8 +83,27 @@ window.speakText = function(text, dotNetObjRef, seq) {
     };
 
     currentUtterance = utterance;
-    speechSynthesis.speak(utterance);
+    try {
+        speechSynthesis.speak(utterance);
+    } catch (e) {
+        console.warn('语音合成异常:', e);
+        notifyFailed(dotNetObjRef, seq, '语音合成异常：' + (e && e.message ? e.message : e));
+        return false;
+    }
+    return true;
 };
+
+// 通知 Blazor 播放失败（不抛异常，避免打崩 circuit）
+function notifyFailed(ref, seq, message) {
+    if (!ref) return;
+    setTimeout(function() {
+        try {
+            ref.invokeMethodAsync('OnSpeechFailed', seq, message);
+        } catch (e) {
+            console.warn('通知播放失败回调异常:', e);
+        }
+    }, 50);
+}
 
 window.stopSpeaking = function() {
     if (speechSynthesis) {

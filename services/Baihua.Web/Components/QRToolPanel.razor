@@ -43,7 +43,7 @@
                 else
                 {
                     <div class="server-qr-compact">
-                        <div class="qr-code-wrapper qr-compact" @ref="_serverQrContainer"></div>
+                        <div class="qr-code-wrapper qr-compact" id="server-qr-container" @ref="_serverQrContainer"></div>
                         <div class="server-info-compact">
                             <div class="info-row info-row-editable">
                                 <span class="info-label">名称</span>
@@ -117,7 +117,7 @@
             @if (_aiKeyQRCode != null)
             {
                 <div class="server-qr-compact">
-                    <div class="qr-code-wrapper qr-compact" @ref="_aiKeyQrContainer"></div>
+                    <div class="qr-code-wrapper qr-compact" id="aikey-qr-container" @ref="_aiKeyQrContainer"></div>
                     <div class="server-info-compact">
                         <div class="info-row">
                             <span class="info-label">提供商</span>
@@ -161,7 +161,7 @@
                     }
                 </div>
                 <div class="qr-result-compact @(_showQR ? "" : "d-none")">
-                    <div class="qr-code-wrapper qr-compact" @ref="_qrContainer"></div>
+                    <div class="qr-code-wrapper qr-compact" id="general-qr-container" @ref="_qrContainer"></div>
                 </div>
             </div>
         </div>
@@ -203,6 +203,7 @@
     private string _inputText = "";
     private bool _showQR = false;
     private string _errorMessage = "";
+    private string? _pendingQrText = null;
     private ElementReference _qrContainer;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -212,6 +213,16 @@
             await LoadAutoAuthStatus();
             await LoadServerQRCode();
             await LoadMainAiApiKey();
+        }
+
+        // 待生成二维码：StateHasChanged 触发的本次渲染已完成，此时 DOM 必已更新
+        if (_pendingQrText != null)
+        {
+            var text = _pendingQrText;
+            _pendingQrText = null;
+            var ok = await JS.InvokeAsync<bool>("generateCompactQRCode", "general-qr-container", text);
+            if (!ok) _errorMessage = "生成二维码失败，请重试";
+            StateHasChanged();
         }
     }
 
@@ -269,8 +280,9 @@
             _aiKeyQRCode = await aiClient.GetFromJsonAsync<AiKeyQRResponse>("api/ai/config/main-apikey");
             if (_aiKeyQRCode != null && !string.IsNullOrEmpty(_aiKeyQRCode.ApiKey))
             {
-                await Task.Yield();
-                await JS.InvokeVoidAsync("generateCompactQRCode", _aiKeyQrContainer, _aiKeyQRCode.ApiKey);
+                // 先触发渲染再调 JS：OnAfterRenderAsync 中改状态不会自动重渲染，容器可能尚未出现
+                StateHasChanged();
+                await JS.InvokeVoidAsync("generateCompactQRCode", "aikey-qr-container", _aiKeyQRCode.ApiKey);
             }
         }
         catch (Exception ex)
@@ -291,6 +303,8 @@
         {
             var apiClient = HttpClientFactory.CreateClient("FamilyApi");
             _serverQRCode = await apiClient.GetFromJsonAsync<ServerQRResponse>("api/pairing/qrcode");
+            // 先触发渲染再调 JS：OnAfterRenderAsync 中改状态不会自动重渲染，容器可能尚未出现
+            StateHasChanged();
             await RenderServerQRCodeAsync();
         }
         catch (Exception ex)
@@ -313,8 +327,9 @@
             return;
         }
         _showQR = true;
-        await Task.Yield();
-        await JS.InvokeVoidAsync("generateCompactQRCode", _qrContainer, _inputText.Trim());
+        // 不在事件处理器内直接调 JS（渲染要等处理器返回后才会发生），改为渲染完成后（OnAfterRenderAsync）再生成
+        _pendingQrText = _inputText.Trim();
+        StateHasChanged();
     }
 
     private void ClearAll()
@@ -328,8 +343,8 @@
     {
         if (_serverQRCode != null && !string.IsNullOrEmpty(_serverQRCode.QrCodeData))
         {
-            await Task.Yield();
-            await JS.InvokeVoidAsync("generateCompactQRCode", _serverQrContainer, _serverQRCode.QrCodeData);
+            // 传 id 而非 ElementReference：容器可能尚未渲染，JS 侧 getElementById + 等待重试
+            await JS.InvokeVoidAsync("generateCompactQRCode", "server-qr-container", _serverQRCode.QrCodeData);
         }
     }
 
@@ -344,6 +359,7 @@
     {
         _isEditingName = false;
         _nameSaveMessage = "";
+        StateHasChanged();
         await RenderServerQRCodeAsync();
     }
 
