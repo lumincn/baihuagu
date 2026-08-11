@@ -50,6 +50,24 @@
     </div>
 }
 
+@if (pendingConfirm != null)
+{
+    <div class="modal-overlay" @onclick="HideTaskConfirm">
+        <div class="modal-content" @onclick:stopPropagation="true">
+            <h3>⚠️ @(pendingConfirm.Value.Action == "delete" ? "删除任务" : "取消任务")</h3>
+            <p>@(pendingConfirm.Value.Action == "delete"
+                ? "确定要删除这个任务吗？任务记录将移除，此操作不可恢复。"
+                : "确定要取消这个正在进行的任务吗？")</p>
+            <div class="modal-actions">
+                <button @onclick="HideTaskConfirm" class="btn btn-secondary">@L["Tasks_Cancel"]</button>
+                <button @onclick="ConfirmTaskAction" class="btn btn-danger">
+                    @(pendingConfirm.Value.Action == "delete" ? "确认删除" : "确认取消")
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
 @if (isLoading)
 {
     <div class="loading">
@@ -83,7 +101,7 @@ else
                             <span class="task-vault-badge">📚 @task.Parameters["vaultName"]</span>
                         }
                     </div>
-                    <span class="task-status status-@task.StatusText.ToLowerInvariant()">@task.StatusText</span>
+                    <span class="task-status status-@task.StatusText.ToLowerInvariant()">@GetStatusDisplay(task.StatusText)</span>
                 </div>
                 <div class="task-progress">
                     <div class="progress-bar">
@@ -94,7 +112,7 @@ else
                 <div class="task-message">@task.Progress.Message</div>
                 @if (task.Result?.Error != null)
                 {
-                    <div class="task-error">❌ @task.Result.Error</div>
+                    <div class="task-error">❌ @FriendlyError(task.Result.Error)</div>
                     @if (task.Result.Error.Contains("返回内容为空") || task.Result.Error.Contains("不支持该问题"))
                     {
                         <div class="alert alert-warning mt-2 py-1 px-2" style="font-size: 0.85em;">
@@ -623,18 +641,52 @@ else
 
     private async Task DeleteTask(string taskId)
     {
-        if (!await JSRuntime.InvokeAsync<bool>("confirm", (string)L["Tasks_ConfirmDeleteMessage"]))
-            return;
-        var success = await ApiService.DeleteTaskAsync(taskId);
-        if (success) await LoadTasks();
+        // 原生 confirm 改为站内确认弹窗（与清空历史一致）
+        pendingConfirm = ("delete", taskId);
     }
 
     private async Task CancelTask(string taskId)
     {
-        if (!await JSRuntime.InvokeAsync<bool>("confirm", (string)L["Tasks_ConfirmCancelMessage"]))
-            return;
-        var success = await ApiService.CancelTaskAsync(taskId);
+        pendingConfirm = ("cancel", taskId);
+    }
+
+    // ---- 统一确认弹窗（删除/取消任务）----
+    private (string Action, string Id)? pendingConfirm;
+
+    private void HideTaskConfirm() => pendingConfirm = null;
+
+    private async Task ConfirmTaskAction()
+    {
+        if (pendingConfirm == null) return;
+        var (action, id) = pendingConfirm.Value;
+        pendingConfirm = null;
+        var success = action == "delete"
+            ? await ApiService.DeleteTaskAsync(id)
+            : await ApiService.CancelTaskAsync(id);
         if (success) await LoadTasks();
+    }
+
+    /// <summary>任务状态中文化（Success/Cancelled → 中文）</summary>
+    private static string GetStatusDisplay(string status) => status switch
+    {
+        "Success" => "任务完成",
+        "Failed" => "失败",
+        "Running" => "进行中",
+        "Pending" => "等待中",
+        "Timeout" => "超时",
+        "Cancelled" => "已取消",
+        _ => status
+    };
+
+    /// <summary>原始错误码友好化（Task_CancelledByUser 等枚举码对家庭用户不友好）</summary>
+    private static string FriendlyError(string error)
+    {
+        if (string.IsNullOrWhiteSpace(error)) return error;
+        return error
+            .Replace("Task_CancelledByUser", "任务已取消")
+            .Replace("Task_Cancelled", "任务已取消")
+            .Replace("Task_Timeout", "任务超时")
+            .Replace("Task_Failed", "任务失败");
     }
 
     private async Task RetryTask(TaskInfo task)

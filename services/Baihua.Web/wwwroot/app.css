@@ -2209,3 +2209,15 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
     .quiz-page .settle-winner { color: #ffb74d; }
     .quiz-page .correct-answer { color: #91a0b0; }
 }
+
+/* 移动端 AI 状态徽章越界修复（审计 P3：375px 下左边缘被切） */
+@media (max-width: 575px) {
+    .ai-status-container,
+    .ai-status-badge {
+        left: auto !important;
+        right: auto !important;
+        position: static !important;
+        margin-left: 0 !important;
+        min-width: 0 !important;
+    }
+}

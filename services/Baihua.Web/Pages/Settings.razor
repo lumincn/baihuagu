@@ -758,7 +758,69 @@
         font-size: 0.9rem;
         margin: 0;
     }
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+    .modal-content {
+        background: white;
+        padding: 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+    }
+    .modal-content h3 {
+        margin-top: 0;
+        margin-bottom: 12px;
+        color: #c94c4c;
+    }
+    .modal-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 8px;
+    }
+    .modal-actions .btn-secondary {
+        background-color: #5a6a72;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .modal-actions .btn-danger {
+        background-color: #c94c4c;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
 </style>
+
+@if (providerToDelete != null)
+{
+    <div class="modal-overlay" @onclick="CancelDeleteProvider">
+        <div class="modal-content" @onclick:stopPropagation="true">
+            <h3>⚠️ 删除 AI 提供商</h3>
+            <p>确定要删除提供商「@providerToDelete.Name」吗？删除后需要重新配置才能使用。</p>
+            <div class="modal-actions">
+                <button class="btn-secondary" @onclick="CancelDeleteProvider">取消</button>
+                <button class="btn-danger" @onclick="ConfirmDeleteProvider">确认删除</button>
+            </div>
+        </div>
+    </div>
+}
 
 @code {
     private bool _canShowLocalModelSettings = false;
@@ -1067,8 +1129,19 @@
 
     private async Task DeleteProvider(AiConfigProvider provider)
     {
-        if (!await ConfirmDelete(string.Format(L["Settings_ConfirmDeleteProvider"], provider.Name)))
-            return;
+        // 原生 confirm 改为站内确认弹窗
+        providerToDelete = provider;
+    }
+
+    private AiConfigProvider? providerToDelete;
+
+    private void CancelDeleteProvider() => providerToDelete = null;
+
+    private async Task ConfirmDeleteProvider()
+    {
+        if (providerToDelete == null) return;
+        var provider = providerToDelete;
+        providerToDelete = null;
 
         if (await ApiService.DeleteAiConfigProviderAsync(provider.Id))
         {

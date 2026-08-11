@@ -21,6 +21,20 @@
         <span class="small">@status</span>
     </div>
 
+    @if (pendingClear != null)
+    {
+        <div class="confirm-modal-overlay" @onclick="CancelClear">
+            <div class="confirm-modal-box" @onclick:stopPropagation="true">
+                <h3>⚠️ @(pendingClear == "local" ? L["LogErrors_ClearLocal"] : L["LogErrors_ClearOpenObserve"])</h3>
+                <p>@(pendingClear == "local" ? L["LogErrors_ConfirmClearLocal"] : L["LogErrors_ConfirmClearOpenObserve"])</p>
+                <div class="confirm-modal-actions">
+                    <button class="btn-secondary" @onclick="CancelClear">取消</button>
+                    <button class="btn-danger" @onclick='() => { if (pendingClear == "local") ConfirmClearLocalLogs(); else ConfirmClearOpenObserve(); }'>确认清理</button>
+                </div>
+            </div>
+        </div>
+    }
+
     @if (loading || loadingOo)
     {
         <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
@@ -51,6 +65,57 @@
         </div>
     }
 </div>
+
+<style>
+    .confirm-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+    .confirm-modal-box {
+        background: white;
+        padding: 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+    }
+    .confirm-modal-box h3 {
+        margin-top: 0;
+        margin-bottom: 12px;
+        color: #c94c4c;
+    }
+    .confirm-modal-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 8px;
+    }
+    .confirm-modal-actions .btn-secondary {
+        background-color: #5a6a72;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .confirm-modal-actions .btn-danger {
+        background-color: #c94c4c;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+</style>
 
 @code {
     private record Entry(string Time, string Msg, string Service = "", string Level = "");
@@ -230,9 +295,13 @@
 
     private async Task ClearLocalLogs()
     {
-        if (!await JSRuntime.InvokeAsync<bool>("confirm", (string)L["LogErrors_ConfirmClearLocal"]))
-            return;
+        // 原生 confirm 改为站内确认弹窗
+        pendingClear = "local";
+    }
 
+    private async Task ConfirmClearLocalLogs()
+    {
+        pendingClear = null;
         var cleared = 0;
         foreach (var svc in SvcNames)
         {
@@ -257,9 +326,13 @@
     private async Task ClearOpenObserve()
     {
         if (string.IsNullOrEmpty(ooAuthHeader)) return;
-        if (!await JSRuntime.InvokeAsync<bool>("confirm", (string)L["LogErrors_ConfirmClearOpenObserve"]))
-            return;
+        // 原生 confirm 改为站内确认弹窗
+        pendingClear = "openobserve";
+    }
 
+    private async Task ConfirmClearOpenObserve()
+    {
+        pendingClear = null;
         clearingOo = true;
         try
         {
@@ -288,6 +361,9 @@
 
         clearingOo = false;
     }
+
+    private string? pendingClear;
+    private void CancelClear() => pendingClear = null;
 
     private string LevelBadge(string level) => level.ToUpperInvariant() switch
     {

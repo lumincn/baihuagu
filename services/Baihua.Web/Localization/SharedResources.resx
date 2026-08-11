@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+﻿<?xml version='1.0' encoding='utf-8'?>
 <root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:schema id="root">
     <xs:element name="root" ns1:IsDataSet="true">
@@ -2862,7 +2862,7 @@
     <value>Platinum</value>
   </data>
   <data name="Messages_PageTitle" xml:space="preserve">
-    <value>Messages</value>
+    <value>AI Chat</value>
   </data>
   <data name="Messages_Title" xml:space="preserve">
     <value>💬 AI Chat</value>

@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+﻿<?xml version='1.0' encoding='utf-8'?>
 <root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:schema id="root">
     <xs:element name="root" ns1:IsDataSet="true">
@@ -2241,7 +2241,7 @@
     <value>暂无数据，请先运行测试。</value>
   </data>
   <data name="ModelBenchmark_PageTitle" xml:space="preserve">
-    <value>模型 benchmark</value>
+    <value>模型评测</value>
   </data>
   <data name="ModelBenchmark_PromptPreview" xml:space="preserve">
     <value>📋 测试题目预览</value>
@@ -2289,7 +2289,7 @@
     <value>⏱ 超时</value>
   </data>
   <data name="ModelBenchmark_Title" xml:space="preserve">
-    <value>📊 模型 benchmark</value>
+    <value>📊 模型评测</value>
   </data>
   <data name="KnowledgeGen_PageTitle" xml:space="preserve">
     <value>AI 生成知识库</value>
@@ -2862,7 +2862,7 @@
     <value>铂金</value>
   </data>
   <data name="Messages_PageTitle" xml:space="preserve">
-    <value>消息</value>
+    <value>AI 对话</value>
   </data>
   <data name="Messages_Title" xml:space="preserve">
     <value>💬 AI 对话</value>
