@@ -1,6 +1,7 @@
 @page "/generate"
 @rendermode InteractiveServer
 @using Microsoft.AspNetCore.Components.Web
+@using Baihua.Contracts.Generate
 @inject NavigationManager Navigation
 @inject Baihua.Web.Services.IApiService ApiService
 @inject Baihua.Web.Services.VaultsService VaultsService
@@ -43,6 +44,35 @@ else
                 <textarea @bind="aiQuery" @bind:event="oninput" class="form-control" rows="4"
                           placeholder="@L["KnowledgeGen_QueryPlaceholder"]"></textarea>
                 <div class="form-text">@L["KnowledgeGen_QueryHint"]</div>
+            }
+        </div>
+
+        <!-- 灵感主题（AI 每日推荐，点击填入主题框） -->
+        <div class="form-group">
+            <label>💡 灵感主题 <small class="text-muted fw-normal">点击即可填入上方主题框（AI 每日更新）</small></label>
+            @if (topicsLoading)
+            {
+                <div class="text-muted small py-2">
+                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                    AI 正在为你推荐今日主题…
+                </div>
+            }
+            else if (topicSuggestions.Count > 0)
+            {
+                <div class="topic-grid">
+                    @foreach (var s in topicSuggestions)
+                    {
+                        <button type="button" class="topic-card" @onclick="() => ApplyTopic(s)" title="@s.Description">
+                            <span class="topic-cat">@s.Category</span>
+                            <span class="topic-title">@s.Title</span>
+                            <span class="topic-desc">@s.Description</span>
+                        </button>
+                    }
+                </div>
+                <div class="d-flex align-items-center gap-2 mt-2">
+                    <small class="text-muted">@(topicsSource == "ai" ? "AI 推荐" : "内置推荐") · 每日刷新</small>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="RefreshTopics" disabled="@topicsLoading">🔄 换一批</button>
+                </div>
             }
         </div>
 
@@ -355,6 +385,45 @@ else
     .new-vault-hint {
         padding: 0.75rem 1rem;
     }
+    .topic-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+        gap: 0.5rem;
+    }
+    .topic-card {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+        text-align: left;
+        padding: 0.5rem 0.65rem;
+        background: white;
+        border: 1px solid #d8e2e8;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .topic-card:hover {
+        border-color: #2e8baf;
+        box-shadow: 0 0 0 2px rgba(0,123,255,0.15);
+    }
+    .topic-cat {
+        font-size: 0.68rem;
+        color: #2e8baf;
+        background: #e0ecf4;
+        border-radius: 4px;
+        padding: 0 0.35rem;
+        align-self: flex-start;
+    }
+    .topic-title {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #2c3e50;
+        line-height: 1.25;
+    }
+    .topic-desc {
+        font-size: 0.75rem;
+        color: #8a97a0;
+    }
 </style>
 
 @code {
@@ -374,6 +443,46 @@ else
     private string detailLevel = "balanced";
     private string globalDetailLevel = "";
 
+    // 灵感主题（AI 每日推荐）
+    private List<TopicSuggestion> topicSuggestions = new();
+    private bool topicsLoading = false;
+    private string topicsSource = "";
+
+    private async Task LoadTopicSuggestionsAsync(bool refresh = false)
+    {
+        if (topicsLoading) return;
+        topicsLoading = true;
+        StateHasChanged();
+        try
+        {
+            // 个性化上下文：已有知识库的行业/名称摘要（最多 8 个）
+            var context = string.Join(",", vaults.Take(8).Select(v =>
+                string.IsNullOrWhiteSpace(v.Industry) ? v.Name : $"{v.Industry}/{v.Name}"));
+            if (context.Length > 150) context = context[..150];
+            var resp = await ApiService.GetTopicSuggestionsAsync(context, refresh);
+            topicSuggestions = resp?.Suggestions ?? new List<TopicSuggestion>();
+            topicsSource = resp?.Source ?? "";
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "灵感主题加载失败");
+            topicSuggestions = new List<TopicSuggestion>();
+        }
+        finally
+        {
+            topicsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ApplyTopic(TopicSuggestion s)
+    {
+        if (string.IsNullOrWhiteSpace(s.Title)) return;
+        aiQuery = s.Title;
+        StateHasChanged();
+    }
+
+    private void RefreshTopics() => _ = LoadTopicSuggestionsAsync(refresh: true);
     private async Task LoadGlobalDetailAsync()
     {
         try
@@ -418,6 +527,9 @@ else
             isInitializing = false;
             StateHasChanged();
         }
+
+        // 灵感主题不阻塞页面初始化（后台加载，AI 生成可能需要几十秒）
+        _ = LoadTopicSuggestionsAsync();
     }
 
     private List<string> GetIndustryOptions()

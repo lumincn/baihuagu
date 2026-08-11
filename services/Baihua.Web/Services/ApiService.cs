@@ -19,6 +19,7 @@ using Baihua.Contracts.OpenClaw;
 using Baihua.Contracts.Scene;
 using Baihua.Contracts.Master;
 using Baihua.Contracts.Onboarding;
+using Baihua.Contracts.Generate;
 
 namespace Baihua.Web.Services
 {
@@ -48,6 +49,7 @@ namespace Baihua.Web.Services
         Task<List<AiProviderInfo>> GetAiProvidersAsync();
         Task<StockRecommendationResponse> GetStockRecommendationsAsync(string? strategy = null, string? industry = null, string? horizon = null, string? prompt = null, string? direction = null, bool refresh = false, CancellationToken cancellationToken = default);
         Task<List<string>> GetStockIndustriesAsync(CancellationToken cancellationToken = default);
+        Task<TopicSuggestionResponse> GetTopicSuggestionsAsync(string? context = null, bool refresh = false, CancellationToken cancellationToken = default);
         Task<StockEvaluationResponse> EvaluateStockAsync(string code, bool refresh = false, CancellationToken cancellationToken = default);
         Task<List<BudgetTransaction>> GetBudgetTransactionsAsync(int? year = null, int? month = null, CancellationToken cancellationToken = default);
         Task<BudgetTransaction> AddBudgetTransactionAsync(BudgetCreateRequest request, CancellationToken cancellationToken = default);
@@ -577,6 +579,21 @@ namespace Baihua.Web.Services
             var response = await GetWithMetricsAsync("/api/stock/industries", linked.Token);
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<List<string>>(linked.Token) ?? new List<string>();
+        }
+
+        public async Task<TopicSuggestionResponse> GetTopicSuggestionsAsync(string? context = null, bool refresh = false, CancellationToken cancellationToken = default)
+        {
+            var query = new List<string>();
+            if (!string.IsNullOrWhiteSpace(context)) query.Add($"context={Uri.EscapeDataString(context)}");
+            if (refresh) query.Add("refresh=true");
+            var qs = query.Count > 0 ? "?" + string.Join('&', query) : "";
+
+            using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
+            var response = await GetWithMetricsAsync("/api/generate/topic-suggestions" + qs, linked.Token, _longHttpClient);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<TopicSuggestionResponse>(linked.Token)
+                   ?? new TopicSuggestionResponse();
         }
 
         public async Task<StockEvaluationResponse> EvaluateStockAsync(string code, bool refresh = false, CancellationToken cancellationToken = default)

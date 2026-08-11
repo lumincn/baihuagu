@@ -179,6 +179,7 @@ builder.Services.AddSingleton<DefaultPromptProvider>();
 builder.Services.AddAiClientServices();
 builder.Services.AddSingleton<AiFunctionService>();
 builder.Services.AddSingleton<StockAdvisorService>();
+builder.Services.AddSingleton<TopicSuggestionService>();
 builder.Services.AddSingleton<FamilyBudgetService>();
 builder.Services.AddSingleton<ModelDownloadService>();
 builder.Services.AddSingleton<OpenVinoRuntimeManager>();
