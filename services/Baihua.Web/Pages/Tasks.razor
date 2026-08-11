@@ -30,6 +30,10 @@
     </span>
     @if (tasks.Any())
     {
+        <label class="form-check form-switch form-check-inline mb-0 ms-2">
+            <input class="form-check-input" type="checkbox" @bind="hideCompleted" @bind:after="() => StateHasChanged()" />
+            <span class="form-check-label small">隐藏已完成</span>
+        </label>
         <button @onclick="ShowClearConfirm" class="btn btn-outline-danger btn-sm">
             🗑️ @L["Tasks_ClearHistory"]
         </button>
@@ -85,7 +89,7 @@ else if (!tasks.Any())
 else
 {
     <div class="task-list">
-        @foreach (var task in tasks)
+        @foreach (var task in (hideCompleted ? tasks.Where(t => t.StatusText != "Success") : tasks))
         {
             <div class="task-item @(task.StatusText == "Success" ? "clickable" : "")" 
                  @onclick="(() => OnTaskClick(task))">
@@ -271,6 +275,7 @@ else
     private bool isLoading = true;
     private bool isHubConnected = false;
     private bool showClearConfirm = false;
+    private bool hideCompleted = false; // 隐藏已完成任务（长列表折叠）
     private HashSet<string> retryingTaskIds = new();
     private readonly SemaphoreSlim _loadTasksLock = new(1, 1);
     private HubConnection? _hubConnection;

@@ -282,7 +282,8 @@ else
         <div class="form-actions">
             <button @onclick="ExecuteGeneration"
                     class="btn btn-primary btn-lg"
-                    disabled="@(isProcessing || string.IsNullOrWhiteSpace(aiQuery) || string.IsNullOrWhiteSpace(selectedVaultId))">
+                    disabled="@(isProcessing || string.IsNullOrWhiteSpace(aiQuery) || string.IsNullOrWhiteSpace(selectedVaultId))"
+                    title="@(string.IsNullOrWhiteSpace(aiQuery) ? "请先输入主题关键词" : string.IsNullOrWhiteSpace(selectedVaultId) ? "请先选择目标知识库" : "") ">
                 @if (isProcessing)
                 {
                     <span>⏳ @processingStep...</span>

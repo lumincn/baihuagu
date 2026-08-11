@@ -121,6 +121,10 @@
     <div class="section">
         <div class="section-header">
             <h2>@L["FamilyHome_RecentSearches"]</h2>
+            @if (recentSearches is { Count: > 0 })
+            {
+                <button class="btn btn-sm btn-link" @onclick="ClearRecentSearches">@L["Search_ClearHistory"]</button>
+            }
         </div>
         @if (isLoadingSearches)
         {
@@ -583,6 +587,12 @@
             isLoadingSearches = false;
             await InvokeAsync(StateHasChanged);
         }
+    }
+
+    private async Task ClearRecentSearches()
+    {
+        await SearchHistoryService.ClearSearchHistory();
+        recentSearches = new List<string>();
     }
 
     private void NavigateToNote(string path)
