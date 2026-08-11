@@ -27,6 +27,10 @@ namespace Baihua.Family.Controllers
             if (noteCount < 1 || noteCount > 50)
                 noteCount = 30;
 
+            // 详细度档位（简洁/适中/详细）：控制篇数范围与每篇篇幅，替代死板的固定数量
+            var detailLevel = Baihua.Contracts.Tasks.VaultGenDetail.Normalize(request.DetailLevel);
+            var (countHint, lengthHint, maxNotes) = Baihua.Contracts.Tasks.VaultGenDetail.Describe(detailLevel);
+
             try
             {
                 string modelName;
@@ -51,6 +55,7 @@ namespace Baihua.Family.Controllers
                     ["keyword"] = request.Keyword,
                     ["model"] = modelName,
                     ["noteCount"] = noteCount.ToString(),
+                    ["detailLevel"] = detailLevel,
                     ["providerId"] = provider.Id,
                 };
 
@@ -61,7 +66,7 @@ namespace Baihua.Family.Controllers
                     using var cts = _taskManager.CreateTaskCts(taskId, null); // 不设超时，用户通过进度条感知进度
                     using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_appLifetime.ApplicationStopping, cts.Token);
 
-                    var totalSteps = 4 + 30; // AI 决定笔记数量，用 30 估算进度
+                    var totalSteps = 4 + maxNotes; // 按档位上限估算进度（AI 在范围内自主决定篇数）
                     var currentStep = 0;
 
                     try
@@ -83,7 +88,7 @@ namespace Baihua.Family.Controllers
                         // Step 3: 生成笔记列表
                         currentStep++;
                         await _taskManager.UpdateProgress(taskId, currentStep, totalSteps, _loc["Task_Progress_Outline"]);
-                        var outline = await GenerateNoteListAsync(provider, modelName, vaultName, request.Industry, request.Keyword, systemPrompt, options, linkedCts.Token);
+                        var outline = await GenerateNoteListAsync(provider, modelName, vaultName, request.Industry, request.Keyword, systemPrompt, countHint, options, linkedCts.Token);
 
                         if (outline.Count == 0)
                         {
@@ -116,7 +121,7 @@ namespace Baihua.Family.Controllers
                             try
                             {
                                 var content = await GenerateNoteContentAsync(
-                                    provider, modelName, item.title, item.category, vaultName, systemPrompt, options, linkedCts.Token);
+                                    provider, modelName, item.title, item.category, vaultName, systemPrompt, lengthHint, options, linkedCts.Token);
 
                                 var safeTitle = item.title.Replace("\\", "_").Replace("/", "_").Replace(":", "_")
                                     .Replace("*", "_").Replace("?", "_").Replace("\"", "_").Replace("<", "_")
@@ -278,9 +283,9 @@ namespace Baihua.Family.Controllers
 
         private async Task<List<NoteOutlineItem>> GenerateNoteListAsync(
             AiProviderConfig provider, string model, string vaultName, string industry, string keyword,
-            string systemPrompt, ChatOptions options, CancellationToken ct)
+            string systemPrompt, string countHint, ChatOptions options, CancellationToken ct)
         {
-            var prompt = $"{systemPrompt}\n\n请为知识库\"{vaultName}\"（{industry}-{keyword}）生成一份全面覆盖核心知识点的大纲，由 AI 自主决定笔记数量。每条笔记包含：title（标题，简洁专业）、category（分类，2-4字）。\n\n要求：\n1. 覆盖{keyword}的核心知识点，由浅入深\n2. 标题要具体，避免过于笼统\n3. 分类要合理，同一知识库内分类不宜超过5个\n4. 必须严格返回 JSON 数组格式，不要加 markdown 代码块标记\n\n格式示例：\n[{{\"title\": \"示例标题\", \"category\": \"示例分类\"}}]";
+            var prompt = $"{systemPrompt}\n\n请为知识库\"{vaultName}\"（{industry}-{keyword}）生成一份覆盖核心知识点的大纲，笔记数量控制在 {countHint}（AI 按主题复杂度在范围内自主决定，不要超出）。每条笔记包含：title（标题，简洁专业）、category（分类，2-4字）。\n\n要求：\n1. 覆盖{keyword}的核心知识点，由浅入深\n2. 标题要具体，避免过于笼统\n3. 分类要合理，同一知识库内分类不宜超过5个\n4. 必须严格返回 JSON 数组格式，不要加 markdown 代码块标记\n\n格式示例：\n[{{\"title\": \"示例标题\", \"category\": \"示例分类\"}}]";
 
             var messages = new List<ChatMessage>
             {
@@ -327,7 +332,7 @@ namespace Baihua.Family.Controllers
 
         private async Task<string> GenerateNoteContentAsync(
             AiProviderConfig provider, string model, string title, string category, string vaultName,
-            string systemPrompt, ChatOptions options, CancellationToken ct)
+            string systemPrompt, string lengthHint, ChatOptions options, CancellationToken ct)
         {
             var prompt = $"""
                 {systemPrompt}
@@ -336,6 +341,7 @@ namespace Baihua.Family.Controllers
                 知识库：{vaultName}
                 分类：{category}
                 标题：{title}
+                篇幅要求：{lengthHint}
 
                 1. **聚焦单一主题**：只讨论"{title}"这一个核心概念，不展开关联概念
                 2. **高度结构化**：必须包含以下部分（按顺序）：

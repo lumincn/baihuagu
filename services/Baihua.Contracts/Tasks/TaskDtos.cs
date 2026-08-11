@@ -56,7 +56,44 @@ public class VaultGenerationRequest
     public string Keyword { get; set; } = string.Empty;
     public string? Model { get; set; }
     public int NoteCount { get; set; } = 30;
+
+    /// <summary>详细度档位：concise 简洁突出重点 / balanced 适中（默认） / comprehensive 详细全面</summary>
+    public string? DetailLevel { get; set; }
+
     public bool GenerateCards { get; set; }
+}
+
+/// <summary>知识库生成详细度档位（同时控制篇数范围与每篇篇幅，由 AI 在范围内按主题自主决定）</summary>
+public static class VaultGenDetail
+{
+    public const string Concise = "concise";
+    public const string Balanced = "balanced";
+    public const string Comprehensive = "comprehensive";
+
+    public static string Normalize(string? level) =>
+        level?.ToLowerInvariant() switch
+        {
+            Concise => Concise,
+            Comprehensive => Comprehensive,
+            _ => Balanced
+        };
+
+    public static string Label(string? level) =>
+        Normalize(level) switch
+        {
+            Concise => "简洁突出重点",
+            Comprehensive => "详细全面",
+            _ => "适中"
+        };
+
+    /// <summary>(篇数范围提示, 每篇篇幅提示, 进度估算上限)</summary>
+    public static (string CountHint, string LengthHint, int MaxNotes) Describe(string? level) =>
+        Normalize(level) switch
+        {
+            Concise => ("6-10 篇", "每篇 200-400 字，只保留最核心的知识点，删掉可有可无的展开", 10),
+            Comprehensive => ("28-45 篇", "每篇 800-1500 字，覆盖知识点及其细节、示例、常见误区", 45),
+            _ => ("12-22 篇", "每篇 400-800 字，覆盖核心知识点并适当展开", 22)
+        };
 }
 
 public class VaultGenerationResponse

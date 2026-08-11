@@ -248,6 +248,7 @@ public class AssistantService
                 industry = topic,
                 keyword = topic,
                 noteCount = 10,
+                detailLevel = "concise",   // 助理自动生成用简洁档：省时省钱
                 generateCards = false
             };
             var resp = await http.PostAsJsonAsync("http://127.0.0.1:8788/api/tasks/vault-generation", body, ct);

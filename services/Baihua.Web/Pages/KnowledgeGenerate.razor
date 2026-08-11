@@ -191,6 +191,31 @@ else
                 </label>
                 <div class="form-text text-muted">@L["KnowledgeGen_AutoGenerateCardsHint"]</div>
             </div>
+
+            <!-- 详细度档位（新知识库模式） -->
+            <div class="form-group">
+                <label class="form-label fw-bold">📐 详细度（控制笔记数量与篇幅，省时省钱）</label>
+                <div class="d-flex gap-4 flex-wrap">
+                    <label class="form-check">
+                        <input type="radio" name="detailLevel" class="form-check-input"
+                               checked="@(detailLevel == "concise")" @onchange='() => SetDetailLevel("concise")' />
+                        <span class="form-check-label">简洁突出重点</span>
+                        <small class="text-muted d-block">约 6-10 篇，每篇 200-400 字，最快最省</small>
+                    </label>
+                    <label class="form-check">
+                        <input type="radio" name="detailLevel" class="form-check-input"
+                               checked="@(detailLevel == "balanced")" @onchange='() => SetDetailLevel("balanced")' />
+                        <span class="form-check-label">适中（推荐）</span>
+                        <small class="text-muted d-block">约 12-22 篇，每篇 400-800 字</small>
+                    </label>
+                    <label class="form-check">
+                        <input type="radio" name="detailLevel" class="form-check-input"
+                               checked="@(detailLevel == "comprehensive")" @onchange='() => SetDetailLevel("comprehensive")' />
+                        <span class="form-check-label">详细全面</span>
+                        <small class="text-muted d-block">约 28-45 篇，每篇 800-1500 字，最贵最慢</small>
+                    </label>
+                </div>
+            </div>
         }
 
         <!-- Prompt Editor -->
@@ -342,6 +367,9 @@ else
     private string manualIndustryValue = "";
     private string aiQuery = "";
     private bool generateCards = true;
+    private string detailLevel = "balanced";
+
+    private void SetDetailLevel(string level) => detailLevel = level;
 
     private List<VaultConfig> vaults = new();
     private string selectedVaultId = "";
@@ -550,7 +578,7 @@ else
         processingStep = L["KnowledgeGen_SubmittingTask"];
         try
         {
-            var response = await ApiService.CreateVaultGenerationTaskAsync(industry.Trim(), aiQuery.Trim(), selectedModel, generateCards: generateCards);
+            var response = await ApiService.CreateVaultGenerationTaskAsync(industry.Trim(), aiQuery.Trim(), selectedModel, generateCards: generateCards, detailLevel: detailLevel);
             if (response.Success && !string.IsNullOrWhiteSpace(response.TaskId))
             {
                 Navigation.NavigateTo("tasks");

@@ -44,7 +44,7 @@ namespace Baihua.Web.Services
         Task<TaskInfo?> GetTaskAsync(string taskId);
         Task<OnboardingStatusDto> GetOnboardingStatusAsync();
         Task<bool> CompleteOnboardingAsync();
-        Task<VaultGenerationResponse> CreateVaultGenerationTaskAsync(string industry, string keyword, string? model = null, int noteCount = 30, bool generateCards = false);
+        Task<VaultGenerationResponse> CreateVaultGenerationTaskAsync(string industry, string keyword, string? model = null, int noteCount = 30, bool generateCards = false, string? detailLevel = null);
         Task<List<AiProviderInfo>> GetAiProvidersAsync();
         Task<StockRecommendationResponse> GetStockRecommendationsAsync(string? strategy = null, string? industry = null, string? horizon = null, string? prompt = null, string? direction = null, bool refresh = false, CancellationToken cancellationToken = default);
         Task<List<string>> GetStockIndustriesAsync(CancellationToken cancellationToken = default);
@@ -479,7 +479,7 @@ namespace Baihua.Web.Services
             }
         }
 
-        public async Task<VaultGenerationResponse> CreateVaultGenerationTaskAsync(string industry, string keyword, string? model = null, int noteCount = 30, bool generateCards = false)
+        public async Task<VaultGenerationResponse> CreateVaultGenerationTaskAsync(string industry, string keyword, string? model = null, int noteCount = 30, bool generateCards = false, string? detailLevel = null)
         {
             try
             {
@@ -492,6 +492,8 @@ namespace Baihua.Web.Services
                 };
                 if (!string.IsNullOrWhiteSpace(model))
                     body["model"] = model;
+                if (!string.IsNullOrWhiteSpace(detailLevel))
+                    body["detailLevel"] = detailLevel;
                 var json = JsonSerializer.Serialize(body);
                 var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
                 var response = await PostWithMetricsAsync("/api/tasks/vault-generation", httpContent);
