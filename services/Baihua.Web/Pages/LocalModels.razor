@@ -868,6 +868,50 @@ else
     }
 
 
+    <!-- OpenVINO 已下载模型删除确认 -->
+    @if (openVinoToDelete != null)
+    {
+        <div class="modal-overlay" @onclick="CancelDeleteOpenVino">
+            <div class="modal-content modal-small" @onclick:stopPropagation>
+                <div class="modal-header">
+                    <h3>⚠️ 删除模型</h3>
+                    <button class="modal-close" @onclick="CancelDeleteOpenVino">×</button>
+                </div>
+                <div class="modal-body">
+                    <p>确定要删除本地模型「@openVinoToDelete.Name」吗？</p>
+                    <p class="text-error">删除后将无法恢复</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CancelDeleteOpenVino">@L["Common_Cancel"]</button>
+                    <button class="btn btn-danger" @onclick="ConfirmDeleteOpenVino">确认删除</button>
+                </div>
+            </div>
+        </div>
+    }
+
+
+    <!-- OpenVINO 已下载模型删除确认 -->
+    @if (openVinoToDelete != null)
+    {
+        <div class="modal-overlay" @onclick="CancelDeleteOpenVino">
+            <div class="modal-content modal-small" @onclick:stopPropagation>
+                <div class="modal-header">
+                    <h3>⚠️ 删除模型</h3>
+                    <button class="modal-close" @onclick="CancelDeleteOpenVino">×</button>
+                </div>
+                <div class="modal-body">
+                    <p>确定要删除本地模型「@openVinoToDelete.Name」吗？</p>
+                    <p class="text-error">删除后将无法恢复</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CancelDeleteOpenVino">@L["Common_Cancel"]</button>
+                    <button class="btn btn-danger" @onclick="ConfirmDeleteOpenVino">确认删除</button>
+                </div>
+            </div>
+        </div>
+    }
+
+
     <!-- Model Details Modal -->
     @if (showDetailsModal && modelDetails != null)
     {
@@ -2139,7 +2183,7 @@ else
                                     {
                                         <button class="btn btn-sm btn-primary" @onclick='() => RunModelAsync(m.Path)'>运行</button>
                                     }
-                                    <button class="btn btn-sm btn-outline-secondary" @onclick='() => DeleteModelAsync(m.Path)'>删除</button>
+                                    <button class="btn btn-sm btn-outline-secondary" @onclick='() => AskDeleteOpenVino(m)'>删除</button>
                                 </td>
                             </tr>
                         }
@@ -2180,6 +2224,27 @@ else
         {
             <div class="text-warning small mt-2">@openVinoMessage</div>
         }
+    }
+
+    <!-- OpenVINO 已下载模型删除确认（与概览 tab 一致的确认流程） -->
+    @if (openVinoToDelete != null)
+    {
+        <div class="modal-overlay" @onclick="CancelDeleteOpenVino">
+            <div class="modal-content modal-small" @onclick:stopPropagation>
+                <div class="modal-header">
+                    <h3>⚠️ 删除模型</h3>
+                    <button class="modal-close" @onclick="CancelDeleteOpenVino">×</button>
+                </div>
+                <div class="modal-body">
+                    <p>确定要删除本地模型「@openVinoToDelete.Name」吗？</p>
+                    <p class="text-error">删除后将无法恢复</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CancelDeleteOpenVino">@L["Common_Cancel"]</button>
+                    <button class="btn btn-danger" @onclick="ConfirmDeleteOpenVino">确认删除</button>
+                </div>
+            </div>
+        </div>
     }
 
 
@@ -2452,6 +2517,21 @@ else
         {
             openVinoMessage = "删除失败：" + ex.Message;
         }
+    }
+
+    // OpenVINO 已下载模型删除确认（与概览 tab 一致的确认流程）
+    private OpenVinoInstalledModelDto? openVinoToDelete;
+
+    private void AskDeleteOpenVino(OpenVinoInstalledModelDto m) => openVinoToDelete = m;
+
+    private void CancelDeleteOpenVino() => openVinoToDelete = null;
+
+    private async Task ConfirmDeleteOpenVino()
+    {
+        if (openVinoToDelete == null) return;
+        var path = openVinoToDelete.Path;
+        openVinoToDelete = null;
+        await DeleteModelAsync(path);
     }
 
     private static string FormatSize(long bytes)

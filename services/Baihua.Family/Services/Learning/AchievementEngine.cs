@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Baihua.Core.Localization;
+using Baihua.Core.Time;
 using Baihua.Data;
 using Baihua.Data.Entities;
 
@@ -14,12 +15,28 @@ public class AchievementEngine
     private readonly IDbContextFactory<FamilyDbContext> _dbFactory;
     private readonly ILogger<AchievementEngine> _logger;
     private readonly IStringLocalizer<SharedResources> _loc;
+    private readonly ITimeProvider _timeProvider;
 
-    public AchievementEngine(IDbContextFactory<FamilyDbContext> dbFactory, ILogger<AchievementEngine> logger, IStringLocalizer<SharedResources> loc)
+    public AchievementEngine(IDbContextFactory<FamilyDbContext> dbFactory, ILogger<AchievementEngine> logger, IStringLocalizer<SharedResources> loc, ITimeProvider timeProvider)
     {
         _dbFactory = dbFactory;
         _logger = logger;
         _loc = loc;
+        _timeProvider = timeProvider;
+    }
+
+    /// <summary>UTC → 北京时间日期（SQLite 读出 Kind=Unspecified，先补为 UTC）</summary>
+    private static DateTime ToBeijingDate(DateTime utc)
+    {
+        if (utc.Kind == DateTimeKind.Unspecified) utc = DateTime.SpecifyKind(utc, DateTimeKind.Utc);
+        return TimeZoneInfo.ConvertTimeFromUtc(utc, SystemTimeProvider.BeijingTz).Date;
+    }
+
+    /// <summary>UTC → 北京时间（判断时段用，如早鸟成就）</summary>
+    private static DateTime ToBeijingLocal(DateTime utc)
+    {
+        if (utc.Kind == DateTimeKind.Unspecified) utc = DateTime.SpecifyKind(utc, DateTimeKind.Utc);
+        return TimeZoneInfo.ConvertTimeFromUtc(utc, SystemTimeProvider.BeijingTz);
     }
 
     private List<AchievementDef>? _definitions;
@@ -99,9 +116,12 @@ public class AchievementEngine
             // 今日正确率
             var todayAccuracy = await CalculateTodayAccuracyAsync(db, learnerId);
 
-            // 是否早鸟
-            var isEarlyBird = await db.StudyActivities
-                .AnyAsync(a => a.LearnerId == learnerId && a.CreatedAt.Hour < 6);
+            // 是否早鸟（北京时间 0-6 点完成学习）
+            var earlyBirdTimes = await db.StudyActivities
+                .Where(a => a.LearnerId == learnerId && a.ActivityType == "study")
+                .Select(a => a.CreatedAt)
+                .ToListAsync();
+            var isEarlyBird = earlyBirdTimes.Any(t => ToBeijingLocal(t).Hour < 6);
 
             // 检查每个成就
             foreach (var def in Definitions)
@@ -188,16 +208,19 @@ public class AchievementEngine
 
     private async Task<int> CalculateStreakAsync(FamilyDbContext db, int learnerId)
     {
-        // 按天统计学习次数
-        var dates = await db.StudyActivities
+        // 按北京时间天统计学习次数（存储为 UTC，需转换后再按天去重）
+        var createdAts = await db.StudyActivities
             .Where(a => a.LearnerId == learnerId && a.ActivityType == "study")
-            .Select(a => a.CreatedAt.Date)
+            .Select(a => a.CreatedAt)
+            .ToListAsync();
+        var dates = createdAts
+            .Select(ToBeijingDate)
             .Distinct()
             .OrderByDescending(d => d)
-            .ToListAsync();
+            .ToList();
 
         int streak = 0;
-        var today = DateTime.UtcNow.Date;
+        var today = _timeProvider.Today;
         for (int i = 0; i < dates.Count; i++)
         {
             var expected = today.AddDays(-i);
@@ -215,14 +238,17 @@ public class AchievementEngine
 
     private async Task<double> CalculateTodayAccuracyAsync(FamilyDbContext db, int learnerId)
     {
-        var today = DateTime.UtcNow.Date;
+        // 按北京时间“今天”统计（存储为 UTC，日期边界需转换）
         var records = await db.StudyActivities
-            .Where(a => a.LearnerId == learnerId && a.ActivityType == "study"
-                        && a.CreatedAt.Date == today && a.Result != null)
+            .Where(a => a.LearnerId == learnerId && a.ActivityType == "study" && a.Result != null)
+            .Select(a => new { a.CreatedAt, a.Result })
             .ToListAsync();
 
-        if (records.Count == 0) return 0;
-        var rememberCount = records.Count(r => r.Result == "remember");
-        return (double)rememberCount / records.Count;
+        var today = _timeProvider.Today;
+        var todayRecords = records.Where(r => ToBeijingDate(r.CreatedAt) == today).ToList();
+
+        if (todayRecords.Count == 0) return 0;
+        var rememberCount = todayRecords.Count(r => r.Result == "remember");
+        return (double)rememberCount / todayRecords.Count;
     }
 }

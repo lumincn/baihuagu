@@ -58,7 +58,7 @@
                     <button class="btn btn-sm btn-outline-secondary" @onclick="GoToProfile" title="@L["MasterChat_ViewProfile"]">👤</button>
                     <button class="btn btn-sm btn-outline-secondary" @onclick="GoToStage">@L["MasterChat_StageProgress"]</button>
                     <button class="btn btn-sm btn-outline-info" @onclick="RunEvictAsync" title="@L["MasterChat_EvictData"]">🧹</button>
-                    <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteMasterAsync(selectedMaster.MasterId)">@L["MasterChat_DeleteMaster"]</button>
+                    <button class="btn btn-sm btn-outline-danger" @onclick="() => AskDeleteMaster(selectedMaster.MasterId, selectedMaster.MasterName)">@L["MasterChat_DeleteMaster"]</button>
                 </div>
             </div>
 
@@ -191,6 +191,22 @@
                 <button class="btn btn-primary" @onclick="CreateMasterAsync" disabled="@isCreating">
                     @(isCreating ? L["MasterChat_Creating"] : L["MasterChat_ConfirmCreate"])
                 </button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(pendingDeleteMasterId))
+{
+    <div class="modal-overlay" @onclick="CancelDeleteMaster">
+        <div class="modal-content" @onclick:stopPropagation>
+            <h4>⚠️ @L["MasterChat_DeleteMaster"]</h4>
+            <p style="color: var(--master-text-secondary); margin: 1rem 0;">
+                确定要删除师父「@pendingDeleteMasterName」吗？拜师进度与师徒关系将一并删除，此操作不可恢复。
+            </p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" @onclick="CancelDeleteMaster">@L["MasterChat_Cancel"]</button>
+                <button class="btn btn-danger" @onclick="ConfirmDeleteMaster">确认删除</button>
             </div>
         </div>
     </div>
@@ -973,6 +989,31 @@
             chatMessages.Clear();
         }
         await LoadMastersAsync();
+    }
+
+    // 删除师父确认弹窗（拜师慎重，删除同样需要确认）
+    private string? pendingDeleteMasterId;
+    private string? pendingDeleteMasterName;
+
+    private void AskDeleteMaster(string id, string name)
+    {
+        pendingDeleteMasterId = id;
+        pendingDeleteMasterName = name;
+    }
+
+    private void CancelDeleteMaster()
+    {
+        pendingDeleteMasterId = null;
+        pendingDeleteMasterName = null;
+    }
+
+    private async Task ConfirmDeleteMaster()
+    {
+        if (string.IsNullOrEmpty(pendingDeleteMasterId)) return;
+        var id = pendingDeleteMasterId;
+        pendingDeleteMasterId = null;
+        pendingDeleteMasterName = null;
+        await DeleteMasterAsync(id);
     }
 
     private void GoToStage()

@@ -55,15 +55,22 @@ public partial class AchievementsController : ControllerBase
         if (string.IsNullOrWhiteSpace(request.Name))
             return BadRequest(new { error = _loc["Achievement_NameRequired"] });
 
-        var learner = await _learnerService.CreateAsync(request.Name.Trim(), request.AvatarEmoji ?? "👤", request.Color ?? "#007bff");
-        return Ok(new LearnerDto
+        try
         {
-            Id = learner.Id,
-            Name = learner.Name,
-            AvatarEmoji = learner.AvatarEmoji,
-            Color = learner.Color,
-            IsDefault = learner.IsDefault
-        });
+            var learner = await _learnerService.CreateAsync(request.Name.Trim(), request.AvatarEmoji ?? "👤", request.Color ?? "#007bff");
+            return Ok(new LearnerDto
+            {
+                Id = learner.Id,
+                Name = learner.Name,
+                AvatarEmoji = learner.AvatarEmoji,
+                Color = learner.Color,
+                IsDefault = learner.IsDefault
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpPost("learners/{id}/default")]

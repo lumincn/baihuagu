@@ -52,6 +52,12 @@ public class LearnerService
             throw new ArgumentException("头像必须是单个 emoji 字符", nameof(avatarEmoji));
 
         using var db = await _dbFactory.CreateDbContextAsync();
+
+        // 防重名（审计发现：重复「小明」污染家庭首页/看板/互考/排行）
+        var exists = await db.LearnerProfiles.AnyAsync(l => l.Name == name);
+        if (exists)
+            throw new ArgumentException($"已存在同名成员「{name}」，请换一个名字", nameof(name));
+
         var learner = new LearnerProfile
         {
             Name = name,
