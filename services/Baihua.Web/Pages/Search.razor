@@ -185,7 +185,7 @@
                         <p>@searchStatus.ErrorMessage</p>
                         @if (!searchStatus.VaultConfigured)
                         {
-                            <p class="text-muted">@L["Search_ConfigVaultPath"] <a href="settings" class="btn btn-sm btn-outline-primary mt-2">@L["Search_SettingsPage"]</a> @L["Search_ConfigVaultPathSuffix"]</p>
+                            <p class="text-muted">@L["Search_ConfigVaultPath"] <a href="vaults" class="btn btn-sm btn-outline-primary mt-2">@L["Search_SettingsPage"]</a> @L["Search_ConfigVaultPathSuffix"]</p>
                         }
                         else if (!searchStatus.VaultExists)
                         {
@@ -470,6 +470,14 @@
             var response = await ApiService.SearchAsync(query, selectedVaultId);
             searchResults = response.Results;
             searchStatus = response.Status;
+            // 默认展开条目最多的分组（避免首屏全折叠看不到任何条目）
+            if (searchResults.Count > 0 && expandedGroups.Count == 0)
+            {
+                var topGroup = BuildGroupedResults()
+                    .OrderByDescending(g => g.Value.Count)
+                    .FirstOrDefault();
+                if (topGroup.Key != null) expandedGroups.Add(topGroup.Key);
+            }
         }
         catch (Exception ex)
         {

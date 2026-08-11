@@ -34,7 +34,7 @@ else
                 <div class="spec-grid">
                     <div class="spec-item">
                         <span class="spec-label">CPU</span>
-                        <span class="spec-value">@(hardwareInfo?.Cpu.Name ?? L["HardwareBenchmark_Unknown"])</span>
+                        <span class="spec-value">@(DisplayCpuName(hardwareInfo?.Cpu.Name) ?? L["HardwareBenchmark_Unknown"])</span>
                     </div>
                     <div class="spec-item">
                         <span class="spec-label">@L["HardwareBenchmark_CoreCount"]</span>
@@ -230,6 +230,16 @@ else
     private HardwareInfoDto? hardwareInfo;
     private List<RecommendationItem> recommendations = new();
     private List<PlatformComparisonItem> sortedPlatforms = new();
+
+    /// <summary>CPU 名称为 Unknown 时降级显示（Windows 上报 Unknown X64 CPU 不友好）</summary>
+    private static string? DisplayCpuName(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return null;
+        var n = name.Trim();
+        if (n.StartsWith("Unknown", StringComparison.OrdinalIgnoreCase))
+            return "未知 CPU（x64）";
+        return n;
+    }
 
     protected override async Task OnInitializedAsync()
     {

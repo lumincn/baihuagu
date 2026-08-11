@@ -88,6 +88,10 @@
             <input type="number" class="form-control form-control-sm" @bind="newRewardTarget" placeholder="目标值" min="1" />
             <button class="btn btn-primary btn-sm" @onclick="AddRewardAsync">添加奖励</button>
         </div>
+        @if (!string.IsNullOrEmpty(rewardFormError))
+        {
+            <div class="text-danger small mt-1">@rewardFormError</div>
+        }
     </section>
 
     <!-- 统计概览 -->
@@ -385,7 +389,15 @@
 
     private async Task AddRewardAsync()
     {
-        if (string.IsNullOrWhiteSpace(newRewardName) || newRewardTarget <= 0) return;
+        if (string.IsNullOrWhiteSpace(newRewardName) || newRewardTarget <= 0)
+        {
+            // 空表单提交要给反馈（之前静默无反应）
+            rewardFormError = string.IsNullOrWhiteSpace(newRewardName)
+                ? "请填写奖励名称"
+                : "请填写正确的目标值（大于 0）";
+            return;
+        }
+        rewardFormError = "";
         await ApiService.CreateRewardAsync(new CreateRewardRequest
         {
             ConditionType = newRewardType,
@@ -396,4 +408,6 @@
         newRewardName = "";
         await LoadRewardsAsync();
     }
+
+    private string rewardFormError = "";
 }
