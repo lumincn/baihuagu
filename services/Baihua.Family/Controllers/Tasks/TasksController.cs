@@ -30,6 +30,7 @@ namespace Baihua.Family.Controllers
         private readonly DefaultPromptProvider _scenePromptService;
         private readonly Services.AnkiCardGenerator _cardGenerator;
         private readonly Services.VaultNoteIndexer _vaultNoteIndexer;
+        private readonly Services.UserActivityService _activityService;
         private readonly ILogger<TasksController> _logger;
         private readonly IHostApplicationLifetime _appLifetime;
         private readonly IStringLocalizer<SharedResources> _loc;
@@ -46,6 +47,7 @@ namespace Baihua.Family.Controllers
             DefaultPromptProvider scenePromptService,
             Services.AnkiCardGenerator cardGenerator,
             Services.VaultNoteIndexer vaultNoteIndexer,
+            Services.UserActivityService activityService,
             ILogger<TasksController> logger,
             IHostApplicationLifetime appLifetime,
             IStringLocalizer<SharedResources> loc)
@@ -61,6 +63,7 @@ namespace Baihua.Family.Controllers
             _scenePromptService = scenePromptService;
             _cardGenerator = cardGenerator;
             _vaultNoteIndexer = vaultNoteIndexer;
+            _activityService = activityService;
             _logger = logger;
             _appLifetime = appLifetime;
             _loc = loc;

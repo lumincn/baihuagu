@@ -182,6 +182,9 @@ builder.Services.AddSingleton<StockAdvisorService>();
 builder.Services.AddSingleton<FamilyBudgetService>();
 builder.Services.AddSingleton<ModelDownloadService>();
 builder.Services.AddSingleton<OpenVinoRuntimeManager>();
+builder.Services.AddSingleton<AssistantService>();
+builder.Services.AddSingleton<UserActivityService>();
+builder.Services.AddHostedService<AssistantDailyWorker>();
 builder.Services.AddHttpClient<Baihua.Core.Services.ComfyUiClient>();
 
 

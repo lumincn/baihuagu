@@ -22,6 +22,9 @@ namespace Baihua.Family.Controllers
             {
                 var (provider, model) = ResolveProviderAndModel(request.ProviderId, request.Model);
 
+                // 数字助理：采集用户聊天输入
+                _activityService.Record("chat", request.Message);
+
                 // 构建消息列表（使用三层记忆系统）
                 var messages = await BuildMessagesWithMemoryAsync(
                     request.History, provider.Id, model, request.Message, request.SessionId, HttpContext.RequestAborted);

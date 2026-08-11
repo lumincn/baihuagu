@@ -19,6 +19,7 @@ public partial class MasterController : ControllerBase
     private readonly IDbContextFactory<FamilyDbContext> _dbFactory;
     private readonly VaultSettingsService _vaultSettings;
     private readonly VaultNoteIndexer _vaultNoteIndexer;
+    private readonly UserActivityService _activityService;
     private readonly IStringLocalizer<SharedResources> _loc;
     private readonly ILogger<MasterController> _logger;
     private readonly StageStrategyFactory _stageStrategyFactory;
@@ -30,6 +31,7 @@ public partial class MasterController : ControllerBase
         IDbContextFactory<FamilyDbContext> dbFactory,
         VaultSettingsService vaultSettings,
         VaultNoteIndexer vaultNoteIndexer,
+        UserActivityService activityService,
         IStringLocalizer<SharedResources> loc,
         ILogger<MasterController> logger,
         StageStrategyFactory stageStrategyFactory)
@@ -40,6 +42,7 @@ public partial class MasterController : ControllerBase
         _dbFactory = dbFactory;
         _vaultSettings = vaultSettings;
         _vaultNoteIndexer = vaultNoteIndexer;
+        _activityService = activityService;
         _loc = loc;
         _logger = logger;
         _stageStrategyFactory = stageStrategyFactory;

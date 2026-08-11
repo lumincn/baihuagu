@@ -26,6 +26,7 @@ namespace Baihua.Family.Controllers
         private readonly Services.AiFunctionService _aiFunctionService;
         private readonly Services.ChatMemoryService _chatMemoryService;
         private readonly Services.AnkiCardGenerator _cardGenerator;
+        private readonly Services.UserActivityService _activityService;
         private readonly TaskManager _taskManager;
         private readonly ILogger<AIController> _logger;
         private readonly IStringLocalizer<SharedResources> _loc;
@@ -40,6 +41,7 @@ namespace Baihua.Family.Controllers
             Services.AiFunctionService aiFunctionService,
             Services.ChatMemoryService chatMemoryService,
             Services.AnkiCardGenerator cardGenerator,
+            Services.UserActivityService activityService,
             TaskManager taskManager,
             ILogger<AIController> logger,
             IStringLocalizer<SharedResources> loc)
@@ -54,6 +56,7 @@ namespace Baihua.Family.Controllers
             _aiFunctionService = aiFunctionService;
             _chatMemoryService = chatMemoryService;
             _cardGenerator = cardGenerator;
+            _activityService = activityService;
             _taskManager = taskManager;
             _logger = logger;
         }

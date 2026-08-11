@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using Baihua.Contracts.Ai;
+using Baihua.Contracts.Assistant;
 using Baihua.Contracts.Budget;
 using Baihua.Contracts.Stock;
 using Microsoft.Extensions.Localization;
@@ -61,6 +62,13 @@ namespace Baihua.Web.Services
         Task<OpenVinoRunResult> RunOpenVinoModelAsync(string modelPath, string device = "GPU", CancellationToken cancellationToken = default);
         Task<bool> StopOpenVinoModelAsync(int port, CancellationToken cancellationToken = default);
         Task DeleteOpenVinoModelAsync(string path, CancellationToken cancellationToken = default);
+        Task<AssistantSettingsDto> GetAssistantSettingsAsync(CancellationToken cancellationToken = default);
+        Task SaveAssistantSettingsAsync(AssistantSettingsDto settings, CancellationToken cancellationToken = default);
+        Task<AssistantAnalysisDto?> GetAssistantTodayAnalysisAsync(CancellationToken cancellationToken = default);
+        Task<AssistantAnalysisDto> RunAssistantAnalysisAsync(CancellationToken cancellationToken = default);
+        Task<List<AssistantAnalysisDto>> GetAssistantHistoryAsync(int days = 14, CancellationToken cancellationToken = default);
+        Task<List<UserActivityDto>> GetAssistantActivitiesAsync(CancellationToken cancellationToken = default);
+        Task<Dictionary<string, int>> GetAssistantActivityCountsAsync(int days = 14, CancellationToken cancellationToken = default);
         Task<SearchResponse> SearchAsync(string query, string vaultId);
         Task<IndexStatusDto> GetIndexStatusAsync(string vaultId);
         Task<bool> RebuildIndexAsync(string vaultId, CancellationToken cancellationToken = default);
@@ -715,6 +723,72 @@ namespace Baihua.Web.Services
             EnsurePrimaryBaseAddress();
             var response = await _httpClient.DeleteAsync("/api/local-models/openvino/model?path=" + Uri.EscapeDataString(path), linked.Token);
             response.EnsureSuccessStatusCode();
+        }
+
+        public async Task<AssistantSettingsDto> GetAssistantSettingsAsync(CancellationToken cancellationToken = default)
+        {
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            var response = await GetWithMetricsAsync("/api/assistant/settings", linked.Token);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<AssistantSettingsDto>(linked.Token) ?? new AssistantSettingsDto();
+        }
+
+        public async Task SaveAssistantSettingsAsync(AssistantSettingsDto settings, CancellationToken cancellationToken = default)
+        {
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            var response = await PostWithMetricsAsync("/api/assistant/settings", JsonContent.Create(settings), linked.Token);
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async Task<AssistantAnalysisDto?> GetAssistantTodayAnalysisAsync(CancellationToken cancellationToken = default)
+        {
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            var response = await GetWithMetricsAsync("/api/assistant/analysis/today", linked.Token);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<AssistantAnalysisDto?>(linked.Token);
+        }
+
+        public async Task<AssistantAnalysisDto> RunAssistantAnalysisAsync(CancellationToken cancellationToken = default)
+        {
+            using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(4));
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
+            var response = await PostWithMetricsAsync("/api/assistant/analysis/run", null, linked.Token, _longHttpClient);
+            if (!response.IsSuccessStatusCode)
+            {
+                var err = await response.Content.ReadAsStringAsync(linked.Token);
+                throw new Exception(err.Length > 200 ? err[..200] : err);
+            }
+            return await response.Content.ReadFromJsonAsync<AssistantAnalysisDto>(linked.Token) ?? new AssistantAnalysisDto();
+        }
+
+        public async Task<List<AssistantAnalysisDto>> GetAssistantHistoryAsync(int days = 14, CancellationToken cancellationToken = default)
+        {
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            var response = await GetWithMetricsAsync($"/api/assistant/analysis/history?days={days}", linked.Token);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<List<AssistantAnalysisDto>>(linked.Token) ?? new();
+        }
+
+        public async Task<List<UserActivityDto>> GetAssistantActivitiesAsync(CancellationToken cancellationToken = default)
+        {
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            var response = await GetWithMetricsAsync("/api/assistant/activities/today", linked.Token);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<List<UserActivityDto>>(linked.Token) ?? new();
+        }
+
+        public async Task<Dictionary<string, int>> GetAssistantActivityCountsAsync(int days = 14, CancellationToken cancellationToken = default)
+        {
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            var response = await GetWithMetricsAsync($"/api/assistant/activities/counts?days={days}", linked.Token);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<Dictionary<string, int>>(linked.Token) ?? new();
         }
 
         public async Task<List<AiProviderInfo>> GetAiProvidersAsync()

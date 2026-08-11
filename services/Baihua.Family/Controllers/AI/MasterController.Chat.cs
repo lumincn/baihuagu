@@ -39,6 +39,9 @@ public partial class MasterController
                 return;
             }
 
+            // 数字助理：采集用户聊天输入
+            _activityService.Record("chat", request.Message);
+
             if (string.IsNullOrWhiteSpace(request.MasterId))
             {
                 await SendSse("error", _loc["Master_IdRequired"]);

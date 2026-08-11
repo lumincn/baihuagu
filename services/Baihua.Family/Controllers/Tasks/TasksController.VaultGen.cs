@@ -15,6 +15,10 @@ namespace Baihua.Family.Controllers
     {
         [HttpPost("vault-generation")]
         public async Task<ActionResult<VaultGenerationResponse>> CreateVaultGenerationTask([FromBody] VaultGenerationRequest request)
-            => await HandleCreateVaultGenerationTaskAsync(request);
+        {
+            // 数字助理：采集知识库生成（强兴趣信号）
+            _activityService.Record("vault_gen", request.Industry + " " + request.Keyword);
+            return await HandleCreateVaultGenerationTaskAsync(request);
+        }
     }
 }

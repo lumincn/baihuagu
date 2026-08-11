@@ -1,0 +1,250 @@
+@page "/assistant"
+@rendermode InteractiveServer
+@using Baihua.Contracts.Assistant
+@inject Baihua.Web.Services.IApiService ApiService
+
+<PageTitle>AI 数字助理</PageTitle>
+
+<h1>🤖 AI 数字助理</h1>
+<p class="text-muted">
+    助理默默观察你在百花中的输入（聊天/搜索/知识库生成），每天自动分析一次，
+    推测你可能感兴趣的主题（最多 3 个），并为你自动生成对应的知识库。
+</p>
+
+<!-- 开关 -->
+<div class="card mb-4">
+    <div class="card-body d-flex justify-content-between align-items-center">
+        <div>
+            <b>助理开关</b>
+            <div class="small text-muted">
+                @(_settings.Enabled ? "开启中：采集输入 + 每日分析 + 自动生成知识库" : "已关闭：不采集、不分析")
+                ｜每日分析时间 @(_settings.AnalyzeHour):00 ｜数据保留 @(_settings.RetentionDays) 天
+            </div>
+        </div>
+        <div class="form-check form-switch" style="transform:scale(1.4);margin-right:0.5rem">
+            <input class="form-check-input" type="checkbox" checked="@_settings.Enabled" @onchange="ToggleAsync" />
+        </div>
+    </div>
+</div>
+
+@if (_settings.Enabled)
+{
+    <!-- 今日分析 -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>📅 今日分析</span>
+            <div>
+                <button class="btn btn-sm btn-primary" disabled="@_analyzing" @onclick="RunAnalysisAsync">
+                    @(_analyzing ? "分析中…" : "立即分析")
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (_analyzing)
+            {
+                <div class="loading-spinner">助理正在分析今天的活动，请稍候…</div>
+            }
+            else if (_todayAnalysis == null)
+            {
+                <div class="text-muted small">
+                    今天还没分析（每天 @(_settings.AnalyzeHour):00 自动分析，或有活动后手动点"立即分析"）。
+                    当前已记录 @(_activities.Count) 条活动。
+                </div>
+            }
+            else
+            {
+                <div class="text-muted small mb-3">@_todayAnalysis.Summary</div>
+
+                @if (_todayAnalysis.Interests.Count == 0)
+                {
+                    <div class="alert alert-info mb-0">今日信息不足以确定兴趣主题（返回 0 个）。</div>
+                }
+                else
+                {
+                    <div class="row g-3">
+                        @foreach (var i in _todayAnalysis.Interests)
+                        {
+                            <div class="col-md-4">
+                                <div class="card h-100 border-primary">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <b>🎯 @i.Topic</b>
+                                            <span class="badge bg-primary">@(Math.Round(i.Confidence * 100))%</span>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(i.Evidence))
+                                        {
+                                            <div class="small text-muted mt-1">依据：@i.Evidence</div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+
+                @if (_todayAnalysis.GeneratedVaults.Count > 0)
+                {
+                    <hr />
+                    <div class="small text-muted mb-2">📚 已触发生成的知识库（可在"任务"页查看进度，完成后出现在知识库列表）：</div>
+                    <ul class="mb-0">
+                        @foreach (var v in _todayAnalysis.GeneratedVaults)
+                        {
+                            <li>
+                                @v.Topic
+                                @if (v.Status == "failed")
+                                {
+                                    <span class="badge bg-danger ms-1">失败 @v.Error</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success ms-1">已提交 @(string.IsNullOrEmpty(v.VaultName) ? "" : v.VaultName)</span>
+                                }
+                            </li>
+                        }
+                    </ul>
+                }
+            }
+        </div>
+    </div>
+
+    <!-- 兴趣历史 -->
+    @if (_history.Count > 0)
+    {
+        <div class="card mb-4">
+            <div class="card-header">📈 兴趣变化（最近 @_history.Count 天）</div>
+            <div class="card-body">
+                @foreach (var h in _history)
+                {
+                    <div class="mb-2">
+                        <span class="badge bg-secondary me-2">@h.Date</span>
+                        @foreach (var i in h.Interests)
+                        {
+                            <span class="badge bg-light text-dark border me-1">@i.Topic @(Math.Round(i.Confidence * 100))%</span>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- 活动量 -->
+    @if (_activityCounts.Count > 0)
+    {
+        <div class="card mb-4">
+            <div class="card-header">📊 近 14 天活动量</div>
+            <div class="card-body">
+                <div class="d-flex align-items-end gap-1" style="height:80px">
+                    @foreach (var kv in _activityCounts)
+                    {
+                        var h = _activityCounts.Values.Max() > 0 ? kv.Value * 70 / _activityCounts.Values.Max() : 0;
+                        <div class="d-flex flex-column align-items-center" style="width:7%">
+                            <div class="bg-primary rounded" style="height:@(Math.Max(h, 2))px;width:70%"></div>
+                            <span class="small text-muted" style="font-size:0.65rem">@kv.Key</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- 今日活动明细 -->
+    @if (_activities.Count > 0)
+    {
+        <div class="card">
+            <div class="card-header">📋 今日已采集的活动（@_activities.Count 条）</div>
+            <div class="card-body p-0" style="max-height:300px;overflow-y:auto">
+                <ul class="list-group list-group-flush">
+                    @foreach (var a in _activities.TakeLast(50).Reverse())
+                    {
+                        <li class="list-group-item small">
+                            <span class="text-muted me-2">@a.Time.ToString("HH:mm")</span>
+                            <span class="badge bg-light text-dark border me-2">@a.Type</span>
+                            @a.Text
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div class="alert alert-secondary">助理已关闭。打开开关后，助理会开始记录输入并每天自动分析。</div>
+}
+
+@code {
+    private AssistantSettingsDto _settings = new();
+    private AssistantAnalysisDto? _todayAnalysis;
+    private List<AssistantAnalysisDto> _history = new();
+    private List<UserActivityDto> _activities = new();
+    private Dictionary<string, int> _activityCounts = new();
+    private bool _analyzing;
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _settings = await ApiService.GetAssistantSettingsAsync();
+            if (_settings.Enabled)
+            {
+                var t1 = ApiService.GetAssistantTodayAnalysisAsync();
+                var t2 = ApiService.GetAssistantHistoryAsync(14);
+                var t3 = ApiService.GetAssistantActivitiesAsync();
+                var t4 = ApiService.GetAssistantActivityCountsAsync(14);
+                await Task.WhenAll(t1, t2, t3, t4);
+                _todayAnalysis = t1.Result;
+                _history = t2.Result;
+                _activities = t3.Result;
+                _activityCounts = t4.Result;
+            }
+        }
+        catch { }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ToggleAsync(ChangeEventArgs e)
+    {
+        _settings.Enabled = (bool)(e.Value ?? false);
+        await ApiService.SaveAssistantSettingsAsync(_settings);
+        if (_settings.Enabled) await ReloadAllAsync();
+        StateHasChanged();
+    }
+
+    private async Task RunAnalysisAsync()
+    {
+        _analyzing = true;
+        StateHasChanged();
+        try
+        {
+            _todayAnalysis = await ApiService.RunAssistantAnalysisAsync();
+            await ReloadAllAsync();
+        }
+        catch (Exception ex)
+        {
+            _todayAnalysis = new AssistantAnalysisDto { Date = DateTime.Today.ToString("yyyy-MM-dd"), Summary = "分析失败：" + ex.Message };
+        }
+        finally
+        {
+            _analyzing = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ReloadAllAsync()
+    {
+        var t1 = ApiService.GetAssistantTodayAnalysisAsync();
+        var t2 = ApiService.GetAssistantHistoryAsync(14);
+        var t3 = ApiService.GetAssistantActivitiesAsync();
+        var t4 = ApiService.GetAssistantActivityCountsAsync(14);
+        await Task.WhenAll(t1, t2, t3, t4);
+        _todayAnalysis = t1.Result;
+        _history = t2.Result;
+        _activities = t3.Result;
+        _activityCounts = t4.Result;
+    }
+}
