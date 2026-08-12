@@ -1,4 +1,4 @@
-﻿<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:schema id="root">
     <xs:element name="root" ns1:IsDataSet="true">
@@ -1575,10 +1575,10 @@
     <value>WebUI 可正常访问 Baihua.Family（{0}ms）</value>
   </data>
   <data name="Devices_PageTitle" xml:space="preserve">
-    <value>移动端管理</value>
+    <value>花记设备</value>
   </data>
   <data name="Devices_Title" xml:space="preserve">
-    <value>📱 移动端管理</value>
+    <value>📱 花记设备</value>
   </data>
   <data name="Devices_TabDevices" xml:space="preserve">
     <value>📱 设备</value>

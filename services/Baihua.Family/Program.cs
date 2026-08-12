@@ -101,6 +101,12 @@ builder.Services.AddControllers(options =>
     {
         options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
         options.JsonSerializerOptions.PropertyNamingPolicy = null;
+    })
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        // 禁用 [ApiController] 自动把 4xx/5xx 包装成 ProblemDetails
+        // 本项目所有 API 统一使用 { error: "本地化错误消息" } 格式，ProblemDetails 会覆盖自定义 JSON
+        options.SuppressMapClientErrors = true;
     });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>

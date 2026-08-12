@@ -277,12 +277,30 @@
         try
         {
             var aiClient = HttpClientFactory.CreateClient("AiApi");
-            _aiKeyQRCode = await aiClient.GetFromJsonAsync<AiKeyQRResponse>("api/ai/config/main-apikey");
-            if (_aiKeyQRCode != null && !string.IsNullOrEmpty(_aiKeyQRCode.ApiKey))
+            var response = await aiClient.GetAsync("api/ai/config/main-apikey");
+            var json = await response.Content.ReadAsStringAsync();
+            if (response.IsSuccessStatusCode)
             {
-                // 先触发渲染再调 JS：OnAfterRenderAsync 中改状态不会自动重渲染，容器可能尚未出现
-                StateHasChanged();
-                await JS.InvokeVoidAsync("generateCompactQRCode", "aikey-qr-container", _aiKeyQRCode.ApiKey);
+                _aiKeyQRCode = System.Text.Json.JsonSerializer.Deserialize<AiKeyQRResponse>(json);
+                if (_aiKeyQRCode != null && !string.IsNullOrEmpty(_aiKeyQRCode.ApiKey))
+                {
+                    StateHasChanged();
+                    await JS.InvokeVoidAsync("generateCompactQRCode", "aikey-qr-container", _aiKeyQRCode.ApiKey);
+                }
+            }
+            else
+            {
+                // 尝试解析后端返回的结构化错误
+                try
+                {
+                    var errorObj = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.Nodes.JsonObject>(json);
+                    var errorMsg = errorObj?["error"]?.GetValue<string>();
+                    _aiKeyQRError = !string.IsNullOrEmpty(errorMsg) ? errorMsg : $"加载失败: {response.ReasonPhrase}";
+                }
+                catch
+                {
+                    _aiKeyQRError = $"加载失败: {response.ReasonPhrase ?? response.StatusCode.ToString()}";
+                }
             }
         }
         catch (Exception ex)
@@ -292,6 +310,7 @@
         finally
         {
             _isLoadingAiKey = false;
+            StateHasChanged();
         }
     }
 
@@ -314,6 +333,7 @@
         finally
         {
             _isLoadingServerQR = false;
+            StateHasChanged();
         }
     }
 

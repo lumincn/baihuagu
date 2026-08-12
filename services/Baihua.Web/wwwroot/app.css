@@ -2208,6 +2208,25 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
     .quiz-page .quiz-empty p { color: #91a0b0; }
     .quiz-page .settle-winner { color: #ffb74d; }
     .quiz-page .correct-answer { color: #91a0b0; }
+
+    /* ---- 全局 cta-btn CTA 按钮（Dashboard/Checkin/GrowthTimeline/DashboardFirstScreen） ---- */
+    /* 注：用 !important 确保覆盖 Dashboard.razor / Checkin.razor scoped 样式的亮色默认值 */
+    .cta-btn { background: #1e8f6f !important; color: #fff !important; }
+
+    /* ---- Dashboard 空提示 + GrowthTimeline 空态 ---- */
+    .empty-hint { color: #91a0b0; }
+    .empty-hint p { color: #91a0b0; }
+
+    /* ---- Onboarding 向导 guide-button ---- */
+    .onboarding-wizard .guide-button { background: #2e8baf !important; color: #fff !important; }
+
+    /* ---- KnowledgeGenerate 灵感主题卡片网格 ---- */
+    /* 注：用 !important 确保覆盖 KnowledgeGenerate.razor scoped 样式亮色默认值 */
+    .topic-card { background: #232a3b !important; border-color: #3d4558 !important; }
+    .topic-card:hover { border-color: #5ab0d4 !important; box-shadow: 0 0 0 2px rgba(90,176,212,0.15) !important; }
+    .topic-cat { color: #5ab0d4 !important; background: rgba(46,139,175,0.15) !important; }
+    .topic-title { color: #d4d8dd !important; }
+    .topic-desc { color: #91a0b0 !important; }
 }
 
 /* 移动端 AI 状态徽章越界修复（审计 P3：375px 下左边缘被切） */
