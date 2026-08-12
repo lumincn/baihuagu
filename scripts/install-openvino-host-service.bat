@@ -1,10 +1,11 @@
 @echo off
 REM ============================================================
-REM 注册 Baihua OpenVINO Host Windows 服务
-REM 右键本文件 -> 以管理员身份运行
-REM 实际逻辑在 install-openvino-host-service.ps1
+REM Register/update Baihua OpenVINO Host Windows service
+REM Right-click this file -> Run as administrator
+REM All logic lives in install-openvino-host-service.ps1
+REM NOTE: keep this .bat ASCII-only (cmd parses .bat as ANSI,
+REM       Chinese chars in UTF-8 cause mojibake errors)
 REM ============================================================
-chcp 65001 >nul
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0install-openvino-host-service.ps1"
 echo.
 pause

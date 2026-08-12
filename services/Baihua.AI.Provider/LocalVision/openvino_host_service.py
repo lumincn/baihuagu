@@ -34,6 +34,22 @@ SERVICE_DESC = ("Baihua OpenVINO LLM/Embedding host "
 # 服务以 LocalSystem 运行，读不到用户级环境变量 BAIHUA_HOME → 显式指定
 BAIHUA_HOME = os.environ.get("BAIHUA_HOME") or r"C:\Users\lumin\.baihua"
 
+# pywin32 服务宿主是 pythonservice.exe，此时 sys.executable 指向它自己，
+# 不能用来启动子进程。必须显式定位真实 python.exe。
+def _resolve_python_exe() -> str:
+    """定位真实 python.exe（优先同级目录，其次 PATH）"""
+    # 当前解释器所在目录下的 python.exe（常规安装布局）
+    base = os.path.dirname(sys.executable)
+    cand = os.path.join(base, "python.exe")
+    if os.path.exists(cand):
+        return cand
+    # pythonservice.exe 同级（pywin32 服务布局）
+    cand2 = os.path.join(base, "..", "python.exe")
+    if os.path.exists(cand2):
+        return os.path.normpath(cand2)
+    # PATH 兜底
+    return "python"
+
 
 class BaihuaOpenVinoHostService(win32serviceutil.ServiceFramework):
     _svc_name_ = SERVICE_NAME
@@ -75,10 +91,22 @@ class BaihuaOpenVinoHostService(win32serviceutil.ServiceFramework):
         host_script = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "openvino_host.py"
         )
-        self.proc = subprocess.Popen(
-            [sys.executable, host_script, "--port", "8866", "--bind", "127.0.0.1"],
-            env=env,
-            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        python_exe = _resolve_python_exe()
+        log_dir = os.path.dirname(os.path.abspath(__file__))
+        log_file = os.path.join(log_dir, "logs", "openvino_host_service.log")
+        os.makedirs(os.path.dirname(log_file), exist_ok=True)
+        with open(log_file, "ab") as lf:
+            self.proc = subprocess.Popen(
+                [python_exe, host_script, "--port", "8866", "--bind", "127.0.0.1"],
+                env=env,
+                stdout=lf,
+                stderr=lf,
+                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+            )
+        servicemanager.LogMsg(
+            servicemanager.EVENTLOG_INFORMATION_TYPE,
+            0x40000000 | 4099,
+            (f"openvino_host 子进程已启动 pid={self.proc.pid} python={python_exe}",),
         )
         # 等待停止事件（阻塞在服务线程）
         win32event.WaitForSingleObject(self.hWaitStop, win32event.INFINITE)
