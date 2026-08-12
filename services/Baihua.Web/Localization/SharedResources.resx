@@ -1850,6 +1850,9 @@
   <data name="Settings_EmbeddingCustom" xml:space="preserve">
     <value>Custom</value>
   </data>
+  <data name="Settings_EmbeddingOpenVino" xml:space="preserve">
+    <value>OpenVINO (Local)</value>
+  </data>
   <data name="Settings_EmbeddingDescription" xml:space="preserve">
     <value>Configure the Embedding model required for RAG knowledge retrieval. Works on CPU alone. Recommended: nomic-embed-text or bge-small-zh-v1.5.</value>
   </data>

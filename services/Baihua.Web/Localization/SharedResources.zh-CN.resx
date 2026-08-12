@@ -1850,6 +1850,9 @@
   <data name="Settings_EmbeddingCustom" xml:space="preserve">
     <value>自定义</value>
   </data>
+  <data name="Settings_EmbeddingOpenVino" xml:space="preserve">
+    <value>OpenVINO（本地）</value>
+  </data>
   <data name="Settings_EmbeddingDescription" xml:space="preserve">
     <value>配置 RAG 知识库检索所需的 Embedding 模型。纯 CPU 即可运行，推荐 nomic-embed-text 或 bge-small-zh-v1.5。</value>
   </data>
