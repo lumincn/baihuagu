@@ -1270,6 +1270,17 @@ else
     </div>
     @if (_showOpenVino)
     {
+        <!-- 区域职责帮助 -->
+        <div class="alert alert-info small" style="margin-top:0.5rem;">
+            <b>📖 区域说明：</b>
+            <ul class="mb-0 mt-1" style="padding-left:1.2rem;">
+                <li><b>⬇️ 下载任务</b>：从 ModelScope/HuggingFace 拉取模型文件到本地磁盘（后台任务，可取消）。</li>
+                <li><b>📦 已下载模型</b>：磁盘上已有的 OpenVINO 模型。<b>▶ 运行</b>＝为模型启动一个独立 LLM 服务进程（端口 8000-8030，供对话/编程使用）；<b>停止</b>＝结束该进程。</li>
+                <li><b>🌐 可下载模型</b>：远端模型目录（仅列出未下载的），点击「下载」获取。</li>
+                <li><b>🧿 已下载模型（通用表）</b>：跨工具汇总的已下载模型。<b>加载</b>＝把 Qwen2.5-VL 视觉模型预热进 vision_server（8801 端口）显存，首次识别图片免冷加载；<b>详情</b>＝查看配置。</li>
+                <li><b>🤖 OpenVINO LLM 服务</b>：宿主机托管的 openvino_llm_server.py 常驻实例（一模型一端口），显示 PID/健康状态，可手动启停。</li>
+            </ul>
+        </div>
         <!-- 下载任务 -->
         <div class="mt-3 mb-2">
             <div class="d-flex justify-content-between align-items-center">
@@ -1323,7 +1334,7 @@ else
 
         <!-- 已下载模型 -->
         <div class="mt-3 mb-2">
-            <h4>📦 已下载模型</h4>
+            <h4>📦 已下载模型 <span class="text-muted small fw-normal">（▶ 运行＝启动 LLM 服务供对话/编程，端口 8000-8030）</span></h4>
             @if (openVinoInstalled.Count == 0)
             {
                 <div class="text-muted small">暂无已下载模型（从下方目录下载）</div>
@@ -1368,7 +1379,7 @@ else
 
         <!-- 可下载目录 -->
         <div class="mt-3">
-            <h4>🌐 可下载模型（ModelScope 国内源 / HuggingFace 镜像）</h4>
+            <h4>🌐 可下载模型 <span class="text-muted small fw-normal">（ModelScope 国内源 / HuggingFace 镜像，已下载的已排除）</span></h4>
             @if (openVinoCatalog.All(c => c.Installed))
             {
                 <div class="text-muted small">所有目录中的模型均已下载</div>
@@ -1399,7 +1410,7 @@ else
     <!-- OpenVINO Downloaded Models -->
     <div class="downloaded-section">
         <div class="section-header" style="cursor:pointer;" @onclick="() => ToggleSection(ref _showDownloadedModels)">
-            <h2>@(_showDownloadedModels ? "▼" : "▶") 🧿 @L["LocalModels_DownloadedOpenVino"]</h2>
+            <h2>@(_showDownloadedModels ? "▼" : "▶") 🧿 @L["LocalModels_DownloadedOpenVino"] <span class="text-muted small fw-normal">（加载＝预热视觉模型到显存，图片识别免冷加载）</span></h2>
             @if (_showDownloadedModels)
             {
                 <button class="btn btn-secondary btn-sm" @onclick="RefreshDownloadedModels" disabled="@isLoadingDownloaded">
@@ -1484,7 +1495,7 @@ else
     <!-- OpenVINO LLM 服务（宿主机托管） -->
     <div class="load-model-section">
         <div class="section-header" style="cursor:pointer;" @onclick="() => ToggleSection(ref _showOpenVinoLlm)">
-            <h3>@(_showOpenVinoLlm ? "▼" : "▶") 🤖 @L["LocalModels_OpenVinoLlmTitle"]</h3>
+            <h3>@(_showOpenVinoLlm ? "▼" : "▶") 🤖 @L["LocalModels_OpenVinoLlmTitle"] <span class="text-muted small fw-normal">（宿主机常驻 LLM 服务，一模型一端口，供对话/编程调用）</span></h3>
             <button class="btn btn-secondary btn-sm" @onclick="LoadOpenVinoLlmStatus" disabled="@isLoadingOpenVinoLlm" title="刷新" style="margin-left:0.5rem;">
                 @(isLoadingOpenVinoLlm ? "⏳" : "🔄")
             </button>
