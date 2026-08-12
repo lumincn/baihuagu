@@ -39,8 +39,10 @@ public class OpenVinoRuntimeManager
             if (!Directory.Exists(ModelRoot)) return result;
             foreach (var dir in Directory.GetDirectories(ModelRoot))
             {
+                // 单文件 LLM（openvino_model.bin）或多文件 VL 模型（openvino_language_model.bin 等）都算已下载
                 var bin = Path.Combine(dir, "openvino_model.bin");
-                if (!File.Exists(bin)) continue;
+                var vlBin = Path.Combine(dir, "openvino_language_model.bin");
+                if (!File.Exists(bin) && !File.Exists(vlBin)) continue;
                 var size = DirectorySize(dir);
                 var name = Path.GetFileName(dir);
                 var running = _running.Values.FirstOrDefault(r => Path.GetFullPath(r.ModelPath) == Path.GetFullPath(dir));
@@ -67,8 +69,9 @@ public class OpenVinoRuntimeManager
     public async Task<OpenVinoRunResult> StartAsync(string modelPath, string device, CancellationToken ct = default)
     {
         modelPath = modelPath.Trim().Trim('"');
-        if (!File.Exists(Path.Combine(modelPath, "openvino_model.bin")))
-            return new OpenVinoRunResult { Success = false, Error = $"目录中未找到 openvino_model.bin: {modelPath}" };
+        var isVl = File.Exists(Path.Combine(modelPath, "openvino_language_model.bin"));
+        if (!File.Exists(Path.Combine(modelPath, "openvino_model.bin")) && !isVl)
+            return new OpenVinoRunResult { Success = false, Error = $"目录中未找到 OpenVINO 模型文件: {modelPath}" };
 
         // 已运行则直接返回
         var existing = _running.Values.FirstOrDefault(r => Path.GetFullPath(r.ModelPath) == Path.GetFullPath(modelPath));
