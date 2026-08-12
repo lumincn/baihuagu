@@ -20,12 +20,15 @@ import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-# 默认实例配置（可被 --config json 覆盖）
+# 默认实例配置（可被 --config json 覆盖；模型根目录跟随 BAIHUA_HOME）
+_MODEL_ROOT = os.environ.get("BAIHUA_HOME") or os.path.join(os.path.expanduser("~"), ".baihua")
 DEFAULT_INSTANCES = [
     {"port": 8000, "name": "对话模型 (Qwen2.5-7B-Instruct)",
-     "model": os.path.expanduser(r"~\.openclaw\models\Qwen2.5-7B-Instruct-int4-ov"), "device": "GPU"},
+     "model": os.path.join(_MODEL_ROOT, "models", "Qwen2.5-7B-Instruct-int4-ov"), "device": "GPU"},
     {"port": 8001, "name": "代码模型 (Qwen2.5-Coder-7B-Instruct)",
-     "model": os.path.expanduser(r"~\.openclaw\models\Qwen2.5-Coder-7B-Instruct-int4-ov"), "device": "GPU"},
+     "model": os.path.join(_MODEL_ROOT, "models", "Qwen2.5-Coder-7B-Instruct-int4-ov"), "device": "GPU"},
+    {"port": 8002, "name": "嵌入模型 (bge-small-zh-v1.5)",
+     "model": os.path.join(_MODEL_ROOT, "models", "bge-small-zh-v1.5"), "device": "CPU", "task": "embedding"},
 ]
 
 SCRIPT = None  # openvino_llm_server.py 路径（自动探测）
@@ -98,6 +101,9 @@ def start_instance(inst):
     log_file = os.path.join(log_dir, f"openvino_llm_{port}.log")
 
     cmd = [find_python(), script, "--model", model, "--device", inst.get("device", "GPU"), "--port", str(port)]
+    task = inst.get("task")
+    if task:
+        cmd += ["--task", str(task)]
     with open(log_file, "ab") as lf:
         proc = subprocess.Popen(cmd, stdout=lf, stderr=lf, cwd=os.path.dirname(script),
                                 creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)

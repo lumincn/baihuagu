@@ -50,6 +50,7 @@ def parse_args():
     ap.add_argument('--port', type=int, default=8000, help='监听端口')
     ap.add_argument('--max-context-size', type=int, default=4096, help='最大上下文长度')
     ap.add_argument('--max-tokens', type=int, default=1024, help='默认最大生成 token 数')
+    ap.add_argument('--task', default='chat', choices=['chat', 'embedding'], help='任务类型: chat=对话/VL, embedding=向量嵌入（TextEmbeddingPipeline）')
     return ap.parse_args()
 
 
@@ -65,6 +66,9 @@ _pipe_lock = threading.Lock()
 OV_CORE = None  # openvino 模块引用（pybind 对象不能挂属性）
 IS_VL = os.path.exists(os.path.join(MODEL_DIR, 'openvino_vision_embeddings_model.xml'))
 
+# 嵌入模型：由启动方显式指定 --task embedding（bge 等 RAG 模型，用 TextEmbeddingPipeline）
+IS_EMBEDDING = getattr(ARGS, 'task', '') == 'embedding'
+
 
 def log(msg: str):
     print(f'[openvino-server] {msg}', flush=True)
@@ -76,7 +80,7 @@ def model_id() -> str:
 
 
 def get_pipe():
-    """懒加载并缓存 pipeline（VL 必须 VLMPipeline，纯文本模型用 LLMPipeline）"""
+    """懒加载并缓存 pipeline（VL 必须 VLMPipeline，嵌入模型用 TextEmbeddingPipeline，纯文本用 LLMPipeline）"""
     global _pipe, OV_CORE
     if _pipe is not None:
         return _pipe
@@ -85,12 +89,15 @@ def get_pipe():
             return _pipe
         if not os.path.isdir(MODEL_DIR):
             raise FileNotFoundError(f'model directory not found: {MODEL_DIR}')
-        log(f'loading model from {MODEL_DIR} (device={DEVICE}, vl={IS_VL}) ...')
+        log(f'loading model from {MODEL_DIR} (device={DEVICE}, vl={IS_VL}, embedding={IS_EMBEDDING}) ...')
         import numpy as np  # noqa: F401  确保 numpy 先导入（openvino 依赖）
         import openvino_genai as ov
         import openvino as ov_core
         OV_CORE = ov_core
-        _pipe = ov.VLMPipeline(MODEL_DIR, DEVICE) if IS_VL else ov.LLMPipeline(MODEL_DIR, DEVICE)
+        if IS_EMBEDDING:
+            _pipe = ov.TextEmbeddingPipeline(MODEL_DIR, DEVICE)
+        else:
+            _pipe = ov.VLMPipeline(MODEL_DIR, DEVICE) if IS_VL else ov.LLMPipeline(MODEL_DIR, DEVICE)
         try:
             _pipe.set_property('MAX_PROMPT_LEN', MAX_CONTEXT)
             log(f'MAX_PROMPT_LEN set to {MAX_CONTEXT}')
@@ -196,6 +203,7 @@ class Handler(BaseHTTPRequestHandler):
                 'model': model_id(),
                 'device': DEVICE,
                 'vl': IS_VL,
+                'embedding': IS_EMBEDDING,
                 'modelPath': MODEL_DIR,
             })
         elif path == '/v1/models':
@@ -234,7 +242,37 @@ class Handler(BaseHTTPRequestHandler):
         try:
             raw = self._read_body()
             req = json.loads(raw.decode('utf-8')) if raw else {}
-            if path == '/v1/chat/completions':
+            if path == '/v1/embeddings':
+                if not IS_EMBEDDING:
+                    self._send_json(400, {'error': f'模型 {model_id()} 不是嵌入模型（无 TextEmbeddingPipeline 支持）'})
+                    return
+                input_data = req.get('input', '')
+                if isinstance(input_data, str):
+                    texts = [input_data]
+                elif isinstance(input_data, list):
+                    texts = [t if isinstance(t, str) else str(t) for t in input_data]
+                else:
+                    self._send_json(400, {'error': 'input 必须是字符串或字符串数组'})
+                    return
+                if not texts or not any(t.strip() for t in texts):
+                    self._send_json(400, {'error': 'input content required'})
+                    return
+                import openvino_genai as ov
+                pipe = get_pipe()
+                log(f'embedding request: model={model_id()} inputs={len(texts)}')
+                vectors = []
+                for t in texts:
+                    if not t.strip():
+                        continue
+                    vec = pipe.embed_query(t.strip())
+                    vectors.append({'object': 'embedding', 'embedding': vec, 'index': len(vectors)})
+                self._send_json(200, {
+                    'object': 'list',
+                    'model': model_id(),
+                    'data': vectors,
+                    'usage': {'prompt_tokens': 0, 'total_tokens': 0},
+                })
+            elif path == '/v1/chat/completions':
                 messages = req.get('messages', [])
                 prompt, image_bytes = extract_text_and_image(messages)
                 if not prompt.strip():

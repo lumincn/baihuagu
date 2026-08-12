@@ -44,6 +44,7 @@
 | `20-vault.yaml` | bh-vault Deployment + Service |
 | `21-ai.yaml` | bh-ai Deployment + Service |
 | **`22a-openvino.yaml`** | **bh-openvino Deployment + Service（GPU 推理）** |
+| **`22b-embedding.yaml`** | **bh-embedding Deployment + Service（bge 嵌入，端口 8002，RAG 用）** |
 | `22-family.yaml` | bh-family Deployment + Service（轻量, 无 GPU） |
 | `23-webui.yaml` | bh-webui Deployment + Service |
 | `24-nginx-configmap.yaml` | Nginx 配置（K8s DNS 适配） |
