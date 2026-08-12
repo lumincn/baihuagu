@@ -172,8 +172,190 @@ namespace Baihua.Family.Services
         }
 
         /// <summary>
-        /// 对搜索结果按语义相似度重排
+        /// 纯向量检索：对知识库全部已索引笔记做余弦相似度排序（无需关键词命中）
         /// </summary>
+        /// <param name="query">查询文本</param>
+        /// <param name="vaultId">知识库 ID</param>
+        /// <param name="vaultPath">知识库磁盘路径（用于读取笔记标题/预览）</param>
+        /// <param name="topK">返回条数</param>
+        public async Task<List<SearchResult>> VectorSearchAsync(string query, string vaultId, string vaultPath, int topK = 20)
+        {
+            var result = new List<SearchResult>();
+            if (string.IsNullOrWhiteSpace(query) || !IsSemanticSearchEnabled())
+                return result;
+
+            try
+            {
+                var queryEmbedding = await GetEmbeddingAsync(query);
+                if (queryEmbedding == null)
+                    return result;
+
+                // 1) 读出该知识库全部笔记向量
+                List<(string NotePath, List<double> Vector)> vectors;
+                using (var db = await _vaultDbFactory.CreateDbContextAsync())
+                {
+                    vectors = await db.NoteEmbeddings
+                        .Where(e => e.VaultId == vaultId && e.Dimensions > 0)
+                        .Select(e => new { e.NotePath, e.VectorJson })
+                        .ToListAsync()
+                        .ContinueWith(t => t.Result
+                            .Select(x => (x.NotePath, DeserializeVector(x.VectorJson)))
+                            .Where(x => x.Item2 != null)
+                            .Select(x => (x.NotePath, x.Item2!))
+                            .ToList());
+                }
+
+                if (vectors.Count == 0)
+                {
+                    _logger.LogInformation("纯向量检索：知识库 {VaultId} 无向量缓存，需先索引", vaultId);
+                    return result;
+                }
+
+                // 2) 余弦相似度排序
+                var scored = new List<(string NotePath, double Score)>();
+                foreach (var (notePath, vector) in vectors)
+                {
+                    var sim = CosineSimilarity(queryEmbedding, vector);
+                    if (sim > 0)
+                        scored.Add((notePath, sim));
+                }
+
+                scored = scored.OrderByDescending(x => x.Score).Take(topK).ToList();
+
+                // 3) 从磁盘读笔记构建结果（标题/预览/相对路径）
+                foreach (var (notePath, score) in scored)
+                {
+                    var fullPath = System.IO.Path.Combine(vaultPath, notePath);
+                    if (!System.IO.File.Exists(fullPath))
+                        continue;
+
+                    string content;
+                    try { content = await System.IO.File.ReadAllTextAsync(fullPath); }
+                    catch { continue; }
+
+                    var title = System.IO.Path.GetFileNameWithoutExtension(fullPath);
+                    var relativePath = notePath.Replace('\\', '/');
+                    result.Add(new SearchResult
+                    {
+                        Id = title,
+                        Title = title,
+                        Path = relativePath,
+                        Preview = ExtractFirstText(content),
+                        Score = (int)Math.Round(score * 10),
+                    });
+                }
+
+                _logger.LogDebug("纯向量检索完成：{Count} 条（topK={TopK}）", result.Count, topK);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "纯向量检索失败");
+            }
+            return result;
+        }
+
+        private static List<double>? DeserializeVector(string json)
+        {
+            try { return JsonSerializer.Deserialize<List<double>>(json); }
+            catch { return null; }
+        }
+
+        /// <summary>提取笔记正文首段文字作为预览（剔除 frontmatter/标题）</summary>
+        private static string ExtractFirstText(string content)
+        {
+            if (string.IsNullOrWhiteSpace(content)) return "";
+            var lines = content.Split('\n');
+            var sb = new System.Text.StringBuilder();
+            var inFm = false;
+            for (int i = 0; i < lines.Length; i++)
+            {
+                var line = lines[i].Trim();
+                if (i == 0 && line == "---") { inFm = true; continue; }
+                if (inFm && line == "---") { inFm = false; continue; }
+                if (inFm) continue;
+                if (line.StartsWith("#")) continue;          // 跳过标题
+                if (string.IsNullOrEmpty(line)) { if (sb.Length > 0) break; continue; }
+                sb.Append(line).Append(' ');
+                if (sb.Length > 160) break;
+            }
+            var text = sb.ToString().Trim();
+            return text.Length > 0 ? text : content.Replace("\n", " ").Trim();
+        }
+
+        /// <summary>
+        /// 获取知识库已索引向量条数
+        /// </summary>
+        public async Task<int> GetIndexedCountAsync(string vaultId)
+        {
+            try
+            {
+                using var db = await _vaultDbFactory.CreateDbContextAsync();
+                return await db.NoteEmbeddings.CountAsync(e => e.VaultId == vaultId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "查询向量索引数失败");
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// 全库向量索引：对知识库所有 .md 笔记生成向量并缓存（纯向量检索的前提）
+        /// </summary>
+        public async Task<(int Indexed, int Failed)> IndexVaultAsync(string vaultId, string vaultPath, CancellationToken ct = default)
+        {
+            int indexed = 0, failed = 0;
+            if (string.IsNullOrWhiteSpace(vaultId) || !Directory.Exists(vaultPath) || !IsSemanticSearchEnabled())
+                return (0, 0);
+
+            try
+            {
+                var files = Directory.GetFiles(vaultPath, "*.md", SearchOption.AllDirectories);
+                _logger.LogInformation("向量索引开始：{VaultId} 共 {Count} 篇笔记", vaultId, files.Length);
+
+                foreach (var file in files)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    try
+                    {
+                        var fileName = Path.GetFileName(file);
+                        if (fileName.Equals("README.md", StringComparison.OrdinalIgnoreCase))
+                            continue;
+
+                        var content = await File.ReadAllTextAsync(file, ct);
+                        var title = Path.GetFileNameWithoutExtension(file);
+                        var textToEmbed = $"{title}\n{ExtractFirstText(content)}".Trim();
+                        if (string.IsNullOrEmpty(textToEmbed))
+                            continue;
+
+                        var relativePath = file.Substring(vaultPath.Length).TrimStart('\\', '/').Replace('\\', '/');
+                        var embedding = await GetEmbeddingAsync(textToEmbed);
+                        if (embedding != null)
+                        {
+                            await SaveNoteEmbeddingAsync(vaultId, relativePath, embedding);
+                            indexed++;
+                        }
+                        else
+                        {
+                            failed++;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogDebug(ex, "索引笔记失败：{File}", file);
+                        failed++;
+                    }
+                }
+
+                _logger.LogInformation("向量索引完成：{VaultId} 成功 {Indexed} 失败 {Failed}", vaultId, indexed, failed);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "向量索引异常");
+            }
+            return (indexed, failed);
+        }
+
         public async Task<List<SearchResult>> RerankBySimilarityAsync(
             string query, 
             List<SearchResult> results)

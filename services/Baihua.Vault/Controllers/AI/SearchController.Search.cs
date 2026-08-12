@@ -96,6 +96,28 @@ public partial class SearchController
                     searchMethod = "file-scan";
                 }
 
+                // 纯向量检索优先：语义搜索启用时，即使无关键词命中也能按语义召回
+                if (_embeddingService.IsSemanticSearchEnabled())
+                {
+                    var vectorResults = await _embeddingService.VectorSearchAsync(q, vaultId, vaultPath, topK: 20);
+                    if (vectorResults.Count > 0)
+                    {
+                        _logger.LogInformation("纯向量检索：找到 {Count} 条结果", vectorResults.Count);
+                        return Ok(new
+                        {
+                            results = vectorResults,
+                            status = new SearchStatusInfo
+                            {
+                                VaultConfigured = true,
+                                VaultExists = true,
+                                ObsidianRunning = obsidianRunning,
+                                SearchMethod = "semantic"
+                            }
+                        });
+                    }
+                    _logger.LogInformation("纯向量检索无结果（可能未索引），回退 FTS");
+                }
+
                 // 尝试 FTS5 全文搜索
                 var ftsResults = await _vaultNoteIndexer.SearchAsync(vaultId, q, HttpContext.RequestAborted);
                 if (ftsResults.Count > 0)
