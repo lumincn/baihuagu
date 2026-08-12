@@ -1472,38 +1472,12 @@ else
                 @downloadedModelMessage
             </div>
         }
-        }
-    </div>
-
-    <!-- OpenVINO Load Model -->
-    <div class="load-model-section">
-        <div class="section-header" style="cursor:pointer;" @onclick="() => ToggleSection(ref _showLoadModel)">
-            <h3>@(_showLoadModel ? "▼" : "▶") 📥 @L["LocalModels_LoadOpenVinoTitle"]</h3>
-        </div>
-        @if (_showLoadModel)
+        @if (!string.IsNullOrEmpty(loadModelMessage))
         {
-        <div class="load-model-form">
-            <div class="form-row">
-                <div class="form-group">
-<label>@L["LocalModels_ModelSelectLabel"]</label>
-                    <select class="form-control" @bind="loadModelName" disabled="@string.IsNullOrEmpty(loadToolId)">
-                        <option value="">@L["LocalModels_SelectModelPlaceholder"]</option>
-                        @foreach (var name in availableModelsForLoad)
-                        {
-                            <option value="@name">@name</option>
-                        }
-                    </select>
-                    <div class="form-text">OpenVINO 模型加载到显存后，识别图片无需等待冷加载。</div>
-                </div>
+            <div class="load-message @(loadModelSuccess ? "text-success" : "text-error")" style="margin-top:0.5rem;">
+                @loadModelMessage
             </div>
-            <button class="btn btn-primary" @onclick="LoadSelectedModel" disabled="@(!CanLoadModel())">
-                @(isLoadingModel ? @L["Common_Loading"] : @L["LocalModels_LoadModelBtn"])
-            </button>
-            @if (!string.IsNullOrEmpty(loadModelMessage))
-            {
-                <span class="load-message @(loadModelSuccess ? "text-success" : "text-error")">@loadModelMessage</span>
-            }
-        </div>
+        }
         }
     </div>
 
@@ -1629,7 +1603,6 @@ else
     private bool _showHardware = false;
     private bool _showRunningModels = false;
     private bool _showDownloadedModels = true;
-    private bool _showLoadModel = false;
     private bool _showLocalTools = false;
     private bool _showRecommendations = true;
     private bool _showOpenVinoLlm = true;
@@ -2197,7 +2170,6 @@ else
     private string loadToolId = "";
     private string loadModelName = "";
     private int loadKeepAliveMinutes = 5;
-    private List<string> availableModelsForLoad = new();
     private bool isLoadingModel = false;
     private string loadModelMessage = "";
     private bool loadModelSuccess = false;
@@ -2379,22 +2351,6 @@ else
         }
     }
 
-    private async Task OnLoadToolChanged()
-    {
-        loadModelName = "";
-        availableModelsForLoad.Clear();
-        if (!string.IsNullOrEmpty(loadToolId))
-        {
-            availableModelsForLoad = await ApiService.GetAvailableModelsAsync(loadToolId);
-        }
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private bool CanLoadModel()
-    {
-        return !string.IsNullOrEmpty(loadToolId) && !string.IsNullOrEmpty(loadModelName) && !isLoadingModel;
-    }
-
     private async Task LoadSelectedModel()
     {
         isLoadingModel = true;
@@ -2453,11 +2409,6 @@ else
     private async Task OnTabChanged(string tab)
     {
         _activeTab = tab;
-        if (tab == "openvino")
-        {
-            loadToolId = tab;
-            await OnLoadToolChanged();
-        }
         await InvokeAsync(StateHasChanged);
     }
 }
