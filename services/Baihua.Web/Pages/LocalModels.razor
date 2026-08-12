@@ -1264,9 +1264,9 @@ else
 
     @if (_activeTab == "openvino")
     {
-    <!-- OpenVINO 模型（Intel Arc GPU） -->
+    <!-- OpenVINO 视觉模型（Intel Arc GPU） -->
     <div class="section-header" style="cursor:pointer;" @onclick="() => ToggleSection(ref _showOpenVino)">
-        <h2>@(_showOpenVino ? "▼" : "▶") 🧠 OpenVINO 模型（Intel Arc GPU）</h2>
+        <h2>@(_showOpenVino ? "▼" : "▶") 🧠 OpenVINO 视觉模型（Intel Arc GPU）</h2>
     </div>
     @if (_showOpenVino)
     {
@@ -1275,7 +1275,7 @@ else
             <b>📖 区域说明：</b>
             <ul class="mb-0 mt-1" style="padding-left:1.2rem;">
                 <li><b>⬇️ 下载任务</b>：从 ModelScope/HuggingFace 拉取模型文件到本地磁盘（后台任务，可取消）。</li>
-                <li><b>🧠 模型目录（已下载+可下载合并表）</b>：一张表看全部模型。未下载→「下载」；已下载→「▶ 运行」（启动独立 LLM 服务进程，端口 8000-8030，供对话/编程）／「停止」／「删除」。</li>
+                <li><b>🧠 OpenVINO 视觉模型（已下载+可下载合并表）</b>：一张表看全部模型。未下载→「下载」；已下载→「▶ 运行」（启动独立 LLM 服务进程，端口 8000-8030，供对话/编程）／「停止」／「删除」。</li>
                 <li><b>🧿 已下载模型（通用表）</b>：跨工具汇总的已下载模型。<b>加载</b>＝把 Qwen2.5-VL 视觉模型预热进 vision_server（8801 端口）显存，首次识别图片免冷加载；<b>详情</b>＝查看配置。</li>
                 <li><b>🤖 OpenVINO LLM 服务</b>：宿主机托管的 openvino_llm_server.py 常驻实例（一模型一端口），显示 PID/健康状态，可手动启停。</li>
             </ul>
@@ -1333,7 +1333,7 @@ else
 
         <!-- 模型目录（已下载 + 可下载合并） -->
         <div class="mt-3 mb-2">
-            <h4>🧠 OpenVINO 模型目录 <span class="text-muted small fw-normal">（▶ 运行＝启动 LLM 服务供对话/编程，端口 8000-8030；下载自 ModelScope/HF 镜像）</span></h4>
+            <h4>🧠 OpenVINO 视觉模型 <span class="text-muted small fw-normal">（▶ 运行＝启动 LLM 服务供对话/编程，端口 8000-8030；下载自 ModelScope/HF 镜像）</span></h4>
             @if (openVinoCatalog.Count == 0)
             {
                 <div class="text-muted small">目录为空</div>
