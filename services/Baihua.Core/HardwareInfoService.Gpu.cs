@@ -71,6 +71,11 @@ public partial class HardwareInfoService
                         gpu.VramBytes = ram;
                 }
 
+                // 设备名自带显存（如 "(16GB)"）更可靠，覆盖 AdapterRAM 的 32 位回绕问题
+                var nameVram = HardwareInfoHelper.ParseVramFromName(name);
+                if (nameVram.HasValue)
+                    gpu.VramBytes = nameVram.Value;
+
                 gpu.IsIntegrated = HardwareInfoHelper.IsIntegratedGpu(name);
                 list.Add(gpu);
             }
@@ -122,7 +127,14 @@ public partial class HardwareInfoService
                 IsIntegrated = HardwareInfoHelper.IsIntegratedGpu(name),
             };
 
-            if (el.TryGetProperty("AdapterRAM", out var ramEl) && ramEl.ValueKind == System.Text.Json.JsonValueKind.Number)
+            // WMI AdapterRAM 是 32 位字段（上限 4GB），>4GB 的卡会回绕成错误值（如 16GB 显示 2GB）。
+            // 设备名自带显存（如 "Intel(R) Arc(TM) 130T GPU (16GB)"）更可靠，优先解析。
+            var nameVram = HardwareInfoHelper.ParseVramFromName(name);
+            if (nameVram.HasValue)
+            {
+                gpu.VramBytes = nameVram.Value;
+            }
+            else if (el.TryGetProperty("AdapterRAM", out var ramEl) && ramEl.ValueKind == System.Text.Json.JsonValueKind.Number)
             {
                 var ram = ramEl.GetUInt32();
                 if (ram > 0 && ram < 0xFFFFFFFF)

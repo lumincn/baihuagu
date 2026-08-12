@@ -137,6 +137,28 @@ public static class HardwareInfoHelper
             : (long)(val * 1024 * 1024);
     }
 
+    /// <summary>
+    /// 从 GPU 设备名解析显存容量（如 "Intel(R) Arc(TM) 130T GPU (16GB)"、"RTX 4090 24GB"）。
+    /// WMI AdapterRAM 是 32 位字段（上限 4GB），大显存卡会回绕成错误值，设备名更可靠。
+    /// </summary>
+    public static long? ParseVramFromName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return null;
+
+        // 括号形式：(16GB) / (16 GB) / (12,288 MB)
+        var match = Regex.Match(name, @"\(\s*(\d+(?:[.,]\d+)?)\s*(GB|GiB|MB|MiB)\s*\)", RegexOptions.IgnoreCase);
+        if (!match.Success)
+            // 裸形式："24GB"、"16 GB"、"8GB"（末尾或单词边界）
+            match = Regex.Match(name, @"(\d+(?:[.,]\d+)?)\s*(GB|GiB|MB|MiB)\b", RegexOptions.IgnoreCase);
+        if (!match.Success) return null;
+
+        var val = double.Parse(match.Groups[1].Value.Replace(",", "."));
+        var unit = match.Groups[2].Value.ToUpperInvariant();
+        return unit.StartsWith("GI") || unit.StartsWith("GB")
+            ? (long)(val * 1024 * 1024 * 1024)
+            : (long)(val * 1024 * 1024);
+    }
+
     public static long? ParseMacMemoryString(string text)
     {
         var match = Regex.Match(text, @"([\d.]+)\s*(MB|GB|TB)");
