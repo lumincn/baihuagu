@@ -22,15 +22,6 @@
         <button class="nav-link @(_activeTab == "overview" ? "active" : "")" @onclick='async () => await OnTabChanged("overview")'>📊 @L["LocalModels_TabOverview"]</button>
     </li>
     <li class="nav-item">
-        <button class="nav-link @(_activeTab == "ollama" ? "active" : "")" @onclick='async () => await OnTabChanged("ollama")'>🦙 Ollama</button>
-    </li>
-    <li class="nav-item">
-        <button class="nav-link @(_activeTab == "lmstudio" ? "active" : "")" @onclick='async () => await OnTabChanged("lmstudio")'>💜 LM Studio</button>
-    </li>
-    <li class="nav-item">
-        <button class="nav-link @(_activeTab == "llamacpp" ? "active" : "")" @onclick='async () => await OnTabChanged("llamacpp")'>⚡ llama.cpp</button>
-    </li>
-    <li class="nav-item">
         <button class="nav-link @(_activeTab == "openvino" ? "active" : "")" @onclick='async () => await OnTabChanged("openvino")'>🧿 OpenVINO</button>
     </li>
 </ul>
@@ -178,393 +169,6 @@ else
 
     }
 
-    @if (_activeTab == "ollama")
-    {
-    <!-- Downloaded Models -->
-    <div class="downloaded-section">
-        <div class="section-header" style="cursor:pointer;" @onclick="() => ToggleSection(ref _showDownloadedModels)">
-            <h2>@(_showDownloadedModels ? "▼" : "▶") 🦙 @L["LocalModels_DownloadedOllama"]</h2>
-            @if (_showDownloadedModels)
-            {
-                <button class="btn btn-secondary btn-sm" @onclick="RefreshDownloadedModels" @onclick:stopPropagation disabled="@isLoadingDownloaded">
-                    @(isLoadingDownloaded ? "🔄 " + L["LocalModels_Refreshing"] : "🔄 " + L["LocalModels_RefreshModels"])
-                </button>
-            }
-        </div>
-        @if (_showDownloadedModels)
-        {
-        @if (downloadedModels.Count == 0)
-        {
-            <div class="alert alert-info">@L["LocalModels_NoDownloadedModels"]</div>
-        }
-        else
-        {
-            <div class="downloaded-models-table">
-                <div class="downloaded-table-header">
-                    <span class="col-dl-name">@L["LocalModels_DlName"]</span>
-                    <span class="col-dl-tool">@L["LocalModels_DlTool"]</span>
-                    <span class="col-dl-size">@L["LocalModels_DlSize"]</span>
-                    <span class="col-dl-time">@L["LocalModels_DlTime"]</span>
-                    <span class="col-dl-status">@L["LocalModels_DlStatus"]</span>
-                    <span class="col-dl-actions">@L["LocalModels_DlActions"]</span>
-                </div>
-                @foreach (var dm in downloadedModels.Where(m => m.ToolId == "ollama"))
-                {
-                    <div class="downloaded-table-row">
-                        <span class="col-dl-name">
-                            <span class="model-name-text">@dm.Name</span>
-                            @if (!string.IsNullOrEmpty(dm.Digest))
-                            {
-                                <span class="digest-text" title="@dm.Digest">@dm.Digest[..Math.Min(12, dm.Digest.Length)]...</span>
-                            }
-                        </span>
-                        <span class="col-dl-tool">
-                            <span class="tool-badge @GetToolBadgeClass(dm.ToolId)">@dm.ToolName</span>
-                        </span>
-                        <span class="col-dl-size">@dm.SizeGiB GB</span>
-                        <span class="col-dl-time">
-                            @(dm.ModifiedAt.HasValue ? dm.ModifiedAt.Value.ToString("yyyy-MM-dd HH:mm") : "-")
-                        </span>
-                        <span class="col-dl-status">
-                            @if (dm.IsRunning)
-                            {
-                                <span class="badge badge-info">▶ @L["LocalModels_RunningBadge"]</span>
-                            }
-                            else
-                            {
-                                <span class="badge badge-light">⏹ @L["LocalModels_StoppedBadge"]</span>
-                            }
-                        </span>
-                        <span class="col-dl-actions">
-                            <button class="btn btn-primary btn-sm" @onclick='() => LoadDownloadedModel(dm)' disabled="@isLoadingModel">
-                                @L["LocalModels_LoadBtn"]
-                            </button>
-                            <button class="btn btn-secondary btn-sm" @onclick='() => ShowModelDetails(dm)' disabled="@isLoadingDetails">
-                                @L["LocalModels_DetailsBtn"]
-                            </button>
-                            <button class="btn btn-danger btn-sm" @onclick='() => DeleteModel(dm)' disabled="@isLoadingModel">
-                                @L["LocalModels_DeleteBtn"]
-                            </button>
-                        </span>
-                    </div>
-                }
-            </div>
-            <div class="memory-summary">
-                @L["LocalModels_ModelCount", downloadedModels.Count, downloadedModels.Sum(m => m.SizeGiB).ToString("F1")]
-            </div>
-        }
-        @if (!string.IsNullOrEmpty(downloadedModelMessage))
-        {
-            <div class="load-message @(downloadedModelSuccess ? "text-success" : "text-error")" style="margin-top:0.5rem;">
-                @downloadedModelMessage
-            </div>
-        }
-        }
-    </div>
-    }
-
-    @if (_activeTab == "lmstudio")
-    {
-    <!-- Downloaded Models -->
-    <div class="downloaded-section">
-        <div class="section-header" style="cursor:pointer;" @onclick="() => ToggleSection(ref _showDownloadedModels)">
-            <h2>@(_showDownloadedModels ? "▼" : "▶") 💜 @L["LocalModels_DownloadedLmStudio"]</h2>
-            @if (_showDownloadedModels)
-            {
-                <button class="btn btn-secondary btn-sm" @onclick="RefreshDownloadedModels" disabled="@isLoadingDownloaded">
-                    @(isLoadingDownloaded ? "🔄 " + L["LocalModels_Refreshing"] : "🔄 " + L["LocalModels_RefreshModels"])
-                </button>
-            }
-        </div>
-        @if (_showDownloadedModels)
-        {
-        @if (downloadedModels.Count == 0)
-        {
-            <div class="alert alert-info">@L["LocalModels_NoDownloadedModels"]</div>
-        }
-        else
-        {
-            <div class="downloaded-models-table">
-                <div class="downloaded-table-header">
-                    <span class="col-dl-name">@L["LocalModels_DlName"]</span>
-                    <span class="col-dl-tool">@L["LocalModels_DlTool"]</span>
-                    <span class="col-dl-size">@L["LocalModels_DlSize"]</span>
-                    <span class="col-dl-time">@L["LocalModels_DlTime"]</span>
-                    <span class="col-dl-status">@L["LocalModels_DlStatus"]</span>
-                    <span class="col-dl-actions">@L["LocalModels_DlActions"]</span>
-                </div>
-                @foreach (var dm in downloadedModels.Where(m => m.ToolId == "lmstudio"))
-                {
-                    <div class="downloaded-table-row">
-                        <span class="col-dl-name">
-                            <span class="model-name-text">@dm.Name</span>
-                            @if (!string.IsNullOrEmpty(dm.Digest))
-                            {
-                                <span class="digest-text" title="@dm.Digest">@dm.Digest[..Math.Min(12, dm.Digest.Length)]...</span>
-                            }
-                        </span>
-                        <span class="col-dl-tool">
-                            <span class="tool-badge @GetToolBadgeClass(dm.ToolId)">@dm.ToolName</span>
-                        </span>
-                        <span class="col-dl-size">@dm.SizeGiB GB</span>
-                        <span class="col-dl-time">
-                            @(dm.ModifiedAt.HasValue ? dm.ModifiedAt.Value.ToString("yyyy-MM-dd HH:mm") : "-")
-                        </span>
-                        <span class="col-dl-status">
-                            @if (dm.IsRunning)
-                            {
-                                <span class="badge badge-info">▶ @L["LocalModels_RunningBadge"]</span>
-                            }
-                            else
-                            {
-                                <span class="badge badge-light">⏹ @L["LocalModels_StoppedBadge"]</span>
-                            }
-                        </span>
-                        <span class="col-dl-actions">
-                            <button class="btn btn-primary btn-sm" @onclick='() => LoadDownloadedModel(dm)' disabled="@isLoadingModel">
-                                @L["LocalModels_LoadBtn"]
-                            </button>
-                            <button class="btn btn-secondary btn-sm" @onclick='() => ShowModelDetails(dm)' disabled="@isLoadingDetails">
-                                @L["LocalModels_DetailsBtn"]
-                            </button>
-                            <button class="btn btn-danger btn-sm" @onclick='() => DeleteModel(dm)' disabled="@isLoadingModel">
-                                @L["LocalModels_DeleteBtn"]
-                            </button>
-                        </span>
-                    </div>
-                }
-            </div>
-            <div class="memory-summary">
-                @L["LocalModels_ModelCount", downloadedModels.Count, downloadedModels.Sum(m => m.SizeGiB).ToString("F1")]
-            </div>
-        }
-        @if (!string.IsNullOrEmpty(downloadedModelMessage))
-        {
-            <div class="load-message @(downloadedModelSuccess ? "text-success" : "text-error")" style="margin-top:0.5rem;">
-                @downloadedModelMessage
-            </div>
-        }
-        }
-    </div>
-    }
-
-    @if (_activeTab == "llamacpp")
-    {
-    <!-- Downloaded Models -->
-    <div class="downloaded-section">
-        <div class="section-header" style="cursor:pointer;" @onclick="() => ToggleSection(ref _showDownloadedModels)">
-            <h2>@(_showDownloadedModels ? "▼" : "▶") ⚡ @L["LocalModels_DownloadedLlamaCpp"]</h2>
-            @if (_showDownloadedModels)
-            {
-                <button class="btn btn-secondary btn-sm" @onclick="RefreshDownloadedModels" disabled="@isLoadingDownloaded">
-                    @(isLoadingDownloaded ? "🔄 " + L["LocalModels_Refreshing"] : "🔄 " + L["LocalModels_RefreshModels"])
-                </button>
-            }
-        </div>
-        @if (_showDownloadedModels)
-        {
-        @if (downloadedModels.Count == 0)
-        {
-            <div class="alert alert-info">@L["LocalModels_NoDownloadedModels"]</div>
-        }
-        else
-        {
-            <div class="downloaded-models-table">
-                <div class="downloaded-table-header">
-                    <span class="col-dl-name">@L["LocalModels_DlName"]</span>
-                    <span class="col-dl-tool">@L["LocalModels_DlTool"]</span>
-                    <span class="col-dl-size">@L["LocalModels_DlSize"]</span>
-                    <span class="col-dl-time">@L["LocalModels_DlTime"]</span>
-                    <span class="col-dl-status">@L["LocalModels_DlStatus"]</span>
-                    <span class="col-dl-actions">@L["LocalModels_DlActions"]</span>
-                </div>
-                @foreach (var dm in downloadedModels.Where(m => m.ToolId == "llamacpp"))
-                {
-                    <div class="downloaded-table-row">
-                        <span class="col-dl-name">
-                            <span class="model-name-text">@dm.Name</span>
-                            @if (!string.IsNullOrEmpty(dm.Digest))
-                            {
-                                <span class="digest-text" title="@dm.Digest">@dm.Digest[..Math.Min(12, dm.Digest.Length)]...</span>
-                            }
-                        </span>
-                        <span class="col-dl-tool">
-                            <span class="tool-badge @GetToolBadgeClass(dm.ToolId)">@dm.ToolName</span>
-                        </span>
-                        <span class="col-dl-size">@dm.SizeGiB GB</span>
-                        <span class="col-dl-time">
-                            @(dm.ModifiedAt.HasValue ? dm.ModifiedAt.Value.ToString("yyyy-MM-dd HH:mm") : "-")
-                        </span>
-                        <span class="col-dl-status">
-                            @if (dm.IsRunning)
-                            {
-                                <span class="badge badge-info">▶ @L["LocalModels_RunningBadge"]</span>
-                            }
-                            else
-                            {
-                                <span class="badge badge-light">⏹ @L["LocalModels_StoppedBadge"]</span>
-                            }
-                        </span>
-                        <span class="col-dl-actions">
-                            <button class="btn btn-primary btn-sm" @onclick='() => LoadDownloadedModel(dm)' disabled="@isLoadingModel">
-                                @L["LocalModels_LoadBtn"]
-                            </button>
-                            <button class="btn btn-secondary btn-sm" @onclick='() => ShowModelDetails(dm)' disabled="@isLoadingDetails">
-                                @L["LocalModels_DetailsBtn"]
-                            </button>
-                            <button class="btn btn-danger btn-sm" @onclick='() => DeleteModel(dm)' disabled="@isLoadingModel">
-                                @L["LocalModels_DeleteBtn"]
-                            </button>
-                        </span>
-                    </div>
-                }
-            </div>
-            <div class="memory-summary">
-                @L["LocalModels_ModelCount", downloadedModels.Count, downloadedModels.Sum(m => m.SizeGiB).ToString("F1")]
-            </div>
-        }
-        @if (!string.IsNullOrEmpty(downloadedModelMessage))
-        {
-            <div class="load-message @(downloadedModelSuccess ? "text-success" : "text-error")" style="margin-top:0.5rem;">
-                @downloadedModelMessage
-            </div>
-        }
-        }
-    </div>
-    }
-
-    @if (_activeTab == "ollama")
-    {
-    <!-- Load Model -->
-    <div class="load-model-section">
-        <div class="section-header" style="cursor:pointer;" @onclick="() => ToggleSection(ref _showLoadModel)">
-            <h3>@(_showLoadModel ? "▼" : "▶") 📥 @L["LocalModels_LoadOllamaTitle"]</h3>
-        </div>
-        @if (_showLoadModel)
-        {
-        <div class="load-model-form">
-            <div class="form-row">
-                <div class="form-group">
-<label>@L["LocalModels_ModelSelectLabel"]</label>
-                    <select class="form-control" @bind="loadModelName" disabled="@string.IsNullOrEmpty(loadToolId)">
-                        <option value="">@L["LocalModels_SelectModelPlaceholder"]</option>
-                        @foreach (var name in availableModelsForLoad)
-                        {
-                            <option value="@name">@name</option>
-                        }
-                    </select>
-                </div>
-                <div class="form-group">
-<label>@L["LocalModels_KeepAliveLabel"]</label>
-                    <div class="btn-group btn-group-sm" role="group">
-                        <button type="button" class="btn @(loadKeepAliveMinutes == 5 ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => loadKeepAliveMinutes = 5)">@L["LocalModels_Keep5Min"]</button>
-                        <button type="button" class="btn @(loadKeepAliveMinutes == 30 ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => loadKeepAliveMinutes = 30)">@L["LocalModels_Keep30Min"]</button>
-                        <button type="button" class="btn @(loadKeepAliveMinutes == 60 ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => loadKeepAliveMinutes = 60)">@L["LocalModels_Keep1Hour"]</button>
-                        <button type="button" class="btn @(loadKeepAliveMinutes == 360 ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => loadKeepAliveMinutes = 360)">@L["LocalModels_Keep6Hour"]</button>
-                        <button type="button" class="btn @(loadKeepAliveMinutes == -1 ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => loadKeepAliveMinutes = -1)">@L["LocalModels_KeepForever"]</button>
-                    </div>
-                </div>
-            </div>
-            <button class="btn btn-primary" @onclick="LoadSelectedModel" disabled="@(!CanLoadModel())">
-                @(isLoadingModel ? @L["Common_Loading"] : @L["LocalModels_LoadModelBtn"])
-            </button>
-            @if (!string.IsNullOrEmpty(loadModelMessage))
-            {
-                <span class="load-message @(loadModelSuccess ? "text-success" : "text-error")">@loadModelMessage</span>
-            }
-        </div>
-        }
-    </div>
-    }
-
-    @if (_activeTab == "lmstudio")
-    {
-    <!-- Load Model -->
-    <div class="load-model-section">
-        <div class="section-header" style="cursor:pointer;" @onclick="() => ToggleSection(ref _showLoadModel)">
-            <h3>@(_showLoadModel ? "▼" : "▶") 📥 @L["LocalModels_LoadLmStudioTitle"]</h3>
-        </div>
-        @if (_showLoadModel)
-        {
-        <div class="load-model-form">
-            <div class="form-row">
-                <div class="form-group">
-<label>@L["LocalModels_ModelSelectLabel"]</label>
-                    <select class="form-control" @bind="loadModelName" disabled="@string.IsNullOrEmpty(loadToolId)">
-                        <option value="">@L["LocalModels_SelectModelPlaceholder"]</option>
-                        @foreach (var name in availableModelsForLoad)
-                        {
-                            <option value="@name">@name</option>
-                        }
-                    </select>
-                </div>
-                <div class="form-group">
-<label>@L["LocalModels_KeepAliveLabel"]</label>
-                    <div class="btn-group btn-group-sm" role="group">
-                        <button type="button" class="btn @(loadKeepAliveMinutes == 5 ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => loadKeepAliveMinutes = 5)">@L["LocalModels_Keep5Min"]</button>
-                        <button type="button" class="btn @(loadKeepAliveMinutes == 30 ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => loadKeepAliveMinutes = 30)">@L["LocalModels_Keep30Min"]</button>
-                        <button type="button" class="btn @(loadKeepAliveMinutes == 60 ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => loadKeepAliveMinutes = 60)">@L["LocalModels_Keep1Hour"]</button>
-                        <button type="button" class="btn @(loadKeepAliveMinutes == 360 ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => loadKeepAliveMinutes = 360)">@L["LocalModels_Keep6Hour"]</button>
-                        <button type="button" class="btn @(loadKeepAliveMinutes == -1 ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => loadKeepAliveMinutes = -1)">@L["LocalModels_KeepForever"]</button>
-                    </div>
-                </div>
-            </div>
-            <button class="btn btn-primary" @onclick="LoadSelectedModel" disabled="@(!CanLoadModel())">
-                @(isLoadingModel ? @L["Common_Loading"] : @L["LocalModels_LoadModelBtn"])
-            </button>
-            @if (!string.IsNullOrEmpty(loadModelMessage))
-            {
-                <span class="load-message @(loadModelSuccess ? "text-success" : "text-error")">@loadModelMessage</span>
-            }
-        </div>
-        }
-    </div>
-    }
-
-    @if (_activeTab == "llamacpp")
-    {
-    <!-- Load Model -->
-    <div class="load-model-section">
-        <div class="section-header" style="cursor:pointer;" @onclick="() => ToggleSection(ref _showLoadModel)">
-            <h3>@(_showLoadModel ? "▼" : "▶") 📥 @L["LocalModels_LoadLlamaCppTitle"]</h3>
-        </div>
-        @if (_showLoadModel)
-        {
-        <div class="load-model-form">
-            <div class="form-row">
-                <div class="form-group">
-<label>@L["LocalModels_ModelSelectLabel"]</label>
-                    <select class="form-control" @bind="loadModelName" disabled="@string.IsNullOrEmpty(loadToolId)">
-                        <option value="">@L["LocalModels_SelectModelPlaceholder"]</option>
-                        @foreach (var name in availableModelsForLoad)
-                        {
-                            <option value="@name">@name</option>
-                        }
-                    </select>
-                </div>
-                <div class="form-group">
-<label>@L["LocalModels_KeepAliveLabel"]</label>
-                    <div class="btn-group btn-group-sm" role="group">
-                        <button type="button" class="btn @(loadKeepAliveMinutes == 5 ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => loadKeepAliveMinutes = 5)">@L["LocalModels_Keep5Min"]</button>
-                        <button type="button" class="btn @(loadKeepAliveMinutes == 30 ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => loadKeepAliveMinutes = 30)">@L["LocalModels_Keep30Min"]</button>
-                        <button type="button" class="btn @(loadKeepAliveMinutes == 60 ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => loadKeepAliveMinutes = 60)">@L["LocalModels_Keep1Hour"]</button>
-                        <button type="button" class="btn @(loadKeepAliveMinutes == 360 ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => loadKeepAliveMinutes = 360)">@L["LocalModels_Keep6Hour"]</button>
-                        <button type="button" class="btn @(loadKeepAliveMinutes == -1 ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => loadKeepAliveMinutes = -1)">@L["LocalModels_KeepForever"]</button>
-                    </div>
-                </div>
-            </div>
-            <button class="btn btn-primary" @onclick="LoadSelectedModel" disabled="@(!CanLoadModel())">
-                @(isLoadingModel ? @L["Common_Loading"] : @L["LocalModels_LoadModelBtn"])
-            </button>
-            @if (!string.IsNullOrEmpty(loadModelMessage))
-            {
-                <span class="load-message @(loadModelSuccess ? "text-success" : "text-error")">@loadModelMessage</span>
-            }
-        </div>
-        }
-    </div>
-    }
-
     @if (_activeTab == "overview")
     {
     <!-- Local Tools Status -->
@@ -607,166 +211,9 @@ else
 
     }
 
-    @if (_activeTab == "llamacpp")
-    {
-    <!-- llama.cpp 配置 -->
-    @if (llamaCppTool != null)
-    {
-        <div class="llamacpp-section">
-            <div class="section-header" style="cursor:pointer;" @onclick="() => ToggleSection(ref _showLlamaCpp)">
-                <h2>@(_showLlamaCpp ? "▼" : "▶") 🔥 @L["LocalModels_LlamaCppConfigTitle"]</h2>
-            </div>
-            @if (_showLlamaCpp)
-            {
-            @if (!llamaCppTool.IsInstalled)
-            {
-                <div class="alert alert-warning">
-                    @L["LocalModels_LlamaCppNotInstalled"]
-                    <a href="@llamaCppTool.InstallGuideUrl" target="_blank">@L["LocalModels_InstallGuide"]</a>
-                </div>
-            }
-            else
-            {
-                <div class="llamacpp-config-form">
-                    <div class="form-row">
-                        <div class="form-group" style="flex: 2;">
-                            <label>@L["LocalModels_ModelPathLabel"]</label>
-                            <input type="text" class="form-control" @bind="_llamaCppModelPath"
-                                   placeholder="/path/to/model.gguf" />
-                            <div class="form-text">@L["LocalModels_ModelPathExample"]</div>
-                        </div>
-                        <div class="form-group">
-<label>@L["LocalModels_PortLabel"]</label>
-                            <input type="number" class="form-control" @bind="_llamaCppPort" />
-                        </div>
-                    </div>
-
-                    <h4 class="llamacpp-section-title">⚙️ @L["LocalModels_BasicConfig"]</h4>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>@L["LocalModels_GpuLayersLabel"]</label>
-                            <input type="number" class="form-control" @bind="_llamaCppNGpuLayers" />
-                            <div class="form-text">@L["LocalModels_GpuLayersHint"]</div>
-                        </div>
-                        <div class="form-group">
-                            <label>@L["LocalModels_ContextSizeLabel"]</label>
-                            <input type="number" class="form-control" @bind="_llamaCppContextSize" />
-                            <div class="form-text">@L["LocalModels_ContextSizeHint"]</div>
-                        </div>
-                        <div class="form-group">
-                            <label>@L["LocalModels_CpuThreadsLabel"]</label>
-                            <input type="number" class="form-control" @bind="_llamaCppThreads" />
-                            <div class="form-text">@L["LocalModels_CpuThreadsHint"]</div>
-                        </div>
-                        <div class="form-group">
-                            <label>@L["LocalModels_BatchSizeLabel"]</label>
-                            <input type="number" class="form-control" @bind="_llamaCppBatchSize" />
-                            <div class="form-text">@L["LocalModels_BatchSizeHint"]</div>
-                        </div>
-                    </div>
-
-                    <h4 class="llamacpp-section-title">🎛️ @L["LocalModels_VramOptimization"]</h4>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>@L["LocalModels_KvKQuantLabel"]</label>
-                            <div class="btn-group btn-group-sm" role="group">
-                                <button type="button" class="btn @(_llamaCppCacheTypeK == "" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => _llamaCppCacheTypeK = "")">@L["LocalModels_Disable"]</button>
-                                <button type="button" class="btn @(_llamaCppCacheTypeK == "f16" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => _llamaCppCacheTypeK = "f16")">f16</button>
-                                <button type="button" class="btn @(_llamaCppCacheTypeK == "q8_0" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => _llamaCppCacheTypeK = "q8_0")">q8_0</button>
-                                <button type="button" class="btn @(_llamaCppCacheTypeK == "q4_0" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => _llamaCppCacheTypeK = "q4_0")">q4_0</button>
-                            </div>
-                            <div class="form-text">@L["LocalModels_KvKQuantHint"]</div>
-                        </div>
-                        <div class="form-group">
-                            <label>@L["LocalModels_KvVQuantLabel"]</label>
-                            <div class="btn-group btn-group-sm" role="group">
-                                <button type="button" class="btn @(_llamaCppCacheTypeV == "" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => _llamaCppCacheTypeV = "")">@L["LocalModels_Disable"]</button>
-                                <button type="button" class="btn @(_llamaCppCacheTypeV == "f16" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => _llamaCppCacheTypeV = "f16")">f16</button>
-                                <button type="button" class="btn @(_llamaCppCacheTypeV == "q8_0" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => _llamaCppCacheTypeV = "q8_0")">q8_0</button>
-                                <button type="button" class="btn @(_llamaCppCacheTypeV == "q4_0" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => _llamaCppCacheTypeV = "q4_0")">q4_0</button>
-                            </div>
-                            <div class="form-text">@L["LocalModels_KvVQuantHint"]</div>
-                        </div>
-                    </div>
-
-                    <h4 class="llamacpp-section-title">🔧 @L["LocalModels_AdvancedOptions"]</h4>
-                    <div class="form-row llamacpp-presets">
-                        <label class="preset-checkbox" title="@L["LocalModels_FlashAttention"]">
-                            <input type="checkbox" @bind="_llamaCppUseFlashAttn" />
-                            <span>⚡ @L["LocalModels_FlashAttention"] (--flash-attn)</span>
-                        </label>
-                        <label class="preset-checkbox" title="@L["LocalModels_MlockHint"]">
-                            <input type="checkbox" @bind="_llamaCppUseMlock" />
-                            <span>🔒 @L["LocalModels_Mlock"] (--mlock)</span>
-                        </label>
-                        <label class="preset-checkbox" title="@L["LocalModels_NoMmapHint"]">
-                            <input type="checkbox" @bind="_llamaCppUseNoMmap" />
-                            <span>🚫 @L["LocalModels_NoMmap"] (--no-mmap)</span>
-                        </label>
-                        <label class="preset-checkbox" title="@L["LocalModels_ContBatchingHint"]">
-                            <input type="checkbox" @bind="_llamaCppUseContBatching" />
-                            <span>🔄 @L["LocalModels_ContBatching"] (--cont-batching)</span>
-                        </label>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group" style="flex: 1;">
-                            <label>@L["LocalModels_ExtraArgsLabel"]</label>
-                            <input type="text" class="form-control" @bind="_llamaCppExtraArgs"
-                                   placeholder="--verbose --log-disable" />
-                            <div class="form-text">@L["LocalModels_ExtraArgsHint"]</div>
-                        </div>
-                    </div>
-
-                    <div class="llamacpp-quick-presets">
-                        <span class="preset-label">@L["LocalModels_PresetLabel"]</span>
-                        <button class="btn btn-outline-secondary btn-sm" @onclick="ApplyVramOptimizedPreset">
-                            💾 @L["LocalModels_PresetVram"]
-                        </button>
-                        <button class="btn btn-outline-secondary btn-sm" @onclick="ApplySpeedPreset">
-                            🚀 @L["LocalModels_PresetSpeed"]
-                        </button>
-                        <button class="btn btn-outline-secondary btn-sm" @onclick="ApplyCpuOnlyPreset">
-                            🖥️ @L["LocalModels_PresetCpu"]
-                        </button>
-                    </div>
-
-                    <div class="llamacpp-actions">
-                        <button class="btn btn-primary" @onclick="SaveLlamaCppConfigAsync"
-                                disabled="@_isSavingLlamaCppConfig">
-                            @(_isSavingLlamaCppConfig ? L["LocalModels_SavingConfig"] : "💾 " + L["LocalModels_SavingConfig"])
-                        </button>
-                        @if (llamaCppTool.IsRunning)
-                        {
-                            <button class="btn btn-danger" @onclick="StopLlamaCppAsync"
-                                    disabled="@_isLlamaCppActionRunning">
-                                @(_isLlamaCppActionRunning ? L["LocalModels_Stopping"] : "⏹ " + L["LocalModels_StopService"])
-                            </button>
-                        }
-                        else
-                        {
-                            <button class="btn btn-success" @onclick="StartLlamaCppAsync"
-                                    disabled="@_isLlamaCppActionRunning">
-                                @(_isLlamaCppActionRunning ? L["LocalModels_Starting"] : "▶️ " + L["LocalModels_StartService"])
-                            </button>
-                        }
-                        @if (!string.IsNullOrEmpty(_llamaCppStatusMessage))
-                        {
-                            <span class="load-message @(_llamaCppStatusSuccess ? "text-success" : "text-error")">
-                                @_llamaCppStatusMessage
-                            </span>
-                        }
-                    </div>
-                </div>
-                }
-            }
-        </div>
-    }
-
-    }
-
     @if (_activeTab == "overview")
     {
+
     <!-- Scene Filters -->
     <div class="scenario-section">
         <div class="scenario-header" style="cursor:pointer;" @onclick="() => ToggleSection(ref _showRecommendations)">
@@ -1196,12 +643,6 @@ else
         gap: 0.35rem;
     }
 
-    .model-download-status {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.35rem;
-    }
-
     .model-requirements {
         display: flex;
         gap: 1rem;
@@ -1319,12 +760,6 @@ else
     .tier-group .models-grid {
         padding: 1rem;
         margin-bottom: 0;
-    }
-
-    .model-actions {
-        display: flex;
-        gap: 0.5rem;
-        margin-top: 0.25rem;
     }
 
     .deploy-card {
@@ -1495,21 +930,6 @@ else
         font-weight: 500;
     }
 
-    .tool-ollama {
-        background: #e0ecf4;
-        color: #257a9e;
-    }
-
-    .tool-lmstudio {
-        background: #f3e5f5;
-        color: #6a1b9a;
-    }
-
-    .tool-llamacpp {
-        background: #f5eee8;
-        color: #a07050;
-    }
-
     .tool-openvino {
         background: #e8f0e8;
         color: #3d7a4d;
@@ -1604,48 +1024,7 @@ else
         border: 1px solid #d8e2e8;
     }
 
-    /* llama.cpp 配置区 */
-    .llamacpp-section {
-        margin-bottom: 2rem;
-        background: #fff8e1;
-        border: 1px solid #e8dcd0;
-        border-radius: 10px;
-        padding: 1rem;
-    }
-
-    .llamacpp-section h2 {
-        font-size: 1.2rem;
-        margin-bottom: 1rem;
-        color: #a07050;
-    }
-
-    .llamacpp-config-form {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-
-    .llamacpp-config-form .form-text {
-        font-size: 0.8rem;
-        color: #888;
-    }
-
-    .llamacpp-actions {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        flex-wrap: wrap;
-    }
-
-    .llamacpp-presets {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        flex-wrap: wrap;
-        margin-top: 0.25rem;
-        padding: 0.5rem 0;
-    }
-
+    /* 已下载模型区域 */
     .preset-label {
         font-size: 0.85rem;
         color: #666;
@@ -1675,31 +1054,6 @@ else
     .preset-checkbox input[type="checkbox"] {
         margin: 0;
         cursor: pointer;
-    }
-
-    .llamacpp-section-title {
-        font-size: 0.95rem;
-        color: #a07050;
-        margin: 1rem 0 0.5rem 0;
-        font-weight: 600;
-    }
-
-    .llamacpp-quick-presets {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-        margin: 0.75rem 0;
-        padding: 0.5rem;
-        background: #fff8e1;
-        border-radius: 8px;
-        border: 1px dashed #e8dcd0;
-    }
-
-    .llamacpp-quick-presets .preset-label {
-        font-size: 0.85rem;
-        color: #666;
-        font-weight: 500;
     }
 
     /* 已下载模型区域 */
@@ -1890,8 +1244,6 @@ else
         .memory-summary { color: #91a0b0; }
         .load-model-section { background: #232a3b; border-color: #2d3548; }
         .badge-light { background: #2a3040; color: #d4d8dd; border-color: #2d3548; }
-        .llamacpp-section { background: #24261f; border-color: #3a3a30; }
-        .llamacpp-section h2 { color: #c0a080; }
         .preset-label { color: #91a0b0; }
         .preset-checkbox { background: #2a2a24; border-color: #3a3a30; color: #c0c8d0; }
         .preset-checkbox:hover { background: #33332a; }
@@ -1905,9 +1257,6 @@ else
         .modal-footer { border-top-color: #2d3548; }
         .modal-close { color: #91a0b0; }
         .modal-close:hover { color: #d4d8dd; }
-        .tool-ollama { background: rgba(37, 122, 158, 0.22); color: #7fc4e0; }
-        .tool-lmstudio { background: rgba(106, 27, 154, 0.28); color: #ce93d8; }
-        .tool-llamacpp { background: rgba(160, 112, 80, 0.22); color: #c8a080; }
         .tool-openvino { background: rgba(61, 122, 77, 0.22); color: #8fc79e; }
     }
 
@@ -1915,6 +1264,141 @@ else
 
     @if (_activeTab == "openvino")
     {
+    <!-- OpenVINO 模型（Intel Arc GPU） -->
+    <div class="section-header" style="cursor:pointer;" @onclick="() => ToggleSection(ref _showOpenVino)">
+        <h2>@(_showOpenVino ? "▼" : "▶") 🧠 OpenVINO 模型（Intel Arc GPU）</h2>
+    </div>
+    @if (_showOpenVino)
+    {
+        <!-- 下载任务 -->
+        <div class="mt-3 mb-2">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4>⬇️ 下载任务</h4>
+                <button class="btn btn-sm btn-outline-secondary" @onclick="RefreshOpenVinoAsync">刷新</button>
+            </div>
+            @if (openVinoDownloads.Count == 0)
+            {
+                <div class="text-muted small">暂无下载任务</div>
+            }
+            else
+            {
+                @foreach (var t in openVinoDownloads)
+                {
+                    var active = t.Status is "running" or "pending";
+                    <div class="mb-2 p-2 border rounded">
+                        <div class="d-flex justify-content-between small">
+                            <span><b>@t.ModelName</b>
+                                <span class="badge @(t.Status == "completed" ? "bg-success" : t.Status == "failed" ? "bg-danger" : t.Status == "cancelled" ? "bg-secondary" : "bg-primary")">@t.Status</span>
+                            </span>
+                            <span>
+                                @if (active)
+                                {
+                                    <span class="text-muted">@t.ProgressPercent%@(t.SpeedMBps > 0 ? $" ({t.SpeedMBps:F1}MB/s)" : "")</span>
+                                    <button class="btn btn-sm btn-outline-secondary ms-2" @onclick='() => CancelDownloadAsync(t.TaskId)'>取消</button>
+                                }
+                                else if (t.CompletedAt.HasValue)
+                                {
+                                    <span class="text-muted">@t.CompletedAt.Value.ToString("HH:mm:ss")</span>
+                                }
+                            </span>
+                        </div>
+                        @if (t.TotalBytes > 0)
+                        {
+                            <div class="progress mt-1" style="height:6px">
+                                <div class="progress-bar @(t.Status == "failed" ? "bg-danger" : "") " style="width:@(t.ProgressPercent)%"></div>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(t.CurrentFile))
+                        {
+                            <div class="small text-muted mt-1">@t.CurrentFile</div>
+                        }
+                        @if (!string.IsNullOrEmpty(t.ErrorMessage))
+                        {
+                            <div class="text-danger small mt-1">@t.ErrorMessage</div>
+                        }
+                    </div>
+                }
+            }
+        </div>
+
+        <!-- 已下载模型 -->
+        <div class="mt-3 mb-2">
+            <h4>📦 已下载模型</h4>
+            @if (openVinoInstalled.Count == 0)
+            {
+                <div class="text-muted small">暂无已下载模型（从下方目录下载）</div>
+            }
+            else
+            {
+                <table class="table table-sm">
+                    <thead><tr><th>模型</th><th>大小</th><th>状态</th><th class="text-end">操作</th></tr></thead>
+                    <tbody>
+                        @foreach (var m in openVinoInstalled)
+                        {
+                            <tr>
+                                <td>@m.Name</td>
+                                <td class="small text-muted">@FormatSize(m.SizeBytes)</td>
+                                <td>
+                                    @if (m.IsRunning)
+                                    {
+                                        <span class="badge bg-success">运行中 :@m.Port</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">未运行</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    @if (m.IsRunning)
+                                    {
+                                        <button class="btn btn-sm btn-outline-danger" @onclick='() => StopModelAsync(m.Port!.Value)'>停止</button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-sm btn-primary" @onclick='() => RunModelAsync(m.Path)'>运行</button>
+                                    }
+                                    <button class="btn btn-sm btn-outline-secondary" @onclick='() => AskDeleteOpenVino(m)'>删除</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+
+        <!-- 可下载目录 -->
+        <div class="mt-3">
+            <h4>🌐 可下载模型（ModelScope 国内源 / HuggingFace 镜像）</h4>
+            <table class="table table-sm">
+                <thead><tr><th>模型</th><th>参数</th><th>大小</th><th>用途</th><th class="text-end"></th></tr></thead>
+                <tbody>
+                    @foreach (var c in openVinoCatalog)
+                    {
+                        <tr>
+                            <td>@c.Name @(c.IsVision ? "👁" : "")</td>
+                            <td>@c.ParameterSize @c.Quantization</td>
+                            <td>@c.SizeGiB.ToString("F1")GB</td>
+                            <td class="small text-muted">@c.Description</td>
+                            <td class="text-end">
+                                @if (c.Installed)
+                                {
+                                    <span class="badge bg-success">已安装</span>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm btn-primary" @onclick='() => StartDownloadAsync(c.Id)'>下载</button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        @if (!string.IsNullOrEmpty(openVinoMessage))
+        {
+            <div class="text-warning small mt-2">@openVinoMessage</div>
+        }
+    }
     <!-- OpenVINO Downloaded Models -->
     <div class="downloaded-section">
         <div class="section-header" style="cursor:pointer;" @onclick="() => ToggleSection(ref _showDownloadedModels)">
@@ -2096,142 +1580,6 @@ else
     </div>
     }
 
-    <!-- OpenVINO 模型 -->
-    <div class="section-header" style="cursor:pointer;" @onclick="() => ToggleSection(ref _showOpenVino)">
-        <h2>@(_showOpenVino ? "▼" : "▶") 🧠 OpenVINO 模型（Intel Arc GPU）</h2>
-    </div>
-    @if (_showOpenVino)
-    {
-        <!-- 下载任务 -->
-        <div class="mt-3 mb-2">
-            <div class="d-flex justify-content-between align-items-center">
-                <h4>⬇️ 下载任务</h4>
-                <button class="btn btn-sm btn-outline-secondary" @onclick="RefreshOpenVinoAsync">刷新</button>
-            </div>
-            @if (openVinoDownloads.Count == 0)
-            {
-                <div class="text-muted small">暂无下载任务</div>
-            }
-            else
-            {
-                @foreach (var t in openVinoDownloads)
-                {
-                    var active = t.Status is "running" or "pending";
-                    <div class="mb-2 p-2 border rounded">
-                        <div class="d-flex justify-content-between small">
-                            <span><b>@t.ModelName</b>
-                                <span class="badge @(t.Status == "completed" ? "bg-success" : t.Status == "failed" ? "bg-danger" : t.Status == "cancelled" ? "bg-secondary" : "bg-primary")">@t.Status</span>
-                            </span>
-                            <span>
-                                @if (active)
-                                {
-                                    <span class="text-muted">@t.ProgressPercent%@(t.SpeedMBps > 0 ? $" ({t.SpeedMBps:F1}MB/s)" : "")</span>
-                                    <button class="btn btn-sm btn-outline-secondary ms-2" @onclick='() => CancelDownloadAsync(t.TaskId)'>取消</button>
-                                }
-                                else if (t.CompletedAt.HasValue)
-                                {
-                                    <span class="text-muted">@t.CompletedAt.Value.ToString("HH:mm:ss")</span>
-                                }
-                            </span>
-                        </div>
-                        @if (t.TotalBytes > 0)
-                        {
-                            <div class="progress mt-1" style="height:6px">
-                                <div class="progress-bar @(t.Status == "failed" ? "bg-danger" : "") " style="width:@(t.ProgressPercent)%"></div>
-                            </div>
-                        }
-                        @if (!string.IsNullOrEmpty(t.CurrentFile))
-                        {
-                            <div class="small text-muted mt-1">@t.CurrentFile</div>
-                        }
-                        @if (!string.IsNullOrEmpty(t.ErrorMessage))
-                        {
-                            <div class="text-danger small mt-1">@t.ErrorMessage</div>
-                        }
-                    </div>
-                }
-            }
-        </div>
-
-        <!-- 已下载模型 -->
-        <div class="mt-3 mb-2">
-            <h4>📦 已下载模型</h4>
-            @if (openVinoInstalled.Count == 0)
-            {
-                <div class="text-muted small">暂无已下载模型（从下方目录下载）</div>
-            }
-            else
-            {
-                <table class="table table-sm">
-                    <thead><tr><th>模型</th><th>大小</th><th>状态</th><th class="text-end">操作</th></tr></thead>
-                    <tbody>
-                        @foreach (var m in openVinoInstalled)
-                        {
-                            <tr>
-                                <td>@m.Name</td>
-                                <td class="small text-muted">@FormatSize(m.SizeBytes)</td>
-                                <td>
-                                    @if (m.IsRunning)
-                                    {
-                                        <span class="badge bg-success">运行中 :@m.Port</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-secondary">未运行</span>
-                                    }
-                                </td>
-                                <td class="text-end">
-                                    @if (m.IsRunning)
-                                    {
-                                        <button class="btn btn-sm btn-outline-danger" @onclick='() => StopModelAsync(m.Port!.Value)'>停止</button>
-                                    }
-                                    else
-                                    {
-                                        <button class="btn btn-sm btn-primary" @onclick='() => RunModelAsync(m.Path)'>运行</button>
-                                    }
-                                    <button class="btn btn-sm btn-outline-secondary" @onclick='() => AskDeleteOpenVino(m)'>删除</button>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            }
-        </div>
-
-        <!-- 可下载目录 -->
-        <div class="mt-3">
-            <h4>🌐 可下载模型（ModelScope 国内源 / HuggingFace 镜像）</h4>
-            <table class="table table-sm">
-                <thead><tr><th>模型</th><th>参数</th><th>大小</th><th>用途</th><th class="text-end"></th></tr></thead>
-                <tbody>
-                    @foreach (var c in openVinoCatalog)
-                    {
-                        <tr>
-                            <td>@c.Name @(c.IsVision ? "👁" : "")</td>
-                            <td>@c.ParameterSize @c.Quantization</td>
-                            <td>@c.SizeGiB.ToString("F1")GB</td>
-                            <td class="small text-muted">@c.Description</td>
-                            <td class="text-end">
-                                @if (c.Installed)
-                                {
-                                    <span class="badge bg-success">已安装</span>
-                                }
-                                else
-                                {
-                                    <button class="btn btn-sm btn-primary" @onclick='() => StartDownloadAsync(c.Id)'>下载</button>
-                                }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-        @if (!string.IsNullOrEmpty(openVinoMessage))
-        {
-            <div class="text-warning small mt-2">@openVinoMessage</div>
-        }
-    }
-
     <!-- OpenVINO 已下载模型删除确认（与概览 tab 一致的确认流程） -->
     @if (openVinoToDelete != null)
     {
@@ -2257,7 +1605,6 @@ else
 @code {
     private bool isLoading = true;
     private string loadingStatus = "";
-    private bool isDeploying = false;
     private bool isRefreshingLibrary = false;
     private HardwareInfoDto? hardwareInfo;
     private List<RecommendedModelDto> recommendedModels = new();
@@ -2287,7 +1634,6 @@ else
     private bool _showDownloadedModels = true;
     private bool _showLoadModel = false;
     private bool _showLocalTools = false;
-    private bool _showLlamaCpp = false;
     private bool _showRecommendations = true;
     private bool _showOpenVinoLlm = true;
 
@@ -2300,26 +1646,6 @@ else
     private bool isControllingOpenVinoLlm;
 
     private void ToggleSection(ref bool flag) => flag = !flag;
-
-    // llama.cpp 配置
-    private LocalToolInfoDto? llamaCppTool => localTools.FirstOrDefault(t => t.Id == "llamacpp");
-    private string _llamaCppModelPath = "";
-    private int _llamaCppNGpuLayers = 999;
-    private int _llamaCppContextSize = 4096;
-    private int _llamaCppPort = 8080;
-    private bool _llamaCppUseFlashAttn = false;
-    private bool _llamaCppUseMlock = false;
-    private bool _llamaCppUseNoMmap = false;
-    private int _llamaCppThreads = 0;
-    private int _llamaCppBatchSize = 2048;
-    private string _llamaCppCacheTypeK = "";
-    private string _llamaCppCacheTypeV = "";
-    private bool _llamaCppUseContBatching = true;
-    private string _llamaCppExtraArgs = "";
-    private bool _isSavingLlamaCppConfig = false;
-    private bool _isLlamaCppActionRunning = false;
-    private string _llamaCppStatusMessage = "";
-    private bool _llamaCppStatusSuccess = false;
 
     private readonly List<(string Value, string Label)> scenarioTags = new()
     {
@@ -2394,11 +1720,10 @@ else
                 StateHasChanged();
             });
 
-            // 第二步：其余数据独立加载、各自容错（Ollama/LM Studio 等不可达时不再拖慢整体）
+            // 第二步：其余数据独立加载、各自容错（OpenVINO 不可达时不再拖慢整体）
             SetLoadingStatus("正在扫描本地模型服务…");
             var tasks = new List<Task>
             {
-                SafeLoadAsync(LoadLlamaCppConfigAsync),
                 SafeLoadAsync(() => LoadRecommendationsAsync()),
                 SafeLoadAsync(RefreshRunningModels),
                 SafeLoadAsync(RefreshDownloadedModels),
@@ -2576,190 +1901,6 @@ else
         return $"{bytes / 1024d:F0}KB";
     }
 
-    private async Task LoadLlamaCppConfigAsync()
-    {
-        try
-        {
-            var config = await ApiService.GetOpenClawLocalAiConfigAsync();
-            if (config.LlamaCpp != null)
-            {
-                _llamaCppModelPath = config.LlamaCpp.ModelPath ?? "";
-                _llamaCppNGpuLayers = config.LlamaCpp.NGpuLayers;
-                _llamaCppContextSize = config.LlamaCpp.ContextSize;
-                _llamaCppPort = config.LlamaCpp.Port;
-                _llamaCppUseFlashAttn = config.LlamaCpp.UseFlashAttn;
-                _llamaCppUseMlock = config.LlamaCpp.UseMlock;
-                _llamaCppUseNoMmap = config.LlamaCpp.UseNoMmap;
-                _llamaCppThreads = config.LlamaCpp.Threads;
-                _llamaCppBatchSize = config.LlamaCpp.BatchSize;
-                _llamaCppCacheTypeK = config.LlamaCpp.CacheTypeK ?? "";
-                _llamaCppCacheTypeV = config.LlamaCpp.CacheTypeV ?? "";
-                _llamaCppUseContBatching = config.LlamaCpp.UseContBatching;
-                _llamaCppExtraArgs = config.LlamaCpp.ExtraArgs ?? "";
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogWarning(ex, "加载 llama.cpp 配置失败");
-        }
-    }
-
-    private async Task SaveLlamaCppConfigAsync()
-    {
-        _isSavingLlamaCppConfig = true;
-        _llamaCppStatusMessage = "";
-        try
-        {
-            // 先获取当前配置以保留 binaryPath
-            var currentConfig = await ApiService.GetOpenClawLocalAiConfigAsync();
-            var binaryPath = currentConfig.LlamaCpp?.BinaryPath ?? "/home/lumin/llama-cpp/build/bin/llama-server";
-
-            var success = await ApiService.SaveOpenClawLocalAiConfigAsync(new SaveOpenClawLocalAiConfigRequest
-            {
-                LlamaCpp = new OpenClawLlamaCppConfigDto
-                {
-                    Enabled = true,
-                    BinaryPath = binaryPath,
-                    ModelPath = _llamaCppModelPath,
-                    BaseUrl = $"http://localhost:{_llamaCppPort}",
-                    Port = _llamaCppPort,
-                    NGpuLayers = _llamaCppNGpuLayers,
-                    ContextSize = _llamaCppContextSize,
-                    UseFlashAttn = _llamaCppUseFlashAttn,
-                    UseMlock = _llamaCppUseMlock,
-                    UseNoMmap = _llamaCppUseNoMmap,
-                    Threads = _llamaCppThreads,
-                    BatchSize = _llamaCppBatchSize,
-                    CacheTypeK = _llamaCppCacheTypeK,
-                    CacheTypeV = _llamaCppCacheTypeV,
-                    UseContBatching = _llamaCppUseContBatching,
-                    ExtraArgs = _llamaCppExtraArgs,
-                }
-            });
-
-            if (success)
-            {
-                _llamaCppStatusMessage = "✅ 配置已保存";
-                _llamaCppStatusSuccess = true;
-                // 刷新工具状态以更新 DefaultModelPath（强制刷新）
-                localTools = await ApiService.GetLocalToolsAsync(forceRefresh: true);
-            }
-            else
-            {
-                _llamaCppStatusMessage = "❌ 保存配置失败";
-                _llamaCppStatusSuccess = false;
-            }
-        }
-        catch (Exception ex)
-        {
-            _llamaCppStatusMessage = $"保存异常: {ex.Message}";
-            _llamaCppStatusSuccess = false;
-        }
-        finally
-        {
-            _isSavingLlamaCppConfig = false;
-            await InvokeAsync(StateHasChanged);
-        }
-    }
-
-    private async Task StartLlamaCppAsync()
-    {
-        _isLlamaCppActionRunning = true;
-        _llamaCppStatusMessage = "";
-        try
-        {
-            var status = await ApiService.StartLlamaCppAsync();
-            if (status.IsRunning)
-            {
-                _llamaCppStatusMessage = $"✅ {status.Message}";
-                _llamaCppStatusSuccess = true;
-            }
-            else
-            {
-                _llamaCppStatusMessage = $"❌ {status.Message ?? "启动失败"}";
-                _llamaCppStatusSuccess = false;
-            }
-            // 刷新状态（强制刷新）
-            localTools = await ApiService.GetLocalToolsAsync(forceRefresh: true);
-            await RefreshRunningModels();
-        }
-        catch (Exception ex)
-        {
-            _llamaCppStatusMessage = $"启动异常: {ex.Message}";
-            _llamaCppStatusSuccess = false;
-        }
-        finally
-        {
-            _isLlamaCppActionRunning = false;
-            await InvokeAsync(StateHasChanged);
-        }
-    }
-
-    private async Task StopLlamaCppAsync()
-    {
-        _isLlamaCppActionRunning = true;
-        _llamaCppStatusMessage = "";
-        try
-        {
-            var success = await ApiService.StopLlamaCppAsync();
-            if (success)
-            {
-                _llamaCppStatusMessage = "✅ llama.cpp 已停止";
-                _llamaCppStatusSuccess = true;
-            }
-            else
-            {
-                _llamaCppStatusMessage = "❌ 停止失败";
-                _llamaCppStatusSuccess = false;
-            }
-            // 刷新状态（强制刷新）
-            localTools = await ApiService.GetLocalToolsAsync(forceRefresh: true);
-            await RefreshRunningModels();
-        }
-        catch (Exception ex)
-        {
-            _llamaCppStatusMessage = $"停止异常: {ex.Message}";
-            _llamaCppStatusSuccess = false;
-        }
-        finally
-        {
-            _isLlamaCppActionRunning = false;
-            await InvokeAsync(StateHasChanged);
-        }
-    }
-
-    private void ApplyVramOptimizedPreset()
-    {
-        _llamaCppUseFlashAttn = true;
-        _llamaCppCacheTypeK = "q8_0";
-        _llamaCppCacheTypeV = "q8_0";
-        _llamaCppUseContBatching = true;
-        _llamaCppStatusMessage = "💾 已应用显存优化预设：Flash Attention + KV Cache q8_0 量化 + 连续批处理";
-        _llamaCppStatusSuccess = true;
-    }
-
-    private void ApplySpeedPreset()
-    {
-        _llamaCppUseFlashAttn = true;
-        _llamaCppBatchSize = 4096;
-        _llamaCppUseContBatching = true;
-        _llamaCppCacheTypeK = "";
-        _llamaCppCacheTypeV = "";
-        _llamaCppStatusMessage = "🚀 已应用速度优先预设：Flash Attention + 大 batch + 连续批处理";
-        _llamaCppStatusSuccess = true;
-    }
-
-    private void ApplyCpuOnlyPreset()
-    {
-        _llamaCppNGpuLayers = 0;
-        _llamaCppUseFlashAttn = false;
-        _llamaCppCacheTypeK = "q8_0";
-        _llamaCppCacheTypeV = "q8_0";
-        _llamaCppUseMlock = true;
-        _llamaCppStatusMessage = "🖥️ 已应用纯 CPU 模式：0 GPU 层 + KV Cache 量化 + 内存锁定";
-        _llamaCppStatusSuccess = true;
-    }
-
     private async Task LoadRecommendationsAsync(bool forceRefresh = false)
     {
         recommendedModels = await ApiService.GetRecommendedModelsAsync(
@@ -2845,20 +1986,6 @@ else
                 }
                 <span class="badge" style="background:#e8eef2;color:#4a5860;">@model.Company</span>
             </div>
-            <div class="model-download-status">
-                @if (model.IsDownloadedOllama)
-                {
-                    <span class="badge badge-success" title="已在 Ollama 中下载">📦 Ollama</span>
-                }
-                @if (model.IsDownloadedLmStudio)
-                {
-                    <span class="badge badge-info" title="已在 LM Studio 中下载">📦 LM Studio</span>
-                }
-                @if (model.IsDownloadedLlamaCpp)
-                {
-                    <span class="badge badge-warning" title="已在 llama.cpp 中可用">📦 llama.cpp</span>
-                }
-            </div>
             <div class="model-requirements">
                 <span>@(model.MinVramGiB.HasValue ? $"显存: {model.MinVramGiB:F0}GB+" : "显存: 无要求")</span>
                 <span>内存: @model.MinRamGiB.ToString("F0")GB+</span>
@@ -2879,16 +2006,6 @@ else
                     </span>
                 </div>
             }
-            <div class="model-actions">
-                <button class="btn btn-primary btn-sm" @onclick='() => DeployModel(model, "ollama")'
-                        disabled="@isDeploying">
-                    部署到 Ollama
-                </button>
-                <button class="btn btn-secondary btn-sm" @onclick='() => DeployModel(model, "lmstudio")'
-                        disabled="@isDeploying">
-                    部署到 LM Studio
-                </button>
-            </div>
         </div>
     };
 
@@ -2961,51 +2078,6 @@ else
         }
     }
 
-    private async Task DeployModel(RecommendedModelDto model, string targetTool)
-    {
-        isDeploying = true;
-        try
-        {
-            var result = await ApiService.DeployLocalModelAsync(new DeployLocalModelRequest
-            {
-                ModelId = model.Id,
-                TargetTool = targetTool
-            });
-
-            if (result.Success)
-            {
-                // 开始轮询任务状态
-                _ = StartTaskPolling(result.TaskId);
-            }
-            else
-            {
-                Logger.LogWarning("部署启动失败: {Message}", result.Message);
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogWarning(ex, "部署异常");
-        }
-        finally
-        {
-            isDeploying = false;
-        }
-    }
-
-    private async Task StartTaskPolling(string taskId)
-    {
-        // 立即刷新一次
-        await RefreshTaskStatus(taskId);
-
-        // 轮询 30 秒或直到完成
-        for (int i = 0; i < 120; i++)
-        {
-            await Task.Delay(3000);
-            var done = await RefreshTaskStatus(taskId);
-            if (done) break;
-        }
-    }
-
     private async Task<bool> RefreshTaskStatus(string taskId)
     {
         var status = await ApiService.GetDeployTaskStatusAsync(taskId);
@@ -3063,9 +2135,6 @@ else
     {
         return toolId switch
         {
-            "ollama" => "tool-ollama",
-            "lmstudio" => "tool-lmstudio",
-            "llamacpp" => "tool-llamacpp",
             "openvino" => "tool-openvino",
             _ => ""
         };
@@ -3387,7 +2456,7 @@ else
     private async Task OnTabChanged(string tab)
     {
         _activeTab = tab;
-        if (tab == "ollama" || tab == "lmstudio" || tab == "llamacpp" || tab == "openvino")
+        if (tab == "openvino")
         {
             loadToolId = tab;
             await OnLoadToolChanged();

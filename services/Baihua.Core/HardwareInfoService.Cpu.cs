@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Baihua.Contracts.LocalModels;
 
@@ -36,16 +37,102 @@ public partial class HardwareInfoService
             return cpu;
         }
 
+        private class Win32ProcessorJson
+        {
+            public string? Name { get; set; }
+            public int NumberOfCores { get; set; }
+            public int NumberOfLogicalProcessors { get; set; }
+            public int MaxClockSpeed { get; set; }
+        }
+
+        private class RegistryCpuJson
+        {
+            public string? ProcessorNameString { get; set; }
+            public int MHz { get; set; }
+        }
+
         private void EnrichCpuInfoWindows(CpuInfoDto cpu)
         {
-            var output = HardwareInfoHelper.RunCommand("wmic", "cpu get Name,NumberOfCores,NumberOfLogicalProcessors /value", 5000);
-            if (string.IsNullOrEmpty(output)) return;
+            // 方案一（主）：PowerShell Get-CimInstance + JSON（wmic 已在 Win11 24H2+ 移除）
+            var psOutput = HardwareInfoHelper.RunCommand("powershell",
+                "-NoProfile -NonInteractive -Command \"Get-CimInstance Win32_Processor | Select-Object Name,NumberOfCores,NumberOfLogicalProcessors,MaxClockSpeed | ConvertTo-Json -Compress\"",
+                10000);
+            if (!string.IsNullOrWhiteSpace(psOutput))
+            {
+                try
+                {
+                    // 处理单个对象 vs 数组（多 CPU 插槽）
+                    if (psOutput.TrimStart().StartsWith('['))
+                    {
+                        var arr = JsonSerializer.Deserialize<List<Win32ProcessorJson>>(psOutput);
+                        if (arr != null && arr.Count > 0)
+                        {
+                            var first = arr[0];
+                            cpu.Name = first.Name ?? cpu.Name;
+                            cpu.CoreCount = arr.Sum(x => x.NumberOfCores);
+                            cpu.LogicalProcessorCount = arr.Sum(x => x.NumberOfLogicalProcessors);
+                            if (first.MaxClockSpeed > 0)
+                                cpu.MaxFrequencyMHz = first.MaxClockSpeed.ToString();
+                        }
+                    }
+                    else
+                    {
+                        var obj = JsonSerializer.Deserialize<Win32ProcessorJson>(psOutput);
+                        if (obj != null)
+                        {
+                            cpu.Name = obj.Name ?? cpu.Name;
+                            cpu.CoreCount = obj.NumberOfCores;
+                            cpu.LogicalProcessorCount = obj.NumberOfLogicalProcessors;
+                            if (obj.MaxClockSpeed > 0)
+                                cpu.MaxFrequencyMHz = obj.MaxClockSpeed.ToString();
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogDebug(ex, "解析 CPU CIM JSON 失败: {Output}", psOutput);
+                }
+            }
 
-            cpu.Name = HardwareInfoHelper.ExtractWmicValue(output, "Name") ?? cpu.Name;
-            if (int.TryParse(HardwareInfoHelper.ExtractWmicValue(output, "NumberOfCores"), out var cores))
-                cpu.CoreCount = cores;
-            if (int.TryParse(HardwareInfoHelper.ExtractWmicValue(output, "NumberOfLogicalProcessors"), out var logical))
-                cpu.LogicalProcessorCount = logical;
+            // 方案二（回退）：PowerShell 读取注册表 HKLM\HARDWARE\DESCRIPTION\System\CentralProcessor\0
+            // 在 CIM 不可用时（极少见），不依赖 wmic 也可获取 CPU 名称/频率
+            if (string.IsNullOrEmpty(cpu.Name))
+            {
+                var regOutput = HardwareInfoHelper.RunCommand("powershell",
+                    "-NoProfile -NonInteractive -Command \"Get-ItemProperty 'HKLM:\\HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0' | Select-Object ProcessorNameString,@{N='MHz';E={$_.'~MHz'}} | ConvertTo-Json -Compress\"",
+                    5000);
+                if (!string.IsNullOrWhiteSpace(regOutput))
+                {
+                    try
+                    {
+                        var reg = JsonSerializer.Deserialize<RegistryCpuJson>(regOutput);
+                        if (reg != null)
+                        {
+                            cpu.Name = reg.ProcessorNameString ?? cpu.Name;
+                            if (reg.MHz > 0 && string.IsNullOrEmpty(cpu.MaxFrequencyMHz))
+                                cpu.MaxFrequencyMHz = reg.MHz.ToString();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogDebug(ex, "解析注册表 CPU JSON 失败: {Output}", regOutput);
+                    }
+                }
+            }
+
+            // 方案三（兼容旧系统）：WMIC（Win10 1809+ 已废弃、Win11 已移除）
+            if (string.IsNullOrEmpty(cpu.Name))
+            {
+                var output = HardwareInfoHelper.RunCommand("wmic", "cpu get Name,NumberOfCores,NumberOfLogicalProcessors /value", 5000);
+                if (!string.IsNullOrEmpty(output))
+                {
+                    cpu.Name = HardwareInfoHelper.ExtractWmicValue(output, "Name") ?? cpu.Name;
+                    if (int.TryParse(HardwareInfoHelper.ExtractWmicValue(output, "NumberOfCores"), out var cores))
+                        cpu.CoreCount = cores;
+                    if (int.TryParse(HardwareInfoHelper.ExtractWmicValue(output, "NumberOfLogicalProcessors"), out var logical))
+                        cpu.LogicalProcessorCount = logical;
+                }
+            }
         }
 
         private void EnrichCpuInfoLinux(CpuInfoDto cpu)

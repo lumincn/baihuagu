@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Net.Http.Json;
 using Baihua.Contracts.LocalModels;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Baihua.Family.Services;
 
@@ -13,20 +14,21 @@ namespace Baihua.Family.Services;
 public class OpenVinoRuntimeManager
 {
     private readonly ILogger<OpenVinoRuntimeManager> _logger;
+    private readonly LocalAiOptions _options;
     private readonly ConcurrentDictionary<int, RunningInstance> _running = new();
     private static readonly object PythonLock = new();
     private static string? _pythonCache;
 
     private sealed record RunningInstance(int Port, int ProcessId, string ModelPath, DateTime StartedAt);
 
-    public OpenVinoRuntimeManager(ILogger<OpenVinoRuntimeManager> logger)
+    public OpenVinoRuntimeManager(ILogger<OpenVinoRuntimeManager> logger, IOptions<LocalAiOptions> options)
     {
         _logger = logger;
+        _options = options.Value;
     }
 
-    /// <summary>模型根目录</summary>
-    public string ModelRoot =>
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".openclaw", "models");
+    /// <summary>模型根目录（可通过 LocalAI:DownloadDirectory 配置）</summary>
+    public string ModelRoot => _options.GetModelRoot();
 
     /// <summary>扫描已下载模型目录</summary>
     public List<OpenVinoInstalledModelDto> GetInstalledModels()

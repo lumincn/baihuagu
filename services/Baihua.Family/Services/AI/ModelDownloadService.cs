@@ -4,6 +4,7 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using Baihua.Contracts.LocalModels;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Baihua.Family.Services;
 
@@ -14,6 +15,7 @@ namespace Baihua.Family.Services;
 public class ModelDownloadService
 {
     private readonly ILogger<ModelDownloadService> _logger;
+    private readonly LocalAiOptions _options;
     private readonly TaskManager _taskManager;
     private readonly IHttpClientFactory _httpFactory;
     private readonly ConcurrentDictionary<string, (OpenVinoDownloadTaskDto Task, CancellationTokenSource Cts)> _tasks = new();
@@ -23,16 +25,17 @@ public class ModelDownloadService
     public ModelDownloadService(
         ILogger<ModelDownloadService> logger,
         TaskManager taskManager,
-        IHttpClientFactory httpFactory)
+        IHttpClientFactory httpFactory,
+        IOptions<LocalAiOptions> options)
     {
         _logger = logger;
         _taskManager = taskManager;
         _httpFactory = httpFactory;
+        _options = options.Value;
     }
 
-    /// <summary>模型根目录（与现有 OpenVINO 模型一致）</summary>
-    public string ModelRoot =>
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".openclaw", "models");
+    /// <summary>模型根目录（可通过 LocalAI:DownloadDirectory 配置）</summary>
+    public string ModelRoot => _options.GetModelRoot();
 
     public List<OpenVinoDownloadTaskDto> GetTasks() =>
         _tasks.Values

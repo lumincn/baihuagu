@@ -187,6 +187,7 @@ builder.Services.AddSingleton<AiFunctionService>();
 builder.Services.AddSingleton<StockAdvisorService>();
 builder.Services.AddSingleton<TopicSuggestionService>();
 builder.Services.AddSingleton<FamilyBudgetService>();
+builder.Services.Configure<LocalAiOptions>(builder.Configuration.GetSection("LocalAI"));
 builder.Services.AddSingleton<ModelDownloadService>();
 builder.Services.AddSingleton<OpenVinoRuntimeManager>();
 builder.Services.AddSingleton<AssistantService>();
@@ -275,6 +276,16 @@ builder.Services.AddSingleton<LmStudioService>();
 builder.Services.AddSingleton<LlamaCppService>();
 builder.Services.Configure<Baihua.AI.Provider.OpenVinoToolOptions>(
     builder.Configuration.GetSection("LocalVision"));
+// 若 LocalVision:ModelRoot 未设置，则从 LocalAI:DownloadDirectory 读取，保持模型路径统一
+builder.Services.PostConfigure<Baihua.AI.Provider.OpenVinoToolOptions>(opts =>
+{
+    if (string.IsNullOrWhiteSpace(opts.ModelRoot))
+    {
+        var dir = builder.Configuration["LocalAI:DownloadDirectory"];
+        if (!string.IsNullOrWhiteSpace(dir))
+            opts.ModelRoot = dir;
+    }
+});
 builder.Services.AddSingleton<Baihua.AI.Provider.OpenVinoToolService>();
 builder.Services.AddSingleton<LocalModelDeploymentService>();
 builder.Services.AddSingleton<AiMetricsService>();

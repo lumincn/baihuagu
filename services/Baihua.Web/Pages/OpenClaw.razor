@@ -45,291 +45,6 @@
                             <div class="alert alert-info">@_syncMessage</div>
                         }
 
-                        <!-- Ollama -->
-                        <div class="mb-4 p-3 border rounded">
-                            <div class="form-check form-switch mb-3">
-                                <input class="form-check-input" type="checkbox" id="ollamaEnabled"
-                                       checked="@_ollamaConfig.Enabled" @onchange="OnOllamaEnabledChanged">
-                                <label class="form-check-label fw-bold" for="ollamaEnabled">@L["OpenClaw_UseOllama"]</label>
-                                @if (_ollamaDetecting)
-                                {
-                                    <span class="badge bg-info ms-2"><span class="spinner-border spinner-border-sm" style="width:0.7rem;height:0.7rem;"></span> 检测中</span>
-                                }
-                                else if (!string.IsNullOrEmpty(_ollamaStatusMessage))
-                                {
-                                    @if (_ollamaStatusMessage.Contains("成功") || _ollamaStatusMessage.Contains("正在运行"))
-                                    {
-                                        <span class="badge bg-success ms-2">@L["OpenClaw_Running"]</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-secondary ms-2">@L["OpenClaw_NotRunning"]</span>
-                                    }
-                                }
-                            </div>
-                            @if (_ollamaDetecting)
-                            {
-                                <div class="alert alert-info py-2 mb-3">
-                                    <span class="spinner-border spinner-border-sm me-2"></span>@_ollamaStatusMessage
-                                </div>
-                            }
-                            else if (!string.IsNullOrEmpty(_ollamaStatusMessage))
-                            {
-                                <div class="alert @(_ollamaStatusMessage.Contains("成功") || _ollamaStatusMessage.Contains("正在运行") ? "alert-success" : "alert-warning") py-2 mb-3">
-                                    @_ollamaStatusMessage
-                                </div>
-                            }
-                            @if (_ollamaConfig.Enabled)
-                            {
-                                <div class="mb-3">
-                                    <label class="form-label">Base URL</label>
-                                    <input type="text" class="form-control" @bind="_ollamaConfig.BaseUrl"
-                                           placeholder="http://localhost:11434" />
-                                    <div class="form-text">@L["OpenClaw_OllamaDefaultAddr"]</div>
-                                </div>
-                                <div class="mb-3 d-flex gap-2">
-                                    <button class="btn btn-outline-primary btn-sm" @onclick="ScanOllamaModels"
-                                            disabled="@_isScanningOllama">
-                                        @if (_isScanningOllama)
-                                        {
-                                            <span class="spinner-border spinner-border-sm me-1"></span>
-                                        }
-                                        else
-                                        {
-                                            <i class="bi bi-search me-1"></i>
-                                        }
-                                        @L["OpenClaw_ScanModels"]
-                                    </button>
-                                    <button class="btn btn-outline-success btn-sm" @onclick='() => SyncModelsAsync("ollama")'
-                                            disabled="@(_isSyncingOllama || _ollamaModels.Count == 0)">
-                                        @if (_isSyncingOllama)
-                                        {
-                                            <span class="spinner-border spinner-border-sm me-1"></span>
-                                        }
-                                        else
-                                        {
-                                            <i class="bi bi-cloud-arrow-up me-1"></i>
-                                        }
-                                        @L["OpenClaw_SyncToOpenClaw"]
-                                    </button>
-                                </div>
-                                @if (_ollamaModels.Count > 0)
-                                {
-                                    <div class="table-responsive">
-                                        <table class="table table-sm table-bordered">
-                                            <thead class="table-light">
-                                                <tr><th>@L["OpenClaw_Col_ModelId"]</th><th>@L["OpenClaw_Col_Name"]</th><th>@L["OpenClaw_Col_Context"]</th><th>@L["OpenClaw_Col_MaxTokens"]</th></tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach (var m in _ollamaModels)
-                                                {
-                                                    <tr>
-                                                        <td><code>@m.Id</code></td>
-                                                        <td><input class="form-control form-control-sm" @bind="m.Name" /></td>
-                                                        <td><input type="number" class="form-control form-control-sm" @bind="m.ContextWindow" style="width:100px" /></td>
-                                                        <td><input type="number" class="form-control form-control-sm" @bind="m.MaxTokens" style="width:100px" /></td>
-                                                    </tr>
-                                                }
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                }
-                                else if (_ollamaScanned)
-                                {
-                                    <div class="alert alert-warning py-2">@L["OpenClaw_NoModelsOllama"]</div>
-                                }
-                            }
-                        </div>
-
-                        <!-- LM Studio -->
-                        <div class="mb-4 p-3 border rounded">
-                            <div class="form-check form-switch mb-3">
-                                <input class="form-check-input" type="checkbox" id="lmStudioEnabled"
-                                       checked="@_lmStudioConfig.Enabled" @onchange="OnLmStudioEnabledChanged">
-                                <label class="form-check-label fw-bold" for="lmStudioEnabled">@L["OpenClaw_UseLmStudio"]</label>
-                                @if (_lmStudioDetecting)
-                                {
-                                    <span class="badge bg-info ms-2"><span class="spinner-border spinner-border-sm" style="width:0.7rem;height:0.7rem;"></span> 检测中</span>
-                                }
-                                else if (!string.IsNullOrEmpty(_lmStudioStatusMessage))
-                                {
-                                    @if (_lmStudioStatusMessage.Contains("成功") || _lmStudioStatusMessage.Contains("正在运行"))
-                                    {
-                                        <span class="badge bg-success ms-2">@L["OpenClaw_Running"]</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-secondary ms-2">@L["OpenClaw_NotRunning"]</span>
-                                    }
-                                }
-                            </div>
-                            @if (_lmStudioDetecting)
-                            {
-                                <div class="alert alert-info py-2 mb-3">
-                                    <span class="spinner-border spinner-border-sm me-2"></span>@_lmStudioStatusMessage
-                                </div>
-                            }
-                            else if (!string.IsNullOrEmpty(_lmStudioStatusMessage))
-                            {
-                                <div class="alert @(_lmStudioStatusMessage.Contains("成功") || _lmStudioStatusMessage.Contains("正在运行") ? "alert-success" : "alert-warning") py-2 mb-3">
-                                    @_lmStudioStatusMessage
-                                </div>
-                            }
-                            @if (_lmStudioConfig.Enabled)
-                            {
-                                <div class="mb-3">
-                                    <label class="form-label">Base URL</label>
-                                    <input type="text" class="form-control" @bind="_lmStudioConfig.BaseUrl"
-                                           placeholder="http://localhost:1234/v1" />
-                                    <div class="form-text">@L["OpenClaw_LmStudioDefaultAddr"]</div>
-                                </div>
-                                <div class="mb-3 d-flex gap-2">
-                                    <button class="btn btn-outline-primary btn-sm" @onclick="ScanLmStudioModels"
-                                            disabled="@_isScanningLmStudio">
-                                        @if (_isScanningLmStudio)
-                                        {
-                                            <span class="spinner-border spinner-border-sm me-1"></span>
-                                        }
-                                        else
-                                        {
-                                            <i class="bi bi-search me-1"></i>
-                                        }
-                                        @L["OpenClaw_ScanModels"]
-                                    </button>
-                                    <button class="btn btn-outline-success btn-sm" @onclick='() => SyncModelsAsync("lmstudio")'
-                                            disabled="@(_isSyncingLmStudio || _lmStudioModels.Count == 0)">
-                                        @if (_isSyncingLmStudio)
-                                        {
-                                            <span class="spinner-border spinner-border-sm me-1"></span>
-                                        }
-                                        else
-                                        {
-                                            <i class="bi bi-cloud-arrow-up me-1"></i>
-                                        }
-                                        @L["OpenClaw_SyncToOpenClaw"]
-                                    </button>
-                                </div>
-                                @if (_lmStudioModels.Count > 0)
-                                {
-                                    <div class="table-responsive">
-                                        <table class="table table-sm table-bordered">
-                                            <thead class="table-light">
-                                                <tr><th>@L["OpenClaw_Col_ModelId"]</th><th>@L["OpenClaw_Col_Name"]</th><th>@L["OpenClaw_Col_Context"]</th><th>@L["OpenClaw_Col_MaxTokens"]</th></tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach (var m in _lmStudioModels)
-                                                {
-                                                    <tr>
-                                                        <td><code>@m.Id</code></td>
-                                                        <td><input class="form-control form-control-sm" @bind="m.Name" /></td>
-                                                        <td><input type="number" class="form-control form-control-sm" @bind="m.ContextWindow" style="width:100px" /></td>
-                                                        <td><input type="number" class="form-control form-control-sm" @bind="m.MaxTokens" style="width:100px" /></td>
-                                                    </tr>
-                                                }
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                }
-                                else if (_lmStudioScanned)
-                                {
-                                    <div class="alert alert-warning py-2">@L["OpenClaw_NoModelsLmStudio"]</div>
-                                }
-                            }
-                        </div>
-
-                        <!-- llama.cpp -->
-                        <div class="mb-4 p-3 border rounded">
-                            <div class="form-check form-switch mb-3">
-                                <input class="form-check-input" type="checkbox" id="llamaCppEnabled"
-                                       checked="@_llamaCppConfig.Enabled" @onchange="OnLlamaCppEnabledChanged">
-                                <label class="form-check-label fw-bold" for="llamaCppEnabled">@L["OpenClaw_UseLlamaCpp"]</label>
-                                @if (_llamaCppDetecting)
-                                {
-                                    <span class="badge bg-info ms-2"><span class="spinner-border spinner-border-sm" style="width:0.7rem;height:0.7rem;"></span> 检测中</span>
-                                }
-                                else if (!string.IsNullOrEmpty(_llamaCppStatusMessage))
-                                {
-                                    @if (_llamaCppStatusMessage.Contains("成功") || _llamaCppStatusMessage.Contains("正在运行"))
-                                    {
-                                        <span class="badge bg-success ms-2">@L["OpenClaw_Running"]</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-secondary ms-2">@L["OpenClaw_NotRunning"]</span>
-                                    }
-                                }
-                            </div>
-                            @if (_llamaCppDetecting)
-                            {
-                                <div class="alert alert-info py-2 mb-3">
-                                    <span class="spinner-border spinner-border-sm me-2"></span>@_llamaCppStatusMessage
-                                </div>
-                            }
-                            else if (!string.IsNullOrEmpty(_llamaCppStatusMessage))
-                            {
-                                <div class="alert @(_llamaCppStatusMessage.Contains("成功") || _llamaCppStatusMessage.Contains("正在运行") ? "alert-success" : "alert-warning") py-2 mb-3">
-                                    @_llamaCppStatusMessage
-                                </div>
-                            }
-                            @if (_llamaCppConfig.Enabled)
-                            {
-                                <div class="alert alert-light border mb-3">
-                                    <i class="bi bi-info-circle me-1"></i>
-                                    @L["OpenClaw_LlamaCppConfigNote"]
-                                </div>
-                                <div class="mb-3 d-flex gap-2">
-                                    <button class="btn btn-outline-primary btn-sm" @onclick="ScanLlamaCppModels"
-                                            disabled="@_isScanningLlamaCpp">
-                                        @if (_isScanningLlamaCpp)
-                                        {
-                                            <span class="spinner-border spinner-border-sm me-1"></span>
-                                        }
-                                        else
-                                        {
-                                            <i class="bi bi-search me-1"></i>
-                                        }
-                                        @L["OpenClaw_ScanModels"]
-                                    </button>
-                                    <button class="btn btn-outline-success btn-sm" @onclick='() => SyncModelsAsync("llamacpp")'
-                                            disabled="@(_isSyncingLlamaCpp || _llamaCppModels.Count == 0)">
-                                        @if (_isSyncingLlamaCpp)
-                                        {
-                                            <span class="spinner-border spinner-border-sm me-1"></span>
-                                        }
-                                        else
-                                        {
-                                            <i class="bi bi-cloud-arrow-up me-1"></i>
-                                        }
-                                        @L["OpenClaw_SyncToOpenClaw"]
-                                    </button>
-                                </div>
-                                @if (_llamaCppModels.Count > 0)
-                                {
-                                    <div class="table-responsive">
-                                        <table class="table table-sm table-bordered">
-                                            <thead class="table-light">
-                                                <tr><th>@L["OpenClaw_Col_ModelId"]</th><th>@L["OpenClaw_Col_Name"]</th><th>@L["OpenClaw_Col_Context"]</th></tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach (var m in _llamaCppModels)
-                                                {
-                                                    <tr>
-                                                        <td><code>@m.Id</code></td>
-                                                        <td>@m.Name</td>
-                                                        <td>@m.ContextWindow</td>
-                                                    </tr>
-                                                }
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                }
-                                else if (_llamaCppScanned)
-                                {
-                                    <div class="alert alert-warning py-2">@L["OpenClaw_NoModelsLlamaCpp"]</div>
-                                }
-                            }
-                        </div>
-
                         <!-- OpenVINO -->
                         <div class="mb-4 p-3 border rounded">
                             <div class="form-check form-switch mb-3">
@@ -533,7 +248,7 @@
                                             <strong>暂无可用模型。</strong>请先在下方完成任一操作：
                                             <ul class="mb-0 mt-1 ps-4">
                                                 <li>进入「AI 设置」页面启用云端 Provider（如硅基流动、OpenAI）并添加模型，模型会自动出现在此处（格式：<code>providerId/modelName</code>）。</li>
-                                                <li>或在本页启用 Ollama / LM Studio / llama.cpp，点击「扫描模型」→「同步到 OpenClaw」，本地模型会出现在此处。</li>
+                                                <li>或在本页启用 OpenVINO，点击「扫描模型」→「同步到 OpenClaw」，本地模型会出现在此处。</li>
                                             </ul>
                                         </div>
                                     }
@@ -789,16 +504,6 @@
             border-color: #2d3548 !important;
         }
 
-        /* llama.cpp 提示框 alert-light */
-        .alert.alert-light.border {
-            background: rgba(255,255,255,0.04) !important;
-            border-color: #3d4558 !important;
-            color: #c0c8d0 !important;
-        }
-        .alert.alert-light.border .bi-info-circle {
-            color: #91c8e0 !important;
-        }
-
         /* 模型配置卡片 badge bg-light text-dark border */
         .badge.bg-light.text-dark.border {
             background: rgba(255,255,255,0.08) !important;
@@ -821,7 +526,7 @@
             border-color: #3d4558 !important;
         }
 
-        /* Ollama/LM Studio/llama.cpp p-3 border rounded 容器 */
+        /* OpenVINO p-3 border rounded 容器 */
         .mb-4.p-3.border.rounded:not(.bg-light) {
             border-color: #2d3548 !important;
         }
@@ -847,38 +552,17 @@
     // 配置面板状态
     private bool _showConfig;
     private bool _isSavingConfig;
-    private bool _isScanningOllama;
-    private bool _isScanningLmStudio;
-    private bool _isScanningLlamaCpp;
     private bool _isScanningOpenVino;
-    private bool _ollamaScanned;
-    private bool _lmStudioScanned;
-    private bool _llamaCppScanned;
     private bool _openVinoScanned;
-    private bool _isSyncingOllama;
-    private bool _isSyncingLmStudio;
-    private bool _isSyncingLlamaCpp;
     private bool _isSyncingOpenVino;
     private string? _syncMessage;
-    private bool _ollamaDetecting;
-    private bool _lmStudioDetecting;
-    private bool _llamaCppDetecting;
     private bool _openVinoDetecting;
     private string? _configError;
     private string? _configSuccess;
-    private string? _ollamaStatusMessage;
-    private string? _lmStudioStatusMessage;
-    private string? _llamaCppStatusMessage;
     private string? _openVinoStatusMessage;
     private List<string> _openVinoDevices = new();
     private string? _openVinoCommandLine;
-    private OpenClawLocalProviderConfigDto _ollamaConfig = new();
-    private OpenClawLocalProviderConfigDto _lmStudioConfig = new();
-    private OpenClawLlamaCppConfigDto _llamaCppConfig = new();
     private OpenClawOpenVinoConfigDto _openVinoConfig = new();
-    private List<OpenClawLocalModelDto> _ollamaModels = new();
-    private List<OpenClawLocalModelDto> _lmStudioModels = new();
-    private List<OpenClawLocalModelDto> _llamaCppModels = new();
     private List<OpenClawLocalModelDto> _openVinoModels = new();
 
     // 默认模型设置
@@ -952,24 +636,7 @@
     private async Task LoadConfigAsync()
     {
         var config = await ApiService.GetOpenClawLocalAiConfigAsync();
-        _ollamaConfig = config.Ollama ?? new OpenClawLocalProviderConfigDto();
-        _lmStudioConfig = config.LmStudio ?? new OpenClawLocalProviderConfigDto();
-        _llamaCppConfig = config.LlamaCpp ?? new OpenClawLlamaCppConfigDto();
         _openVinoConfig = config.OpenVino ?? new OpenClawOpenVinoConfigDto();
-        _ollamaModels = _ollamaConfig.Models.ToList();
-        _lmStudioModels = _lmStudioConfig.Models.ToList();
-        _llamaCppModels = _llamaCppConfig.Enabled && !string.IsNullOrWhiteSpace(_llamaCppConfig.ModelPath)
-            ? new List<OpenClawLocalModelDto>
-            {
-                new OpenClawLocalModelDto
-                {
-                    Id = System.IO.Path.GetFileNameWithoutExtension(_llamaCppConfig.ModelPath).Replace(".", "-").ToLowerInvariant(),
-                    Name = System.IO.Path.GetFileNameWithoutExtension(_llamaCppConfig.ModelPath),
-                    ApiType = _llamaCppConfig.ApiType,
-                    ContextWindow = _llamaCppConfig.ContextSize,
-                }
-            }
-            : new List<OpenClawLocalModelDto>();
         _openVinoModels = _openVinoConfig.Enabled && !string.IsNullOrWhiteSpace(_openVinoConfig.ModelPath)
             ? new List<OpenClawLocalModelDto>
             {
@@ -1012,12 +679,6 @@
         }
 
         // 自动检测已启用 provider 的服务状态
-        if (_ollamaConfig.Enabled)
-            await DetectAndStartAsync("ollama");
-        if (_lmStudioConfig.Enabled)
-            await DetectAndStartAsync("lmstudio");
-        if (_llamaCppConfig.Enabled)
-            await DetectAndStartAsync("llamacpp");
         if (_openVinoConfig.Enabled)
             await DetectAndStartAsync("openvino");
     }
@@ -1028,78 +689,6 @@
         if (val is bool b) return b;
         if (val is string s) return s.Equals("true", StringComparison.OrdinalIgnoreCase);
         return false;
-    }
-
-    private async Task OnOllamaEnabledChanged(ChangeEventArgs e)
-    {
-        _ollamaConfig.Enabled = GetCheckboxValue(e);
-        if (!_ollamaConfig.Enabled)
-        {
-            _ollamaModels.Clear();
-            _ollamaScanned = false;
-            _ollamaStatusMessage = "已停用：Ollama 配置已从 OpenClaw 中移除（Ollama 服务本身不会停止）";
-            return;
-        }
-        // 设置默认值
-        if (string.IsNullOrWhiteSpace(_ollamaConfig.BaseUrl))
-            _ollamaConfig.BaseUrl = "http://localhost:11434";
-        if (string.IsNullOrWhiteSpace(_ollamaConfig.ApiType))
-            _ollamaConfig.ApiType = "ollama";
-        await DetectAndStartAsync("ollama");
-    }
-
-    private async Task OnLmStudioEnabledChanged(ChangeEventArgs e)
-    {
-        _lmStudioConfig.Enabled = GetCheckboxValue(e);
-        if (!_lmStudioConfig.Enabled)
-        {
-            _lmStudioModels.Clear();
-            _lmStudioScanned = false;
-            _lmStudioStatusMessage = "已停用：LM Studio 配置已从 OpenClaw 中移除（LM Studio 服务本身不会停止）";
-            return;
-        }
-        // 设置默认值
-        if (string.IsNullOrWhiteSpace(_lmStudioConfig.BaseUrl))
-            _lmStudioConfig.BaseUrl = "http://localhost:1234/v1";
-        if (string.IsNullOrWhiteSpace(_lmStudioConfig.ApiType))
-            _lmStudioConfig.ApiType = "openai-completions";
-        await DetectAndStartAsync("lmstudio");
-    }
-
-    private async Task OnLlamaCppEnabledChanged(ChangeEventArgs e)
-    {
-        _llamaCppConfig.Enabled = GetCheckboxValue(e);
-        if (!_llamaCppConfig.Enabled)
-        {
-            _llamaCppModels.Clear();
-            _llamaCppScanned = false;
-            _llamaCppStatusMessage = "正在停止 llama.cpp 服务...";
-            StateHasChanged();
-            try
-            {
-                await ApiService.StopLlamaCppAsync();
-                _llamaCppStatusMessage = "已停用：llama.cpp 服务已停止";
-            }
-            catch (Exception ex)
-            {
-                _llamaCppStatusMessage = $"已停用，但停止服务失败: {ex.Message}";
-            }
-            return;
-        }
-        // 设置默认值
-        if (string.IsNullOrWhiteSpace(_llamaCppConfig.BinaryPath))
-            _llamaCppConfig.BinaryPath = "/home/lumin/llama-cpp/build/bin/llama-server";
-        if (string.IsNullOrWhiteSpace(_llamaCppConfig.BaseUrl))
-            _llamaCppConfig.BaseUrl = "http://localhost:8080";
-        if (string.IsNullOrWhiteSpace(_llamaCppConfig.ApiType))
-            _llamaCppConfig.ApiType = "openai-completions";
-        if (_llamaCppConfig.Port == 0)
-            _llamaCppConfig.Port = 8080;
-        if (_llamaCppConfig.NGpuLayers == 0)
-            _llamaCppConfig.NGpuLayers = 999;
-        if (_llamaCppConfig.ContextSize == 0)
-            _llamaCppConfig.ContextSize = 4096;
-        await DetectAndStartAsync("llamacpp");
     }
 
     private async Task OnOpenVinoEnabledChanged(ChangeEventArgs e)
@@ -1128,128 +717,47 @@
 
     private async Task DetectAndStartAsync(string provider)
     {
-        if (provider == "ollama")
-        {
-            _ollamaDetecting = true;
-            _ollamaStatusMessage = "正在检测 Ollama 服务状态...";
-        }
-        else if (provider == "lmstudio")
-        {
-            _lmStudioDetecting = true;
-            _lmStudioStatusMessage = "正在检测 LM Studio 服务状态...";
-        }
-        else if (provider == "llamacpp")
-        {
-            _llamaCppDetecting = true;
-            _llamaCppStatusMessage = "正在检测 llama.cpp 服务状态...";
-        }
-        else if (provider == "openvino")
-        {
-            _openVinoDetecting = true;
-            _openVinoStatusMessage = "正在检测 OpenVINO 服务状态...";
-        }
+        _openVinoDetecting = true;
+        _openVinoStatusMessage = "正在检测 OpenVINO 服务状态...";
         await InvokeAsync(StateHasChanged);
 
         try
         {
             var status = await ApiService.DetectAndStartOpenClawLocalAiAsync(provider);
-            if (provider == "ollama")
+            _openVinoStatusMessage = status.Message;
+            if (status.Devices?.Count > 0)
             {
-                _ollamaStatusMessage = status.Message;
-                if (status.IsRunning)
+                _openVinoDevices = status.Devices;
+                // 若当前设备不在探测列表中且已有值，保持用户选择；否则取第一个真实设备
+                if (string.IsNullOrWhiteSpace(_openVinoConfig.Device) ||
+                    (!_openVinoDevices.Contains(_openVinoConfig.Device) && _openVinoConfig.Device == "CPU" && !_openVinoDevices.Contains("CPU")))
                 {
-                    // 服务已运行，自动扫描模型
-                    await ScanModelsAsync("ollama");
+                    _openVinoConfig.Device = _openVinoDevices[0];
                 }
             }
-            else if (provider == "lmstudio")
+            _openVinoCommandLine = status.CommandLine;
+            if (status.IsRunning)
             {
-                _lmStudioStatusMessage = status.Message;
-                if (status.IsRunning)
-                {
-                    await ScanModelsAsync("lmstudio");
-                }
-            }
-            else if (provider == "llamacpp")
-            {
-                _llamaCppStatusMessage = status.Message;
-                if (status.IsRunning)
-                {
-                    await ScanModelsAsync("llamacpp");
-                }
-            }
-            else if (provider == "openvino")
-            {
-                _openVinoStatusMessage = status.Message;
-                if (status.Devices?.Count > 0)
-                {
-                    _openVinoDevices = status.Devices;
-                    // 若当前设备不在探测列表中且已有值，保持用户选择；否则取第一个真实设备
-                    if (string.IsNullOrWhiteSpace(_openVinoConfig.Device) ||
-                        (!_openVinoDevices.Contains(_openVinoConfig.Device) && _openVinoConfig.Device == "CPU" && !_openVinoDevices.Contains("CPU")))
-                    {
-                        _openVinoConfig.Device = _openVinoDevices[0];
-                    }
-                }
-                _openVinoCommandLine = status.CommandLine;
-                if (status.IsRunning)
-                {
-                    await ScanModelsAsync("openvino");
-                }
+                await ScanModelsAsync("openvino");
             }
         }
         catch (Exception ex)
         {
-            if (provider == "ollama")
-                _ollamaStatusMessage = $"检测失败: {ex.Message}";
-            else if (provider == "lmstudio")
-                _lmStudioStatusMessage = $"检测失败: {ex.Message}";
-            else if (provider == "llamacpp")
-                _llamaCppStatusMessage = $"检测失败: {ex.Message}";
-            else if (provider == "openvino")
-                _openVinoStatusMessage = $"检测失败: {ex.Message}";
+            _openVinoStatusMessage = $"检测失败: {ex.Message}";
         }
         finally
         {
-            if (provider == "ollama")
-                _ollamaDetecting = false;
-            else if (provider == "lmstudio")
-                _lmStudioDetecting = false;
-            else if (provider == "llamacpp")
-                _llamaCppDetecting = false;
-            else if (provider == "openvino")
-                _openVinoDetecting = false;
+            _openVinoDetecting = false;
             await InvokeAsync(StateHasChanged);
         }
     }
 
-    private async Task ScanOllamaModels() => await ScanModelsAsync("ollama");
-    private async Task ScanLmStudioModels() => await ScanModelsAsync("lmstudio");
-    private async Task ScanLlamaCppModels() => await ScanModelsAsync("llamacpp");
     private async Task ScanOpenVinoModels() => await ScanModelsAsync("openvino");
 
     private async Task ScanModelsAsync(string provider)
     {
-        if (provider == "ollama")
-        {
-            _isScanningOllama = true;
-            _ollamaScanned = false;
-        }
-        else if (provider == "lmstudio")
-        {
-            _isScanningLmStudio = true;
-            _lmStudioScanned = false;
-        }
-        else if (provider == "llamacpp")
-        {
-            _isScanningLlamaCpp = true;
-            _llamaCppScanned = false;
-        }
-        else if (provider == "openvino")
-        {
-            _isScanningOpenVino = true;
-            _openVinoScanned = false;
-        }
+        _isScanningOpenVino = true;
+        _openVinoScanned = false;
         await InvokeAsync(StateHasChanged);
 
         try
@@ -1257,33 +765,12 @@
             // 先临时保存当前配置以便扫描接口能读到
             var temp = new SaveOpenClawLocalAiConfigRequest
             {
-                Ollama = _ollamaConfig,
-                LmStudio = _lmStudioConfig,
-                LlamaCpp = _llamaCppConfig,
                 OpenVino = _openVinoConfig
             };
             await ApiService.SaveOpenClawLocalAiConfigAsync(temp);
 
-            if (provider == "ollama")
-            {
-                _ollamaModels = await ApiService.ScanOpenClawLocalModelsAsync("ollama");
-                _ollamaScanned = true;
-            }
-            else if (provider == "lmstudio")
-            {
-                _lmStudioModels = await ApiService.ScanOpenClawLocalModelsAsync("lmstudio");
-                _lmStudioScanned = true;
-            }
-            else if (provider == "llamacpp")
-            {
-                _llamaCppModels = await ApiService.ScanOpenClawLocalModelsAsync("llamacpp");
-                _llamaCppScanned = true;
-            }
-            else if (provider == "openvino")
-            {
-                _openVinoModels = await ApiService.ScanOpenClawLocalModelsAsync("openvino");
-                _openVinoScanned = true;
-            }
+            _openVinoModels = await ApiService.ScanOpenClawLocalModelsAsync("openvino");
+            _openVinoScanned = true;
         }
         catch (Exception ex)
         {
@@ -1291,14 +778,7 @@
         }
         finally
         {
-            if (provider == "ollama")
-                _isScanningOllama = false;
-            else if (provider == "lmstudio")
-                _isScanningLmStudio = false;
-            else if (provider == "llamacpp")
-                _isScanningLlamaCpp = false;
-            else if (provider == "openvino")
-                _isScanningOpenVino = false;
+            _isScanningOpenVino = false;
             await InvokeAsync(StateHasChanged);
         }
     }
@@ -1315,43 +795,8 @@
         {
             var request = new SaveOpenClawLocalAiConfigRequest
             {
-                Ollama = _ollamaConfig,
-                LmStudio = _lmStudioConfig,
-                LlamaCpp = _llamaCppConfig,
                 OpenVino = _openVinoConfig
             };
-
-            if (_ollamaConfig.Enabled)
-            {
-                _ollamaConfig.Models = _ollamaModels.ToList();
-                if (string.IsNullOrWhiteSpace(_ollamaConfig.BaseUrl))
-                    _ollamaConfig.BaseUrl = "http://localhost:11434";
-                if (_ollamaConfig.ApiType == "")
-                    _ollamaConfig.ApiType = "ollama";
-            }
-
-            if (_lmStudioConfig.Enabled)
-            {
-                _lmStudioConfig.Models = _lmStudioModels.ToList();
-                if (string.IsNullOrWhiteSpace(_lmStudioConfig.BaseUrl))
-                    _lmStudioConfig.BaseUrl = "http://localhost:1234/v1";
-                if (_lmStudioConfig.ApiType == "")
-                    _lmStudioConfig.ApiType = "openai-completions";
-            }
-
-            if (_llamaCppConfig.Enabled)
-            {
-                if (string.IsNullOrWhiteSpace(_llamaCppConfig.BaseUrl))
-                    _llamaCppConfig.BaseUrl = "http://localhost:8080";
-                if (_llamaCppConfig.ApiType == "")
-                    _llamaCppConfig.ApiType = "openai-completions";
-                if (_llamaCppConfig.Port == 0)
-                    _llamaCppConfig.Port = 8080;
-                if (_llamaCppConfig.NGpuLayers == 0)
-                    _llamaCppConfig.NGpuLayers = 999;
-                if (_llamaCppConfig.ContextSize == 0)
-                    _llamaCppConfig.ContextSize = 4096;
-            }
 
             if (_openVinoConfig.Enabled)
             {
@@ -1393,22 +838,6 @@
     private async Task RefreshAvailableModelsAsync()
     {
         _availableModels.Clear();
-        if (_ollamaConfig.Enabled)
-        {
-            foreach (var m in _ollamaModels)
-                _availableModels.Add($"ollama/{m.Id}");
-        }
-        if (_lmStudioConfig.Enabled)
-        {
-            foreach (var m in _lmStudioModels)
-                _availableModels.Add($"lmstudio/{m.Id}");
-        }
-        if (_llamaCppConfig.Enabled && !string.IsNullOrWhiteSpace(_llamaCppConfig.ModelPath))
-        {
-            var modelName = System.IO.Path.GetFileNameWithoutExtension(_llamaCppConfig.ModelPath);
-            var modelId = modelName.Replace(".", "-").ToLowerInvariant();
-            _availableModels.Add($"llamacpp/{modelId}");
-        }
         if (_openVinoConfig.Enabled && !string.IsNullOrWhiteSpace(_openVinoConfig.ModelPath))
         {
             var modelName = System.IO.Path.GetFileName(_openVinoConfig.ModelPath.TrimEnd('/', '\\'));
@@ -1484,14 +913,7 @@
 
     private async Task SyncModelsAsync(string provider)
     {
-        if (provider == "ollama")
-            _isSyncingOllama = true;
-        else if (provider == "lmstudio")
-            _isSyncingLmStudio = true;
-        else if (provider == "llamacpp")
-            _isSyncingLlamaCpp = true;
-        else if (provider == "openvino")
-            _isSyncingOpenVino = true;
+        _isSyncingOpenVino = true;
         _syncMessage = null;
         StateHasChanged();
 
@@ -1522,14 +944,7 @@
         }
         finally
         {
-            if (provider == "ollama")
-                _isSyncingOllama = false;
-            else if (provider == "lmstudio")
-                _isSyncingLmStudio = false;
-            else if (provider == "llamacpp")
-                _isSyncingLlamaCpp = false;
-            else if (provider == "openvino")
-                _isSyncingOpenVino = false;
+            _isSyncingOpenVino = false;
             StateHasChanged();
         }
     }
