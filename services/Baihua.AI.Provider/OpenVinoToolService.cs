@@ -70,7 +70,7 @@ public class OpenVinoToolService
 
     private string ModelRoot =>
         string.IsNullOrWhiteSpace(_options.ModelRoot)
-            ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".openclaw", "models")
+            ? Path.Combine(Baihua.Contracts.BaihuaPaths.Home, "models")
             : _options.ModelRoot;
 
     public string DefaultModelPath => ModelRoot;

@@ -79,8 +79,7 @@ public class OpenVinoVisionService
             return env;
         // 目录名中的 B 为大写（Qwen2.5-VL-3B-Instruct-int4-ov）
         var folderSuffix = model.Id == "7b" ? "7B" : "3B";
-        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        return Path.Combine(home, ".openclaw", "models", $"Qwen2.5-VL-{folderSuffix}-Instruct-int4-ov");
+        return Path.Combine(Baihua.Contracts.BaihuaPaths.Home, "models", $"Qwen2.5-VL-{folderSuffix}-Instruct-int4-ov");
     }
 
     /// <summary>

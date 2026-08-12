@@ -44,17 +44,24 @@ import openvino_genai as ov_genai
 # ---------------------------------------------------------------------------
 
 def detect_model_dir() -> Path:
-    """Find the shared .openclaw/models dir across Windows / WSL2 mounts."""
+    """Find the shared model dir across Windows / WSL2 mounts (BAIHUA_HOME 优先)."""
     candidates = []
-    # Windows native
-    home = os.path.expanduser("~")
-    candidates.append(Path(home) / ".openclaw" / "models")
-    # WSL2 via /mnt/c
-    candidates.append(Path("/mnt/c/Users/lumin/.openclaw/models"))
     # Explicit override via env
-    env_dir = os.environ.get("OPENCLAW_MODELS_DIR")
+    env_dir = os.environ.get("OPENCLAW_MODELS_DIR") or os.environ.get("BAIHUA_MODELS_DIR")
     if env_dir:
         candidates.insert(0, Path(env_dir))
+    # BAIHUA_HOME 统一数据根（Windows / WSL 都可用）
+    baihua_home = os.environ.get("BAIHUA_HOME")
+    if baihua_home:
+        candidates.append(Path(baihua_home) / "models")
+    # Windows native
+    home = os.path.expanduser("~")
+    candidates.append(Path(home) / ".baihua" / "models")
+    # WSL2 via /mnt/c
+    candidates.append(Path("/mnt/c/Users/lumin/.baihua/models"))
+    # 旧位置（兼容）
+    candidates.append(Path(home) / ".openclaw" / "models")
+    candidates.append(Path("/mnt/c/Users/lumin/.openclaw/models"))
 
     for p in candidates:
         if p.exists():
@@ -62,7 +69,7 @@ def detect_model_dir() -> Path:
             return p
     raise FileNotFoundError(
         f"Cannot find OpenVINO model dir. Tried: {[str(c) for c in candidates]}. "
-        "Set OPENCLAW_MODELS_DIR env var."
+        "Set OPENCLAW_MODELS_DIR or BAIHUA_HOME env var."
     )
 
 
