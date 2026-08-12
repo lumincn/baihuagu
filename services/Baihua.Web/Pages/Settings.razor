@@ -329,10 +329,10 @@
         <div class="form-group">
             <label>@L["Settings_Provider"]</label>
             <div class="btn-group btn-group-sm" role="group">
-                <button type="button" class="btn @(embeddingConfig.ProviderId == "ollama" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => embeddingConfig.ProviderId = "ollama")">@L["Settings_EmbeddingOllama"]</button>
-                <button type="button" class="btn @(embeddingConfig.ProviderId == "openai" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => embeddingConfig.ProviderId = "openai")">@L["Settings_EmbeddingOpenai"]</button>
-                <button type="button" class="btn @(embeddingConfig.ProviderId == "siliconflow" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => embeddingConfig.ProviderId = "siliconflow")">@L["Settings_EmbeddingSiliconflow"]</button>
-                <button type="button" class="btn @(embeddingConfig.ProviderId == "custom" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => embeddingConfig.ProviderId = "custom")">@L["Settings_EmbeddingCustom"]</button>
+                <button type="button" class="btn @(embeddingConfig.ProviderId == "ollama" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => SelectEmbeddingProvider("ollama"))">@L["Settings_EmbeddingOllama"]</button>
+                <button type="button" class="btn @(embeddingConfig.ProviderId == "openai" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => SelectEmbeddingProvider("openai"))">@L["Settings_EmbeddingOpenai"]</button>
+                <button type="button" class="btn @(embeddingConfig.ProviderId == "siliconflow" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => SelectEmbeddingProvider("siliconflow"))">@L["Settings_EmbeddingSiliconflow"]</button>
+                <button type="button" class="btn @(embeddingConfig.ProviderId == "custom" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => SelectEmbeddingProvider("custom"))">@L["Settings_EmbeddingCustom"]</button>
             </div>
         </div>
         <div class="form-group">
@@ -1385,6 +1385,59 @@
         {
             Logger.LogWarning(ex, "加载 Embedding 配置失败");
         }
+    }
+
+    /// <summary>
+    /// 切换 Embedding 提供商时联动预填默认 Model/BaseUrl
+    /// （若用户已手动改过表单则保留用户输入，避免覆盖）
+    /// </summary>
+    private void SelectEmbeddingProvider(string provider)
+    {
+        // 记录切换前的值，判断用户是否自定义过
+        var prev = embeddingConfig.ProviderId;
+        var userCustomized = !string.IsNullOrEmpty(embeddingConfig.Model) && !string.IsNullOrEmpty(embeddingConfig.BaseUrl)
+                             && !IsEmbeddingDefault(prev, embeddingConfig.Model, embeddingConfig.BaseUrl);
+
+        embeddingConfig.ProviderId = provider;
+
+        if (provider == "custom")
+        {
+            // custom 保留当前值，用户自行填写
+            return;
+        }
+
+        // 用户自定义过 → 仅切换高亮，不覆盖表单
+        if (userCustomized)
+            return;
+
+        // 否则预填该提供商的默认值
+        switch (provider)
+        {
+            case "ollama":
+                embeddingConfig.Model = "nomic-embed-text";
+                embeddingConfig.BaseUrl = "http://localhost:11434/v1";
+                break;
+            case "openai":
+                embeddingConfig.Model = "text-embedding-3-small";
+                embeddingConfig.BaseUrl = "https://api.openai.com/v1";
+                break;
+            case "siliconflow":
+                embeddingConfig.Model = "BAAI/bge-large-zh-v1.5";
+                embeddingConfig.BaseUrl = "https://api.siliconflow.cn/v1";
+                break;
+        }
+    }
+
+    /// <summary>判断 Model/BaseUrl 是否为某提供商的默认值（用于检测用户自定义）</summary>
+    private static bool IsEmbeddingDefault(string provider, string model, string baseUrl)
+    {
+        return provider switch
+        {
+            "ollama" => model == "nomic-embed-text" && baseUrl == "http://localhost:11434/v1",
+            "openai" => model == "text-embedding-3-small" && baseUrl == "https://api.openai.com/v1",
+            "siliconflow" => model == "BAAI/bge-large-zh-v1.5" && baseUrl == "https://api.siliconflow.cn/v1",
+            _ => false,
+        };
     }
 
     private async Task SaveEmbeddingConfig()
