@@ -4086,7 +4086,7 @@ Shift+Enter new line, Enter to send</value>
   </data>
 
   <data name="LocalModels_DownloadedOpenVino" xml:space="preserve">
-    <value>OpenVINO Models</value>
+    <value>OpenVINO Vision Models</value>
   </data>
   <data name="LocalModels_OpenVinoLlmTitle" xml:space="preserve">
     <value>OpenVINO LLM Services (host-managed)</value>
