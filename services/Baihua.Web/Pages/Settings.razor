@@ -1389,15 +1389,11 @@
 
     /// <summary>
     /// 切换 Embedding 提供商时联动预填默认 Model/BaseUrl
-    /// （若用户已手动改过表单则保留用户输入，避免覆盖）
+    /// （从 custom 切出总是预填；非 custom 之间切换时若用户已自定义则保留输入）
     /// </summary>
     private void SelectEmbeddingProvider(string provider)
     {
-        // 记录切换前的值，判断用户是否自定义过
         var prev = embeddingConfig.ProviderId;
-        var userCustomized = !string.IsNullOrEmpty(embeddingConfig.Model) && !string.IsNullOrEmpty(embeddingConfig.BaseUrl)
-                             && !IsEmbeddingDefault(prev, embeddingConfig.Model, embeddingConfig.BaseUrl);
-
         embeddingConfig.ProviderId = provider;
 
         if (provider == "custom")
@@ -1406,11 +1402,24 @@
             return;
         }
 
-        // 用户自定义过 → 仅切换高亮，不覆盖表单
+        // 从 custom 切出 → 总是预填新默认值（custom 无预设，旧值不应残留）
+        if (prev == "custom")
+        {
+            ApplyEmbeddingDefaults(provider);
+            return;
+        }
+
+        // 非 custom 之间切换：仅当用户没自定义过才预填（避免覆盖已输入内容）
+        var userCustomized = !string.IsNullOrEmpty(embeddingConfig.Model) && !string.IsNullOrEmpty(embeddingConfig.BaseUrl)
+                             && !IsEmbeddingDefault(prev, embeddingConfig.Model, embeddingConfig.BaseUrl);
         if (userCustomized)
             return;
 
-        // 否则预填该提供商的默认值
+        ApplyEmbeddingDefaults(provider);
+    }
+
+    private void ApplyEmbeddingDefaults(string provider)
+    {
         switch (provider)
         {
             case "ollama":
