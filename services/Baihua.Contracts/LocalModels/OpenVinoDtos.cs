@@ -12,6 +12,21 @@ public class OpenVinoCatalogItemDto
     public bool IsVision { get; set; }
     public string ModelScopeRepo { get; set; } = "";
     public bool Installed { get; set; }
+
+    /// <summary>已下载时的本地目录路径</summary>
+    public string? Path { get; set; }
+
+    /// <summary>已下载时的实际占用字节数</summary>
+    public long SizeBytes { get; set; }
+
+    /// <summary>是否正在运行（已下载模型才有意义）</summary>
+    public bool IsRunning { get; set; }
+
+    /// <summary>运行端口（正在运行时）</summary>
+    public int? Port { get; set; }
+
+    /// <summary>已下载时的最后修改时间</summary>
+    public DateTime? LastModified { get; set; }
 }
 
 /// <summary>OpenVINO 可下载模型目录条目（网上仓库：ModelScope / HuggingFace）</summary>

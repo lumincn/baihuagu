@@ -11,20 +11,33 @@ public partial class LocalModelDeploymentController
     public ActionResult<List<OpenVinoCatalogItemDto>> GetOpenVinoCatalog()
     {
         var installed = _openVinoRuntime.GetInstalledModels()
-            .Select(m => m.Name)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            .ToDictionary(m => m.Name, StringComparer.OrdinalIgnoreCase);
 
-        var catalog = OpenVinoCatalog.All.Select(e => new OpenVinoCatalogItemDto
+        var catalog = OpenVinoCatalog.All.Select(e =>
         {
-            Id = e.Id,
-            Name = e.Name,
-            ParameterSize = e.ParameterSize,
-            Quantization = e.Quantization,
-            SizeGiB = e.SizeGiB,
-            Description = e.Description,
-            IsVision = e.IsVision,
-            ModelScopeRepo = e.ModelScopeRepo,
-            Installed = installed.Contains(DefaultDirName(e))
+            var dto = new OpenVinoCatalogItemDto
+            {
+                Id = e.Id,
+                Name = e.Name,
+                ParameterSize = e.ParameterSize,
+                Quantization = e.Quantization,
+                SizeGiB = e.SizeGiB,
+                Description = e.Description,
+                IsVision = e.IsVision,
+                ModelScopeRepo = e.ModelScopeRepo,
+            };
+
+            // 合并已下载信息：路径/实际大小/运行状态/端口
+            if (installed.TryGetValue(DefaultDirName(e), out var m))
+            {
+                dto.Installed = true;
+                dto.Path = m.Path;
+                dto.SizeBytes = m.SizeBytes;
+                dto.IsRunning = m.IsRunning;
+                dto.Port = m.Port;
+                dto.LastModified = m.LastModified;
+            }
+            return dto;
         }).ToList();
 
         return Ok(catalog);

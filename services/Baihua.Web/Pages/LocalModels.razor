@@ -1275,8 +1275,7 @@ else
             <b>📖 区域说明：</b>
             <ul class="mb-0 mt-1" style="padding-left:1.2rem;">
                 <li><b>⬇️ 下载任务</b>：从 ModelScope/HuggingFace 拉取模型文件到本地磁盘（后台任务，可取消）。</li>
-                <li><b>📦 已下载模型</b>：磁盘上已有的 OpenVINO 模型。<b>▶ 运行</b>＝为模型启动一个独立 LLM 服务进程（端口 8000-8030，供对话/编程使用）；<b>停止</b>＝结束该进程。</li>
-                <li><b>🌐 可下载模型</b>：远端模型目录（仅列出未下载的），点击「下载」获取。</li>
+                <li><b>🧠 模型目录（已下载+可下载合并表）</b>：一张表看全部模型。未下载→「下载」；已下载→「▶ 运行」（启动独立 LLM 服务进程，端口 8000-8030，供对话/编程）／「停止」／「删除」。</li>
                 <li><b>🧿 已下载模型（通用表）</b>：跨工具汇总的已下载模型。<b>加载</b>＝把 Qwen2.5-VL 视觉模型预热进 vision_server（8801 端口）显存，首次识别图片免冷加载；<b>详情</b>＝查看配置。</li>
                 <li><b>🤖 OpenVINO LLM 服务</b>：宿主机托管的 openvino_llm_server.py 常驻实例（一模型一端口），显示 PID/健康状态，可手动启停。</li>
             </ul>
@@ -1332,75 +1331,71 @@ else
             }
         </div>
 
-        <!-- 已下载模型 -->
+        <!-- 模型目录（已下载 + 可下载合并） -->
         <div class="mt-3 mb-2">
-            <h4>📦 已下载模型 <span class="text-muted small fw-normal">（▶ 运行＝启动 LLM 服务供对话/编程，端口 8000-8030）</span></h4>
-            @if (openVinoInstalled.Count == 0)
+            <h4>🧠 OpenVINO 模型目录 <span class="text-muted small fw-normal">（▶ 运行＝启动 LLM 服务供对话/编程，端口 8000-8030；下载自 ModelScope/HF 镜像）</span></h4>
+            @if (openVinoCatalog.Count == 0)
             {
-                <div class="text-muted small">暂无已下载模型（从下方目录下载）</div>
+                <div class="text-muted small">目录为空</div>
             }
             else
             {
                 <table class="table table-sm">
-                    <thead><tr><th>模型</th><th>大小</th><th>状态</th><th class="text-end">操作</th></tr></thead>
+                    <thead><tr><th>模型</th><th>参数</th><th>大小</th><th>用途</th><th>状态</th><th class="text-end">操作</th></tr></thead>
                     <tbody>
-                        @foreach (var m in openVinoInstalled)
+                        @foreach (var c in openVinoCatalog)
                         {
-                            <tr>
-                                <td>@m.Name</td>
-                                <td class="small text-muted">@FormatSize(m.SizeBytes)</td>
-                                <td>
-                                    @if (m.IsRunning)
+                            <tr class="@(c.Installed ? "table-active" : "")">
+                                <td>@c.Name @(c.IsVision ? "👁" : "")</td>
+                                <td>@c.ParameterSize @c.Quantization</td>
+                                <td class="small text-muted">
+                                    @if (c.Installed && c.SizeBytes > 0)
                                     {
-                                        <span class="badge bg-success">运行中 :@m.Port</span>
+                                        @FormatSize(c.SizeBytes)
                                     }
                                     else
                                     {
-                                        <span class="badge bg-secondary">未运行</span>
+                                        @(c.SizeGiB.ToString("F1") + "GB")
+                                    }
+                                </td>
+                                <td class="small text-muted">@c.Description</td>
+                                <td>
+                                    @if (c.Installed && c.IsRunning)
+                                    {
+                                        <span class="badge bg-success">运行中 :@c.Port</span>
+                                    }
+                                    else if (c.Installed)
+                                    {
+                                        <span class="badge bg-secondary">已下载</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-muted">未下载</span>
                                     }
                                 </td>
                                 <td class="text-end">
-                                    @if (m.IsRunning)
+                                    @if (c.Installed)
                                     {
-                                        <button class="btn btn-sm btn-outline-danger" @onclick='() => StopModelAsync(m.Port!.Value)'>停止</button>
+                                        @if (c.IsRunning)
+                                        {
+                                            <button class="btn btn-sm btn-outline-danger" @onclick='() => StopModelAsync(c.Port!.Value)'>停止</button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-sm btn-primary" @onclick='() => RunModelAsync(c.Path!)'>运行</button>
+                                        }
+                                        <button class="btn btn-sm btn-outline-secondary" @onclick='() => AskDeleteOpenVino(c)'>删除</button>
                                     }
                                     else
                                     {
-                                        <button class="btn btn-sm btn-primary" @onclick='() => RunModelAsync(m.Path)'>运行</button>
+                                        <button class="btn btn-sm btn-primary" @onclick='() => StartDownloadAsync(c.Id)'>下载</button>
                                     }
-                                    <button class="btn btn-sm btn-outline-secondary" @onclick='() => AskDeleteOpenVino(m)'>删除</button>
                                 </td>
                             </tr>
                         }
                     </tbody>
                 </table>
             }
-        </div>
-
-        <!-- 可下载目录 -->
-        <div class="mt-3">
-            <h4>🌐 可下载模型 <span class="text-muted small fw-normal">（ModelScope 国内源 / HuggingFace 镜像，已下载的已排除）</span></h4>
-            @if (openVinoCatalog.All(c => c.Installed))
-            {
-                <div class="text-muted small">所有目录中的模型均已下载</div>
-            }
-            <table class="table table-sm">
-                <thead><tr><th>模型</th><th>参数</th><th>大小</th><th>用途</th><th class="text-end"></th></tr></thead>
-                <tbody>
-                    @foreach (var c in openVinoCatalog.Where(x => !x.Installed))
-                    {
-                        <tr>
-                            <td>@c.Name @(c.IsVision ? "👁" : "")</td>
-                            <td>@c.ParameterSize @c.Quantization</td>
-                            <td>@c.SizeGiB.ToString("F1")GB</td>
-                            <td class="small text-muted">@c.Description</td>
-                            <td class="text-end">
-                                <button class="btn btn-sm btn-primary" @onclick='() => StartDownloadAsync(c.Id)'>下载</button>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
         </div>
         @if (!string.IsNullOrEmpty(openVinoMessage))
         {
@@ -1603,7 +1598,6 @@ else
     // OpenVINO 模型区
     private bool _showOpenVino = true;
     private List<OpenVinoCatalogItemDto> openVinoCatalog = new();
-    private List<OpenVinoInstalledModelDto> openVinoInstalled = new();
     private List<OpenVinoDownloadTaskDto> openVinoDownloads = new();
     private string? openVinoMessage;
     private System.Timers.Timer? _downloadTimer;
@@ -1742,11 +1736,9 @@ else
         try
         {
             var catTask = ApiService.GetOpenVinoCatalogAsync();
-            var instTask = ApiService.GetOpenVinoInstalledAsync();
             var dlTask = ApiService.GetOpenVinoDownloadsAsync();
-            await Task.WhenAll(catTask, instTask, dlTask);
+            await Task.WhenAll(catTask, dlTask);
             openVinoCatalog = catTask.Result;
-            openVinoInstalled = instTask.Result;
             openVinoDownloads = dlTask.Result;
 
             // 有活跃下载任务则保持定时刷新
@@ -1861,9 +1853,9 @@ else
     }
 
     // OpenVINO 已下载模型删除确认（与概览 tab 一致的确认流程）
-    private OpenVinoInstalledModelDto? openVinoToDelete;
+    private OpenVinoCatalogItemDto? openVinoToDelete;
 
-    private void AskDeleteOpenVino(OpenVinoInstalledModelDto m) => openVinoToDelete = m;
+    private void AskDeleteOpenVino(OpenVinoCatalogItemDto m) => openVinoToDelete = m;
 
     private void CancelDeleteOpenVino() => openVinoToDelete = null;
 
@@ -1872,6 +1864,7 @@ else
         if (openVinoToDelete == null) return;
         var path = openVinoToDelete.Path;
         openVinoToDelete = null;
+        if (string.IsNullOrWhiteSpace(path)) return;
         await DeleteModelAsync(path);
     }
 
