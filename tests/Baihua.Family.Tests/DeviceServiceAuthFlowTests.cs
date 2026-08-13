@@ -140,4 +140,63 @@ public class DeviceServiceAuthFlowTests : IDisposable
         Assert.Single(devices); // 不新增重复记录
         Assert.Equal("Authorized", devices[0].Status);
     }
+
+    [Fact]
+    public void AuthorizeDevice_sameName_differentDeviceId_is_rejected()
+    {
+        // 名称碰撞防护：攻击者冒用他人设备名、不同 DeviceId 申请授权 → 拒绝且不泄露原令牌
+        var service = CreateService();
+        var req1 = service.SubmitLanDiscoveryRequest("同名设备", deviceId: "android-original");
+        Assert.True(service.AuthorizeDevice(req1.RequestId).success);
+
+        var req2 = service.SubmitLanDiscoveryRequest("同名设备", deviceId: "android-attacker");
+        var result = service.AuthorizeDevice(req2.RequestId);
+        Assert.False(result.success);
+        Assert.Null(result.accessToken);
+        Assert.NotNull(result.error);
+        Assert.Contains("同名", result.error);
+
+        using var ctx = _factory.Object.CreateDbContext();
+        var devices = ctx.AuthorizedDevices
+            .Where(d => d.DeviceName == "同名设备" && d.Status == "Authorized").ToList();
+        Assert.Single(devices);
+        Assert.Equal("android-original", devices[0].DeviceId);
+    }
+
+    [Fact]
+    public void AuthorizeDevice_sameName_sameDeviceId_returns_existing_token()
+    {
+        // 同一物理设备重新配对（同 DeviceId）→ 返回现有令牌，不重复建记录
+        var service = CreateService();
+        var req1 = service.SubmitLanDiscoveryRequest("重配设备", deviceId: "android-repair");
+        var first = service.AuthorizeDevice(req1.RequestId);
+        Assert.True(first.success);
+
+        var req2 = service.SubmitLanDiscoveryRequest("重配设备", deviceId: "android-repair");
+        var second = service.AuthorizeDevice(req2.RequestId);
+        Assert.True(second.success);
+        Assert.Equal(first.accessToken, second.accessToken);
+
+        using var ctx = _factory.Object.CreateDbContext();
+        Assert.Single(ctx.AuthorizedDevices.Where(d => d.DeviceName == "重配设备" && d.Status == "Authorized").ToList());
+    }
+
+    [Fact]
+    public void AutoAuthorize_sameName_differentDeviceId_is_rejected()
+    {
+        var service = CreateService();
+        var (ok1, token1, _) = service.AutoAuthorizeDevice("自动设备", deviceId: "android-a1");
+        Assert.True(ok1);
+
+        // 同名不同 DeviceId：不自动授权（回退人工审批）
+        var (ok2, token2, err2) = service.AutoAuthorizeDevice("自动设备", deviceId: "android-a2");
+        Assert.False(ok2);
+        Assert.Null(token2);
+        Assert.NotNull(err2);
+
+        // 同 DeviceId 重新自动授权 → 返回原令牌
+        var (ok3, token3, _) = service.AutoAuthorizeDevice("自动设备", deviceId: "android-a1");
+        Assert.True(ok3);
+        Assert.Equal(token1, token3);
+    }
 }

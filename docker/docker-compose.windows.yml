@@ -27,10 +27,12 @@ services:
       - BAIHUA_VAULT_URL=http://vault:8790
       - BAIHUA_AI_URL=http://host.docker.internal:8791
       - BAIHUA_WEBUI_URL=http://webui:5177
+      # 管理 API 访问控制：放行 Docker bridge 网段（webui/nginx 容器经服务名调用管理 API）
+      - BAIHUA_ADMIN_ALLOWED_NETS=172.16.0.0/12
       # 知识库根指向容器内挂载点
       - BAIHUA_VAULT_ROOT=/vaults
-      # Windows Docker 下 OpenObserve 通过 host-gateway 访问
-      - OpenObserve__WebUrl=http://host.docker.internal:5082/
+      # Windows 桥接网络下 OpenObserve 通过 compose 服务名直连（宿主机端口已仅绑 127.0.0.1，host.docker.internal 不可达）
+      - OpenObserve__WebUrl=http://openobserve:5080/
     depends_on:
       vault:
         condition: service_healthy
@@ -50,8 +52,10 @@ services:
       - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/config/vault:/app/config:ro
       - ${VAULTS_DIR:-C:/Users/lumin/Vaults}:/vaults
     environment:
-      - OpenObserve__WebUrl=http://host.docker.internal:5082/
+      - OpenObserve__WebUrl=http://openobserve:5080/
       - BAIHUA_VAULT_ROOT=/vaults
+      # 管理 API 访问控制：放行 Docker bridge 网段（family/webui 容器经服务名调用管理 API）
+      - BAIHUA_ADMIN_ALLOWED_NETS=172.16.0.0/12
 
   ai:
     network_mode: ""
@@ -68,7 +72,7 @@ services:
       - ${BAIHUA_HOME:-C:/Users/lumin/AppData/Local/baihua}/config/ai:/app/config:ro
       - ${VAULTS_DIR:-C:/Users/lumin/Vaults}:/vaults
     environment:
-      - OpenObserve__WebUrl=http://host.docker.internal:5082/
+      - OpenObserve__WebUrl=http://openobserve:5080/
       - BAIHUA_VAULT_ROOT=/vaults
 
   webui:
@@ -90,7 +94,7 @@ services:
       - FamilyApi__BaseUrl=http://family:8788/
       - AiApi__BaseUrl=http://host.docker.internal:8791/
       - VaultApi__BaseUrl=http://vault:8790/
-      - OpenObserve__WebUrl=http://host.docker.internal:5082/
+      - OpenObserve__WebUrl=http://openobserve:5080/
     depends_on:
       family:
         condition: service_healthy

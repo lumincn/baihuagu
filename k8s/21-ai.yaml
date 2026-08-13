@@ -35,6 +35,9 @@ spec:
           env:
             - name: ASPNETCORE_URLS
               value: "http://0.0.0.0:8791"
+            # 管理 API 访问控制：放行 Pod 网段（WebUI 等 Pod 通过 Service 调用管理 API）
+            - name: BAIHUA_ADMIN_ALLOWED_NETS
+              value: "10.0.0.0/8"
           volumeMounts:
             - name: data
               mountPath: /app/data

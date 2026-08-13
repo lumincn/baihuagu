@@ -1,4 +1,4 @@
-﻿#requires -Version 5.1
+#requires -Version 5.1
 <#
   baihua - Windows + Docker compose + native AI CLI
   Cell of the matrix: OS=windows, deployment=docker (ai runs native for GPU)
@@ -48,9 +48,25 @@ $DataHome = if ($env:BAIHUA_HOME) { $env:BAIHUA_HOME } else { Join-Path $HOME '.
 # compose 服务列表（不含 ai——ai 是 native 的）
 $Services = @('family', 'vault', 'webui', 'nginx', 'openobserve')
 
+function Ensure-OpenObservePassword {
+    # compose 要求 OPENOBSERVE_PASSWORD（OpenObserve 根密码，不再使用硬编码默认值）。
+    # 缺失时生成随机密码并持久化到 docker/.env（已 gitignore），保证重启后一致。
+    if ($env:OPENOBSERVE_PASSWORD) { return }
+    $envFile = Join-Path $DockerDir '.env'
+    if (Test-Path $envFile) {
+        $line = Get-Content $envFile | Where-Object { $_ -match '^OPENOBSERVE_PASSWORD=' } | Select-Object -First 1
+        if ($line) { $env:OPENOBSERVE_PASSWORD = ($line -split '=', 2)[1].Trim(); return }
+    }
+    $pass = -join ((48..57) + (97..122) + (65..90) | Get-Random -Count 24 | ForEach-Object { [char]$_ })
+    Add-Content -Path $envFile -Value "OPENOBSERVE_PASSWORD=$pass"
+    $env:OPENOBSERVE_PASSWORD = $pass
+    Write-Host "[deps] OPENOBSERVE_PASSWORD 已生成并写入 docker/.env"
+}
+
 function Invoke-Compose {
     param([string[]]$ComposeArgs)
     Ensure-Docker
+    Ensure-OpenObservePassword
     Push-Location $DockerDir
     try {
         $prev = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
@@ -114,6 +130,8 @@ function Start-Native-Ai {
         BAIHUA_SKIP_MUTEX = 'true'
         ASPNETCORE_URLS = 'http://127.0.0.1:8791'
         OpenObserve__Enabled = 'false'
+        # 管理 API 访问控制：放行 Docker bridge / host-gateway 网段（webui 容器经 host.docker.internal 调用）
+        BAIHUA_ADMIN_ALLOWED_NETS = '172.16.0.0/12,192.168.0.0/16'
     }
     foreach ($k in $envBlock.Keys) { Set-Item -Path ('Env:' + $k) -Value $envBlock[$k] }
     New-Item -ItemType Directory -Force -Path (Split-Path $AiPidFile), (Split-Path $AiLogFile) | Out-Null

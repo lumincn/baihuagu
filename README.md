@@ -41,7 +41,11 @@ cd services/WebUI.Family && dotnet run
 
 ## 访问授权
 
-无需密码，无需 IP 白名单。使用本机 CLI Token 授权：
+- **WebUI（5177）**：CLI Token Cookie 登录，`./bh dashboard` 一键授权（Token 5 分钟有效）。
+- **管理 API（8788/8791/8790）**：默认仅允许本机（loopback）访问；局域网设备只能访问移动端公开端点（`/mg/*`、配对/同步等），并需 HMAC 签名设备鉴权。
+- **容器/反向代理部署**：非 loopback 来源（如 WebUI 容器）访问管理 API，需用环境变量显式放行：
+  - `BAIHUA_ADMIN_ALLOWED_NETS`：允许访问管理 API 的网段（逗号分隔 CIDR，如 `172.16.0.0/12`）
+  - `BAIHUA_TRUSTED_PROXY_NETS`：受信任反向代理网段（其 `X-Forwarded-For` 头才会被采信）
 
 ```bash
 ./bh dashboard   # 本机一键访问

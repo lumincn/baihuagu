@@ -79,6 +79,8 @@ docker/data/
 # Service runtime data (SQLite databases, local dev state)
 /data/
 services/**/data/
+# 例外：Baihua.Core 的 Data 源码目录（勿与运行时 data 目录混淆；Windows 下大小写不敏感）
+!services/Baihua.Core/Data/
 
 # Test files
 check_task.py

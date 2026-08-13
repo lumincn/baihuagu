@@ -308,9 +308,9 @@ else
         try
         {
             var markdown = File.ReadAllText(file.FullPath);
-            _viewContent = Markdig.Markdown.ToHtml(markdown);
+            _viewContent = MobileApp.Maui.Utils.SafeMarkdown.ToHtml(markdown);
         }
-        catch { _viewContent = "<p>[无法预览]</p>"; }
+        catch { _viewContent = "[无法预览]"; }
     }
 
     private void ConfirmDeleteVault(VaultEntry vault)

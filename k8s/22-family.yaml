@@ -38,6 +38,9 @@ spec:
               value: "http://0.0.0.0:8788"
             - name: BAIHUA_SKIP_MUTEX
               value: "true"
+            # 管理 API 访问控制：放行 Pod 网段（WebUI 等 Pod 通过 Service 调用管理 API）
+            - name: BAIHUA_ADMIN_ALLOWED_NETS
+              value: "10.0.0.0/8"
             # OpenVINO 远程服务 URL（K8s Service DNS）
             # 设为非 localhost 时，Family 跳过本地 Python 进程启动，直接调用远程 API
             - name: OPENVINO_LLM_URL

@@ -56,7 +56,7 @@ C:\Users\lumin\DevecostudioProjects\
 > - **Baihua.AI** (8791) — AI 模型、聊天、配置管理
 > - **Baihua.Vault** (8790) — 知识库、同步、搜索、索引
 >
-> 3 个服务共用同一个 SQLite `baihua.db`（通过 `Baihua.Core` 共享数据层）。
+> 3 个服务各自使用独立的 SQLite 数据库文件（family.db / vault.db / ai.db，通过 `Baihua.Data`/`Baihua.Core` 共享数据层与实体）。
 
 ## 助手 / 自动化约定
 
@@ -95,7 +95,7 @@ C:\Users\lumin\DevecostudioProjects\
 ./bh dashboard
 ```
 
-无需密码，无需 IP 白名单。授权基于操作系统用户权限（只有能运行 `bh` 命令的本机用户才能访问）。
+WebUI（5177）用 CLI Token Cookie 登录；管理 API（8788/8791/8790）默认仅允许 loopback 访问，容器/反向代理部署用 `BAIHUA_ADMIN_ALLOWED_NETS`（CIDR 列表）显式放行网段，`BAIHUA_TRUSTED_PROXY_NETS` 声明受信任代理网段；移动端走 `/mg/*` 公开端点 + HMAC 签名设备鉴权。
 
 ## 常用命令
 

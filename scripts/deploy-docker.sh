@@ -155,6 +155,11 @@ ssh ${SSH_OPTS} "${SERVER}" bash -s "${REMOTE_SRC_DIR}" << 'REMOTE_SCRIPT'
 
     # 启动容器
     cd "${SRC_DIR}/family/docker"
+    # 确保 OPENOBSERVE_PASSWORD 已配置（compose 必填）；缺失则生成并持久化到 .env
+    if ! grep -q '^OPENOBSERVE_PASSWORD=' .env 2>/dev/null; then
+        echo "OPENOBSERVE_PASSWORD=$(openssl rand -hex 16)" >> .env
+        echo "      已生成 OPENOBSERVE_PASSWORD 并写入 docker/.env"
+    fi
     docker compose down 2>/dev/null || true
     docker compose --profile docker-ai up -d --remove-orphans
 REMOTE_SCRIPT

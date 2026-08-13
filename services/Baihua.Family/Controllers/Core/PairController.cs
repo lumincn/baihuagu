@@ -93,6 +93,7 @@ namespace Baihua.Family.Controllers
         /// 移动端扫码配对注册设备
         /// </summary>
         [HttpPost("/mg/register-device")]
+        [Microsoft.AspNetCore.RateLimiting.EnableRateLimiting("pair")]
         public ActionResult RegisterDevice([FromBody] RegisterDeviceRequest request)
         {
             try

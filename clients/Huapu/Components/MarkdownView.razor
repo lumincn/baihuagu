@@ -1,4 +1,4 @@
-@using Markdig
+@using MobileApp.Maui.Utils
 
 <div class="markdown-content">
     @if (string.IsNullOrEmpty(_renderedHtml))
@@ -19,17 +19,6 @@
 
     protected override void OnParametersSet()
     {
-        if (!string.IsNullOrEmpty(Content))
-        {
-            var pipeline = new MarkdownPipelineBuilder()
-                .UseAdvancedExtensions()
-                .DisableHtml()
-                .Build();
-            _renderedHtml = Markdown.ToHtml(Content, pipeline);
-        }
-        else
-        {
-            _renderedHtml = "";
-        }
+        _renderedHtml = SafeMarkdown.ToHtml(Content);
     }
 }

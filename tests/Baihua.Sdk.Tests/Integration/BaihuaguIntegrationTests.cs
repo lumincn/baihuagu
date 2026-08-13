@@ -46,10 +46,10 @@ public class BaihuaguIntegrationTests
         return (client, signer);
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task HttpTransport_ReachServer()
     {
-        if (!HasServer) { _output.WriteLine("SKIP: BAIHUAGU_TEST_URL not set"); return; }
+        Skip.If(!HasServer, "BAIHUAGU_TEST_URL not set");
 
         var (client, signer) = CreateClient();
         var transport = new HttpTransport(client, signer, TestUrl!);
@@ -60,11 +60,11 @@ public class BaihuaguIntegrationTests
         Assert.True(resp.StatusCode > 0, "Should get a response");
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task FetchVaultList_ReturnsVaults()
     {
-        if (!HasServer) { _output.WriteLine("SKIP: BAIHUAGU_TEST_URL not set"); return; }
-        if (!HasSecret) { _output.WriteLine("SKIP: BAIHUAGU_TEST_SECRET not set (needed for signing)"); return; }
+        Skip.If(!HasServer, "BAIHUAGU_TEST_URL not set");
+        Skip.If(!HasSecret, "BAIHUAGU_TEST_SECRET not set (needed for signing)");
 
         var (client, signer) = CreateClient();
         var sync = new SyncServiceImpl(client, signer);
@@ -78,12 +78,12 @@ public class BaihuaguIntegrationTests
         Assert.NotEmpty(vaults);
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task FetchManifest_Succeeds()
     {
-        if (!HasServer) { _output.WriteLine("SKIP: BAIHUAGU_TEST_URL not set"); return; }
-        if (!HasSecret) { _output.WriteLine("SKIP: BAIHUAGU_TEST_SECRET not set"); return; }
-        if (string.IsNullOrEmpty(TestVaultId)) { _output.WriteLine("SKIP: BAIHUAGU_TEST_VAULT_ID not set"); return; }
+        Skip.If(!HasServer, "BAIHUAGU_TEST_URL not set");
+        Skip.If(!HasSecret, "BAIHUAGU_TEST_SECRET not set");
+        Skip.If(string.IsNullOrEmpty(TestVaultId), "BAIHUAGU_TEST_VAULT_ID not set");
 
         var (client, signer) = CreateClient();
         var sync = new SyncServiceImpl(client, signer);
@@ -106,10 +106,10 @@ public class BaihuaguIntegrationTests
         Assert.Equal("http://192.168.1.1:8788", addrs.HttpUrl);
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task DeviceRegistration_ToRealServer()
     {
-        if (!HasServer) { _output.WriteLine("SKIP: BAIHUAGU_TEST_URL not set"); return; }
+        Skip.If(!HasServer, "BAIHUAGU_TEST_URL not set");
 
         var (client, signer) = CreateClient();
         var pairing = new PairingServiceImpl(client, signer, "sdk_test_device", "SDK Test");
@@ -121,10 +121,10 @@ public class BaihuaguIntegrationTests
         Assert.NotNull(result);
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task FullFlow_ParseQr_Register_FetchVaults_FetchManifest()
     {
-        if (!HasServer) { _output.WriteLine("SKIP: BAIHUAGU_TEST_URL not set"); return; }
+        Skip.If(!HasServer, "BAIHUAGU_TEST_URL not set");
 
         var (client, signer) = CreateClient();
         var qrJson = $"{{\"serverId\":\"demo\",\"baseUrl\":\"{TestUrl}\",\"hostName\":\"Demo\"}}";

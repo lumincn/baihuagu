@@ -35,7 +35,7 @@ public class AIDbContext : DbContext
         if (!optionsBuilder.IsConfigured)
         {
             var dbPath = GetDefaultDbPath();
-            optionsBuilder.UseSqlite($"Data Source={dbPath};Foreign Keys=True;");
+            optionsBuilder.UseSqlite($"Data Source={dbPath};Foreign Keys=True;Default Timeout=5;");
         }
     }
 

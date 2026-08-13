@@ -12,7 +12,15 @@ if (string.IsNullOrEmpty(ooPass)) { Console.WriteLine("ERROR: OPENOBSERVE_ROOT_P
 var remoteCred = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{ooEmail}:{ooPass}"));
 
 var localEmail = Environment.GetEnvironmentVariable("LOCAL_OPENOBSERVE_EMAIL") ?? "root@localhost.com";
-var localPass = Environment.GetEnvironmentVariable("LOCAL_OPENOBSERVE_PASSWORD") ?? "Complexpass#123";
+// 本地 OpenObserve 密码不再提供硬编码回退：优先 LOCAL_OPENOBSERVE_PASSWORD，否则用 compose 的 OPENOBSERVE_PASSWORD（同一实例），仍缺失则报错退出
+var localPass = Environment.GetEnvironmentVariable("LOCAL_OPENOBSERVE_PASSWORD")
+                ?? Environment.GetEnvironmentVariable("OPENOBSERVE_PASSWORD") ?? "";
+Console.WriteLine($"Local Email: {localEmail}, Pass: {(localPass.Length > 4 ? localPass[..4] + "..." : "(empty)")}");
+if (string.IsNullOrEmpty(localPass))
+{
+    Console.WriteLine("ERROR: LOCAL_OPENOBSERVE_PASSWORD not set（本地 OpenObserve 密码，即 compose 的 OPENOBSERVE_PASSWORD）");
+    return;
+}
 var localCred = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{localEmail}:{localPass}"));
 
 var ids = new[] { "7459266129253367808", "7459266168595939328", "7459266196630667264", "7459666781049716736" };

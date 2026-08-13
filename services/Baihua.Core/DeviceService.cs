@@ -273,29 +273,36 @@ namespace Baihua.Core;
                 _pendingRequests.TryRemove(key, out _);
             }
 
-            // 去重：同名设备已授权则直接返回现有令牌
+            // 去重：同名设备已授权时，仅当请求携带的 DeviceId 与已授权记录一致
+            //（同一台物理设备重新配对）才返回现有令牌；DeviceId 不一致或缺失 → 拒绝，
+            // 防止攻击者冒用他人设备名领取既有访问令牌（设备名碰撞攻击）
             var existingAuthorized = dbContext.AuthorizedDevices
                 .FirstOrDefault(d => d.DeviceName == request.DeviceName && d.Status == "Authorized");
             if (existingAuthorized != null)
             {
-                // 如果配对请求携带了真实 DeviceId，且与现有记录不一致，更新为最新标识
-                if (!string.IsNullOrEmpty(request.DeviceId) && existingAuthorized.DeviceId != request.DeviceId)
+                var sameDevice = !string.IsNullOrEmpty(request.DeviceId)
+                    && string.Equals(existingAuthorized.DeviceId, request.DeviceId, StringComparison.OrdinalIgnoreCase);
+                if (sameDevice)
                 {
-                    _logger.LogInformation("设备 {DeviceName} 已授权，更新 DeviceId: {OldDeviceId} -> {NewDeviceId}",
-                        request.DeviceName, existingAuthorized.DeviceId, request.DeviceId);
-                    existingAuthorized.DeviceId = request.DeviceId;
+                    // 同一设备重新配对：刷新 IP/系统名等元数据，返回现有令牌
                     existingAuthorized.IpAddress = request.IpAddress ?? existingAuthorized.IpAddress;
-                    existingAuthorized.UpdatedAt = DateTime.UtcNow;
                     if (!string.IsNullOrEmpty(request.SystemDeviceName))
                     {
                         existingAuthorized.SystemDeviceName = request.SystemDeviceName;
                     }
+                    existingAuthorized.UpdatedAt = DateTime.UtcNow;
                     dbContext.SaveChanges();
+
+                    _requestResults[requestId] = "authorized";
+                    _ = NotifyDeviceStatusChangedAsync("authorized", request.DeviceName, requestId, deviceId: request.DeviceId);
+                    return (true, existingAuthorized.AccessToken, null);
                 }
 
-                _requestResults[requestId] = "authorized";
-                _ = NotifyDeviceStatusChangedAsync("authorized", request.DeviceName, requestId, deviceId: request.DeviceId);
-                return (true, existingAuthorized.AccessToken, null);
+                _logger.LogWarning("[AUTH-DIAG] Device name collision rejected: {DeviceName}, request DeviceId={RequestDeviceId}, existing DeviceId={ExistingDeviceId}",
+                    request.DeviceName, request.DeviceId, existingAuthorized.DeviceId);
+                _requestResults[requestId] = "rejected";
+                _ = NotifyDeviceStatusChangedAsync("rejected", request.DeviceName, requestId, deviceId: request.DeviceId);
+                return (false, null, "同名设备已授权：请先在设备管理中撤销原设备，或更换设备名后重试");
             }
 
             // DeviceId 有 UNIQUE 约束：如果同 DeviceId 的记录已存在（如被撤销后重新授权），
@@ -501,16 +508,21 @@ namespace Baihua.Core;
             var existing = deviceId != null
                 ? dbContext.AuthorizedDevices.FirstOrDefault(d => d.DeviceId == deviceId && d.Status == "Authorized")
                 : null;
-            if (existing == null)
-            {
-                existing = dbContext.AuthorizedDevices
-                    .FirstOrDefault(d => d.DeviceName == deviceName && d.Status == "Authorized");
-            }
             if (existing != null)
             {
                 _logger.LogInformation("[AUTH-DIAG] Device already authorized: {DeviceName}, DeviceId={DeviceId}, AccessToken={AccessToken}",
                     deviceName, existing.DeviceId, existing.AccessToken);
                 return (true, existing.AccessToken, null);
+            }
+
+            // 名称碰撞防护：同名已授权但 DeviceId 不一致 → 不自动授权（回退人工审批流程）
+            var sameNameDevice = dbContext.AuthorizedDevices
+                .FirstOrDefault(d => d.DeviceName == deviceName && d.Status == "Authorized");
+            if (sameNameDevice != null)
+            {
+                _logger.LogWarning("[AUTH-DIAG] Auto-authorize rejected on device name collision: {DeviceName}, request DeviceId={DeviceId}, existing DeviceId={ExistingDeviceId}",
+                    deviceName, deviceId, sameNameDevice.DeviceId);
+                return (false, null, "同名设备已授权，等待人工处理");
             }
 
             var resolvedDeviceId = deviceId ?? Guid.NewGuid().ToString("N");

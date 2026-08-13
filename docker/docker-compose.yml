@@ -30,6 +30,7 @@ services:
       # OpenObserve 通过宿主机 localhost 访问
       - OpenObserve__WebUrl=http://127.0.0.1:5082/
       - OpenObserve__Enabled=true
+      - OpenObserve__Password=${OPENOBSERVE_PASSWORD:?请设置 OPENOBSERVE_PASSWORD 环境变量}
       # 知识库根路径（容器内挂载点）
       - BAIHUA_VAULT_ROOT=/vaults
       # 固定加密密钥（可选）
@@ -78,6 +79,7 @@ services:
       - VaultApi__BaseUrl=http://127.0.0.1:8790/
       - OpenObserve__WebUrl=http://127.0.0.1:5082/
       - OpenObserve__Enabled=true
+      - OpenObserve__Password=${OPENOBSERVE_PASSWORD:?请设置 OPENOBSERVE_PASSWORD 环境变量}
       - ADMIN_PASSWORD_HASH=${ADMIN_PASSWORD_HASH:-}
       - ADMIN_IP_WHITELIST=${ADMIN_IP_WHITELIST:-}
     depends_on:
@@ -147,6 +149,7 @@ services:
       - ASPNETCORE_URLS=http://0.0.0.0:8790
       - OpenObserve__WebUrl=http://127.0.0.1:5082/
       - OpenObserve__Enabled=true
+      - OpenObserve__Password=${OPENOBSERVE_PASSWORD:?请设置 OPENOBSERVE_PASSWORD 环境变量}
       - BAIHUA_VAULT_ROOT=/vaults
       - BAIHUA_ENCRYPTION_KEY=${BAIHUA_ENCRYPTION_KEY:-}
       - MobileAuth__SharedSecret=${MOBILE_AUTH_SECRET:-}
@@ -181,6 +184,7 @@ services:
       - ASPNETCORE_URLS=http://0.0.0.0:8791
       - OpenObserve__WebUrl=http://127.0.0.1:5082/
       - OpenObserve__Enabled=true
+      - OpenObserve__Password=${OPENOBSERVE_PASSWORD:?请设置 OPENOBSERVE_PASSWORD 环境变量}
       - BAIHUA_VAULT_ROOT=/vaults
       - BAIHUA_ENCRYPTION_KEY=${BAIHUA_ENCRYPTION_KEY:-}
     healthcheck:
@@ -197,12 +201,15 @@ services:
     container_name: bh-openobserve
     restart: unless-stopped
     ports:
-      - "5082:5080"
-      - "5083:5081"
+      # 仅绑定宿主机回环地址，避免 OpenObserve WebUI/API 暴露到局域网
+      # （服务端 native 运行或 host 网络容器均通过 127.0.0.1:5082 访问，见各服务 OpenObserve__WebUrl）
+      - "127.0.0.1:5082:5080"
+      - "127.0.0.1:5083:5081"
     volumes:
       - /opt/baihua/data/openobserve:/data
     environment:
       ZO_ROOT_USER_EMAIL: root@localhost.com
-      ZO_ROOT_USER_PASSWORD: Complexpass#123
+      # 必填变量：缺失时 docker compose 直接报错（不再回退到硬编码默认密码）
+      ZO_ROOT_USER_PASSWORD: ${OPENOBSERVE_PASSWORD:?请设置 OPENOBSERVE_PASSWORD 环境变量}
       ZO_DATA_DIR: /data
 

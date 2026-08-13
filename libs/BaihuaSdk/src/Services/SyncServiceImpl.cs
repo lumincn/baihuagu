@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Net;
 using MobileContract.Services;
 using MobileContract.VaultSync;
 using BaihuaSdk.Signing;
@@ -62,7 +63,7 @@ public class SyncServiceImpl : ISyncService
         var resp = await transport.GetAsync("/mg/file",
             new Dictionary<string, string> { ["path"] = relPath }, ct);
         if (!resp.IsSuccess)
-            throw new HttpRequestException(resp.ErrorMessage ?? "下载文件失败");
+            throw new HttpRequestException(resp.ErrorMessage ?? "下载文件失败", null, ToStatusCode(resp));
         return resp.Data!;
     }
 
@@ -74,7 +75,7 @@ public class SyncServiceImpl : ISyncService
         var resp = await transport.GetBytesAsync("/mg/file",
             new Dictionary<string, string> { ["path"] = relPath }, ct);
         if (!resp.IsSuccess)
-            throw new HttpRequestException(resp.ErrorMessage ?? "下载文件失败");
+            throw new HttpRequestException(resp.ErrorMessage ?? "下载文件失败", null, ToStatusCode(resp));
         return resp.Data!;
     }
 
@@ -114,7 +115,7 @@ public class SyncServiceImpl : ISyncService
         var manifest = await FetchManifestAsync(serverUrl, vaultId, deviceId, ct: ct);
         var files = manifest.Files ?? Array.Empty<ManifestFile>();
 
-        int downloaded = 0, deleted = 0, failed = 0;
+        int downloaded = 0, skipped = 0, deleted = 0, failed = 0;
         var errors = new List<string>();
 
         foreach (var file in files)
@@ -143,23 +144,34 @@ public class SyncServiceImpl : ISyncService
             try
             {
                 var validPath = AssertValidRelPath(file.RelPath);
+
+                // 服务端 manifest 的 mtime 为 unix 秒（VaultController.Sync 用 ToUnixTimeSeconds），
+                // 而 IVaultStorageAdapter 按 unix 毫秒读写时间戳，统一换算为毫秒再比对/写入。
+                var serverMtimeMs = (file.Mtime ?? 0) * 1000L;
+                if (serverMtimeMs > 0 && await storage.GetFileMtimeAsync(validPath) == serverMtimeMs)
+                {
+                    // 本地文件时间戳与服务端一致，视为未变更，跳过下载
+                    skipped++;
+                    continue;
+                }
+
                 await storage.EnsureDirForFileAsync(validPath);
 
                 if (IsTextFile(validPath))
                 {
                     var content = await DownloadTextFileAsync(serverUrl, vaultId, validPath, ct);
-                    await storage.WriteTextFileAsync(validPath, content, file.Mtime ?? 0);
+                    await storage.WriteTextFileAsync(validPath, content, serverMtimeMs);
                 }
                 else
                 {
                     var content = await DownloadBinaryFileAsync(serverUrl, vaultId, validPath, ct);
-                    await storage.WriteBinaryFileAsync(validPath, content, file.Mtime ?? 0);
+                    await storage.WriteBinaryFileAsync(validPath, content, serverMtimeMs);
                 }
                 downloaded++;
             }
-            catch (HttpRequestException ex) when (ex.Message.Contains("404"))
+            catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {
-                // 服务端文件已不存在，跳过
+                // 服务端文件已不存在（manifest 快照与文件删除之间存在竞态），跳过
             }
             catch (Exception ex)
             {
@@ -169,10 +181,10 @@ public class SyncServiceImpl : ISyncService
         }
 
         return new SyncResult(
-            Cursor: 0,
+            Cursor: manifest.Cursor ?? 0,
             TotalFiles: files.Count,
             Downloaded: downloaded,
-            Skipped: 0,
+            Skipped: skipped,
             Deleted: deleted,
             Failed: failed,
             Errors: errors.Count > 0 ? errors : null);
@@ -204,6 +216,10 @@ public class SyncServiceImpl : ISyncService
         var ext = Path.GetExtension(relPath).ToLowerInvariant().TrimStart('.');
         return ext is "md" or "json";
     }
+
+    /// <summary>将 ApiResponse 的状态码转为 HttpStatusCode（0/无效时返回 null）</summary>
+    private static HttpStatusCode? ToStatusCode<T>(ApiResponse<T> resp) =>
+        resp.StatusCode > 0 ? (HttpStatusCode)resp.StatusCode : null;
 
     private record VaultListCacheEntry(IReadOnlyList<VaultInfo> Vaults, DateTimeOffset CachedAt);
 }

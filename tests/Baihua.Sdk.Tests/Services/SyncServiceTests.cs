@@ -1,5 +1,6 @@
 using BaihuaSdk.Services;
 using BaihuaSdk.Signing;
+using BaihuaSdk.Storage;
 using BaihuaSdk.Transport;
 using Moq;
 using System.Net;
@@ -226,5 +227,131 @@ public class SyncServiceTests
     {
         SyncServiceImpl.ClearVaultListCache("http://localhost");
         // No exception = success
+    }
+
+    // ---- SyncVaultAsync 增量同步测试 ----
+
+    private static FileSystemVaultStorage CreateTempStorage(out string dir)
+    {
+        dir = Path.Combine(Path.GetTempPath(), $"sync_test_{Guid.NewGuid():N}");
+        Directory.CreateDirectory(dir);
+        return new FileSystemVaultStorage(dir);
+    }
+
+    /// <summary>服务端 mtime 为 unix 秒，本地存储按毫秒读写</summary>
+    private const long ServerMtimeSec = 1710000000; // 2024-03-09 左右
+    private const long ServerMtimeMs = ServerMtimeSec * 1000L;
+
+    [Fact]
+    public async Task SyncVaultAsync_UnchangedMtime_SkipsDownload()
+    {
+        var (client, handler) = CreateMockClient();
+        var signerMock = new Mock<IRequestSigner>();
+        signerMock.Setup(s => s.SignRequest(It.IsAny<string>(), It.IsAny<string>(),
+            It.IsAny<string?>(), It.IsAny<string?>()))
+            .Returns(new Dictionary<string, string>());
+
+        // a.md 已存在且 mtime 与服务端一致 → 应跳过；b.md 不存在 → 应下载
+        var storage = CreateTempStorage(out var dir);
+        try
+        {
+            await storage.WriteTextFileAsync("notes/a.md", "旧内容", ServerMtimeMs);
+
+            var manifest = new VaultManifestResponse(
+                VaultId: "vault-1", VaultName: "Test", Cursor: 42,
+                Files: new List<ManifestFile>
+                {
+                    new(Op: "upsert", RelPath: "notes/a.md", Mtime: ServerMtimeSec, Size: null, Sha256: null),
+                    new(Op: "upsert", RelPath: "notes/b.md", Mtime: ServerMtimeSec, Size: null, Sha256: null)
+                });
+            handler.SetupResponse("/mg/manifest", HttpStatusCode.OK, JsonSerializer.Serialize(manifest));
+            handler.SetupResponse("/mg/file", HttpStatusCode.OK, "# B 内容");
+
+            var service = new SyncServiceImpl(client, signerMock.Object);
+            var result = await service.SyncVaultAsync("http://localhost", "vault-1", "device-1", storage);
+
+            Assert.Equal(1, result.Downloaded);
+            Assert.Equal(1, result.Skipped);
+            Assert.Equal(0, result.Failed);
+            Assert.Equal(42, result.Cursor);
+            // 只应发生一次 /mg/file 下载（b.md），a.md 未发起请求
+            Assert.Single(handler.RequestLog, p => p == "/mg/file");
+        }
+        finally
+        {
+            Directory.Delete(dir, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task SyncVaultAsync_ChangedMtime_Redownloads()
+    {
+        var (client, handler) = CreateMockClient();
+        var signerMock = new Mock<IRequestSigner>();
+        signerMock.Setup(s => s.SignRequest(It.IsAny<string>(), It.IsAny<string>(),
+            It.IsAny<string?>(), It.IsAny<string?>()))
+            .Returns(new Dictionary<string, string>());
+
+        var storage = CreateTempStorage(out var dir);
+        try
+        {
+            // 本地 mtime 与服务端不一致（旧版本）→ 应重新下载并更新
+            await storage.WriteTextFileAsync("notes/a.md", "旧内容", ServerMtimeMs - 1000);
+
+            var manifest = new VaultManifestResponse(
+                VaultId: "vault-1", VaultName: "Test", Cursor: 0,
+                Files: new List<ManifestFile>
+                {
+                    new(Op: "upsert", RelPath: "notes/a.md", Mtime: ServerMtimeSec, Size: null, Sha256: null)
+                });
+            handler.SetupResponse("/mg/manifest", HttpStatusCode.OK, JsonSerializer.Serialize(manifest));
+            handler.SetupResponse("/mg/file", HttpStatusCode.OK, "# 新内容");
+
+            var service = new SyncServiceImpl(client, signerMock.Object);
+            var result = await service.SyncVaultAsync("http://localhost", "vault-1", "device-1", storage);
+
+            Assert.Equal(1, result.Downloaded);
+            Assert.Equal(0, result.Skipped);
+            Assert.Equal("# 新内容", await File.ReadAllTextAsync(Path.Combine(dir, "notes", "a.md")));
+        }
+        finally
+        {
+            Directory.Delete(dir, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task SyncVaultAsync_FileNotFound_SkipsNotFails()
+    {
+        var (client, handler) = CreateMockClient();
+        var signerMock = new Mock<IRequestSigner>();
+        signerMock.Setup(s => s.SignRequest(It.IsAny<string>(), It.IsAny<string>(),
+            It.IsAny<string?>(), It.IsAny<string?>()))
+            .Returns(new Dictionary<string, string>());
+
+        var storage = CreateTempStorage(out var dir);
+        try
+        {
+            var manifest = new VaultManifestResponse(
+                VaultId: "vault-1", VaultName: "Test", Cursor: 0,
+                Files: new List<ManifestFile>
+                {
+                    new(Op: "upsert", RelPath: "notes/gone.md", Mtime: ServerMtimeSec, Size: null, Sha256: null)
+                });
+            handler.SetupResponse("/mg/manifest", HttpStatusCode.OK, JsonSerializer.Serialize(manifest));
+            // manifest 快照里存在、但文件已被服务端删除 → 下载返回 404，应静默跳过而非计入失败
+            handler.SetupResponse("/mg/file", HttpStatusCode.NotFound, "Not found");
+
+            var service = new SyncServiceImpl(client, signerMock.Object);
+            var result = await service.SyncVaultAsync("http://localhost", "vault-1", "device-1", storage);
+
+            Assert.Equal(0, result.Downloaded);
+            Assert.Equal(0, result.Failed);
+            Assert.Null(result.Errors);
+        }
+        finally
+        {
+            Directory.Delete(dir, recursive: true);
+        }
     }
 }

@@ -432,23 +432,14 @@ builder.Services.AddOpenObserveTelemetry(
 
 
 // 配置反向代理头部转发（支持 nginx 等反向代理）
-// 信任来自 loopback + Docker 桥接网段的代理头，防止客户端伪造 X-Forwarded-For 绕过访问控制
+// 默认只信任 loopback 代理；其他代理网段（如 Docker 桥接）需通过 BAIHUA_TRUSTED_PROXY_NETS 显式声明，
+// 防止局域网客户端伪造 X-Forwarded-For 绕过访问控制
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
-{
-    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-    options.KnownIPNetworks.Clear();
-    options.KnownProxies.Clear();
-    // 显式添加受信任的代理：loopback（nginx 通常与后端在同一主机）
-    options.KnownProxies.Add(IPAddress.Loopback);
-    options.KnownProxies.Add(IPAddress.IPv6Loopback);
-    // Docker Desktop / Docker Engine 桥接网段
-    // Nginx 容器从 172.17.0.1 等地址转发请求时，必须信任该网段才能正确应用 X-Forwarded-For
-    // 覆盖 172.16.0.0 ~ 172.31.255.255（Docker 默认 172.17.0.0/16 也在此范围）
-    // kind/k3s Pod 网段（10.244.x / 10.42.x）同属 RFC1918，一并信任
-    options.KnownIPNetworks.Add(new System.Net.IPNetwork(IPAddress.Parse("10.0.0.0"), 8));
-    options.KnownIPNetworks.Add(new System.Net.IPNetwork(IPAddress.Parse("172.16.0.0"), 12));
-    options.KnownIPNetworks.Add(new System.Net.IPNetwork(IPAddress.Parse("192.168.0.0"), 16));
-});
+    Baihua.Core.Security.AdminNetworkPolicy.ConfigureForwardedHeaders(options, builder.Configuration));
+
+// 管理 API 允许访问的网段（默认空 = 仅 loopback；容器部署在 compose/k8s 中显式配置）
+var adminAllowedNets = Baihua.Core.Security.AdminNetworkPolicy.ParseNets(
+    builder.Configuration[Baihua.Core.Security.AdminNetworkPolicy.AdminAllowedNetsEnv]);
 
 var app = builder.Build();
 
@@ -599,30 +590,20 @@ app.Use(async (context, next) =>
     logger.LogInformation("[AccessControl] Path: {Path}, RemoteIP: {RemoteIP}, IsLoopback: {IsLoopback}",
         path, remoteIp?.ToString(), remoteIp != null && IPAddress.IsLoopback(remoteIp));
 
-    // 非公开路径仅允许本机访问（WebUI 通过 loopback 调用 Baihua.Family）
-    // Docker 部署时：nginx/WebUI 容器通过 bridge 网络访问（172.16.0.0/12 Docker 默认网段），
-    // kind/k3s 下是 Pod 网段（10.244.x / 10.42.x）。RFC1918 私有网段全部放行（与 KnownIPNetworks 一致）。
-    var isDockerNetwork = false;
-    if (remoteIp != null)
+    // 非公开路径仅允许本机访问（WebUI 通过 loopback 调用 Baihua.Family）。
+    // 容器/反向代理部署（Docker bridge、k3s Pod 网段等）需通过
+    // BAIHUA_ADMIN_ALLOWED_NETS 环境变量显式放行网段——不再隐式信任整个 RFC1918。
+    if (Baihua.Core.Security.AdminNetworkPolicy.IsAllowed(remoteIp, adminAllowedNets))
     {
-        try
-        {
-            isDockerNetwork =
-                new System.Net.IPNetwork(IPAddress.Parse("10.0.0.0"), 8).Contains(remoteIp) ||
-                new System.Net.IPNetwork(IPAddress.Parse("172.16.0.0"), 12).Contains(remoteIp) ||
-                new System.Net.IPNetwork(IPAddress.Parse("192.168.0.0"), 16).Contains(remoteIp);
-        }
-        catch { isDockerNetwork = false; }
-    }
-    if (remoteIp != null && (IPAddress.IsLoopback(remoteIp) || remoteIp.ToString() == "127.0.0.1" || remoteIp.ToString() == "::1" || isDockerNetwork))
-    {
-        logger.LogInformation("[AccessControl] Allowing local request for path: {Path} (loopback={IsLoopback}, dockerNet={IsDockerNet})",
-            path, IPAddress.IsLoopback(remoteIp), isDockerNetwork);
+        logger.LogInformation("[AccessControl] Allowing local request for path: {Path} (remoteIp={RemoteIp})",
+            path, remoteIp?.ToString());
         await next();
         return;
     }
 
     // 非本机访问非公开端点 → 拒绝
+    logger.LogWarning("[AccessControl] Blocked non-local request to Family API from {RemoteIP}: {Path}",
+        remoteIp?.ToString(), path);
     context.Response.StatusCode = 403;
     await context.Response.WriteAsJsonAsync(new
     {

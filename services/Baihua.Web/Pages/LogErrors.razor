@@ -134,7 +134,7 @@
         // Build OpenObserve auth header
         var ooUrl = Configuration["OpenObserve:WebUrl"] ?? "http://localhost:5082";
         var ooUser = Configuration["OpenObserve:User"] ?? "root@localhost.com";
-        var ooPass = Configuration["OpenObserve:Password"] ?? "Complexpass#123";
+        var ooPass = Configuration["OpenObserve:Password"] ?? "";
         if (!string.IsNullOrEmpty(ooUser) && !string.IsNullOrEmpty(ooPass))
         {
             var raw = Encoding.UTF8.GetBytes($"{ooUser}:{ooPass}");
