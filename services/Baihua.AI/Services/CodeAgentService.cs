@@ -16,26 +16,33 @@ public class CodeAgentService
     private readonly AiSettingsService _aiSettings;
     private readonly IStringLocalizer<SharedResources> _loc;
     private readonly ILogger<CodeAgentService> _logger;
+    private readonly IConfiguration _configuration;
+    private readonly ILoggerFactory _loggerFactory;
 
     public CodeAgentService(
         AiSettingsService aiSettings,
         IStringLocalizer<SharedResources> loc,
-        ILogger<CodeAgentService> logger)
+        ILogger<CodeAgentService> logger,
+        IConfiguration configuration,
+        ILoggerFactory loggerFactory)
     {
         _aiSettings = aiSettings;
         _loc = loc;
         _logger = logger;
+        _configuration = configuration;
+        _loggerFactory = loggerFactory;
     }
 
     /// <summary>系统提示词：专注代码生成，输出纯净代码</summary>
     private const string DefaultInstructions =
         """
-        你是一名资深软件工程师。根据用户需求生成完整、可直接运行的代码。
+        你是一名资深软件工程师，辅助用户完成编程任务。
         规则：
-        1. 只输出代码本身，用 ``` 代码块包裹，不要输出解释、评论性前言或后语。
-        2. 优先选择最简单可靠的实现，遵循目标语言的主流最佳实践。
-        3. 如有多个文件，按逻辑顺序依次输出，每个文件用注释标明文件名（如 // File: Program.cs）。
-        4. 不要假设环境里有未安装的库；控制台程序优先用 .NET 内置 / Python 标准库实现。
+        1. 需要外部信息（最新资料、官方文档、API 用法、版本号、报错原因）时，必须直接调用 tavily_search 搜索，必要时调用 web_fetch 精读页面，然后基于真实信息回答；绝对不要编写调用搜索 API 的示例代码来代替实际查询。
+        2. 用户要求生成代码时：只输出代码本身，用 ``` 代码块包裹，不要输出解释、评论性前言或后语。
+        3. 优先选择最简单可靠的实现，遵循目标语言的主流最佳实践。
+        4. 如有多个文件，按逻辑顺序依次输出，每个文件用注释标明文件名（如 // File: Program.cs）。
+        5. 不要假设环境里有未安装的库；控制台程序优先用 .NET 内置 / Python 标准库实现。
         """;
 
     /// <summary>
@@ -58,7 +65,19 @@ public class CodeAgentService
             .GetChatClient(model)
             .AsIChatClient();
 
-        return new ChatClientAgent(chatClient, instructions: DefaultInstructions, name: "CodeAgent");
+        var tools = new CodeAgentTools(_configuration, _loggerFactory);
+        return new ChatClientAgent(chatClient,
+            instructions: DefaultInstructions,
+            name: "CodeAgent",
+            tools:
+            [
+                AIFunctionFactory.Create(tools.TavilySearch,
+                    "tavily_search",
+                    "使用 Tavily 搜索引擎查询全网信息（最新资料、官方文档、报错排查）。参数 query 为搜索关键词，maxResults 为返回条数（1-10，默认 5）。"),
+                AIFunctionFactory.Create(tools.WebFetch,
+                    "web_fetch",
+                    "抓取指定网页（http/https）并返回纯文本正文，适合精读官方文档。参数 url 为完整地址，maxChars 为最大字符数（默认 20000）。")
+            ]);
     }
 
     /// <summary>
