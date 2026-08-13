@@ -4140,7 +4140,7 @@ namespace Baihua.Web.Services
                 catch { }
                 throw new InvalidOperationException(error ?? $"HTTP {(int)response.StatusCode}");
             }
-            return System.Text.Json.JsonSerializer.Deserialize<ComfyGenerateResultDto>(body)
+            return System.Text.Json.JsonSerializer.Deserialize<ComfyGenerateResultDto>(body, _caseInsensitiveJsonOptions)
                 ?? throw new InvalidOperationException("空响应");
         }
 
