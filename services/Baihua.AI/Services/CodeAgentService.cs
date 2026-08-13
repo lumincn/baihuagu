@@ -1,8 +1,12 @@
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using Baihua.Contracts.Ai;
+using Baihua.Data;
+using Baihua.Data.Entities;
 using Baihua.Family.Models;
+using Microsoft.EntityFrameworkCore;
 using Baihua.Family.Services;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -17,24 +21,30 @@ namespace Baihua.AI.Services;
 /// </summary>
 public class CodeAgentService
 {
+    /// <summary>CodeAgent 观测：trace 源（OpenObserve 里按此过滤 agent 调用链）</summary>
+    private static readonly ActivitySource CodeAgentActivity = new("Baihua.AI.CodeAgent");
+
     private readonly AiSettingsService _aiSettings;
     private readonly IStringLocalizer<SharedResources> _loc;
     private readonly ILogger<CodeAgentService> _logger;
     private readonly IConfiguration _configuration;
     private readonly ILoggerFactory _loggerFactory;
+    private readonly IDbContextFactory<AIDbContext> _aiDbFactory;
 
     public CodeAgentService(
         AiSettingsService aiSettings,
         IStringLocalizer<SharedResources> loc,
         ILogger<CodeAgentService> logger,
         IConfiguration configuration,
-        ILoggerFactory loggerFactory)
+        ILoggerFactory loggerFactory,
+        IDbContextFactory<AIDbContext> aiDbFactory)
     {
         _aiSettings = aiSettings;
         _loc = loc;
         _logger = logger;
         _configuration = configuration;
         _loggerFactory = loggerFactory;
+        _aiDbFactory = aiDbFactory;
     }
 
     /// <summary>系统提示词基础规则（不含工具说明，工具规则按模式动态追加）</summary>
@@ -73,6 +83,8 @@ public class CodeAgentService
         var chatClient = new OpenAI.OpenAIClient(credential, clientOptions)
             .GetChatClient(model)
             .AsIChatClient();
+        // OTel GenAI 遥测（span/metric 按 GenAI 语义约定，含 token 用量）
+        var chatClientWithTelemetry = chatClient.AsBuilder().UseOpenTelemetry().Build();
 
         var codeAgentTools = new CodeAgentTools(_configuration, _loggerFactory);
         var tools = new List<Microsoft.Extensions.AI.AITool>();
@@ -103,7 +115,7 @@ public class CodeAgentService
             instructions += CodeGraphToolRule;
         }
 
-        return new ChatClientAgent(chatClient,
+        return new ChatClientAgent(chatClientWithTelemetry,
             instructions: instructions.Trim(),
             name: "CodeAgent",
             tools: tools);
@@ -176,18 +188,55 @@ public class CodeAgentService
         如果未发现问题，回复「✅ 未发现问题」。不要重写代码，只列问题。
         """;
 
+    /// <summary>记录一次 CodeAgent 调用到 AiUsageMetrics（与聊天/生成同一张统计表）。</summary>
+    public async Task RecordUsageAsync(string providerId, string model, string operation,
+        long latencyMs, long? inputTokens, long? outputTokens, string? error = null)
+    {
+        try
+        {
+            await using var db = await _aiDbFactory.CreateDbContextAsync();
+            var providerName = _aiSettings.GetAiProvider(providerId)?.Name ?? providerId;
+            db.AiUsageMetrics.Add(new AiUsageMetric
+            {
+                ProviderId = providerId,
+                ProviderName = providerName,
+                ModelId = model,
+                Operation = operation,
+                LatencyMs = latencyMs,
+                InputTokens = inputTokens is null ? null : (int)inputTokens,
+                OutputTokens = outputTokens is null ? null : (int)outputTokens,
+                TotalTokens = (int)((inputTokens ?? 0) + (outputTokens ?? 0)),
+                ErrorMessage = error
+            });
+            await db.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "记录 CodeAgent 用量失败");
+        }
+    }
+
     /// <summary>流水线（非流式）：调研 → 编码 → 审查，返回各阶段结果。</summary>
     public async Task<CodeAgentPipelineResponse> RunPipelineAsync(
         string providerId, string model, string prompt, string? language, string? context,
         bool skipResearch, bool skipReview, CancellationToken ct)
     {
+        using var activity = CodeAgentActivity.StartActivity("PipelineRun");
+        activity?.SetTag("provider", providerId);
+        activity?.SetTag("model", model);
+
         var userMsg = BuildUserMessage(prompt, language, context);
 
         string? research = null;
         if (!skipResearch)
         {
             var researchAgent = CreateAgent(providerId, model, CodeAgentToolMode.Search, ResearchInstructions);
-            research = (await researchAgent.RunAsync(new[] { userMsg }, session: null, options: null, ct)).ToString();
+            var sw = Stopwatch.StartNew();
+            var result = await researchAgent.RunAsync(new[] { userMsg }, session: null, options: null, ct);
+            sw.Stop();
+            research = result.ToString();
+            await RecordUsageAsync(providerId, model, "codeagent-pipeline-research", sw.ElapsedMilliseconds,
+                result.Usage?.InputTokenCount, result.Usage?.OutputTokenCount);
         }
 
         var codeContext = context;
@@ -196,14 +245,24 @@ public class CodeAgentService
             codeContext = $"{(string.IsNullOrWhiteSpace(context) ? "" : context + "\n\n")}【调研摘要】\n{research.Trim()}";
         }
         var coder = CreateAgent(providerId, model, CodeAgentToolMode.CodeGraph);
-        var codeOutput = (await coder.RunAsync(new[] { BuildUserMessage(prompt, language, codeContext) }, session: null, options: null, ct)).ToString();
+        var codeSw = Stopwatch.StartNew();
+        var codeResult = await coder.RunAsync(new[] { BuildUserMessage(prompt, language, codeContext) }, session: null, options: null, ct);
+        codeSw.Stop();
+        var codeOutput = codeResult.ToString();
         var (code, fileName) = ExtractCode(codeOutput);
+        await RecordUsageAsync(providerId, model, "codeagent-pipeline-code", codeSw.ElapsedMilliseconds,
+            codeResult.Usage?.InputTokenCount, codeResult.Usage?.OutputTokenCount);
 
         string? review = null;
         if (!skipReview)
         {
             var reviewer = CreateAgent(providerId, model, CodeAgentToolMode.None, ReviewInstructions);
-            review = (await reviewer.RunAsync(new[] { BuildUserMessage($"请审查以下代码：\n\n{code}", null, null) }, session: null, options: null, ct)).ToString();
+            var reviewSw = Stopwatch.StartNew();
+            var reviewResult = await reviewer.RunAsync(new[] { BuildUserMessage($"请审查以下代码：\n\n{code}", null, null) }, session: null, options: null, ct);
+            reviewSw.Stop();
+            review = reviewResult.ToString();
+            await RecordUsageAsync(providerId, model, "codeagent-pipeline-review", reviewSw.ElapsedMilliseconds,
+                reviewResult.Usage?.InputTokenCount, reviewResult.Usage?.OutputTokenCount);
         }
 
         return new CodeAgentPipelineResponse
@@ -223,6 +282,10 @@ public class CodeAgentService
         string providerId, string model, string prompt, string? language, string? context,
         bool skipResearch, bool skipReview, [EnumeratorCancellation] CancellationToken ct)
     {
+        using var activity = CodeAgentActivity.StartActivity("PipelineRunStreaming");
+        activity?.SetTag("provider", providerId);
+        activity?.SetTag("model", model);
+
         var userMsg = BuildUserMessage(prompt, language, context);
         var codeText = new StringBuilder();
 

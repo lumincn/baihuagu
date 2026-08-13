@@ -44,7 +44,8 @@ public partial class AiClientService
 
                 var openaiClient = new OpenAIClient(credential, clientOptions);
                 var client = openaiClient.GetChatClient(model).AsIChatClient();
-                return client;
+                // OTel GenAI 遥测（span/metric 按 GenAI 语义约定，含 token 用量）
+                return client.AsBuilder().UseOpenTelemetry().Build();
             });
         }
 

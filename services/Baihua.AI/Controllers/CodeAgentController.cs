@@ -5,6 +5,7 @@ using Baihua.Family.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Localization;
+using System.Diagnostics;
 
 namespace Baihua.AI.Controllers;
 
@@ -16,6 +17,9 @@ namespace Baihua.AI.Controllers;
 [Route("api/ai/code")]
 public class CodeAgentController : ControllerBase
 {
+    /// <summary>CodeAgent 观测：trace 源（与 service 同源，OpenObserve 里按此过滤）</summary>
+    private static readonly ActivitySource CodeAgentActivity = new("Baihua.AI.CodeAgent");
+
     private readonly CodeAgentService _codeAgent;
     private readonly AiSettingsService _aiSettings;
     private readonly ILogger<CodeAgentController> _logger;
@@ -55,19 +59,43 @@ public class CodeAgentController : ControllerBase
             using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(_aiSettings.AiRequestTimeoutMinutes));
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(HttpContext.RequestAborted, timeoutCts.Token);
 
-            var result = await agent.RunAsync(messages, session: null, options: null, linkedCts.Token);
-            var output = result.ToString() ?? "";
-
-            var (code, fileName) = CodeAgentService.ExtractCode(output);
-            return Ok(new CodeAgentResponse
+            var sw = Stopwatch.StartNew();
+            var agentError = (string?)null;
+            long? inTokens = null;
+            long? outTokens = null;
+            try
             {
-                Success = true,
-                Message = _loc["Ai_Chat_ReplySuccess"].Value,
-                Code = string.IsNullOrWhiteSpace(code) ? output : code,
-                FileName = fileName,
-                ProviderId = providerId,
-                Model = model
-            });
+                var result = await agent.RunAsync(messages, session: null, options: null, linkedCts.Token);
+                inTokens = result.Usage?.InputTokenCount;
+                outTokens = result.Usage?.OutputTokenCount;
+                var output = result.ToString() ?? "";
+
+                var (code, fileName) = CodeAgentService.ExtractCode(output);
+                return Ok(new CodeAgentResponse
+                {
+                    Success = true,
+                    Message = _loc["Ai_Chat_ReplySuccess"].Value,
+                    Code = string.IsNullOrWhiteSpace(code) ? output : code,
+                    FileName = fileName,
+                    ProviderId = providerId,
+                    Model = model
+                });
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                agentError = ex.Message;
+                throw;
+            }
+            finally
+            {
+                sw.Stop();
+                using var act = CodeAgentActivity.StartActivity("AgentRun");
+                act?.SetTag("provider", providerId);
+                act?.SetTag("model", model);
+                act?.SetStatus(agentError == null ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
+                await _codeAgent.RecordUsageAsync(providerId, model, "codeagent", sw.ElapsedMilliseconds,
+                    inTokens, outTokens, agentError);
+            }
         }
         catch (OperationCanceledException)
         {
@@ -97,6 +125,10 @@ public class CodeAgentController : ControllerBase
             await response.Body.FlushAsync();
         }
 
+        var sw = Stopwatch.StartNew();
+        var error = (string?)null;
+        (string ProviderId, string Model)? resolved = null;
+
         try
         {
             if (string.IsNullOrWhiteSpace(request.Prompt))
@@ -106,6 +138,7 @@ public class CodeAgentController : ControllerBase
             }
 
             var (providerId, model) = ResolveProviderAndModel(request.ProviderId, request.Model);
+            resolved = (providerId, model);
             var agent = _codeAgent.CreateAgent(providerId, model, request.ToolMode);
 
             await SendSse("meta", System.Text.Json.JsonSerializer.Serialize(new { providerId, model }));
@@ -165,12 +198,27 @@ public class CodeAgentController : ControllerBase
         }
         catch (OperationCanceledException)
         {
+            error = _loc["AiChat_Timeout"].Value;
             await SendSse("error", _loc["AiChat_Timeout"].Value);
         }
         catch (Exception ex)
         {
+            error = ex.Message;
             _logger.LogError(ex, "编程 Agent 流式执行失败");
             await SendSse("error", _loc["Ai_Chat_Failed", ex.Message].Value);
+        }
+        finally
+        {
+            sw.Stop();
+            if (resolved is { } r)
+            {
+                using var act = CodeAgentActivity.StartActivity("AgentRunStreaming");
+                act?.SetTag("provider", r.ProviderId);
+                act?.SetTag("model", r.Model);
+                act?.SetStatus(error == null ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
+                await _codeAgent.RecordUsageAsync(r.ProviderId, r.Model, "codeagent-stream", sw.ElapsedMilliseconds,
+                    null, null, error);
+            }
         }
     }
 
@@ -224,6 +272,10 @@ public class CodeAgentController : ControllerBase
             await response.Body.FlushAsync();
         }
 
+        var sw = Stopwatch.StartNew();
+        var error = (string?)null;
+        (string ProviderId, string Model)? resolved = null;
+
         try
         {
             if (string.IsNullOrWhiteSpace(request.Prompt))
@@ -233,6 +285,7 @@ public class CodeAgentController : ControllerBase
             }
 
             var (providerId, model) = ResolveProviderAndModel(request.ProviderId, request.Model);
+            resolved = (providerId, model);
             await SendSse("meta", System.Text.Json.JsonSerializer.Serialize(new { providerId, model, pipeline = true }));
 
             using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(_aiSettings.AiRequestTimeoutMinutes * 3));
@@ -262,12 +315,23 @@ public class CodeAgentController : ControllerBase
         }
         catch (OperationCanceledException)
         {
+            error = _loc["AiChat_Timeout"].Value;
             await SendSse("error", _loc["AiChat_Timeout"].Value);
         }
         catch (Exception ex)
         {
+            error = ex.Message;
             _logger.LogError(ex, "编程 Agent 流水线流式执行失败");
             await SendSse("error", _loc["Ai_Chat_Failed", ex.Message].Value);
+        }
+        finally
+        {
+            sw.Stop();
+            if (resolved is { } r)
+            {
+                await _codeAgent.RecordUsageAsync(r.ProviderId, r.Model, "codeagent-pipeline-stream", sw.ElapsedMilliseconds,
+                    null, null, error);
+            }
         }
     }
 

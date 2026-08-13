@@ -164,6 +164,7 @@ var openobservePass = builder.Configuration["OpenObserve:Password"] ?? "";
         otelBuilder.WithMetrics(metrics =>
         {
             metrics.AddMeter("Baihua.AI")
+                   .AddMeter("Microsoft.Extensions.AI")
                    .AddView("ai.latency_ms", new OpenTelemetry.Metrics.ExplicitBucketHistogramConfiguration
                    {
                        Boundaries = new double[] { 0, 50, 100, 250, 500, 1000, 2500, 5000, 10000, 30000, 60000 }
@@ -190,6 +191,7 @@ var openobservePass = builder.Configuration["OpenObserve:Password"] ?? "";
         {
             tracing
                 .AddSource("Baihua.AI")
+                .AddSource("Microsoft.Extensions.AI")
                 .SetSampler(isDevelopment
                     ? new AlwaysOnSampler()
                     : new ParentBasedSampler(new TraceIdRatioBasedSampler(0.1)))
