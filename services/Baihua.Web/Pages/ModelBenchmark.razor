@@ -1,5 +1,5 @@
 @page "/model-benchmark"
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @using Baihua.Contracts.Benchmark
 @using Baihua.Contracts.LocalModels
 @inject Baihua.Web.Services.IApiService ApiService

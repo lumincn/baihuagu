@@ -1,5 +1,5 @@
 @page "/openclaw"
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject Baihua.Web.Services.IApiService ApiService
 @inject Baihua.Web.Services.CapabilityService CapabilityService
 @inject IJSRuntime JSRuntime

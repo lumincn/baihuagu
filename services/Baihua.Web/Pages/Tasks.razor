@@ -1,5 +1,5 @@
 @page "/tasks"
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @using System.Net.Http
 @using System.Threading
 @using Microsoft.AspNetCore.Http.Connections

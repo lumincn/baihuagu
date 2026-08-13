@@ -68,6 +68,7 @@ namespace Baihua.Core;
     {
         private readonly ILogger<DeviceService> _logger;
         private string _pairCode;
+        private readonly object _pairCodeLock = new();
         private readonly IHubContext<Hubs.DeviceHub>? _deviceHub;
         private readonly WebSocket.DeviceWebSocketHub? _wsHub;
         private readonly IDbContextFactory<FamilyDbContext> _dbContextFactory;
@@ -127,16 +128,33 @@ namespace Baihua.Core;
         /// </summary>
         public string RefreshPairCode()
         {
-            _pairCode = GenerateRandomPairCode();
+            lock (_pairCodeLock)
+            {
+                _pairCode = GenerateRandomPairCode();
+            }
             _logger.LogInformation("配对码已刷新");
             return _pairCode;
         }
 
 
+        /// <summary>
+        /// 验证配对码。配对码为一次性：验证通过后立即轮换，
+        /// 防止同一码被截获后重复用于配对多台设备。
+        /// </summary>
         public bool ValidatePairCode(string? pairCode)
         {
             if (string.IsNullOrWhiteSpace(pairCode)) return false;
-            return pairCode.Trim() == _pairCode;
+
+            lock (_pairCodeLock)
+            {
+                var matches = pairCode.Trim() == _pairCode;
+                if (matches)
+                {
+                    _pairCode = GenerateRandomPairCode();
+                    _logger.LogInformation("配对码验证通过，已轮换新配对码（一次性）");
+                }
+                return matches;
+            }
         }
 
         public PairRequestInfo SubmitPairRequest(string deviceName, string pairCode, string? ipAddress = null, string? requestId = null, string? deviceId = null, string? systemDeviceName = null)

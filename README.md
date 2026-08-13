@@ -1,30 +1,31 @@
 # 百花
 
-家庭版后端服务 + yj CLI 工具，面向本地/局域网使用。
+家庭版后端服务 + bh CLI 工具，面向本地/局域网使用。
 
 ## 项目结构
 
 ```
 services/
-  Baihua.Family/    # 家庭版主服务（API 服务）
+  Baihua.Family/    # 家庭版主服务（亲子功能、任务、设备管理）
   Baihua.AI/        # AI 模型、聊天、配置管理
   Baihua.Vault/     # 知识库、同步、搜索、索引
-  WebUI.Family/         # 家庭版 Web 界面（Blazor Server）
+  Baihua.Web/       # 家庭版 Web 界面（Blazor Server）
   Baihua.Contracts/ # 共享 DTO 与接口契约
-  Core.Shared/          # 共享服务层
+  Baihua.Core/      # 共享服务层（安全、设备、索引等）
   Baihua.Data/      # 共享 EF Core 数据层
 libs/
-  BaihuaSdk/          # 跨平台移动端 SDK（net9.0;net10.0，零 MAUI 依赖）
-  MobileContract/       # 移动端契约（DTO、接口定义）
+  BaihuaSdk/        # 跨平台移动端 SDK（net9.0;net10.0，零 MAUI 依赖）
+  MobileContract/   # 移动端契约（DTO、接口定义）
 clients/
-  MobileApp.Maui/       # MAUI Blazor Hybrid 移动客户端
-scripts/                # 开发、发布、部署脚本
-docs/                   # 文档
-docker/                 # Docker 配置
-bh                      # 极简 CLI 工具（Linux/Mac）
+  Huapu/            # 花圃（BaiHua.Nursery）— MAUI 技术验证客户端
+scripts/            # 开发、发布、部署脚本
+docs/               # 文档
+docker/             # Docker 配置
+tools/bh/           # 极简 CLI 工具（Windows/Linux，native/docker/k8s）
 tests/
-  BaihuaSdk.Tests/    # SDK 单元测试与集成测试
-  MobileApp.Maui.Tests/ # MAUI DI 回归测试
+  Baihua.Family.Tests/  # 后端服务测试
+  Baihua.Sdk.Tests/     # SDK 单元测试与集成测试
+  Huapu.Tests/          # MAUI DI 回归测试
   e2e/                  # Playwright E2E 测试
 ```
 
@@ -36,7 +37,7 @@ tests/
 
 # 手动启动
 cd services/Baihua.Family && dotnet run
-cd services/WebUI.Family && dotnet run
+cd services/Baihua.Web && dotnet run
 ```
 
 ## 访问授权
@@ -58,7 +59,8 @@ cd services/WebUI.Family && dotnet run
 | Baihua.Family | 8788 | 家庭/亲子功能（任务、成就、OpenClaw、设备配对） |
 | Baihua.AI | 8791 | AI 模型、聊天、配置管理 |
 | Baihua.Vault | 8790 | 知识库、同步、搜索、索引 |
-| WebUI.Family | 5177 | Blazor Server 管理后台 |
+| Baihua.Web | 5177 | Blazor Server 管理后台 |
+
 ## Windows (PowerShell) 运行
 
 ### 推荐使用 PowerShell 7 (pwsh)

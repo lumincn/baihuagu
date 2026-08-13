@@ -1,5 +1,5 @@
 @page "/qr-tool"
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @using Baihua.Web.Components
 @inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 

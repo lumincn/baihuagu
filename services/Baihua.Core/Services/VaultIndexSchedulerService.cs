@@ -5,16 +5,18 @@ using Microsoft.Extensions.Logging;
 namespace Baihua.Family.Services
 {
     /// <summary>
-    /// 知识库 FTS5 索引定时重建服务
-    /// 定期检查知识库文件变化，自动重建全文索引
+    /// 知识库 FTS5 索引定时更新服务
+    /// 定期扫描知识库文件，以 mtime/size 快照对比为准做增量索引：
+    /// 仅新增/变更的笔记重新写入、已删除的笔记删除 FTS 行；
+    /// 首次启动或快照丢失（如进程重启）时才整库重建。
     /// </summary>
     public class VaultIndexSchedulerService : BackgroundService
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<VaultIndexSchedulerService> _logger;
         private readonly TimeSpan _checkInterval;
-        private readonly Dictionary<string, DateTime> _lastScanTimes = new();
-        private readonly Dictionary<string, int> _lastFileCounts = new();
+        // vaultId -> (相对路径 -> 文件指纹)；内存快照，进程重启后丢失 → 首次整库重建
+        private readonly Dictionary<string, Dictionary<string, NoteFileStamp>> _snapshots = new();
 
         public VaultIndexSchedulerService(
             IServiceProvider serviceProvider,
@@ -84,46 +86,31 @@ namespace Baihua.Family.Services
 
                 try
                 {
-                    var currentFiles = Directory.GetFiles(vault.Path, "*.md", SearchOption.AllDirectories);
-                    var currentCount = currentFiles.Length;
-                    var currentLatestWrite = currentFiles.Length > 0
-                        ? currentFiles.Select(f => new FileInfo(f).LastWriteTimeUtc).Max()
-                        : DateTime.MinValue;
-
-                    var needsReindex = false;
-
-                    if (!_lastFileCounts.TryGetValue(vault.Id, out var lastCount))
+                    _snapshots.TryGetValue(vault.Id, out var previous);
+                    if (previous == null)
                     {
-                        _logger.LogInformation("首次为知识库 {VaultName} 建立索引，文件数: {Count}", vault.Name, currentCount);
-                        needsReindex = true;
-                    }
-                    else if (currentCount != lastCount)
-                    {
-                        _logger.LogInformation("知识库 {VaultName} 文件数量变化: {LastCount} -> {CurrentCount}，重建索引", 
-                            vault.Name, lastCount, currentCount);
-                        needsReindex = true;
-                    }
-                    else if (_lastScanTimes.TryGetValue(vault.Id, out var lastScan))
-                    {
-                        // 检查是否有文件在上次扫描后修改
-                        var hasNewerFiles = currentFiles.Any(f => new FileInfo(f).LastWriteTimeUtc > lastScan);
-                        if (hasNewerFiles)
-                        {
-                            _logger.LogInformation("知识库 {VaultName} 有新增或修改的文件，重建索引", vault.Name);
-                            needsReindex = true;
-                        }
+                        _logger.LogInformation("首次为知识库 {VaultName} 建立索引（无快照，整库重建）", vault.Name);
                     }
 
-                    if (needsReindex)
-                    {
-                        _logger.LogInformation("开始重建知识库 {VaultName} 的 FTS5 索引...", vault.Name);
-                        await indexer.IndexVaultAsync(vault.Id, vault.Path, stoppingToken);
-                        _logger.LogInformation("知识库 {VaultName} 的 FTS5 索引重建完成", vault.Name);
+                    var result = await indexer.IndexVaultChangesAsync(vault.Id, vault.Path, previous, stoppingToken);
 
-                        _lastFileCounts[vault.Id] = currentCount;
+                    if (result.IsFullRebuild)
+                    {
+                        _logger.LogInformation("知识库 {VaultName} 的 FTS5 索引整库重建完成：{Added} 个文件",
+                            vault.Name, result.Added);
+                    }
+                    else if (result.Changed)
+                    {
+                        _logger.LogInformation("知识库 {VaultName} 的 FTS5 索引增量更新完成：新增 {Added}、更新 {Updated}、删除 {Removed}",
+                            vault.Name, result.Added, result.Updated, result.Removed);
+                    }
+                    else
+                    {
+                        _logger.LogDebug("知识库 {VaultName} 无变更，跳过索引", vault.Name);
                     }
 
-                    _lastScanTimes[vault.Id] = DateTime.UtcNow;
+                    // 仅在成功后更新快照；失败时不更新，下轮按同一快照重试
+                    _snapshots[vault.Id] = result.Snapshot;
                 }
                 catch (Exception ex)
                 {

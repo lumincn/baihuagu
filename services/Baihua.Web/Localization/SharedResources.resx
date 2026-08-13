@@ -4338,4 +4338,296 @@ Shift+Enter new line, Enter to send</value>
   </data>
   <data name="Todo_Loading" xml:space="preserve">
     <value>Loading…</value>
-  </data></root>
+  </data>
+  <data name="Nav_FamilyBudget" xml:space="preserve">
+    <value>Family Budget</value>
+  </data>
+  <data name="Nav_AiDrawing" xml:space="preserve">
+    <value>AI Drawing</value>
+  </data>
+  <data name="Nav_StockAdvisor" xml:space="preserve">
+    <value>Stock AI Advisor</value>
+  </data>
+  <data name="Nav_Assistant" xml:space="preserve">
+    <value>AI Assistant</value>
+  </data>
+  <data name="FamilyBudget_PageTitle" xml:space="preserve">
+    <value>Family Budget</value>
+  </data>
+  <data name="FamilyBudget_Title" xml:space="preserve">
+    <value>Family Budget</value>
+  </data>
+  <data name="FamilyBudget_Subtitle" xml:space="preserve">
+    <value>Record every income and expense of the family, with automatic monthly bills and category summaries.</value>
+  </data>
+  <data name="FamilyBudget_Loading" xml:space="preserve">
+    <value>Loading…</value>
+  </data>
+  <data name="FamilyBudget_PrevMonth" xml:space="preserve">
+    <value>Prev Month</value>
+  </data>
+  <data name="FamilyBudget_MonthLabel" xml:space="preserve">
+    <value>{0}/{1}</value>
+  </data>
+  <data name="FamilyBudget_NextMonth" xml:space="preserve">
+    <value>Next Month</value>
+  </data>
+  <data name="FamilyBudget_Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="FamilyBudget_MonthIncome" xml:space="preserve">
+    <value>Monthly Income</value>
+  </data>
+  <data name="FamilyBudget_MonthExpense" xml:space="preserve">
+    <value>Monthly Expense</value>
+  </data>
+  <data name="FamilyBudget_MonthBalance" xml:space="preserve">
+    <value>Monthly Balance</value>
+  </data>
+  <data name="FamilyBudget_AddHeader" xml:space="preserve">
+    <value>Add Entry</value>
+  </data>
+  <data name="FamilyBudget_ExpenseType" xml:space="preserve">
+    <value>Expense</value>
+  </data>
+  <data name="FamilyBudget_IncomeType" xml:space="preserve">
+    <value>Income</value>
+  </data>
+  <data name="FamilyBudget_AmountPlaceholder" xml:space="preserve">
+    <value>Amount</value>
+  </data>
+  <data name="FamilyBudget_SelectCategory" xml:space="preserve">
+    <value>Select category…</value>
+  </data>
+  <data name="FamilyBudget_NotePlaceholder" xml:space="preserve">
+    <value>Note (optional)</value>
+  </data>
+  <data name="FamilyBudget_Saving" xml:space="preserve">
+    <value>Saving…</value>
+  </data>
+  <data name="FamilyBudget_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="FamilyBudget_CategoryStatsTitle" xml:space="preserve">
+    <value>Category Breakdown</value>
+  </data>
+  <data name="FamilyBudget_NoExpenseRecords" xml:space="preserve">
+    <value>No expense records this month</value>
+  </data>
+  <data name="FamilyBudget_TotalIncome" xml:space="preserve">
+    <value>Total Income</value>
+  </data>
+  <data name="FamilyBudget_TotalExpense" xml:space="preserve">
+    <value>Total Expense</value>
+  </data>
+  <data name="FamilyBudget_DetailHeader" xml:space="preserve">
+    <value>Monthly Details ({0})</value>
+  </data>
+  <data name="FamilyBudget_NoRecords" xml:space="preserve">
+    <value>No records this month yet</value>
+  </data>
+  <data name="FamilyBudget_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="FamilyBudget_ConfirmDeleteTitle" xml:space="preserve">
+    <value>Confirm Delete</value>
+  </data>
+  <data name="FamilyBudget_ConfirmDeleteMessage" xml:space="preserve">
+    <value>Are you sure you want to delete this entry?</value>
+  </data>
+  <data name="FamilyBudget_DeleteIrreversible" xml:space="preserve">
+    <value>This action cannot be undone</value>
+  </data>
+  <data name="FamilyBudget_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="FamilyBudget_ConfirmDelete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="FamilyBudget_LoadFailed" xml:space="preserve">
+    <value>Failed to load: {0}</value>
+  </data>
+  <data name="FamilyBudget_AmountRequired" xml:space="preserve">
+    <value>Please enter an amount</value>
+  </data>
+  <data name="FamilyBudget_CategoryRequired" xml:space="preserve">
+    <value>Please select a category</value>
+  </data>
+  <data name="FamilyBudget_SaveFailed" xml:space="preserve">
+    <value>Failed to save: {0}</value>
+  </data>
+  <data name="AiDrawing_PageTitle" xml:space="preserve">
+    <value>AI Drawing</value>
+  </data>
+  <data name="AiDrawing_Title" xml:space="preserve">
+    <value>AI Drawing</value>
+  </data>
+  <data name="AiDrawing_ComfyUnavailable" xml:space="preserve">
+    <value>ComfyUI service is not running. Please start ComfyUI (127.0.0.1:8188), then</value>
+  </data>
+  <data name="AiDrawing_Recheck" xml:space="preserve">
+    <value>Recheck</value>
+  </data>
+  <data name="AiDrawing_GenerationParams" xml:space="preserve">
+    <value>Generation Parameters</value>
+  </data>
+  <data name="AiDrawing_Mode" xml:space="preserve">
+    <value>Mode</value>
+  </data>
+  <data name="AiDrawing_ImageMode" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="AiDrawing_VideoMode" xml:space="preserve">
+    <value>Video</value>
+  </data>
+  <data name="AiDrawing_Prompt" xml:space="preserve">
+    <value>Prompt</value>
+  </data>
+  <data name="AiDrawing_PromptPlaceholder" xml:space="preserve">
+    <value>Describe the image you want, e.g. an orange cat sitting on the windowsill in warm sunlight</value>
+  </data>
+  <data name="AiDrawing_Style" xml:space="preserve">
+    <value>Style</value>
+  </data>
+  <data name="AiDrawing_StyleHint" xml:space="preserve">
+    <value>The style is appended to the end of the prompt</value>
+  </data>
+  <data name="AiDrawing_Width" xml:space="preserve">
+    <value>Width</value>
+  </data>
+  <data name="AiDrawing_Height" xml:space="preserve">
+    <value>Height</value>
+  </data>
+  <data name="AiDrawing_Steps" xml:space="preserve">
+    <value>Steps: {0}</value>
+  </data>
+  <data name="AiDrawing_Generating" xml:space="preserve">
+    <value>⏳ Generating…</value>
+  </data>
+  <data name="AiDrawing_Generate" xml:space="preserve">
+    <value>✨ Generate</value>
+  </data>
+  <data name="AiDrawing_GenerateHint" xml:space="preserve">
+    <value>Images take about 30 seconds, videos about 3-5 minutes. Please wait patiently.</value>
+  </data>
+  <data name="AiDrawing_Duration" xml:space="preserve">
+    <value>Took {0:F1} seconds</value>
+  </data>
+  <data name="AiDrawing_Download" xml:space="preserve">
+    <value>Download</value>
+  </data>
+  <data name="AiDrawing_HistoryTitle" xml:space="preserve">
+    <value>History</value>
+  </data>
+  <data name="AiDrawing_Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="AiDrawing_NoHistory" xml:space="preserve">
+    <value>No generation records yet</value>
+  </data>
+  <data name="AiDrawing_ImageLoadFailed" xml:space="preserve">
+    <value>Image failed to load</value>
+  </data>
+  <data name="AiDrawing_VideoLoadFailed" xml:space="preserve">
+    <value>Video failed to load</value>
+  </data>
+  <data name="AiDrawing_Failed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="AiDrawing_PromptRequired" xml:space="preserve">
+    <value>Please enter a prompt</value>
+  </data>
+  <data name="AiDrawing_StyleDefault" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="AiDrawing_StyleRealistic" xml:space="preserve">
+    <value>Realistic Photography</value>
+  </data>
+  <data name="AiDrawing_StyleAnime" xml:space="preserve">
+    <value>Anime</value>
+  </data>
+  <data name="AiDrawing_StyleCyberpunk" xml:space="preserve">
+    <value>Cyberpunk</value>
+  </data>
+  <data name="AiDrawing_StyleInkWash" xml:space="preserve">
+    <value>Ink Wash</value>
+  </data>
+  <data name="AiDrawing_StyleOil" xml:space="preserve">
+    <value>Oil Painting</value>
+  </data>
+  <data name="AiDrawing_Style3D" xml:space="preserve">
+    <value>3D Render</value>
+  </data>
+  <data name="AiDrawing_StylePixel" xml:space="preserve">
+    <value>Pixel Art</value>
+  </data>
+  <data name="Assistant_PageTitle" xml:space="preserve">
+    <value>AI Assistant</value>
+  </data>
+  <data name="Assistant_Title" xml:space="preserve">
+    <value>AI Assistant</value>
+  </data>
+  <data name="Assistant_Intro" xml:space="preserve">
+    <value>The assistant quietly observes your input in Baihua (chat / search / knowledge generation), analyzes it once a day, infers topics you may be interested in (up to 3), and automatically generates matching knowledge bases for you.</value>
+  </data>
+  <data name="Assistant_SwitchLabel" xml:space="preserve">
+    <value>Assistant Switch</value>
+  </data>
+  <data name="Assistant_EnabledStatus" xml:space="preserve">
+    <value>Enabled: collects input + daily analysis + auto-generates knowledge bases</value>
+  </data>
+  <data name="Assistant_DisabledStatus" xml:space="preserve">
+    <value>Disabled: no collection, no analysis</value>
+  </data>
+  <data name="Assistant_ScheduleInfo" xml:space="preserve">
+    <value>｜Daily analysis at {0}:00 ｜Data retained for {1} days</value>
+  </data>
+  <data name="Assistant_TodayAnalysis" xml:space="preserve">
+    <value>Today's Analysis</value>
+  </data>
+  <data name="Assistant_Analyzing" xml:space="preserve">
+    <value>Analyzing…</value>
+  </data>
+  <data name="Assistant_AnalyzeNow" xml:space="preserve">
+    <value>Analyze Now</value>
+  </data>
+  <data name="Assistant_AnalyzingHint" xml:space="preserve">
+    <value>The assistant is analyzing today's activity, please wait…</value>
+  </data>
+  <data name="Assistant_NotAnalyzedToday" xml:space="preserve">
+    <value>Not analyzed today (auto-analyzed daily at {0}:00, or click &quot;Analyze Now&quot; after new activity).</value>
+  </data>
+  <data name="Assistant_ActivityCount" xml:space="preserve">
+    <value>{0} activities recorded so far.</value>
+  </data>
+  <data name="Assistant_NotEnoughInfo" xml:space="preserve">
+    <value>Not enough information today to determine interest topics (0 returned).</value>
+  </data>
+  <data name="Assistant_Evidence" xml:space="preserve">
+    <value>Evidence: {0}</value>
+  </data>
+  <data name="Assistant_GeneratedVaultsHeader" xml:space="preserve">
+    <value>Knowledge bases triggered for generation (check progress on the Tasks page; they will appear in the knowledge base list once done):</value>
+  </data>
+  <data name="Assistant_Failed" xml:space="preserve">
+    <value>Failed {0}</value>
+  </data>
+  <data name="Assistant_Submitted" xml:space="preserve">
+    <value>Submitted {0}</value>
+  </data>
+  <data name="Assistant_InterestHistory" xml:space="preserve">
+    <value>Interest Changes (last {0} days)</value>
+  </data>
+  <data name="Assistant_ActivityVolume" xml:space="preserve">
+    <value>Activity Volume (last 14 days)</value>
+  </data>
+  <data name="Assistant_ActivitiesHeader" xml:space="preserve">
+    <value>Activities Collected Today ({0})</value>
+  </data>
+  <data name="Assistant_DisabledHint" xml:space="preserve">
+    <value>The assistant is disabled. After you turn on the switch, the assistant will start recording your input and analyze it daily.</value>
+  </data>
+  <data name="Assistant_AnalysisFailed" xml:space="preserve">
+    <value>Analysis failed: {0}</value>
+  </data>
+</root>

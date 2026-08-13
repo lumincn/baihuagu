@@ -1,5 +1,5 @@
 @page "/log-errors"
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @layout Baihua.Web.Shared.MainLayout
 @using System.Net.Http.Headers
 @using System.Text

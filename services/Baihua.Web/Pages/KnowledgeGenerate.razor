@@ -1,5 +1,5 @@
 @page "/generate"
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @using Microsoft.AspNetCore.Components.Web
 @using Baihua.Contracts.Generate
 @inject NavigationManager Navigation

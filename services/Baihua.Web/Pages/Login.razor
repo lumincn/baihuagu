@@ -1,6 +1,6 @@
 @page "/login"
 @layout Baihua.Web.Components.Layout.EmptyLayout
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject Baihua.Web.Services.AuthService AuthService
 @inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 

@@ -1,24 +1,24 @@
 @page "/assistant"
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @using Baihua.Contracts.Assistant
 @inject Baihua.Web.Services.IApiService ApiService
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
-<PageTitle>AI 数字助理</PageTitle>
+<PageTitle>@L["Assistant_PageTitle"]</PageTitle>
 
-<h1>🤖 AI 数字助理</h1>
+<h1>🤖 @L["Assistant_Title"]</h1>
 <p class="text-muted">
-    助理默默观察你在百花中的输入（聊天/搜索/知识库生成），每天自动分析一次，
-    推测你可能感兴趣的主题（最多 3 个），并为你自动生成对应的知识库。
+    @L["Assistant_Intro"]
 </p>
 
 <!-- 开关 -->
 <div class="card mb-4">
     <div class="card-body d-flex justify-content-between align-items-center">
         <div>
-            <b>助理开关</b>
+            <b>@L["Assistant_SwitchLabel"]</b>
             <div class="small text-muted">
-                @(_settings.Enabled ? "开启中：采集输入 + 每日分析 + 自动生成知识库" : "已关闭：不采集、不分析")
-                ｜每日分析时间 @(_settings.AnalyzeHour):00 ｜数据保留 @(_settings.RetentionDays) 天
+                @(_settings.Enabled ? L["Assistant_EnabledStatus"] : L["Assistant_DisabledStatus"])
+                @L["Assistant_ScheduleInfo", _settings.AnalyzeHour, _settings.RetentionDays]
             </div>
         </div>
         <div class="form-check form-switch" style="transform:scale(1.4);margin-right:0.5rem">
@@ -32,23 +32,23 @@
     <!-- 今日分析 -->
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <span>📅 今日分析</span>
+            <span>📅 @L["Assistant_TodayAnalysis"]</span>
             <div>
                 <button class="btn btn-sm btn-primary" disabled="@_analyzing" @onclick="RunAnalysisAsync">
-                    @(_analyzing ? "分析中…" : "立即分析")
+                    @(_analyzing ? L["Assistant_Analyzing"] : L["Assistant_AnalyzeNow"])
                 </button>
             </div>
         </div>
         <div class="card-body">
             @if (_analyzing)
             {
-                <div class="loading-spinner">助理正在分析今天的活动，请稍候…</div>
+                <div class="loading-spinner">@L["Assistant_AnalyzingHint"]</div>
             }
             else if (_todayAnalysis == null)
             {
                 <div class="text-muted small">
-                    今天还没分析（每天 @(_settings.AnalyzeHour):00 自动分析，或有活动后手动点"立即分析"）。
-                    当前已记录 @(_activities.Count) 条活动。
+                    @L["Assistant_NotAnalyzedToday", _settings.AnalyzeHour]
+                    @L["Assistant_ActivityCount", _activities.Count]
                 </div>
             }
             else
@@ -57,7 +57,7 @@
 
                 @if (_todayAnalysis.Interests.Count == 0)
                 {
-                    <div class="alert alert-info mb-0">今日信息不足以确定兴趣主题（返回 0 个）。</div>
+                    <div class="alert alert-info mb-0">@L["Assistant_NotEnoughInfo"]</div>
                 }
                 else
                 {
@@ -73,7 +73,7 @@
                                         </div>
                                         @if (!string.IsNullOrEmpty(i.Evidence))
                                         {
-                                            <div class="small text-muted mt-1">依据：@i.Evidence</div>
+                                            <div class="small text-muted mt-1">@L["Assistant_Evidence", i.Evidence]</div>
                                         }
                                     </div>
                                 </div>
@@ -85,7 +85,7 @@
                 @if (_todayAnalysis.GeneratedVaults.Count > 0)
                 {
                     <hr />
-                    <div class="small text-muted mb-2">📚 已触发生成的知识库（可在"任务"页查看进度，完成后出现在知识库列表）：</div>
+                    <div class="small text-muted mb-2">📚 @L["Assistant_GeneratedVaultsHeader"]</div>
                     <ul class="mb-0">
                         @foreach (var v in _todayAnalysis.GeneratedVaults)
                         {
@@ -93,11 +93,11 @@
                                 @v.Topic
                                 @if (v.Status == "failed")
                                 {
-                                    <span class="badge bg-danger ms-1">失败 @v.Error</span>
+                                    <span class="badge bg-danger ms-1">@L["Assistant_Failed", v.Error ?? ""]</span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-success ms-1">已提交 @(string.IsNullOrEmpty(v.VaultName) ? "" : v.VaultName)</span>
+                                    <span class="badge bg-success ms-1">@L["Assistant_Submitted", string.IsNullOrEmpty(v.VaultName) ? "" : v.VaultName]</span>
                                 }
                             </li>
                         }
@@ -111,7 +111,7 @@
     @if (_history.Count > 0)
     {
         <div class="card mb-4">
-            <div class="card-header">📈 兴趣变化（最近 @_history.Count 天）</div>
+            <div class="card-header">📈 @L["Assistant_InterestHistory", _history.Count]</div>
             <div class="card-body">
                 @foreach (var h in _history)
                 {
@@ -131,7 +131,7 @@
     @if (_activityCounts.Count > 0)
     {
         <div class="card mb-4">
-            <div class="card-header">📊 近 14 天活动量</div>
+            <div class="card-header">📊 @L["Assistant_ActivityVolume"]</div>
             <div class="card-body">
                 <div class="d-flex align-items-end gap-1" style="height:80px">
                     @foreach (var kv in _activityCounts)
@@ -151,7 +151,7 @@
     @if (_activities.Count > 0)
     {
         <div class="card">
-            <div class="card-header">📋 今日已采集的活动（@_activities.Count 条）</div>
+            <div class="card-header">📋 @L["Assistant_ActivitiesHeader", _activities.Count]</div>
             <div class="card-body p-0" style="max-height:300px;overflow-y:auto">
                 <ul class="list-group list-group-flush">
                     @foreach (var a in _activities.TakeLast(50).Reverse())
@@ -169,7 +169,7 @@
 }
 else
 {
-    <div class="alert alert-secondary">助理已关闭。打开开关后，助理会开始记录输入并每天自动分析。</div>
+    <div class="alert alert-secondary">@L["Assistant_DisabledHint"]</div>
 }
 
 @code {
@@ -226,7 +226,7 @@ else
         }
         catch (Exception ex)
         {
-            _todayAnalysis = new AssistantAnalysisDto { Date = DateTime.Today.ToString("yyyy-MM-dd"), Summary = "分析失败：" + ex.Message };
+            _todayAnalysis = new AssistantAnalysisDto { Date = DateTime.Today.ToString("yyyy-MM-dd"), Summary = L["Assistant_AnalysisFailed", ex.Message] };
         }
         finally
         {

@@ -1,5 +1,5 @@
 @page "/ai-metrics"
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @using Baihua.Contracts.Metrics
 @inject Baihua.Web.Services.IApiService ApiService
 @implements IDisposable

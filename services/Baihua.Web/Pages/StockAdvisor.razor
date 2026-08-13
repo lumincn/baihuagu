@@ -1,5 +1,5 @@
 @page "/stock-advisor"
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @using Baihua.Contracts.Stock
 @using System.Text.Json
 @inject Baihua.Web.Services.IApiService ApiService

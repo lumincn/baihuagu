@@ -1,5 +1,5 @@
 @page "/master-stage"
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @using Baihua.Web.Services
 @using Microsoft.Extensions.Localization
 @using Baihua.Contracts.Master

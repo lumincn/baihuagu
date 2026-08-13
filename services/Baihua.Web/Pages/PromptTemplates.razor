@@ -1,5 +1,5 @@
 @page "/prompt-templates"
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @using Microsoft.Extensions.Localization
 @inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 @inject Baihua.Web.Services.IApiService ApiService

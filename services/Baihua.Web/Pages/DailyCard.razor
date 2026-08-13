@@ -1,5 +1,5 @@
 @page "/daily-card"
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject Baihua.Web.Services.IApiService ApiService
 @inject Baihua.Web.Services.VaultsService VaultsService
 @inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L

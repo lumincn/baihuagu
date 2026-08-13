@@ -1,5 +1,5 @@
 @page "/note"
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject NavigationManager Navigation
 @inject Microsoft.Extensions.Logging.ILogger<NoteDetail> Logger
 @inject Baihua.Web.Services.IRecentNotesService RecentNotesService

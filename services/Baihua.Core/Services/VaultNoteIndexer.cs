@@ -7,6 +7,25 @@ using Baihua.Data;
 namespace Baihua.Family.Services
 {
     /// <summary>
+    /// 笔记文件指纹（mtime + 大小），用于增量索引的变更检测
+    /// </summary>
+    public readonly record struct NoteFileStamp(DateTime LastWriteTimeUtc, long Length);
+
+    /// <summary>
+    /// 一次索引更新的结果（Snapshot 为更新后的文件指纹快照，供下次增量对比）
+    /// </summary>
+    public sealed record VaultIndexChangeResult(
+        Dictionary<string, NoteFileStamp> Snapshot,
+        bool IsFullRebuild,
+        int Added,
+        int Updated,
+        int Removed,
+        int Unchanged)
+    {
+        public bool Changed => Added > 0 || Updated > 0 || Removed > 0;
+    }
+
+    /// <summary>
     /// 知识库笔记 FTS5 全文索引服务
     /// </summary>
     public class VaultNoteIndexer
@@ -43,62 +62,119 @@ namespace Baihua.Family.Services
         }
 
         /// <summary>
-        /// 重建指定知识库的全文索引
+        /// 重建指定知识库的全文索引（删除 + 逐条插入在同一个事务内，任一步失败整体回滚，
+        /// 不会留下半空索引）
         /// </summary>
         public async Task IndexVaultAsync(string vaultId, string vaultPath, CancellationToken ct = default)
+        {
+            await RebuildAsync(vaultId, vaultPath, ct);
+        }
+
+        /// <summary>
+        /// 增量更新指定知识库的全文索引：
+        /// 以笔记文件 mtime/size 快照对比为准，仅对新增/变更的笔记重新写入、
+        /// 对已删除的笔记删除对应 FTS 行，未变更的笔记不处理；
+        /// previousSnapshot 为 null 或为空（首次索引 / 快照丢失）时退化为整库重建。
+        /// </summary>
+        public async Task<VaultIndexChangeResult> IndexVaultChangesAsync(
+            string vaultId,
+            string vaultPath,
+            IReadOnlyDictionary<string, NoteFileStamp>? previousSnapshot,
+            CancellationToken ct = default)
         {
             if (!Directory.Exists(vaultPath))
             {
                 _logger.LogWarning("知识库路径不存在：{Path}", vaultPath);
-                return;
+                var keep = previousSnapshot == null
+                    ? new Dictionary<string, NoteFileStamp>(StringComparer.OrdinalIgnoreCase)
+                    : previousSnapshot.ToDictionary(kv => kv.Key, kv => kv.Value, StringComparer.OrdinalIgnoreCase);
+                return new VaultIndexChangeResult(keep, false, 0, 0, 0, 0);
             }
 
             await EnsureFtsTableAsync(ct);
 
-            using var dbContext = await _dbContextFactory.CreateDbContextAsync(ct);
-
-            // 1. 删除该知识库的旧索引
-            await dbContext.Database.ExecuteSqlRawAsync(
-                "DELETE FROM VaultNoteFts WHERE vault_id = {0}",
-                vaultId);
-
-            // 2. 扫描所有 .md 文件
-            var files = Directory.GetFiles(vaultPath, "*.md", SearchOption.AllDirectories);
-            _logger.LogInformation("开始索引知识库 {VaultId}，共 {Count} 个文件", vaultId, files.Length);
-
-            var indexed = 0;
-            foreach (var file in files)
+            // 无法增量（首次 / 快照丢失）→ 整库重建
+            if (previousSnapshot == null || previousSnapshot.Count == 0)
             {
-                if (ct.IsCancellationRequested) break;
+                _logger.LogInformation("知识库 {VaultId} 无可用快照，执行整库重建", vaultId);
+                var (indexed, snapshot) = await RebuildAsync(vaultId, vaultPath, ct);
+                return new VaultIndexChangeResult(snapshot, true, indexed, 0, 0, 0);
+            }
 
-                try
+            var current = ScanVault(vaultPath);
+
+            var added = new List<string>();
+            var updated = new List<string>();
+            var removed = new List<string>();
+            var unchanged = 0;
+
+            foreach (var (path, stamp) in current)
+            {
+                if (previousSnapshot.TryGetValue(path, out var prev))
                 {
-                    var fileName = Path.GetFileName(file);
-                    if (fileName.Equals("README.md", StringComparison.OrdinalIgnoreCase))
-                        continue;
-
-                    var title = Path.GetFileNameWithoutExtension(file);
-                    var relativePath = file.Substring(vaultPath.Length).TrimStart('/', '\\');
-                    var content = await File.ReadAllTextAsync(file, ct);
-
-                    // 3. 插入索引（批量插入性能更好，但 FTS5 不支持普通 INSERT 的批量优化）
-                    await dbContext.Database.ExecuteSqlRawAsync(
-                        "INSERT INTO VaultNoteFts (title, content, vault_id, file_path) VALUES ({0}, {1}, {2}, {3})",
-                        title, content, vaultId, relativePath);
-
-                    indexed++;
-                    if (indexed % 100 == 0)
-                    {
-                        _logger.LogDebug("已索引 {Indexed}/{Total} 个文件", indexed, files.Length);
-                    }
+                    if (prev == stamp) unchanged++;
+                    else updated.Add(path);
                 }
-                catch (Exception ex)
+                else
                 {
-                    _logger.LogWarning(ex, "索引文件失败：{File}", file);
+                    added.Add(path);
                 }
             }
 
-            _logger.LogInformation("知识库 {VaultId} 索引完成：{Indexed}/{Total} 个文件", vaultId, indexed, files.Length);
+            foreach (var path in previousSnapshot.Keys)
+            {
+                if (!current.ContainsKey(path)) removed.Add(path);
+            }
+
+            if (added.Count == 0 && updated.Count == 0 && removed.Count == 0)
+            {
+                _logger.LogDebug("知识库 {VaultId} 无变化，跳过索引", vaultId);
+                return new VaultIndexChangeResult(current, false, 0, 0, 0, unchanged);
+            }
+
+            _logger.LogInformation("知识库 {VaultId} 增量索引：新增 {Added} 更新 {Updated} 删除 {Removed}",
+                vaultId, added.Count, updated.Count, removed.Count);
+
+            using var dbContext = await _dbContextFactory.CreateDbContextAsync(ct);
+            await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
+
+            try
+            {
+                // 删除已移除笔记的 FTS 行
+                foreach (var path in removed)
+                {
+                    await dbContext.Database.ExecuteSqlRawAsync(
+                        "DELETE FROM VaultNoteFts WHERE vault_id = {0} AND file_path = {1}",
+                        vaultId, path);
+                }
+
+                // 新增/变更笔记：先删旧行（避免重复）再插入
+                foreach (var path in added.Concat(updated))
+                {
+                    ct.ThrowIfCancellationRequested();
+
+                    var fullPath = Path.Combine(vaultPath, path);
+                    var title = Path.GetFileNameWithoutExtension(path);
+                    var content = await ReadNoteContentAsync(fullPath, ct);
+
+                    await dbContext.Database.ExecuteSqlRawAsync(
+                        "DELETE FROM VaultNoteFts WHERE vault_id = {0} AND file_path = {1}",
+                        vaultId, path);
+                    await dbContext.Database.ExecuteSqlRawAsync(
+                        "INSERT INTO VaultNoteFts (title, content, vault_id, file_path) VALUES ({0}, {1}, {2}, {3})",
+                        title, content, vaultId, path);
+                }
+
+                await transaction.CommitAsync(ct);
+            }
+            catch
+            {
+                _logger.LogWarning("知识库 {VaultId} 增量索引失败，已回滚，旧索引保持不变", vaultId);
+                await transaction.RollbackAsync(CancellationToken.None);
+                throw;
+            }
+
+            return new VaultIndexChangeResult(current, false, added.Count, updated.Count, removed.Count, unchanged);
         }
 
         /// <summary>
@@ -206,6 +282,99 @@ namespace Baihua.Family.Services
             catch
             {
                 return (0, null);
+            }
+        }
+
+        /// <summary>
+        /// 读取笔记内容（protected virtual 便于测试注入读取失败/统计读取次数）
+        /// </summary>
+        protected virtual Task<string> ReadNoteContentAsync(string filePath, CancellationToken ct)
+            => File.ReadAllTextAsync(filePath, ct);
+
+        /// <summary>
+        /// 扫描知识库全部 .md 笔记，返回相对路径 → 文件指纹（跳过 README.md）
+        /// </summary>
+        private static Dictionary<string, NoteFileStamp> ScanVault(string vaultPath)
+        {
+            var result = new Dictionary<string, NoteFileStamp>(StringComparer.OrdinalIgnoreCase);
+            var files = Directory.GetFiles(vaultPath, "*.md", SearchOption.AllDirectories);
+            foreach (var file in files)
+            {
+                var fileName = Path.GetFileName(file);
+                if (fileName.Equals("README.md", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                var relativePath = file.Substring(vaultPath.Length).TrimStart('/', '\\');
+                var info = new FileInfo(file);
+                result[relativePath] = new NoteFileStamp(info.LastWriteTimeUtc, info.Length);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 整库重建：删除该知识库全部旧索引后逐条插入，同一事务内完成，任一步失败整体回滚
+        /// </summary>
+        private async Task<(int Indexed, Dictionary<string, NoteFileStamp> Snapshot)> RebuildAsync(
+            string vaultId, string vaultPath, CancellationToken ct)
+        {
+            if (!Directory.Exists(vaultPath))
+            {
+                _logger.LogWarning("知识库路径不存在：{Path}", vaultPath);
+                return (0, new Dictionary<string, NoteFileStamp>(StringComparer.OrdinalIgnoreCase));
+            }
+
+            await EnsureFtsTableAsync(ct);
+
+            var snapshot = ScanVault(vaultPath);
+
+            using var dbContext = await _dbContextFactory.CreateDbContextAsync(ct);
+            await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
+
+            try
+            {
+                // 1. 删除该知识库的旧索引
+                await dbContext.Database.ExecuteSqlRawAsync(
+                    "DELETE FROM VaultNoteFts WHERE vault_id = {0}",
+                    vaultId);
+
+                // 2. 扫描所有 .md 文件
+                var files = Directory.GetFiles(vaultPath, "*.md", SearchOption.AllDirectories);
+                _logger.LogInformation("开始索引知识库 {VaultId}，共 {Count} 个文件", vaultId, files.Length);
+
+                var indexed = 0;
+                foreach (var file in files)
+                {
+                    ct.ThrowIfCancellationRequested();
+
+                    var fileName = Path.GetFileName(file);
+                    if (fileName.Equals("README.md", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    var title = Path.GetFileNameWithoutExtension(file);
+                    var relativePath = file.Substring(vaultPath.Length).TrimStart('/', '\\');
+                    var content = await ReadNoteContentAsync(file, ct);
+
+                    // 3. 插入索引（批量插入性能更好，但 FTS5 不支持普通 INSERT 的批量优化）
+                    await dbContext.Database.ExecuteSqlRawAsync(
+                        "INSERT INTO VaultNoteFts (title, content, vault_id, file_path) VALUES ({0}, {1}, {2}, {3})",
+                        title, content, vaultId, relativePath);
+
+                    indexed++;
+                    if (indexed % 100 == 0)
+                    {
+                        _logger.LogDebug("已索引 {Indexed}/{Total} 个文件", indexed, files.Length);
+                    }
+                }
+
+                await transaction.CommitAsync(ct);
+                _logger.LogInformation("知识库 {VaultId} 索引完成：{Indexed}/{Total} 个文件", vaultId, indexed, files.Length);
+                return (indexed, snapshot);
+            }
+            catch
+            {
+                _logger.LogWarning("知识库 {VaultId} 索引重建失败，已回滚，旧索引保持不变", vaultId);
+                await transaction.RollbackAsync(CancellationToken.None);
+                throw;
             }
         }
 

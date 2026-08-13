@@ -1,16 +1,17 @@
 @page "/ai-drawing"
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject Baihua.Web.Services.IApiService ApiService
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
-<PageTitle>AI 绘图</PageTitle>
+<PageTitle>@L["AiDrawing_PageTitle"]</PageTitle>
 
-<h1>🎨 AI 绘图</h1>
+<h1>🎨 @L["AiDrawing_Title"]</h1>
 
 @if (!comfyAvailable)
 {
     <div class="alert alert-warning">
-        ⚠️ ComfyUI 服务未运行。请先启动 ComfyUI（127.0.0.1:8188），然后点击
-        <button class="btn btn-sm btn-primary" @onclick="CheckStatusAsync">🔄 重新检测</button>
+        ⚠️ @L["AiDrawing_ComfyUnavailable"]
+        <button class="btn btn-sm btn-primary" @onclick="CheckStatusAsync">🔄 @L["AiDrawing_Recheck"]</button>
     </div>
 }
 
@@ -19,37 +20,37 @@
     <div class="drawing-config">
         <div class="card mb-3">
             <div class="card-body">
-                <h5 class="mb-3">⚙️ 生成参数</h5>
+                <h5 class="mb-3">⚙️ @L["AiDrawing_GenerationParams"]</h5>
 
                 <div class="mb-3">
-                    <label class="form-label">模式</label>
+                    <label class="form-label">@L["AiDrawing_Mode"]</label>
                     <div class="btn-group w-100" role="group">
-                        <button type="button" class="btn @(mode == "image" ? "btn-primary" : "btn-outline-primary")" @onclick="SetModeImage">🖼️ 图片</button>
-                        <button type="button" class="btn @(mode == "video" ? "btn-primary" : "btn-outline-primary")" @onclick="SetModeVideo">🎬 视频</button>
+                        <button type="button" class="btn @(mode == "image" ? "btn-primary" : "btn-outline-primary")" @onclick="SetModeImage">🖼️ @L["AiDrawing_ImageMode"]</button>
+                        <button type="button" class="btn @(mode == "video" ? "btn-primary" : "btn-outline-primary")" @onclick="SetModeVideo">🎬 @L["AiDrawing_VideoMode"]</button>
                     </div>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">提示词</label>
-                    <textarea class="form-control" rows="3" @bind="prompt" placeholder="描述你想生成的画面，例如：一只橘猫坐在窗台上，温暖阳光"></textarea>
+                    <label class="form-label">@L["AiDrawing_Prompt"]</label>
+                    <textarea class="form-control" rows="3" @bind="prompt" placeholder="@L["AiDrawing_PromptPlaceholder"]"></textarea>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">风格</label>
+                    <label class="form-label">@L["AiDrawing_Style"]</label>
                     <select class="form-select" @bind="selectedStyle">
                         @foreach (var s in Styles)
                         {
-                            <option value="@s.Name">@s.Name</option>
+                            <option value="@s.Name">@L[s.Name]</option>
                         }
                     </select>
-                    <div class="form-text">风格会追加到提示词末尾</div>
+                    <div class="form-text">@L["AiDrawing_StyleHint"]</div>
                 </div>
 
                 @if (mode == "image")
                 {
                     <div class="row g-2 mb-3">
                         <div class="col-6">
-                            <label class="form-label">宽度</label>
+                            <label class="form-label">@L["AiDrawing_Width"]</label>
                             <select class="form-select" @bind="width">
                                 <option value="512">512</option>
                                 <option value="768">768</option>
@@ -57,7 +58,7 @@
                             </select>
                         </div>
                         <div class="col-6">
-                            <label class="form-label">高度</label>
+                            <label class="form-label">@L["AiDrawing_Height"]</label>
                             <select class="form-select" @bind="height">
                                 <option value="512">512</option>
                                 <option value="768">768</option>
@@ -68,13 +69,13 @@
                 }
 
                 <div class="mb-3">
-                    <label class="form-label">采样步数：@steps</label>
+                    <label class="form-label">@L["AiDrawing_Steps", steps]</label>
                     <input type="range" class="form-range" min="10" max="40" step="1" @bind="steps" />
                     <div class="d-flex justify-content-between"><small>10</small><small>40</small></div>
                 </div>
 
                 <button class="btn btn-primary w-100" @onclick="GenerateAsync" disabled="@(isGenerating || !comfyAvailable)">
-                    @(isGenerating ? "⏳ 生成中…" : "✨ 生成")
+                    @(isGenerating ? L["AiDrawing_Generating"] : L["AiDrawing_Generate"])
                 </button>
 
                 @if (isGenerating)
@@ -82,7 +83,7 @@
                     <div class="progress mt-3" style="height: 8px;">
                         <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
                     </div>
-                    <div class="text-muted small mt-2">图片约 30 秒，视频约 3-5 分钟，请耐心等待</div>
+                    <div class="text-muted small mt-2">@L["AiDrawing_GenerateHint"]</div>
                 }
 
                 @if (!string.IsNullOrEmpty(errorMessage))
@@ -102,8 +103,8 @@
                             <video src="@lastResultUrl" class="drawing-result" controls autoplay muted loop></video>
                         }
                         <div class="text-muted small mt-2">
-                            耗时 @lastDurationSeconds.ToString("F1") 秒
-                            <a class="btn btn-sm btn-outline-secondary ms-2" href="@lastResultUrl" target="_blank">⬇️ 下载</a>
+                            @L["AiDrawing_Duration", lastDurationSeconds]
+                            <a class="btn btn-sm btn-outline-secondary ms-2" href="@lastResultUrl" target="_blank">⬇️ @L["AiDrawing_Download"]</a>
                         </div>
                     </div>
                 }
@@ -114,12 +115,12 @@
     <!-- 右侧：历史记录 -->
     <div class="drawing-history">
         <div class="d-flex justify-content-between align-items-center mb-2">
-            <h5 class="mb-0">🕘 历史记录</h5>
-            <button class="btn btn-sm btn-outline-secondary" @onclick="LoadHistoryAsync">🔄 刷新</button>
+            <h5 class="mb-0">🕘 @L["AiDrawing_HistoryTitle"]</h5>
+            <button class="btn btn-sm btn-outline-secondary" @onclick="LoadHistoryAsync">🔄 @L["AiDrawing_Refresh"]</button>
         </div>
         @if (historyItems.Count == 0)
         {
-            <div class="text-muted text-center py-5">还没有生成记录</div>
+            <div class="text-muted text-center py-5">@L["AiDrawing_NoHistory"]</div>
         }
         else
         {
@@ -131,12 +132,12 @@
                             @if (item.Kind == "image")
                             {
                                 <img src="@item.FullUrl" class="card-img-top drawing-thumb" alt="@item.Prompt" loading="lazy"
-                                     onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 120%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23e9ecef%22/><text x=%2250%25%22 y=%2255%25%22 font-size=%2212%22 fill=%22%23999%22 text-anchor=%22middle%22>图片加载失败</text></svg>';" />
+                                     onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 120%22><rect width=%22100%25%22 height=%22100%25%22 fill=%22%23e9ecef%22/><text x=%2250%25%22 y=%2255%25%22 font-size=%2212%22 fill=%22%23999%22 text-anchor=%22middle%22>@L["AiDrawing_ImageLoadFailed"]</text></svg>';" />
                             }
                             else
                             {
                                 <video src="@item.FullUrl" class="card-img-top drawing-thumb" muted preload="metadata"
-                                       onerror="this.onerror=null;this.outerHTML='<div class=&quot;drawing-thumb drawing-thumb-fallback&quot;>视频加载失败</div>';"></video>
+                                       onerror="this.onerror=null;this.outerHTML='<div class=&quot;drawing-thumb drawing-thumb-fallback&quot;>@L["AiDrawing_VideoLoadFailed"]</div>';"></video>
                             }
                         </a>
                         <div class="card-body py-2">
@@ -145,7 +146,7 @@
                                 <span>@(item.Kind == "image" ? "🖼️" : "🎬") @item.CreatedAt.ToString("MM-dd HH:mm")</span>
                                 @if (!item.IsSuccess)
                                 {
-                                    <span class="text-danger">失败</span>
+                                    <span class="text-danger">@L["AiDrawing_Failed"]</span>
                                 }
                             </div>
                         </div>
@@ -204,19 +205,19 @@
 
     private static readonly StylePreset[] Styles =
     [
-        new("默认", ""),
-        new("写实摄影", ", professional photography, realistic, 8k, sharp focus, natural lighting"),
-        new("动漫", ", anime style, vibrant colors, detailed illustration, studio quality"),
-        new("赛博朋克", ", cyberpunk, neon lights, futuristic, cinematic, highly detailed"),
-        new("水墨国风", ", chinese ink painting, wash painting style, elegant, minimal"),
-        new("油画", ", oil painting, impressionist, rich textures, artistic"),
-        new("3D 渲染", ", 3d render, octane render, cinematic lighting, ultra detailed"),
-        new("像素风", ", pixel art, retro game style, 8-bit, detailed sprites")
+        new("AiDrawing_StyleDefault", ""),
+        new("AiDrawing_StyleRealistic", ", professional photography, realistic, 8k, sharp focus, natural lighting"),
+        new("AiDrawing_StyleAnime", ", anime style, vibrant colors, detailed illustration, studio quality"),
+        new("AiDrawing_StyleCyberpunk", ", cyberpunk, neon lights, futuristic, cinematic, highly detailed"),
+        new("AiDrawing_StyleInkWash", ", chinese ink painting, wash painting style, elegant, minimal"),
+        new("AiDrawing_StyleOil", ", oil painting, impressionist, rich textures, artistic"),
+        new("AiDrawing_Style3D", ", 3d render, octane render, cinematic lighting, ultra detailed"),
+        new("AiDrawing_StylePixel", ", pixel art, retro game style, 8-bit, detailed sprites")
     ];
 
     private string mode = "image";
     private string prompt = "";
-    private string selectedStyle = "默认";
+    private string selectedStyle = "AiDrawing_StyleDefault";
     private int width = 512;
     private int height = 512;
     private int steps = 20;
@@ -259,7 +260,7 @@
     {
         if (string.IsNullOrWhiteSpace(prompt))
         {
-            errorMessage = "请输入提示词";
+            errorMessage = L["AiDrawing_PromptRequired"];
             return;
         }
 

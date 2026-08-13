@@ -1,5 +1,5 @@
 @page "/code-agent"
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @using Microsoft.AspNetCore.Components.Web
 @using Baihua.Web.Services
 @using Microsoft.JSInterop

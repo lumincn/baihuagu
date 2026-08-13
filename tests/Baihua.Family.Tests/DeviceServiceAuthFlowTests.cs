@@ -199,4 +199,40 @@ public class DeviceServiceAuthFlowTests : IDisposable
         Assert.True(ok3);
         Assert.Equal(token1, token3);
     }
+
+    // ============ 一次性配对码 ============
+
+    [Fact]
+    public void PairCode_validate_success_rotates_code()
+    {
+        var service = CreateService();
+        var code = service.GetPairCode();
+
+        Assert.True(service.ValidatePairCode(code));
+        Assert.NotEqual(code, service.GetPairCode()); // 一次性：验证后即轮换
+        Assert.False(service.ValidatePairCode(code)); // 旧码立即失效
+    }
+
+    [Fact]
+    public void PairCode_wrong_or_empty_does_not_rotate()
+    {
+        var service = CreateService();
+        var code = service.GetPairCode();
+
+        Assert.False(service.ValidatePairCode("WRONG-CODE"));
+        Assert.False(service.ValidatePairCode(""));
+        Assert.False(service.ValidatePairCode(null));
+        Assert.Equal(code, service.GetPairCode()); // 未轮换
+    }
+
+    [Fact]
+    public void PairCode_refresh_generates_new_code()
+    {
+        var service = CreateService();
+        var old = service.GetPairCode();
+        var fresh = service.RefreshPairCode();
+
+        Assert.NotEqual(old, fresh);
+        Assert.Equal(fresh, service.GetPairCode());
+    }
 }

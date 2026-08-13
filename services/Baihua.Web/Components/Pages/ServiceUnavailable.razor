@@ -4,7 +4,7 @@
 @inject Baihua.Web.Services.IApiService ApiService
 @inject IWebHostEnvironment Environment
 @inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 
 <PageTitle>@L["ServiceUnavailable_PageTitle"]</PageTitle>
 

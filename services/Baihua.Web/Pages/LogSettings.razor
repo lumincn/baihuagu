@@ -1,5 +1,5 @@
 @page "/log-settings"
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject Baihua.Web.Services.SettingsService SettingsService
 @inject HttpClient Http
 @inject IJSRuntime JS

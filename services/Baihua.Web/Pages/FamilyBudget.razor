@@ -1,25 +1,26 @@
 @page "/family-budget"
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @using Baihua.Contracts.Budget
 @using System.Globalization
 @inject Baihua.Web.Services.IApiService ApiService
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
-<PageTitle>家庭记账</PageTitle>
+<PageTitle>@L["FamilyBudget_PageTitle"]</PageTitle>
 
-<h1>💰 家庭记账</h1>
-<p class="text-muted">记录家庭的每一笔收支，自动汇总月度账单与分类统计。</p>
+<h1>💰 @L["FamilyBudget_Title"]</h1>
+<p class="text-muted">@L["FamilyBudget_Subtitle"]</p>
 
 @if (_loading)
 {
-    <div class="loading-spinner">加载中…</div>
+    <div class="loading-spinner">@L["FamilyBudget_Loading"]</div>
 }
 else
 {
     <div class="d-flex align-items-center gap-3 mb-3">
-        <button class="btn btn-outline-secondary btn-sm" @onclick='() => ChangeMonth(-1)'>◀ 上月</button>
-        <h4 class="mb-0">@(_year) 年 @(_month) 月</h4>
-        <button class="btn btn-outline-secondary btn-sm" @onclick='() => ChangeMonth(1)'>下月 ▶</button>
-        <button class="btn btn-outline-primary btn-sm ms-2" @onclick="LoadAsync">刷新</button>
+        <button class="btn btn-outline-secondary btn-sm" @onclick='() => ChangeMonth(-1)'>◀ @L["FamilyBudget_PrevMonth"]</button>
+        <h4 class="mb-0">@L["FamilyBudget_MonthLabel", _year, _month]</h4>
+        <button class="btn btn-outline-secondary btn-sm" @onclick='() => ChangeMonth(1)'>@L["FamilyBudget_NextMonth"] ▶</button>
+        <button class="btn btn-outline-primary btn-sm ms-2" @onclick="LoadAsync">@L["FamilyBudget_Refresh"]</button>
     </div>
 
     <!-- 月度概览 -->
@@ -27,7 +28,7 @@ else
         <div class="col-md-4">
             <div class="card border-success">
                 <div class="card-body text-center">
-                    <div class="text-muted small">本月收入</div>
+                    <div class="text-muted small">@L["FamilyBudget_MonthIncome"]</div>
                     <div class="fs-4 text-success fw-bold">+@_summary.MonthIncome.ToString("N2")</div>
                 </div>
             </div>
@@ -35,7 +36,7 @@ else
         <div class="col-md-4">
             <div class="card border-danger">
                 <div class="card-body text-center">
-                    <div class="text-muted small">本月支出</div>
+                    <div class="text-muted small">@L["FamilyBudget_MonthExpense"]</div>
                     <div class="fs-4 text-danger fw-bold">-@_summary.MonthExpense.ToString("N2")</div>
                 </div>
             </div>
@@ -43,7 +44,7 @@ else
         <div class="col-md-4">
             <div class="card @(_summary.MonthBalance >= 0 ? "border-primary" : "border-warning")">
                 <div class="card-body text-center">
-                    <div class="text-muted small">本月结余</div>
+                    <div class="text-muted small">@L["FamilyBudget_MonthBalance"]</div>
                     <div class="fs-4 fw-bold @(_summary.MonthBalance >= 0 ? "text-primary" : "text-warning")">
                         @(_summary.MonthBalance >= 0 ? "+" : "")@_summary.MonthBalance.ToString("N2")
                     </div>
@@ -56,19 +57,19 @@ else
         <!-- 新增记录 -->
         <div class="col-md-4">
             <div class="card">
-                <div class="card-header">✏️ 记一笔</div>
+                <div class="card-header">✏️ @L["FamilyBudget_AddHeader"]</div>
                 <div class="card-body">
                     <div class="btn-group w-100 mb-3" role="group">
-                        <button class="btn btn-sm @(_newType == "expense" ? "btn-danger" : "btn-outline-danger")" @onclick='() => SetType("expense")'>支出</button>
-                        <button class="btn btn-sm @(_newType == "income" ? "btn-success" : "btn-outline-success")" @onclick='() => SetType("income")'>收入</button>
+                        <button class="btn btn-sm @(_newType == "expense" ? "btn-danger" : "btn-outline-danger")" @onclick='() => SetType("expense")'>@L["FamilyBudget_ExpenseType"]</button>
+                        <button class="btn btn-sm @(_newType == "income" ? "btn-success" : "btn-outline-success")" @onclick='() => SetType("income")'>@L["FamilyBudget_IncomeType"]</button>
                     </div>
                     <div class="mb-2">
-                        <input class="form-control" type="number" step="0.01" min="0.01" placeholder="金额"
+                        <input class="form-control" type="number" step="0.01" min="0.01" placeholder="@L["FamilyBudget_AmountPlaceholder"]"
                                @bind="_newAmount" />
                     </div>
                     <div class="mb-2">
                         <select class="form-select" @bind="_newCategory">
-                            <option value="">选择分类…</option>
+                            <option value="">@L["FamilyBudget_SelectCategory"]</option>
                             @foreach (var c in Categories)
                             {
                                 <option value="@c">@c</option>
@@ -79,10 +80,10 @@ else
                         <input class="form-control" type="date" @bind="_newDate" />
                     </div>
                     <div class="mb-3">
-                        <input class="form-control" placeholder="备注（可选）" @bind="_newNote" />
+                        <input class="form-control" placeholder="@L["FamilyBudget_NotePlaceholder"]" @bind="_newNote" />
                     </div>
                     <button class="btn btn-primary w-100" disabled="@_saving" @onclick="AddAsync">
-                        @(_saving ? "保存中…" : "保存")
+                        @(_saving ? L["FamilyBudget_Saving"] : L["FamilyBudget_Save"])
                     </button>
                     @if (!string.IsNullOrEmpty(_formError))
                     {
@@ -95,11 +96,11 @@ else
         <!-- 分类统计 -->
         <div class="col-md-4">
             <div class="card">
-                <div class="card-header">📊 本月支出分类</div>
+                <div class="card-header">📊 @L["FamilyBudget_CategoryStatsTitle"]</div>
                 <div class="card-body">
                     @if (_summary.CategoryStats.Count == 0)
                     {
-                        <div class="text-muted small">本月暂无支出记录</div>
+                        <div class="text-muted small">@L["FamilyBudget_NoExpenseRecords"]</div>
                     }
                     else
                     {
@@ -119,8 +120,8 @@ else
                     }
                     <hr />
                     <div class="small text-muted">
-                        累计收入 <b class="text-success">@_summary.TotalIncome.ToString("N2")</b> ｜
-                        累计支出 <b class="text-danger">@_summary.TotalExpense.ToString("N2")</b>
+                        @L["FamilyBudget_TotalIncome"] <b class="text-success">@_summary.TotalIncome.ToString("N2")</b> ｜
+                        @L["FamilyBudget_TotalExpense"] <b class="text-danger">@_summary.TotalExpense.ToString("N2")</b>
                     </div>
                 </div>
             </div>
@@ -130,12 +131,12 @@ else
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <span>📋 本月明细（@_transactions.Count 笔）</span>
+                    <span>📋 @L["FamilyBudget_DetailHeader", _transactions.Count]</span>
                 </div>
                 <div class="card-body p-0" style="max-height:520px;overflow-y:auto">
                     @if (_transactions.Count == 0)
                     {
-                        <div class="text-muted small p-3">本月还没有记录</div>
+                        <div class="text-muted small p-3">@L["FamilyBudget_NoRecords"]</div>
                     }
                     else
                     {
@@ -158,7 +159,7 @@ else
                                         <span class="fw-bold @(income ? "text-success" : "text-danger")">
                                             @(income ? "+" : "-")@t.Amount.ToString("N2")
                                         </span>
-                                        <button class="btn btn-sm btn-outline-danger" title="删除" @onclick='() => _pendingDelete = t'>×</button>
+                                        <button class="btn btn-sm btn-outline-danger" title="@L["FamilyBudget_Delete"]" @onclick='() => _pendingDelete = t'>×</button>
                                     </div>
                                 </li>
                             }
@@ -173,18 +174,18 @@ else
     {
         <div class="modal-overlay" @onclick="CancelDelete">
             <div class="modal-content" @onclick:stopPropagation="true">
-                <h3>确认删除</h3>
+                <h3>@L["FamilyBudget_ConfirmDeleteTitle"]</h3>
                 <p class="mb-1">
-                    确定要删除这笔账目吗？
+                    @L["FamilyBudget_ConfirmDeleteMessage"]
                     <br />
                     <span class="text-muted small">
                         [@_pendingDelete.Category] @(_pendingDelete.Type == "income" ? "+" : "-")@_pendingDelete.Amount.ToString("N2") · @_pendingDelete.Date.ToString("yyyy-MM-dd")@(!string.IsNullOrEmpty(_pendingDelete.Note) ? $" · {_pendingDelete.Note}" : "")
                     </span>
                 </p>
-                <p class="text-danger small">此操作不可恢复</p>
+                <p class="text-danger small">@L["FamilyBudget_DeleteIrreversible"]</p>
                 <div class="modal-actions">
-                    <button class="btn btn-secondary" @onclick="CancelDelete">取消</button>
-                    <button class="btn btn-danger" @onclick="ConfirmDelete">确认删除</button>
+                    <button class="btn btn-secondary" @onclick="CancelDelete">@L["FamilyBudget_Cancel"]</button>
+                    <button class="btn btn-danger" @onclick="ConfirmDelete">@L["FamilyBudget_ConfirmDelete"]</button>
                 </div>
             </div>
         </div>
@@ -311,7 +312,7 @@ else
         }
         catch (Exception ex)
         {
-            _formError = "加载失败：" + ex.Message;
+            _formError = L["FamilyBudget_LoadFailed", ex.Message];
         }
         finally
         {
@@ -323,8 +324,8 @@ else
     private async Task AddAsync()
     {
         _formError = null;
-        if (_newAmount <= 0) { _formError = "请输入金额"; return; }
-        if (string.IsNullOrEmpty(_newCategory)) { _formError = "请选择分类"; return; }
+        if (_newAmount <= 0) { _formError = L["FamilyBudget_AmountRequired"]; return; }
+        if (string.IsNullOrEmpty(_newCategory)) { _formError = L["FamilyBudget_CategoryRequired"]; return; }
 
         _saving = true;
         StateHasChanged();
@@ -346,7 +347,7 @@ else
         }
         catch (Exception ex)
         {
-            _formError = "保存失败：" + ex.Message;
+            _formError = L["FamilyBudget_SaveFailed", ex.Message];
         }
         finally
         {
