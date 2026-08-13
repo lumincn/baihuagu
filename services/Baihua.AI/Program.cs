@@ -192,9 +192,8 @@ var openobservePass = builder.Configuration["OpenObserve:Password"] ?? "";
             tracing
                 .AddSource("Baihua.AI")
                 .AddSource("Microsoft.Extensions.AI")
-                .SetSampler(isDevelopment
-                    ? new AlwaysOnSampler()
-                    : new ParentBasedSampler(new TraceIdRatioBasedSampler(0.1)))
+                // 个人开发环境全量采样；如未来生产流量大再改 TraceIdRatioBasedSampler
+                .SetSampler(new AlwaysOnSampler())
                 .AddOtlpExporter(options =>
                 {
                     options.Endpoint = new Uri($"{baseUrl}/api/default/v1/traces");
