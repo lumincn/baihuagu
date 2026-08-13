@@ -3,27 +3,28 @@
 @inject Baihua.Web.Services.IApiService ApiService
 @inject Baihua.Web.Services.VaultsService VaultsService
 @inject Microsoft.Extensions.Logging.ILogger<Quiz> Logger
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 @using Baihua.Contracts.Achievements
 
-<PageTitle>亲子互考</PageTitle>
+<PageTitle>@L["Quiz_Title"]</PageTitle>
 
 <div class="quiz-page">
-    <h1>🎯 亲子互考</h1>
+    <h1>🎯 @L["Quiz_Title"]</h1>
 
     @if (session == null)
     {
         <!-- AC1：选择对战双方 -->
         <div class="quiz-setup">
-            <h2>选择对战成员</h2>
+            <h2>@L["Quiz_SelectPlayers"]</h2>
             @if (learners.Count < 2)
             {
-                <div class="quiz-empty">需要至少 2 位家庭成员才能开始互考，先去添加学习者吧！</div>
+                <div class="quiz-empty">@L["Quiz_NeedTwoLearners"]</div>
             }
             else
             {
                 <div class="player-select">
                     <div>
-                        <label>成员 A（先出题）</label>
+                        <label>@L["Quiz_PlayerA"]</label>
                         <select class="form-select" @bind="playerAId">
                             @foreach (var l in learners)
                             {
@@ -32,7 +33,7 @@
                         </select>
                     </div>
                     <div>
-                        <label>成员 B（先作答）</label>
+                        <label>@L["Quiz_PlayerB"]</label>
                         <select class="form-select" @bind="playerBId">
                             @foreach (var l in learners)
                             {
@@ -46,7 +47,7 @@
                     <p class="quiz-error">@setupError</p>
                 }
                 <button class="btn btn-primary" @onclick="StartQuizAsync" disabled="@isStarting">
-                    @(isStarting ? "开始中..." : "开始互考")
+                    @(isStarting ? L["Quiz_Starting"] : L["Quiz_Start"])
                 </button>
             }
         </div>
@@ -55,33 +56,33 @@
     {
         <!-- AC3：结算面板 -->
         <div class="quiz-settlement">
-            <h2>🏆 对战结束</h2>
+            <h2>🏆 @L["Quiz_Finished"]</h2>
             <div class="settle-winner">
                 @if (result.WinnerId.HasValue)
                 {
-                    <span>🎉 胜者：@result.WinnerName！</span>
+                    <span>@string.Format(L["Quiz_WinnerFormat"], result.WinnerName)</span>
                 }
                 else
                 {
-                    <span>🤝 平局！</span>
+                    <span>@L["Quiz_Draw"]</span>
                 }
             </div>
             <div class="settle-scores">
                 <div class="settle-player">
                     <div class="sp-avatar">@session.PlayerA.AvatarEmoji</div>
                     <div class="sp-name">@session.PlayerA.Name</div>
-                    <div class="sp-score">@result.ScoreA 分</div>
-                    <div class="sp-accuracy">正确率 @(result.AccuracyA.ToString("P0"))</div>
+                    <div class="sp-score">@string.Format(L["Quiz_PointsFormat"], result.ScoreA)</div>
+                    <div class="sp-accuracy">@string.Format(L["Quiz_AccuracyFormat"], result.AccuracyA.ToString("P0"))</div>
                 </div>
                 <div class="settle-vs">VS</div>
                 <div class="settle-player">
                     <div class="sp-avatar">@session.PlayerB.AvatarEmoji</div>
                     <div class="sp-name">@session.PlayerB.Name</div>
-                    <div class="sp-score">@result.ScoreB 分</div>
-                    <div class="sp-accuracy">正确率 @(result.AccuracyB.ToString("P0"))</div>
+                    <div class="sp-score">@string.Format(L["Quiz_PointsFormat"], result.ScoreB)</div>
+                    <div class="sp-accuracy">@string.Format(L["Quiz_AccuracyFormat"], result.AccuracyB.ToString("P0"))</div>
                 </div>
             </div>
-            <button class="btn btn-primary" @onclick="ResetQuiz">再来一局</button>
+            <button class="btn btn-primary" @onclick="ResetQuiz">@L["Quiz_PlayAgain"]</button>
         </div>
     }
     else
@@ -90,24 +91,24 @@
         <div class="quiz-round">
             <div class="scoreboard">
                 <div class="score-a">@session.PlayerA.AvatarEmoji @session.PlayerA.Name：<b>@session.ScoreA</b></div>
-                <div class="round-num">第 @session.CurrentRound / @session.TotalRounds 轮</div>
+                <div class="round-num">@string.Format(L["Quiz_RoundFormat"], session.CurrentRound, session.TotalRounds)</div>
                 <div class="score-b">@session.PlayerB.AvatarEmoji @session.PlayerB.Name：<b>@session.ScoreB</b></div>
             </div>
             <div class="question-card">
-                <div class="q-asker">@AskerName 出题（@session.TimeLimitSeconds 秒限时）</div>
+                <div class="q-asker">@string.Format(L["Quiz_AskerFormat"], AskerName, session.TimeLimitSeconds)</div>
                 <div class="q-front">@session.CurrentQuestion?.Front</div>
-                <textarea class="form-control" @bind="answerText" rows="3" placeholder="输入你的答案..."></textarea>
+                <textarea class="form-control" @bind="answerText" rows="3" placeholder="@L["Quiz_AnswerPlaceholder"]"></textarea>
                 <button class="btn btn-primary" @onclick="SubmitAnswerAsync" disabled="@isSubmitting">
-                    @(isSubmitting ? "判定中..." : "提交答案")
+                    @(isSubmitting ? L["Quiz_Judging"] : L["Quiz_Submit"])
                 </button>
             </div>
             @if (lastResult != null)
             {
                 <div class="answer-feedback @(lastResult.IsCorrect ? "correct" : "wrong")">
-                    @(lastResult.IsCorrect ? "✅ 回答正确！" : "❌ 回答错误")
+                    @(lastResult.IsCorrect ? L["Quiz_Correct"] : L["Quiz_Wrong"])
                     @if (!lastResult.IsCorrect && !string.IsNullOrEmpty(lastResult.CorrectAnswer))
                     {
-                        <div class="correct-answer">正确答案：@lastResult.CorrectAnswer</div>
+                        <div class="correct-answer">@string.Format(L["Quiz_CorrectAnswerFormat"], lastResult.CorrectAnswer)</div>
                     }
                 </div>
             }
@@ -188,7 +189,7 @@
     {
         if (playerAId == playerBId)
         {
-            setupError = "请选择两位不同的成员";
+            setupError = L["Quiz_ErrorDifferentPlayers"].Value;
             return;
         }
         setupError = "";
@@ -211,7 +212,7 @@
         catch (Exception ex)
         {
             Logger.LogWarning(ex, "创建互考失败");
-            setupError = "知识库暂无卡片，请先创建卡片";
+            setupError = L["Quiz_ErrorNoCards"].Value;
         }
         finally
         {

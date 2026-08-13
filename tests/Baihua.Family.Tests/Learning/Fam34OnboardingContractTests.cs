@@ -85,8 +85,8 @@ public class Fam34OnboardingContractTests
         Assert.True(hasOnboarding && stepMarkers,
             "FAM-34-AC2：Onboarding 缺少四步结构（Step 1/2/3）（红）");
         Assert.True(
-            source.Contains("第一次学习", StringComparison.OrdinalIgnoreCase),
-            "FAM-34-AC2：缺少 Step 2 引导'完成第一次学习'（红）");
+            source.Contains("FamilyLanding_FirstStudyTitle", StringComparison.OrdinalIgnoreCase),
+            "FAM-34-AC2：缺少 Step 2 引导 key（FamilyLanding_FirstStudyTitle）（红）");
     }
 
     // ============ AC3：跳过持久化 ============

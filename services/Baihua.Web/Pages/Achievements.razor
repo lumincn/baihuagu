@@ -47,10 +47,10 @@
 
     <!-- FAM-31 家庭奖励进度（孩子视角进度条） -->
     <section class="reward-section">
-        <h2>🎁 家庭奖励</h2>
+        <h2>🎁 @L["Achievements_RewardTitle"]</h2>
         @if (rewardProgress.Count == 0)
         {
-            <div class="reward-empty">还没有奖励，家长可在下方添加奖励激励孩子学习</div>
+            <div class="reward-empty">@L["Achievements_RewardEmpty"]</div>
         }
         else
         {
@@ -62,12 +62,12 @@
                         <div class="reward-name">@reward.RewardName</div>
                         @if (reward.IsAchieved)
                         {
-                            <div class="reward-achieved">🎉 已达成！</div>
+                            <div class="reward-achieved">@L["Achievements_RewardAchieved"]</div>
                         }
                         else
                         {
                             <div class="reward-progress-text">
-                                进度 @reward.CurrentValue/@reward.TargetValue，还差 @reward.Remaining 就能获得 @reward.RewardIcon @reward.RewardName！
+                                @string.Format(L["Achievements_RewardProgress"], reward.CurrentValue, reward.TargetValue, reward.Remaining, reward.RewardIcon, reward.RewardName)
                             </div>
                             <div class="progress">
                                 <div class="progress-bar" style="width: @(reward.TargetValue > 0 ? (reward.CurrentValue * 100 / reward.TargetValue) : 0)%"></div>
@@ -79,14 +79,14 @@
         }
         <!-- 家长添加奖励 -->
         <div class="reward-add">
-            <input type="text" class="form-control form-control-sm" @bind="newRewardName" placeholder="奖励名称（如：冰淇淋）" />
+            <input type="text" class="form-control form-control-sm" @bind="newRewardName" placeholder="@L["Achievements_RewardNamePlaceholder"]" />
             <select class="form-select form-select-sm" @bind="newRewardType">
-                <option value="streak_days">连续打卡天数</option>
-                <option value="achievement_count">解锁成就数</option>
-                <option value="card_count">学习卡片数</option>
+                <option value="streak_days">@L["Achievements_RewardTypeStreak"]</option>
+                <option value="achievement_count">@L["Achievements_RewardTypeAchievements"]</option>
+                <option value="card_count">@L["Achievements_RewardTypeCards"]</option>
             </select>
-            <input type="number" class="form-control form-control-sm" @bind="newRewardTarget" placeholder="目标值" min="1" />
-            <button class="btn btn-primary btn-sm" @onclick="AddRewardAsync">添加奖励</button>
+            <input type="number" class="form-control form-control-sm" @bind="newRewardTarget" placeholder="@L["Achievements_RewardTargetPlaceholder"]" min="1" />
+            <button class="btn btn-primary btn-sm" @onclick="AddRewardAsync">@L["Achievements_AddReward"]</button>
         </div>
         @if (!string.IsNullOrEmpty(rewardFormError))
         {
@@ -393,8 +393,8 @@
         {
             // 空表单提交要给反馈（之前静默无反应）
             rewardFormError = string.IsNullOrWhiteSpace(newRewardName)
-                ? "请填写奖励名称"
-                : "请填写正确的目标值（大于 0）";
+                ? L["Achievements_RewardNameRequired"].Value
+                : L["Achievements_RewardTargetInvalid"].Value;
             return;
         }
         rewardFormError = "";

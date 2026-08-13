@@ -5700,4 +5700,248 @@ Shift+Enter new line, Enter to send</value>
   <data name="HardwareBenchmark_DataEstimateFormula" xml:space="preserve">
     <value>tokens/s ≈ memory bandwidth × utilization coefficient</value>
   </data>
+  <!-- 本轮 i18n 清零 -->
+  <data name="Checkin_Title" xml:space="preserve">
+    <value>Study Check-in</value>
+  </data>
+  <data name="Checkin_LoadFailed" xml:space="preserve">
+    <value>Failed to load. Please retry.</value>
+  </data>
+  <data name="Checkin_Retry" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="Checkin_StreakDays" xml:space="preserve">
+    <value>day streak</value>
+  </data>
+  <data name="Checkin_StreakGraceToday" xml:space="preserve">
+    <value>{0} day streak (not studied yet today)</value>
+  </data>
+  <data name="Checkin_StreakMotivation" xml:space="preserve">
+    <value>🎉 7+ days in a row — awesome!</value>
+  </data>
+  <data name="Checkin_MakeupHint" xml:space="preserve">
+    <value>Makeup</value>
+  </data>
+  <data name="Checkin_MakeupDialogTitle" xml:space="preserve">
+    <value>Make up {0}?</value>
+  </data>
+  <data name="Checkin_MakeupQuota" xml:space="preserve">
+    <value>Makeups left this month: {0}/3</value>
+  </data>
+  <data name="Checkin_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Checkin_ConfirmMakeup" xml:space="preserve">
+    <value>Confirm makeup</value>
+  </data>
+  <data name="Checkin_TodayList" xml:space="preserve">
+    <value>Today's Study List</value>
+  </data>
+  <data name="Checkin_EmptyToday" xml:space="preserve">
+    <value>No study yet today — go to the daily card to start.</value>
+  </data>
+  <data name="Checkin_GoDailyCard" xml:space="preserve">
+    <value>Go to Daily Card</value>
+  </data>
+  <data name="Checkin_Source" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="Checkin_StartTime" xml:space="preserve">
+    <value>Start Time</value>
+  </data>
+  <data name="Checkin_EndTime" xml:space="preserve">
+    <value>End Time</value>
+  </data>
+  <data name="Checkin_CardCount" xml:space="preserve">
+    <value>Cards Studied</value>
+  </data>
+  <data name="Checkin_Accuracy" xml:space="preserve">
+    <value>Accuracy</value>
+  </data>
+  <data name="Checkin_MakeupSuccess" xml:space="preserve">
+    <value>Makeup succeeded! Left this month: {0}/3</value>
+  </data>
+  <data name="Checkin_MakeupFailed" xml:space="preserve">
+    <value>Makeup failed. Please retry.</value>
+  </data>
+  <data name="Quiz_Title" xml:space="preserve">
+    <value>Family Quiz</value>
+  </data>
+  <data name="Quiz_SelectPlayers" xml:space="preserve">
+    <value>Choose Players</value>
+  </data>
+  <data name="Quiz_NeedTwoLearners" xml:space="preserve">
+    <value>Need at least 2 family members to start. Add learners first!</value>
+  </data>
+  <data name="Quiz_PlayerA" xml:space="preserve">
+    <value>Player A (asks first)</value>
+  </data>
+  <data name="Quiz_PlayerB" xml:space="preserve">
+    <value>Player B (answers first)</value>
+  </data>
+  <data name="Quiz_Starting" xml:space="preserve">
+    <value>Starting...</value>
+  </data>
+  <data name="Quiz_Start" xml:space="preserve">
+    <value>Start Quiz</value>
+  </data>
+  <data name="Quiz_Finished" xml:space="preserve">
+    <value>Quiz Finished</value>
+  </data>
+  <data name="Quiz_WinnerFormat" xml:space="preserve">
+    <value>🎉 Winner: {0}!</value>
+  </data>
+  <data name="Quiz_Draw" xml:space="preserve">
+    <value>🤝 Draw!</value>
+  </data>
+  <data name="Quiz_PointsFormat" xml:space="preserve">
+    <value>{0} pts</value>
+  </data>
+  <data name="Quiz_AccuracyFormat" xml:space="preserve">
+    <value>Accuracy {0}</value>
+  </data>
+  <data name="Quiz_PlayAgain" xml:space="preserve">
+    <value>Play Again</value>
+  </data>
+  <data name="Quiz_RoundFormat" xml:space="preserve">
+    <value>Round {0} / {1}</value>
+  </data>
+  <data name="Quiz_AskerFormat" xml:space="preserve">
+    <value>{0} asks ({1}s time limit)</value>
+  </data>
+  <data name="Quiz_AnswerPlaceholder" xml:space="preserve">
+    <value>Type your answer...</value>
+  </data>
+  <data name="Quiz_Judging" xml:space="preserve">
+    <value>Judging...</value>
+  </data>
+  <data name="Quiz_Submit" xml:space="preserve">
+    <value>Submit Answer</value>
+  </data>
+  <data name="Quiz_Correct" xml:space="preserve">
+    <value>✅ Correct!</value>
+  </data>
+  <data name="Quiz_Wrong" xml:space="preserve">
+    <value>❌ Wrong</value>
+  </data>
+  <data name="Quiz_CorrectAnswerFormat" xml:space="preserve">
+    <value>Correct answer: {0}</value>
+  </data>
+  <data name="Quiz_ErrorDifferentPlayers" xml:space="preserve">
+    <value>Please choose two different members</value>
+  </data>
+  <data name="Quiz_ErrorNoCards" xml:space="preserve">
+    <value>The vault has no cards yet. Create cards first.</value>
+  </data>
+  <data name="Achievements_RewardTitle" xml:space="preserve">
+    <value>Family Rewards</value>
+  </data>
+  <data name="Achievements_RewardEmpty" xml:space="preserve">
+    <value>No rewards yet. Parents can add rewards below to motivate learning.</value>
+  </data>
+  <data name="Achievements_RewardAchieved" xml:space="preserve">
+    <value>🎉 Achieved!</value>
+  </data>
+  <data name="Achievements_RewardProgress" xml:space="preserve">
+    <value>Progress {0}/{1} — {2} more to earn {3} {4}!</value>
+  </data>
+  <data name="Achievements_RewardNamePlaceholder" xml:space="preserve">
+    <value>Reward name (e.g. ice cream)</value>
+  </data>
+  <data name="Achievements_RewardTypeStreak" xml:space="preserve">
+    <value>Consecutive check-in days</value>
+  </data>
+  <data name="Achievements_RewardTypeAchievements" xml:space="preserve">
+    <value>Unlocked achievements</value>
+  </data>
+  <data name="Achievements_RewardTypeCards" xml:space="preserve">
+    <value>Studied cards</value>
+  </data>
+  <data name="Achievements_RewardTargetPlaceholder" xml:space="preserve">
+    <value>Target</value>
+  </data>
+  <data name="Achievements_AddReward" xml:space="preserve">
+    <value>Add Reward</value>
+  </data>
+  <data name="Achievements_RewardNameRequired" xml:space="preserve">
+    <value>Please enter a reward name</value>
+  </data>
+  <data name="Achievements_RewardTargetInvalid" xml:space="preserve">
+    <value>Please enter a valid target (greater than 0)</value>
+  </data>
+  <data name="Dashboard_LoadFailed" xml:space="preserve">
+    <value>Failed to load. Please retry.</value>
+  </data>
+  <data name="Dashboard_Retry" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="Dashboard_EmptyLearners" xml:space="preserve">
+    <value>Add your first learner</value>
+  </data>
+  <data name="Dashboard_AddLearner" xml:space="preserve">
+    <value>Add your first learner</value>
+  </data>
+  <data name="FamilyLanding_Skip" xml:space="preserve">
+    <value>Skip</value>
+  </data>
+  <data name="FamilyLanding_WelcomeTitle" xml:space="preserve">
+    <value>Welcome to the Baihua family learning space!</value>
+  </data>
+  <data name="FamilyLanding_WelcomeSubtitle" xml:space="preserve">
+    <value>Create your first learner and start the family learning journey</value>
+  </data>
+  <data name="FamilyLanding_LearnerNamePlaceholder" xml:space="preserve">
+    <value>Enter learner name</value>
+  </data>
+  <data name="FamilyLanding_Start" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="FamilyLanding_FirstStudyTitle" xml:space="preserve">
+    <value>Complete Your First Study</value>
+  </data>
+  <data name="FamilyLanding_FirstStudySubtitle" xml:space="preserve">
+    <value>Try finishing your first card! Go to the daily card to start.</value>
+  </data>
+  <data name="FamilyLanding_GoDailyCard" xml:space="preserve">
+    <value>Go to Daily Card</value>
+  </data>
+  <data name="FamilyLanding_CongratsTitle" xml:space="preserve">
+    <value>Awesome! You finished your first study!</value>
+  </data>
+  <data name="FamilyLanding_CongratsSubtitle" xml:space="preserve">
+    <value>Check out your streak and achievements</value>
+  </data>
+  <data name="FamilyLanding_ViewCheckin" xml:space="preserve">
+    <value>View Check-in</value>
+  </data>
+  <data name="FamilyLanding_Step1" xml:space="preserve">
+    <value>1 Create learner</value>
+  </data>
+  <data name="FamilyLanding_Step2" xml:space="preserve">
+    <value>2 First study</value>
+  </data>
+  <data name="FamilyLanding_Step3" xml:space="preserve">
+    <value>3 See results</value>
+  </data>
+  <data name="FamilyLanding_NameRequired" xml:space="preserve">
+    <value>Please enter a learner name</value>
+  </data>
+  <data name="FamilyLanding_NameTooLong" xml:space="preserve">
+    <value>Name too long — keep it within 20 characters</value>
+  </data>
+  <data name="FamilyLanding_CreateFailed" xml:space="preserve">
+    <value>Creation failed. Please retry.</value>
+  </data>
+  <data name="LogErrors_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="LogErrors_ConfirmClear" xml:space="preserve">
+    <value>Confirm Clear</value>
+  </data>
+  <data name="Login_CmdHint1" xml:space="preserve">
+    <value>On Windows cmd, just run</value>
+  </data>
+  <data name="Login_CmdHint2" xml:space="preserve">
+    <value>— no ./ prefix needed</value>
+  </data>
 </root>

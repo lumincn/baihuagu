@@ -7,10 +7,10 @@
 @inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 @using Baihua.Contracts.Achievements
 
-<PageTitle>学习打卡</PageTitle>
+<PageTitle>@L["Checkin_Title"]</PageTitle>
 
 <div class="checkin-page">
-    <h1>学习打卡</h1>
+    <h1>@L["Checkin_Title"]</h1>
 
     @if (isLoading)
     {
@@ -24,8 +24,8 @@
     else if (loadError)
     {
         <div class="checkin-error">
-            <p class="error-text">加载失败，请重试</p>
-            <button class="retry-btn" @onclick="LoadCheckinAsync">重试</button>
+            <p class="error-text">@L["Checkin_LoadFailed"]</p>
+            <button class="retry-btn" @onclick="LoadCheckinAsync">@L["Checkin_Retry"]</button>
         </div>
     }
     else
@@ -35,11 +35,11 @@
             <div class="streak-banner">
                 <span class="flame">🔥</span>
                 <span class="streak-num">@data.FamilyStreak</span>
-                <span class="streak-label">天连续打卡</span>
+                <span class="streak-label">@L["Checkin_StreakDays"]</span>
             </div>
             @if (data.StreakStatus == "今天还没学")
             {
-                <div class="streak-grace">连续打卡 @data.FamilyStreak 天（今天还没学）</div>
+                <div class="streak-grace">@string.Format(L["Checkin_StreakGraceToday"], data.FamilyStreak)</div>
             }
             else if (!string.IsNullOrEmpty(data.StreakStatus))
             {
@@ -47,7 +47,7 @@
             }
             @if (data.FamilyStreak >= 7)
             {
-                <div class="streak-motivation">🎉 连续 7 天以上，太棒了！</div>
+                <div class="streak-motivation">@L["Checkin_StreakMotivation"]</div>
             }
             <div class="calendar7">
                 @foreach (var day in data.Last7Days)
@@ -58,7 +58,7 @@
                         <div class="cal-mark">@(day.IsChecked ? "🔥" : "⬜")</div>
                         @if (day.IsMakeupable)
                         {
-                            <div class="cal-makeup-hint">补</div>
+                            <div class="cal-makeup-hint">@L["Checkin_MakeupHint"]</div>
                         }
                         <div class="cal-date">@(day.Date?.ToString("dd"))</div>
                     </div>
@@ -70,15 +70,15 @@
         {
             <div class="makeup-dialog-mask" @onclick="CloseMakeupDialog">
                 <div class="makeup-dialog" @onclick:stopPropagation="true">
-                    <h3>补签 @(makeupTarget?.ToString("M月d日"))？</h3>
-                    <p class="makeup-quota">本月剩余补签次数：@data.MakeupRemaining/3</p>
+                    <h3>@string.Format(L["Checkin_MakeupDialogTitle"], makeupTarget?.ToString("M月d日"))</h3>
+                    <p class="makeup-quota">@string.Format(L["Checkin_MakeupQuota"], data.MakeupRemaining)</p>
                     @if (!string.IsNullOrEmpty(makeupError))
                     {
                         <p class="makeup-error">@makeupError</p>
                     }
                     <div class="makeup-actions">
-                        <button class="btn btn-secondary" @onclick="CloseMakeupDialog">取消</button>
-                        <button class="btn btn-primary" @onclick="ConfirmMakeupAsync" disabled="@isMakingUp">确认补签</button>
+                        <button class="btn btn-secondary" @onclick="CloseMakeupDialog">@L["Checkin_Cancel"]</button>
+                        <button class="btn btn-primary" @onclick="ConfirmMakeupAsync" disabled="@isMakingUp">@L["Checkin_ConfirmMakeup"]</button>
                     </div>
                 </div>
             </div>
@@ -91,15 +91,15 @@
 
         <!-- 今日学习清单（按 Learner 分组） -->
         <section class="today-section">
-            <h2>今日学习清单</h2>
+            <h2>@L["Checkin_TodayList"]</h2>
 
             @if (data.TodayRecords.Count == 0)
             {
                 <!-- 空态引导 -->
                 <div class="empty-state">
                     <div class="empty-icon">🌱</div>
-                    <p class="empty-text">今天还没开始学习，点击前往每日卡片</p>
-                    <a class="cta-btn" href="/daily-card">前往每日卡片</a>
+                    <p class="empty-text">@L["Checkin_EmptyToday"]</p>
+                    <a class="cta-btn" href="/daily-card">@L["Checkin_GoDailyCard"]</a>
                 </div>
             }
             else
@@ -119,11 +119,11 @@
                             @if (expandedRecord == record)
                             {
                                 <div class="record-detail">
-                                    <div class="detail-row"><span>来源</span><span>@record.Source</span></div>
-                                    <div class="detail-row"><span>开始时间</span><span>@(record.StartTime?.ToString("HH:mm"))</span></div>
-                                    <div class="detail-row"><span>结束时间</span><span>@(record.EndTime?.ToString("HH:mm"))</span></div>
-                                    <div class="detail-row"><span>学习卡片数</span><span>@record.CardCount</span></div>
-                                    <div class="detail-row"><span>正确率</span><span>@record.Accuracy.ToString("F0")%</span></div>
+                                    <div class="detail-row"><span>@L["Checkin_Source"]</span><span>@record.Source</span></div>
+                                    <div class="detail-row"><span>@L["Checkin_StartTime"]</span><span>@(record.StartTime?.ToString("HH:mm"))</span></div>
+                                    <div class="detail-row"><span>@L["Checkin_EndTime"]</span><span>@(record.EndTime?.ToString("HH:mm"))</span></div>
+                                    <div class="detail-row"><span>@L["Checkin_CardCount"]</span><span>@record.CardCount</span></div>
+                                    <div class="detail-row"><span>@L["Checkin_Accuracy"]</span><span>@record.Accuracy.ToString("F0")%</span></div>
                                 </div>
                             }
                         }
@@ -276,7 +276,7 @@
             {
                 showMakeupDialog = false;
                 makeupTarget = null;
-                makeupToast = $"补签成功！本月剩余：{result.Remaining}/3";
+                makeupToast = string.Format(L["Checkin_MakeupSuccess"], result.Remaining);
                 await LoadCheckinAsync();
                 await Task.Delay(2500);
                 makeupToast = null;
@@ -297,7 +297,7 @@
         catch (Exception ex)
         {
             Logger.LogWarning(ex, "补签失败");
-            makeupError = "补签失败，请重试";
+            makeupError = L["Checkin_MakeupFailed"].Value;
         }
         finally
         {

@@ -23,45 +23,45 @@
         <!-- FAM-34 Onboarding 向导（无 Learner + 未完成标记） -->
         <div class="onboarding-wizard">
             <div class="onboarding-header">
-                <button class="onboarding-skip" @onclick="SkipOnboarding">跳过 ✕</button>
+                <button class="onboarding-skip" @onclick="SkipOnboarding">@L["FamilyLanding_Skip"] ✕</button>
             </div>
 
             @if (onboardingStep == 1)
             {
                 <div class="onboarding-card" data-step="Step 1">
-                    <h2>👋 欢迎来到百花家庭学习空间！</h2>
-                    <p>创建你的第一个学习者，开始家庭共学之旅</p>
+                    <h2>👋 @L["FamilyLanding_WelcomeTitle"]</h2>
+                    <p>@L["FamilyLanding_WelcomeSubtitle"]</p>
                     <div class="onboarding-form">
-                        <input type="text" class="form-control" @bind="newLearnerName" placeholder="输入学习者名字" />
+                        <input type="text" class="form-control" @bind="newLearnerName" placeholder="@L["FamilyLanding_LearnerNamePlaceholder"]" />
                         @if (!string.IsNullOrEmpty(onboardingError))
                         {
                             <p class="onboarding-error">@onboardingError</p>
                         }
-                        <button class="btn btn-primary" @onclick="CreateLearnerFromOnboarding" disabled="@isOnboardingBusy">开始</button>
+                        <button class="btn btn-primary" @onclick="CreateLearnerFromOnboarding" disabled="@isOnboardingBusy">@L["FamilyLanding_Start"]</button>
                     </div>
                 </div>
             }
             else if (onboardingStep == 2)
             {
                 <div class="onboarding-card" data-step="Step 2">
-                    <h2>📖 完成第一次学习</h2>
-                    <p>试试完成第一张卡片吧！前往每日卡片开始学习</p>
-                    <a class="guide-button" href="daily-card">前往每日卡片 ➡️</a>
+                    <h2>📖 @L["FamilyLanding_FirstStudyTitle"]</h2>
+                    <p>@L["FamilyLanding_FirstStudySubtitle"]</p>
+                    <a class="guide-button" href="daily-card">@L["FamilyLanding_GoDailyCard"] ➡️</a>
                 </div>
             }
             else if (onboardingStep == 3)
             {
                 <div class="onboarding-card" data-step="Step 3">
-                    <h2>🎉 太棒了！你完成了第一次学习！</h2>
-                    <p>去看看你的连续打卡天数和成就吧</p>
-                    <a class="guide-button" href="/checkin">查看学习打卡 ➡️</a>
+                    <h2>🎉 @L["FamilyLanding_CongratsTitle"]</h2>
+                    <p>@L["FamilyLanding_CongratsSubtitle"]</p>
+                    <a class="guide-button" href="/checkin">@L["FamilyLanding_ViewCheckin"] ➡️</a>
                 </div>
             }
 
             <div class="onboarding-steps">
-                <span class="ob-step @(onboardingStep >= 1 ? "active" : "")">1 创建学习者</span>
-                <span class="ob-step @(onboardingStep >= 2 ? "active" : "")">2 第一次学习</span>
-                <span class="ob-step @(onboardingStep >= 3 ? "active" : "")">3 看到成果</span>
+                <span class="ob-step @(onboardingStep >= 1 ? "active" : "")">@L["FamilyLanding_Step1"]</span>
+                <span class="ob-step @(onboardingStep >= 2 ? "active" : "")">@L["FamilyLanding_Step2"]</span>
+                <span class="ob-step @(onboardingStep >= 3 ? "active" : "")">@L["FamilyLanding_Step3"]</span>
                 <span class="ob-step @(onboardingStep >= 4 ? "active" : "")">Done</span>
             </div>
         </div>
@@ -531,12 +531,12 @@
     {
         if (string.IsNullOrWhiteSpace(newLearnerName))
         {
-            onboardingError = "请输入学习者名字";
+            onboardingError = L["FamilyLanding_NameRequired"].Value;
             return;
         }
         if (newLearnerName.Trim().Length > 20)
         {
-            onboardingError = "名字太长啦，请控制在 20 字以内";
+            onboardingError = L["FamilyLanding_NameTooLong"].Value;
             return;
         }
         isOnboardingBusy = true;
@@ -554,7 +554,7 @@
         catch (Exception ex)
         {
             Logger.LogWarning(ex, "Onboarding 创建学习者失败");
-            onboardingError = "创建失败，请重试";
+            onboardingError = L["FamilyLanding_CreateFailed"].Value;
         }
         finally
         {

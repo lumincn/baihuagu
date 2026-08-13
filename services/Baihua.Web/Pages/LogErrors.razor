@@ -28,8 +28,8 @@
                 <h3>⚠️ @(pendingClear == "local" ? L["LogErrors_ClearLocal"] : L["LogErrors_ClearOpenObserve"])</h3>
                 <p>@(pendingClear == "local" ? L["LogErrors_ConfirmClearLocal"] : L["LogErrors_ConfirmClearOpenObserve"])</p>
                 <div class="confirm-modal-actions">
-                    <button class="btn-secondary" @onclick="CancelClear">取消</button>
-                    <button class="btn-danger" @onclick='() => { if (pendingClear == "local") ConfirmClearLocalLogs(); else ConfirmClearOpenObserve(); }'>确认清理</button>
+                    <button class="btn-secondary" @onclick="CancelClear">@L["LogErrors_Cancel"]</button>
+                    <button class="btn-danger" @onclick='() => { if (pendingClear == "local") ConfirmClearLocalLogs(); else ConfirmClearOpenObserve(); }'>@L["LogErrors_ConfirmClear"]</button>
                 </div>
             </div>
         </div>

@@ -5699,4 +5699,248 @@ Shift+Enter 换行，Enter 发送</value>
   <data name="HardwareBenchmark_DataEstimateFormula" xml:space="preserve">
     <value>tokens/s ≈ 内存带宽 × 利用率系数</value>
   </data>
+  <!-- 本轮 i18n 清零 -->
+  <data name="Checkin_Title" xml:space="preserve">
+    <value>学习打卡</value>
+  </data>
+  <data name="Checkin_LoadFailed" xml:space="preserve">
+    <value>加载失败，请重试</value>
+  </data>
+  <data name="Checkin_Retry" xml:space="preserve">
+    <value>重试</value>
+  </data>
+  <data name="Checkin_StreakDays" xml:space="preserve">
+    <value>天连续打卡</value>
+  </data>
+  <data name="Checkin_StreakGraceToday" xml:space="preserve">
+    <value>连续打卡 {0} 天（今天还没学）</value>
+  </data>
+  <data name="Checkin_StreakMotivation" xml:space="preserve">
+    <value>🎉 连续 7 天以上，太棒了！</value>
+  </data>
+  <data name="Checkin_MakeupHint" xml:space="preserve">
+    <value>补</value>
+  </data>
+  <data name="Checkin_MakeupDialogTitle" xml:space="preserve">
+    <value>补签 {0}？</value>
+  </data>
+  <data name="Checkin_MakeupQuota" xml:space="preserve">
+    <value>本月剩余补签次数：{0}/3</value>
+  </data>
+  <data name="Checkin_Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="Checkin_ConfirmMakeup" xml:space="preserve">
+    <value>确认补签</value>
+  </data>
+  <data name="Checkin_TodayList" xml:space="preserve">
+    <value>今日学习清单</value>
+  </data>
+  <data name="Checkin_EmptyToday" xml:space="preserve">
+    <value>今天还没开始学习，点击前往每日卡片</value>
+  </data>
+  <data name="Checkin_GoDailyCard" xml:space="preserve">
+    <value>前往每日卡片</value>
+  </data>
+  <data name="Checkin_Source" xml:space="preserve">
+    <value>来源</value>
+  </data>
+  <data name="Checkin_StartTime" xml:space="preserve">
+    <value>开始时间</value>
+  </data>
+  <data name="Checkin_EndTime" xml:space="preserve">
+    <value>结束时间</value>
+  </data>
+  <data name="Checkin_CardCount" xml:space="preserve">
+    <value>学习卡片数</value>
+  </data>
+  <data name="Checkin_Accuracy" xml:space="preserve">
+    <value>正确率</value>
+  </data>
+  <data name="Checkin_MakeupSuccess" xml:space="preserve">
+    <value>补签成功！本月剩余：{0}/3</value>
+  </data>
+  <data name="Checkin_MakeupFailed" xml:space="preserve">
+    <value>补签失败，请重试</value>
+  </data>
+  <data name="Quiz_Title" xml:space="preserve">
+    <value>亲子互考</value>
+  </data>
+  <data name="Quiz_SelectPlayers" xml:space="preserve">
+    <value>选择对战成员</value>
+  </data>
+  <data name="Quiz_NeedTwoLearners" xml:space="preserve">
+    <value>需要至少 2 位家庭成员才能开始互考，先去添加学习者吧！</value>
+  </data>
+  <data name="Quiz_PlayerA" xml:space="preserve">
+    <value>成员 A（先出题）</value>
+  </data>
+  <data name="Quiz_PlayerB" xml:space="preserve">
+    <value>成员 B（先作答）</value>
+  </data>
+  <data name="Quiz_Starting" xml:space="preserve">
+    <value>开始中...</value>
+  </data>
+  <data name="Quiz_Start" xml:space="preserve">
+    <value>开始互考</value>
+  </data>
+  <data name="Quiz_Finished" xml:space="preserve">
+    <value>对战结束</value>
+  </data>
+  <data name="Quiz_WinnerFormat" xml:space="preserve">
+    <value>🎉 胜者：{0}！</value>
+  </data>
+  <data name="Quiz_Draw" xml:space="preserve">
+    <value>🤝 平局！</value>
+  </data>
+  <data name="Quiz_PointsFormat" xml:space="preserve">
+    <value>{0} 分</value>
+  </data>
+  <data name="Quiz_AccuracyFormat" xml:space="preserve">
+    <value>正确率 {0}</value>
+  </data>
+  <data name="Quiz_PlayAgain" xml:space="preserve">
+    <value>再来一局</value>
+  </data>
+  <data name="Quiz_RoundFormat" xml:space="preserve">
+    <value>第 {0} / {1} 轮</value>
+  </data>
+  <data name="Quiz_AskerFormat" xml:space="preserve">
+    <value>{0} 出题（{1} 秒限时）</value>
+  </data>
+  <data name="Quiz_AnswerPlaceholder" xml:space="preserve">
+    <value>输入你的答案...</value>
+  </data>
+  <data name="Quiz_Judging" xml:space="preserve">
+    <value>判定中...</value>
+  </data>
+  <data name="Quiz_Submit" xml:space="preserve">
+    <value>提交答案</value>
+  </data>
+  <data name="Quiz_Correct" xml:space="preserve">
+    <value>✅ 回答正确！</value>
+  </data>
+  <data name="Quiz_Wrong" xml:space="preserve">
+    <value>❌ 回答错误</value>
+  </data>
+  <data name="Quiz_CorrectAnswerFormat" xml:space="preserve">
+    <value>正确答案：{0}</value>
+  </data>
+  <data name="Quiz_ErrorDifferentPlayers" xml:space="preserve">
+    <value>请选择两位不同的成员</value>
+  </data>
+  <data name="Quiz_ErrorNoCards" xml:space="preserve">
+    <value>知识库暂无卡片，请先创建卡片</value>
+  </data>
+  <data name="Achievements_RewardTitle" xml:space="preserve">
+    <value>家庭奖励</value>
+  </data>
+  <data name="Achievements_RewardEmpty" xml:space="preserve">
+    <value>还没有奖励，家长可在下方添加奖励激励孩子学习</value>
+  </data>
+  <data name="Achievements_RewardAchieved" xml:space="preserve">
+    <value>🎉 已达成！</value>
+  </data>
+  <data name="Achievements_RewardProgress" xml:space="preserve">
+    <value>进度 {0}/{1}，还差 {2} 就能获得 {3} {4}！</value>
+  </data>
+  <data name="Achievements_RewardNamePlaceholder" xml:space="preserve">
+    <value>奖励名称（如：冰淇淋）</value>
+  </data>
+  <data name="Achievements_RewardTypeStreak" xml:space="preserve">
+    <value>连续打卡天数</value>
+  </data>
+  <data name="Achievements_RewardTypeAchievements" xml:space="preserve">
+    <value>解锁成就数</value>
+  </data>
+  <data name="Achievements_RewardTypeCards" xml:space="preserve">
+    <value>学习卡片数</value>
+  </data>
+  <data name="Achievements_RewardTargetPlaceholder" xml:space="preserve">
+    <value>目标值</value>
+  </data>
+  <data name="Achievements_AddReward" xml:space="preserve">
+    <value>添加奖励</value>
+  </data>
+  <data name="Achievements_RewardNameRequired" xml:space="preserve">
+    <value>请填写奖励名称</value>
+  </data>
+  <data name="Achievements_RewardTargetInvalid" xml:space="preserve">
+    <value>请填写正确的目标值（大于 0）</value>
+  </data>
+  <data name="Dashboard_LoadFailed" xml:space="preserve">
+    <value>加载失败，请重试</value>
+  </data>
+  <data name="Dashboard_Retry" xml:space="preserve">
+    <value>重试</value>
+  </data>
+  <data name="Dashboard_EmptyLearners" xml:space="preserve">
+    <value>添加第一个学习者</value>
+  </data>
+  <data name="Dashboard_AddLearner" xml:space="preserve">
+    <value>添加第一个学习者</value>
+  </data>
+  <data name="FamilyLanding_Skip" xml:space="preserve">
+    <value>跳过</value>
+  </data>
+  <data name="FamilyLanding_WelcomeTitle" xml:space="preserve">
+    <value>欢迎来到百花家庭学习空间！</value>
+  </data>
+  <data name="FamilyLanding_WelcomeSubtitle" xml:space="preserve">
+    <value>创建你的第一个学习者，开始家庭共学之旅</value>
+  </data>
+  <data name="FamilyLanding_LearnerNamePlaceholder" xml:space="preserve">
+    <value>输入学习者名字</value>
+  </data>
+  <data name="FamilyLanding_Start" xml:space="preserve">
+    <value>开始</value>
+  </data>
+  <data name="FamilyLanding_FirstStudyTitle" xml:space="preserve">
+    <value>完成第一次学习</value>
+  </data>
+  <data name="FamilyLanding_FirstStudySubtitle" xml:space="preserve">
+    <value>试试完成第一张卡片吧！前往每日卡片开始学习</value>
+  </data>
+  <data name="FamilyLanding_GoDailyCard" xml:space="preserve">
+    <value>前往每日卡片</value>
+  </data>
+  <data name="FamilyLanding_CongratsTitle" xml:space="preserve">
+    <value>太棒了！你完成了第一次学习！</value>
+  </data>
+  <data name="FamilyLanding_CongratsSubtitle" xml:space="preserve">
+    <value>去看看你的连续打卡天数和成就吧</value>
+  </data>
+  <data name="FamilyLanding_ViewCheckin" xml:space="preserve">
+    <value>查看学习打卡</value>
+  </data>
+  <data name="FamilyLanding_Step1" xml:space="preserve">
+    <value>1 创建学习者</value>
+  </data>
+  <data name="FamilyLanding_Step2" xml:space="preserve">
+    <value>2 第一次学习</value>
+  </data>
+  <data name="FamilyLanding_Step3" xml:space="preserve">
+    <value>3 看到成果</value>
+  </data>
+  <data name="FamilyLanding_NameRequired" xml:space="preserve">
+    <value>请输入学习者名字</value>
+  </data>
+  <data name="FamilyLanding_NameTooLong" xml:space="preserve">
+    <value>名字太长啦，请控制在 20 字以内</value>
+  </data>
+  <data name="FamilyLanding_CreateFailed" xml:space="preserve">
+    <value>创建失败，请重试</value>
+  </data>
+  <data name="LogErrors_Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="LogErrors_ConfirmClear" xml:space="preserve">
+    <value>确认清理</value>
+  </data>
+  <data name="Login_CmdHint1" xml:space="preserve">
+    <value>Windows 命令提示符（cmd）直接用</value>
+  </data>
+  <data name="Login_CmdHint2" xml:space="preserve">
+    <value>，无需 ./ 前缀</value>
+  </data>
 </root>

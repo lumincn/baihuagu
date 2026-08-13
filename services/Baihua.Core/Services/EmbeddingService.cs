@@ -693,7 +693,20 @@ namespace Baihua.Family.Services
             var embedding = await GetEmbeddingAsync(textToEmbed);
             if (embedding != null)
             {
-                await SaveNoteEmbeddingAsync(vaultId, path, embedding);
+                // 缓存写入与索引任务共用 per-vault 闸门，避免与整库索引并发写同一行触发唯一索引冲突。
+                // 限时等待：索引任务长时间持锁时跳过缓存写（仅丢一次缓存，不影响本次重排结果）。
+                var gate = _vaultIndexLocks.GetOrAdd(vaultId, _ => new SemaphoreSlim(1, 1));
+                if (await gate.WaitAsync(TimeSpan.FromSeconds(5)))
+                {
+                    try
+                    {
+                        await SaveNoteEmbeddingAsync(vaultId, path, embedding);
+                    }
+                    finally
+                    {
+                        gate.Release();
+                    }
+                }
             }
 
             return embedding;

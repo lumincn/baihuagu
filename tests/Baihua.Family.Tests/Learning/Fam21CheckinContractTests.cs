@@ -218,11 +218,11 @@ public class Fam21CheckinContractTests : IDisposable
     [Fact]
     public void CheckinPage_HasEmptyStateCta_ToDailyCard()
     {
-        // AC2：空状态引导 + CTA"前往每日卡片"（跳转 /daily-card）
+        // AC2：空状态引导 + CTA"前往每日卡片"（跳转 /daily-card，页面已 i18n 化 → 断言 resx key）
         var source = ReadCheckinSource();
         Assert.True(
-            source.Contains("前往每日卡片", StringComparison.OrdinalIgnoreCase),
-            "FAM-21-AC2：空状态缺少引导 CTA'前往每日卡片'（红）");
+            source.Contains("Checkin_GoDailyCard", StringComparison.OrdinalIgnoreCase),
+            "FAM-21-AC2：空状态缺少引导 CTA key（Checkin_GoDailyCard）（红）");
         Assert.True(
             source.Contains("/daily-card", StringComparison.OrdinalIgnoreCase) ||
             source.Contains("daily-card", StringComparison.OrdinalIgnoreCase),

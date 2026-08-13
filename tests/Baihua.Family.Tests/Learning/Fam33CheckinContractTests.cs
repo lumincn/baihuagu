@@ -117,12 +117,11 @@ public class Fam33CheckinContractTests : IDisposable
     [Fact]
     public void CheckinPage_HasMakeupConfirmDialog_WithQuota()
     {
-        // 补签确认弹窗：显示日期 + 本月剩余次数（AC1 UI："补签 8 月 5 日？本月剩余补签次数：2/3"）
+        // 补签确认弹窗：显示日期 + 本月剩余次数（页面已 i18n 化 → 断言 resx key）
         var source = ReadCheckinSource();
         Assert.True(
-            source.Contains("剩余补签次数", StringComparison.OrdinalIgnoreCase) ||
-            source.Contains("剩余", StringComparison.OrdinalIgnoreCase) && source.Contains("补签", StringComparison.OrdinalIgnoreCase),
-            "FAM-33：补签确认弹窗缺少'本月剩余补签次数'提示（红）");
+            source.Contains("Checkin_MakeupQuota", StringComparison.OrdinalIgnoreCase),
+            "FAM-33：补签确认弹窗缺少'本月剩余补签次数'提示 key（Checkin_MakeupQuota）（红）");
         Assert.True(
             source.Contains("本月补签次数已用完", StringComparison.OrdinalIgnoreCase) ||
             source.Contains("已用完", StringComparison.OrdinalIgnoreCase),
