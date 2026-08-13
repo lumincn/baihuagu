@@ -1,0 +1,235 @@
+@page "/todo"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject IApiService ApiService
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
+@using Baihua.Contracts.Todo
+
+<PageTitle>@L["Todo_PageTitle"]</PageTitle>
+
+<div class="todo-page">
+    <h1>📝 @L["Todo_PageTitle"]</h1>
+
+    <div class="input-group mb-3">
+        <input class="form-control" placeholder="@L["Todo_AddPlaceholder"]" maxlength="200"
+               @bind="_newTitle" @bind:event="oninput"
+               @onkeydown="OnNewTitleKeyDown" aria-label="@L["Todo_AddPlaceholder"]" />
+        <button class="btn btn-primary" disabled="@(_saving || string.IsNullOrWhiteSpace(_newTitle))" @onclick="AddAsync">
+            @L["Todo_Add"]
+        </button>
+    </div>
+
+    @if (_loadError != null)
+    {
+        <div class="alert alert-warning d-flex align-items-center gap-2">
+            <span>@L["Todo_LoadFailed"]</span>
+            <button class="btn btn-sm btn-outline-warning" @onclick="LoadAsync">@L["Todo_Retry"]</button>
+        </div>
+    }
+    else
+    {
+        <div class="btn-group btn-group-sm mb-3" role="group">
+            @foreach (var (key, label) in _filters)
+            {
+                <button class="btn @(_filter == key ? "btn-primary" : "btn-outline-primary")"
+                        @onclick="() => SetFilter(key)">
+                    @label <span class="badge @(_filter == key ? "bg-light text-primary" : "bg-secondary")">@CountFor(key)</span>
+                </button>
+            }
+        </div>
+
+        @if (_isLoading)
+        {
+            <div class="todo-loading">@L["Todo_Loading"]</div>
+        }
+        else if (_visibleItems.Count == 0)
+        {
+            <div class="todo-empty">@L["Todo_Empty"]</div>
+        }
+        else
+        {
+            <ul class="list-group">
+                @foreach (var item in _visibleItems)
+                {
+                    <li class="list-group-item todo-item @(item.IsDone ? "todo-done" : "")">
+                        <input class="form-check-input me-2" type="checkbox"
+                               checked="@item.IsDone" disabled="@_togglingIds.Contains(item.Id)"
+                               @onchange="() => ToggleAsync(item)" aria-label="@item.Title" />
+                        <span class="todo-title flex-grow-1">@item.Title</span>
+                        @if (item.CreatedAt != default)
+                        {
+                            <span class="todo-date small text-muted me-2">@item.CreatedAt.ToLocalTime().ToString("MM-dd")</span>
+                        }
+                        <button class="btn btn-sm @(_pendingDeleteId == item.Id ? "btn-danger" : "btn-outline-danger")"
+                                @onclick="() => OnDeleteClickAsync(item.Id)">
+                            @(_pendingDeleteId == item.Id ? L["Todo_ConfirmDelete"] : L["Todo_Delete"])
+                        </button>
+                    </li>
+                }
+            </ul>
+        }
+    }
+</div>
+
+@code {
+    private readonly List<TodoItemDto> _items = new();
+    private readonly HashSet<int> _togglingIds = new();
+    private string _newTitle = "";
+    private string _filter = "all";
+    private bool _isLoading;
+    private bool _saving;
+    private string? _loadError;
+    private int? _pendingDeleteId;
+
+    /// <summary>筛选定义（key, 标签本地化键）——按固定顺序渲染</summary>
+    private static readonly (string Key, string LabelKey)[] _filterDefs =
+    [
+        ("all", "Todo_FilterAll"),
+        ("pending", "Todo_FilterPending"),
+        ("done", "Todo_FilterDone"),
+    ];
+
+    private List<(string Key, string Label)> _filters
+        => _filterDefs.Select(f => (f.Key, L[f.LabelKey].Value)).ToList();
+
+    private List<TodoItemDto> _visibleItems => _filter switch
+    {
+        "pending" => _items.Where(i => !i.IsDone).ToList(),
+        "done" => _items.Where(i => i.IsDone).ToList(),
+        _ => _items
+    };
+
+    private int CountFor(string key) => key switch
+    {
+        "pending" => _items.Count(i => !i.IsDone),
+        "done" => _items.Count(i => i.IsDone),
+        _ => _items.Count
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _isLoading = true;
+        _loadError = null;
+        try
+        {
+            var items = await ApiService.GetTodosAsync();
+            _items.Clear();
+            _items.AddRange(items);
+        }
+        catch
+        {
+            _loadError = "load";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task AddAsync()
+    {
+        var title = _newTitle.Trim();
+        if (title.Length == 0) return;
+
+        _saving = true;
+        try
+        {
+            var created = await ApiService.AddTodoAsync(new CreateTodoRequest { Title = title });
+            _items.Add(created);
+            _newTitle = "";
+            _filter = "all";
+        }
+        catch
+        {
+            _loadError ??= "save";
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task ToggleAsync(TodoItemDto item)
+    {
+        if (_togglingIds.Contains(item.Id)) return;
+        _togglingIds.Add(item.Id);
+        try
+        {
+            var updated = await ApiService.UpdateTodoAsync(item.Id, new UpdateTodoRequest { IsDone = !item.IsDone });
+            if (updated != null)
+            {
+                var index = _items.FindIndex(i => i.Id == item.Id);
+                if (index >= 0) _items[index] = updated;
+            }
+        }
+        catch
+        {
+            _loadError ??= "save";
+        }
+        finally
+        {
+            _togglingIds.Remove(item.Id);
+        }
+    }
+
+    private async Task OnDeleteClickAsync(int id)
+    {
+        if (_pendingDeleteId != id)
+        {
+            _pendingDeleteId = id;
+            return;
+        }
+
+        _pendingDeleteId = null;
+        try
+        {
+            await ApiService.DeleteTodoAsync(id);
+            _items.RemoveAll(i => i.Id == id);
+        }
+        catch
+        {
+            _loadError ??= "save";
+        }
+    }
+
+    private void SetFilter(string key)
+    {
+        _filter = key;
+        _pendingDeleteId = null;
+    }
+
+    private async Task OnNewTitleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(_newTitle) && !_saving)
+        {
+            await AddAsync();
+        }
+    }
+}
+
+<style>
+    .todo-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .todo-done .todo-title {
+        text-decoration: line-through;
+        opacity: 0.55;
+    }
+
+    .todo-title {
+        word-break: break-word;
+    }
+
+    .todo-empty, .todo-loading {
+        padding: 2rem 1rem;
+        text-align: center;
+        color: rgba(180, 200, 215, 0.7);
+    }
+</style>

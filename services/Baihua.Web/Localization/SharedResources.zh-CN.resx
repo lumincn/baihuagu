@@ -4298,4 +4298,43 @@ Shift+Enter 换行，Enter 发送</value>
   <data name="CodeAgent_StageReview" xml:space="preserve">
     <value>③ 审查</value>
   </data>
-<data name="CodeAgent_NewConversation" xml:space="preserve"><value>新对话</value></data></root>
+<data name="CodeAgent_NewConversation" xml:space="preserve"><value>新对话</value></data>  <!-- 个人待办清单 TodoList -->
+  <data name="Nav_TodoList" xml:space="preserve">
+    <value>待办清单</value>
+  </data>
+  <data name="Todo_PageTitle" xml:space="preserve">
+    <value>待办清单</value>
+  </data>
+  <data name="Todo_AddPlaceholder" xml:space="preserve">
+    <value>添加新的待办…</value>
+  </data>
+  <data name="Todo_Add" xml:space="preserve">
+    <value>添加</value>
+  </data>
+  <data name="Todo_Empty" xml:space="preserve">
+    <value>还没有待办，添加第一条吧</value>
+  </data>
+  <data name="Todo_FilterAll" xml:space="preserve">
+    <value>全部</value>
+  </data>
+  <data name="Todo_FilterPending" xml:space="preserve">
+    <value>未完成</value>
+  </data>
+  <data name="Todo_FilterDone" xml:space="preserve">
+    <value>已完成</value>
+  </data>
+  <data name="Todo_Delete" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="Todo_ConfirmDelete" xml:space="preserve">
+    <value>确认删除？</value>
+  </data>
+  <data name="Todo_LoadFailed" xml:space="preserve">
+    <value>加载失败</value>
+  </data>
+  <data name="Todo_Retry" xml:space="preserve">
+    <value>重试</value>
+  </data>
+  <data name="Todo_Loading" xml:space="preserve">
+    <value>加载中…</value>
+  </data></root>

@@ -4299,4 +4299,43 @@ Shift+Enter new line, Enter to send</value>
   <data name="CodeAgent_StageReview" xml:space="preserve">
     <value>③ Review</value>
   </data>
-<data name="CodeAgent_NewConversation" xml:space="preserve"><value>New conversation</value></data></root>
+<data name="CodeAgent_NewConversation" xml:space="preserve"><value>New conversation</value></data>  <!-- 个人待办清单 TodoList -->
+  <data name="Nav_TodoList" xml:space="preserve">
+    <value>Todo List</value>
+  </data>
+  <data name="Todo_PageTitle" xml:space="preserve">
+    <value>Todo List</value>
+  </data>
+  <data name="Todo_AddPlaceholder" xml:space="preserve">
+    <value>Add a new todo…</value>
+  </data>
+  <data name="Todo_Add" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="Todo_Empty" xml:space="preserve">
+    <value>No todos yet — add your first one.</value>
+  </data>
+  <data name="Todo_FilterAll" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="Todo_FilterPending" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="Todo_FilterDone" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="Todo_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Todo_ConfirmDelete" xml:space="preserve">
+    <value>Confirm?</value>
+  </data>
+  <data name="Todo_LoadFailed" xml:space="preserve">
+    <value>Failed to load</value>
+  </data>
+  <data name="Todo_Retry" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="Todo_Loading" xml:space="preserve">
+    <value>Loading…</value>
+  </data></root>

@@ -19,7 +19,6 @@ namespace Baihua.Family.Controllers;
         private readonly VaultSettingsService _vaultSettings;
         private readonly AiClientService _aiClientService;
         private readonly RagService _ragService;
-        private readonly McpServerService _mcpServerService;
         private readonly LocalModelDeploymentService _localDeployment;
         private readonly DefaultPromptProvider _scenePromptService;
         private readonly ILogger<ChatCompletionsController> _logger;
@@ -30,7 +29,6 @@ namespace Baihua.Family.Controllers;
             VaultSettingsService vaultSettings,
             AiClientService aiClientService,
             RagService ragService,
-            McpServerService mcpServerService,
             LocalModelDeploymentService localDeployment,
             DefaultPromptProvider scenePromptService,
             ILogger<ChatCompletionsController> logger,
@@ -40,7 +38,6 @@ namespace Baihua.Family.Controllers;
             _vaultSettings = vaultSettings;
             _aiClientService = aiClientService;
             _ragService = ragService;
-            _mcpServerService = mcpServerService;
             _localDeployment = localDeployment;
             _scenePromptService = scenePromptService;
             _logger = logger;
@@ -91,13 +88,6 @@ namespace Baihua.Family.Controllers;
                 if (request.Stream == true)
                 {
                     return await HandleStreamingAsync(provider, model, messages, options, HttpContext.RequestAborted);
-                }
-
-                // 非流式模式支持工具调用
-                if (request.Tools?.Count > 0)
-                {
-                    var toolResult = await HandleToolCallingAsync(provider, model, messages, options, request.Tools, HttpContext.RequestAborted);
-                    if (toolResult != null) return Ok(toolResult);
                 }
 
                 response = await _aiClientService.GetChatResponseWithAutoStartAsync(

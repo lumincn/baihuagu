@@ -8,6 +8,7 @@ using Baihua.Contracts.Ai;
 using Baihua.Contracts.Assistant;
 using Baihua.Contracts.Budget;
 using Baihua.Contracts.Stock;
+using Baihua.Contracts.Todo;
 using Microsoft.Extensions.Localization;
 using Baihua.Contracts.Anki;
 using Baihua.Contracts.Achievements;
@@ -55,6 +56,12 @@ namespace Baihua.Web.Services
         Task<BudgetTransaction> AddBudgetTransactionAsync(BudgetCreateRequest request, CancellationToken cancellationToken = default);
         Task<bool> DeleteBudgetTransactionAsync(Guid id, CancellationToken cancellationToken = default);
         Task<BudgetSummary> GetBudgetSummaryAsync(int? year = null, int? month = null, CancellationToken cancellationToken = default);
+
+        // 个人待办清单
+        Task<List<TodoItemDto>> GetTodosAsync(CancellationToken cancellationToken = default);
+        Task<TodoItemDto> AddTodoAsync(CreateTodoRequest request, CancellationToken cancellationToken = default);
+        Task<TodoItemDto?> UpdateTodoAsync(int id, UpdateTodoRequest request, CancellationToken cancellationToken = default);
+        Task<bool> DeleteTodoAsync(int id, CancellationToken cancellationToken = default);
         Task<List<OpenVinoCatalogItemDto>> GetOpenVinoCatalogAsync(CancellationToken cancellationToken = default);
         Task<List<OpenVinoInstalledModelDto>> GetOpenVinoInstalledAsync(CancellationToken cancellationToken = default);
         Task<List<OpenVinoDownloadTaskDto>> GetOpenVinoDownloadsAsync(CancellationToken cancellationToken = default);
@@ -648,6 +655,46 @@ namespace Baihua.Web.Services
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
             EnsurePrimaryBaseAddress();
             var response = await _httpClient.DeleteAsync($"/api/budget/transactions/{id}", linked.Token);
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return false;
+            response.EnsureSuccessStatusCode();
+            return true;
+        }
+
+        public async Task<List<TodoItemDto>> GetTodosAsync(CancellationToken cancellationToken = default)
+        {
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            var response = await GetWithMetricsAsync("/api/todos", linked.Token);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<List<TodoItemDto>>(linked.Token) ?? new List<TodoItemDto>();
+        }
+
+        public async Task<TodoItemDto> AddTodoAsync(CreateTodoRequest request, CancellationToken cancellationToken = default)
+        {
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            var response = await PostWithMetricsAsync("/api/todos", JsonContent.Create(request), linked.Token);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<TodoItemDto>(linked.Token) ?? new TodoItemDto();
+        }
+
+        public async Task<TodoItemDto?> UpdateTodoAsync(int id, UpdateTodoRequest request, CancellationToken cancellationToken = default)
+        {
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            EnsurePrimaryBaseAddress();
+            var response = await _httpClient.PutAsync($"/api/todos/{id}", JsonContent.Create(request), linked.Token);
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return null;
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<TodoItemDto>(linked.Token);
+        }
+
+        public async Task<bool> DeleteTodoAsync(int id, CancellationToken cancellationToken = default)
+        {
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            EnsurePrimaryBaseAddress();
+            var response = await _httpClient.DeleteAsync($"/api/todos/{id}", linked.Token);
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return false;
             response.EnsureSuccessStatusCode();
             return true;

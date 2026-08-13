@@ -221,6 +221,7 @@ builder.Services.AddSingleton<LeaderboardService>();
         builder.Services.AddSingleton<LeaderboardSettingsService>();
 builder.Services.AddSingleton<RewardService>();
 builder.Services.AddSingleton<QuizService>();
+builder.Services.AddSingleton<Baihua.Family.Services.Todo.TodoService>();
 builder.Services.AddHostedService<StudyRecordMigrationService>();
 builder.Services.AddSingleton<Baihua.Core.WebSocket.DeviceWebSocketHub>();
 builder.Services.AddSingleton<DeviceService>();
@@ -299,7 +300,6 @@ builder.Services.AddSingleton<OpenClawConfigService>();
 builder.Services.AddSingleton<ILocalAiConfigService, LocalAiConfigService>();
 builder.Services.AddSingleton<IOpenClawModelProfileService, OpenClawModelProfileService>();
 builder.Services.AddSingleton<IOpenClawTaskService, OpenClawTaskService>();
-builder.Services.AddSingleton<McpServerService>();
 
 // API 限流（配对码防暴力破解）
 builder.Services.AddRateLimiter(options =>
@@ -572,7 +572,6 @@ app.Use(async (context, next) =>
     var publicPaths = new[]
     {
         "/health", "/api/health", "/swagger",
-        "/mcp",
         "/ws/devices",
         "/vault/manifest", "/vault/file", "/vault/file_chunk",
         "/api/vaults", "/vault/pair", "/pair",

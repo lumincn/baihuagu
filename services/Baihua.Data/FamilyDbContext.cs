@@ -41,6 +41,7 @@ public class FamilyDbContext : DbContext
     public DbSet<CheckinMakeupRecord> CheckinMakeupRecords => Set<CheckinMakeupRecord>();
     public DbSet<FamilyReward> FamilyRewards => Set<FamilyReward>();
     public DbSet<RewardClaim> RewardClaims => Set<RewardClaim>();
+    public DbSet<TodoItem> TodoItems => Set<TodoItem>();
 
     public string DatabasePath
     {
