@@ -73,7 +73,7 @@
                     <div class="d-flex justify-content-between"><small>10</small><small>40</small></div>
                 </div>
 
-                <button class="btn btn-primary w-100" @onclick="GenerateAsync" disabled="@isGenerating || !comfyAvailable">
+                <button class="btn btn-primary w-100" @onclick="GenerateAsync" disabled="@(isGenerating || !comfyAvailable)">
                     @(isGenerating ? "⏳ 生成中…" : "✨ 生成")
                 </button>
 
