@@ -1,0 +1,94 @@
+name: Release
+
+# 打 tag v* 自动发布（如 v0.1.0）；也可手动触发指定 tag。
+# 产物：ai/family/vault/webui 四个服务，win-x64 + linux-x64 双平台 zip，附加到 GitHub Release。
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag（手动触发时填写，例如 v0.1.0；留空则用当前分支名）'
+        required: false
+        default: ''
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build:
+    name: Build ${{ matrix.rid }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        rid: [win-x64, linux-x64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Publish services (${{ matrix.rid }})
+        run: |
+          dotnet publish services/Baihua.AI/Baihua.AI.csproj      -c Release -r ${{ matrix.rid }} --self-contained false -o publish/${{ matrix.rid }}/ai
+          dotnet publish services/Baihua.Family/Baihua.Family.csproj -c Release -r ${{ matrix.rid }} --self-contained false -o publish/${{ matrix.rid }}/family
+          dotnet publish services/Baihua.Vault/Baihua.Vault.csproj  -c Release -r ${{ matrix.rid }} --self-contained false -o publish/${{ matrix.rid }}/vault
+          dotnet publish services/Baihua.Web/Baihua.Web.csproj      -c Release -r ${{ matrix.rid }} --self-contained false -o publish/${{ matrix.rid }}/webui
+
+      - name: Package zip
+        run: |
+          cd publish/${{ matrix.rid }}
+          zip -qr ../../baihuagu-${{ matrix.rid }}.zip ai family vault webui
+          cd ../..
+          ls -lh baihuagu-${{ matrix.rid }}.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: baihuagu-${{ matrix.rid }}
+          path: baihuagu-${{ matrix.rid }}.zip
+          if-no-files-found: error
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Collect zips
+        run: |
+          mkdir -p dist
+          find artifacts -name '*.zip' -exec cp {} dist/ \;
+          ls -lh dist/
+
+      - name: Determine tag
+        id: tag
+        run: |
+          TAG="${{ github.event.inputs.tag }}"
+          if [ -z "$TAG" ]; then TAG="${{ github.ref_name }}"; fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Create Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd dist
+          gh release create "${{ steps.tag.outputs.tag }}" *.zip --generate-notes
