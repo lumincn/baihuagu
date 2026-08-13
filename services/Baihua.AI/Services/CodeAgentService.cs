@@ -254,6 +254,10 @@ public class CodeAgentService
         {
             await using var db = await _aiDbFactory.CreateDbContextAsync();
             var providerName = _aiSettings.GetAiProvider(providerId)?.Name ?? providerId;
+            // 与聊天/生成一致：输出 token / 秒（供性能监控页 TPS 指标）
+            double? tps = null;
+            if (latencyMs > 0 && outputTokens is > 0)
+                tps = outputTokens.Value / (latencyMs / 1000.0);
             db.AiUsageMetrics.Add(new AiUsageMetric
             {
                 ProviderId = providerId,
@@ -264,6 +268,7 @@ public class CodeAgentService
                 InputTokens = inputTokens is null ? null : (int)inputTokens,
                 OutputTokens = outputTokens is null ? null : (int)outputTokens,
                 TotalTokens = (int)((inputTokens ?? 0) + (outputTokens ?? 0)),
+                TokensPerSecond = tps,
                 ErrorMessage = error
             });
             await db.SaveChangesAsync();

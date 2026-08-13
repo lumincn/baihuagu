@@ -150,6 +150,8 @@ public class CodeAgentController : ControllerBase
         var sw = Stopwatch.StartNew();
         var error = (string?)null;
         (string ProviderId, string Model)? resolved = null;
+        long? streamInTokens = null;
+        long? streamOutTokens = null;
 
         try
         {
@@ -194,6 +196,16 @@ public class CodeAgentController : ControllerBase
                             {
                                 fullOutput.Append(t);
                                 await SendSse("delta", System.Text.Json.JsonSerializer.Serialize(new { content = t }));
+                            }
+                            break;
+                        }
+                        case Microsoft.Extensions.AI.UsageContent usage:
+                        {
+                            // 流式 update 携带 token 用量（供性能监控页 TPS 指标）
+                            if (usage.Details is { } ud)
+                            {
+                                streamInTokens = ud.InputTokenCount ?? streamInTokens;
+                                streamOutTokens = ud.OutputTokenCount ?? streamOutTokens;
                             }
                             break;
                         }
@@ -259,7 +271,7 @@ public class CodeAgentController : ControllerBase
                 act?.SetTag("model", r.Model);
                 act?.SetStatus(error == null ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
                 await _codeAgent.RecordUsageAsync(r.ProviderId, r.Model, "codeagent-stream", sw.ElapsedMilliseconds,
-                    null, null, error);
+                    streamInTokens, streamOutTokens, error);
             }
         }
     }
