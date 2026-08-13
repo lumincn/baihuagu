@@ -27,6 +27,8 @@ DEFAULT_INSTANCES = [
      "model": os.path.join(_MODEL_ROOT, "models", "Qwen2.5-7B-Instruct-int4-ov"), "device": "GPU"},
     {"port": 8001, "name": "代码模型 (Qwen2.5-Coder-7B-Instruct)",
      "model": os.path.join(_MODEL_ROOT, "models", "Qwen2.5-Coder-7B-Instruct-int4-ov"), "device": "GPU"},
+    {"port": 8002, "name": "视觉模型 (Qwen2.5-VL-7B-Instruct)",
+     "model": os.path.join(_MODEL_ROOT, "models", "Qwen2.5-VL-7B-Instruct-int4-ov"), "device": "GPU"},
     {"port": 8003, "name": "嵌入模型 (bge-small-zh-v1.5)",
      "model": os.path.join(_MODEL_ROOT, "models", "bge-small-zh-v1.5"), "device": "CPU", "task": "embedding"},
 ]
