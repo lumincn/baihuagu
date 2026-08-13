@@ -118,16 +118,44 @@ public class CodeAgentController : ControllerBase
             using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(_aiSettings.AiRequestTimeoutMinutes));
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(HttpContext.RequestAborted, timeoutCts.Token);
 
+            // 工具调用展示：跟踪 callId -> 工具名，把工具调用/结果作为 SSE 事件推给前端
+            var toolNames = new Dictionary<string, string>();
             await foreach (var update in agent.RunStreamingAsync(messages, session: null, options: null, linkedCts.Token))
             {
                 foreach (var content in update.Contents)
                 {
-                    if (content is TextContent text)
+                    switch (content)
                     {
-                        var t = text.Text;
-                        if (!string.IsNullOrEmpty(t))
+                        case Microsoft.Extensions.AI.TextContent text:
                         {
-                            await SendSse("delta", System.Text.Json.JsonSerializer.Serialize(new { content = t }));
+                            var t = text.Text;
+                            if (!string.IsNullOrEmpty(t))
+                            {
+                                await SendSse("delta", System.Text.Json.JsonSerializer.Serialize(new { content = t }));
+                            }
+                            break;
+                        }
+                        case Microsoft.Extensions.AI.FunctionCallContent fc:
+                        {
+                            if (!string.IsNullOrEmpty(fc.CallId)) toolNames[fc.CallId] = fc.Name ?? "";
+                            await SendSse("tool", System.Text.Json.JsonSerializer.Serialize(new
+                            {
+                                kind = "call",
+                                name = fc.Name ?? "",
+                                detail = Truncate(fc.Arguments is null ? "" : System.Text.Json.JsonSerializer.Serialize(fc.Arguments), 300)
+                            }));
+                            break;
+                        }
+                        case Microsoft.Extensions.AI.FunctionResultContent fr:
+                        {
+                            toolNames.TryGetValue(fr.CallId ?? "", out var name);
+                            await SendSse("tool", System.Text.Json.JsonSerializer.Serialize(new
+                            {
+                                kind = "result",
+                                name = name ?? fr.CallId ?? "",
+                                detail = Truncate(fr.Result?.ToString() ?? "", 200)
+                            }));
+                            break;
                         }
                     }
                 }
@@ -145,6 +173,9 @@ public class CodeAgentController : ControllerBase
             await SendSse("error", _loc["Ai_Chat_Failed", ex.Message].Value);
         }
     }
+
+    private static string Truncate(string s, int max) =>
+        string.IsNullOrEmpty(s) ? s : (s.Length <= max ? s : s[..max] + "…");
 
     private (string ProviderId, string Model) ResolveProviderAndModel(string? providerId, string? model)
     {

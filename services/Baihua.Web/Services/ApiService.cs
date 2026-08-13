@@ -1440,6 +1440,14 @@ namespace Baihua.Web.Services
                             yield return text;
                         }
                     }
+                    else if (currentEvent == "tool")
+                    {
+                        var marker = FormatToolEvent(data);
+                        if (!string.IsNullOrEmpty(marker))
+                        {
+                            yield return marker;
+                        }
+                    }
                     else if (currentEvent == "done")
                     {
                         yield break;
@@ -1503,6 +1511,32 @@ namespace Baihua.Web.Services
                     contentProp.ValueKind == JsonValueKind.String)
                 {
                     return contentProp.GetString();
+                }
+            }
+            catch { }
+            return null;
+        }
+
+        /// <summary>把后端 tool SSE 事件格式化成页面可见的进度行。</summary>
+        private static string? FormatToolEvent(string data)
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(data);
+                if (!doc.RootElement.TryGetProperty("kind", out var kindProp))
+                    return null;
+
+                var kind = kindProp.GetString();
+                var name = doc.RootElement.TryGetProperty("name", out var n) ? n.GetString() : "";
+                var detail = doc.RootElement.TryGetProperty("detail", out var d) ? d.GetString() : "";
+
+                if (kind == "call")
+                {
+                    return $"\n🛠️ 调用工具：{name}({detail})\n";
+                }
+                if (kind == "result")
+                {
+                    return $"\n✅ 工具结果 [{name}]：{detail}\n";
                 }
             }
             catch { }
