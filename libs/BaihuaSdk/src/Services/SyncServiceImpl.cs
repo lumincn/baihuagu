@@ -115,7 +115,7 @@ public class SyncServiceImpl : ISyncService
         var manifest = await FetchManifestAsync(serverUrl, vaultId, deviceId, ct: ct);
         var files = manifest.Files ?? Array.Empty<ManifestFile>();
 
-        int downloaded = 0, skipped = 0, deleted = 0, failed = 0;
+        int downloaded = 0, deleted = 0, failed = 0;
         var errors = new List<string>();
 
         foreach (var file in files)
@@ -145,15 +145,10 @@ public class SyncServiceImpl : ISyncService
             {
                 var validPath = AssertValidRelPath(file.RelPath);
 
-                // 服务端 manifest 的 mtime 为 unix 秒（VaultController.Sync 用 ToUnixTimeSeconds），
-                // 而 IVaultStorageAdapter 按 unix 毫秒读写时间戳，统一换算为毫秒再比对/写入。
+                // 全量同步：清单里每个文件都下载写入（不做客户端增量跳过，保持行为最简）。
+                // 服务端 manifest 的 mtime 为 unix 秒，而 IVaultStorageAdapter 按毫秒读写，
+                // 统一换算为毫秒写入，保证本地文件时间戳正确。
                 var serverMtimeMs = (file.Mtime ?? 0) * 1000L;
-                if (serverMtimeMs > 0 && await storage.GetFileMtimeAsync(validPath) == serverMtimeMs)
-                {
-                    // 本地文件时间戳与服务端一致，视为未变更，跳过下载
-                    skipped++;
-                    continue;
-                }
 
                 await storage.EnsureDirForFileAsync(validPath);
 
@@ -184,7 +179,7 @@ public class SyncServiceImpl : ISyncService
             Cursor: manifest.Cursor ?? 0,
             TotalFiles: files.Count,
             Downloaded: downloaded,
-            Skipped: skipped,
+            Skipped: 0,
             Deleted: deleted,
             Failed: failed,
             Errors: errors.Count > 0 ? errors : null);

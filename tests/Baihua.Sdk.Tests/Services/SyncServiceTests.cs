@@ -229,7 +229,7 @@ public class SyncServiceTests
         // No exception = success
     }
 
-    // ---- SyncVaultAsync 增量同步测试 ----
+    // ---- SyncVaultAsync 全量同步测试 ----
 
     private static FileSystemVaultStorage CreateTempStorage(out string dir)
     {
@@ -243,15 +243,15 @@ public class SyncServiceTests
     private const long ServerMtimeMs = ServerMtimeSec * 1000L;
 
     [Fact]
-    public async Task SyncVaultAsync_UnchangedMtime_SkipsDownload()
+    public async Task SyncVaultAsync_AlwaysDownloads_EvenIfMtimeMatches()
     {
+        // 全量同步语义：本地已存在且 mtime 一致的文件也会重新下载（不依赖客户端增量比对）
         var (client, handler) = CreateMockClient();
         var signerMock = new Mock<IRequestSigner>();
         signerMock.Setup(s => s.SignRequest(It.IsAny<string>(), It.IsAny<string>(),
             It.IsAny<string?>(), It.IsAny<string?>()))
             .Returns(new Dictionary<string, string>());
 
-        // a.md 已存在且 mtime 与服务端一致 → 应跳过；b.md 不存在 → 应下载
         var storage = CreateTempStorage(out var dir);
         try
         {
@@ -270,12 +270,12 @@ public class SyncServiceTests
             var service = new SyncServiceImpl(client, signerMock.Object);
             var result = await service.SyncVaultAsync("http://localhost", "vault-1", "device-1", storage);
 
-            Assert.Equal(1, result.Downloaded);
-            Assert.Equal(1, result.Skipped);
+            Assert.Equal(2, result.Downloaded);
+            Assert.Equal(0, result.Skipped);
             Assert.Equal(0, result.Failed);
             Assert.Equal(42, result.Cursor);
-            // 只应发生一次 /mg/file 下载（b.md），a.md 未发起请求
-            Assert.Single(handler.RequestLog, p => p == "/mg/file");
+            // 两个文件都发起下载（a.md 不因 mtime 一致而跳过）
+            Assert.Equal(2, handler.RequestLog.Count(p => p == "/mg/file"));
         }
         finally
         {
@@ -284,7 +284,7 @@ public class SyncServiceTests
     }
 
     [Fact]
-    public async Task SyncVaultAsync_ChangedMtime_Redownloads()
+    public async Task SyncVaultAsync_DownloadsAndWritesContent()
     {
         var (client, handler) = CreateMockClient();
         var signerMock = new Mock<IRequestSigner>();
@@ -295,9 +295,6 @@ public class SyncServiceTests
         var storage = CreateTempStorage(out var dir);
         try
         {
-            // 本地 mtime 与服务端不一致（旧版本）→ 应重新下载并更新
-            await storage.WriteTextFileAsync("notes/a.md", "旧内容", ServerMtimeMs - 1000);
-
             var manifest = new VaultManifestResponse(
                 VaultId: "vault-1", VaultName: "Test", Cursor: 0,
                 Files: new List<ManifestFile>
