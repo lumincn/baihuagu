@@ -22,10 +22,11 @@ public class TaskCancellationManagerTests
     public void CreateCts_WithTimeout_CancelsAfterTimeout()
     {
         var manager = new TaskCancellationManager();
-        var cts = manager.CreateCts("task-1", TimeSpan.FromMilliseconds(1));
+        var cts = manager.CreateCts("task-1", TimeSpan.FromMilliseconds(100));
 
-        Thread.Sleep(50); // 等待超时
-        Assert.True(cts.IsCancellationRequested);
+        // 轮询等待取消（CI 高负载下允许宽裕时间），避免脆弱的固定 Sleep
+        Assert.True(cts.Token.WaitHandle.WaitOne(TimeSpan.FromSeconds(10)),
+            "超时后 CTS 应在 10 秒内触发取消");
     }
 
     [Fact]
