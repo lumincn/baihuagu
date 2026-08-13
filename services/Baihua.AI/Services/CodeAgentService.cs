@@ -59,7 +59,8 @@ public class CodeAgentService
         """;
 
     private const string SearchToolRule =
-        "需要外部信息（最新资料、官方文档、API 用法、版本号、报错原因）时，必须直接调用 tavily_search 搜索，必要时调用 web_fetch 精读页面，然后基于真实信息回答；绝对不要编写调用搜索 API 的示例代码来代替实际查询。\n";
+        "需要外部信息（最新资料、官方文档、API 用法、版本号、报错原因）时，必须直接调用 tavily_search 搜索，必要时调用 web_fetch 精读页面，然后基于真实信息回答；绝对不要编写调用搜索 API 的示例代码来代替实际查询。\n" +
+        "涉及微软技术（MAF/.NET/Azure/Windows/C# 官方 API）时优先调用 learn_docs_search / learn_docs_fetch / learn_code_sample_search 查微软官方文档与代码示例，而不是凭记忆写 API。\n";
 
     private const string CodeGraphToolRule =
         "用户问题涉及 baihuagu 项目代码本身（某功能在哪、某符号被谁用、改某处会影响什么）时，优先调用 gitnexus_query / gitnexus_context / gitnexus_impact 基于真实代码图谱回答，不要凭记忆猜测。\n";
@@ -98,6 +99,15 @@ public class CodeAgentService
             tools.Add(AIFunctionFactory.Create(codeAgentTools.WebFetch,
                 "web_fetch",
                 "抓取指定网页（http/https）并返回纯文本正文，适合精读官方文档。参数 url 为完整地址，maxChars 为最大字符数（默认 20000）。"));
+            tools.Add(AIFunctionFactory.Create(codeAgentTools.LearnDocsSearch,
+                "learn_docs_search",
+                "搜索微软官方文档（Microsoft Learn）：MAF/.NET/Azure/Windows/Office 等微软技术的权威资料。参数 query 为搜索关键词。微软技术问题优先用它而非 tavily_search。"));
+            tools.Add(AIFunctionFactory.Create(codeAgentTools.LearnDocsFetch,
+                "learn_docs_fetch",
+                "获取微软 Learn 文档完整文章（markdown）。用于精读 learn_docs_search 命中或已知的高价值页面，参数 url 必须是以 microsoft.com 结尾的文档地址（如 https://learn.microsoft.com/...）。"));
+            tools.Add(AIFunctionFactory.Create(codeAgentTools.LearnCodeSampleSearch,
+                "learn_code_sample_search",
+                "搜索微软官方代码示例（Learn）：生成或参考 .NET/C#/MAF/Azure 相关代码时使用，返回带语言的官方代码片段。参数 query 为描述/SDK/类名，language 可选（csharp/javascript/typescript/python 等）。"));
             instructions += SearchToolRule;
         }
 
