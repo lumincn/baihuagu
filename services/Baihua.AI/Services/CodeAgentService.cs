@@ -30,6 +30,7 @@ public class CodeAgentService
     private readonly IConfiguration _configuration;
     private readonly ILoggerFactory _loggerFactory;
     private readonly IDbContextFactory<AIDbContext> _aiDbFactory;
+    private readonly AiMetricsService _metrics;
 
     public CodeAgentService(
         AiSettingsService aiSettings,
@@ -37,7 +38,8 @@ public class CodeAgentService
         ILogger<CodeAgentService> logger,
         IConfiguration configuration,
         ILoggerFactory loggerFactory,
-        IDbContextFactory<AIDbContext> aiDbFactory)
+        IDbContextFactory<AIDbContext> aiDbFactory,
+        AiMetricsService metrics)
     {
         _aiSettings = aiSettings;
         _loc = loc;
@@ -45,6 +47,7 @@ public class CodeAgentService
         _configuration = configuration;
         _loggerFactory = loggerFactory;
         _aiDbFactory = aiDbFactory;
+        _metrics = metrics;
     }
 
     /// <summary>系统提示词基础规则（不含工具说明，工具规则按模式动态追加）</summary>
@@ -252,12 +255,16 @@ public class CodeAgentService
     {
         try
         {
-            await using var db = await _aiDbFactory.CreateDbContextAsync();
-            var providerName = _aiSettings.GetAiProvider(providerId)?.Name ?? providerId;
-            // 与聊天/生成一致：输出 token / 秒（供性能监控页 TPS 指标）
+            // 1. OTel metrics（→ OpenObserve：ai.requests.total / ai.latency_ms / ai.tokens.total / ai.tokens_per_second）
             double? tps = null;
             if (latencyMs > 0 && outputTokens is > 0)
                 tps = outputTokens.Value / (latencyMs / 1000.0);
+            _metrics.RecordAiRequest(providerId, model, operation, latencyMs,
+                string.IsNullOrEmpty(error), inputTokens, outputTokens, tps);
+
+            // 2. 本地 SQLite（→ 性能监控页）
+            await using var db = await _aiDbFactory.CreateDbContextAsync();
+            var providerName = _aiSettings.GetAiProvider(providerId)?.Name ?? providerId;
             db.AiUsageMetrics.Add(new AiUsageMetric
             {
                 ProviderId = providerId,
