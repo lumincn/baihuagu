@@ -156,7 +156,7 @@
     <value>正在检测硬件信息...</value>
   </data>
   <data name="HardwareBenchmark_CurrentMachine" xml:space="preserve">
-    <value>本机配置</value>
+    <value>当前机器</value>
   </data>
   <data name="HardwareBenchmark_CurrentMachineLabel" xml:space="preserve">
     <value>当前机器</value>
@@ -3427,10 +3427,10 @@ Shift+Enter 换行，Enter 发送</value>
     <value>未命名笔记</value>
   </data>
   <data name="Tasks_ConfirmDeleteMessage" xml:space="preserve">
-    <value>确定要删除这个任务吗？</value>
+    <value>确定要删除这个任务吗？任务记录将移除，此操作不可恢复。</value>
   </data>
   <data name="Tasks_ConfirmCancelMessage" xml:space="preserve">
-    <value>确定要取消这个任务吗？正在执行的操作将被中断。</value>
+    <value>确定要取消这个正在进行的任务吗？</value>
   </data>
   <data name="Tasks_RetryFailedTitle" xml:space="preserve">
     <value>重试失败</value>
@@ -4628,5 +4628,1075 @@ Shift+Enter 换行，Enter 发送</value>
   </data>
   <data name="Assistant_AnalysisFailed" xml:space="preserve">
     <value>分析失败：{0}</value>
+  </data>
+  <data name="Stock_PageTitle" xml:space="preserve">
+    <value>股票 AI 建议</value>
+  </data>
+  <data name="Stock_Title" xml:space="preserve">
+    <value>📈 股票 AI 建议</value>
+  </data>
+  <data name="Stock_Subtitle" xml:space="preserve">
+    <value>AI 拉取 A 股实时行情并分析，按你的条件自动推荐 10 只建议购买的股票；输入已购代码评估是否卖出。</value>
+  </data>
+  <data name="Stock_AnalysisHeader" xml:space="preserve">
+    <value>🎛️ 分析条件</value>
+  </data>
+  <data name="Stock_StrategyLabel" xml:space="preserve">
+    <value>算法 / 角度</value>
+  </data>
+  <data name="Stock_Strategy_All" xml:space="preserve">
+    <value>综合（均衡）</value>
+  </data>
+  <data name="Stock_Strategy_Value" xml:space="preserve">
+    <value>价值投资（低估值/高ROE）</value>
+  </data>
+  <data name="Stock_Strategy_Growth" xml:space="preserve">
+    <value>成长股（高成长赛道）</value>
+  </data>
+  <data name="Stock_Strategy_Technical" xml:space="preserve">
+    <value>技术面（趋势/量能/动量）</value>
+  </data>
+  <data name="Stock_Strategy_Dividend" xml:space="preserve">
+    <value>高股息（防御/分红）</value>
+  </data>
+  <data name="Stock_IndustryLabel" xml:space="preserve">
+    <value>行业</value>
+  </data>
+  <data name="Stock_IndustryAll" xml:space="preserve">
+    <value>全部行业</value>
+  </data>
+  <data name="Stock_HorizonLabel" xml:space="preserve">
+    <value>持有周期</value>
+  </data>
+  <data name="Stock_Horizon_All" xml:space="preserve">
+    <value>中长期（均衡）</value>
+  </data>
+  <data name="Stock_Horizon_Short" xml:space="preserve">
+    <value>短期（数日~数周）</value>
+  </data>
+  <data name="Stock_Horizon_Long" xml:space="preserve">
+    <value>长期（数月~数年）</value>
+  </data>
+  <data name="Stock_PromptLabel" xml:space="preserve">
+    <value>📝 自定义提示词（附加给 AI 的分析要求）</value>
+  </data>
+  <data name="Stock_PromptPlaceholder" xml:space="preserve">
+    <value>如：侧重高分红、低波动的防御性标的…</value>
+  </data>
+  <data name="Stock_ResetPromptTitle" xml:space="preserve">
+    <value>恢复默认提示词</value>
+  </data>
+  <data name="Stock_ResetPrompt" xml:space="preserve">
+    <value>默认</value>
+  </data>
+  <data name="Stock_HistoryLabel" xml:space="preserve">
+    <value>最近使用的提示词（最多 10 条）</value>
+  </data>
+  <data name="Stock_HistoryPlaceholder" xml:space="preserve">
+    <value>选择历史提示词…</value>
+  </data>
+  <data name="Stock_TabBuy" xml:space="preserve">
+    <value>🛒 建议买入</value>
+  </data>
+  <data name="Stock_TabSell" xml:space="preserve">
+    <value>🚨 建议卖出</value>
+  </data>
+  <data name="Stock_Analyzing" xml:space="preserve">
+    <value>分析中…</value>
+  </data>
+  <data name="Stock_StartAnalysis" xml:space="preserve">
+    <value>🔄 开始分析</value>
+  </data>
+  <data name="Stock_ForceRefreshSkipCache" xml:space="preserve">
+    <value>强制刷新（跳过缓存）</value>
+  </data>
+  <data name="Stock_CacheHint" xml:space="preserve">
+    <value>行情缓存 30 秒，AI 结果缓存 10 分钟（按条件+提示词）</value>
+  </data>
+  <data name="Stock_Loading" xml:space="preserve">
+    <value>AI 正在拉取行情并分析，请稍候（约 10-60 秒）…</value>
+  </data>
+  <data name="Stock_AnalysisFailed" xml:space="preserve">
+    <value>⚠️ 分析失败：</value>
+  </data>
+  <data name="Stock_Retry" xml:space="preserve">
+    <value>重试</value>
+  </data>
+  <data name="Stock_TopBuy" xml:space="preserve">
+    <value>🛒 建议购买 TOP 10</value>
+  </data>
+  <data name="Stock_TopSell" xml:space="preserve">
+    <value>🚨 建议卖出 TOP 10</value>
+  </data>
+  <data name="Stock_ModelLabel" xml:space="preserve">
+    <value>模型：{0}｜{1}</value>
+  </data>
+  <data name="Stock_NoResult" xml:space="preserve">
+    <value>没有拿到有效的推荐结果（模型输出可能不是有效 JSON，见下方原始输出）。</value>
+  </data>
+  <data name="Stock_ColCode" xml:space="preserve">
+    <value>代码</value>
+  </data>
+  <data name="Stock_ColName" xml:space="preserve">
+    <value>名称</value>
+  </data>
+  <data name="Stock_ColScore" xml:space="preserve">
+    <value>建议度</value>
+  </data>
+  <data name="Stock_ColAction" xml:space="preserve">
+    <value>动作</value>
+  </data>
+  <data name="Stock_ColReason" xml:space="preserve">
+    <value>理由</value>
+  </data>
+  <data name="Stock_EvaluationHeader" xml:space="preserve">
+    <value>💼 持仓评估：是否卖出？</value>
+  </data>
+  <data name="Stock_CodePlaceholder" xml:space="preserve">
+    <value>股票代码，如 600519</value>
+  </data>
+  <data name="Stock_Analyze" xml:space="preserve">
+    <value>分析</value>
+  </data>
+  <data name="Stock_ForceRefresh" xml:space="preserve">
+    <value>强制刷新</value>
+  </data>
+  <data name="Stock_Sell" xml:space="preserve">
+    <value>卖出</value>
+  </data>
+  <data name="Stock_Hold" xml:space="preserve">
+    <value>持有</value>
+  </data>
+  <data name="Stock_EvalAdvice" xml:space="preserve">
+    <value>{0}（{1}）建议：{2}</value>
+  </data>
+  <data name="Stock_Confidence" xml:space="preserve">
+    <value>置信度 {0}</value>
+  </data>
+  <data name="Stock_RawOutput" xml:space="preserve">
+    <value>AI 原始输出（调试）</value>
+  </data>
+  <data name="Stock_DisclaimerPart1" xml:space="preserve">
+    <value>⚠️ 免责声明：本页面内容由 AI 基于公开行情数据自动生成，仅供学习参考，</value>
+  </data>
+  <data name="Stock_DisclaimerBold" xml:space="preserve">
+    <value>不构成任何投资建议</value>
+  </data>
+  <data name="Stock_DisclaimerPart2" xml:space="preserve">
+    <value>。股市有风险，投资需谨慎。AI 可能出错，请独立判断。</value>
+  </data>
+  <data name="Stock_DefaultPrompt" xml:space="preserve">
+    <value>侧重基本面：优先盈利能力强、估值合理、现金流健康的标的；回避高波动题材股、业绩暴雷风险与高质押公司。</value>
+  </data>
+  <data name="Stock_CondStrategy_All" xml:space="preserve">
+    <value>综合</value>
+  </data>
+  <data name="Stock_CondStrategy_Value" xml:space="preserve">
+    <value>价值投资</value>
+  </data>
+  <data name="Stock_CondStrategy_Growth" xml:space="preserve">
+    <value>成长股</value>
+  </data>
+  <data name="Stock_CondStrategy_Technical" xml:space="preserve">
+    <value>技术面</value>
+  </data>
+  <data name="Stock_CondStrategy_Dividend" xml:space="preserve">
+    <value>高股息</value>
+  </data>
+  <data name="Stock_CondHorizon_All" xml:space="preserve">
+    <value>中长期</value>
+  </data>
+  <data name="Stock_CondHorizon_Short" xml:space="preserve">
+    <value>短期</value>
+  </data>
+  <data name="Stock_CondHorizon_Long" xml:space="preserve">
+    <value>长期</value>
+  </data>
+  <data name="Nav_OpenClaw" xml:space="preserve">
+    <value>OpenClaw 智能体</value>
+  </data>
+  <data name="Tasks_HideCompleted" xml:space="preserve">
+    <value>隐藏已完成</value>
+  </data>
+  <data name="Tasks_DeleteTask" xml:space="preserve">
+    <value>删除任务</value>
+  </data>
+  <data name="Tasks_CancelTask" xml:space="preserve">
+    <value>取消任务</value>
+  </data>
+  <data name="Tasks_ConfirmDelete" xml:space="preserve">
+    <value>确认删除</value>
+  </data>
+  <data name="Tasks_ConfirmCancel" xml:space="preserve">
+    <value>确认取消</value>
+  </data>
+  <data name="Tasks_StatusSuccess" xml:space="preserve">
+    <value>任务完成</value>
+  </data>
+  <data name="Tasks_StatusFailed" xml:space="preserve">
+    <value>失败</value>
+  </data>
+  <data name="Tasks_StatusRunning" xml:space="preserve">
+    <value>进行中</value>
+  </data>
+  <data name="Tasks_StatusPending" xml:space="preserve">
+    <value>等待中</value>
+  </data>
+  <data name="Tasks_StatusTimeout" xml:space="preserve">
+    <value>超时</value>
+  </data>
+  <data name="Tasks_StatusCancelled" xml:space="preserve">
+    <value>已取消</value>
+  </data>
+  <data name="NoteDetail_Generating" xml:space="preserve">
+    <value>⏳ 生成中…</value>
+  </data>
+  <data name="NoteDetail_GenerateAnkiCards" xml:space="preserve">
+    <value>🗂️ 生成 Anki 卡片</value>
+  </data>
+  <data name="NoteDetail_NoVaultToGenerate" xml:space="preserve">
+    <value>未找到知识库，无法生成卡片</value>
+  </data>
+  <data name="NoteDetail_CardTaskSubmitted" xml:space="preserve">
+    <value>已提交卡片生成任务（{0}）</value>
+  </data>
+  <data name="NoteDetail_CheckTasksPage" xml:space="preserve">
+    <value>请到任务页查看</value>
+  </data>
+  <data name="NoteDetail_TaskShortId" xml:space="preserve">
+    <value>任务 {0}…</value>
+  </data>
+  <data name="NoteDetail_CardTaskCreateFailed" xml:space="preserve">
+    <value>卡片生成任务创建失败，请稍后重试</value>
+  </data>
+  <data name="NoteDetail_CardGenerationFailed" xml:space="preserve">
+    <value>卡片生成失败：{0}</value>
+  </data>
+  <data name="PromptTemplates_DeleteTitle" xml:space="preserve">
+    <value>删除模板</value>
+  </data>
+  <data name="PromptTemplates_DeleteMessage" xml:space="preserve">
+    <value>确定要删除模板「{0}」吗？自定义模板删除后不可恢复。</value>
+  </data>
+  <data name="Common_ConfirmDelete" xml:space="preserve">
+    <value>确认删除</value>
+  </data>
+  <data name="Settings_GlobalDetailTitle" xml:space="preserve">
+    <value>全局生成详细度</value>
+  </data>
+  <data name="Settings_GlobalDetailDescription" xml:space="preserve">
+    <value>应用于所有 AI 内容生成（知识库、笔记等），编程任务除外。默认最简洁：省时省钱。</value>
+  </data>
+  <data name="Settings_GlobalDetailLabel" xml:space="preserve">
+    <value>生成详细度</value>
+  </data>
+  <data name="Settings_DetailConcise" xml:space="preserve">
+    <value>简洁突出重点</value>
+  </data>
+  <data name="Settings_DetailBalanced" xml:space="preserve">
+    <value>适中</value>
+  </data>
+  <data name="Settings_DetailComprehensive" xml:space="preserve">
+    <value>详细全面</value>
+  </data>
+  <data name="Settings_DetailCountConcise" xml:space="preserve">
+    <value>约 6-10 篇笔记，每篇 200-400 字</value>
+  </data>
+  <data name="Settings_DetailCountBalanced" xml:space="preserve">
+    <value>约 12-22 篇笔记，每篇 400-800 字</value>
+  </data>
+  <data name="Settings_DetailCountComprehensive" xml:space="preserve">
+    <value>约 28-45 篇笔记，每篇 800-1500 字</value>
+  </data>
+  <data name="Settings_DeleteProviderTitle" xml:space="preserve">
+    <value>删除 AI 提供商</value>
+  </data>
+  <data name="Settings_DeleteProviderMessage" xml:space="preserve">
+    <value>确定要删除提供商「{0}」吗？删除后需要重新配置才能使用。</value>
+  </data>
+  <data name="Leaderboard_ViewSelf" xml:space="preserve">
+    <value>和自己比</value>
+  </data>
+  <data name="Leaderboard_ViewFamily" xml:space="preserve">
+    <value>家庭排行</value>
+  </data>
+  <data name="Leaderboard_TabWeekly" xml:space="preserve">
+    <value>本周</value>
+  </data>
+  <data name="Leaderboard_LastWeek" xml:space="preserve">
+    <value>上周</value>
+  </data>
+  <data name="Leaderboard_CardUnit" xml:space="preserve">
+    <value>张卡片</value>
+  </data>
+  <data name="Leaderboard_CompareTip" xml:space="preserve">
+    <value>和自己比，进步看得见 💪</value>
+  </data>
+  <data name="Leaderboard_KidsTab" xml:space="preserve">
+    <value>孩子榜</value>
+  </data>
+  <data name="Leaderboard_AdultsTab" xml:space="preserve">
+    <value>大人榜</value>
+  </data>
+  <data name="Leaderboard_AllTab" xml:space="preserve">
+    <value>全家</value>
+  </data>
+  <data name="Leaderboard_ShowAllFamily" xml:space="preserve">
+    <value>显示全家排行</value>
+  </data>
+  <data name="Leaderboard_InviteHint" xml:space="preserve">
+    <value>邀请更多小伙伴一起学吧 🌱</value>
+  </data>
+  <data name="Leaderboard_ScoreTitle" xml:space="preserve">
+    <value>分数 = 学习卡片数 + 正确率×20</value>
+  </data>
+  <data name="Leaderboard_TabMonthly" xml:space="preserve">
+    <value>本月</value>
+  </data>
+  <data name="Leaderboard_TabAllTime" xml:space="preserve">
+    <value>总榜</value>
+  </data>
+  <data name="Leaderboard_TabStreak" xml:space="preserve">
+    <value>🔥 连击</value>
+  </data>
+  <data name="Leaderboard_TabAccuracy" xml:space="preserve">
+    <value>🎯 正确率</value>
+  </data>
+  <data name="KnowledgeGen_TopicInspirationLabel" xml:space="preserve">
+    <value>灵感主题</value>
+  </data>
+  <data name="KnowledgeGen_TopicClickHint" xml:space="preserve">
+    <value>点击即可填入上方主题框（AI 每日更新）</value>
+  </data>
+  <data name="KnowledgeGen_TopicLoading" xml:space="preserve">
+    <value>AI 正在为你推荐今日主题…</value>
+  </data>
+  <data name="KnowledgeGen_SourceAi" xml:space="preserve">
+    <value>AI 推荐</value>
+  </data>
+  <data name="KnowledgeGen_SourceBuiltin" xml:space="preserve">
+    <value>内置推荐</value>
+  </data>
+  <data name="KnowledgeGen_TopicsSourceFormat" xml:space="preserve">
+    <value>{0} · 每日刷新</value>
+  </data>
+  <data name="KnowledgeGen_RefreshTopics" xml:space="preserve">
+    <value>换一批</value>
+  </data>
+  <data name="KnowledgeGen_DetailLabel" xml:space="preserve">
+    <value>📐 详细度（控制笔记数量与篇幅，省时省钱）</value>
+  </data>
+  <data name="KnowledgeGen_FollowGlobalPrefix" xml:space="preserve">
+    <value>默认跟随全局设置：</value>
+  </data>
+  <data name="KnowledgeGen_FollowGlobalSuffix" xml:space="preserve">
+    <value>（可在 AI 设置中修改）</value>
+  </data>
+  <data name="KnowledgeGen_DetailBalanced" xml:space="preserve">
+    <value>适中（推荐）</value>
+  </data>
+  <data name="KnowledgeGen_DetailCountConcise" xml:space="preserve">
+    <value>约 6-10 篇，每篇 200-400 字，最快最省</value>
+  </data>
+  <data name="KnowledgeGen_DetailCountBalanced" xml:space="preserve">
+    <value>约 12-22 篇，每篇 400-800 字</value>
+  </data>
+  <data name="KnowledgeGen_DetailCountComprehensive" xml:space="preserve">
+    <value>约 28-45 篇，每篇 800-1500 字，最贵最慢</value>
+  </data>
+  <data name="KnowledgeGen_TitleNeedsQuery" xml:space="preserve">
+    <value>请先输入主题关键词</value>
+  </data>
+  <data name="KnowledgeGen_TitleNeedsVault" xml:space="preserve">
+    <value>请先选择目标知识库</value>
+  </data>
+  <data name="Vision_Running" xml:space="preserve">
+    <value>视觉服务运行中（127.0.0.1:{0}）</value>
+  </data>
+  <data name="Vision_Stopping" xml:space="preserve">
+    <value>停止中…</value>
+  </data>
+  <data name="Vision_StopServer" xml:space="preserve">
+    <value>⏹ 停止服务</value>
+  </data>
+  <data name="Vision_StopFailed" xml:space="preserve">
+    <value>停止失败：{0}</value>
+  </data>
+  <data name="Search_VaultsLoading" xml:space="preserve">
+    <value>知识库列表加载中，请稍候…</value>
+  </data>
+  <data name="Search_VaultsLoadingRetry" xml:space="preserve">
+    <value>知识库列表加载中，请稍候再试…</value>
+  </data>
+  <data name="LogSettings_PasswordPlaceholder" xml:space="preserve">
+    <value>留空则用环境变量</value>
+  </data>
+  <data name="CodeAgent_ProviderLocal" xml:space="preserve">
+    <value>（本地）</value>
+  </data>
+  <data name="CodeAgent_ProviderCloud" xml:space="preserve">
+    <value>（云端）</value>
+  </data>
+  <data name="MasterChat_IndustryPlaceholder" xml:space="preserve">
+    <value>输入或选择行业</value>
+  </data>
+  <data name="MasterChat_DeleteMasterMessage" xml:space="preserve">
+    <value>确定要删除师父「{0}」吗？拜师进度与师徒关系将一并删除，此操作不可恢复。</value>
+  </data>
+  <data name="MasterChat_StoppedMarker" xml:space="preserve">
+    <value>（已停止）</value>
+  </data>
+  <data name="MasterChat_RequestFailed" xml:space="preserve">
+    <value>请求失败：{0}</value>
+  </data>
+  <data name="MasterChat_EvictConfirm" xml:space="preserve">
+    <value>确定要清理旧数据吗？这将压缩7天前的对话并淘汰30天前的摘要。</value>
+  </data>
+  <data name="MasterChat_EvictDone" xml:space="preserve">
+    <value>✅ 数据清理完成：压缩 {0} 个阶段，淘汰 {1} 个阶段</value>
+  </data>
+  <data name="MasterChat_EvictFailed" xml:space="preserve">
+    <value>清理失败：{0}</value>
+  </data>
+  <data name="MasterChat_StageTip_Rudao" xml:space="preserve">
+    <value>引导阶段：师父会通过提问了解你的基础和目标，帮助你明确学习方向。</value>
+  </data>
+  <data name="MasterChat_StageTip_Zhuji" xml:space="preserve">
+    <value>基础阶段：师父会严格要求你掌握基础知识，每日布置功课并检查完成情况。</value>
+  </data>
+  <data name="MasterChat_StageTip_Jingjin" xml:space="preserve">
+    <value>精进阶段：师父会对细节有近乎偏执的追求，任何微小错误都要指出并纠正。</value>
+  </data>
+  <data name="MasterChat_StageTip_Moli" xml:space="preserve">
+    <value>磨砺阶段：师父会模拟真实考试环境，出题考察你的综合能力。</value>
+  </data>
+  <data name="MasterChat_StageTip_Chushi" xml:space="preserve">
+    <value>出师阶段：师父会分享实战经验和考试技巧，帮助你做好最后的冲刺准备。</value>
+  </data>
+  <data name="OpenClaw_Detecting" xml:space="preserve">
+    <value>检测中</value>
+  </data>
+  <data name="OpenClaw_StartupCommandLabel" xml:space="preserve">
+    <value>启动命令（可复制到命令行手动运行）</value>
+  </data>
+  <data name="OpenClaw_OpenVinoDescription1" xml:space="preserve">
+    <value>Intel OpenVINO 推理引擎，支持 CPU/GPU/NPU 加速。需安装 Python 环境 + </value>
+  </data>
+  <data name="OpenClaw_OpenVinoDescription2" xml:space="preserve">
+    <value>，服务由随百花发布的 </value>
+  </data>
+  <data name="OpenClaw_OpenVinoDescription3" xml:space="preserve">
+    <value>（OpenAI 兼容）提供。</value>
+  </data>
+  <data name="OpenClaw_BinaryPathLabel" xml:space="preserve">
+    <value>服务脚本路径</value>
+  </data>
+  <data name="OpenClaw_BinaryPathPlaceholder" xml:space="preserve">
+    <value>留空自动探测（随发布自带 openvino_llm_server.py）</value>
+  </data>
+  <data name="OpenClaw_BinaryPathHint" xml:space="preserve">
+    <value>Python 脚本路径或可执行命令；留空时自动探测 python + openvino_genai</value>
+  </data>
+  <data name="OpenClaw_ModelPathLabel" xml:space="preserve">
+    <value>模型目录路径</value>
+  </data>
+  <data name="OpenClaw_ModelPathHint" xml:space="preserve">
+    <value>OpenVINO 优化后的模型目录</value>
+  </data>
+  <data name="OpenClaw_DeviceLabel" xml:space="preserve">
+    <value>推理设备</value>
+  </data>
+  <data name="OpenClaw_DevicesDetected" xml:space="preserve">
+    <value>检测到：{0}</value>
+  </data>
+  <data name="OpenClaw_PortLabel" xml:space="preserve">
+    <value>端口</value>
+  </data>
+  <data name="OpenClaw_ContextSizeLabel" xml:space="preserve">
+    <value>上下文大小</value>
+  </data>
+  <data name="OpenClaw_ExtraArgsLabel" xml:space="preserve">
+    <value>额外启动参数</value>
+  </data>
+  <data name="OpenClaw_NoOpenVinoModels" xml:space="preserve">
+    <value>未找到 OpenVINO 模型</value>
+  </data>
+  <data name="OpenClaw_NoModelsStrong" xml:space="preserve">
+    <value>暂无可用模型。</value>
+  </data>
+  <data name="OpenClaw_NoModelsHint1" xml:space="preserve">
+    <value>请先在下方完成任一操作：</value>
+  </data>
+  <data name="OpenClaw_NoModelsHint2" xml:space="preserve">
+    <value>进入「AI 设置」页面启用云端 Provider（如硅基流动、OpenAI）并添加模型，模型会自动出现在此处（格式：providerId/modelName）。</value>
+  </data>
+  <data name="OpenClaw_NoModelsHint3" xml:space="preserve">
+    <value>或在本页启用 OpenVINO，点击「扫描模型」→「同步到 OpenClaw」，本地模型会出现在此处。</value>
+  </data>
+  <data name="OpenClaw_LoadDefaultModelsFailed" xml:space="preserve">
+    <value>加载默认模型列表失败：{0}。可用模型将显示为空。</value>
+  </data>
+  <data name="OpenClaw_LoadConfigFailed" xml:space="preserve">
+    <value>加载模型配置文件失败：{0}</value>
+  </data>
+  <data name="OpenClaw_OpenVinoRemoved" xml:space="preserve">
+    <value>已停用：OpenVINO 配置已从 OpenClaw 中移除（服务本身不会停止）</value>
+  </data>
+  <data name="OpenClaw_DetectingStatus" xml:space="preserve">
+    <value>正在检测 OpenVINO 服务状态...</value>
+  </data>
+  <data name="OpenClaw_DetectFailed" xml:space="preserve">
+    <value>检测失败: {0}</value>
+  </data>
+  <data name="OpenClaw_ScanFailed" xml:space="preserve">
+    <value>扫描失败: {0}</value>
+  </data>
+  <data name="OpenClaw_ConfigSaved" xml:space="preserve">
+    <value>配置已保存（通过 openclaw config set 写入）</value>
+  </data>
+  <data name="OpenClaw_ConfigSaveFailed" xml:space="preserve">
+    <value>保存配置失败</value>
+  </data>
+  <data name="OpenClaw_SaveFailed" xml:space="preserve">
+    <value>保存失败: {0}</value>
+  </data>
+  <data name="OpenClaw_SwitchedProfile" xml:space="preserve">
+    <value>已切换到 {0} 配置</value>
+  </data>
+  <data name="OpenClaw_SwitchProfileFailed" xml:space="preserve">
+    <value>切换模型配置失败</value>
+  </data>
+  <data name="OpenClaw_SwitchProfileFailedDetail" xml:space="preserve">
+    <value>切换模型配置失败: {0}</value>
+  </data>
+  <data name="OpenClaw_RestoredBuiltinDefault" xml:space="preserve">
+    <value>已恢复使用 OpenClaw 内置默认模型</value>
+  </data>
+  <data name="OpenClaw_DefaultModelSet" xml:space="preserve">
+    <value>默认模型已设置为 {0}</value>
+  </data>
+  <data name="OpenClaw_SetDefaultFailed" xml:space="preserve">
+    <value>设置默认模型失败</value>
+  </data>
+  <data name="OpenClaw_SetDefaultFailedDetail" xml:space="preserve">
+    <value>设置默认模型失败: {0}</value>
+  </data>
+  <data name="OpenClaw_Synced" xml:space="preserve">
+    <value>{0} 模型已同步到 OpenClaw</value>
+  </data>
+  <data name="OpenClaw_SyncFailed" xml:space="preserve">
+    <value>同步 {0} 模型到 OpenClaw 失败</value>
+  </data>
+  <data name="OpenClaw_SyncFailedDetail" xml:space="preserve">
+    <value>同步失败: {0}</value>
+  </data>
+  <data name="OpenClaw_RefreshFailed" xml:space="preserve">
+    <value>刷新失败: {0}</value>
+  </data>
+  <data name="OpenClaw_SubmitFailed" xml:space="preserve">
+    <value>提交失败: {0}</value>
+  </data>
+  <data name="OpenClaw_ConfirmCancelTask" xml:space="preserve">
+    <value>确定要取消此任务吗？OpenClaw 进程将被终止。</value>
+  </data>
+  <data name="OpenClaw_ConfirmDeleteTask" xml:space="preserve">
+    <value>确定要删除此任务及其报告吗？</value>
+  </data>
+  <data name="OpenClaw_LoadReportFailed" xml:space="preserve">
+    <value>加载报告失败: {0}</value>
+  </data>
+  <data name="OpenClaw_NoErrorDetail" xml:space="preserve">
+    <value>暂无错误详情，可能已被清理。</value>
+  </data>
+  <data name="OpenClaw_LoadErrorFailed" xml:space="preserve">
+    <value>加载错误信息失败: {0}</value>
+  </data>
+  <data name="OpenClaw_TaskStatus_Completed" xml:space="preserve">
+    <value>已完成</value>
+  </data>
+  <data name="OpenClaw_TaskStatus_Running" xml:space="preserve">
+    <value>执行中</value>
+  </data>
+  <data name="OpenClaw_TaskStatus_Pending" xml:space="preserve">
+    <value>待处理</value>
+  </data>
+  <data name="OpenClaw_TaskStatus_Failed" xml:space="preserve">
+    <value>失败</value>
+  </data>
+  <data name="HardwareBenchmark_Detecting" xml:space="preserve">
+    <value>正在检测硬件信息...</value>
+  </data>
+  <data name="HardwareBenchmark_MachineConfig" xml:space="preserve">
+    <value>本机配置</value>
+  </data>
+  <data name="HardwareBenchmark_CoreUnit" xml:space="preserve">
+    <value>核心</value>
+  </data>
+  <data name="HardwareBenchmark_DataGpuSpecLabel" xml:space="preserve">
+    <value>GPU 规格</value>
+  </data>
+  <data name="HardwareBenchmark_DataGpuSpecValue" xml:space="preserve">
+    <value>：NVIDIA / AMD / Intel / Apple 官方产品页及 CES 发布会公开资料</value>
+  </data>
+  <data name="HardwareBenchmark_DataBandwidthLabel" xml:space="preserve">
+    <value>带宽数据</value>
+  </data>
+  <data name="HardwareBenchmark_DataBandwidthValue" xml:space="preserve">
+    <value>：显存带宽 = 位宽 × 等效频率 ÷ 8；集显/统一内存带宽来自官方 SoC 规格</value>
+  </data>
+  <data name="HardwareBenchmark_DataEstimateLabel" xml:space="preserve">
+    <value>推理速度估算</value>
+  </data>
+  <data name="HardwareBenchmark_DataEstimateValue1" xml:space="preserve">
+    <value>：基于 </value>
+  </data>
+  <data name="HardwareBenchmark_DataEstimateValue2" xml:space="preserve">
+    <value>，其中 NVIDIA/AMD/Intel 独显取 </value>
+  </data>
+  <data name="HardwareBenchmark_DataEstimateValue3" xml:space="preserve">
+    <value>、Apple Silicon 取 </value>
+  </data>
+  <data name="HardwareBenchmark_DataEstimateValue4" xml:space="preserve">
+    <value>、集显取 </value>
+  </data>
+  <data name="HardwareBenchmark_DataBaselineLabel" xml:space="preserve">
+    <value>基准模型</value>
+  </data>
+  <data name="HardwareBenchmark_DataBaselineValue" xml:space="preserve">
+    <value>：Llama-3-8B Q4_K_M（约 4.8GB），自回归 decode 阶段通常为 memory-bound</value>
+  </data>
+  <data name="HardwareBenchmark_DataLimitLabel" xml:space="preserve">
+    <value>局限性</value>
+  </data>
+  <data name="HardwareBenchmark_DataLimitValue" xml:space="preserve">
+    <value>：实际速度受量化格式、上下文长度、batch 大小、软件优化等影响，估算值仅供参考</value>
+  </data>
+  <data name="HardwareBenchmark_TierTitle" xml:space="preserve">
+    <value>性能等级说明</value>
+  </data>
+  <data name="HardwareBenchmark_TierCpuTitle" xml:space="preserve">
+    <value>CPU 推理</value>
+  </data>
+  <data name="HardwareBenchmark_TierCpuRange" xml:space="preserve">
+    <value>无独立 GPU 或显存 &amp;lt; 4GB</value>
+  </data>
+  <data name="HardwareBenchmark_TierCpuDesc" xml:space="preserve">
+    <value>适合运行 1B-3B 小模型，速度较慢（1-10 tok/s），可作为 fallback 方案。</value>
+  </data>
+  <data name="HardwareBenchmark_TierEntryTitle" xml:space="preserve">
+    <value>入门 GPU</value>
+  </data>
+  <data name="HardwareBenchmark_TierEntryRange" xml:space="preserve">
+    <value>显存 4-8GB (GTX 1660, RTX 3050 等)</value>
+  </data>
+  <data name="HardwareBenchmark_TierEntryDesc" xml:space="preserve">
+    <value>可运行 7B Q4 量化模型，速度约 15-40 tok/s，适合个人日常使用。</value>
+  </data>
+  <data name="HardwareBenchmark_TierMidTitle" xml:space="preserve">
+    <value>中端 GPU</value>
+  </data>
+  <data name="HardwareBenchmark_TierMidRange" xml:space="preserve">
+    <value>显存 8-16GB (RTX 4060/4070, Arc A770 等)</value>
+  </data>
+  <data name="HardwareBenchmark_TierMidDesc" xml:space="preserve">
+    <value>流畅运行 7B-13B 模型，可尝试 70B Q4，速度 40-100 tok/s。</value>
+  </data>
+  <data name="HardwareBenchmark_TierHighTitle" xml:space="preserve">
+    <value>高端 GPU</value>
+  </data>
+  <data name="HardwareBenchmark_TierHighRange" xml:space="preserve">
+    <value>显存 16-24GB (RTX 4080/4090/5070, Arc Pro 等)</value>
+  </data>
+  <data name="HardwareBenchmark_TierHighDesc" xml:space="preserve">
+    <value>本地运行 70B 模型无障碍，可运行多模型并行，速度 80-180 tok/s。</value>
+  </data>
+  <data name="HardwareBenchmark_TierProTitle" xml:space="preserve">
+    <value>专业/工作站</value>
+  </data>
+  <data name="HardwareBenchmark_TierProRange" xml:space="preserve">
+    <value>显存 48GB+ 或 大统一内存 (DGX, M3 Ultra, AI Max+)</value>
+  </data>
+  <data name="HardwareBenchmark_TierProDesc" xml:space="preserve">
+    <value>可本地运行 405B 级别大模型，或同时加载多个 70B 模型，企业级生产力。</value>
+  </data>
+  <data name="HardwareBenchmark_TierTopLabel" xml:space="preserve">
+    <value>顶级 GPU</value>
+  </data>
+  <data name="HardwareBenchmark_ScenarioTitle" xml:space="preserve">
+    <value>本机适用场景建议</value>
+  </data>
+  <data name="HardwareBenchmark_Refreshing" xml:space="preserve">
+    <value>🔄 刷新中...</value>
+  </data>
+  <data name="HardwareBenchmark_Refresh" xml:space="preserve">
+    <value>🔄 刷新硬件信息</value>
+  </data>
+  <data name="HardwareBenchmark_DataDisclaimer" xml:space="preserve">
+    <value>数据仅供参考，实际性能受驱动、散热、模型优化等因素影响。</value>
+  </data>
+  <data name="HardwareBenchmark_UnknownCpu" xml:space="preserve">
+    <value>未知 CPU（x64）</value>
+  </data>
+  <data name="HardwareBenchmark_LocalMachine" xml:space="preserve">
+    <value>本机</value>
+  </data>
+  <data name="HardwareBenchmark_NoDiscreteGpu" xml:space="preserve">
+    <value>无独立 GPU</value>
+  </data>
+  <data name="HardwareBenchmark_UnifiedMemory" xml:space="preserve">
+    <value>统一内存</value>
+  </data>
+  <data name="HardwareBenchmark_AiAccelerator" xml:space="preserve">
+    <value>AI 加速器</value>
+  </data>
+  <data name="HardwareBenchmark_WholeMachine" xml:space="preserve">
+    <value>(整机)</value>
+  </data>
+  <data name="HardwareBenchmark_UpTo" xml:space="preserve">
+    <value>最高</value>
+  </data>
+  <data name="HardwareBenchmark_CapLocalInferTitle" xml:space="preserve">
+    <value>本地模型推理</value>
+  </data>
+  <data name="HardwareBenchmark_CapLocalInferCpu" xml:space="preserve">
+    <value>CPU 推理约 {0} tok/s，仅支持 1B-3B 小模型。建议优先使用云端 API。</value>
+  </data>
+  <data name="HardwareBenchmark_CapLocalInferLowEnd" xml:space="preserve">
+    <value>估算约 {0} tok/s，可运行 7B Q4 量化模型。</value>
+  </data>
+  <data name="HardwareBenchmark_CapLocalInferMid" xml:space="preserve">
+    <value>估算约 {0} tok/s，流畅运行 7B-13B 模型，可尝试 70B Q4。</value>
+  </data>
+  <data name="HardwareBenchmark_CapLocalInferHigh" xml:space="preserve">
+    <value>估算约 {0} tok/s，可本地运行 70B 模型，适合重度 AI 开发。</value>
+  </data>
+  <data name="HardwareBenchmark_CapLocalInferTop" xml:space="preserve">
+    <value>估算约 {0} tok/s，顶级性能，可运行大模型或多模型并行。</value>
+  </data>
+  <data name="HardwareBenchmark_CapImageTitle" xml:space="preserve">
+    <value>图像生成 / 多模态</value>
+  </data>
+  <data name="HardwareBenchmark_CapImageCpu" xml:space="preserve">
+    <value>不支持 Stable Diffusion 等图像生成模型。</value>
+  </data>
+  <data name="HardwareBenchmark_CapImageLowEnd" xml:space="preserve">
+    <value>可尝试 SD 1.5 / SDXL 低分辨率生成，显存可能成为瓶颈。</value>
+  </data>
+  <data name="HardwareBenchmark_CapImageMid" xml:space="preserve">
+    <value>可运行 SDXL、FLUX 等主流图像生成模型。</value>
+  </data>
+  <data name="HardwareBenchmark_CapEmbedTitle" xml:space="preserve">
+    <value>知识库嵌入构建</value>
+  </data>
+  <data name="HardwareBenchmark_CapEmbedLow" xml:space="preserve">
+    <value>内存较低，大量文档处理时可能出现内存不足。</value>
+  </data>
+  <data name="HardwareBenchmark_CapEmbedMid" xml:space="preserve">
+    <value>内存充足，可流畅处理中等规模知识库构建。</value>
+  </data>
+  <data name="HardwareBenchmark_CapEmbedHigh" xml:space="preserve">
+    <value>大内存优势明显，可高效处理大规模知识库构建。</value>
+  </data>
+  <data name="HardwareBenchmark_CapRagTitle" xml:space="preserve">
+    <value>RAG 长上下文对话</value>
+  </data>
+  <data name="HardwareBenchmark_CapRagLow" xml:space="preserve">
+    <value>建议优先使用云端 API，本地模型上下文窗口和速度可能受限。</value>
+  </data>
+  <data name="HardwareBenchmark_CapRagHigh" xml:space="preserve">
+    <value>可本地运行支持长上下文的模型，实现私有化 RAG。</value>
+  </data>
+  <data name="HardwareBenchmark_LevelLimited" xml:space="preserve">
+    <value>受限</value>
+  </data>
+  <data name="HardwareBenchmark_LevelAvailable" xml:space="preserve">
+    <value>可用</value>
+  </data>
+  <data name="HardwareBenchmark_LevelGood" xml:space="preserve">
+    <value>良好</value>
+  </data>
+  <data name="HardwareBenchmark_LevelExcellent" xml:space="preserve">
+    <value>优秀</value>
+  </data>
+  <data name="HardwareBenchmark_LevelTop" xml:space="preserve">
+    <value>顶级</value>
+  </data>
+  <data name="HardwareBenchmark_LevelNotSupported" xml:space="preserve">
+    <value>不支持</value>
+  </data>
+  <data name="LocalModels_Loading" xml:space="preserve">
+    <value>加载中</value>
+  </data>
+  <data name="LocalModels_ScenarioAll" xml:space="preserve">
+    <value>全部</value>
+  </data>
+  <data name="LocalModels_ScenarioChat" xml:space="preserve">
+    <value>💬 通用对话</value>
+  </data>
+  <data name="LocalModels_ScenarioChinese" xml:space="preserve">
+    <value>🇨🇳 中文优化</value>
+  </data>
+  <data name="LocalModels_ScenarioTcm" xml:space="preserve">
+    <value>📝 笔记</value>
+  </data>
+  <data name="LocalModels_ScenarioCode" xml:space="preserve">
+    <value>💻 代码编程</value>
+  </data>
+  <data name="LocalModels_ScenarioReasoning" xml:space="preserve">
+    <value>🧠 推理思考</value>
+  </data>
+  <data name="LocalModels_ScenarioLightweight" xml:space="preserve">
+    <value>🪶 轻量快速</value>
+  </data>
+  <data name="LocalModels_CompanyAll" xml:space="preserve">
+    <value>🏢 全部公司</value>
+  </data>
+  <data name="LocalModels_CompanyAliyun" xml:space="preserve">
+    <value>☁️ 阿里云</value>
+  </data>
+  <data name="LocalModels_DeleteModelTitle" xml:space="preserve">
+    <value>删除模型</value>
+  </data>
+  <data name="LocalModels_DeleteOpenVinoText" xml:space="preserve">
+    <value>确定要删除本地模型「{0}」吗？</value>
+  </data>
+  <data name="LocalModels_DeleteOpenVinoIrreversible" xml:space="preserve">
+    <value>删除后将无法恢复</value>
+  </data>
+  <data name="LocalModels_OpenVinoTitle" xml:space="preserve">
+    <value>OpenVINO 模型（Intel Arc GPU）</value>
+  </data>
+  <data name="LocalModels_AreaHelpTitle" xml:space="preserve">
+    <value>区域说明：</value>
+  </data>
+  <data name="LocalModels_AreaDownloadsLabel" xml:space="preserve">
+    <value>⬇️ 下载任务</value>
+  </data>
+  <data name="LocalModels_AreaDownloadsValue" xml:space="preserve">
+    <value>：从 ModelScope/HuggingFace 拉取模型文件到本地磁盘（后台任务，可取消）。</value>
+  </data>
+  <data name="LocalModels_AreaCatalogLabel" xml:space="preserve">
+    <value>🧠 模型目录（已下载+可下载合并表）</value>
+  </data>
+  <data name="LocalModels_AreaCatalogValue" xml:space="preserve">
+    <value>：一张表看全部模型。未下载→「下载」；已下载→「▶ 运行」（启动独立 LLM 服务进程，端口 8000-8030，供对话/编程）／「停止」／「删除」。</value>
+  </data>
+  <data name="LocalModels_AreaDownloadedLabel" xml:space="preserve">
+    <value>🧿 已下载模型（通用表）</value>
+  </data>
+  <data name="LocalModels_AreaDownloadedValue" xml:space="preserve">
+    <value>：跨工具汇总的已下载模型。加载＝把 Qwen2.5-VL 视觉模型预热进 vision_server（8801 端口）显存，首次识别图片免冷加载；详情＝查看配置。</value>
+  </data>
+  <data name="LocalModels_AreaLlmLabel" xml:space="preserve">
+    <value>🤖 OpenVINO LLM 服务</value>
+  </data>
+  <data name="LocalModels_AreaLlmValue" xml:space="preserve">
+    <value>：宿主机托管的 openvino_llm_server.py 常驻实例（一模型一端口），显示 PID/健康状态，可手动启停。</value>
+  </data>
+  <data name="LocalModels_DownloadTasks" xml:space="preserve">
+    <value>下载任务</value>
+  </data>
+  <data name="LocalModels_NoDownloadTasks" xml:space="preserve">
+    <value>暂无下载任务</value>
+  </data>
+  <data name="LocalModels_CatalogTitle" xml:space="preserve">
+    <value>OpenVINO 模型目录</value>
+  </data>
+  <data name="LocalModels_CatalogHint" xml:space="preserve">
+    <value>（▶ 运行＝启动 LLM 服务供对话/编程，端口 8000-8030；下载自 ModelScope/HF 镜像）</value>
+  </data>
+  <data name="LocalModels_CatalogEmpty" xml:space="preserve">
+    <value>目录为空</value>
+  </data>
+  <data name="LocalModels_Col_Params" xml:space="preserve">
+    <value>参数</value>
+  </data>
+  <data name="LocalModels_Col_Size" xml:space="preserve">
+    <value>大小</value>
+  </data>
+  <data name="LocalModels_Col_Usage" xml:space="preserve">
+    <value>用途</value>
+  </data>
+  <data name="LocalModels_Col_Status" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="LocalModels_Col_Port" xml:space="preserve">
+    <value>端口</value>
+  </data>
+  <data name="LocalModels_Col_Name" xml:space="preserve">
+    <value>名称</value>
+  </data>
+  <data name="LocalModels_RunningWithPort" xml:space="preserve">
+    <value>运行中 :{0}</value>
+  </data>
+  <data name="LocalModels_DownloadedBadge" xml:space="preserve">
+    <value>已下载</value>
+  </data>
+  <data name="LocalModels_NotDownloadedBadge" xml:space="preserve">
+    <value>未下载</value>
+  </data>
+  <data name="LocalModels_StopBtn" xml:space="preserve">
+    <value>停止</value>
+  </data>
+  <data name="LocalModels_RunBtn" xml:space="preserve">
+    <value>运行</value>
+  </data>
+  <data name="LocalModels_DownloadBtn" xml:space="preserve">
+    <value>下载</value>
+  </data>
+  <data name="LocalModels_StartBtn" xml:space="preserve">
+    <value>启动</value>
+  </data>
+  <data name="LocalModels_DownloadedHint" xml:space="preserve">
+    <value>（加载＝预热视觉模型到显存，图片识别免冷加载）</value>
+  </data>
+  <data name="LocalModels_LlmHint" xml:space="preserve">
+    <value>（宿主机常驻 LLM 服务，一模型一端口，供对话/编程调用）</value>
+  </data>
+  <data name="LocalModels_LlmRunning" xml:space="preserve">
+    <value>运行中</value>
+  </data>
+  <data name="LocalModels_LlmStarting" xml:space="preserve">
+    <value>启动中</value>
+  </data>
+  <data name="LocalModels_LlmStopped" xml:space="preserve">
+    <value>已停止</value>
+  </data>
+  <data name="LocalModels_Managed" xml:space="preserve">
+    <value>(托管)</value>
+  </data>
+  <data name="LocalModels_LoadingHardware" xml:space="preserve">
+    <value>正在检测硬件环境…</value>
+  </data>
+  <data name="LocalModels_LoadingScanTools" xml:space="preserve">
+    <value>正在扫描本地模型服务…</value>
+  </data>
+  <data name="LocalModels_OpenVinoLoadFailed" xml:space="preserve">
+    <value>OpenVINO 数据加载失败：{0}</value>
+  </data>
+  <data name="LocalModels_StartDownloadFailed" xml:space="preserve">
+    <value>启动下载失败：{0}</value>
+  </data>
+  <data name="LocalModels_CancelFailed" xml:space="preserve">
+    <value>取消失败：{0}</value>
+  </data>
+  <data name="LocalModels_StartedWithEndpoint" xml:space="preserve">
+    <value>已启动 :{0}（{1}）</value>
+  </data>
+  <data name="LocalModels_RunFailed" xml:space="preserve">
+    <value>运行失败：{0}</value>
+  </data>
+  <data name="LocalModels_StopFailed" xml:space="preserve">
+    <value>停止失败：{0}</value>
+  </data>
+  <data name="LocalModels_DeleteFailed" xml:space="preserve">
+    <value>删除失败：{0}</value>
+  </data>
+  <data name="LocalModels_VramLabel" xml:space="preserve">
+    <value>显存: {0}GB+</value>
+  </data>
+  <data name="LocalModels_VramNone" xml:space="preserve">
+    <value>显存: 无要求</value>
+  </data>
+  <data name="LocalModels_RamLabel" xml:space="preserve">
+    <value>内存: {0}GB+</value>
+  </data>
+  <data name="LocalModels_SpeedEstimateHint" xml:space="preserve">
+    <value>基于当前硬件的估算速度，仅供参考</value>
+  </data>
+  <data name="LocalModels_LlmStatusUnavailable" xml:space="preserve">
+    <value>无法获取 OpenVINO 托管服务状态（宿主机 8866 未运行？）</value>
+  </data>
+  <data name="LocalModels_SpeedVeryFast" xml:space="preserve">
+    <value>🚀 约 {0} tok/s</value>
+  </data>
+  <data name="LocalModels_SpeedFast" xml:space="preserve">
+    <value>⚡ 约 {0} tok/s</value>
+  </data>
+  <data name="LocalModels_SpeedMedium" xml:space="preserve">
+    <value>🐢 约 {0} tok/s</value>
+  </data>
+  <data name="LocalModels_SpeedSlow" xml:space="preserve">
+    <value>🐌 约 {0} tok/s</value>
+  </data>
+  <data name="LocalModels_DeployStatusPending" xml:space="preserve">
+    <value>等待中</value>
+  </data>
+  <data name="LocalModels_DeployStatusRunning" xml:space="preserve">
+    <value>进行中</value>
+  </data>
+  <data name="LocalModels_DeployStatusCompleted" xml:space="preserve">
+    <value>已完成</value>
+  </data>
+  <data name="LocalModels_DeployStatusFailed" xml:space="preserve">
+    <value>失败</value>
+  </data>
+  <data name="LocalModels_RefreshDownloadedFailed" xml:space="preserve">
+    <value>刷新已下载模型失败: {0}</value>
+  </data>
+  <data name="LocalModels_DeletedOk" xml:space="preserve">
+    <value>✅ {0} 已删除</value>
+  </data>
+  <data name="LocalModels_DeleteFailedToolDown" xml:space="preserve">
+    <value>❌ 删除失败，请检查工具是否运行</value>
+  </data>
+  <data name="LocalModels_DeleteException" xml:space="preserve">
+    <value>删除异常: {0}</value>
+  </data>
+  <data name="LocalModels_ConfirmUnload" xml:space="preserve">
+    <value>确定要卸载模型 {0} 吗？正在使用该模型的任务将被中断。</value>
+  </data>
+  <data name="LocalModels_UnloadedOk" xml:space="preserve">
+    <value>✅ {0} 已卸载</value>
+  </data>
+  <data name="LocalModels_UnloadFailed" xml:space="preserve">
+    <value>❌ 卸载 {0} 失败</value>
+  </data>
+  <data name="LocalModels_UnloadException" xml:space="preserve">
+    <value>卸载异常: {0}</value>
+  </data>
+  <data name="LocalModels_LoadedOk" xml:space="preserve">
+    <value>✅ {0} 已加载</value>
+  </data>
+  <data name="LocalModels_LoadFailedToolDown" xml:space="preserve">
+    <value>❌ 加载 {0} 失败，请检查工具是否运行</value>
+  </data>
+  <data name="LocalModels_LoadException" xml:space="preserve">
+    <value>加载异常: {0}</value>
+  </data>
+  <data name="LocalModels_ExpireSoon" xml:space="preserve">
+    <value>即将过期</value>
+  </data>
+  <data name="LocalModels_ExpireHours" xml:space="preserve">
+    <value>{0}小时后过期</value>
+  </data>
+  <data name="LocalModels_ExpireMinutes" xml:space="preserve">
+    <value>{0}分钟后过期</value>
+  </data>
+  <data name="E2EPerf_Time" xml:space="preserve">
+    <value>耗时</value>
+  </data>
+  <data name="E2EPerf_TotalTime" xml:space="preserve">
+    <value>总耗时</value>
+  </data>
+  <data name="PromptTemplates_SaveFailedFormat" xml:space="preserve">
+    <value>保存失败：{0}</value>
+  </data>
+  <data name="HardwareBenchmark_CpuInferenceHint" xml:space="preserve">
+    <value>使用 CPU 推理</value>
+  </data>
+  <data name="MasterChat_CreateFailed" xml:space="preserve">
+    <value>拜师失败：{0}</value>
+  </data>
+  <data name="MasterChat_UnknownError" xml:space="preserve">
+    <value>未知错误</value>
+  </data>
+  <data name="MasterChat_SafetyWarning" xml:space="preserve">
+    <value>
+
+⚠️ 以上内容仅供参考，不构成专业医疗/法律意见，请以权威资源为准。</value>
+  </data>
+  <data name="HardwareBenchmark_DataEstimateFormula" xml:space="preserve">
+    <value>tokens/s ≈ 内存带宽 × 利用率系数</value>
   </data>
 </root>

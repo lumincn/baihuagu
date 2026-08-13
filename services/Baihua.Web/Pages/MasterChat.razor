@@ -163,7 +163,7 @@
             <h4>@L["MasterChat_ModalTitle"]</h4>
             <div class="form-group">
                 <label>@L["MasterChat_Industry"]</label>
-                <input type="text" class="form-control" @bind="createIndustry" list="industry-list" placeholder="输入或选择行业" />
+                <input type="text" class="form-control" @bind="createIndustry" list="industry-list" placeholder="@L["MasterChat_IndustryPlaceholder"]" />
                 <datalist id="industry-list">
                     <option value="中医" />
                     <option value="医学" />
@@ -202,11 +202,11 @@
         <div class="modal-content" @onclick:stopPropagation>
             <h4>⚠️ @L["MasterChat_DeleteMaster"]</h4>
             <p style="color: var(--master-text-secondary); margin: 1rem 0;">
-                确定要删除师父「@pendingDeleteMasterName」吗？拜师进度与师徒关系将一并删除，此操作不可恢复。
+                @L["MasterChat_DeleteMasterMessage", pendingDeleteMasterName ?? ""]
             </p>
             <div class="modal-actions">
                 <button class="btn btn-secondary" @onclick="CancelDeleteMaster">@L["MasterChat_Cancel"]</button>
-                <button class="btn btn-danger" @onclick="ConfirmDeleteMaster">确认删除</button>
+                <button class="btn btn-danger" @onclick="ConfirmDeleteMaster">@L["Common_ConfirmDelete"]</button>
             </div>
         </div>
     </div>
@@ -740,16 +740,15 @@
         "真实诊断", "开处方", "开药方", "真实法律建议", "代理诉讼",
         "医疗诊断", "处方药", "手术方案", "法律代理"
     ];
-    private const string SafetyWarning = "\n\n⚠️ 以上内容仅供参考，不构成专业医疗/法律意见，请以权威资源为准。";
 
     private static string SanitizeInput(string input, int maxLength = 200) =>
         string.Concat(input.Take(maxLength)).Replace("\n", " ").Replace("\r", " ").Replace("【", " ").Replace("】", " ").Trim();
 
-    private static string ApplySafetyFilter(string text)
+    private string ApplySafetyFilter(string text)
     {
         foreach (var kw in UnsafeKeywords)
             if (text.Contains(kw, StringComparison.OrdinalIgnoreCase))
-                return text + SafetyWarning;
+                return text + L["MasterChat_SafetyWarning"];
         return text;
     }
 
@@ -890,13 +889,13 @@
             }
             else
             {
-                createError = $"拜师失败：{result.Message ?? "未知错误"}";
+                createError = string.Format(L["MasterChat_CreateFailed"], result.Message ?? L["MasterChat_UnknownError"]);
                 StateHasChanged();
             }
         }
         catch (Exception ex)
         {
-            createError = $"拜师失败：{ex.Message}";
+            createError = string.Format(L["MasterChat_CreateFailed"], ex.Message);
             StateHasChanged();
         }
         finally
@@ -941,7 +940,7 @@
 
             if (_chatCts.IsCancellationRequested)
             {
-                aiMessage.Content = string.IsNullOrEmpty(aiMessage.Content) ? "（已停止）" : aiMessage.Content + "\n\n（已停止）";
+                aiMessage.Content = string.IsNullOrEmpty(aiMessage.Content) ? L["MasterChat_StoppedMarker"] : aiMessage.Content + "\n\n" + L["MasterChat_StoppedMarker"];
             }
             else
             {
@@ -950,11 +949,11 @@
         }
         catch (OperationCanceledException)
         {
-            aiMessage.Content = string.IsNullOrEmpty(aiMessage.Content) ? "（已停止）" : aiMessage.Content + "\n\n（已停止）";
+            aiMessage.Content = string.IsNullOrEmpty(aiMessage.Content) ? L["MasterChat_StoppedMarker"] : aiMessage.Content + "\n\n" + L["MasterChat_StoppedMarker"];
         }
         catch (Exception ex)
         {
-            aiMessage.Content = $"请求失败：{ex.Message}";
+            aiMessage.Content = string.Format(L["MasterChat_RequestFailed"], ex.Message);
         }
         finally
         {
@@ -1056,13 +1055,13 @@
         if (selectedMaster == null) return;
         try
         {
-            if (!await JSRuntime.InvokeAsync<bool>("confirm", "确定要清理旧数据吗？这将压缩7天前的对话并淘汰30天前的摘要。"))
+            if (!await JSRuntime.InvokeAsync<bool>("confirm", L["MasterChat_EvictConfirm"]))
                 return;
 
             var result = await ApiService.EvictMasterAsync(selectedMaster.MasterId);
             if (result.Success)
             {
-                chatMessages.Add(new ChatMsg { IsUser = false, Content = $"✅ 数据清理完成：压缩 {result.CompressedStages} 个阶段，淘汰 {result.EvictedStages} 个阶段", Time = DateTime.Now });
+                chatMessages.Add(new ChatMsg { IsUser = false, Content = string.Format(L["MasterChat_EvictDone"], result.CompressedStages, result.EvictedStages), Time = DateTime.Now });
                 StateHasChanged();
                 await SaveChatHistoryAsync();
             }
@@ -1074,7 +1073,7 @@
         }
         catch (Exception ex)
         {
-            chatMessages.Add(new ChatMsg { IsUser = false, Content = $"清理失败：{ex.Message}", Time = DateTime.Now });
+            chatMessages.Add(new ChatMsg { IsUser = false, Content = string.Format(L["MasterChat_EvictFailed"], ex.Message), Time = DateTime.Now });
             StateHasChanged();
         }
     }
@@ -1091,13 +1090,13 @@
     private static string Truncate(string s, int max) =>
         s.Length <= max ? s : s[..max] + "...";
 
-    private static string GetStageTip(string stage) => stage switch
+    private string GetStageTip(string stage) => stage switch
     {
-        "入道" => "引导阶段：师父会通过提问了解你的基础和目标，帮助你明确学习方向。",
-        "筑基" => "基础阶段：师父会严格要求你掌握基础知识，每日布置功课并检查完成情况。",
-        "精进" => "精进阶段：师父会对细节有近乎偏执的追求，任何微小错误都要指出并纠正。",
-        "磨砺" => "磨砺阶段：师父会模拟真实考试环境，出题考察你的综合能力。",
-        "出师" => "出师阶段：师父会分享实战经验和考试技巧，帮助你做好最后的冲刺准备。",
+        "入道" => L["MasterChat_StageTip_Rudao"],
+        "筑基" => L["MasterChat_StageTip_Zhuji"],
+        "精进" => L["MasterChat_StageTip_Jingjin"],
+        "磨砺" => L["MasterChat_StageTip_Moli"],
+        "出师" => L["MasterChat_StageTip_Chushi"],
         _ => ""
     };
 

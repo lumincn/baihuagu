@@ -4,31 +4,32 @@
 @using System.Text.Json
 @inject Baihua.Web.Services.IApiService ApiService
 @inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
-<PageTitle>股票 AI 建议</PageTitle>
+<PageTitle>@L["Stock_PageTitle"]</PageTitle>
 
-<h1>📈 股票 AI 建议</h1>
-<p class="text-muted">AI 拉取 A 股实时行情并分析，按你的条件自动推荐 10 只建议购买的股票；输入已购代码评估是否卖出。</p>
+<h1>@L["Stock_Title"]</h1>
+<p class="text-muted">@L["Stock_Subtitle"]</p>
 
 <!-- 分析条件 -->
 <div class="card mb-4">
-    <div class="card-header">🎛️ 分析条件</div>
+    <div class="card-header">@L["Stock_AnalysisHeader"]</div>
     <div class="card-body">
         <div class="row g-3 align-items-end">
             <div class="col-md-4">
-                <label class="form-label small text-muted">算法 / 角度</label>
+                <label class="form-label small text-muted">@L["Stock_StrategyLabel"]</label>
                 <select class="form-select" @bind="_strategy">
-                    <option value="">综合（均衡）</option>
-                    <option value="value">价值投资（低估值/高ROE）</option>
-                    <option value="growth">成长股（高成长赛道）</option>
-                    <option value="technical">技术面（趋势/量能/动量）</option>
-                    <option value="dividend">高股息（防御/分红）</option>
+                    <option value="">@L["Stock_Strategy_All"]</option>
+                    <option value="value">@L["Stock_Strategy_Value"]</option>
+                    <option value="growth">@L["Stock_Strategy_Growth"]</option>
+                    <option value="technical">@L["Stock_Strategy_Technical"]</option>
+                    <option value="dividend">@L["Stock_Strategy_Dividend"]</option>
                 </select>
             </div>
             <div class="col-md-4">
-                <label class="form-label small text-muted">行业</label>
+                <label class="form-label small text-muted">@L["Stock_IndustryLabel"]</label>
                 <select class="form-select" @bind="_industry">
-                    <option value="">全部行业</option>
+                    <option value="">@L["Stock_IndustryAll"]</option>
                     @foreach (var ind in _industries)
                     {
                         <option value="@ind">@ind</option>
@@ -36,27 +37,27 @@
                 </select>
             </div>
             <div class="col-md-4">
-                <label class="form-label small text-muted">持有周期</label>
+                <label class="form-label small text-muted">@L["Stock_HorizonLabel"]</label>
                 <select class="form-select" @bind="_horizon">
-                    <option value="">中长期（均衡）</option>
-                    <option value="short">短期（数日~数周）</option>
-                    <option value="long">长期（数月~数年）</option>
+                    <option value="">@L["Stock_Horizon_All"]</option>
+                    <option value="short">@L["Stock_Horizon_Short"]</option>
+                    <option value="long">@L["Stock_Horizon_Long"]</option>
                 </select>
             </div>
         </div>
         <div class="row g-3 mt-1">
             <div class="col-md-8">
-                <label class="form-label small text-muted">📝 自定义提示词（附加给 AI 的分析要求）</label>
+                <label class="form-label small text-muted">@L["Stock_PromptLabel"]</label>
                 <div class="d-flex gap-2">
-                    <input class="form-control" placeholder="如：侧重高分红、低波动的防御性标的…"
+                    <input class="form-control" placeholder="@L["Stock_PromptPlaceholder"]"
                            @bind="_prompt" @bind:event="oninput" />
-                    <button class="btn btn-outline-secondary text-nowrap" title="恢复默认提示词" @onclick="ResetPrompt">默认</button>
+                    <button class="btn btn-outline-secondary text-nowrap" title="@L["Stock_ResetPromptTitle"]" @onclick="ResetPrompt">@L["Stock_ResetPrompt"]</button>
                 </div>
             </div>
             <div class="col-md-4">
-                <label class="form-label small text-muted">最近使用的提示词（最多 10 条）</label>
+                <label class="form-label small text-muted">@L["Stock_HistoryLabel"]</label>
                 <select class="form-select" @bind="_selectedHistory" @bind:after="OnHistorySelected">
-                    <option value="">选择历史提示词…</option>
+                    <option value="">@L["Stock_HistoryPlaceholder"]</option>
                     @foreach (var p in _promptHistory)
                     {
                         <option value="@p">@(p.Length > 28 ? p[..28] + "…" : p)</option>
@@ -66,17 +67,17 @@
         </div>
         <div class="mt-3 d-flex align-items-center">
             <div class="btn-group me-3" role="group">
-                <button class="btn btn-sm @(_tab == "buy" ? "btn-primary" : "btn-outline-primary")" @onclick='() => SwitchTabAsync("buy")'>🛒 建议买入</button>
-                <button class="btn btn-sm @(_tab == "sell" ? "btn-danger" : "btn-outline-danger")" @onclick='() => SwitchTabAsync("sell")'>🚨 建议卖出</button>
+                <button class="btn btn-sm @(_tab == "buy" ? "btn-primary" : "btn-outline-primary")" @onclick='() => SwitchTabAsync("buy")'>@L["Stock_TabBuy"]</button>
+                <button class="btn btn-sm @(_tab == "sell" ? "btn-danger" : "btn-outline-danger")" @onclick='() => SwitchTabAsync("sell")'>@L["Stock_TabSell"]</button>
             </div>
             <button class="btn btn-primary" disabled="@_loading" @onclick="LoadRecommendationsAsync">
-                @(_loading ? "分析中…" : "🔄 开始分析")
+                @(_loading ? L["Stock_Analyzing"] : L["Stock_StartAnalysis"])
             </button>
             <button class="btn btn-outline-secondary ms-2" disabled="@_loading" @onclick="() => RefreshRecommendationsAsync()">
-                强制刷新（跳过缓存）
+                @L["Stock_ForceRefreshSkipCache"]
             </button>
             <span class="small text-muted ms-2">
-                行情缓存 30 秒，AI 结果缓存 10 分钟（按条件+提示词）
+                @L["Stock_CacheHint"]
             </span>
         </div>
     </div>
@@ -84,14 +85,14 @@
 
 @if (_loading)
 {
-    <div class="loading-spinner">AI 正在拉取行情并分析，请稍候（约 10-60 秒）…</div>
+    <div class="loading-spinner">@L["Stock_Loading"]</div>
 }
 else if (!string.IsNullOrEmpty(_error))
 {
     <div class="alert alert-warning" role="alert">
-        <b>⚠️ 分析失败：</b>@_error
+        <b>@L["Stock_AnalysisFailed"]</b>@_error
         <div class="mt-2">
-            <button class="btn btn-sm btn-outline-secondary" @onclick="LoadRecommendationsAsync">重试</button>
+            <button class="btn btn-sm btn-outline-secondary" @onclick="LoadRecommendationsAsync">@L["Stock_Retry"]</button>
         </div>
     </div>
 }
@@ -100,15 +101,15 @@ else
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span>
-                @(_tab == "sell" ? "🚨 建议卖出 TOP 10" : "🛒 建议购买 TOP 10")
+                @(_tab == "sell" ? L["Stock_TopSell"] : L["Stock_TopBuy"])
                 <span class="badge bg-secondary ms-2">@ConditionLabel()</span>
             </span>
-            <span class="text-muted small">模型：@(_result?.Model)｜@(_result?.GeneratedAt.ToString("HH:mm:ss"))</span>
+            <span class="text-muted small">@string.Format(L["Stock_ModelLabel"], _result?.Model, _result?.GeneratedAt.ToString("HH:mm:ss"))</span>
         </div>
         <div class="card-body">
             @if (_result == null || _result.Recommendations.Count == 0)
             {
-                <div class="text-muted">没有拿到有效的推荐结果（模型输出可能不是有效 JSON，见下方原始输出）。</div>
+                <div class="text-muted">@L["Stock_NoResult"]</div>
             }
             else
             {
@@ -116,11 +117,11 @@ else
                     <thead>
                         <tr>
                             <th style="width:52px">#</th>
-                            <th>代码</th>
-                            <th>名称</th>
-                            <th style="width:220px">建议度</th>
-                            <th>动作</th>
-                            <th>理由</th>
+                            <th>@L["Stock_ColCode"]</th>
+                            <th>@L["Stock_ColName"]</th>
+                            <th style="width:220px">@L["Stock_ColScore"]</th>
+                            <th>@L["Stock_ColAction"]</th>
+                            <th>@L["Stock_ColReason"]</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -151,16 +152,16 @@ else
     </div>
 
     <div class="card mb-4">
-        <div class="card-header">💼 持仓评估：是否卖出？</div>
+        <div class="card-header">@L["Stock_EvaluationHeader"]</div>
         <div class="card-body">
             <div class="d-flex gap-2 align-items-center">
-                <input class="form-control" style="max-width:200px" placeholder="股票代码，如 600519"
+                <input class="form-control" style="max-width:200px" placeholder="@L["Stock_CodePlaceholder"]"
                        @bind="_holdingCode" @bind:event="oninput" />
                 <button class="btn btn-primary" disabled="@_evaluating" @onclick="() => EvaluateAsync()">
-                    @(_evaluating ? "分析中…" : "分析")
+                    @(_evaluating ? L["Stock_Analyzing"] : L["Stock_Analyze"])
                 </button>
                 <button class="btn btn-outline-secondary" disabled="@_evaluating" @onclick="() => EvaluateAsync(refresh: true)">
-                    强制刷新
+                    @L["Stock_ForceRefresh"]
                 </button>
             </div>
 
@@ -175,8 +176,8 @@ else
                     <div class="d-flex align-items-center gap-3">
                         <span style="font-size:1.6rem">@(sell ? "🔴" : "🟢")</span>
                         <div>
-                            <b>@_evaluation.Name（@_evaluation.Code）建议：@(sell ? "卖出" : "持有")</b>
-                            <span class="badge @(sell ? "bg-danger" : "bg-success") ms-2">置信度 @_evaluation.Confidence</span>
+                            <b>@string.Format(L["Stock_EvalAdvice"], _evaluation.Name, _evaluation.Code, sell ? L["Stock_Sell"] : L["Stock_Hold"])</b>
+                            <span class="badge @(sell ? "bg-danger" : "bg-success") ms-2">@string.Format(L["Stock_Confidence"], _evaluation.Confidence)</span>
                             <div class="small mt-1">@_evaluation.Reason</div>
                         </div>
                     </div>
@@ -189,21 +190,18 @@ else
 @if (_result?.Raw is { Length: > 0 })
 {
     <details class="small text-muted">
-        <summary>AI 原始输出（调试）</summary>
+        <summary>@L["Stock_RawOutput"]</summary>
         <pre class="mt-2 p-2 bg-light border rounded" style="white-space:pre-wrap;max-height:300px;overflow:auto">@_result.Raw</pre>
     </details>
 }
 
 <div class="text-muted small mt-4 border-top pt-2">
-    ⚠️ 免责声明：本页面内容由 AI 基于公开行情数据自动生成，仅供学习参考，<b>不构成任何投资建议</b>。
-    股市有风险，投资需谨慎。AI 可能出错，请独立判断。
+    @L["Stock_DisclaimerPart1"]<b>@L["Stock_DisclaimerBold"]</b>@L["Stock_DisclaimerPart2"]
 </div>
 
 @code {
     private const string PromptHistoryKey = "stock.promptHistory";
     private const int PromptHistoryMax = 10;
-    private const string DefaultPrompt =
-        "侧重基本面：优先盈利能力强、估值合理、现金流健康的标的；回避高波动题材股、业绩暴雷风险与高质押公司。";
 
     private StockRecommendationResponse? _result;
     private bool _loading = true;
@@ -213,7 +211,7 @@ else
     private string _industry = "";
     private string _horizon = "";
     private string _tab = "buy";
-    private string _prompt = DefaultPrompt;
+    private string _prompt = "";
     private string _selectedHistory = "";
     private List<string> _promptHistory = new();
     private List<string> _industries = new();
@@ -226,6 +224,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         // 行业下拉选项 + 最近提示词历史 + 默认条件自动分析
+        _prompt = L["Stock_DefaultPrompt"];
         try { _industries = await ApiService.GetStockIndustriesAsync(); } catch { }
         await LoadPromptHistoryAsync();
         await LoadRecommendationsAsync();
@@ -250,7 +249,7 @@ else
         _selectedHistory = ""; // 选完即复位，避免下拉停在旧值
     }
 
-    private void ResetPrompt() => _prompt = DefaultPrompt;
+    private void ResetPrompt() => _prompt = L["Stock_DefaultPrompt"];
 
     private void SavePromptToHistory(string prompt)
     {
@@ -269,18 +268,18 @@ else
         var parts = new List<string>();
         parts.Add(_strategy switch
         {
-            "value" => "价值投资",
-            "growth" => "成长股",
-            "technical" => "技术面",
-            "dividend" => "高股息",
-            _ => "综合"
+            "value" => L["Stock_CondStrategy_Value"],
+            "growth" => L["Stock_CondStrategy_Growth"],
+            "technical" => L["Stock_CondStrategy_Technical"],
+            "dividend" => L["Stock_CondStrategy_Dividend"],
+            _ => L["Stock_CondStrategy_All"]
         });
-        parts.Add(string.IsNullOrEmpty(_industry) ? "全部行业" : _industry);
+        parts.Add(string.IsNullOrEmpty(_industry) ? L["Stock_IndustryAll"] : _industry);
         parts.Add(_horizon switch
         {
-            "short" => "短期",
-            "long" => "长期",
-            _ => "中长期"
+            "short" => L["Stock_CondHorizon_Short"],
+            "long" => L["Stock_CondHorizon_Long"],
+            _ => L["Stock_CondHorizon_All"]
         });
         return string.Join(" ｜ ", parts);
     }

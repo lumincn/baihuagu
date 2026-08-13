@@ -85,7 +85,7 @@ else if (note != null)
                     <span>✏️</span> @(isEditing ? L["NoteDetail_CancelEdit"] : L["NoteDetail_Edit"])
                 </button>
                 <button @onclick="GenerateCardsForNote" class="btn btn-outline-info" disabled="@isGeneratingCards">
-                    @(isGeneratingCards ? "⏳ 生成中…" : "🗂️ 生成 Anki 卡片")
+                    @(isGeneratingCards ? L["NoteDetail_Generating"] : L["NoteDetail_GenerateAnkiCards"])
                 </button>
             </div>
         </div>
@@ -195,7 +195,7 @@ else
     {
         if (string.IsNullOrEmpty(noteVaultId))
         {
-            generateCardsMessage = "未找到知识库，无法生成卡片";
+            generateCardsMessage = L["NoteDetail_NoVaultToGenerate"];
             return;
         }
         isGeneratingCards = true;
@@ -204,12 +204,15 @@ else
         {
             var result = await ApiService.GenerateAllCardsAsync(noteVaultId);
             generateCardsMessage = result != null
-                ? $"已提交卡片生成任务（{(string.IsNullOrEmpty(result.TaskId) ? "请到任务页查看" : $"任务 {result.TaskId[..Math.Min(8, result.TaskId.Length)]}…")}）"
-                : "卡片生成任务创建失败，请稍后重试";
+                ? string.Format(L["NoteDetail_CardTaskSubmitted"],
+                    string.IsNullOrEmpty(result.TaskId)
+                        ? L["NoteDetail_CheckTasksPage"]
+                        : string.Format(L["NoteDetail_TaskShortId"], result.TaskId[..Math.Min(8, result.TaskId.Length)]))
+                : L["NoteDetail_CardTaskCreateFailed"];
         }
         catch (Exception ex)
         {
-            generateCardsMessage = $"卡片生成失败：{ex.Message}";
+            generateCardsMessage = string.Format(L["NoteDetail_CardGenerationFailed"], ex.Message);
         }
         finally
         {

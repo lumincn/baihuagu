@@ -53,7 +53,7 @@
                                 <label class="form-check-label fw-bold" for="openVinoEnabled">@L["OpenClaw_UseOpenVino"]</label>
                                 @if (_openVinoDetecting)
                                 {
-                                    <span class="badge bg-info ms-2"><span class="spinner-border spinner-border-sm" style="width:0.7rem;height:0.7rem;"></span> 检测中</span>
+                                    <span class="badge bg-info ms-2"><span class="spinner-border spinner-border-sm" style="width:0.7rem;height:0.7rem;"></span> @L["OpenClaw_Detecting"]</span>
                                 }
                                 else if (!string.IsNullOrEmpty(_openVinoStatusMessage))
                                 {
@@ -82,7 +82,7 @@
                             @if (!string.IsNullOrEmpty(_openVinoCommandLine))
                             {
                                 <div class="mb-3">
-                                    <label class="form-label">启动命令（可复制到命令行手动运行）</label>
+                                    <label class="form-label">@L["OpenClaw_StartupCommandLabel"]</label>
                                     <code class="d-block p-2 border rounded bg-dark text-light" style="white-space: pre-wrap; word-break: break-all;">@_openVinoCommandLine</code>
                                 </div>
                             }
@@ -90,25 +90,25 @@
                             {
                                 <div class="alert alert-light border mb-3">
                                     <i class="bi bi-info-circle me-1"></i>
-                                    Intel OpenVINO 推理引擎，支持 CPU/GPU/NPU 加速。需安装 Python 环境 + <code>pip install openvino-genai</code>，服务由随百花发布的 <code>openvino_llm_server.py</code>（OpenAI 兼容）提供。
+                                    @L["OpenClaw_OpenVinoDescription1"]<code>pip install openvino-genai</code>@L["OpenClaw_OpenVinoDescription2"]<code>openvino_llm_server.py</code>@L["OpenClaw_OpenVinoDescription3"]
                                 </div>
                                 <div class="row mb-3">
                                     <div class="col-md-6">
-                                        <label class="form-label">服务脚本路径</label>
+                                        <label class="form-label">@L["OpenClaw_BinaryPathLabel"]</label>
                                         <input type="text" class="form-control" @bind="_openVinoConfig.BinaryPath"
-                                               placeholder="留空自动探测（随发布自带 openvino_llm_server.py）" />
-                                        <div class="form-text">Python 脚本路径或可执行命令；留空时自动探测 python + openvino_genai</div>
+                                               placeholder="@L["OpenClaw_BinaryPathPlaceholder"]" />
+                                        <div class="form-text">@L["OpenClaw_BinaryPathHint"]</div>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">模型目录路径</label>
+                                        <label class="form-label">@L["OpenClaw_ModelPathLabel"]</label>
                                         <input type="text" class="form-control" @bind="_openVinoConfig.ModelPath"
                                                placeholder="/path/to/openvino_model" />
-                                        <div class="form-text">OpenVINO 优化后的模型目录</div>
+                                        <div class="form-text">@L["OpenClaw_ModelPathHint"]</div>
                                     </div>
                                 </div>
                                 <div class="row mb-3">
                                     <div class="col-md-3">
-                                        <label class="form-label">推理设备</label>
+                                        <label class="form-label">@L["OpenClaw_DeviceLabel"]</label>
                                         <select class="form-select" @bind="_openVinoConfig.Device">
                                             @foreach (var d in _openVinoDevices)
                                             {
@@ -119,10 +119,10 @@
                                             @if (!_openVinoDevices.Contains("NPU")) { <option value="NPU">NPU</option> }
                                             @if (!_openVinoDevices.Contains("AUTO")) { <option value="AUTO">AUTO</option> }
                                         </select>
-                                        <div class="form-text">检测到：@(string.Join(" / ", _openVinoDevices))</div>
+                                        <div class="form-text">@string.Format(L["OpenClaw_DevicesDetected"], string.Join(" / ", _openVinoDevices))</div>
                                     </div>
                                     <div class="col-md-3">
-                                        <label class="form-label">端口</label>
+                                        <label class="form-label">@L["OpenClaw_PortLabel"]</label>
                                         <input type="number" class="form-control" @bind="_openVinoConfig.Port" />
                                     </div>
                                     <div class="col-md-3">
@@ -131,12 +131,12 @@
                                                placeholder="http://localhost:8000" />
                                     </div>
                                     <div class="col-md-3">
-                                        <label class="form-label">上下文大小</label>
+                                        <label class="form-label">@L["OpenClaw_ContextSizeLabel"]</label>
                                         <input type="number" class="form-control" @bind="_openVinoConfig.ContextSize" />
                                     </div>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">额外启动参数</label>
+                                    <label class="form-label">@L["OpenClaw_ExtraArgsLabel"]</label>
                                     <input type="text" class="form-control" @bind="_openVinoConfig.ExtraArgs"
                                            placeholder="--num-beams 1" />
                                 </div>
@@ -188,7 +188,7 @@
                                 }
                                 else if (_openVinoScanned)
                                 {
-                                    <div class="alert alert-warning py-2">未找到 OpenVINO 模型</div>
+                                    <div class="alert alert-warning py-2">@L["OpenClaw_NoOpenVinoModels"]</div>
                                 }
                             }
                         </div>
@@ -245,10 +245,10 @@
                                     {
                                         <div class="alert alert-info py-2 mt-2 mb-0 small">
                                             <i class="bi bi-info-circle me-1"></i>
-                                            <strong>暂无可用模型。</strong>请先在下方完成任一操作：
+                                            <strong>@L["OpenClaw_NoModelsStrong"]</strong>@L["OpenClaw_NoModelsHint1"]
                                             <ul class="mb-0 mt-1 ps-4">
-                                                <li>进入「AI 设置」页面启用云端 Provider（如硅基流动、OpenAI）并添加模型，模型会自动出现在此处（格式：<code>providerId/modelName</code>）。</li>
-                                                <li>或在本页启用 OpenVINO，点击「扫描模型」→「同步到 OpenClaw」，本地模型会出现在此处。</li>
+                                                <li>@L["OpenClaw_NoModelsHint2"]</li>
+                                                <li>@L["OpenClaw_NoModelsHint3"]</li>
                                             </ul>
                                         </div>
                                     }
@@ -661,7 +661,7 @@
         }
         catch (Exception ex)
         {
-            _configError = $"加载默认模型列表失败：{ex.Message}。可用模型将显示为空。";
+            _configError = string.Format(L["OpenClaw_LoadDefaultModelsFailed"], ex.Message);
             _availableModels = new List<string>();
         }
 
@@ -675,7 +675,7 @@
         catch (Exception ex)
         {
             if (string.IsNullOrEmpty(_configError))
-                _configError = $"加载模型配置文件失败：{ex.Message}";
+                _configError = string.Format(L["OpenClaw_LoadConfigFailed"], ex.Message);
         }
 
         // 自动检测已启用 provider 的服务状态
@@ -698,7 +698,7 @@
         {
             _openVinoModels.Clear();
             _openVinoScanned = false;
-            _openVinoStatusMessage = "已停用：OpenVINO 配置已从 OpenClaw 中移除（服务本身不会停止）";
+            _openVinoStatusMessage = L["OpenClaw_OpenVinoRemoved"];
             return;
         }
         // 设置默认值
@@ -718,7 +718,7 @@
     private async Task DetectAndStartAsync(string provider)
     {
         _openVinoDetecting = true;
-        _openVinoStatusMessage = "正在检测 OpenVINO 服务状态...";
+        _openVinoStatusMessage = L["OpenClaw_DetectingStatus"];
         await InvokeAsync(StateHasChanged);
 
         try
@@ -743,7 +743,7 @@
         }
         catch (Exception ex)
         {
-            _openVinoStatusMessage = $"检测失败: {ex.Message}";
+            _openVinoStatusMessage = string.Format(L["OpenClaw_DetectFailed"], ex.Message);
         }
         finally
         {
@@ -774,7 +774,7 @@
         }
         catch (Exception ex)
         {
-            _configError = $"扫描失败: {ex.Message}";
+            _configError = string.Format(L["OpenClaw_ScanFailed"], ex.Message);
         }
         finally
         {
@@ -815,18 +815,18 @@
             var success = await ApiService.SaveOpenClawLocalAiConfigAsync(request);
             if (success)
             {
-                _configSuccess = "配置已保存（通过 openclaw config set 写入）";
+                _configSuccess = L["OpenClaw_ConfigSaved"];
                 // 刷新可用模型列表
                 await RefreshAvailableModelsAsync();
             }
             else
             {
-                _configError = "保存配置失败";
+                _configError = L["OpenClaw_ConfigSaveFailed"];
             }
         }
         catch (Exception ex)
         {
-            _configError = $"保存失败: {ex.Message}";
+            _configError = string.Format(L["OpenClaw_SaveFailed"], ex.Message);
         }
         finally
         {
@@ -858,18 +858,18 @@
             {
                 _currentProfile = profileId;
                 var profile = _modelProfiles.FirstOrDefault(p => p.Id == profileId);
-                _profileMessage = $"已切换到 {profile?.Name ?? profileId} 配置";
+                _profileMessage = string.Format(L["OpenClaw_SwitchedProfile"], profile?.Name ?? profileId);
                 // 同步更新默认模型下拉框
                 _selectedDefaultModel = profile?.Model ?? "";
             }
             else
             {
-                _configError = "切换模型配置失败";
+                _configError = L["OpenClaw_SwitchProfileFailed"];
             }
         }
         catch (Exception ex)
         {
-            _configError = $"切换模型配置失败: {ex.Message}";
+            _configError = string.Format(L["OpenClaw_SwitchProfileFailedDetail"], ex.Message);
         }
         finally
         {
@@ -889,20 +889,20 @@
             if (success)
             {
                 _defaultModelMessage = string.IsNullOrWhiteSpace(_selectedDefaultModel)
-                    ? "已恢复使用 OpenClaw 内置默认模型"
-                    : $"默认模型已设置为 {_selectedDefaultModel}";
+                    ? L["OpenClaw_RestoredBuiltinDefault"]
+                    : string.Format(L["OpenClaw_DefaultModelSet"], _selectedDefaultModel);
                 // 检查是否匹配某个 profile
                 var matchedProfile = _modelProfiles.FirstOrDefault(p => p.Model == _selectedDefaultModel);
                 _currentProfile = matchedProfile?.Id;
             }
             else
             {
-                _configError = "设置默认模型失败";
+                _configError = L["OpenClaw_SetDefaultFailed"];
             }
         }
         catch (Exception ex)
         {
-            _configError = $"设置默认模型失败: {ex.Message}";
+            _configError = string.Format(L["OpenClaw_SetDefaultFailedDetail"], ex.Message);
         }
         finally
         {
@@ -922,7 +922,7 @@
             var success = await ApiService.SyncLocalModelsToOpenClawAsync(provider);
             if (success)
             {
-                _syncMessage = $"{provider} 模型已同步到 OpenClaw";
+                _syncMessage = string.Format(L["OpenClaw_Synced"], provider);
                 // 刷新可用模型列表
                 await RefreshAvailableModelsAsync();
                 // 重新加载默认模型选项
@@ -935,12 +935,12 @@
             }
             else
             {
-                _configError = $"同步 {provider} 模型到 OpenClaw 失败";
+                _configError = string.Format(L["OpenClaw_SyncFailed"], provider);
             }
         }
         catch (Exception ex)
         {
-            _configError = $"同步失败: {ex.Message}";
+            _configError = string.Format(L["OpenClaw_SyncFailedDetail"], ex.Message);
         }
         finally
         {
@@ -961,7 +961,7 @@
         catch (Exception ex)
         {
             if (!silent)
-                _submitError = $"刷新失败: {ex.Message}";
+                _submitError = string.Format(L["OpenClaw_RefreshFailed"], ex.Message);
         }
         finally
         {
@@ -992,7 +992,7 @@
         }
         catch (Exception ex)
         {
-            _submitError = $"提交失败: {ex.Message}";
+            _submitError = string.Format(L["OpenClaw_SubmitFailed"], ex.Message);
         }
         finally
         {
@@ -1002,7 +1002,7 @@
 
     private async Task CancelTaskAsync(int id)
     {
-        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "确定要取消此任务吗？OpenClaw 进程将被终止。");
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", L["OpenClaw_ConfirmCancelTask"]);
         if (!confirmed) return;
 
         var success = await ApiService.CancelOpenClawTaskAsync(id);
@@ -1014,7 +1014,7 @@
 
     private async Task DeleteTaskAsync(int id)
     {
-        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "确定要删除此任务及其报告吗？");
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", L["OpenClaw_ConfirmDeleteTask"]);
         if (!confirmed) return;
 
         var success = await ApiService.DeleteOpenClawTaskAsync(id);
@@ -1038,7 +1038,7 @@
         }
         catch (Exception ex)
         {
-            _reportContent = $"加载报告失败: {ex.Message}";
+            _reportContent = string.Format(L["OpenClaw_LoadReportFailed"], ex.Message);
         }
         finally
         {
@@ -1064,12 +1064,12 @@
             }
             else
             {
-                _reportContent = "暂无错误详情，可能已被清理。";
+                _reportContent = L["OpenClaw_NoErrorDetail"];
             }
         }
         catch (Exception ex)
         {
-            _reportContent = $"加载错误信息失败: {ex.Message}";
+            _reportContent = string.Format(L["OpenClaw_LoadErrorFailed"], ex.Message);
         }
         finally
         {
@@ -1107,12 +1107,12 @@
         _ => "bg-secondary"
     };
 
-    private static string GetStatusLabel(string status) => status.ToLowerInvariant() switch
+    private string GetStatusLabel(string status) => status.ToLowerInvariant() switch
     {
-        "completed" => "已完成",
-        "running" => "执行中",
-        "pending" => "待处理",
-        "failed" => "失败",
+        "completed" => L["OpenClaw_TaskStatus_Completed"],
+        "running" => L["OpenClaw_TaskStatus_Running"],
+        "pending" => L["OpenClaw_TaskStatus_Pending"],
+        "failed" => L["OpenClaw_TaskStatus_Failed"],
         _ => status
     };
 }

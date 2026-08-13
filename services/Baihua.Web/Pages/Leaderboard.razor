@@ -12,10 +12,10 @@
     <!-- FAM-22：视图切换（默认选中第一个视图按钮） -->
     <div class="view-switch">
         <button class="view-tab @(activeView == "self" ? "active" : "")" @onclick='() => SwitchView("self")'>
-            👤 和自己比
+            👤 @L["Leaderboard_ViewSelf"]
         </button>
         <button class="view-tab @(activeView == "family" ? "active" : "")" @onclick='() => SwitchView("family")'>
-            👨‍👩‍👧 家庭排行
+            👨‍👩‍👧 @L["Leaderboard_ViewFamily"]
         </button>
     </div>
 
@@ -29,9 +29,9 @@
         <div class="self-compare">
             <div class="compare-grid">
                 <div class="compare-card">
-                    <div class="cmp-label">本周</div>
+                    <div class="cmp-label">@L["Leaderboard_TabWeekly"]</div>
                     <div class="cmp-value">@compare.WeekTotal</div>
-                    <div class="cmp-unit">张卡片</div>
+                    <div class="cmp-unit">@L["Leaderboard_CardUnit"]</div>
                 </div>
                 <div class="compare-arrow">
                     @if (compare.Arrow == "up")
@@ -63,12 +63,12 @@
                     </div>
                 </div>
                 <div class="compare-card">
-                    <div class="cmp-label">上周</div>
+                    <div class="cmp-label">@L["Leaderboard_LastWeek"]</div>
                     <div class="cmp-value">@compare.LastWeekTotal</div>
-                    <div class="cmp-unit">张卡片</div>
+                    <div class="cmp-unit">@L["Leaderboard_CardUnit"]</div>
                 </div>
             </div>
-            <div class="compare-tip">和自己比，进步看得见 💪</div>
+            <div class="compare-tip">@L["Leaderboard_CompareTip"]</div>
         </div>
     }
     else
@@ -76,17 +76,17 @@
         <!-- ========== 家庭排行视图（AC3/AC4/AC5） ========== -->
         <div class="toolbar">
             <div class="role-tabs">
-                <button class="tab @(activeRole == "kids" ? "active" : "")" @onclick='() => SwitchRole("kids")'>🧒 孩子榜</button>
-                <button class="tab @(activeRole == "adults" ? "active" : "")" @onclick='() => SwitchRole("adults")'>👩 大人榜</button>
+                <button class="tab @(activeRole == "kids" ? "active" : "")" @onclick='() => SwitchRole("kids")'>🧒 @L["Leaderboard_KidsTab"]</button>
+                <button class="tab @(activeRole == "adults" ? "active" : "")" @onclick='() => SwitchRole("adults")'>👩 @L["Leaderboard_AdultsTab"]</button>
                 @if (allFamilyEnabled)
                 {
-                    <button class="tab @(activeRole == "all" ? "active" : "")" @onclick='() => SwitchRole("all")'>👨‍👩‍👧 全家</button>
+                    <button class="tab @(activeRole == "all" ? "active" : "")" @onclick='() => SwitchRole("all")'>👨‍👩‍👧 @L["Leaderboard_AllTab"]</button>
                 }
             </div>
             <div class="setting-toggle">
                 <label class="toggle-label">
                     <input type="checkbox" checked="@allFamilyEnabled" @onchange="OnAllFamilyToggle" />
-                    显示全家排行
+                    @L["Leaderboard_ShowAllFamily"]
                 </label>
             </div>
             <div class="tab-group">
@@ -102,7 +102,7 @@
         @if (entries.Count == 0)
         {
             <div class="empty">@L["Leaderboard_EmptyHint"]</div>
-            <div class="solo-guide">邀请更多小伙伴一起学吧 🌱</div>
+            <div class="solo-guide">@L["Leaderboard_InviteHint"]</div>
         }
         else
         {
@@ -150,7 +150,7 @@
                             <div class="score-bar-wrap">
                                 <div class="score-bar" style="width:@(maxScore > 0 ? (entry.Score * 100 / maxScore) : 0)%;background:@entry.Color"></div>
                             </div>
-                            <span class="score-value" title="分数 = 学习卡片数 + 正确率×20">@entry.Score</span>
+                            <span class="score-value" title="@L["Leaderboard_ScoreTitle"]">@entry.Score</span>
                         </div>
                     </div>
                 }
@@ -376,13 +376,13 @@
     private int maxScore = 1;
     private string? selectedVaultId;
 
-    private readonly (string Key, string Label)[] tabs = new[]
+    private (string Key, string Label)[] tabs => new[]
     {
-        ("weekly", "本周"),
-        ("monthly", "本月"),
-        ("alltime", "总榜"),
-        ("streak", "🔥 连击"),
-        ("accuracy", "🎯 正确率")
+        ("weekly", L["Leaderboard_TabWeekly"].Value),
+        ("monthly", L["Leaderboard_TabMonthly"].Value),
+        ("alltime", L["Leaderboard_TabAllTime"].Value),
+        ("streak", L["Leaderboard_TabStreak"].Value),
+        ("accuracy", L["Leaderboard_TabAccuracy"].Value)
     };
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

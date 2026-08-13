@@ -292,9 +292,10 @@ namespace Baihua.Family.Services
             => File.ReadAllTextAsync(filePath, ct);
 
         /// <summary>
-        /// 扫描知识库全部 .md 笔记，返回相对路径 → 文件指纹（跳过 README.md）
+        /// 扫描知识库全部 .md 笔记，返回相对路径 → 文件指纹（跳过 README.md）。
+        /// 共享实现：供 EmbeddingService 增量向量索引复用（同命名空间 internal）。
         /// </summary>
-        private static Dictionary<string, NoteFileStamp> ScanVault(string vaultPath)
+        internal static Dictionary<string, NoteFileStamp> ScanVaultShared(string vaultPath)
         {
             var result = new Dictionary<string, NoteFileStamp>(StringComparer.OrdinalIgnoreCase);
             var files = Directory.GetFiles(vaultPath, "*.md", SearchOption.AllDirectories);
@@ -310,6 +311,12 @@ namespace Baihua.Family.Services
             }
             return result;
         }
+
+        /// <summary>
+        /// 扫描知识库全部 .md 笔记，返回相对路径 → 文件指纹（跳过 README.md）
+        /// </summary>
+        private static Dictionary<string, NoteFileStamp> ScanVault(string vaultPath)
+            => ScanVaultShared(vaultPath);
 
         /// <summary>
         /// 整库重建：删除该知识库全部旧索引后逐条插入，同一事务内完成，任一步失败整体回滚

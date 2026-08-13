@@ -37,9 +37,9 @@ else
     else
     {
         <div class="alert alert-success d-flex align-items-center gap-2">
-            <span>✅ 视觉服务运行中（127.0.0.1:@status.Port）</span>
+            <span>✅ @string.Format(L["Vision_Running"], status.Port)</span>
             <button class="btn btn-outline-danger btn-sm" @onclick="StopServerAsync" disabled="@isStoppingServer">
-                @(isStoppingServer ? "停止中…" : "⏹ 停止服务")
+                @(isStoppingServer ? L["Vision_Stopping"] : L["Vision_StopServer"])
             </button>
         </div>
     }
@@ -265,7 +265,7 @@ else
             {
                 Enabled = true,
                 ServerRunning = false,
-                Message = $"停止失败：{ex.Message}",
+                Message = string.Format(L["Vision_StopFailed"], ex.Message),
             };
         }
         finally

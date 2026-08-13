@@ -47,7 +47,7 @@
         {
             <div class="text-muted small mb-2">
                 <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                知识库列表加载中，请稍候…
+                @L["Search_VaultsLoading"]
             </div>
         }
         @if (vaults.Count > 0)
@@ -445,7 +445,7 @@
             else if (isVaultsLoading)
             {
                 // 知识库列表还在后台加载（首次打开需 3-5s），提示稍候而非误报"未创建知识库"
-                searchStatus = new SearchStatusInfo { ErrorMessage = "知识库列表加载中，请稍候再试…" };
+                searchStatus = new SearchStatusInfo { ErrorMessage = L["Search_VaultsLoadingRetry"] };
                 hasSearched = true;
                 return;
             }

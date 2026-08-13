@@ -43,7 +43,7 @@
                             <select class="form-select" @bind="_providerId" @bind:after="OnProviderChanged">
                                 @foreach (var p in _providers)
                                 {
-                                    <option value="@p.Id">@p.Name@(IsLocalProvider(p) ? "（本地）" : "（云端）")</option>
+                                    <option value="@p.Id">@p.Name@(IsLocalProvider(p) ? L["CodeAgent_ProviderLocal"] : L["CodeAgent_ProviderCloud"])</option>
                                 }
                             </select>
                         </div>
@@ -55,7 +55,7 @@
                                 {
                                     @foreach (var m in p.Models)
                                     {
-                                        <option value="@m.Name">@m.Name@(m.IsPaid ? "（云端）" : "")</option>
+                                        <option value="@m.Name">@m.Name@(m.IsPaid ? L["CodeAgent_ProviderCloud"] : "")</option>
                                     }
                                 }
                             </select>

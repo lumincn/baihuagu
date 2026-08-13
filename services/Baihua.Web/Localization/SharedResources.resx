@@ -3428,10 +3428,10 @@ Shift+Enter new line, Enter to send</value>
     <value>Unnamed Note</value>
   </data>
   <data name="Tasks_ConfirmDeleteMessage" xml:space="preserve">
-    <value>Are you sure you want to delete this task?</value>
+    <value>Are you sure you want to delete this task? The task record will be removed and cannot be restored.</value>
   </data>
   <data name="Tasks_ConfirmCancelMessage" xml:space="preserve">
-    <value>Are you sure you want to cancel this task? The current operation will be interrupted.</value>
+    <value>Are you sure you want to cancel this running task?</value>
   </data>
   <data name="Tasks_RetryFailedTitle" xml:space="preserve">
     <value>Retry failed</value>
@@ -4629,5 +4629,1075 @@ Shift+Enter new line, Enter to send</value>
   </data>
   <data name="Assistant_AnalysisFailed" xml:space="preserve">
     <value>Analysis failed: {0}</value>
+  </data>
+  <data name="Stock_PageTitle" xml:space="preserve">
+    <value>Stock AI Advisor</value>
+  </data>
+  <data name="Stock_Title" xml:space="preserve">
+    <value>📈 Stock AI Advisor</value>
+  </data>
+  <data name="Stock_Subtitle" xml:space="preserve">
+    <value>AI pulls real-time A-share quotes and analyzes them, automatically recommending 10 stocks to buy based on your conditions; enter a held stock code to evaluate whether to sell.</value>
+  </data>
+  <data name="Stock_AnalysisHeader" xml:space="preserve">
+    <value>🎛️ Analysis Conditions</value>
+  </data>
+  <data name="Stock_StrategyLabel" xml:space="preserve">
+    <value>Algorithm / Angle</value>
+  </data>
+  <data name="Stock_Strategy_All" xml:space="preserve">
+    <value>Comprehensive (Balanced)</value>
+  </data>
+  <data name="Stock_Strategy_Value" xml:space="preserve">
+    <value>Value Investing (Low Valuation / High ROE)</value>
+  </data>
+  <data name="Stock_Strategy_Growth" xml:space="preserve">
+    <value>Growth Stocks (High-Growth Tracks)</value>
+  </data>
+  <data name="Stock_Strategy_Technical" xml:space="preserve">
+    <value>Technical Analysis (Trend / Volume / Momentum)</value>
+  </data>
+  <data name="Stock_Strategy_Dividend" xml:space="preserve">
+    <value>High Dividend (Defensive / Dividend)</value>
+  </data>
+  <data name="Stock_IndustryLabel" xml:space="preserve">
+    <value>Industry</value>
+  </data>
+  <data name="Stock_IndustryAll" xml:space="preserve">
+    <value>All Industries</value>
+  </data>
+  <data name="Stock_HorizonLabel" xml:space="preserve">
+    <value>Holding Period</value>
+  </data>
+  <data name="Stock_Horizon_All" xml:space="preserve">
+    <value>Mid-Long Term (Balanced)</value>
+  </data>
+  <data name="Stock_Horizon_Short" xml:space="preserve">
+    <value>Short Term (Days to Weeks)</value>
+  </data>
+  <data name="Stock_Horizon_Long" xml:space="preserve">
+    <value>Long Term (Months to Years)</value>
+  </data>
+  <data name="Stock_PromptLabel" xml:space="preserve">
+    <value>📝 Custom Prompt (Additional Requirements for the AI Analysis)</value>
+  </data>
+  <data name="Stock_PromptPlaceholder" xml:space="preserve">
+    <value>e.g., focus on defensive targets with high dividends and low volatility…</value>
+  </data>
+  <data name="Stock_ResetPromptTitle" xml:space="preserve">
+    <value>Restore default prompt</value>
+  </data>
+  <data name="Stock_ResetPrompt" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="Stock_HistoryLabel" xml:space="preserve">
+    <value>Recently Used Prompts (Up to 10)</value>
+  </data>
+  <data name="Stock_HistoryPlaceholder" xml:space="preserve">
+    <value>Select a historical prompt…</value>
+  </data>
+  <data name="Stock_TabBuy" xml:space="preserve">
+    <value>🛒 Buy Recommendations</value>
+  </data>
+  <data name="Stock_TabSell" xml:space="preserve">
+    <value>🚨 Sell Recommendations</value>
+  </data>
+  <data name="Stock_Analyzing" xml:space="preserve">
+    <value>Analyzing…</value>
+  </data>
+  <data name="Stock_StartAnalysis" xml:space="preserve">
+    <value>🔄 Start Analysis</value>
+  </data>
+  <data name="Stock_ForceRefreshSkipCache" xml:space="preserve">
+    <value>Force Refresh (Skip Cache)</value>
+  </data>
+  <data name="Stock_CacheHint" xml:space="preserve">
+    <value>Quotes cached for 30 seconds; AI results cached for 10 minutes (per conditions + prompt)</value>
+  </data>
+  <data name="Stock_Loading" xml:space="preserve">
+    <value>AI is fetching quotes and analyzing. Please wait (about 10-60 seconds)…</value>
+  </data>
+  <data name="Stock_AnalysisFailed" xml:space="preserve">
+    <value>⚠️ Analysis failed: </value>
+  </data>
+  <data name="Stock_Retry" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="Stock_TopBuy" xml:space="preserve">
+    <value>🛒 Top 10 Buy Recommendations</value>
+  </data>
+  <data name="Stock_TopSell" xml:space="preserve">
+    <value>🚨 Top 10 Sell Recommendations</value>
+  </data>
+  <data name="Stock_ModelLabel" xml:space="preserve">
+    <value>Model: {0}｜{1}</value>
+  </data>
+  <data name="Stock_NoResult" xml:space="preserve">
+    <value>No valid recommendation results were obtained (the model output may not be valid JSON, see the raw output below).</value>
+  </data>
+  <data name="Stock_ColCode" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="Stock_ColName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Stock_ColScore" xml:space="preserve">
+    <value>Score</value>
+  </data>
+  <data name="Stock_ColAction" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="Stock_ColReason" xml:space="preserve">
+    <value>Reason</value>
+  </data>
+  <data name="Stock_EvaluationHeader" xml:space="preserve">
+    <value>💼 Holdings Evaluation: Should You Sell?</value>
+  </data>
+  <data name="Stock_CodePlaceholder" xml:space="preserve">
+    <value>Stock code, e.g., 600519</value>
+  </data>
+  <data name="Stock_Analyze" xml:space="preserve">
+    <value>Analyze</value>
+  </data>
+  <data name="Stock_ForceRefresh" xml:space="preserve">
+    <value>Force Refresh</value>
+  </data>
+  <data name="Stock_Sell" xml:space="preserve">
+    <value>Sell</value>
+  </data>
+  <data name="Stock_Hold" xml:space="preserve">
+    <value>Hold</value>
+  </data>
+  <data name="Stock_EvalAdvice" xml:space="preserve">
+    <value>{0} ({1}) recommendation: {2}</value>
+  </data>
+  <data name="Stock_Confidence" xml:space="preserve">
+    <value>Confidence {0}</value>
+  </data>
+  <data name="Stock_RawOutput" xml:space="preserve">
+    <value>AI Raw Output (Debug)</value>
+  </data>
+  <data name="Stock_DisclaimerPart1" xml:space="preserve">
+    <value>⚠️ Disclaimer: This page's content is auto-generated by AI based on public market data and is for learning reference only; it </value>
+  </data>
+  <data name="Stock_DisclaimerBold" xml:space="preserve">
+    <value>does not constitute any investment advice</value>
+  </data>
+  <data name="Stock_DisclaimerPart2" xml:space="preserve">
+    <value>. The stock market involves risk; invest with caution. AI can make mistakes, so please make your own judgment.</value>
+  </data>
+  <data name="Stock_DefaultPrompt" xml:space="preserve">
+    <value>Focus on fundamentals: prioritize stocks with strong profitability, reasonable valuation and healthy cash flow; avoid highly volatile theme stocks, earnings-risk stocks and companies with high pledge ratios.</value>
+  </data>
+  <data name="Stock_CondStrategy_All" xml:space="preserve">
+    <value>Comprehensive</value>
+  </data>
+  <data name="Stock_CondStrategy_Value" xml:space="preserve">
+    <value>Value Investing</value>
+  </data>
+  <data name="Stock_CondStrategy_Growth" xml:space="preserve">
+    <value>Growth</value>
+  </data>
+  <data name="Stock_CondStrategy_Technical" xml:space="preserve">
+    <value>Technical</value>
+  </data>
+  <data name="Stock_CondStrategy_Dividend" xml:space="preserve">
+    <value>High Dividend</value>
+  </data>
+  <data name="Stock_CondHorizon_All" xml:space="preserve">
+    <value>Mid-Long Term</value>
+  </data>
+  <data name="Stock_CondHorizon_Short" xml:space="preserve">
+    <value>Short Term</value>
+  </data>
+  <data name="Stock_CondHorizon_Long" xml:space="preserve">
+    <value>Long Term</value>
+  </data>
+  <data name="Nav_OpenClaw" xml:space="preserve">
+    <value>OpenClaw</value>
+  </data>
+  <data name="Tasks_HideCompleted" xml:space="preserve">
+    <value>Hide completed</value>
+  </data>
+  <data name="Tasks_DeleteTask" xml:space="preserve">
+    <value>Delete Task</value>
+  </data>
+  <data name="Tasks_CancelTask" xml:space="preserve">
+    <value>Cancel Task</value>
+  </data>
+  <data name="Tasks_ConfirmDelete" xml:space="preserve">
+    <value>Confirm Delete</value>
+  </data>
+  <data name="Tasks_ConfirmCancel" xml:space="preserve">
+    <value>Confirm Cancel</value>
+  </data>
+  <data name="Tasks_StatusSuccess" xml:space="preserve">
+    <value>Completed</value>
+  </data>
+  <data name="Tasks_StatusFailed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="Tasks_StatusRunning" xml:space="preserve">
+    <value>Running</value>
+  </data>
+  <data name="Tasks_StatusPending" xml:space="preserve">
+    <value>Pending</value>
+  </data>
+  <data name="Tasks_StatusTimeout" xml:space="preserve">
+    <value>Timeout</value>
+  </data>
+  <data name="Tasks_StatusCancelled" xml:space="preserve">
+    <value>Cancelled</value>
+  </data>
+  <data name="NoteDetail_Generating" xml:space="preserve">
+    <value>⏳ Generating…</value>
+  </data>
+  <data name="NoteDetail_GenerateAnkiCards" xml:space="preserve">
+    <value>🗂️ Generate Anki Cards</value>
+  </data>
+  <data name="NoteDetail_NoVaultToGenerate" xml:space="preserve">
+    <value>No vault found; cannot generate cards</value>
+  </data>
+  <data name="NoteDetail_CardTaskSubmitted" xml:space="preserve">
+    <value>Card generation task submitted ({0})</value>
+  </data>
+  <data name="NoteDetail_CheckTasksPage" xml:space="preserve">
+    <value>check the tasks page</value>
+  </data>
+  <data name="NoteDetail_TaskShortId" xml:space="preserve">
+    <value>task {0}…</value>
+  </data>
+  <data name="NoteDetail_CardTaskCreateFailed" xml:space="preserve">
+    <value>Failed to create the card generation task, please try again later</value>
+  </data>
+  <data name="NoteDetail_CardGenerationFailed" xml:space="preserve">
+    <value>Card generation failed: {0}</value>
+  </data>
+  <data name="PromptTemplates_DeleteTitle" xml:space="preserve">
+    <value>Delete Template</value>
+  </data>
+  <data name="PromptTemplates_DeleteMessage" xml:space="preserve">
+    <value>Are you sure you want to delete the template "{0}"? Custom templates cannot be restored after deletion.</value>
+  </data>
+  <data name="Common_ConfirmDelete" xml:space="preserve">
+    <value>Confirm Delete</value>
+  </data>
+  <data name="Settings_GlobalDetailTitle" xml:space="preserve">
+    <value>Global Generation Detail Level</value>
+  </data>
+  <data name="Settings_GlobalDetailDescription" xml:space="preserve">
+    <value>Applied to all AI content generation (knowledge bases, notes, etc.), except programming tasks. The default is the most concise: saves time and money.</value>
+  </data>
+  <data name="Settings_GlobalDetailLabel" xml:space="preserve">
+    <value>Generation Detail Level</value>
+  </data>
+  <data name="Settings_DetailConcise" xml:space="preserve">
+    <value>Concise, Key Points Only</value>
+  </data>
+  <data name="Settings_DetailBalanced" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="Settings_DetailComprehensive" xml:space="preserve">
+    <value>Comprehensive</value>
+  </data>
+  <data name="Settings_DetailCountConcise" xml:space="preserve">
+    <value>About 6-10 notes, 200-400 characters each</value>
+  </data>
+  <data name="Settings_DetailCountBalanced" xml:space="preserve">
+    <value>About 12-22 notes, 400-800 characters each</value>
+  </data>
+  <data name="Settings_DetailCountComprehensive" xml:space="preserve">
+    <value>About 28-45 notes, 800-1500 characters each</value>
+  </data>
+  <data name="Settings_DeleteProviderTitle" xml:space="preserve">
+    <value>Delete AI Provider</value>
+  </data>
+  <data name="Settings_DeleteProviderMessage" xml:space="preserve">
+    <value>Are you sure you want to delete the provider "{0}"? It must be reconfigured before it can be used again.</value>
+  </data>
+  <data name="Leaderboard_ViewSelf" xml:space="preserve">
+    <value>Compare with Yourself</value>
+  </data>
+  <data name="Leaderboard_ViewFamily" xml:space="preserve">
+    <value>Family Ranking</value>
+  </data>
+  <data name="Leaderboard_TabWeekly" xml:space="preserve">
+    <value>This Week</value>
+  </data>
+  <data name="Leaderboard_LastWeek" xml:space="preserve">
+    <value>Last Week</value>
+  </data>
+  <data name="Leaderboard_CardUnit" xml:space="preserve">
+    <value>cards</value>
+  </data>
+  <data name="Leaderboard_CompareTip" xml:space="preserve">
+    <value>Compare with yourself and watch your progress 💪</value>
+  </data>
+  <data name="Leaderboard_KidsTab" xml:space="preserve">
+    <value>Kids</value>
+  </data>
+  <data name="Leaderboard_AdultsTab" xml:space="preserve">
+    <value>Adults</value>
+  </data>
+  <data name="Leaderboard_AllTab" xml:space="preserve">
+    <value>Everyone</value>
+  </data>
+  <data name="Leaderboard_ShowAllFamily" xml:space="preserve">
+    <value>Show All-Family Ranking</value>
+  </data>
+  <data name="Leaderboard_InviteHint" xml:space="preserve">
+    <value>Invite more friends to learn together 🌱</value>
+  </data>
+  <data name="Leaderboard_ScoreTitle" xml:space="preserve">
+    <value>Score = cards studied + accuracy × 20</value>
+  </data>
+  <data name="Leaderboard_TabMonthly" xml:space="preserve">
+    <value>This Month</value>
+  </data>
+  <data name="Leaderboard_TabAllTime" xml:space="preserve">
+    <value>All Time</value>
+  </data>
+  <data name="Leaderboard_TabStreak" xml:space="preserve">
+    <value>🔥 Streak</value>
+  </data>
+  <data name="Leaderboard_TabAccuracy" xml:space="preserve">
+    <value>🎯 Accuracy</value>
+  </data>
+  <data name="KnowledgeGen_TopicInspirationLabel" xml:space="preserve">
+    <value>Inspiration Topics</value>
+  </data>
+  <data name="KnowledgeGen_TopicClickHint" xml:space="preserve">
+    <value>Click to fill in the topic box above (AI updates daily)</value>
+  </data>
+  <data name="KnowledgeGen_TopicLoading" xml:space="preserve">
+    <value>AI is recommending today's topics for you…</value>
+  </data>
+  <data name="KnowledgeGen_SourceAi" xml:space="preserve">
+    <value>AI Recommended</value>
+  </data>
+  <data name="KnowledgeGen_SourceBuiltin" xml:space="preserve">
+    <value>Built-in Recommendations</value>
+  </data>
+  <data name="KnowledgeGen_TopicsSourceFormat" xml:space="preserve">
+    <value>{0} · Daily Refresh</value>
+  </data>
+  <data name="KnowledgeGen_RefreshTopics" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="KnowledgeGen_DetailLabel" xml:space="preserve">
+    <value>📐 Detail Level (controls note count and length; saves time and money)</value>
+  </data>
+  <data name="KnowledgeGen_FollowGlobalPrefix" xml:space="preserve">
+    <value>Defaults to the global setting: </value>
+  </data>
+  <data name="KnowledgeGen_FollowGlobalSuffix" xml:space="preserve">
+    <value> (can be modified in AI settings)</value>
+  </data>
+  <data name="KnowledgeGen_DetailBalanced" xml:space="preserve">
+    <value>Balanced (Recommended)</value>
+  </data>
+  <data name="KnowledgeGen_DetailCountConcise" xml:space="preserve">
+    <value>About 6-10 notes, 200-400 characters each, fastest and cheapest</value>
+  </data>
+  <data name="KnowledgeGen_DetailCountBalanced" xml:space="preserve">
+    <value>About 12-22 notes, 400-800 characters each</value>
+  </data>
+  <data name="KnowledgeGen_DetailCountComprehensive" xml:space="preserve">
+    <value>About 28-45 notes, 800-1500 characters each, most expensive and slowest</value>
+  </data>
+  <data name="KnowledgeGen_TitleNeedsQuery" xml:space="preserve">
+    <value>Please enter a topic keyword first</value>
+  </data>
+  <data name="KnowledgeGen_TitleNeedsVault" xml:space="preserve">
+    <value>Please select a target vault first</value>
+  </data>
+  <data name="Vision_Running" xml:space="preserve">
+    <value>Vision service running (127.0.0.1:{0})</value>
+  </data>
+  <data name="Vision_Stopping" xml:space="preserve">
+    <value>Stopping…</value>
+  </data>
+  <data name="Vision_StopServer" xml:space="preserve">
+    <value>⏹ Stop Service</value>
+  </data>
+  <data name="Vision_StopFailed" xml:space="preserve">
+    <value>Failed to stop: {0}</value>
+  </data>
+  <data name="Search_VaultsLoading" xml:space="preserve">
+    <value>Loading the vault list, please wait…</value>
+  </data>
+  <data name="Search_VaultsLoadingRetry" xml:space="preserve">
+    <value>The vault list is still loading, please try again in a moment…</value>
+  </data>
+  <data name="LogSettings_PasswordPlaceholder" xml:space="preserve">
+    <value>leave empty to use the environment variable</value>
+  </data>
+  <data name="CodeAgent_ProviderLocal" xml:space="preserve">
+    <value> (Local)</value>
+  </data>
+  <data name="CodeAgent_ProviderCloud" xml:space="preserve">
+    <value> (Cloud)</value>
+  </data>
+  <data name="MasterChat_IndustryPlaceholder" xml:space="preserve">
+    <value>Enter or select an industry</value>
+  </data>
+  <data name="MasterChat_DeleteMasterMessage" xml:space="preserve">
+    <value>Are you sure you want to delete the master "{0}"? The apprenticeship progress and master-apprentice relationship will be deleted together, and this action cannot be undone.</value>
+  </data>
+  <data name="MasterChat_StoppedMarker" xml:space="preserve">
+    <value>(stopped)</value>
+  </data>
+  <data name="MasterChat_RequestFailed" xml:space="preserve">
+    <value>Request failed: {0}</value>
+  </data>
+  <data name="MasterChat_EvictConfirm" xml:space="preserve">
+    <value>Are you sure you want to clean up old data? This will compress conversations from more than 7 days ago and evict summaries from more than 30 days ago.</value>
+  </data>
+  <data name="MasterChat_EvictDone" xml:space="preserve">
+    <value>✅ Data cleanup complete: compressed {0} stages, evicted {1} stages</value>
+  </data>
+  <data name="MasterChat_EvictFailed" xml:space="preserve">
+    <value>Cleanup failed: {0}</value>
+  </data>
+  <data name="MasterChat_StageTip_Rudao" xml:space="preserve">
+    <value>Guidance stage: The master will ask questions to understand your foundation and goals, helping you define your learning direction.</value>
+  </data>
+  <data name="MasterChat_StageTip_Zhuji" xml:space="preserve">
+    <value>Foundation stage: The master will strictly require you to master basic knowledge, assign homework daily, and check your progress.</value>
+  </data>
+  <data name="MasterChat_StageTip_Jingjin" xml:space="preserve">
+    <value>Advancement stage: The master pursues details almost obsessively and will point out and correct any minor mistakes.</value>
+  </data>
+  <data name="MasterChat_StageTip_Moli" xml:space="preserve">
+    <value>Sharpening stage: The master will simulate real exam environments and test your overall abilities.</value>
+  </data>
+  <data name="MasterChat_StageTip_Chushi" xml:space="preserve">
+    <value>Graduation stage: The master will share practical experience and exam tips to help you prepare for the final sprint.</value>
+  </data>
+  <data name="OpenClaw_Detecting" xml:space="preserve">
+    <value>Detecting</value>
+  </data>
+  <data name="OpenClaw_StartupCommandLabel" xml:space="preserve">
+    <value>Startup command (copyable to run manually in a terminal)</value>
+  </data>
+  <data name="OpenClaw_OpenVinoDescription1" xml:space="preserve">
+    <value>Intel OpenVINO inference engine supporting CPU/GPU/NPU acceleration. Requires a Python environment + </value>
+  </data>
+  <data name="OpenClaw_OpenVinoDescription2" xml:space="preserve">
+    <value>, served by the </value>
+  </data>
+  <data name="OpenClaw_OpenVinoDescription3" xml:space="preserve">
+    <value> (OpenAI compatible) shipped with Baihua.</value>
+  </data>
+  <data name="OpenClaw_BinaryPathLabel" xml:space="preserve">
+    <value>Service script path</value>
+  </data>
+  <data name="OpenClaw_BinaryPathPlaceholder" xml:space="preserve">
+    <value>leave empty for auto-detection (openvino_llm_server.py ships with the release)</value>
+  </data>
+  <data name="OpenClaw_BinaryPathHint" xml:space="preserve">
+    <value>Python script path or executable command; when empty, python + openvino_genai are auto-detected</value>
+  </data>
+  <data name="OpenClaw_ModelPathLabel" xml:space="preserve">
+    <value>Model directory path</value>
+  </data>
+  <data name="OpenClaw_ModelPathHint" xml:space="preserve">
+    <value>Directory of the OpenVINO-optimized model</value>
+  </data>
+  <data name="OpenClaw_DeviceLabel" xml:space="preserve">
+    <value>Inference device</value>
+  </data>
+  <data name="OpenClaw_DevicesDetected" xml:space="preserve">
+    <value>Detected: {0}</value>
+  </data>
+  <data name="OpenClaw_PortLabel" xml:space="preserve">
+    <value>Port</value>
+  </data>
+  <data name="OpenClaw_ContextSizeLabel" xml:space="preserve">
+    <value>Context size</value>
+  </data>
+  <data name="OpenClaw_ExtraArgsLabel" xml:space="preserve">
+    <value>Extra startup arguments</value>
+  </data>
+  <data name="OpenClaw_NoOpenVinoModels" xml:space="preserve">
+    <value>No OpenVINO models found</value>
+  </data>
+  <data name="OpenClaw_NoModelsStrong" xml:space="preserve">
+    <value>No models available.</value>
+  </data>
+  <data name="OpenClaw_NoModelsHint1" xml:space="preserve">
+    <value>First complete one of the following:</value>
+  </data>
+  <data name="OpenClaw_NoModelsHint2" xml:space="preserve">
+    <value>Enable a cloud provider (e.g., SiliconFlow, OpenAI) in "AI Settings" and add models; they will appear here automatically (format: providerId/modelName).</value>
+  </data>
+  <data name="OpenClaw_NoModelsHint3" xml:space="preserve">
+    <value>Or enable OpenVINO on this page, click "Scan Models" → "Sync to OpenClaw", and local models will appear here.</value>
+  </data>
+  <data name="OpenClaw_LoadDefaultModelsFailed" xml:space="preserve">
+    <value>Failed to load the default model list: {0}. Available models will be shown empty.</value>
+  </data>
+  <data name="OpenClaw_LoadConfigFailed" xml:space="preserve">
+    <value>Failed to load the model configuration file: {0}</value>
+  </data>
+  <data name="OpenClaw_OpenVinoRemoved" xml:space="preserve">
+    <value>Disabled: the OpenVINO configuration has been removed from OpenClaw (the service itself will not stop)</value>
+  </data>
+  <data name="OpenClaw_DetectingStatus" xml:space="preserve">
+    <value>Detecting the OpenVINO service status...</value>
+  </data>
+  <data name="OpenClaw_DetectFailed" xml:space="preserve">
+    <value>Detection failed: {0}</value>
+  </data>
+  <data name="OpenClaw_ScanFailed" xml:space="preserve">
+    <value>Scan failed: {0}</value>
+  </data>
+  <data name="OpenClaw_ConfigSaved" xml:space="preserve">
+    <value>Configuration saved (written via openclaw config set)</value>
+  </data>
+  <data name="OpenClaw_ConfigSaveFailed" xml:space="preserve">
+    <value>Failed to save configuration</value>
+  </data>
+  <data name="OpenClaw_SaveFailed" xml:space="preserve">
+    <value>Save failed: {0}</value>
+  </data>
+  <data name="OpenClaw_SwitchedProfile" xml:space="preserve">
+    <value>Switched to the {0} configuration</value>
+  </data>
+  <data name="OpenClaw_SwitchProfileFailed" xml:space="preserve">
+    <value>Failed to switch model configuration</value>
+  </data>
+  <data name="OpenClaw_SwitchProfileFailedDetail" xml:space="preserve">
+    <value>Failed to switch model configuration: {0}</value>
+  </data>
+  <data name="OpenClaw_RestoredBuiltinDefault" xml:space="preserve">
+    <value>Restored to use OpenClaw's built-in default model</value>
+  </data>
+  <data name="OpenClaw_DefaultModelSet" xml:space="preserve">
+    <value>Default model set to {0}</value>
+  </data>
+  <data name="OpenClaw_SetDefaultFailed" xml:space="preserve">
+    <value>Failed to set the default model</value>
+  </data>
+  <data name="OpenClaw_SetDefaultFailedDetail" xml:space="preserve">
+    <value>Failed to set the default model: {0}</value>
+  </data>
+  <data name="OpenClaw_Synced" xml:space="preserve">
+    <value>{0} models synced to OpenClaw</value>
+  </data>
+  <data name="OpenClaw_SyncFailed" xml:space="preserve">
+    <value>Failed to sync {0} models to OpenClaw</value>
+  </data>
+  <data name="OpenClaw_SyncFailedDetail" xml:space="preserve">
+    <value>Sync failed: {0}</value>
+  </data>
+  <data name="OpenClaw_RefreshFailed" xml:space="preserve">
+    <value>Refresh failed: {0}</value>
+  </data>
+  <data name="OpenClaw_SubmitFailed" xml:space="preserve">
+    <value>Submit failed: {0}</value>
+  </data>
+  <data name="OpenClaw_ConfirmCancelTask" xml:space="preserve">
+    <value>Are you sure you want to cancel this task? The OpenClaw process will be terminated.</value>
+  </data>
+  <data name="OpenClaw_ConfirmDeleteTask" xml:space="preserve">
+    <value>Are you sure you want to delete this task and its report?</value>
+  </data>
+  <data name="OpenClaw_LoadReportFailed" xml:space="preserve">
+    <value>Failed to load the report: {0}</value>
+  </data>
+  <data name="OpenClaw_NoErrorDetail" xml:space="preserve">
+    <value>No error details available; they may have been cleaned up.</value>
+  </data>
+  <data name="OpenClaw_LoadErrorFailed" xml:space="preserve">
+    <value>Failed to load error details: {0}</value>
+  </data>
+  <data name="OpenClaw_TaskStatus_Completed" xml:space="preserve">
+    <value>Completed</value>
+  </data>
+  <data name="OpenClaw_TaskStatus_Running" xml:space="preserve">
+    <value>Running</value>
+  </data>
+  <data name="OpenClaw_TaskStatus_Pending" xml:space="preserve">
+    <value>Pending</value>
+  </data>
+  <data name="OpenClaw_TaskStatus_Failed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="HardwareBenchmark_Detecting" xml:space="preserve">
+    <value>Detecting hardware information...</value>
+  </data>
+  <data name="HardwareBenchmark_MachineConfig" xml:space="preserve">
+    <value>This Machine Configuration</value>
+  </data>
+  <data name="HardwareBenchmark_CoreUnit" xml:space="preserve">
+    <value>cores</value>
+  </data>
+  <data name="HardwareBenchmark_DataGpuSpecLabel" xml:space="preserve">
+    <value>GPU specs</value>
+  </data>
+  <data name="HardwareBenchmark_DataGpuSpecValue" xml:space="preserve">
+    <value>: NVIDIA / AMD / Intel / Apple official product pages and CES announcements</value>
+  </data>
+  <data name="HardwareBenchmark_DataBandwidthLabel" xml:space="preserve">
+    <value>Bandwidth data</value>
+  </data>
+  <data name="HardwareBenchmark_DataBandwidthValue" xml:space="preserve">
+    <value>: memory bandwidth = bus width × effective frequency ÷ 8; integrated/unified memory bandwidth from official SoC specs</value>
+  </data>
+  <data name="HardwareBenchmark_DataEstimateLabel" xml:space="preserve">
+    <value>Inference speed estimate</value>
+  </data>
+  <data name="HardwareBenchmark_DataEstimateValue1" xml:space="preserve">
+    <value>: based on </value>
+  </data>
+  <data name="HardwareBenchmark_DataEstimateValue2" xml:space="preserve">
+    <value>, where NVIDIA/AMD/Intel discrete GPUs use </value>
+  </data>
+  <data name="HardwareBenchmark_DataEstimateValue3" xml:space="preserve">
+    <value>, Apple Silicon uses </value>
+  </data>
+  <data name="HardwareBenchmark_DataEstimateValue4" xml:space="preserve">
+    <value>, integrated GPUs use </value>
+  </data>
+  <data name="HardwareBenchmark_DataBaselineLabel" xml:space="preserve">
+    <value>Baseline model</value>
+  </data>
+  <data name="HardwareBenchmark_DataBaselineValue" xml:space="preserve">
+    <value>: Llama-3-8B Q4_K_M (about 4.8GB); the autoregressive decode stage is usually memory-bound</value>
+  </data>
+  <data name="HardwareBenchmark_DataLimitLabel" xml:space="preserve">
+    <value>Limitations</value>
+  </data>
+  <data name="HardwareBenchmark_DataLimitValue" xml:space="preserve">
+    <value>: actual speed is affected by quantization format, context length, batch size, software optimization, etc.; estimates are for reference only</value>
+  </data>
+  <data name="HardwareBenchmark_TierTitle" xml:space="preserve">
+    <value>Performance Tier Guide</value>
+  </data>
+  <data name="HardwareBenchmark_TierCpuTitle" xml:space="preserve">
+    <value>CPU Inference</value>
+  </data>
+  <data name="HardwareBenchmark_TierCpuRange" xml:space="preserve">
+    <value>No discrete GPU or VRAM &amp;lt; 4GB</value>
+  </data>
+  <data name="HardwareBenchmark_TierCpuDesc" xml:space="preserve">
+    <value>Suitable for running small 1B-3B models; slower (1-10 tok/s) and usable as a fallback option.</value>
+  </data>
+  <data name="HardwareBenchmark_TierEntryTitle" xml:space="preserve">
+    <value>Entry GPU</value>
+  </data>
+  <data name="HardwareBenchmark_TierEntryRange" xml:space="preserve">
+    <value>4-8GB VRAM (GTX 1660, RTX 3050, etc.)</value>
+  </data>
+  <data name="HardwareBenchmark_TierEntryDesc" xml:space="preserve">
+    <value>Can run 7B Q4 quantized models at about 15-40 tok/s, suitable for daily personal use.</value>
+  </data>
+  <data name="HardwareBenchmark_TierMidTitle" xml:space="preserve">
+    <value>Mid-Range GPU</value>
+  </data>
+  <data name="HardwareBenchmark_TierMidRange" xml:space="preserve">
+    <value>8-16GB VRAM (RTX 4060/4070, Arc A770, etc.)</value>
+  </data>
+  <data name="HardwareBenchmark_TierMidDesc" xml:space="preserve">
+    <value>Runs 7B-13B models smoothly and can try 70B Q4, at 40-100 tok/s.</value>
+  </data>
+  <data name="HardwareBenchmark_TierHighTitle" xml:space="preserve">
+    <value>High-End GPU</value>
+  </data>
+  <data name="HardwareBenchmark_TierHighRange" xml:space="preserve">
+    <value>16-24GB VRAM (RTX 4080/4090/5070, Arc Pro, etc.)</value>
+  </data>
+  <data name="HardwareBenchmark_TierHighDesc" xml:space="preserve">
+    <value>Runs 70B models locally without issues, can run multiple models in parallel, at 80-180 tok/s.</value>
+  </data>
+  <data name="HardwareBenchmark_TierProTitle" xml:space="preserve">
+    <value>Pro / Workstation</value>
+  </data>
+  <data name="HardwareBenchmark_TierProRange" xml:space="preserve">
+    <value>48GB+ VRAM or large unified memory (DGX, M3 Ultra, AI Max+)</value>
+  </data>
+  <data name="HardwareBenchmark_TierProDesc" xml:space="preserve">
+    <value>Can run 405B-class large models locally, or load multiple 70B models at once, for enterprise-grade productivity.</value>
+  </data>
+  <data name="HardwareBenchmark_TierTopLabel" xml:space="preserve">
+    <value>Top-Tier GPU</value>
+  </data>
+  <data name="HardwareBenchmark_ScenarioTitle" xml:space="preserve">
+    <value>Recommended Scenarios for This Machine</value>
+  </data>
+  <data name="HardwareBenchmark_Refreshing" xml:space="preserve">
+    <value>🔄 Refreshing...</value>
+  </data>
+  <data name="HardwareBenchmark_Refresh" xml:space="preserve">
+    <value>🔄 Refresh Hardware Info</value>
+  </data>
+  <data name="HardwareBenchmark_DataDisclaimer" xml:space="preserve">
+    <value>Data is for reference only; actual performance is affected by drivers, cooling, model optimization, etc.</value>
+  </data>
+  <data name="HardwareBenchmark_UnknownCpu" xml:space="preserve">
+    <value>Unknown CPU (x64)</value>
+  </data>
+  <data name="HardwareBenchmark_LocalMachine" xml:space="preserve">
+    <value>This Machine</value>
+  </data>
+  <data name="HardwareBenchmark_NoDiscreteGpu" xml:space="preserve">
+    <value>No Discrete GPU</value>
+  </data>
+  <data name="HardwareBenchmark_UnifiedMemory" xml:space="preserve">
+    <value>Unified Memory</value>
+  </data>
+  <data name="HardwareBenchmark_AiAccelerator" xml:space="preserve">
+    <value>AI Accelerators</value>
+  </data>
+  <data name="HardwareBenchmark_WholeMachine" xml:space="preserve">
+    <value>(whole machine)</value>
+  </data>
+  <data name="HardwareBenchmark_UpTo" xml:space="preserve">
+    <value>Up to</value>
+  </data>
+  <data name="HardwareBenchmark_CapLocalInferTitle" xml:space="preserve">
+    <value>Local Model Inference</value>
+  </data>
+  <data name="HardwareBenchmark_CapLocalInferCpu" xml:space="preserve">
+    <value>CPU inference at about {0} tok/s; only 1B-3B small models are supported. Using a cloud API is recommended.</value>
+  </data>
+  <data name="HardwareBenchmark_CapLocalInferLowEnd" xml:space="preserve">
+    <value>Estimated at about {0} tok/s; can run 7B Q4 quantized models.</value>
+  </data>
+  <data name="HardwareBenchmark_CapLocalInferMid" xml:space="preserve">
+    <value>Estimated at about {0} tok/s; runs 7B-13B models smoothly and can try 70B Q4.</value>
+  </data>
+  <data name="HardwareBenchmark_CapLocalInferHigh" xml:space="preserve">
+    <value>Estimated at about {0} tok/s; can run 70B models locally, suitable for heavy AI development.</value>
+  </data>
+  <data name="HardwareBenchmark_CapLocalInferTop" xml:space="preserve">
+    <value>Estimated at about {0} tok/s; top performance, can run large models or multiple models in parallel.</value>
+  </data>
+  <data name="HardwareBenchmark_CapImageTitle" xml:space="preserve">
+    <value>Image Generation / Multimodal</value>
+  </data>
+  <data name="HardwareBenchmark_CapImageCpu" xml:space="preserve">
+    <value>Image generation models such as Stable Diffusion are not supported.</value>
+  </data>
+  <data name="HardwareBenchmark_CapImageLowEnd" xml:space="preserve">
+    <value>Can try low-resolution SD 1.5 / SDXL generation; VRAM may become a bottleneck.</value>
+  </data>
+  <data name="HardwareBenchmark_CapImageMid" xml:space="preserve">
+    <value>Can run mainstream image generation models such as SDXL and FLUX.</value>
+  </data>
+  <data name="HardwareBenchmark_CapEmbedTitle" xml:space="preserve">
+    <value>Knowledge Base Embedding Build</value>
+  </data>
+  <data name="HardwareBenchmark_CapEmbedLow" xml:space="preserve">
+    <value>Low memory; out-of-memory issues may occur when processing large numbers of documents.</value>
+  </data>
+  <data name="HardwareBenchmark_CapEmbedMid" xml:space="preserve">
+    <value>Sufficient memory; can smoothly build medium-scale knowledge bases.</value>
+  </data>
+  <data name="HardwareBenchmark_CapEmbedHigh" xml:space="preserve">
+    <value>Large memory is a clear advantage; can efficiently build large-scale knowledge bases.</value>
+  </data>
+  <data name="HardwareBenchmark_CapRagTitle" xml:space="preserve">
+    <value>RAG Long-Context Chat</value>
+  </data>
+  <data name="HardwareBenchmark_CapRagLow" xml:space="preserve">
+    <value>Using a cloud API is recommended; local model context windows and speed may be limited.</value>
+  </data>
+  <data name="HardwareBenchmark_CapRagHigh" xml:space="preserve">
+    <value>Can run long-context models locally for private RAG.</value>
+  </data>
+  <data name="HardwareBenchmark_LevelLimited" xml:space="preserve">
+    <value>Limited</value>
+  </data>
+  <data name="HardwareBenchmark_LevelAvailable" xml:space="preserve">
+    <value>Available</value>
+  </data>
+  <data name="HardwareBenchmark_LevelGood" xml:space="preserve">
+    <value>Good</value>
+  </data>
+  <data name="HardwareBenchmark_LevelExcellent" xml:space="preserve">
+    <value>Excellent</value>
+  </data>
+  <data name="HardwareBenchmark_LevelTop" xml:space="preserve">
+    <value>Top</value>
+  </data>
+  <data name="HardwareBenchmark_LevelNotSupported" xml:space="preserve">
+    <value>Not Supported</value>
+  </data>
+  <data name="LocalModels_Loading" xml:space="preserve">
+    <value>Loading</value>
+  </data>
+  <data name="LocalModels_ScenarioAll" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="LocalModels_ScenarioChat" xml:space="preserve">
+    <value>💬 General Chat</value>
+  </data>
+  <data name="LocalModels_ScenarioChinese" xml:space="preserve">
+    <value>🇨🇳 Chinese Optimized</value>
+  </data>
+  <data name="LocalModels_ScenarioTcm" xml:space="preserve">
+    <value>📝 Notes</value>
+  </data>
+  <data name="LocalModels_ScenarioCode" xml:space="preserve">
+    <value>💻 Coding</value>
+  </data>
+  <data name="LocalModels_ScenarioReasoning" xml:space="preserve">
+    <value>🧠 Reasoning</value>
+  </data>
+  <data name="LocalModels_ScenarioLightweight" xml:space="preserve">
+    <value>🪶 Lightweight &amp; Fast</value>
+  </data>
+  <data name="LocalModels_CompanyAll" xml:space="preserve">
+    <value>🏢 All Companies</value>
+  </data>
+  <data name="LocalModels_CompanyAliyun" xml:space="preserve">
+    <value>☁️ Alibaba Cloud</value>
+  </data>
+  <data name="LocalModels_DeleteModelTitle" xml:space="preserve">
+    <value>Delete Model</value>
+  </data>
+  <data name="LocalModels_DeleteOpenVinoText" xml:space="preserve">
+    <value>Are you sure you want to delete the local model "{0}"?</value>
+  </data>
+  <data name="LocalModels_DeleteOpenVinoIrreversible" xml:space="preserve">
+    <value>It cannot be restored after deletion</value>
+  </data>
+  <data name="LocalModels_OpenVinoTitle" xml:space="preserve">
+    <value>OpenVINO Models (Intel Arc GPU)</value>
+  </data>
+  <data name="LocalModels_AreaHelpTitle" xml:space="preserve">
+    <value>Area Guide:</value>
+  </data>
+  <data name="LocalModels_AreaDownloadsLabel" xml:space="preserve">
+    <value>⬇️ Download Tasks</value>
+  </data>
+  <data name="LocalModels_AreaDownloadsValue" xml:space="preserve">
+    <value>: pull model files from ModelScope/HuggingFace to the local disk (background task, cancellable).</value>
+  </data>
+  <data name="LocalModels_AreaCatalogLabel" xml:space="preserve">
+    <value>🧠 Model Catalog (merged table of downloaded + downloadable)</value>
+  </data>
+  <data name="LocalModels_AreaCatalogValue" xml:space="preserve">
+    <value>: one table for all models. Not downloaded → "Download"; downloaded → "▶ Run" (starts a standalone LLM service process, ports 8000-8030, for chat/coding) / "Stop" / "Delete".</value>
+  </data>
+  <data name="LocalModels_AreaDownloadedLabel" xml:space="preserve">
+    <value>🧿 Downloaded Models (general table)</value>
+  </data>
+  <data name="LocalModels_AreaDownloadedValue" xml:space="preserve">
+    <value>: downloaded models aggregated across tools. Load = preheat the Qwen2.5-VL vision model into the vision_server (port 8801) VRAM so first image recognition avoids cold loading; Details = view configuration.</value>
+  </data>
+  <data name="LocalModels_AreaLlmLabel" xml:space="preserve">
+    <value>🤖 OpenVINO LLM Service</value>
+  </data>
+  <data name="LocalModels_AreaLlmValue" xml:space="preserve">
+    <value>: resident instances of openvino_llm_server.py hosted on the host machine (one model per port); shows PID/health status and can be started/stopped manually.</value>
+  </data>
+  <data name="LocalModels_DownloadTasks" xml:space="preserve">
+    <value>Download Tasks</value>
+  </data>
+  <data name="LocalModels_NoDownloadTasks" xml:space="preserve">
+    <value>No download tasks</value>
+  </data>
+  <data name="LocalModels_CatalogTitle" xml:space="preserve">
+    <value>OpenVINO Model Catalog</value>
+  </data>
+  <data name="LocalModels_CatalogHint" xml:space="preserve">
+    <value>(▶ Run = start an LLM service for chat/coding, ports 8000-8030; downloads from ModelScope/HF mirrors)</value>
+  </data>
+  <data name="LocalModels_CatalogEmpty" xml:space="preserve">
+    <value>The catalog is empty</value>
+  </data>
+  <data name="LocalModels_Col_Params" xml:space="preserve">
+    <value>Params</value>
+  </data>
+  <data name="LocalModels_Col_Size" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="LocalModels_Col_Usage" xml:space="preserve">
+    <value>Usage</value>
+  </data>
+  <data name="LocalModels_Col_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="LocalModels_Col_Port" xml:space="preserve">
+    <value>Port</value>
+  </data>
+  <data name="LocalModels_Col_Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="LocalModels_RunningWithPort" xml:space="preserve">
+    <value>Running :{0}</value>
+  </data>
+  <data name="LocalModels_DownloadedBadge" xml:space="preserve">
+    <value>Downloaded</value>
+  </data>
+  <data name="LocalModels_NotDownloadedBadge" xml:space="preserve">
+    <value>Not Downloaded</value>
+  </data>
+  <data name="LocalModels_StopBtn" xml:space="preserve">
+    <value>Stop</value>
+  </data>
+  <data name="LocalModels_RunBtn" xml:space="preserve">
+    <value>Run</value>
+  </data>
+  <data name="LocalModels_DownloadBtn" xml:space="preserve">
+    <value>Download</value>
+  </data>
+  <data name="LocalModels_StartBtn" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="LocalModels_DownloadedHint" xml:space="preserve">
+    <value>(Load = preheat the vision model into VRAM so image recognition avoids cold loading)</value>
+  </data>
+  <data name="LocalModels_LlmHint" xml:space="preserve">
+    <value>(resident LLM services on the host, one model per port, for chat/coding)</value>
+  </data>
+  <data name="LocalModels_LlmRunning" xml:space="preserve">
+    <value>Running</value>
+  </data>
+  <data name="LocalModels_LlmStarting" xml:space="preserve">
+    <value>Starting</value>
+  </data>
+  <data name="LocalModels_LlmStopped" xml:space="preserve">
+    <value>Stopped</value>
+  </data>
+  <data name="LocalModels_Managed" xml:space="preserve">
+    <value>(managed)</value>
+  </data>
+  <data name="LocalModels_LoadingHardware" xml:space="preserve">
+    <value>Detecting hardware environment…</value>
+  </data>
+  <data name="LocalModels_LoadingScanTools" xml:space="preserve">
+    <value>Scanning local model services…</value>
+  </data>
+  <data name="LocalModels_OpenVinoLoadFailed" xml:space="preserve">
+    <value>Failed to load OpenVINO data: {0}</value>
+  </data>
+  <data name="LocalModels_StartDownloadFailed" xml:space="preserve">
+    <value>Failed to start the download: {0}</value>
+  </data>
+  <data name="LocalModels_CancelFailed" xml:space="preserve">
+    <value>Cancel failed: {0}</value>
+  </data>
+  <data name="LocalModels_StartedWithEndpoint" xml:space="preserve">
+    <value>Started :{0} ({1})</value>
+  </data>
+  <data name="LocalModels_RunFailed" xml:space="preserve">
+    <value>Run failed: {0}</value>
+  </data>
+  <data name="LocalModels_StopFailed" xml:space="preserve">
+    <value>Stop failed: {0}</value>
+  </data>
+  <data name="LocalModels_DeleteFailed" xml:space="preserve">
+    <value>Delete failed: {0}</value>
+  </data>
+  <data name="LocalModels_VramLabel" xml:space="preserve">
+    <value>VRAM: {0}GB+</value>
+  </data>
+  <data name="LocalModels_VramNone" xml:space="preserve">
+    <value>VRAM: no requirement</value>
+  </data>
+  <data name="LocalModels_RamLabel" xml:space="preserve">
+    <value>RAM: {0}GB+</value>
+  </data>
+  <data name="LocalModels_SpeedEstimateHint" xml:space="preserve">
+    <value>Estimated speed based on the current hardware, for reference only</value>
+  </data>
+  <data name="LocalModels_LlmStatusUnavailable" xml:space="preserve">
+    <value>Unable to get the OpenVINO hosted service status (is the host port 8866 running?)</value>
+  </data>
+  <data name="LocalModels_SpeedVeryFast" xml:space="preserve">
+    <value>🚀 About {0} tok/s</value>
+  </data>
+  <data name="LocalModels_SpeedFast" xml:space="preserve">
+    <value>⚡ About {0} tok/s</value>
+  </data>
+  <data name="LocalModels_SpeedMedium" xml:space="preserve">
+    <value>🐢 About {0} tok/s</value>
+  </data>
+  <data name="LocalModels_SpeedSlow" xml:space="preserve">
+    <value>🐌 About {0} tok/s</value>
+  </data>
+  <data name="LocalModels_DeployStatusPending" xml:space="preserve">
+    <value>Pending</value>
+  </data>
+  <data name="LocalModels_DeployStatusRunning" xml:space="preserve">
+    <value>Running</value>
+  </data>
+  <data name="LocalModels_DeployStatusCompleted" xml:space="preserve">
+    <value>Completed</value>
+  </data>
+  <data name="LocalModels_DeployStatusFailed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="LocalModels_RefreshDownloadedFailed" xml:space="preserve">
+    <value>Failed to refresh downloaded models: {0}</value>
+  </data>
+  <data name="LocalModels_DeletedOk" xml:space="preserve">
+    <value>✅ {0} deleted</value>
+  </data>
+  <data name="LocalModels_DeleteFailedToolDown" xml:space="preserve">
+    <value>❌ Deletion failed, please check whether the tool is running</value>
+  </data>
+  <data name="LocalModels_DeleteException" xml:space="preserve">
+    <value>Delete exception: {0}</value>
+  </data>
+  <data name="LocalModels_ConfirmUnload" xml:space="preserve">
+    <value>Are you sure you want to unload the model {0}? Tasks using this model will be interrupted.</value>
+  </data>
+  <data name="LocalModels_UnloadedOk" xml:space="preserve">
+    <value>✅ {0} unloaded</value>
+  </data>
+  <data name="LocalModels_UnloadFailed" xml:space="preserve">
+    <value>❌ Failed to unload {0}</value>
+  </data>
+  <data name="LocalModels_UnloadException" xml:space="preserve">
+    <value>Unload exception: {0}</value>
+  </data>
+  <data name="LocalModels_LoadedOk" xml:space="preserve">
+    <value>✅ {0} loaded</value>
+  </data>
+  <data name="LocalModels_LoadFailedToolDown" xml:space="preserve">
+    <value>❌ Failed to load {0}, please check whether the tool is running</value>
+  </data>
+  <data name="LocalModels_LoadException" xml:space="preserve">
+    <value>Load exception: {0}</value>
+  </data>
+  <data name="LocalModels_ExpireSoon" xml:space="preserve">
+    <value>Expires soon</value>
+  </data>
+  <data name="LocalModels_ExpireHours" xml:space="preserve">
+    <value>Expires in {0} hours</value>
+  </data>
+  <data name="LocalModels_ExpireMinutes" xml:space="preserve">
+    <value>Expires in {0} minutes</value>
+  </data>
+  <data name="E2EPerf_Time" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="E2EPerf_TotalTime" xml:space="preserve">
+    <value>Total Time</value>
+  </data>
+  <data name="PromptTemplates_SaveFailedFormat" xml:space="preserve">
+    <value>Failed to save: {0}</value>
+  </data>
+  <data name="HardwareBenchmark_CpuInferenceHint" xml:space="preserve">
+    <value>Using CPU Inference</value>
+  </data>
+  <data name="MasterChat_CreateFailed" xml:space="preserve">
+    <value>Failed to create the master: {0}</value>
+  </data>
+  <data name="MasterChat_UnknownError" xml:space="preserve">
+    <value>Unknown error</value>
+  </data>
+  <data name="MasterChat_SafetyWarning" xml:space="preserve">
+    <value>
+
+⚠️ The above content is for reference only and does not constitute professional medical/legal advice; please rely on authoritative sources.</value>
+  </data>
+  <data name="HardwareBenchmark_DataEstimateFormula" xml:space="preserve">
+    <value>tokens/s ≈ memory bandwidth × utilization coefficient</value>
   </data>
 </root>

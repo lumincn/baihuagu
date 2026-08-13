@@ -15,8 +15,9 @@ namespace Baihua.Family.Services
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<VaultIndexSchedulerService> _logger;
         private readonly TimeSpan _checkInterval;
-        // vaultId -> (相对路径 -> 文件指纹)；内存快照，进程重启后丢失 → 首次整库重建
-        private readonly Dictionary<string, Dictionary<string, NoteFileStamp>> _snapshots = new();
+        // vaultId -> (相对路径 -> 文件指纹)；快照持久化到数据目录 JSON 文件，
+        // 服务重启后加载，避免每次都整库重建（文件损坏时安全退化为全量）
+        private readonly Dictionary<string, Dictionary<string, NoteFileStamp>> _snapshots;
 
         public VaultIndexSchedulerService(
             IServiceProvider serviceProvider,
@@ -29,6 +30,10 @@ namespace Baihua.Family.Services
             // 默认每小时检查一次，可通过配置调整
             var intervalMinutes = configuration.GetValue<int?>("VaultIndex:IntervalMinutes") ?? 60;
             _checkInterval = TimeSpan.FromMinutes(Math.Max(5, intervalMinutes));
+
+            _snapshots = VaultIndexSnapshotStore.Load(logger);
+            if (_snapshots.Count > 0)
+                _logger.LogInformation("已加载 {Count} 个知识库的索引快照", _snapshots.Count);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -111,6 +116,7 @@ namespace Baihua.Family.Services
 
                     // 仅在成功后更新快照；失败时不更新，下轮按同一快照重试
                     _snapshots[vault.Id] = result.Snapshot;
+                    VaultIndexSnapshotStore.Save(_snapshots, _logger);
                 }
                 catch (Exception ex)
                 {

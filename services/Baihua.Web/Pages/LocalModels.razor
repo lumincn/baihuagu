@@ -31,7 +31,7 @@
 {
     <div class="loading-spinner">
         <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">加载中</span>
+            <span class="visually-hidden">@L["LocalModels_Loading"]</span>
         </div>
         <div class="mt-2">@L["LocalModels_Refreshing"]@(!string.IsNullOrEmpty(loadingStatus) ? $"：{loadingStatus}" : "")
         </div>
@@ -327,16 +327,16 @@ else
         <div class="modal-overlay" @onclick="CancelDeleteOpenVino">
             <div class="modal-content modal-small" @onclick:stopPropagation>
                 <div class="modal-header">
-                    <h3>⚠️ 删除模型</h3>
+                    <h3>⚠️ @L["LocalModels_DeleteModelTitle"]</h3>
                     <button class="modal-close" @onclick="CancelDeleteOpenVino">×</button>
                 </div>
                 <div class="modal-body">
-                    <p>确定要删除本地模型「@openVinoToDelete.Name」吗？</p>
-                    <p class="text-error">删除后将无法恢复</p>
+                    <p>@L["LocalModels_DeleteOpenVinoText", openVinoToDelete.Name]</p>
+                    <p class="text-error">@L["LocalModels_DeleteOpenVinoIrreversible"]</p>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" @onclick="CancelDeleteOpenVino">@L["Common_Cancel"]</button>
-                    <button class="btn btn-danger" @onclick="ConfirmDeleteOpenVino">确认删除</button>
+                    <button class="btn btn-danger" @onclick="ConfirmDeleteOpenVino">@L["LocalModels_DeleteConfirmBtn"]</button>
                 </div>
             </div>
         </div>
@@ -349,16 +349,16 @@ else
         <div class="modal-overlay" @onclick="CancelDeleteOpenVino">
             <div class="modal-content modal-small" @onclick:stopPropagation>
                 <div class="modal-header">
-                    <h3>⚠️ 删除模型</h3>
+                    <h3>⚠️ @L["LocalModels_DeleteModelTitle"]</h3>
                     <button class="modal-close" @onclick="CancelDeleteOpenVino">×</button>
                 </div>
                 <div class="modal-body">
-                    <p>确定要删除本地模型「@openVinoToDelete.Name」吗？</p>
-                    <p class="text-error">删除后将无法恢复</p>
+                    <p>@L["LocalModels_DeleteOpenVinoText", openVinoToDelete.Name]</p>
+                    <p class="text-error">@L["LocalModels_DeleteOpenVinoIrreversible"]</p>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" @onclick="CancelDeleteOpenVino">@L["Common_Cancel"]</button>
-                    <button class="btn btn-danger" @onclick="ConfirmDeleteOpenVino">确认删除</button>
+                    <button class="btn btn-danger" @onclick="ConfirmDeleteOpenVino">@L["LocalModels_DeleteConfirmBtn"]</button>
                 </div>
             </div>
         </div>
@@ -1266,29 +1266,29 @@ else
     {
     <!-- OpenVINO 模型（Intel Arc GPU） -->
     <div class="section-header" style="cursor:pointer;" @onclick="() => ToggleSection(ref _showOpenVino)">
-        <h2>@(_showOpenVino ? "▼" : "▶") 🧠 OpenVINO 模型（Intel Arc GPU）</h2>
+        <h2>@(_showOpenVino ? "▼" : "▶") 🧠 @L["LocalModels_OpenVinoTitle"]</h2>
     </div>
     @if (_showOpenVino)
     {
         <!-- 区域职责帮助 -->
         <div class="alert alert-info small" style="margin-top:0.5rem;">
-            <b>📖 区域说明：</b>
+            <b>📖 @L["LocalModels_AreaHelpTitle"]</b>
             <ul class="mb-0 mt-1" style="padding-left:1.2rem;">
-                <li><b>⬇️ 下载任务</b>：从 ModelScope/HuggingFace 拉取模型文件到本地磁盘（后台任务，可取消）。</li>
-                <li><b>🧠 模型目录（已下载+可下载合并表）</b>：一张表看全部模型。未下载→「下载」；已下载→「▶ 运行」（启动独立 LLM 服务进程，端口 8000-8030，供对话/编程）／「停止」／「删除」。</li>
-                <li><b>🧿 已下载模型（通用表）</b>：跨工具汇总的已下载模型。<b>加载</b>＝把 Qwen2.5-VL 视觉模型预热进 vision_server（8801 端口）显存，首次识别图片免冷加载；<b>详情</b>＝查看配置。</li>
-                <li><b>🤖 OpenVINO LLM 服务</b>：宿主机托管的 openvino_llm_server.py 常驻实例（一模型一端口），显示 PID/健康状态，可手动启停。</li>
+                <li><b>@L["LocalModels_AreaDownloadsLabel"]</b>@L["LocalModels_AreaDownloadsValue"]</li>
+                <li><b>@L["LocalModels_AreaCatalogLabel"]</b>@L["LocalModels_AreaCatalogValue"]</li>
+                <li><b>@L["LocalModels_AreaDownloadedLabel"]</b>@L["LocalModels_AreaDownloadedValue"]</li>
+                <li><b>@L["LocalModels_AreaLlmLabel"]</b>@L["LocalModels_AreaLlmValue"]</li>
             </ul>
         </div>
         <!-- 下载任务 -->
         <div class="mt-3 mb-2">
             <div class="d-flex justify-content-between align-items-center">
-                <h4>⬇️ 下载任务</h4>
-                <button class="btn btn-sm btn-outline-secondary" @onclick="RefreshOpenVinoAsync">刷新</button>
+                <h4>⬇️ @L["LocalModels_DownloadTasks"]</h4>
+                <button class="btn btn-sm btn-outline-secondary" @onclick="RefreshOpenVinoAsync">@L["Common_Refresh"]</button>
             </div>
             @if (openVinoDownloads.Count == 0)
             {
-                <div class="text-muted small">暂无下载任务</div>
+                <div class="text-muted small">@L["LocalModels_NoDownloadTasks"]</div>
             }
             else
             {
@@ -1304,7 +1304,7 @@ else
                                 @if (active)
                                 {
                                     <span class="text-muted">@t.ProgressPercent%@(t.SpeedMBps > 0 ? $" ({t.SpeedMBps:F1}MB/s)" : "")</span>
-                                    <button class="btn btn-sm btn-outline-secondary ms-2" @onclick='() => CancelDownloadAsync(t.TaskId)'>取消</button>
+                                    <button class="btn btn-sm btn-outline-secondary ms-2" @onclick='() => CancelDownloadAsync(t.TaskId)'>@L["Common_Cancel"]</button>
                                 }
                                 else if (t.CompletedAt.HasValue)
                                 {
@@ -1333,15 +1333,15 @@ else
 
         <!-- 模型目录（已下载 + 可下载合并） -->
         <div class="mt-3 mb-2">
-            <h4>🧠 OpenVINO 模型目录 <span class="text-muted small fw-normal">（▶ 运行＝启动 LLM 服务供对话/编程，端口 8000-8030；下载自 ModelScope/HF 镜像）</span></h4>
+            <h4>🧠 @L["LocalModels_CatalogTitle"] <span class="text-muted small fw-normal">@L["LocalModels_CatalogHint"]</span></h4>
             @if (openVinoCatalog.Count == 0)
             {
-                <div class="text-muted small">目录为空</div>
+                <div class="text-muted small">@L["LocalModels_CatalogEmpty"]</div>
             }
             else
             {
                 <table class="table table-sm">
-                    <thead><tr><th>模型</th><th>参数</th><th>大小</th><th>用途</th><th>状态</th><th class="text-end">操作</th></tr></thead>
+                    <thead><tr><th>@L["LocalModels_Col_Model"]</th><th>@L["LocalModels_Col_Params"]</th><th>@L["LocalModels_Col_Size"]</th><th>@L["LocalModels_Col_Usage"]</th><th>@L["LocalModels_Col_Status"]</th><th class="text-end">@L["LocalModels_Col_Actions"]</th></tr></thead>
                     <tbody>
                         @foreach (var c in openVinoCatalog)
                         {
@@ -1362,15 +1362,15 @@ else
                                 <td>
                                     @if (c.Installed && c.IsRunning)
                                     {
-                                        <span class="badge bg-success">运行中 :@c.Port</span>
+                                        <span class="badge bg-success">@string.Format(L["LocalModels_RunningWithPort"], c.Port)</span>
                                     }
                                     else if (c.Installed)
                                     {
-                                        <span class="badge bg-secondary">已下载</span>
+                                        <span class="badge bg-secondary">@L["LocalModels_DownloadedBadge"]</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-light text-muted">未下载</span>
+                                        <span class="badge bg-light text-muted">@L["LocalModels_NotDownloadedBadge"]</span>
                                     }
                                 </td>
                                 <td class="text-end">
@@ -1378,17 +1378,17 @@ else
                                     {
                                         @if (c.IsRunning)
                                         {
-                                            <button class="btn btn-sm btn-outline-danger" @onclick='() => StopModelAsync(c.Port!.Value)'>停止</button>
+                                            <button class="btn btn-sm btn-outline-danger" @onclick='() => StopModelAsync(c.Port!.Value)'>@L["LocalModels_StopBtn"]</button>
                                         }
                                         else
                                         {
-                                            <button class="btn btn-sm btn-primary" @onclick='() => RunModelAsync(c.Path!)'>运行</button>
+                                            <button class="btn btn-sm btn-primary" @onclick='() => RunModelAsync(c.Path!)'>@L["LocalModels_RunBtn"]</button>
                                         }
-                                        <button class="btn btn-sm btn-outline-secondary" @onclick='() => AskDeleteOpenVino(c)'>删除</button>
+                                        <button class="btn btn-sm btn-outline-secondary" @onclick='() => AskDeleteOpenVino(c)'>@L["LocalModels_DeleteBtn"]</button>
                                     }
                                     else
                                     {
-                                        <button class="btn btn-sm btn-primary" @onclick='() => StartDownloadAsync(c.Id)'>下载</button>
+                                        <button class="btn btn-sm btn-primary" @onclick='() => StartDownloadAsync(c.Id)'>@L["LocalModels_DownloadBtn"]</button>
                                     }
                                 </td>
                             </tr>
@@ -1405,7 +1405,7 @@ else
     <!-- OpenVINO Downloaded Models -->
     <div class="downloaded-section">
         <div class="section-header" style="cursor:pointer;" @onclick="() => ToggleSection(ref _showDownloadedModels)">
-            <h2>@(_showDownloadedModels ? "▼" : "▶") 🧿 @L["LocalModels_DownloadedOpenVino"] <span class="text-muted small fw-normal">（加载＝预热视觉模型到显存，图片识别免冷加载）</span></h2>
+            <h2>@(_showDownloadedModels ? "▼" : "▶") 🧿 @L["LocalModels_DownloadedOpenVino"] <span class="text-muted small fw-normal">@L["LocalModels_DownloadedHint"]</span></h2>
             @if (_showDownloadedModels)
             {
                 <button class="btn btn-secondary btn-sm" @onclick="RefreshDownloadedModels" disabled="@isLoadingDownloaded">
@@ -1490,8 +1490,8 @@ else
     <!-- OpenVINO LLM 服务（宿主机托管） -->
     <div class="load-model-section">
         <div class="section-header" style="cursor:pointer;" @onclick="() => ToggleSection(ref _showOpenVinoLlm)">
-            <h3>@(_showOpenVinoLlm ? "▼" : "▶") 🤖 @L["LocalModels_OpenVinoLlmTitle"] <span class="text-muted small fw-normal">（宿主机常驻 LLM 服务，一模型一端口，供对话/编程调用）</span></h3>
-            <button class="btn btn-secondary btn-sm" @onclick="LoadOpenVinoLlmStatus" disabled="@isLoadingOpenVinoLlm" title="刷新" style="margin-left:0.5rem;">
+            <h3>@(_showOpenVinoLlm ? "▼" : "▶") 🤖 @L["LocalModels_OpenVinoLlmTitle"] <span class="text-muted small fw-normal">@L["LocalModels_LlmHint"]</span></h3>
+            <button class="btn btn-secondary btn-sm" @onclick="LoadOpenVinoLlmStatus" disabled="@isLoadingOpenVinoLlm" title="@L["Common_Refresh"]" style="margin-left:0.5rem;">
                 @(isLoadingOpenVinoLlm ? "⏳" : "🔄")
             </button>
         </div>
@@ -1507,7 +1507,7 @@ else
             }
             <div class="downloaded-models-table" style="margin-top:0.5rem;">
                 <div class="downloaded-table-header">
-                    <span>端口</span><span>名称</span><span>模型</span><span>状态</span><span>PID</span><span>操作</span>
+                    <span>@L["LocalModels_Col_Port"]</span><span>@L["LocalModels_Col_Name"]</span><span>@L["LocalModels_Col_Model"]</span><span>@L["LocalModels_Col_Status"]</span><span>PID</span><span>@L["LocalModels_Col_Actions"]</span>
                 </div>
                 @foreach (var inst in openVinoLlmInstances)
                 {
@@ -1518,30 +1518,30 @@ else
                         <span>
                             @if (inst.Running && inst.Healthy)
                             {
-                                <span class="badge" style="background:#2e7d32;color:#fff;">运行中</span>
+                                <span class="badge" style="background:#2e7d32;color:#fff;">@L["LocalModels_LlmRunning"]</span>
                             }
                             else if (inst.Running)
                             {
-                                <span class="badge" style="background:#f9a825;color:#fff;">启动中</span>
+                                <span class="badge" style="background:#f9a825;color:#fff;">@L["LocalModels_LlmStarting"]</span>
                             }
                             else
                             {
-                                <span class="badge" style="background:#757575;color:#fff;">已停止</span>
+                                <span class="badge" style="background:#757575;color:#fff;">@L["LocalModels_LlmStopped"]</span>
                             }
                             @if (inst.Managed)
                             {
-                                <span style="font-size:0.7rem;color:#888;">(托管)</span>
+                                <span style="font-size:0.7rem;color:#888;">@L["LocalModels_Managed"]</span>
                             }
                         </span>
                         <span style="font-size:0.75rem;color:#888;">@(inst.Pid?.ToString() ?? "-")</span>
                         <span>
                             @if (inst.Running)
                             {
-                                <button class="btn btn-secondary btn-sm" @onclick='() => ControlOpenVinoLlm("stop", inst.Port)' disabled="@isControllingOpenVinoLlm">停止</button>
+                                <button class="btn btn-secondary btn-sm" @onclick='() => ControlOpenVinoLlm("stop", inst.Port)' disabled="@isControllingOpenVinoLlm">@L["LocalModels_StopBtn"]</button>
                             }
                             else
                             {
-                                <button class="btn btn-primary btn-sm" @onclick='() => ControlOpenVinoLlm("start", inst.Port)' disabled="@isControllingOpenVinoLlm">启动</button>
+                                <button class="btn btn-primary btn-sm" @onclick='() => ControlOpenVinoLlm("start", inst.Port)' disabled="@isControllingOpenVinoLlm">@L["LocalModels_StartBtn"]</button>
                             }
                         </span>
                     </div>
@@ -1563,16 +1563,16 @@ else
         <div class="modal-overlay" @onclick="CancelDeleteOpenVino">
             <div class="modal-content modal-small" @onclick:stopPropagation>
                 <div class="modal-header">
-                    <h3>⚠️ 删除模型</h3>
+                    <h3>⚠️ @L["LocalModels_DeleteModelTitle"]</h3>
                     <button class="modal-close" @onclick="CancelDeleteOpenVino">×</button>
                 </div>
                 <div class="modal-body">
-                    <p>确定要删除本地模型「@openVinoToDelete.Name」吗？</p>
-                    <p class="text-error">删除后将无法恢复</p>
+                    <p>@L["LocalModels_DeleteOpenVinoText", openVinoToDelete.Name]</p>
+                    <p class="text-error">@L["LocalModels_DeleteOpenVinoIrreversible"]</p>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" @onclick="CancelDeleteOpenVino">@L["Common_Cancel"]</button>
-                    <button class="btn btn-danger" @onclick="ConfirmDeleteOpenVino">确认删除</button>
+                    <button class="btn btn-danger" @onclick="ConfirmDeleteOpenVino">@L["LocalModels_DeleteConfirmBtn"]</button>
                 </div>
             </div>
         </div>
@@ -1622,21 +1622,21 @@ else
 
     private void ToggleSection(ref bool flag) => flag = !flag;
 
-    private readonly List<(string Value, string Label)> scenarioTags = new()
+    private List<(string Value, string Label)> scenarioTags => new()
     {
-        ("", "全部"),
-        ("chat", "💬 通用对话"),
-        ("chinese", "🇨🇳 中文优化"),
-        ("tcm", "📝 笔记"),
-        ("code", "💻 代码编程"),
-        ("reasoning", "🧠 推理思考"),
-        ("lightweight", "🪶 轻量快速"),
+        ("", L["LocalModels_ScenarioAll"]),
+        ("chat", L["LocalModels_ScenarioChat"]),
+        ("chinese", L["LocalModels_ScenarioChinese"]),
+        ("tcm", L["LocalModels_ScenarioTcm"]),
+        ("code", L["LocalModels_ScenarioCode"]),
+        ("reasoning", L["LocalModels_ScenarioReasoning"]),
+        ("lightweight", L["LocalModels_ScenarioLightweight"]),
     };
 
-    private readonly List<(string Value, string Label)> companyTags = new()
+    private List<(string Value, string Label)> companyTags => new()
     {
-        ("", "🏢 全部公司"),
-        ("阿里云", "☁️ 阿里云"),
+        ("", L["LocalModels_CompanyAll"]),
+        ("阿里云", L["LocalModels_CompanyAliyun"]),
         ("Meta", "👤 Meta"),
         ("Google", "🔍 Google"),
         ("Microsoft", "🪟 Microsoft"),
@@ -1682,7 +1682,7 @@ else
         try
         {
             // 第一步：硬件 + 本地工具（快），完成后即可先渲染概览，不必等慢的提供方扫描
-            SetLoadingStatus("正在检测硬件环境…");
+            SetLoadingStatus(L["LocalModels_LoadingHardware"]);
             var hwTask = ApiService.GetHardwareInfoAsync();
             var toolsTask = ApiService.GetLocalToolsAsync();
             await Task.WhenAll(hwTask, toolsTask);
@@ -1696,7 +1696,7 @@ else
             });
 
             // 第二步：其余数据独立加载、各自容错（OpenVINO 不可达时不再拖慢整体）
-            SetLoadingStatus("正在扫描本地模型服务…");
+            SetLoadingStatus(L["LocalModels_LoadingScanTools"]);
             var tasks = new List<Task>
             {
                 SafeLoadAsync(() => LoadRecommendationsAsync()),
@@ -1747,7 +1747,7 @@ else
         }
         catch (Exception ex)
         {
-            openVinoMessage = "OpenVINO 数据加载失败：" + ex.Message;
+            openVinoMessage = string.Format(L["LocalModels_OpenVinoLoadFailed"], ex.Message);
         }
     }
 
@@ -1792,7 +1792,7 @@ else
         }
         catch (Exception ex)
         {
-            openVinoMessage = "启动下载失败：" + ex.Message;
+            openVinoMessage = string.Format(L["LocalModels_StartDownloadFailed"], ex.Message);
         }
     }
 
@@ -1805,7 +1805,7 @@ else
         }
         catch (Exception ex)
         {
-            openVinoMessage = "取消失败：" + ex.Message;
+            openVinoMessage = string.Format(L["LocalModels_CancelFailed"], ex.Message);
         }
     }
 
@@ -1816,13 +1816,13 @@ else
         {
             var r = await ApiService.RunOpenVinoModelAsync(path);
             openVinoMessage = r.Success
-                ? $"已启动 :{r.Port}（{r.Endpoint}）"
-                : $"运行失败：{r.Error}";
+                ? string.Format(L["LocalModels_StartedWithEndpoint"], r.Port, r.Endpoint)
+                : string.Format(L["LocalModels_RunFailed"], r.Error);
             await LoadOpenVinoAsync();
         }
         catch (Exception ex)
         {
-            openVinoMessage = "运行失败：" + ex.Message;
+            openVinoMessage = string.Format(L["LocalModels_RunFailed"], ex.Message);
         }
     }
 
@@ -1835,7 +1835,7 @@ else
         }
         catch (Exception ex)
         {
-            openVinoMessage = "停止失败：" + ex.Message;
+            openVinoMessage = string.Format(L["LocalModels_StopFailed"], ex.Message);
         }
     }
 
@@ -1848,7 +1848,7 @@ else
         }
         catch (Exception ex)
         {
-            openVinoMessage = "删除失败：" + ex.Message;
+            openVinoMessage = string.Format(L["LocalModels_DeleteFailed"], ex.Message);
         }
     }
 
@@ -1961,21 +1961,21 @@ else
                 <span class="badge" style="background:#e8eef2;color:#4a5860;">@model.Company</span>
             </div>
             <div class="model-requirements">
-                <span>@(model.MinVramGiB.HasValue ? $"显存: {model.MinVramGiB:F0}GB+" : "显存: 无要求")</span>
-                <span>内存: @model.MinRamGiB.ToString("F0")GB+</span>
+                <span>@(model.MinVramGiB.HasValue ? string.Format(L["LocalModels_VramLabel"], model.MinVramGiB.Value.ToString("F0")) : L["LocalModels_VramNone"])</span>
+                <span>@string.Format(L["LocalModels_RamLabel"], model.MinRamGiB.ToString("F0"))</span>
             </div>
             <div class="model-suitability @(GetSuitabilityClass(model.Suitability))">
                 @model.Suitability
                 @if (model.MatchScore >= 90)
                 {
-                    <span> ⭐ 推荐</span>
+                    <span> ⭐ @L["LocalModels_RecommendedBadge"]</span>
                 }
             </div>
             @if (model.EstimatedTokensPerSecond.HasValue)
             {
                 <div class="model-performance">
                     <span class="speed-badge @(GetSpeedClass(model.EstimatedTokensPerSecond.Value))"
-                          title="基于当前硬件的估算速度，仅供参考">
+                          title="@L["LocalModels_SpeedEstimateHint"]">
                         @GetSpeedLabel(model.EstimatedTokensPerSecond.Value)
                     </span>
                 </div>
@@ -2013,7 +2013,7 @@ else
             var status = await ApiService.GetOpenVinoLlmStatusAsync();
             if (status == null)
             {
-                openVinoLlmError = "无法获取 OpenVINO 托管服务状态（宿主机 8866 未运行？）";
+                openVinoLlmError = L["LocalModels_LlmStatusUnavailable"];
                 openVinoLlmInstances = new();
             }
             else
@@ -2134,14 +2134,14 @@ else
         };
     }
 
-    private static string GetSpeedLabel(double tps)
+    private string GetSpeedLabel(double tps)
     {
         return tps switch
         {
-            >= 30 => $"🚀 约 {tps:F0} tok/s",
-            >= 10 => $"⚡ 约 {tps:F0} tok/s",
-            >= 3 => $"🐢 约 {tps:F0} tok/s",
-            _ => $"🐌 约 {tps:F0} tok/s"
+            >= 30 => string.Format(L["LocalModels_SpeedVeryFast"], tps),
+            >= 10 => string.Format(L["LocalModels_SpeedFast"], tps),
+            >= 3 => string.Format(L["LocalModels_SpeedMedium"], tps),
+            _ => string.Format(L["LocalModels_SpeedSlow"], tps)
         };
     }
 
@@ -2156,14 +2156,14 @@ else
         };
     }
 
-    private static string GetTaskStatusLabel(string status)
+    private string GetTaskStatusLabel(string status)
     {
         return status switch
         {
-            "pending" => "等待中",
-            "running" => "进行中",
-            "completed" => "已完成",
-            "failed" => "失败",
+            "pending" => L["LocalModels_DeployStatusPending"],
+            "running" => L["LocalModels_DeployStatusRunning"],
+            "completed" => L["LocalModels_DeployStatusCompleted"],
+            "failed" => L["LocalModels_DeployStatusFailed"],
             _ => status
         };
     }
@@ -2209,7 +2209,7 @@ else
         }
         catch (Exception ex)
         {
-            downloadedModelMessage = $"刷新已下载模型失败: {ex.Message}";
+            downloadedModelMessage = string.Format(L["LocalModels_RefreshDownloadedFailed"], ex.Message);
             downloadedModelSuccess = false;
         }
         finally
@@ -2255,7 +2255,7 @@ else
 
             if (success)
             {
-                downloadedModelMessage = $"✅ {modelToDelete.Name} 已删除";
+                downloadedModelMessage = string.Format(L["LocalModels_DeletedOk"], modelToDelete.Name);
                 downloadedModelSuccess = true;
                 showDeleteConfirm = false;
                 modelToDelete = null;
@@ -2264,13 +2264,13 @@ else
             }
             else
             {
-                downloadedModelMessage = $"❌ 删除失败，请检查工具是否运行";
+                downloadedModelMessage = L["LocalModels_DeleteFailedToolDown"];
                 downloadedModelSuccess = false;
             }
         }
         catch (Exception ex)
         {
-            downloadedModelMessage = $"删除异常: {ex.Message}";
+            downloadedModelMessage = string.Format(L["LocalModels_DeleteException"], ex.Message);
             downloadedModelSuccess = false;
         }
         finally
@@ -2318,7 +2318,7 @@ else
 
     private async Task UnloadModel(RunningModelDto model)
     {
-        if (!await JSRuntime.InvokeAsync<bool>("confirm", $"确定要卸载模型 {model.DisplayName} 吗？正在使用该模型的任务将被中断。"))
+        if (!await JSRuntime.InvokeAsync<bool>("confirm", string.Format(L["LocalModels_ConfirmUnload"], model.DisplayName)))
             return;
         isLoadingModel = true;
         loadModelMessage = "";
@@ -2332,20 +2332,20 @@ else
 
             if (success)
             {
-                loadModelMessage = $"✅ {model.DisplayName} 已卸载";
+                loadModelMessage = string.Format(L["LocalModels_UnloadedOk"], model.DisplayName);
                 loadModelSuccess = true;
                 await Task.Delay(500);
                 await RefreshRunningModels();
             }
             else
             {
-                loadModelMessage = $"❌ 卸载 {model.DisplayName} 失败";
+                loadModelMessage = string.Format(L["LocalModels_UnloadFailed"], model.DisplayName);
                 loadModelSuccess = false;
             }
         }
         catch (Exception ex)
         {
-            loadModelMessage = $"卸载异常: {ex.Message}";
+            loadModelMessage = string.Format(L["LocalModels_UnloadException"], ex.Message);
             loadModelSuccess = false;
         }
         finally
@@ -2370,20 +2370,20 @@ else
 
             if (success)
             {
-                loadModelMessage = $"✅ {loadModelName} 已加载";
+                loadModelMessage = string.Format(L["LocalModels_LoadedOk"], loadModelName);
                 loadModelSuccess = true;
                 await Task.Delay(500);
                 await RefreshRunningModels();
             }
             else
             {
-                loadModelMessage = $"❌ 加载 {loadModelName} 失败，请检查工具是否运行";
+                loadModelMessage = string.Format(L["LocalModels_LoadFailedToolDown"], loadModelName);
                 loadModelSuccess = false;
             }
         }
         catch (Exception ex)
         {
-            loadModelMessage = $"加载异常: {ex.Message}";
+            loadModelMessage = string.Format(L["LocalModels_LoadException"], ex.Message);
             loadModelSuccess = false;
         }
         finally
@@ -2393,13 +2393,13 @@ else
         }
     }
 
-    private static string GetTimeRemaining(DateTime expiresAt)
+    private string GetTimeRemaining(DateTime expiresAt)
     {
         var remaining = expiresAt - DateTime.Now;
-        if (remaining.TotalSeconds <= 0) return "即将过期";
-        if (remaining.TotalHours >= 1) return $"{remaining.TotalHours:F0}小时后过期";
-        if (remaining.TotalMinutes >= 1) return $"{remaining.TotalMinutes:F0}分钟后过期";
-        return "即将过期";
+        if (remaining.TotalSeconds <= 0) return L["LocalModels_ExpireSoon"];
+        if (remaining.TotalHours >= 1) return string.Format(L["LocalModels_ExpireHours"], remaining.TotalHours);
+        if (remaining.TotalMinutes >= 1) return string.Format(L["LocalModels_ExpireMinutes"], remaining.TotalMinutes);
+        return L["LocalModels_ExpireSoon"];
     }
 
     #endregion

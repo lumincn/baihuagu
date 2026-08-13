@@ -172,11 +172,11 @@ else
 {
     <div class="confirm-modal-overlay" @onclick="CancelDeleteTemplate">
         <div class="confirm-modal-box" @onclick:stopPropagation="true">
-            <h3>⚠️ 删除模板</h3>
-            <p>确定要删除模板「@templateToDelete」吗？自定义模板删除后不可恢复。</p>
+            <h3>⚠️ @L["PromptTemplates_DeleteTitle"]</h3>
+            <p>@L["PromptTemplates_DeleteMessage", templateToDelete]</p>
             <div class="confirm-modal-actions">
-                <button class="btn-secondary" @onclick="CancelDeleteTemplate">取消</button>
-                <button class="btn-danger" @onclick="ConfirmDeleteTemplate">确认删除</button>
+                <button class="btn-secondary" @onclick="CancelDeleteTemplate">@L["Common_Cancel"]</button>
+                <button class="btn-danger" @onclick="ConfirmDeleteTemplate">@L["Common_ConfirmDelete"]</button>
             </div>
         </div>
     </div>

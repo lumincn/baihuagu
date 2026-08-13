@@ -1,5 +1,6 @@
 using Baihua.Contracts.Search;
 using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,15 @@ namespace Baihua.Family.Services
         private readonly ILogger<EmbeddingService> _logger;
 
         private const int MaxNotesToRerank = 50;
+
+        /// <summary>向量写库批量提交条数</summary>
+        private const int EmbeddingBatchSize = 50;
+
+        /// <summary>
+        /// per-vault 索引并发闸：同一知识库的索引任务串行执行，不同知识库可并行。
+        /// key 忽略大小写（vaultId 与文件相对路径的忽略大小写语义保持一致）。
+        /// </summary>
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _vaultIndexLocks = new(StringComparer.OrdinalIgnoreCase);
 
         public EmbeddingService(
             AiClientService aiClientService,
@@ -142,6 +152,13 @@ namespace Baihua.Family.Services
                 return null;
             }
         }
+
+        /// <summary>
+        /// 计算文本向量（protected virtual 注入点，便于测试注入假实现/统计 API 调用次数；
+        /// 参考 VaultNoteIndexer.ReadNoteContentAsync 的做法）
+        /// </summary>
+        protected virtual Task<List<double>?> ComputeEmbeddingAsync(string text, CancellationToken ct = default)
+            => GetEmbeddingAsync(text);
 
         private async Task RecordEmbeddingMetricAsync(string providerId, string modelName, long latencyMs, bool isSuccess, string? errorMessage)
         {
@@ -300,60 +317,285 @@ namespace Baihua.Family.Services
         }
 
         /// <summary>
-        /// 全库向量索引：对知识库所有 .md 笔记生成向量并缓存（纯向量检索的前提）
+        /// 全量向量索引：对知识库所有 .md 笔记生成向量并缓存（纯向量检索的前提）。
+        /// 等价于以 null 快照调用增量重载；同一知识库的索引任务由 per-vault 锁串行化。
         /// </summary>
         public async Task<(int Indexed, int Failed)> IndexVaultAsync(string vaultId, string vaultPath, CancellationToken ct = default)
         {
-            int indexed = 0, failed = 0;
-            if (string.IsNullOrWhiteSpace(vaultId) || !Directory.Exists(vaultPath) || !IsSemanticSearchEnabled())
-                return (0, 0);
+            var result = await IndexVaultCoreAsync(vaultId, vaultPath, previousSnapshot: null, ct);
+            return (result.Indexed, result.Failed);
+        }
 
+        /// <summary>
+        /// 增量向量索引：以笔记文件 mtime/size 快照对比为准，仅对新增/变更的笔记调用
+        /// embedding API 并 upsert，对已删除的笔记删除其向量行，未变更笔记零调用；
+        /// previousSnapshot 为 null 或为空（首次索引 / 快照丢失）时退化为整库重建。
+        /// 同一知识库的索引任务由 per-vault 锁串行化（不同知识库可并行）。
+        /// </summary>
+        public async Task<VaultIndexChangeResult> IndexVaultAsync(
+            string vaultId,
+            string vaultPath,
+            IReadOnlyDictionary<string, NoteFileStamp>? previousSnapshot,
+            CancellationToken ct = default)
+        {
+            var result = await IndexVaultCoreAsync(vaultId, vaultPath, previousSnapshot, ct);
+            return new VaultIndexChangeResult(
+                result.Snapshot, result.IsFullRebuild,
+                result.Added, result.Updated, result.Removed, result.Unchanged);
+        }
+
+        /// <summary>一次向量索引运行的内部结果</summary>
+        private sealed record IndexRunResult(
+            Dictionary<string, NoteFileStamp> Snapshot,
+            bool IsFullRebuild,
+            int Indexed,
+            int Failed,
+            int Added,
+            int Updated,
+            int Removed,
+            int Unchanged)
+        {
+            public static IndexRunResult Empty(IReadOnlyDictionary<string, NoteFileStamp>? previousSnapshot)
+                => new(
+                    previousSnapshot == null
+                        ? new Dictionary<string, NoteFileStamp>(StringComparer.OrdinalIgnoreCase)
+                        : previousSnapshot.ToDictionary(kv => kv.Key, kv => kv.Value, StringComparer.OrdinalIgnoreCase),
+                    false, 0, 0, 0, 0, 0, 0);
+        }
+
+        /// <summary>
+        /// 向量索引主流程：per-vault 锁内串行执行（try/finally 保证释放），
+        /// 无快照 → 整库重建，有快照 → 增量 diff
+        /// </summary>
+        private async Task<IndexRunResult> IndexVaultCoreAsync(
+            string vaultId,
+            string vaultPath,
+            IReadOnlyDictionary<string, NoteFileStamp>? previousSnapshot,
+            CancellationToken ct)
+        {
+            if (string.IsNullOrWhiteSpace(vaultId) || !Directory.Exists(vaultPath) || !IsSemanticSearchEnabled())
+                return IndexRunResult.Empty(previousSnapshot);
+
+            var gate = _vaultIndexLocks.GetOrAdd(vaultId, _ => new SemaphoreSlim(1, 1));
+            await gate.WaitAsync(ct);
             try
             {
-                var files = Directory.GetFiles(vaultPath, "*.md", SearchOption.AllDirectories);
-                _logger.LogInformation("向量索引开始：{VaultId} 共 {Count} 篇笔记", vaultId, files.Length);
+                if (previousSnapshot == null || previousSnapshot.Count == 0)
+                    return await RebuildEmbeddingsAsync(vaultId, vaultPath, ct);
 
-                foreach (var file in files)
+                return await IncrementalEmbeddingsAsync(vaultId, vaultPath, previousSnapshot, ct);
+            }
+            finally
+            {
+                gate.Release();
+            }
+        }
+
+        /// <summary>整库重建：计算全部笔记向量并批量写入，同时清理磁盘上已不存在的旧向量行</summary>
+        private async Task<IndexRunResult> RebuildEmbeddingsAsync(string vaultId, string vaultPath, CancellationToken ct)
+        {
+            var current = VaultNoteIndexer.ScanVaultShared(vaultPath);
+            _logger.LogInformation("向量索引全量重建开始：{VaultId} 共 {Count} 篇笔记", vaultId, current.Count);
+
+            int indexed = 0, failed = 0;
+            var embeddings = new List<(string Path, List<double> Vector)>();
+
+            foreach (var (relativePath, _) in current)
+            {
+                ct.ThrowIfCancellationRequested();
+                try
                 {
-                    ct.ThrowIfCancellationRequested();
-                    try
+                    var embedding = await BuildAndEmbedAsync(vaultPath, relativePath, ct);
+                    if (embedding != null)
                     {
-                        var fileName = Path.GetFileName(file);
-                        if (fileName.Equals("README.md", StringComparison.OrdinalIgnoreCase))
-                            continue;
-
-                        var content = await File.ReadAllTextAsync(file, ct);
-                        var title = Path.GetFileNameWithoutExtension(file);
-                        var textToEmbed = $"{title}\n{ExtractFirstText(content)}".Trim();
-                        if (string.IsNullOrEmpty(textToEmbed))
-                            continue;
-
-                        var relativePath = file.Substring(vaultPath.Length).TrimStart('\\', '/').Replace('\\', '/');
-                        var embedding = await GetEmbeddingAsync(textToEmbed);
-                        if (embedding != null)
-                        {
-                            await SaveNoteEmbeddingAsync(vaultId, relativePath, embedding);
-                            indexed++;
-                        }
-                        else
-                        {
-                            failed++;
-                        }
+                        embeddings.Add((relativePath, embedding));
+                        indexed++;
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        _logger.LogDebug(ex, "索引笔记失败：{File}", file);
                         failed++;
                     }
                 }
+                catch (Exception ex)
+                {
+                    _logger.LogDebug(ex, "索引笔记失败：{Path}", relativePath);
+                    failed++;
+                }
+            }
 
-                _logger.LogInformation("向量索引完成：{VaultId} 成功 {Indexed} 失败 {Failed}", vaultId, indexed, failed);
-            }
-            catch (Exception ex)
+            using var db = await _vaultDbFactory.CreateDbContextAsync(ct);
+
+            // 清理磁盘上已不存在的旧向量行
+            var dbPaths = await db.NoteEmbeddings
+                .Where(e => e.VaultId == vaultId)
+                .Select(e => e.NotePath)
+                .ToListAsync(ct);
+            var orphanPaths = dbPaths.Where(p => !current.ContainsKey(p)).ToList();
+            if (orphanPaths.Count > 0)
             {
-                _logger.LogDebug(ex, "向量索引异常");
+                await db.NoteEmbeddings
+                    .Where(e => e.VaultId == vaultId && orphanPaths.Contains(e.NotePath))
+                    .ExecuteDeleteAsync(ct);
             }
-            return (indexed, failed);
+
+            await UpsertEmbeddingsAsync(db, vaultId, embeddings, ct);
+
+            _logger.LogInformation("向量索引全量重建完成：{VaultId} 成功 {Indexed} 失败 {Failed}", vaultId, indexed, failed);
+            return new IndexRunResult(current, true, indexed, failed, indexed, 0, orphanPaths.Count, 0);
+        }
+
+        /// <summary>
+        /// 增量索引：按快照 diff 只对新增/变更笔记调用 embedding API 并批量 upsert，
+        /// 对删除笔记删除其向量行，未变更笔记零调用
+        /// </summary>
+        private async Task<IndexRunResult> IncrementalEmbeddingsAsync(
+            string vaultId,
+            string vaultPath,
+            IReadOnlyDictionary<string, NoteFileStamp> previousSnapshot,
+            CancellationToken ct)
+        {
+            var current = VaultNoteIndexer.ScanVaultShared(vaultPath);
+
+            var added = new List<string>();
+            var updated = new List<string>();
+            var removed = new List<string>();
+            var unchanged = 0;
+
+            foreach (var (path, stamp) in current)
+            {
+                if (previousSnapshot.TryGetValue(path, out var prev))
+                {
+                    if (prev == stamp) unchanged++;
+                    else updated.Add(path);
+                }
+                else
+                {
+                    added.Add(path);
+                }
+            }
+
+            foreach (var path in previousSnapshot.Keys)
+            {
+                if (!current.ContainsKey(path)) removed.Add(path);
+            }
+
+            if (added.Count == 0 && updated.Count == 0 && removed.Count == 0)
+            {
+                _logger.LogDebug("知识库 {VaultId} 向量索引无变化，跳过", vaultId);
+                return new IndexRunResult(current, false, 0, 0, 0, 0, 0, unchanged);
+            }
+
+            _logger.LogInformation("知识库 {VaultId} 向量增量索引：新增 {Added} 更新 {Updated} 删除 {Removed}",
+                vaultId, added.Count, updated.Count, removed.Count);
+
+            int indexed = 0, failed = 0;
+            var embeddings = new List<(string Path, List<double> Vector)>();
+
+            foreach (var path in added.Concat(updated))
+            {
+                ct.ThrowIfCancellationRequested();
+                try
+                {
+                    var embedding = await BuildAndEmbedAsync(vaultPath, path, ct);
+                    if (embedding != null)
+                    {
+                        embeddings.Add((path, embedding));
+                        indexed++;
+                    }
+                    else
+                    {
+                        failed++;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogDebug(ex, "增量索引笔记失败：{Path}", path);
+                    failed++;
+                }
+            }
+
+            using var db = await _vaultDbFactory.CreateDbContextAsync(ct);
+
+            // 删除已移除笔记的向量行
+            if (removed.Count > 0)
+            {
+                await db.NoteEmbeddings
+                    .Where(e => e.VaultId == vaultId && removed.Contains(e.NotePath))
+                    .ExecuteDeleteAsync(ct);
+            }
+
+            // 新增/变更笔记批量 upsert
+            await UpsertEmbeddingsAsync(db, vaultId, embeddings, ct);
+
+            return new IndexRunResult(current, false, indexed, failed, added.Count, updated.Count, removed.Count, unchanged);
+        }
+
+        /// <summary>读取笔记并计算向量（标题 + 首段正文）</summary>
+        private async Task<List<double>?> BuildAndEmbedAsync(string vaultPath, string relativePath, CancellationToken ct)
+        {
+            var fullPath = Path.Combine(vaultPath, relativePath);
+            var content = await File.ReadAllTextAsync(fullPath, ct);
+            var title = Path.GetFileNameWithoutExtension(relativePath);
+            var textToEmbed = $"{title}\n{ExtractFirstText(content)}".Trim();
+            if (string.IsNullOrEmpty(textToEmbed))
+                return null;
+            return await ComputeEmbeddingAsync(textToEmbed, ct);
+        }
+
+        /// <summary>
+        /// 批量 upsert 向量：已存在行更新（保留 CreatedAt），新增行 AddRange 后
+        /// 按 EmbeddingBatchSize 分批 SaveChanges
+        /// </summary>
+        private async Task UpsertEmbeddingsAsync(
+            VaultDbContext db,
+            string vaultId,
+            IReadOnlyList<(string Path, List<double> Vector)> embeddings,
+            CancellationToken ct)
+        {
+            if (embeddings.Count == 0)
+                return;
+
+            var paths = embeddings.Select(e => e.Path).ToList();
+            var existing = await db.NoteEmbeddings
+                .Where(e => e.VaultId == vaultId && paths.Contains(e.NotePath))
+                .ToDictionaryAsync(e => e.NotePath, StringComparer.OrdinalIgnoreCase, ct);
+
+            var now = DateTime.UtcNow;
+            var added = new List<NoteEmbedding>();
+
+            foreach (var (path, vector) in embeddings)
+            {
+                var json = JsonSerializer.Serialize(vector);
+                if (existing.TryGetValue(path, out var row))
+                {
+                    row.VectorJson = json;
+                    row.Dimensions = vector.Count;
+                    row.UpdatedAt = now;
+                }
+                else
+                {
+                    added.Add(new NoteEmbedding
+                    {
+                        VaultId = vaultId,
+                        NotePath = path,
+                        VectorJson = json,
+                        Dimensions = vector.Count,
+                        CreatedAt = now,
+                        UpdatedAt = now,
+                    });
+                }
+            }
+
+            for (int i = 0; i < added.Count; i += EmbeddingBatchSize)
+            {
+                ct.ThrowIfCancellationRequested();
+                db.NoteEmbeddings.AddRange(added.Skip(i).Take(EmbeddingBatchSize));
+                await db.SaveChangesAsync(ct);
+            }
+
+            // 只有更新无新增时也需要落库
+            if (added.Count == 0 && existing.Count > 0)
+                await db.SaveChangesAsync(ct);
         }
 
         public async Task<List<SearchResult>> RerankBySimilarityAsync(

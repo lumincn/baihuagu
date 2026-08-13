@@ -32,7 +32,7 @@
     {
         <label class="form-check form-switch form-check-inline mb-0 ms-2">
             <input class="form-check-input" type="checkbox" @bind="hideCompleted" @bind:after="() => StateHasChanged()" />
-            <span class="form-check-label small">隐藏已完成</span>
+            <span class="form-check-label small">@L["Tasks_HideCompleted"]</span>
         </label>
         <button @onclick="ShowClearConfirm" class="btn btn-outline-danger btn-sm">
             🗑️ @L["Tasks_ClearHistory"]
@@ -58,14 +58,14 @@
 {
     <div class="modal-overlay" @onclick="HideTaskConfirm">
         <div class="modal-content" @onclick:stopPropagation="true">
-            <h3>⚠️ @(pendingConfirm.Value.Action == "delete" ? "删除任务" : "取消任务")</h3>
+            <h3>⚠️ @(pendingConfirm.Value.Action == "delete" ? L["Tasks_DeleteTask"] : L["Tasks_CancelTask"])</h3>
             <p>@(pendingConfirm.Value.Action == "delete"
-                ? "确定要删除这个任务吗？任务记录将移除，此操作不可恢复。"
-                : "确定要取消这个正在进行的任务吗？")</p>
+                ? L["Tasks_ConfirmDeleteMessage"]
+                : L["Tasks_ConfirmCancelMessage"])</p>
             <div class="modal-actions">
                 <button @onclick="HideTaskConfirm" class="btn btn-secondary">@L["Tasks_Cancel"]</button>
                 <button @onclick="ConfirmTaskAction" class="btn btn-danger">
-                    @(pendingConfirm.Value.Action == "delete" ? "确认删除" : "确认取消")
+                    @(pendingConfirm.Value.Action == "delete" ? L["Tasks_ConfirmDelete"] : L["Tasks_ConfirmCancel"])
                 </button>
             </div>
         </div>
@@ -671,27 +671,27 @@ else
         if (success) await LoadTasks();
     }
 
-    /// <summary>任务状态中文化（Success/Cancelled → 中文）</summary>
-    private static string GetStatusDisplay(string status) => status switch
+    /// <summary>任务状态本地化（Success/Cancelled → 中文）</summary>
+    private string GetStatusDisplay(string status) => status switch
     {
-        "Success" => "任务完成",
-        "Failed" => "失败",
-        "Running" => "进行中",
-        "Pending" => "等待中",
-        "Timeout" => "超时",
-        "Cancelled" => "已取消",
+        "Success" => L["Tasks_StatusSuccess"],
+        "Failed" => L["Tasks_StatusFailed"],
+        "Running" => L["Tasks_StatusRunning"],
+        "Pending" => L["Tasks_StatusPending"],
+        "Timeout" => L["Tasks_StatusTimeout"],
+        "Cancelled" => L["Tasks_StatusCancelled"],
         _ => status
     };
 
     /// <summary>原始错误码友好化（Task_CancelledByUser 等枚举码对家庭用户不友好）</summary>
-    private static string FriendlyError(string error)
+    private string FriendlyError(string error)
     {
         if (string.IsNullOrWhiteSpace(error)) return error;
         return error
-            .Replace("Task_CancelledByUser", "任务已取消")
-            .Replace("Task_Cancelled", "任务已取消")
-            .Replace("Task_Timeout", "任务超时")
-            .Replace("Task_Failed", "任务失败");
+            .Replace("Task_CancelledByUser", L["Tasks_StatusCancelled"])
+            .Replace("Task_Cancelled", L["Tasks_StatusCancelled"])
+            .Replace("Task_Timeout", L["Tasks_StatusTimeout"])
+            .Replace("Task_Failed", L["Tasks_StatusFailed"]);
     }
 
     private async Task RetryTask(TaskInfo task)

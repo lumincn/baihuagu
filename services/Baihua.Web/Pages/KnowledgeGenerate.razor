@@ -49,12 +49,12 @@ else
 
         <!-- 灵感主题（AI 每日推荐，点击填入主题框） -->
         <div class="form-group">
-            <label>💡 灵感主题 <small class="text-muted fw-normal">点击即可填入上方主题框（AI 每日更新）</small></label>
+            <label>💡 @L["KnowledgeGen_TopicInspirationLabel"] <small class="text-muted fw-normal">@L["KnowledgeGen_TopicClickHint"]</small></label>
             @if (topicsLoading)
             {
                 <div class="text-muted small py-2">
                     <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                    AI 正在为你推荐今日主题…
+                    @L["KnowledgeGen_TopicLoading"]
                 </div>
             }
             else if (topicSuggestions.Count > 0)
@@ -70,8 +70,8 @@ else
                     }
                 </div>
                 <div class="d-flex align-items-center gap-2 mt-2">
-                    <small class="text-muted">@(topicsSource == "ai" ? "AI 推荐" : "内置推荐") · 每日刷新</small>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="RefreshTopics" disabled="@topicsLoading">🔄 换一批</button>
+                    <small class="text-muted">@string.Format(L["KnowledgeGen_TopicsSourceFormat"], topicsSource == "ai" ? L["KnowledgeGen_SourceAi"] : L["KnowledgeGen_SourceBuiltin"])</small>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="RefreshTopics" disabled="@topicsLoading">🔄 @L["KnowledgeGen_RefreshTopics"]</button>
                 </div>
             }
         </div>
@@ -224,29 +224,29 @@ else
 
             <!-- 详细度档位（新知识库模式） -->
             <div class="form-group">
-                <label class="form-label fw-bold">📐 详细度（控制笔记数量与篇幅，省时省钱）</label>
+                <label class="form-label fw-bold">@L["KnowledgeGen_DetailLabel"]</label>
                 @if (!string.IsNullOrEmpty(globalDetailLevel))
                 {
-                    <div class="form-text text-muted mb-2">默认跟随全局设置：<b>@(globalDetailLevel == "concise" ? "简洁突出重点" : globalDetailLevel == "comprehensive" ? "详细全面" : "适中")</b>（可在 AI 设置中修改）</div>
+                    <div class="form-text text-muted mb-2">@L["KnowledgeGen_FollowGlobalPrefix"]<b>@(globalDetailLevel == "concise" ? L["Settings_DetailConcise"] : globalDetailLevel == "comprehensive" ? L["Settings_DetailComprehensive"] : L["Settings_DetailBalanced"])</b>@L["KnowledgeGen_FollowGlobalSuffix"]</div>
                 }
                 <div class="d-flex gap-4 flex-wrap">
                     <label class="form-check">
                         <input type="radio" name="detailLevel" class="form-check-input"
                                checked="@(detailLevel == "concise")" @onchange='() => SetDetailLevel("concise")' />
-                        <span class="form-check-label">简洁突出重点</span>
-                        <small class="text-muted d-block">约 6-10 篇，每篇 200-400 字，最快最省</small>
+                        <span class="form-check-label">@L["Settings_DetailConcise"]</span>
+                        <small class="text-muted d-block">@L["KnowledgeGen_DetailCountConcise"]</small>
                     </label>
                     <label class="form-check">
                         <input type="radio" name="detailLevel" class="form-check-input"
                                checked="@(detailLevel == "balanced")" @onchange='() => SetDetailLevel("balanced")' />
-                        <span class="form-check-label">适中（推荐）</span>
-                        <small class="text-muted d-block">约 12-22 篇，每篇 400-800 字</small>
+                        <span class="form-check-label">@L["KnowledgeGen_DetailBalanced"]</span>
+                        <small class="text-muted d-block">@L["KnowledgeGen_DetailCountBalanced"]</small>
                     </label>
                     <label class="form-check">
                         <input type="radio" name="detailLevel" class="form-check-input"
                                checked="@(detailLevel == "comprehensive")" @onchange='() => SetDetailLevel("comprehensive")' />
-                        <span class="form-check-label">详细全面</span>
-                        <small class="text-muted d-block">约 28-45 篇，每篇 800-1500 字，最贵最慢</small>
+                        <span class="form-check-label">@L["Settings_DetailComprehensive"]</span>
+                        <small class="text-muted d-block">@L["KnowledgeGen_DetailCountComprehensive"]</small>
                     </label>
                 </div>
             </div>
@@ -283,7 +283,7 @@ else
             <button @onclick="ExecuteGeneration"
                     class="btn btn-primary btn-lg"
                     disabled="@(isProcessing || string.IsNullOrWhiteSpace(aiQuery) || string.IsNullOrWhiteSpace(selectedVaultId))"
-                    title="@(string.IsNullOrWhiteSpace(aiQuery) ? "请先输入主题关键词" : string.IsNullOrWhiteSpace(selectedVaultId) ? "请先选择目标知识库" : "") ">
+                    title="@(string.IsNullOrWhiteSpace(aiQuery) ? L["KnowledgeGen_TitleNeedsQuery"] : string.IsNullOrWhiteSpace(selectedVaultId) ? L["KnowledgeGen_TitleNeedsVault"] : "") ">
                 @if (isProcessing)
                 {
                     <span>⏳ @processingStep...</span>
