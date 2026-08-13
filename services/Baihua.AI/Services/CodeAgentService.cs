@@ -1,3 +1,6 @@
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Text.Json;
 using Baihua.Contracts.Ai;
 using Baihua.Family.Models;
 using Baihua.Family.Services;
@@ -54,7 +57,7 @@ public class CodeAgentService
     /// <summary>
     /// 创建 MAF ChatClientAgent（OpenAI 兼容端点），按工具模式挂载工具。
     /// </summary>
-    public ChatClientAgent CreateAgent(string providerId, string model, CodeAgentToolMode toolMode = CodeAgentToolMode.All)
+    public ChatClientAgent CreateAgent(string providerId, string model, CodeAgentToolMode toolMode = CodeAgentToolMode.All, string? customInstructions = null)
     {
         var provider = _aiSettings.GetAiProvider(providerId)
             ?? throw new InvalidOperationException(_loc["AiClient_ProviderNotFound", providerId]);
@@ -73,7 +76,7 @@ public class CodeAgentService
 
         var codeAgentTools = new CodeAgentTools(_configuration, _loggerFactory);
         var tools = new List<Microsoft.Extensions.AI.AITool>();
-        var instructions = BaseInstructions;
+        var instructions = customInstructions ?? BaseInstructions;
 
         if (toolMode is CodeAgentToolMode.All or CodeAgentToolMode.Search)
         {
@@ -154,4 +157,156 @@ public class CodeAgentService
 
         return (code, fileName);
     }
+
+    // ================== 多 Agent 流水线（调研 → 编码 → 审查） ==================
+
+    private const string ResearchInstructions =
+        """
+        你是技术调研助手。针对用户需求做快速调研：
+        1. 涉及的技术方案与资料要点（需要时用 tavily_search / web_fetch 查最新资料）
+        2. 相关代码位置（需要时用 gitnexus 查代码图谱）
+        3. 潜在风险点
+        输出为简洁条目，400 字以内，不要写代码。
+        """;
+
+    private const string ReviewInstructions =
+        """
+        你是资深代码审查员。审查用户提供的代码，按严重程度列出问题清单，每项包含：位置 / 问题 / 修改建议。
+        重点检查：正确性、边界条件、安全性、可读性、资源释放。
+        如果未发现问题，回复「✅ 未发现问题」。不要重写代码，只列问题。
+        """;
+
+    /// <summary>流水线（非流式）：调研 → 编码 → 审查，返回各阶段结果。</summary>
+    public async Task<CodeAgentPipelineResponse> RunPipelineAsync(
+        string providerId, string model, string prompt, string? language, string? context,
+        bool skipResearch, bool skipReview, CancellationToken ct)
+    {
+        var userMsg = BuildUserMessage(prompt, language, context);
+
+        string? research = null;
+        if (!skipResearch)
+        {
+            var researchAgent = CreateAgent(providerId, model, CodeAgentToolMode.Search, ResearchInstructions);
+            research = (await researchAgent.RunAsync(new[] { userMsg }, session: null, options: null, ct)).ToString();
+        }
+
+        var codeContext = context;
+        if (!string.IsNullOrWhiteSpace(research))
+        {
+            codeContext = $"{(string.IsNullOrWhiteSpace(context) ? "" : context + "\n\n")}【调研摘要】\n{research.Trim()}";
+        }
+        var coder = CreateAgent(providerId, model, CodeAgentToolMode.CodeGraph);
+        var codeOutput = (await coder.RunAsync(new[] { BuildUserMessage(prompt, language, codeContext) }, session: null, options: null, ct)).ToString();
+        var (code, fileName) = ExtractCode(codeOutput);
+
+        string? review = null;
+        if (!skipReview)
+        {
+            var reviewer = CreateAgent(providerId, model, CodeAgentToolMode.None, ReviewInstructions);
+            review = (await reviewer.RunAsync(new[] { BuildUserMessage($"请审查以下代码：\n\n{code}", null, null) }, session: null, options: null, ct)).ToString();
+        }
+
+        return new CodeAgentPipelineResponse
+        {
+            Success = true,
+            Research = research,
+            Code = string.IsNullOrWhiteSpace(code) ? codeOutput : code,
+            FileName = fileName,
+            Review = review,
+            ProviderId = providerId,
+            Model = model
+        };
+    }
+
+    /// <summary>流水线（流式）：按阶段产出更新（stage/delta/tool），供 SSE 推送。</summary>
+    public async IAsyncEnumerable<CodeAgentPipelineUpdate> RunPipelineStreamingAsync(
+        string providerId, string model, string prompt, string? language, string? context,
+        bool skipResearch, bool skipReview, [EnumeratorCancellation] CancellationToken ct)
+    {
+        var userMsg = BuildUserMessage(prompt, language, context);
+        var codeText = new StringBuilder();
+
+        if (!skipResearch)
+        {
+            yield return new StageUpdate("research");
+            var researchAgent = CreateAgent(providerId, model, CodeAgentToolMode.Search, ResearchInstructions);
+            await foreach (var u in RunAgentUpdatesAsync(researchAgent, userMsg, ct))
+            {
+                if (u is DeltaUpdate d) codeText.AppendLine(d.Text);
+                yield return u;
+            }
+        }
+
+        yield return new StageUpdate("code");
+        var codeContext = context;
+        var research = codeText.ToString().Trim();
+        if (!string.IsNullOrWhiteSpace(research))
+        {
+            codeContext = $"{(string.IsNullOrWhiteSpace(context) ? "" : context + "\n\n")}【调研摘要】\n{research}";
+        }
+        var coder = CreateAgent(providerId, model, CodeAgentToolMode.CodeGraph);
+        var fullCodeText = new StringBuilder();
+        await foreach (var u in RunAgentUpdatesAsync(coder, BuildUserMessage(prompt, language, codeContext), ct))
+        {
+            if (u is DeltaUpdate d) fullCodeText.AppendLine(d.Text);
+            yield return u;
+        }
+
+        if (!skipReview)
+        {
+            yield return new StageUpdate("review");
+            var reviewer = CreateAgent(providerId, model, CodeAgentToolMode.None, ReviewInstructions);
+            await foreach (var u in RunAgentUpdatesAsync(reviewer, BuildUserMessage($"请审查以下代码：\n\n{fullCodeText}", null, null), ct))
+            {
+                yield return u;
+            }
+        }
+    }
+
+    /// <summary>把 MAF 流式更新映射为流水线更新（文本/工具调用/工具结果）。</summary>
+    private static async IAsyncEnumerable<CodeAgentPipelineUpdate> RunAgentUpdatesAsync(
+        ChatClientAgent agent, ChatMessage message, [EnumeratorCancellation] CancellationToken ct)
+    {
+        var toolNames = new Dictionary<string, string>();
+        await foreach (var update in agent.RunStreamingAsync(new[] { message }, session: null, options: null, ct))
+        {
+            foreach (var content in update.Contents)
+            {
+                switch (content)
+                {
+                    case TextContent text when !string.IsNullOrEmpty(text.Text):
+                        yield return new DeltaUpdate(text.Text);
+                        break;
+                    case FunctionCallContent fc:
+                        if (!string.IsNullOrEmpty(fc.CallId)) toolNames[fc.CallId] = fc.Name ?? "";
+                        yield return new ToolCallUpdate(fc.Name ?? "",
+                            fc.Arguments is null ? "" : JsonSerializer.Serialize(fc.Arguments));
+                        break;
+                    case FunctionResultContent fr:
+                        toolNames.TryGetValue(fr.CallId ?? "", out var name);
+                        yield return new ToolResultUpdate(name ?? fr.CallId ?? "",
+                            Truncate(fr.Result?.ToString() ?? "", 200));
+                        break;
+                }
+            }
+        }
+    }
+
+    private static string Truncate(string s, int max) =>
+        string.IsNullOrEmpty(s) ? s : (s.Length <= max ? s : s[..max] + "…");
 }
+
+/// <summary>流水线流式更新类型。</summary>
+public abstract record CodeAgentPipelineUpdate;
+
+/// <summary>阶段切换（research / code / review）。</summary>
+public sealed record StageUpdate(string Name) : CodeAgentPipelineUpdate;
+
+/// <summary>文本增量。</summary>
+public sealed record DeltaUpdate(string Text) : CodeAgentPipelineUpdate;
+
+/// <summary>工具调用。</summary>
+public sealed record ToolCallUpdate(string Name, string Detail) : CodeAgentPipelineUpdate;
+
+/// <summary>工具结果。</summary>
+public sealed record ToolResultUpdate(string Name, string Detail) : CodeAgentPipelineUpdate;

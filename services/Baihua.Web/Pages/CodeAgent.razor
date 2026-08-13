@@ -72,6 +72,12 @@
                                 <option value="None">@L["CodeAgent_ToolMode_None"]</option>
                             </select>
                         </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="pipelineMode" @bind="_pipeline">
+                                <label class="form-check-label" for="pipelineMode">@L["CodeAgent_PipelineMode"]</label>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mt-3">
@@ -110,7 +116,21 @@
         </div>
     </div>
 
-    @if (!string.IsNullOrEmpty(_output) || isRunning)
+    @if (_pipeline)
+    {
+        <div class="card mt-3">
+            <div class="card-header bg-info text-white"><i class="bi bi-diagram-3"></i> @L["CodeAgent_PipelineTitle"]</div>
+            <div class="card-body">
+                <h6>① @L["CodeAgent_StageResearch"]</h6>
+                <pre class="code-output mb-3"><code>@_research</code></pre>
+                <h6>② @L["CodeAgent_StageCode"]</h6>
+                <pre class="code-output mb-3"><code>@_codeOut</code></pre>
+                <h6>③ @L["CodeAgent_StageReview"]</h6>
+                <pre class="code-output mb-0"><code>@_review</code></pre>
+            </div>
+        </div>
+    }
+    @if (!_pipeline && (!string.IsNullOrEmpty(_output) || isRunning))
     {
         <div class="row">
             <div class="col-12">
@@ -152,6 +172,11 @@
     private string _providerId = "";
     private string _model = "";
     private string _toolMode = "All";
+    private bool _pipeline;
+    private string _research = "";
+    private string _codeOut = "";
+    private string _review = "";
+    private string _currentStage = "";
     private string _output = "";
     private string? _error;
     private string? _fileName;
@@ -217,21 +242,64 @@
                 Stream = true
             };
 
-            await foreach (var delta in ApiService.StreamCodeAgentAsync(request, _cts.Token))
+            if (_pipeline)
             {
-                _output += delta;
-                StateHasChanged();
-                await Task.Yield();
-            }
+                _research = "";
+                _codeOut = "";
+                _review = "";
+                var pipeRequest = new CodeAgentPipelineRequest
+                {
+                    Prompt = request.Prompt,
+                    Language = request.Language,
+                    ProviderId = request.ProviderId,
+                    Model = request.Model,
+                    ToolMode = request.ToolMode,
+                    Stream = true
+                };
 
-            // 从输出中识别文件名（File: xxx）
-            var fileMatch = System.Text.RegularExpressions.Regex.Match(_output,
-                @"(?i)(?:File|文件名)\s*[:：]\s*([^\r\n`]+)");
-            if (fileMatch.Success)
+                await foreach (var item in ApiService.StreamCodeAgentPipelineAsync(pipeRequest, _cts.Token))
+                {
+                    switch (item.Type)
+                    {
+                        case "stage":
+                            _currentStage = item.Data;
+                            break;
+                        case "delta":
+                        case "tool":
+                            AppendStageText(item.Data);
+                            break;
+                    }
+                    StateHasChanged();
+                    await Task.Yield();
+                }
+
+                var pipeFileMatch = System.Text.RegularExpressions.Regex.Match(_codeOut,
+                    @"(?i)(?:File|文件名)\s*[:：]\s*([^\r\n`]+)");
+                if (pipeFileMatch.Success)
+                {
+                    var candidate = pipeFileMatch.Groups[1].Value.Trim().Trim('"', '\'', '*');
+                    if (!string.IsNullOrWhiteSpace(candidate))
+                        _fileName = candidate;
+                }
+            }
+            else
             {
-                var candidate = fileMatch.Groups[1].Value.Trim().Trim('"', '\'', '*');
-                if (!string.IsNullOrWhiteSpace(candidate))
-                    _fileName = candidate;
+                await foreach (var delta in ApiService.StreamCodeAgentAsync(request, _cts.Token))
+                {
+                    _output += delta;
+                    StateHasChanged();
+                    await Task.Yield();
+                }
+
+                // 从输出中识别文件名（File: xxx）
+                var fileMatch = System.Text.RegularExpressions.Regex.Match(_output,
+                    @"(?i)(?:File|文件名)\s*[:：]\s*([^\r\n`]+)");
+                if (fileMatch.Success)
+                {
+                    var candidate = fileMatch.Groups[1].Value.Trim().Trim('"', '\'', '*');
+                    if (!string.IsNullOrWhiteSpace(candidate))
+                        _fileName = candidate;
+                }
             }
         }
         catch (OperationCanceledException)
@@ -246,6 +314,26 @@
         {
             isRunning = false;
             StateHasChanged();
+        }
+    }
+
+    /// <summary>把流水线文本追加到当前阶段。</summary>
+    private void AppendStageText(string text)
+    {
+        switch (_currentStage)
+        {
+            case "research":
+                _research += text;
+                break;
+            case "code":
+                _codeOut += text;
+                break;
+            case "review":
+                _review += text;
+                break;
+            default:
+                _output += text;
+                break;
         }
     }
 

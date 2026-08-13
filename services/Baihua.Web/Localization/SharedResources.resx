@@ -4275,4 +4275,19 @@ Shift+Enter new line, Enter to send</value>
   <data name="CodeAgent_ToolMode_None" xml:space="preserve">
     <value>无工具（纯代码生成）</value>
   </data>
+  <data name="CodeAgent_PipelineMode" xml:space="preserve">
+    <value>Pipeline mode (research → code → review)</value>
+  </data>
+  <data name="CodeAgent_PipelineTitle" xml:space="preserve">
+    <value>Agent Pipeline</value>
+  </data>
+  <data name="CodeAgent_StageResearch" xml:space="preserve">
+    <value>Research</value>
+  </data>
+  <data name="CodeAgent_StageCode" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="CodeAgent_StageReview" xml:space="preserve">
+    <value>Review</value>
+  </data>
 </root>

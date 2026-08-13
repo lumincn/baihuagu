@@ -90,6 +90,7 @@ namespace Baihua.Web.Services
         // 编程 Agent（Microsoft Agent Framework）
         Task<CodeAgentResponse> RunCodeAgentAsync(CodeAgentRequest request, CancellationToken cancellationToken = default);
         IAsyncEnumerable<string> StreamCodeAgentAsync(CodeAgentRequest request, CancellationToken cancellationToken = default);
+        IAsyncEnumerable<CodeAgentStreamItem> StreamCodeAgentPipelineAsync(CodeAgentPipelineRequest request, CancellationToken cancellationToken = default);
         Task<List<CodeAgentProviderInfo>> GetCodeAgentProvidersAsync(CancellationToken cancellationToken = default);
         Task<List<LocalModelInfo>> ScanLocalModelsAsync(string? directory = null);
 
@@ -263,6 +264,9 @@ namespace Baihua.Web.Services
         Task<VaultFocusUpdateResponse> UpdateVaultFocusAsync(string masterId, VaultFocusUpdateRequest request, CancellationToken cancellationToken = default);
         Task<VaultFocusUpdateResponse> RemoveVaultFocusAsync(string masterId, string vaultId, CancellationToken cancellationToken = default);
     }
+
+    /// <summary>流水线流式事件项：Type = stage/delta/tool/error，Data 已格式化。</summary>
+    public sealed record CodeAgentStreamItem(string Type, string Data);
 
     public class ApiService : IApiService
 
@@ -1462,6 +1466,86 @@ namespace Baihua.Web.Services
                     currentEvent = null;
                 }
             }
+        }
+
+        /// <summary>
+        /// 编程 Agent 流水线（SSE）：返回结构化事件（stage/delta/tool），Data 已格式化。
+        /// </summary>
+        public async IAsyncEnumerable<CodeAgentStreamItem> StreamCodeAgentPipelineAsync(
+            CodeAgentPipelineRequest request,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            var json = JsonSerializer.Serialize(request);
+            var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+
+            using var response = await _aiHttpClient.SendAsync(
+                new HttpRequestMessage(HttpMethod.Post, "/api/ai/code/pipeline/stream") { Content = httpContent },
+                HttpCompletionOption.ResponseHeadersRead,
+                cancellationToken);
+
+            response.EnsureSuccessStatusCode();
+
+            var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            using var reader = new StreamReader(stream, Encoding.UTF8);
+
+            string? currentEvent = null;
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var line = await reader.ReadLineAsync(cancellationToken);
+                if (line == null) break;
+
+                if (line.StartsWith("event: "))
+                {
+                    currentEvent = line.Substring(7).Trim();
+                }
+                else if (line.StartsWith("data: "))
+                {
+                    var data = line.Substring(6);
+                    switch (currentEvent)
+                    {
+                        case "stage":
+                        {
+                            var name = ExtractJsonProperty(data, "name") ?? "";
+                            yield return new CodeAgentStreamItem("stage", name);
+                            break;
+                        }
+                        case "delta":
+                        {
+                            var text = TryExtractContent(data);
+                            if (!string.IsNullOrEmpty(text))
+                                yield return new CodeAgentStreamItem("delta", text);
+                            break;
+                        }
+                        case "tool":
+                        {
+                            var marker = FormatToolEvent(data);
+                            if (!string.IsNullOrEmpty(marker))
+                                yield return new CodeAgentStreamItem("tool", marker);
+                            break;
+                        }
+                        case "done":
+                            yield break;
+                        case "error":
+                            throw new InvalidOperationException(_loc["Api_StreamError", data!]);
+                    }
+                }
+                else if (string.IsNullOrEmpty(line))
+                {
+                    currentEvent = null;
+                }
+            }
+        }
+
+        private static string? ExtractJsonProperty(string data, string property)
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(data);
+                if (doc.RootElement.TryGetProperty(property, out var p) && p.ValueKind == JsonValueKind.String)
+                    return p.GetString();
+            }
+            catch { }
+            return null;
         }
 
         public async Task<List<CodeAgentProviderInfo>> GetCodeAgentProvidersAsync(CancellationToken cancellationToken = default)

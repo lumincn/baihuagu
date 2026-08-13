@@ -4274,4 +4274,19 @@ Shift+Enter 换行，Enter 发送</value>
   <data name="CodeAgent_ToolMode_None" xml:space="preserve">
     <value>无工具（纯代码生成）</value>
   </data>
+  <data name="CodeAgent_PipelineMode" xml:space="preserve">
+    <value>流水线模式（调研→编码→审查）</value>
+  </data>
+  <data name="CodeAgent_PipelineTitle" xml:space="preserve">
+    <value>多 Agent 流水线</value>
+  </data>
+  <data name="CodeAgent_StageResearch" xml:space="preserve">
+    <value>① 调研</value>
+  </data>
+  <data name="CodeAgent_StageCode" xml:space="preserve">
+    <value>② 代码</value>
+  </data>
+  <data name="CodeAgent_StageReview" xml:space="preserve">
+    <value>③ 审查</value>
+  </data>
 </root>

@@ -28,6 +28,42 @@ public class CodeAgentRequest
 }
 
 /// <summary>
+/// 编程 Agent 流水线请求：多阶段执行（调研 → 编码 → 审查），每个阶段用独立 Agent。
+/// </summary>
+public class CodeAgentPipelineRequest : CodeAgentRequest
+{
+    /// <summary>跳过调研阶段（默认 false）</summary>
+    public bool SkipResearch { get; set; }
+
+    /// <summary>跳过审查阶段（默认 false）</summary>
+    public bool SkipReview { get; set; }
+}
+
+/// <summary>
+/// 编程 Agent 流水线响应（非流式）。
+/// </summary>
+public class CodeAgentPipelineResponse
+{
+    public bool Success { get; set; }
+    public string? Message { get; set; }
+
+    /// <summary>调研阶段输出</summary>
+    public string? Research { get; set; }
+
+    /// <summary>编码阶段输出的代码（已提取，无 ``` 包裹）</summary>
+    public string? Code { get; set; }
+
+    /// <summary>编码阶段提取的文件名</summary>
+    public string? FileName { get; set; }
+
+    /// <summary>审查阶段输出</summary>
+    public string? Review { get; set; }
+
+    public string? ProviderId { get; set; }
+    public string? Model { get; set; }
+}
+
+/// <summary>
 /// 编程 Agent 工具集模式：控制挂载哪些工具（工具定义会占用上下文，纯代码生成场景建议 None）。
 /// </summary>
 [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]

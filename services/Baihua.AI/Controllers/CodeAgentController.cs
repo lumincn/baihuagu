@@ -177,6 +177,100 @@ public class CodeAgentController : ControllerBase
     private static string Truncate(string s, int max) =>
         string.IsNullOrEmpty(s) ? s : (s.Length <= max ? s : s[..max] + "…");
 
+    /// <summary>
+    /// 编程 Agent 流水线（调研→编码→审查）：非流式，返回各阶段结果。
+    /// </summary>
+    [HttpPost("pipeline")]
+    public async Task<ActionResult<CodeAgentPipelineResponse>> RunPipeline([FromBody] CodeAgentPipelineRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Prompt))
+            return BadRequest(new { error = _loc["AiChat_MessageEmpty"].Value });
+
+        try
+        {
+            var (providerId, model) = ResolveProviderAndModel(request.ProviderId, request.Model);
+            using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(_aiSettings.AiRequestTimeoutMinutes * 3));
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(HttpContext.RequestAborted, timeoutCts.Token);
+
+            var result = await _codeAgent.RunPipelineAsync(providerId, model, request.Prompt, request.Language,
+                request.Context, request.SkipResearch, request.SkipReview, linkedCts.Token);
+            return Ok(result);
+        }
+        catch (OperationCanceledException)
+        {
+            return Ok(new CodeAgentPipelineResponse { Success = false, Message = _loc["AiChat_Timeout"].Value });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "编程 Agent 流水线执行失败");
+            return Ok(new CodeAgentPipelineResponse { Success = false, Message = _loc["Ai_Chat_Failed", ex.Message].Value });
+        }
+    }
+
+    /// <summary>
+    /// 编程 Agent 流水线（调研→编码→审查）：SSE 流式，按阶段推送。
+    /// </summary>
+    [HttpPost("pipeline/stream")]
+    public async Task StreamPipeline([FromBody] CodeAgentPipelineRequest request)
+    {
+        var response = HttpContext.Response;
+        response.ContentType = "text/event-stream";
+        response.Headers["Cache-Control"] = "no-cache";
+        response.Headers["X-Accel-Buffering"] = "no";
+
+        async Task SendSse(string eventType, string data)
+        {
+            await response.WriteAsync($"event: {eventType}\ndata: {data}\n\n");
+            await response.Body.FlushAsync();
+        }
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(request.Prompt))
+            {
+                await SendSse("error", _loc["AiChat_MessageEmpty"].Value);
+                return;
+            }
+
+            var (providerId, model) = ResolveProviderAndModel(request.ProviderId, request.Model);
+            await SendSse("meta", System.Text.Json.JsonSerializer.Serialize(new { providerId, model, pipeline = true }));
+
+            using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(_aiSettings.AiRequestTimeoutMinutes * 3));
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(HttpContext.RequestAborted, timeoutCts.Token);
+
+            await foreach (var update in _codeAgent.RunPipelineStreamingAsync(providerId, model, request.Prompt, request.Language,
+                               request.Context, request.SkipResearch, request.SkipReview, linkedCts.Token))
+            {
+                switch (update)
+                {
+                    case StageUpdate stage:
+                        await SendSse("stage", System.Text.Json.JsonSerializer.Serialize(new { name = stage.Name }));
+                        break;
+                    case DeltaUpdate delta:
+                        await SendSse("delta", System.Text.Json.JsonSerializer.Serialize(new { content = delta.Text }));
+                        break;
+                    case ToolCallUpdate tc:
+                        await SendSse("tool", System.Text.Json.JsonSerializer.Serialize(new { kind = "call", name = tc.Name, detail = tc.Detail }));
+                        break;
+                    case ToolResultUpdate tr:
+                        await SendSse("tool", System.Text.Json.JsonSerializer.Serialize(new { kind = "result", name = tr.Name, detail = tr.Detail }));
+                        break;
+                }
+            }
+
+            await SendSse("done", "");
+        }
+        catch (OperationCanceledException)
+        {
+            await SendSse("error", _loc["AiChat_Timeout"].Value);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "编程 Agent 流水线流式执行失败");
+            await SendSse("error", _loc["Ai_Chat_Failed", ex.Message].Value);
+        }
+    }
+
     private (string ProviderId, string Model) ResolveProviderAndModel(string? providerId, string? model)
     {
         var providers = _aiSettings.GetAiProviders();
