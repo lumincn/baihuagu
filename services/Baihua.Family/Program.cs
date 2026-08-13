@@ -194,7 +194,11 @@ builder.Services.AddSingleton<AssistantService>();
 builder.Services.AddSingleton<UserActivityService>();
 builder.Services.AddSingleton<AiDetailSettingsService>();
 builder.Services.AddHostedService<AssistantDailyWorker>();
-builder.Services.AddHttpClient<Baihua.Core.Services.ComfyUiClient>();
+builder.Services.AddHttpClient<Baihua.Core.Services.ComfyUiClient>(client =>
+        {
+            // ComfyUI 生成：图片约 20-60s（含模型冷加载）、视频 3-5 分钟，默认 30s 硬超时不够
+            client.Timeout = TimeSpan.FromMinutes(6);
+        });
 
 
 builder.Services.AddSingleton<NoteParser>();

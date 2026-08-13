@@ -4087,7 +4087,8 @@ namespace Baihua.Web.Services
 
         public async Task<ComfyGenerateResultDto> GenerateComfyImageAsync(string prompt, string negativePrompt, int width, int height, int steps, CancellationToken cancellationToken = default)
         {
-            var response = await _httpClient.PostAsJsonAsync("/api/comfy/generate-image", new
+            // 用长超时 client（FamilyApiLong 5 分钟）：图片生成约 20-60 秒（含模型冷加载），30s 硬超时不够
+            var response = await _longHttpClient.PostAsJsonAsync("/api/comfy/generate-image", new
             {
                 Prompt = prompt,
                 NegativePrompt = negativePrompt,
@@ -4100,7 +4101,8 @@ namespace Baihua.Web.Services
 
         public async Task<ComfyGenerateResultDto> GenerateComfyVideoAsync(string prompt, string negativePrompt, CancellationToken cancellationToken = default)
         {
-            var response = await _httpClient.PostAsJsonAsync("/api/comfy/generate-video", new
+            // 视频生成 3-5 分钟，必须走长超时 client
+            var response = await _longHttpClient.PostAsJsonAsync("/api/comfy/generate-video", new
             {
                 Prompt = prompt,
                 NegativePrompt = negativePrompt
