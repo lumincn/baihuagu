@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
@@ -19,6 +20,16 @@ public sealed class CodeAgentTools
     {
         Timeout = TimeSpan.FromSeconds(30)
     };
+
+    /// <summary>GitNexus CLI 入口（node 脚本），可用环境变量 GITNEXUS_CLI_ENTRY 覆盖。</summary>
+    private const string GitNexusEntry =
+        @"C:\Users\lumin\AppData\Roaming\npm\node_modules\gitnexus\dist\cli\index.js";
+
+    /// <summary>默认目标代码库（GitNexus 全局注册名）。</summary>
+    private const string DefaultRepo = "baihuagu";
+
+    /// <summary>GitNexus 工作目录：目标仓库根目录。</summary>
+    private const string RepoRoot = @"C:\Users\lumin\src\baihuagu";
 
     public CodeAgentTools(IConfiguration configuration, ILoggerFactory loggerFactory)
     {
@@ -93,6 +104,60 @@ public sealed class CodeAgentTools
         {
             _logger.LogWarning(ex, "网页抓取失败: {Url}", url);
             return $"错误：抓取失败 - {ex.Message}";
+        }
+    }
+
+    /// <summary>在 GitNexus 知识图谱中按概念搜索代码（找功能/流程的实现位置与涉及文件）。</summary>
+    public async Task<string> GitNexusQuery(string query, string? repo = null)
+    {
+        return await RunGitNexusAsync(["query", query, "--repo", repo ?? DefaultRepo, "--limit", "5"]);
+    }
+
+    /// <summary>查看代码符号的 360° 上下文：谁调用它、它调用谁、参与哪些执行流。</summary>
+    public async Task<string> GitNexusContext(string symbol, string? repo = null)
+    {
+        return await RunGitNexusAsync(["context", symbol, "--repo", repo ?? DefaultRepo, "--limit", "20"]);
+    }
+
+    /// <summary>分析修改某符号的影响范围（爆炸半径）：upstream=谁依赖它，downstream=它依赖什么。</summary>
+    public async Task<string> GitNexusImpact(string target, string direction = "upstream", string? repo = null)
+    {
+        return await RunGitNexusAsync(["impact", target, "--direction", direction, "--repo", repo ?? DefaultRepo, "--limit", "30"]);
+    }
+
+    private async Task<string> RunGitNexusAsync(string[] args)
+    {
+        var entry = Environment.GetEnvironmentVariable("GITNEXUS_CLI_ENTRY") ?? GitNexusEntry;
+        try
+        {
+            var argLine = string.Join(' ', args.Select(a => "\"" + a + "\""));
+            var psi = new ProcessStartInfo("node", $"\"{entry}\" {argLine}")
+            {
+                WorkingDirectory = RepoRoot,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8
+            };
+
+            using var proc = Process.Start(psi)
+                ?? throw new InvalidOperationException("无法启动 gitnexus 进程");
+            var stdoutTask = proc.StandardOutput.ReadToEndAsync();
+            var stderrTask = proc.StandardError.ReadToEndAsync();
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+            await proc.WaitForExitAsync(cts.Token);
+            var stdout = (await stdoutTask).Trim();
+            _ = await stderrTask;
+
+            if (proc.ExitCode != 0)
+                return $"gitnexus 失败(exit {proc.ExitCode})：{Truncate(stdout, 500)}";
+            return string.IsNullOrEmpty(stdout) ? "（无输出/未找到）" : Truncate(stdout, 8000);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "GitNexus 调用失败");
+            return $"错误：GitNexus 调用失败 - {ex.Message}";
         }
     }
 
