@@ -3854,7 +3854,7 @@ Shift+Enter new line, Enter to send</value>
     <value>Virtual Master</value>
   </data>
   <data name="Nav_ResearchLabel" xml:space="preserve">
-    <value>Research</value>
+    <value>① Research</value>
   </data>
   <data name="Nav_LocalModels" xml:space="preserve">
     <value>Local Models</value>
@@ -4285,12 +4285,13 @@ Shift+Enter new line, Enter to send</value>
     <value>Agent Pipeline</value>
   </data>
   <data name="CodeAgent_StageResearch" xml:space="preserve">
-    <value>Research</value>
+    <value>① Research</value>
   </data>
   <data name="CodeAgent_StageCode" xml:space="preserve">
-    <value>Code</value>
+    <value>② Code</value>
   </data>
   <data name="CodeAgent_StageReview" xml:space="preserve">
-    <value>Review</value>
+    <value>③ Review</value>
   </data>
 </root>
+
