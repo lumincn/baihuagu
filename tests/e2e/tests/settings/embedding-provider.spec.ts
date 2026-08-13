@@ -34,10 +34,9 @@ test.describe('Embedding 配置提供商切换', () => {
   test('默认加载显示已保存配置（custom/本地 OpenVINO）', async ({ page }) => {
     const section = embeddingSection(page);
     await expect(section).toBeVisible();
-    const { model, baseUrl } = await getModelBaseUrl(page);
-    // 当前数据库配置是 custom + 本地 8002
-    expect(model.length).toBeGreaterThan(0);
-    expect(baseUrl.length).toBeGreaterThan(0);
+    // 配置异步加载，轮询等待输入框有值（避免 flaky）
+    await expect.poll(async () => (await getModelBaseUrl(page)).model.length).toBeGreaterThan(0);
+    await expect.poll(async () => (await getModelBaseUrl(page)).baseUrl.length).toBeGreaterThan(0);
   });
 
   test('从 custom 切换到 Ollama 联动预填 nomic-embed-text', async ({ page }) => {
