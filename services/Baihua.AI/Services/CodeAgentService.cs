@@ -219,23 +219,25 @@ public class CodeAgentService
     /// <summary>流水线（非流式）：调研 → 编码 → 审查，返回各阶段结果。</summary>
     public async Task<CodeAgentPipelineResponse> RunPipelineAsync(
         string providerId, string model, string prompt, string? language, string? context,
-        bool skipResearch, bool skipReview, CancellationToken ct)
+        bool skipResearch, bool skipReview, string? planModel = null, string? reviewModel = null, CancellationToken ct = default)
     {
         using var activity = CodeAgentActivity.StartActivity("PipelineRun");
         activity?.SetTag("provider", providerId);
         activity?.SetTag("model", model);
 
         var userMsg = BuildUserMessage(prompt, language, context);
+        var planModelId = string.IsNullOrWhiteSpace(planModel) ? model : planModel!;
+        var reviewModelId = string.IsNullOrWhiteSpace(reviewModel) ? model : reviewModel!;
 
         string? research = null;
         if (!skipResearch)
         {
-            var researchAgent = CreateAgent(providerId, model, CodeAgentToolMode.Search, ResearchInstructions);
+            var researchAgent = CreateAgent(providerId, planModelId, CodeAgentToolMode.Search, ResearchInstructions);
             var sw = Stopwatch.StartNew();
             var result = await researchAgent.RunAsync(new[] { userMsg }, session: null, options: null, ct);
             sw.Stop();
             research = result.ToString();
-            await RecordUsageAsync(providerId, model, "codeagent-pipeline-research", sw.ElapsedMilliseconds,
+            await RecordUsageAsync(providerId, planModelId, "codeagent-pipeline-research", sw.ElapsedMilliseconds,
                 result.Usage?.InputTokenCount, result.Usage?.OutputTokenCount);
         }
 
@@ -256,12 +258,12 @@ public class CodeAgentService
         string? review = null;
         if (!skipReview)
         {
-            var reviewer = CreateAgent(providerId, model, CodeAgentToolMode.None, ReviewInstructions);
+            var reviewer = CreateAgent(providerId, reviewModelId, CodeAgentToolMode.None, ReviewInstructions);
             var reviewSw = Stopwatch.StartNew();
             var reviewResult = await reviewer.RunAsync(new[] { BuildUserMessage($"请审查以下代码：\n\n{code}", null, null) }, session: null, options: null, ct);
             reviewSw.Stop();
             review = reviewResult.ToString();
-            await RecordUsageAsync(providerId, model, "codeagent-pipeline-review", reviewSw.ElapsedMilliseconds,
+            await RecordUsageAsync(providerId, reviewModelId, "codeagent-pipeline-review", reviewSw.ElapsedMilliseconds,
                 reviewResult.Usage?.InputTokenCount, reviewResult.Usage?.OutputTokenCount);
         }
 
@@ -280,19 +282,21 @@ public class CodeAgentService
     /// <summary>流水线（流式）：按阶段产出更新（stage/delta/tool），供 SSE 推送。</summary>
     public async IAsyncEnumerable<CodeAgentPipelineUpdate> RunPipelineStreamingAsync(
         string providerId, string model, string prompt, string? language, string? context,
-        bool skipResearch, bool skipReview, [EnumeratorCancellation] CancellationToken ct)
+        bool skipResearch, bool skipReview, string? planModel = null, string? reviewModel = null, [EnumeratorCancellation] CancellationToken ct = default)
     {
         using var activity = CodeAgentActivity.StartActivity("PipelineRunStreaming");
         activity?.SetTag("provider", providerId);
         activity?.SetTag("model", model);
 
         var userMsg = BuildUserMessage(prompt, language, context);
+        var planModelId = string.IsNullOrWhiteSpace(planModel) ? model : planModel!;
+        var reviewModelId = string.IsNullOrWhiteSpace(reviewModel) ? model : reviewModel!;
         var codeText = new StringBuilder();
 
         if (!skipResearch)
         {
             yield return new StageUpdate("research");
-            var researchAgent = CreateAgent(providerId, model, CodeAgentToolMode.Search, ResearchInstructions);
+            var researchAgent = CreateAgent(providerId, planModelId, CodeAgentToolMode.Search, ResearchInstructions);
             await foreach (var u in RunAgentUpdatesAsync(researchAgent, userMsg, ct))
             {
                 if (u is DeltaUpdate d) codeText.AppendLine(d.Text);
@@ -318,7 +322,7 @@ public class CodeAgentService
         if (!skipReview)
         {
             yield return new StageUpdate("review");
-            var reviewer = CreateAgent(providerId, model, CodeAgentToolMode.None, ReviewInstructions);
+            var reviewer = CreateAgent(providerId, reviewModelId, CodeAgentToolMode.None, ReviewInstructions);
             await foreach (var u in RunAgentUpdatesAsync(reviewer, BuildUserMessage($"请审查以下代码：\n\n{fullCodeText}", null, null), ct))
             {
                 yield return u;

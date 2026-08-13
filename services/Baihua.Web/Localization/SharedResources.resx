@@ -4276,6 +4276,9 @@ Shift+Enter new line, Enter to send</value>
     <value>无工具（纯代码生成）</value>
   </data>
   <data name="CodeAgent_PipelineMode" xml:space="preserve">
+  <data name="CodeAgent_PlanPro" xml:space="preserve">
+    <value>Plan stage uses Pro model</value>
+  </data>
     <value>Pipeline mode (research → code → review)</value>
   </data>
   <data name="CodeAgent_PipelineTitle" xml:space="preserve">

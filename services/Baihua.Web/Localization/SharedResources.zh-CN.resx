@@ -4275,6 +4275,9 @@ Shift+Enter 换行，Enter 发送</value>
     <value>无工具（纯代码生成）</value>
   </data>
   <data name="CodeAgent_PipelineMode" xml:space="preserve">
+  <data name="CodeAgent_PlanPro" xml:space="preserve">
+    <value>规划阶段用 Pro 模型（更强）</value>
+  </data>
     <value>流水线模式（调研→编码→审查）</value>
   </data>
   <data name="CodeAgent_PipelineTitle" xml:space="preserve">

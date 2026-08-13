@@ -37,6 +37,12 @@ public class CodeAgentPipelineRequest : CodeAgentRequest
 
     /// <summary>跳过审查阶段（默认 false）</summary>
     public bool SkipReview { get; set; }
+
+    /// <summary>规划（调研）阶段模型；为空则用主模型（默认建议 deepseek-v4-pro）</summary>
+    public string? PlanModel { get; set; }
+
+    /// <summary>审查阶段模型；为空则用主模型</summary>
+    public string? ReviewModel { get; set; }
 }
 
 /// <summary>

@@ -241,7 +241,7 @@ public class CodeAgentController : ControllerBase
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(HttpContext.RequestAborted, timeoutCts.Token);
 
             var result = await _codeAgent.RunPipelineAsync(providerId, model, request.Prompt, request.Language,
-                request.Context, request.SkipResearch, request.SkipReview, linkedCts.Token);
+                request.Context, request.SkipResearch, request.SkipReview, request.PlanModel, request.ReviewModel, linkedCts.Token);
             return Ok(result);
         }
         catch (OperationCanceledException)
@@ -292,7 +292,7 @@ public class CodeAgentController : ControllerBase
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(HttpContext.RequestAborted, timeoutCts.Token);
 
             await foreach (var update in _codeAgent.RunPipelineStreamingAsync(providerId, model, request.Prompt, request.Language,
-                               request.Context, request.SkipResearch, request.SkipReview, linkedCts.Token))
+                               request.Context, request.SkipResearch, request.SkipReview, request.PlanModel, request.ReviewModel, linkedCts.Token))
             {
                 switch (update)
                 {
