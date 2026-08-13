@@ -160,6 +160,12 @@ function Resolve-SingleService($name, [ref]$svcRef) {
     return $true
 }
 
+function Get-PortOwnerProcess($port) {
+    $conn = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (-not $conn) { return $null }
+    return Get-Process -Id $conn.OwningProcess -ErrorAction SilentlyContinue
+}
+
 function Show-Status {
     foreach ($svc in $Services) {
         $portOpen = Test-PortOpen $svc.Port
@@ -169,7 +175,25 @@ function Show-Status {
             $pid2 = [int](Get-Content $pf)
             $pidAlive = [bool](Get-Process -Id $pid2 -ErrorAction SilentlyContinue)
         }
-        $state = if ($portOpen -and $pidAlive) { 'RUNNING' } elseif ($portOpen) { 'PORT-OPEN(foreign)' } elseif ($pidAlive) { 'PROC-ALIVE' } else { 'stopped' }
+        # 端口占用方进程名：区分 release exe（bh-*.exe）与 dotnet run（bh-*.exe 父进程为 dotnet.exe）
+        $owner = if ($portOpen) { Get-PortOwnerProcess $svc.Port } else { $null }
+        $ownerName = if ($owner) { $owner.ProcessName } else { '' }
+        $isReleaseExe = $ownerName -like 'bh-*'
+        $isDotnetRun = $false
+        if ($owner) {
+            try {
+                $ownerProc = Get-CimInstance Win32_Process -Filter "ProcessId=$($owner.Id)" -ErrorAction Stop
+                $parent = Get-CimInstance Win32_Process -Filter "ProcessId=$($ownerProc.ParentProcessId)" -ErrorAction Stop
+                $isDotnetRun = $parent.Name -eq 'dotnet.exe'
+            } catch { $isDotnetRun = $false }
+        }
+
+        $state = if ($portOpen -and $pidAlive) { 'RUNNING (release)' }
+                 elseif ($portOpen -and $isDotnetRun) { 'RUNNING (dotnet run)' }
+                 elseif ($portOpen -and $isReleaseExe) { 'RUNNING (release, 外部启动)' }
+                 elseif ($portOpen) { "PORT-OPEN (foreign:$ownerName)" }
+                 elseif ($pidAlive) { 'PROC-ALIVE' }
+                 else { 'stopped' }
         Write-Host ("{0,-8} port={1,-5} {2}" -f $svc.Name, $svc.Port, $state)
     }
 }
