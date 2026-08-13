@@ -89,7 +89,7 @@ namespace Baihua.Web.Services
 
         // 编程 Agent（Microsoft Agent Framework）
         Task<CodeAgentResponse> RunCodeAgentAsync(CodeAgentRequest request, CancellationToken cancellationToken = default);
-        IAsyncEnumerable<string> StreamCodeAgentAsync(CodeAgentRequest request, CancellationToken cancellationToken = default);
+        IAsyncEnumerable<CodeAgentStreamItem> StreamCodeAgentAsync(CodeAgentRequest request, CancellationToken cancellationToken = default);
         IAsyncEnumerable<CodeAgentStreamItem> StreamCodeAgentPipelineAsync(CodeAgentPipelineRequest request, CancellationToken cancellationToken = default);
         Task<List<CodeAgentProviderInfo>> GetCodeAgentProvidersAsync(CancellationToken cancellationToken = default);
   Task<List<CodeAgentSessionSummaryDto>> GetCodeAgentHistoryAsync(int limit = 20, CancellationToken cancellationToken = default);
@@ -1410,7 +1410,7 @@ namespace Baihua.Web.Services
                    ?? new CodeAgentResponse { Success = false };
         }
 
-        public async IAsyncEnumerable<string> StreamCodeAgentAsync(
+        public async IAsyncEnumerable<CodeAgentStreamItem> StreamCodeAgentAsync(
             CodeAgentRequest request,
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
@@ -1445,7 +1445,7 @@ namespace Baihua.Web.Services
                         var text = TryExtractContent(data);
                         if (!string.IsNullOrEmpty(text))
                         {
-                            yield return text;
+                            yield return new CodeAgentStreamItem("delta", text);
                         }
                     }
                     else if (currentEvent == "tool")
@@ -1453,11 +1453,17 @@ namespace Baihua.Web.Services
                         var marker = FormatToolEvent(data);
                         if (!string.IsNullOrEmpty(marker))
                         {
-                            yield return marker;
+                            yield return new CodeAgentStreamItem("tool", marker);
                         }
                     }
                     else if (currentEvent == "done")
                     {
+                        // done 事件携带 sessionId（续聊用）
+                        var sessionId = ExtractJsonProperty(data, "sessionId");
+                        if (!string.IsNullOrEmpty(sessionId))
+                        {
+                            yield return new CodeAgentStreamItem("session", sessionId);
+                        }
                         yield break;
                     }
                     else if (currentEvent == "error")
@@ -4170,3 +4176,4 @@ namespace Baihua.Web.Services
     }
 
 }
+

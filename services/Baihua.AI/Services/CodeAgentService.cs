@@ -67,8 +67,10 @@ public class CodeAgentService
 
     /// <summary>
     /// 创建 MAF ChatClientAgent（OpenAI 兼容端点），按工具模式挂载工具。
+    /// enableCompaction=true 时挂 CompactionProvider（ContextWindow 策略：工具结果先压、超预算截断），
+    /// 仅在传入 AgentSession 的会话模式下生效（单次调用不压缩）。
     /// </summary>
-    public ChatClientAgent CreateAgent(string providerId, string model, CodeAgentToolMode toolMode = CodeAgentToolMode.All, string? customInstructions = null)
+    public ChatClientAgent CreateAgent(string providerId, string model, CodeAgentToolMode toolMode = CodeAgentToolMode.All, string? customInstructions = null, bool enableCompaction = false)
     {
         var provider = _aiSettings.GetAiProvider(providerId)
             ?? throw new InvalidOperationException(_loc["AiClient_ProviderNotFound", providerId]);
@@ -85,7 +87,19 @@ public class CodeAgentService
             .GetChatClient(model)
             .AsIChatClient();
         // OTel GenAI 遥测（span/metric 按 GenAI 语义约定，含 token 用量）
-        var chatClientWithTelemetry = chatClient.AsBuilder().UseOpenTelemetry().Build();
+        var builder = chatClient.AsBuilder().UseOpenTelemetry();
+        if (enableCompaction)
+        {
+#pragma warning disable MAAI001 // 压缩 API 目前标记 Experimental（官方文档推荐用法）
+            builder.UseAIContextProviders([
+                new Microsoft.Agents.AI.Compaction.CompactionProvider(
+                    new Microsoft.Agents.AI.Compaction.ContextWindowCompactionStrategy(
+                        maxContextWindowTokens: 1_000_000,
+                        maxOutputTokens: 8_000))
+            ]);
+#pragma warning restore MAAI001
+        }
+        var chatClientWithTelemetry = builder.Build();
 
         var codeAgentTools = new CodeAgentTools(_configuration, _loggerFactory);
         var tools = new List<Microsoft.Extensions.AI.AITool>();
@@ -197,6 +211,40 @@ public class CodeAgentService
         重点检查：正确性、边界条件、安全性、可读性、资源释放。
         如果未发现问题，回复「✅ 未发现问题」。不要重写代码，只列问题。
         """;
+
+    /// <summary>从序列化状态恢复会话（无状态时返回 null）。</summary>
+    public static async Task<Microsoft.Agents.AI.AgentSession?> ResolveSessionAsync(
+        ChatClientAgent agent, string? sessionStateJson)
+    {
+        if (string.IsNullOrWhiteSpace(sessionStateJson))
+            return null;
+        try
+        {
+            using var doc = JsonDocument.Parse(sessionStateJson);
+            return await agent.DeserializeSessionAsync(doc.RootElement.Clone());
+        }
+        catch (Exception)
+        {
+            // 状态损坏/版本不兼容时放弃会话，从零开始
+            return null;
+        }
+    }
+
+    /// <summary>序列化会话状态（无会话时返回 null）。</summary>
+    public static async Task<string?> SerializeSessionAsync(ChatClientAgent agent, Microsoft.Agents.AI.AgentSession? session)
+    {
+        if (session is null)
+            return null;
+        try
+        {
+            var element = await agent.SerializeSessionAsync(session);
+            return element.GetRawText();
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
 
     /// <summary>记录一次 CodeAgent 调用到 AiUsageMetrics（与聊天/生成同一张统计表）。</summary>
     public async Task RecordUsageAsync(string providerId, string model, string operation,

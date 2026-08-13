@@ -55,7 +55,7 @@ public class CodeAgentController : ControllerBase
         try
         {
             var (providerId, model) = ResolveProviderAndModel(request.ProviderId, request.Model);
-            var agent = _codeAgent.CreateAgent(providerId, model, request.ToolMode);
+            var agent = _codeAgent.CreateAgent(providerId, model, request.ToolMode, enableCompaction: true);
 
             var messages = new List<ChatMessage>
             {
@@ -65,18 +65,32 @@ public class CodeAgentController : ControllerBase
             using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(_aiSettings.AiRequestTimeoutMinutes));
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(HttpContext.RequestAborted, timeoutCts.Token);
 
+            // 会话模式：SessionId 命中历史记录时恢复上下文（含消息历史与压缩状态）
+            var sessionStateJson = await LoadSessionStateJsonAsync(request.SessionId);
+            var session = await CodeAgentService.ResolveSessionAsync(agent, sessionStateJson);
+            session ??= await agent.CreateSessionAsync();   // 首次生成：创建会话（MAF 累积消息历史，供续聊与压缩）
+            var savedSessionId = request.SessionId;
+
             var sw = Stopwatch.StartNew();
             var agentError = (string?)null;
             long? inTokens = null;
             long? outTokens = null;
             try
             {
-                var result = await agent.RunAsync(messages, session: null, options: null, linkedCts.Token);
+                var result = await agent.RunAsync(messages, session: session, options: null, linkedCts.Token);
                 inTokens = result.Usage?.InputTokenCount;
                 outTokens = result.Usage?.OutputTokenCount;
                 var output = result.ToString() ?? "";
 
                 var (code, fileName) = CodeAgentService.ExtractCode(output);
+                var newSessionState = await CodeAgentService.SerializeSessionAsync(agent, session);
+
+                // 会话模式：把更新后的会话状态（含新消息历史）持久化到对应历史记录
+                if (savedSessionId is int sid)
+                {
+                    await UpdateSessionStateAsync(sid, newSessionState, output, fileName);
+                }
+
                 return Ok(new CodeAgentResponse
                 {
                     Success = true,
@@ -84,7 +98,9 @@ public class CodeAgentController : ControllerBase
                     Code = string.IsNullOrWhiteSpace(code) ? output : code,
                     FileName = fileName,
                     ProviderId = providerId,
-                    Model = model
+                    Model = model,
+                    SessionId = savedSessionId,
+                    SessionStateJson = newSessionState
                 });
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
@@ -145,7 +161,7 @@ public class CodeAgentController : ControllerBase
 
             var (providerId, model) = ResolveProviderAndModel(request.ProviderId, request.Model);
             resolved = (providerId, model);
-            var agent = _codeAgent.CreateAgent(providerId, model, request.ToolMode);
+            var agent = _codeAgent.CreateAgent(providerId, model, request.ToolMode, enableCompaction: true);
 
             await SendSse("meta", System.Text.Json.JsonSerializer.Serialize(new { providerId, model }));
 
@@ -157,9 +173,15 @@ public class CodeAgentController : ControllerBase
             using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(_aiSettings.AiRequestTimeoutMinutes));
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(HttpContext.RequestAborted, timeoutCts.Token);
 
+            // 会话模式：恢复上下文（含压缩状态），流式累积完整输出后持久化
+            var sessionStateJson = await LoadSessionStateJsonAsync(request.SessionId);
+            var session = await CodeAgentService.ResolveSessionAsync(agent, sessionStateJson);
+            session ??= await agent.CreateSessionAsync();   // 首次生成：创建会话（MAF 累积消息历史，供续聊与压缩）
+            var fullOutput = new System.Text.StringBuilder();
+
             // 工具调用展示：跟踪 callId -> 工具名，把工具调用/结果作为 SSE 事件推给前端
             var toolNames = new Dictionary<string, string>();
-            await foreach (var update in agent.RunStreamingAsync(messages, session: null, options: null, linkedCts.Token))
+            await foreach (var update in agent.RunStreamingAsync(messages, session: session, options: null, linkedCts.Token))
             {
                 foreach (var content in update.Contents)
                 {
@@ -170,6 +192,7 @@ public class CodeAgentController : ControllerBase
                             var t = text.Text;
                             if (!string.IsNullOrEmpty(t))
                             {
+                                fullOutput.Append(t);
                                 await SendSse("delta", System.Text.Json.JsonSerializer.Serialize(new { content = t }));
                             }
                             break;
@@ -200,7 +223,20 @@ public class CodeAgentController : ControllerBase
                 }
             }
 
-            await SendSse("done", "");
+            // 会话持久化：续聊更新原记录；首次生成自动建档（含会话状态），done 返回新 id
+            var finalState = await CodeAgentService.SerializeSessionAsync(agent, session);
+            var (_, fname) = CodeAgentService.ExtractCode(fullOutput.ToString());
+            int? savedId = request.SessionId;
+            if (savedId is int sid)
+            {
+                await UpdateSessionStateAsync(sid, finalState, fullOutput.ToString(), fname);
+            }
+            else if (fullOutput.Length > 0 && !string.IsNullOrWhiteSpace(request.Prompt))
+            {
+                savedId = await CreateSessionRecordAsync(request, fullOutput.ToString(), finalState, fname);
+            }
+
+            await SendSse("done", System.Text.Json.JsonSerializer.Serialize(new { sessionId = savedId }));
         }
         catch (OperationCanceledException)
         {
@@ -368,6 +404,68 @@ public class CodeAgentController : ControllerBase
 
     #region 会话历史
 
+    /// <summary>读取历史记录的会话状态 JSON。</summary>
+    private async Task<string?> LoadSessionStateJsonAsync(int? sessionId)
+    {
+        if (sessionId is not int id) return null;
+        try
+        {
+            await using var db = await _aiDbFactory.CreateDbContextAsync();
+            var s = await db.CodeAgentSessions.FindAsync(id);
+            return s?.SessionStateJson;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "读取会话状态失败");
+            return null;
+        }
+    }
+
+    /// <summary>更新历史记录的会话状态与输出（继续对话后）。</summary>
+    private async Task UpdateSessionStateAsync(int id, string? sessionStateJson, string? output, string? fileName)
+    {
+        try
+        {
+            await using var db = await _aiDbFactory.CreateDbContextAsync();
+            var s = await db.CodeAgentSessions.FindAsync(id);
+            if (s is null) return;
+            s.SessionStateJson = sessionStateJson;
+            if (!string.IsNullOrWhiteSpace(output))
+            {
+                if (s.IsPipeline) { s.Code = output; }
+                else { s.Output = output; }
+                s.FileName = fileName ?? s.FileName;
+            }
+            s.CreatedAt = DateTime.UtcNow;
+            await db.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "更新会话状态失败");
+        }
+    }
+
+    /// <summary>首次生成自动建档（流式端点）：含会话状态与输出，返回新记录 Id。</summary>
+    private async Task<int> CreateSessionRecordAsync(CodeAgentRequest request, string output, string? sessionStateJson, string? fileName)
+    {
+        await using var db = await _aiDbFactory.CreateDbContextAsync();
+        var entity = new CodeAgentSession
+        {
+            Prompt = request.Prompt.Trim(),
+            Language = request.Language,
+            ProviderId = request.ProviderId,
+            Model = request.Model,
+            ToolMode = request.ToolMode.ToString(),
+            IsPipeline = false,
+            Output = output,
+            FileName = fileName,
+            SessionStateJson = sessionStateJson
+        };
+        db.CodeAgentSessions.Add(entity);
+        await db.SaveChangesAsync();
+        return entity.Id;
+    }
+
     /// <summary>
     /// 保存一次生成记录（由前端在生成完成后调用，含完整输出）。
     /// </summary>
@@ -391,7 +489,8 @@ public class CodeAgentController : ControllerBase
             Research = request.Research,
             Code = request.Code,
             Review = request.Review,
-            FileName = request.FileName
+            FileName = request.FileName,
+            SessionStateJson = request.SessionStateJson
         };
         db.CodeAgentSessions.Add(entity);
         await db.SaveChangesAsync();
@@ -480,3 +579,7 @@ public class CodeAgentController : ControllerBase
 
     #endregion
 }
+
+
+
+

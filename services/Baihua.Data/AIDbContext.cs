@@ -164,6 +164,7 @@ public class AIDbContext : DbContext
             entity.Property(e => e.Model).HasMaxLength(100);
             entity.Property(e => e.ToolMode).HasMaxLength(20).IsRequired().HasDefaultValue("All");
             entity.Property(e => e.FileName).HasMaxLength(300);
+            entity.Property(e => e.SessionStateJson).HasColumnType("TEXT");
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
         });
 

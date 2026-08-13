@@ -49,7 +49,7 @@
   <data name="Search_Placeholder" xml:space="preserve">
     <value>搜索笔记...</value>
   </data>
-  <!-- Dashboard keys -->
+  
   <data name="Dashboard_PageTitle" xml:space="preserve">
     <value>家长看板</value>
   </data>
@@ -4284,7 +4284,7 @@ Shift+Enter 换行，Enter 发送</value>
     <value>历史记录</value>
   </data>
   <data name="CodeAgent_HistoryChars" xml:space="preserve">
-    <value>字</value>
+  <value>字</value>
   </data>
   <data name="CodeAgent_PipelineTitle" xml:space="preserve">
     <value>多 Agent 流水线</value>
@@ -4298,5 +4298,4 @@ Shift+Enter 换行，Enter 发送</value>
   <data name="CodeAgent_StageReview" xml:space="preserve">
     <value>③ 审查</value>
   </data>
-</root>
-
+<data name="CodeAgent_NewConversation" xml:space="preserve"><value>新对话</value></data></root>

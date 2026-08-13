@@ -23,6 +23,9 @@ public class CodeAgentRequest
     /// <summary>额外上下文（如已有代码片段、约束条件），可为空</summary>
     public string? Context { get; set; }
 
+    /// <summary>历史记录 Id（继续对话时传）：恢复会话上下文并把本次生成更新到该记录</summary>
+    public int? SessionId { get; set; }
+
     /// <summary>工具集模式（默认全部工具）</summary>
     public CodeAgentToolMode ToolMode { get; set; } = CodeAgentToolMode.All;
 }
@@ -93,6 +96,9 @@ public class CodeAgentSessionSaveRequest
     public string? Code { get; set; }
     public string? Review { get; set; }
     public string? FileName { get; set; }
+
+    /// <summary>MAF 会话状态序列化（续聊用）</summary>
+    public string? SessionStateJson { get; set; }
 }
 
 /// <summary>
@@ -153,4 +159,10 @@ public class CodeAgentResponse
     /// <summary>实际使用的提供方与模型</summary>
     public string? ProviderId { get; set; }
     public string? Model { get; set; }
+
+    /// <summary>会话记录 Id（继续对话时回传）</summary>
+    public int? SessionId { get; set; }
+
+    /// <summary>MAF 会话状态序列化（前端保存历史时存回，用于续聊）</summary>
+    public string? SessionStateJson { get; set; }
 }

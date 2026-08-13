@@ -45,4 +45,7 @@ public class CodeAgentSession
 
     /// <summary>识别出的文件名</summary>
     public string? FileName { get; set; }
+
+    /// <summary>MAF AgentSession 序列化状态（用于继续对话，含消息历史与压缩状态）</summary>
+    public string? SessionStateJson { get; set; }
 }
