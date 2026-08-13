@@ -69,6 +69,11 @@ jobs:
     permissions:
       contents: write
     steps:
+      # gh release create 需要 git 仓库上下文来解析远程仓库/tag
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
