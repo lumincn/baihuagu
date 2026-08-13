@@ -130,23 +130,34 @@ function Start-Services {
     if ($ok) { Write-Host "[start] all services up. WebUI: http://localhost:5177" }
 }
 
-function Stop-Services {
-    foreach ($svc in $Services) {
-        $pf = Get-PidFile $svc.Name
-        $stopped = $false
-        if (Test-Path $pf) {
-            $pid2 = [int](Get-Content $pf)
-            $proc = Get-Process -Id $pid2 -ErrorAction SilentlyContinue
-            if ($proc) { Stop-Process -Id $pid2 -Force -ErrorAction SilentlyContinue; Write-Host "[$($svc.Name)] stopped pid=$pid2"; $stopped = $true }
-            Remove-Item $pf -Force -ErrorAction SilentlyContinue
-        }
-        if (-not $stopped -and (Test-PortOpen $svc.Port)) {
-            # 兜底：pid 文件缺失但端口被占（如进程被外部启动），按端口杀
-            $conn = Get-NetTCPConnection -LocalPort $svc.Port -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
-            if ($conn) { Stop-Process -Id $conn.OwningProcess -Force -ErrorAction SilentlyContinue; Write-Host "[$($svc.Name)] stopped by port pid=$($conn.OwningProcess)" }
-        }
+function Stop-One($svc) {
+    $pf = Get-PidFile $svc.Name
+    $stopped = $false
+    if (Test-Path $pf) {
+        $pid2 = [int](Get-Content $pf)
+        $proc = Get-Process -Id $pid2 -ErrorAction SilentlyContinue
+        if ($proc) { Stop-Process -Id $pid2 -Force -ErrorAction SilentlyContinue; Write-Host "[$($svc.Name)] stopped pid=$pid2"; $stopped = $true }
+        Remove-Item $pf -Force -ErrorAction SilentlyContinue
     }
+    if (-not $stopped -and (Test-PortOpen $svc.Port)) {
+        # 兜底：pid 文件缺失但端口被占（如进程被外部启动），按端口杀
+        $conn = Get-NetTCPConnection -LocalPort $svc.Port -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($conn) { Stop-Process -Id $conn.OwningProcess -Force -ErrorAction SilentlyContinue; Write-Host "[$($svc.Name)] stopped by port pid=$($conn.OwningProcess)" }
+    }
+}
+
+function Stop-Services {
+    foreach ($svc in $Services) { Stop-One $svc }
     Write-Host '[stop] done'
+}
+
+# 解析单服务参数（vault|ai|family|webui），返回 $true 表示已处理（含报错）
+function Resolve-SingleService($name, [ref]$svcRef) {
+    if (-not $name) { return $false }
+    $svc = $Services | Where-Object { $_.Name -eq $name.ToLower() }
+    if (-not $svc) { Write-Host "unknown service: $name (vault|ai|family|webui)" -ForegroundColor Yellow; return $true }
+    $svcRef.Value = $svc
+    return $true
 }
 
 function Show-Status {
@@ -196,9 +207,21 @@ function Open-Dashboard {
 
 switch ($Command.ToLower()) {
     'build'     { Invoke-Build }
-    'start'     { Start-Services }
-    'stop'      { Stop-Services }
-    'restart'   { Stop-Services; Start-Services }
+    'start'     {
+        if ($Arg1) {
+            $svc = $null; if (Resolve-SingleService $Arg1 ([ref]$svc)) { Start-One $svc; Write-Host "[start] $($svc.Name) starting... check 'bh status'" }
+        } else { Start-Services }
+    }
+    'stop'      {
+        if ($Arg1) {
+            $svc = $null; if (Resolve-SingleService $Arg1 ([ref]$svc)) { Stop-One $svc; Write-Host "[stop] $($svc.Name) stopped" }
+        } else { Stop-Services }
+    }
+    'restart'   {
+        if ($Arg1) {
+            $svc = $null; if (Resolve-SingleService $Arg1 ([ref]$svc)) { Stop-One $svc; Start-One $svc; Write-Host "[restart] $($svc.Name) restarting..." }
+        } else { Stop-Services; Start-Services }
+    }
     'status'    { Show-Status }
     'logs'      { $count = 50; if ($Arg2) { $count = [int]$Arg2 }; Show-Logs $Arg1 $count }
     'dashboard' { Open-Dashboard }
