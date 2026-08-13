@@ -1,11 +1,14 @@
 using Baihua.AI.Services;
 using Baihua.Contracts.Ai;
 using Baihua.Core.Localization;
+using Baihua.Data;
+using Baihua.Data.Entities;
 using Baihua.Family.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Localization;
 using System.Diagnostics;
+using Microsoft.EntityFrameworkCore;
 
 namespace Baihua.AI.Controllers;
 
@@ -24,17 +27,20 @@ public class CodeAgentController : ControllerBase
     private readonly AiSettingsService _aiSettings;
     private readonly ILogger<CodeAgentController> _logger;
     private readonly IStringLocalizer<SharedResources> _loc;
+    private readonly IDbContextFactory<AIDbContext> _aiDbFactory;
 
     public CodeAgentController(
         CodeAgentService codeAgent,
         AiSettingsService aiSettings,
         ILogger<CodeAgentController> logger,
-        IStringLocalizer<SharedResources> loc)
+        IStringLocalizer<SharedResources> loc,
+        IDbContextFactory<AIDbContext> aiDbFactory)
     {
         _codeAgent = codeAgent;
         _aiSettings = aiSettings;
         _logger = logger;
         _loc = loc;
+        _aiDbFactory = aiDbFactory;
     }
 
     /// <summary>
@@ -359,4 +365,118 @@ public class CodeAgentController : ControllerBase
 
         return (provider.Id, resolvedModel);
     }
+
+    #region 会话历史
+
+    /// <summary>
+    /// 保存一次生成记录（由前端在生成完成后调用，含完整输出）。
+    /// </summary>
+    [HttpPost("history")]
+    public async Task<ActionResult<object>> SaveSession([FromBody] CodeAgentSessionSaveRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Prompt))
+            return BadRequest(new { error = "prompt required" });
+
+        await using var db = await _aiDbFactory.CreateDbContextAsync();
+        var entity = new CodeAgentSession
+        {
+            Prompt = request.Prompt.Trim(),
+            Language = request.Language,
+            ProviderId = request.ProviderId,
+            Model = request.Model,
+            ToolMode = string.IsNullOrWhiteSpace(request.ToolMode) ? "All" : request.ToolMode!,
+            IsPipeline = request.IsPipeline,
+            PlanPro = request.PlanPro,
+            Output = request.Output,
+            Research = request.Research,
+            Code = request.Code,
+            Review = request.Review,
+            FileName = request.FileName
+        };
+        db.CodeAgentSessions.Add(entity);
+        await db.SaveChangesAsync();
+        return Ok(new { id = entity.Id });
+    }
+
+    /// <summary>
+    /// 历史列表（倒序，不含大文本）。
+    /// </summary>
+    [HttpGet("history")]
+    public async Task<ActionResult<List<CodeAgentSessionSummaryDto>>> GetSessions([FromQuery] int limit = 20)
+    {
+        limit = Math.Clamp(limit, 1, 100);
+        await using var db = await _aiDbFactory.CreateDbContextAsync();
+        var raw = await db.CodeAgentSessions
+            .OrderByDescending(s => s.Id)
+            .Take(limit)
+            .Select(s => new
+            {
+                s.Id, s.CreatedAt, s.Prompt, s.Language, s.ProviderId, s.Model, s.ToolMode,
+                s.IsPipeline, s.PlanPro, s.FileName,
+                OutLen = s.Output != null ? s.Output.Length : 0,
+                ResLen = s.Research != null ? s.Research.Length : 0,
+                CodeLen = s.Code != null ? s.Code.Length : 0,
+                RevLen = s.Review != null ? s.Review.Length : 0
+            })
+            .ToListAsync();
+        var items = raw.Select(s => new CodeAgentSessionSummaryDto
+        {
+            Id = s.Id,
+            CreatedAt = s.CreatedAt,
+            Prompt = s.Prompt,
+            Language = s.Language,
+            ProviderId = s.ProviderId,
+            Model = s.Model,
+            ToolMode = s.ToolMode,
+            IsPipeline = s.IsPipeline,
+            PlanPro = s.PlanPro,
+            FileName = s.FileName,
+            OutputLength = s.OutLen + s.ResLen + s.CodeLen + s.RevLen
+        }).ToList();
+        return Ok(items);
+    }
+
+    /// <summary>
+    /// 历史详情（含完整输出）。
+    /// </summary>
+    [HttpGet("history/{id:int}")]
+    public async Task<ActionResult<CodeAgentSessionDetailDto>> GetSession(int id)
+    {
+        await using var db = await _aiDbFactory.CreateDbContextAsync();
+        var s = await db.CodeAgentSessions.FindAsync(id);
+        if (s is null) return NotFound();
+        return Ok(new CodeAgentSessionDetailDto
+        {
+            Id = s.Id,
+            CreatedAt = s.CreatedAt,
+            Prompt = s.Prompt,
+            Language = s.Language,
+            ProviderId = s.ProviderId,
+            Model = s.Model,
+            ToolMode = s.ToolMode,
+            IsPipeline = s.IsPipeline,
+            PlanPro = s.PlanPro,
+            FileName = s.FileName,
+            Output = s.Output,
+            Research = s.Research,
+            Code = s.Code,
+            Review = s.Review
+        });
+    }
+
+    /// <summary>
+    /// 删除一条历史记录。
+    /// </summary>
+    [HttpDelete("history/{id:int}")]
+    public async Task<IActionResult> DeleteSession(int id)
+    {
+        await using var db = await _aiDbFactory.CreateDbContextAsync();
+        var s = await db.CodeAgentSessions.FindAsync(id);
+        if (s is null) return NotFound();
+        db.CodeAgentSessions.Remove(s);
+        await db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    #endregion
 }

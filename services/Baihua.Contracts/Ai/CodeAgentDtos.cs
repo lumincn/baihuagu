@@ -46,6 +46,56 @@ public class CodeAgentPipelineRequest : CodeAgentRequest
 }
 
 /// <summary>
+/// 编程 Agent 历史记录（列表项，不含大文本）
+/// </summary>
+public class CodeAgentSessionSummaryDto
+{
+    public int Id { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public string Prompt { get; set; } = "";
+    public string? Language { get; set; }
+    public string? ProviderId { get; set; }
+    public string? Model { get; set; }
+    public string ToolMode { get; set; } = "All";
+    public bool IsPipeline { get; set; }
+    public bool PlanPro { get; set; }
+    public string? FileName { get; set; }
+
+    /// <summary>输出总长度（摘要排序用）</summary>
+    public int OutputLength { get; set; }
+}
+
+/// <summary>
+/// 编程 Agent 历史详情（含各阶段输出）
+/// </summary>
+public class CodeAgentSessionDetailDto : CodeAgentSessionSummaryDto
+{
+    public string? Output { get; set; }
+    public string? Research { get; set; }
+    public string? Code { get; set; }
+    public string? Review { get; set; }
+}
+
+/// <summary>
+/// 保存编程 Agent 会话记录请求
+/// </summary>
+public class CodeAgentSessionSaveRequest
+{
+    public string Prompt { get; set; } = "";
+    public string? Language { get; set; }
+    public string? ProviderId { get; set; }
+    public string? Model { get; set; }
+    public string? ToolMode { get; set; }
+    public bool IsPipeline { get; set; }
+    public bool PlanPro { get; set; }
+    public string? Output { get; set; }
+    public string? Research { get; set; }
+    public string? Code { get; set; }
+    public string? Review { get; set; }
+    public string? FileName { get; set; }
+}
+
+/// <summary>
 /// 编程 Agent 流水线响应（非流式）。
 /// </summary>
 public class CodeAgentPipelineResponse

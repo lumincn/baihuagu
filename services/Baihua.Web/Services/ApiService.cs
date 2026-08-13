@@ -92,6 +92,10 @@ namespace Baihua.Web.Services
         IAsyncEnumerable<string> StreamCodeAgentAsync(CodeAgentRequest request, CancellationToken cancellationToken = default);
         IAsyncEnumerable<CodeAgentStreamItem> StreamCodeAgentPipelineAsync(CodeAgentPipelineRequest request, CancellationToken cancellationToken = default);
         Task<List<CodeAgentProviderInfo>> GetCodeAgentProvidersAsync(CancellationToken cancellationToken = default);
+  Task<List<CodeAgentSessionSummaryDto>> GetCodeAgentHistoryAsync(int limit = 20, CancellationToken cancellationToken = default);
+  Task<CodeAgentSessionDetailDto?> GetCodeAgentHistoryItemAsync(int id, CancellationToken cancellationToken = default);
+  Task<int> SaveCodeAgentSessionAsync(CodeAgentSessionSaveRequest request, CancellationToken cancellationToken = default);
+  Task DeleteCodeAgentSessionAsync(int id, CancellationToken cancellationToken = default);
         Task<List<LocalModelInfo>> ScanLocalModelsAsync(string? directory = null);
 
         // 本地视觉识别（Qwen2.5-VL + OpenVINO）
@@ -1565,6 +1569,37 @@ namespace Baihua.Web.Services
             }
             return result;
         }
+
+        #region CodeAgent 会话历史
+
+        public async Task<List<CodeAgentSessionSummaryDto>> GetCodeAgentHistoryAsync(int limit = 20, CancellationToken cancellationToken = default)
+        {
+            return await _aiHttpClient.GetFromJsonAsync<List<CodeAgentSessionSummaryDto>>(
+                $"/api/ai/code/history?limit={limit}", cancellationToken)
+                ?? new List<CodeAgentSessionSummaryDto>();
+        }
+
+        public async Task<CodeAgentSessionDetailDto?> GetCodeAgentHistoryItemAsync(int id, CancellationToken cancellationToken = default)
+        {
+            return await _aiHttpClient.GetFromJsonAsync<CodeAgentSessionDetailDto>(
+                $"/api/ai/code/history/{id}", cancellationToken);
+        }
+
+        public async Task<int> SaveCodeAgentSessionAsync(CodeAgentSessionSaveRequest request, CancellationToken cancellationToken = default)
+        {
+            var resp = await _aiHttpClient.PostAsJsonAsync("/api/ai/code/history", request, cancellationToken);
+            resp.EnsureSuccessStatusCode();
+            var obj = await resp.Content.ReadFromJsonAsync<Dictionary<string, int>>(cancellationToken);
+            return obj != null && obj.TryGetValue("id", out var id) ? id : 0;
+        }
+
+        public async Task DeleteCodeAgentSessionAsync(int id, CancellationToken cancellationToken = default)
+        {
+            var resp = await _aiHttpClient.DeleteAsync($"/api/ai/code/history/{id}", cancellationToken);
+            resp.EnsureSuccessStatusCode();
+        }
+
+        #endregion
 
         private static ChatStreamEvent? ParseToolCallEvent(string data)
         {

@@ -156,6 +156,51 @@
             </div>
         </div>
     }
+
+    @if (_history.Count > 0)
+    {
+        <div class="card mt-3">
+            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-clock-history"></i> @L["CodeAgent_HistoryTitle"]</span>
+                @if (_historyLoading)
+                {
+                    <span class="spinner-border spinner-border-sm"></span>
+                }
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush" style="max-height: 40vh; overflow-y: auto;">
+                    @foreach (var item in _history)
+                    {
+                        <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-start"
+                            @onclick="() => LoadHistoryItem(item.Id)" style="cursor:pointer">
+                            <div class="flex-grow-1 me-2" style="min-width:0">
+                                <div class="text-truncate">@item.Prompt</div>
+                                <small class="text-muted">
+                                    @item.CreatedAt.ToLocalTime().ToString("MM-dd HH:mm")
+                                    @if (item.IsPipeline)
+                                    {
+                                        <span class="badge bg-info ms-1">@L["CodeAgent_PipelineMode"]</span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(item.Model))
+                                    {
+                                        <span class="badge bg-secondary ms-1">@item.Model</span>
+                                    }
+                                    @if (item.OutputLength > 0)
+                                    {
+                                        <span class="badge bg-light text-dark ms-1">@item.OutputLength @L["CodeAgent_HistoryChars"]</span>
+                                    }
+                                </small>
+                            </div>
+                            <button class="btn btn-sm btn-outline-danger"
+                                    @onclick="() => DeleteHistoryItem(item.Id)" @onclick:stopPropagation>
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    }
 </div>
 
 <style>
@@ -191,6 +236,8 @@
     private bool isRunning;
     private CancellationTokenSource? _cts;
     private List<CodeAgentProviderInfo> _providers = new();
+    private List<CodeAgentSessionSummaryDto> _history = new();
+    private bool _historyLoading;
 
     protected override async Task OnInitializedAsync()
     {
@@ -206,6 +253,97 @@
                 _providerId = selected.Id;
                 _model = selected.Model;
             }
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        await LoadHistoryAsync();
+    }
+
+    /// <summary>加载历史列表</summary>
+    private async Task LoadHistoryAsync()
+    {
+        _historyLoading = true;
+        try
+        {
+            _history = await ApiService.GetCodeAgentHistoryAsync(20);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _historyLoading = false;
+        }
+    }
+
+    /// <summary>保存当前生成结果到历史</summary>
+    private async Task SaveSessionAsync()
+    {
+        try
+        {
+            var req = new CodeAgentSessionSaveRequest
+            {
+                Prompt = _prompt,
+                Language = string.IsNullOrWhiteSpace(_language) ? null : _language,
+                ProviderId = string.IsNullOrWhiteSpace(_providerId) ? null : _providerId,
+                Model = string.IsNullOrWhiteSpace(_model) ? null : _model,
+                ToolMode = _toolMode,
+                IsPipeline = _pipeline,
+                PlanPro = _planPro,
+                Output = _pipeline ? null : _output,
+                Research = _pipeline ? _research : null,
+                Code = _pipeline ? _codeOut : null,
+                Review = _pipeline ? _review : null,
+                FileName = _fileName
+            };
+            await ApiService.SaveCodeAgentSessionAsync(req);
+            await LoadHistoryAsync();
+        }
+        catch (Exception)
+        {
+            // 保存失败不打扰用户（历史是附加功能）
+        }
+    }
+
+    /// <summary>加载一条历史到页面（回填输入区 + 显示输出）</summary>
+    private async Task LoadHistoryItem(int id)
+    {
+        try
+        {
+            var item = await ApiService.GetCodeAgentHistoryItemAsync(id);
+            if (item is null) return;
+            _prompt = item.Prompt;
+            _language = item.Language ?? "";
+            _providerId = item.ProviderId ?? "";
+            _model = item.Model ?? "";
+            _toolMode = string.IsNullOrEmpty(item.ToolMode) ? "All" : item.ToolMode;
+            _pipeline = item.IsPipeline;
+            _planPro = item.PlanPro;
+            _output = item.Output ?? "";
+            _research = item.Research ?? "";
+            _codeOut = item.Code ?? "";
+            _review = item.Review ?? "";
+            _fileName = item.FileName;
+            _error = null;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+    }
+
+    /// <summary>删除一条历史</summary>
+    private async Task DeleteHistoryItem(int id)
+    {
+        try
+        {
+            await ApiService.DeleteCodeAgentSessionAsync(id);
+            _history.RemoveAll(h => h.Id == id);
+            StateHasChanged();
         }
         catch (Exception ex)
         {
@@ -290,6 +428,7 @@
                     if (!string.IsNullOrWhiteSpace(candidate))
                         _fileName = candidate;
                 }
+                await SaveSessionAsync();
             }
             else
             {
@@ -309,6 +448,7 @@
                     if (!string.IsNullOrWhiteSpace(candidate))
                         _fileName = candidate;
                 }
+                await SaveSessionAsync();
             }
         }
         catch (OperationCanceledException)
