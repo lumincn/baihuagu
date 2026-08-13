@@ -78,10 +78,10 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup .NET 9
+      - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: '10.0.x'
 
       - name: Cache NuGet packages
         uses: actions/cache@v4
@@ -96,4 +96,4 @@ jobs:
         run: dotnet workload install maui-android
 
       - name: Build Android
-        run: dotnet build clients/Huapu/Huapu.csproj -f net9.0-android -c Release
+        run: dotnet build clients/Huapu/Huapu.csproj -f net10.0-android36.1 -c Release
