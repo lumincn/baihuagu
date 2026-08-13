@@ -56,8 +56,8 @@ public class Fam21CheckinContractTests : IDisposable
     private Fam21CheckinProbe.CheckinSnapshot GetSnapshot()
     {
         var svc = Fam21CheckinProbe.CreateService(_familyFactory, _vaultFactory, _clock, out var error);
-        Assert.NotNull(svc);
-        Assert.Null(error);
+        Assert.True(svc is not null, error ?? "未知错误");
+        Assert.True(error is null, error);
         return Fam21CheckinProbe.GetSnapshot(svc!, "vault-fam21");
     }
 

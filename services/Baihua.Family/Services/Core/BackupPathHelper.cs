@@ -20,7 +20,7 @@ public static class BackupPathHelper
 
             if (fullPath.StartsWith(fullBase, StringComparison.OrdinalIgnoreCase))
             {
-                var relative = fullPath[fullBase.Length..].TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                var relative = fullPath[fullBase.Length..].TrimStart('\\', '/');
                 // 统一使用正斜杠，跨平台兼容
                 return relative.Replace('\\', '/');
             }

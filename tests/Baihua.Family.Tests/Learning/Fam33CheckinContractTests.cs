@@ -144,8 +144,8 @@ public class Fam33CheckinContractTests : IDisposable
     private Fam33MakeupProbe.CheckinSnapshot GetSnapshot()
     {
         var svc = Fam33MakeupProbe.CreateService(_familyFactory, _vaultFactory, _clock, out var error);
-        Assert.NotNull(svc);
-        Assert.Null(error);
+        Assert.True(svc is not null, error ?? "未知错误");
+        Assert.True(error is null, error);
         return Fam33MakeupProbe.GetSnapshot(svc!, "vault-fam33");
     }
 }

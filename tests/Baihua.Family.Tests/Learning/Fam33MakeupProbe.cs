@@ -123,7 +123,7 @@ public static class Fam33MakeupProbe
         }
         catch (Exception ex)
         {
-            error = $"无法构造 {type.Name}: {Unwrap(ex).Message}（红）";
+            error = $"无法构造 {type.Name}: {Unwrap(ex).Message}（红）\n{ex}";
             return null;
         }
     }
@@ -138,8 +138,19 @@ public static class Fam33MakeupProbe
         if (pt == typeof(IStringLocalizer<SharedResources>)) return TestLocalizer.Create();
         if (pt.IsGenericType && pt.GetGenericTypeDefinition() == typeof(ILogger<>))
         {
+            // NullLogger<T>.Instance 在 10.x Abstractions 由属性改为字段，属性优先、字段兜底
             var loggerType = typeof(NullLogger<>).MakeGenericType(pt.GetGenericArguments()[0]);
-            return loggerType.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static)!.GetValue(null);
+            var instance = loggerType.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static)?.GetValue(null)
+                ?? loggerType.GetField("Instance", BindingFlags.Public | BindingFlags.Static)?.GetValue(null);
+            return instance ?? throw new InvalidOperationException($"NullLogger<{pt.GetGenericArguments()[0].Name}>.Instance 不可用");
+        }
+        if (pt == typeof(CardRepository))
+        {
+            return new CardRepository(
+                new VaultSettingsService(vaultFactory, NullLogger<VaultSettingsService>.Instance),
+                familyFactory,
+                new LearnerService(familyFactory, NullLogger<LearnerService>.Instance),
+                NullLogger<CardRepository>.Instance);
         }
         return null;
     }
