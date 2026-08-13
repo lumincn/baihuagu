@@ -4259,4 +4259,19 @@ Shift+Enter 换行，Enter 发送</value>
   <data name="LogErrors_Title" xml:space="preserve">
     <value>错误日志</value>
   </data>
+  <data name="CodeAgent_ToolMode" xml:space="preserve">
+    <value>工具集</value>
+  </data>
+  <data name="CodeAgent_ToolMode_All" xml:space="preserve">
+    <value>全部（搜索+网页+代码图谱）</value>
+  </data>
+  <data name="CodeAgent_ToolMode_Search" xml:space="preserve">
+    <value>仅联网（搜索+网页）</value>
+  </data>
+  <data name="CodeAgent_ToolMode_CodeGraph" xml:space="preserve">
+    <value>仅代码图谱</value>
+  </data>
+  <data name="CodeAgent_ToolMode_None" xml:space="preserve">
+    <value>无工具（纯代码生成）</value>
+  </data>
 </root>

@@ -45,7 +45,7 @@ public class CodeAgentController : ControllerBase
         try
         {
             var (providerId, model) = ResolveProviderAndModel(request.ProviderId, request.Model);
-            var agent = _codeAgent.CreateAgent(providerId, model);
+            var agent = _codeAgent.CreateAgent(providerId, model, request.ToolMode);
 
             var messages = new List<ChatMessage>
             {
@@ -106,7 +106,7 @@ public class CodeAgentController : ControllerBase
             }
 
             var (providerId, model) = ResolveProviderAndModel(request.ProviderId, request.Model);
-            var agent = _codeAgent.CreateAgent(providerId, model);
+            var agent = _codeAgent.CreateAgent(providerId, model, request.ToolMode);
 
             await SendSse("meta", System.Text.Json.JsonSerializer.Serialize(new { providerId, model }));
 

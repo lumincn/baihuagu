@@ -1,3 +1,4 @@
+using Baihua.Contracts.Ai;
 using Baihua.Family.Models;
 using Baihua.Family.Services;
 using Microsoft.Agents.AI;
@@ -33,23 +34,27 @@ public class CodeAgentService
         _loggerFactory = loggerFactory;
     }
 
-    /// <summary>系统提示词：专注代码生成，输出纯净代码</summary>
-    private const string DefaultInstructions =
+    /// <summary>系统提示词基础规则（不含工具说明，工具规则按模式动态追加）</summary>
+    private const string BaseInstructions =
         """
         你是一名资深软件工程师，辅助用户完成编程任务。
         规则：
-        1. 需要外部信息（最新资料、官方文档、API 用法、版本号、报错原因）时，必须直接调用 tavily_search 搜索，必要时调用 web_fetch 精读页面，然后基于真实信息回答；绝对不要编写调用搜索 API 的示例代码来代替实际查询。
-        2. 用户要求生成代码时：只输出代码本身，用 ``` 代码块包裹，不要输出解释、评论性前言或后语。
-        3. 优先选择最简单可靠的实现，遵循目标语言的主流最佳实践。
-        4. 如有多个文件，按逻辑顺序依次输出，每个文件用注释标明文件名（如 // File: Program.cs）。
-        5. 不要假设环境里有未安装的库；控制台程序优先用 .NET 内置 / Python 标准库实现。
-        6. 用户问题涉及 baihuagu 项目代码本身（某功能在哪、某符号被谁用、改某处会影响什么）时，优先调用 gitnexus_query / gitnexus_context / gitnexus_impact 基于真实代码图谱回答，不要凭记忆猜测。
+        1. 用户要求生成代码时：只输出代码本身，用 ``` 代码块包裹，不要输出解释、评论性前言或后语。
+        2. 优先选择最简单可靠的实现，遵循目标语言的主流最佳实践。
+        3. 如有多个文件，按逻辑顺序依次输出，每个文件用注释标明文件名（如 // File: Program.cs）。
+        4. 不要假设环境里有未安装的库；控制台程序优先用 .NET 内置 / Python 标准库实现。
         """;
 
+    private const string SearchToolRule =
+        "需要外部信息（最新资料、官方文档、API 用法、版本号、报错原因）时，必须直接调用 tavily_search 搜索，必要时调用 web_fetch 精读页面，然后基于真实信息回答；绝对不要编写调用搜索 API 的示例代码来代替实际查询。\n";
+
+    private const string CodeGraphToolRule =
+        "用户问题涉及 baihuagu 项目代码本身（某功能在哪、某符号被谁用、改某处会影响什么）时，优先调用 gitnexus_query / gitnexus_context / gitnexus_impact 基于真实代码图谱回答，不要凭记忆猜测。\n";
+
     /// <summary>
-    /// 创建 MAF ChatClientAgent（OpenAI 兼容端点）。
+    /// 创建 MAF ChatClientAgent（OpenAI 兼容端点），按工具模式挂载工具。
     /// </summary>
-    public ChatClientAgent CreateAgent(string providerId, string model)
+    public ChatClientAgent CreateAgent(string providerId, string model, CodeAgentToolMode toolMode = CodeAgentToolMode.All)
     {
         var provider = _aiSettings.GetAiProvider(providerId)
             ?? throw new InvalidOperationException(_loc["AiClient_ProviderNotFound", providerId]);
@@ -66,28 +71,39 @@ public class CodeAgentService
             .GetChatClient(model)
             .AsIChatClient();
 
-        var tools = new CodeAgentTools(_configuration, _loggerFactory);
+        var codeAgentTools = new CodeAgentTools(_configuration, _loggerFactory);
+        var tools = new List<Microsoft.Extensions.AI.AITool>();
+        var instructions = BaseInstructions;
+
+        if (toolMode is CodeAgentToolMode.All or CodeAgentToolMode.Search)
+        {
+            tools.Add(AIFunctionFactory.Create(codeAgentTools.TavilySearch,
+                "tavily_search",
+                "使用 Tavily 搜索引擎查询全网信息（最新资料、官方文档、报错排查）。参数 query 为搜索关键词，maxResults 为返回条数（1-10，默认 5）。"));
+            tools.Add(AIFunctionFactory.Create(codeAgentTools.WebFetch,
+                "web_fetch",
+                "抓取指定网页（http/https）并返回纯文本正文，适合精读官方文档。参数 url 为完整地址，maxChars 为最大字符数（默认 20000）。"));
+            instructions += SearchToolRule;
+        }
+
+        if (toolMode is CodeAgentToolMode.All or CodeAgentToolMode.CodeGraph)
+        {
+            tools.Add(AIFunctionFactory.Create(codeAgentTools.GitNexusQuery,
+                "gitnexus_query",
+                "在本地代码知识图谱中按概念搜索代码：找某个功能/流程的实现在哪些文件、涉及哪些符号。参数 query 为概念关键词（如\"登录流程\"、\"CodeAgent\"），repo 默认 baihuagu。"));
+            tools.Add(AIFunctionFactory.Create(codeAgentTools.GitNexusContext,
+                "gitnexus_context",
+                "查看某个代码符号（类/方法/函数名）的 360° 上下文：谁调用它、它调用谁、参与哪些执行流。参数 symbol 为符号名。"));
+            tools.Add(AIFunctionFactory.Create(codeAgentTools.GitNexusImpact,
+                "gitnexus_impact",
+                "分析修改某个符号的影响范围（爆炸半径）：upstream=哪些代码依赖它（改它会不会破坏别人），downstream=它依赖什么。参数 target 为符号名，direction 默认 upstream。"));
+            instructions += CodeGraphToolRule;
+        }
+
         return new ChatClientAgent(chatClient,
-            instructions: DefaultInstructions,
+            instructions: instructions.Trim(),
             name: "CodeAgent",
-            tools:
-            [
-                AIFunctionFactory.Create(tools.TavilySearch,
-                    "tavily_search",
-                    "使用 Tavily 搜索引擎查询全网信息（最新资料、官方文档、报错排查）。参数 query 为搜索关键词，maxResults 为返回条数（1-10，默认 5）。"),
-                AIFunctionFactory.Create(tools.WebFetch,
-                    "web_fetch",
-                    "抓取指定网页（http/https）并返回纯文本正文，适合精读官方文档。参数 url 为完整地址，maxChars 为最大字符数（默认 20000）。"),
-                AIFunctionFactory.Create(tools.GitNexusQuery,
-                    "gitnexus_query",
-                    "在本地代码知识图谱中按概念搜索代码：找某个功能/流程的实现在哪些文件、涉及哪些符号。参数 query 为概念关键词（如\"登录流程\"、\"CodeAgent\"），repo 默认 baihuagu。"),
-                AIFunctionFactory.Create(tools.GitNexusContext,
-                    "gitnexus_context",
-                    "查看某个代码符号（类/方法/函数名）的 360° 上下文：谁调用它、它调用谁、参与哪些执行流。参数 symbol 为符号名。"),
-                AIFunctionFactory.Create(tools.GitNexusImpact,
-                    "gitnexus_impact",
-                    "分析修改某个符号的影响范围（爆炸半径）：upstream=哪些代码依赖它（改它会不会破坏别人），downstream=它依赖什么。参数 target 为符号名，direction 默认 upstream。")
-            ]);
+            tools: tools);
     }
 
     /// <summary>

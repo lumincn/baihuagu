@@ -22,6 +22,28 @@ public class CodeAgentRequest
 
     /// <summary>额外上下文（如已有代码片段、约束条件），可为空</summary>
     public string? Context { get; set; }
+
+    /// <summary>工具集模式（默认全部工具）</summary>
+    public CodeAgentToolMode ToolMode { get; set; } = CodeAgentToolMode.All;
+}
+
+/// <summary>
+/// 编程 Agent 工具集模式：控制挂载哪些工具（工具定义会占用上下文，纯代码生成场景建议 None）。
+/// </summary>
+[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
+public enum CodeAgentToolMode
+{
+    /// <summary>全部工具：联网搜索 + 网页精读 + 代码图谱</summary>
+    All,
+
+    /// <summary>仅联网：tavily_search + web_fetch</summary>
+    Search,
+
+    /// <summary>仅代码图谱：gitnexus_query / context / impact</summary>
+    CodeGraph,
+
+    /// <summary>无工具：纯代码生成，上下文最小、最稳定</summary>
+    None
 }
 
 /// <summary>
