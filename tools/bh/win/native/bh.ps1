@@ -1,4 +1,4 @@
-﻿#requires -Version 5.1
+#requires -Version 5.1
 <#
   baihua - Windows + dotnet native CLI
   Cell of the matrix: OS=windows, deployment=dotnet-native
@@ -98,7 +98,7 @@ function Start-One($svc) {
         BAIHUA_HOME = $DataHome
         BAIHUA_SKIP_MUTEX = 'true'
         ASPNETCORE_URLS = "http://127.0.0.1:$($svc.Port)"
-        OpenObserve__Enabled = 'false'
+        OpenObserve__Enabled = 'true'
     }
     if ($svc.Name -eq 'family') {
         $envBlock['BAIHUA_VAULT_URL'] = 'http://127.0.0.1:8790'
@@ -253,3 +253,4 @@ switch ($Command.ToLower()) {
     'help'      { Help-Text }
     default     { Help-Text }
 }
+
