@@ -224,6 +224,7 @@ builder.Services.AddSingleton<LeaderboardService>();
 builder.Services.AddSingleton<RewardService>();
 builder.Services.AddSingleton<QuizService>();
 builder.Services.AddSingleton<Baihua.Family.Services.Todo.TodoService>();
+builder.Services.AddSingleton<Baihua.Family.Services.Todo.TodoAiService>();
 builder.Services.AddHostedService<StudyRecordMigrationService>();
 builder.Services.AddSingleton<Baihua.Core.WebSocket.DeviceWebSocketHub>();
 builder.Services.AddSingleton<DeviceService>();

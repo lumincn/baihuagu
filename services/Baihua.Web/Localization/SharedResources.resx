@@ -4339,6 +4339,54 @@ Shift+Enter new line, Enter to send</value>
   <data name="Todo_Loading" xml:space="preserve">
     <value>Loading…</value>
   </data>
+  <data name="Todo_AiGenerate" xml:space="preserve">
+    <value>✨ AI Generate</value>
+  </data>
+  <data name="Todo_GoalPlaceholder" xml:space="preserve">
+    <value>Enter a goal and let AI break it into actionable todos, e.g. apply for a passport / public rental housing…</value>
+  </data>
+  <data name="Todo_Generating" xml:space="preserve">
+    <value>AI is breaking down your goal…</value>
+  </data>
+  <data name="Todo_GoalEmpty" xml:space="preserve">
+    <value>Please enter a goal first</value>
+  </data>
+  <data name="Todo_GenerateFailed" xml:space="preserve">
+    <value>AI generation failed</value>
+  </data>
+  <data name="Todo_GoalSection" xml:space="preserve">
+    <value>Goal</value>
+  </data>
+  <data name="Todo_Ungrouped" xml:space="preserve">
+    <value>Other todos</value>
+  </data>
+  <data name="Todo_Guide" xml:space="preserve">
+    <value>Guide</value>
+  </data>
+  <data name="Todo_DeleteGoalConfirm" xml:space="preserve">
+    <value>Delete goal and all its todos?</value>
+  </data>
+  <data name="Todo_NoGoals" xml:space="preserve">
+    <value>No goals yet. Enter a goal and let AI break it into step-by-step actionable tasks.</value>
+  </data>
+  <data name="Todo_Progress" xml:space="preserve">
+    <value>{0}/{1} done</value>
+  </data>
+  <data name="Todo_AiPreviewTitle" xml:space="preserve">
+    <value>AI Generated Todos</value>
+  </data>
+  <data name="Todo_PreviewHint" xml:space="preserve">
+    <value>Review the todos below. Save if satisfied, or cancel to discard.</value>
+  </data>
+  <data name="Todo_SaveConfirm" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Todo_Saving" xml:space="preserve">
+    <value>Saving…</value>
+  </data>
+  <data name="Todo_SaveFailed" xml:space="preserve">
+    <value>Save failed</value>
+  </data>
   <data name="Nav_FamilyBudget" xml:space="preserve">
     <value>Family Budget</value>
   </data>

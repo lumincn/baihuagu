@@ -62,6 +62,10 @@ namespace Baihua.Web.Services
         Task<TodoItemDto> AddTodoAsync(CreateTodoRequest request, CancellationToken cancellationToken = default);
         Task<TodoItemDto?> UpdateTodoAsync(int id, UpdateTodoRequest request, CancellationToken cancellationToken = default);
         Task<bool> DeleteTodoAsync(int id, CancellationToken cancellationToken = default);
+        Task<List<TodoGoalDto>> GetTodoGoalsAsync(CancellationToken cancellationToken = default);
+        Task<AiTodoPreviewDto> GenerateTodosAsync(GenerateTodosRequest request, CancellationToken cancellationToken = default);
+        Task<TodoGoalDto> SaveGeneratedTodosAsync(SaveGeneratedTodosRequest request, CancellationToken cancellationToken = default);
+        Task<bool> DeleteTodoGoalAsync(int id, CancellationToken cancellationToken = default);
         Task<List<OpenVinoCatalogItemDto>> GetOpenVinoCatalogAsync(CancellationToken cancellationToken = default);
         Task<List<OpenVinoInstalledModelDto>> GetOpenVinoInstalledAsync(CancellationToken cancellationToken = default);
         Task<List<OpenVinoDownloadTaskDto>> GetOpenVinoDownloadsAsync(CancellationToken cancellationToken = default);

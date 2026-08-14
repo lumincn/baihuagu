@@ -4338,6 +4338,54 @@ Shift+Enter 换行，Enter 发送</value>
   <data name="Todo_Loading" xml:space="preserve">
     <value>加载中…</value>
   </data>
+  <data name="Todo_AiGenerate" xml:space="preserve">
+    <value>✨ AI 生成</value>
+  </data>
+  <data name="Todo_GoalPlaceholder" xml:space="preserve">
+    <value>输入目标，让 AI 拆解成可执行的待办，例如：办理护照 / 申请公租房…</value>
+  </data>
+  <data name="Todo_Generating" xml:space="preserve">
+    <value>AI 正在拆解目标…</value>
+  </data>
+  <data name="Todo_GoalEmpty" xml:space="preserve">
+    <value>请先输入目标</value>
+  </data>
+  <data name="Todo_GenerateFailed" xml:space="preserve">
+    <value>AI 生成失败</value>
+  </data>
+  <data name="Todo_GoalSection" xml:space="preserve">
+    <value>目标</value>
+  </data>
+  <data name="Todo_Ungrouped" xml:space="preserve">
+    <value>其他待办</value>
+  </data>
+  <data name="Todo_Guide" xml:space="preserve">
+    <value>指引</value>
+  </data>
+  <data name="Todo_DeleteGoalConfirm" xml:space="preserve">
+    <value>删除目标及全部待办？</value>
+  </data>
+  <data name="Todo_NoGoals" xml:space="preserve">
+    <value>还没有目标。输入一个目标，让 AI 帮你拆解成一步步可执行的小事，少走弯路。</value>
+  </data>
+  <data name="Todo_Progress" xml:space="preserve">
+    <value>{0}/{1} 已完成</value>
+  </data>
+  <data name="Todo_AiPreviewTitle" xml:space="preserve">
+    <value>AI 生成的待办</value>
+  </data>
+  <data name="Todo_PreviewHint" xml:space="preserve">
+    <value>请确认以下待办是否满意，满意后保存；不满意可直接取消。</value>
+  </data>
+  <data name="Todo_SaveConfirm" xml:space="preserve">
+    <value>确认保存</value>
+  </data>
+  <data name="Todo_Saving" xml:space="preserve">
+    <value>保存中…</value>
+  </data>
+  <data name="Todo_SaveFailed" xml:space="preserve">
+    <value>保存失败</value>
+  </data>
   <data name="Nav_FamilyBudget" xml:space="preserve">
     <value>家庭记账</value>
   </data>

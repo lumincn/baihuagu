@@ -293,6 +293,54 @@ namespace Baihua.Web.Services
             return true;
         }
 
+        public async Task<List<TodoGoalDto>> GetTodoGoalsAsync(CancellationToken cancellationToken = default)
+        {
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            var response = await GetWithMetricsAsync("/api/todos/goals", linked.Token);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<List<TodoGoalDto>>(linked.Token) ?? new List<TodoGoalDto>();
+        }
+
+        public async Task<AiTodoPreviewDto> GenerateTodosAsync(GenerateTodosRequest request, CancellationToken cancellationToken = default)
+        {
+            // AI 本地大模型生成一组待办可能耗时 20s+，走长超时客户端（5 分钟），不用 QuickCallTimeout(15s)
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            EnsurePrimaryBaseAddress();
+            var response = await _longHttpClient.PostAsync("/api/todos/ai-generate", JsonContent.Create(request), linked.Token);
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await TryGetErrorMessageAsync(response);
+                throw new HttpRequestException(error ?? $"AI 生成失败（{(int)response.StatusCode}）");
+            }
+            return await response.Content.ReadFromJsonAsync<AiTodoPreviewDto>(linked.Token) ?? new AiTodoPreviewDto();
+        }
+
+        public async Task<TodoGoalDto> SaveGeneratedTodosAsync(SaveGeneratedTodosRequest request, CancellationToken cancellationToken = default)
+        {
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            EnsurePrimaryBaseAddress();
+            var response = await _httpClient.PostAsync("/api/todos/ai-save", JsonContent.Create(request), linked.Token);
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await TryGetErrorMessageAsync(response);
+                throw new HttpRequestException(error ?? $"保存失败（{(int)response.StatusCode}）");
+            }
+            return await response.Content.ReadFromJsonAsync<TodoGoalDto>(linked.Token) ?? new TodoGoalDto();
+        }
+
+        public async Task<bool> DeleteTodoGoalAsync(int id, CancellationToken cancellationToken = default)
+        {
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
+            EnsurePrimaryBaseAddress();
+            var response = await _httpClient.DeleteAsync($"/api/todos/goals/{id}", linked.Token);
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return false;
+            response.EnsureSuccessStatusCode();
+            return true;
+        }
+
         public async Task<BudgetSummary> GetBudgetSummaryAsync(int? year = null, int? month = null, CancellationToken cancellationToken = default)
         {
             var qs = (year.HasValue || month.HasValue)

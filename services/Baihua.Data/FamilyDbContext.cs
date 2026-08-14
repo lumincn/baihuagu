@@ -42,6 +42,7 @@ public class FamilyDbContext : DbContext
     public DbSet<FamilyReward> FamilyRewards => Set<FamilyReward>();
     public DbSet<RewardClaim> RewardClaims => Set<RewardClaim>();
     public DbSet<TodoItem> TodoItems => Set<TodoItem>();
+    public DbSet<TodoGoal> TodoGoals => Set<TodoGoal>();
 
     public string DatabasePath
     {
@@ -351,6 +352,29 @@ public class FamilyDbContext : DbContext
             entity.Property(e => e.VaultId).IsRequired();
             entity.Property(e => e.State).HasMaxLength(20).IsRequired().HasDefaultValue("discovered");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("datetime('now')");
+        });
+
+        modelBuilder.Entity<TodoGoal>(entity =>
+        {
+            entity.ToTable("TodoGoals");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Title).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
+
+            // 删除目标时级联删除其下全部待办（SQLite 单级级联，无环，安全）
+            entity.HasMany(e => e.Items)
+                .WithOne(e => e.Goal)
+                .HasForeignKey(e => e.GoalId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<TodoItem>(entity =>
+        {
+            entity.ToTable("TodoItems");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Title).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Note).HasMaxLength(1000);
+            entity.HasIndex(e => e.GoalId);
         });
     }
 
