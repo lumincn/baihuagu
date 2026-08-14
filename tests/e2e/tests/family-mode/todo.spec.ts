@@ -39,6 +39,37 @@ test.describe('个人待办清单（TodoList）', () => {
     await expect(page.locator('li.todo-item', { hasText: uniqueTitle })).toHaveCount(0, { timeout: 15000 });
   });
 
+  test('AI 生成：输入目标 → 预览确认 → 保存为一组待办', async ({ page }) => {
+    // AI（本地 qwen2.5-7b）生成可能较慢，放宽超时
+    test.setTimeout(300000);
+    const goal = '发布arkts鸿蒙版花记';
+    const goalInput = page.getByPlaceholder('输入目标，让 AI 拆解成可执行的待办，例如：办理护照 / 申请公租房…');
+    const before = await page.locator('.todo-goal').count();
+
+    // 1. 输入目标并点击 AI 生成 → 弹出预览确认框（此时未保存）
+    await goalInput.fill(goal);
+    await page.getByRole('button', { name: /AI 生成/ }).click();
+
+    const modal = page.locator('.todo-preview-modal');
+    await expect(modal).toBeVisible({ timeout: 180000 });
+    await expect(modal.locator('li.todo-preview-item').first()).toBeVisible({ timeout: 15000 });
+    // 预览阶段不应落库：目标卡片数量不变
+    await expect(page.locator('.todo-goal')).toHaveCount(before, { timeout: 15000 });
+
+    // 2. 确认保存 → 弹窗关闭、新目标卡片出现（AI 可能改写标题，不断言标题文案）
+    await modal.getByRole('button', { name: '确认保存' }).click();
+    await expect(modal).toHaveCount(0, { timeout: 15000 });
+    const newGoal = page.locator('.todo-goal').nth(before);
+    await expect(newGoal).toBeVisible({ timeout: 15000 });
+    await expect(newGoal.locator('li.todo-item').first()).toBeVisible({ timeout: 15000 });
+    await expect(goalInput).toHaveValue('');
+
+    // 3. 数据自清理：两步删除新目标（级联删除其下待办）
+    await newGoal.locator('.card-header').getByRole('button', { name: '删除', exact: true }).click();
+    await newGoal.locator('.card-header').getByRole('button', { name: '删除目标及全部待办？', exact: true }).click();
+    await expect(page.locator('.todo-goal')).toHaveCount(before, { timeout: 15000 });
+  });
+
   test('API: 待办端点返回合法结构', async ({ request }) => {
     const apiBase = `http://127.0.0.1:${process.env.API_PORT || '8788'}`;
     const res = await request.get(`${apiBase}/api/todos`);
