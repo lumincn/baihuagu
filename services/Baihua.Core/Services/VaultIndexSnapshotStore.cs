@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
-namespace Baihua.Family.Services;
+namespace Baihua.Core.Services;
 
 /// <summary>
 /// Vault FTS 索引文件快照持久化（JSON 文件）。

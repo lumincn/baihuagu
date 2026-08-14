@@ -1,3 +1,5 @@
+using Baihua.Core.Models;
+using Baihua.Core.Services;
 using Baihua.Core;
 using Baihua.Core.Localization;
 using Baihua.Family.Services;
@@ -43,7 +45,7 @@ namespace Baihua.Family.Controllers
                     messages.Insert(0, new ChatMessage(ChatRole.System, GetSystemPrompt(provider.Id)));
                 }
 
-                var options = Services.AiClientService.BuildChatOptions();
+                var options = Baihua.Core.Services.AiClientService.BuildChatOptions();
                 IList<AITool>? tools = null;
                 if (enableTools)
                 {
@@ -94,7 +96,7 @@ namespace Baihua.Family.Controllers
                         }
 
                         // 重新调用 AI 获取最终回复（不再传 Tools，避免无限循环）
-                        var finalOptions = Services.AiClientService.BuildChatOptions();
+                        var finalOptions = Baihua.Core.Services.AiClientService.BuildChatOptions();
                         var finalResponse = await _aiClientService.GetChatResponseWithAutoStartAsync(
                             provider, model, messages, finalOptions, linkedCts.Token);
                         return finalResponse.Text ?? "";
@@ -108,7 +110,7 @@ namespace Baihua.Family.Controllers
                 if (string.IsNullOrWhiteSpace(content) && enableTools)
                 {
                     _logger.LogWarning("AI ({Provider}/{Model}) 返回内容为空，尝试禁用工具调用后重试", provider.Name, model);
-                    var retryOptions = Services.AiClientService.BuildChatOptions();
+                    var retryOptions = Baihua.Core.Services.AiClientService.BuildChatOptions();
                     var retryResponse = await _aiClientService.GetChatResponseWithAutoStartAsync(
                         provider, model, messages, retryOptions, linkedCts.Token, operation: "chat-retry-no-tools");
                     content = retryResponse.Text;

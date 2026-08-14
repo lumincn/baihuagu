@@ -1,4 +1,4 @@
-namespace Baihua.Family.Services;
+namespace Baihua.Core.Services;
 
 /// <summary>
 /// 获取配置文件目录。

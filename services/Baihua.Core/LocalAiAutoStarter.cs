@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 
-namespace Baihua.Family.Services
+namespace Baihua.Core.Services
 {
     /// <summary>
     /// 自动检测并启动本地 AI 服务（LM Studio / Ollama）。

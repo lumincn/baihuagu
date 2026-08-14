@@ -1,4 +1,4 @@
-namespace Baihua.Family.Services;
+namespace Baihua.Core.Services;
 
 /// <summary>
 /// 任务取消令牌管理——从 TaskManager 中提取的 CancellationTokenSource 生命周期关注点

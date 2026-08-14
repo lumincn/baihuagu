@@ -1,3 +1,5 @@
+using Baihua.Core.Models;
+using Baihua.Core.Services;
 using Baihua.Family.Services;
 using Microsoft.AspNetCore.Mvc;
 using Baihua.Contracts.Ai;

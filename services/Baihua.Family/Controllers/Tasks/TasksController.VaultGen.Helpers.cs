@@ -1,3 +1,5 @@
+using Baihua.Core.Models;
+using Baihua.Core.Services;
 using Baihua.Core;
 using Baihua.Core.Localization;
 using Baihua.Family.Services;
@@ -75,7 +77,7 @@ namespace Baihua.Family.Controllers
                     {
                         await _taskManager.UpdateStatus(taskId, RunnerTaskStatus.Running);
 
-                        var options = Services.AiClientService.BuildChatOptions(temperature: 0.7f, maxOutputTokens: 4000);
+                        var options = Baihua.Core.Services.AiClientService.BuildChatOptions(temperature: 0.7f, maxOutputTokens: 4000);
 
                         // Step 1: 生成知识库名称
                         currentStep++;

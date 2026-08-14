@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using Baihua.Family.Services;
+using Baihua.Core.Services;
 
 namespace Baihua.Core;
 

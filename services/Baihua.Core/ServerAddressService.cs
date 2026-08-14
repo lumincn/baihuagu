@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Baihua.Data;
 using Baihua.Data.Entities;
 
-namespace Baihua.Family.Services
+namespace Baihua.Core.Services
 {
     /// <summary>
     /// 服务器地址配置服务

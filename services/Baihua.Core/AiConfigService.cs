@@ -3,10 +3,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using Baihua.Data;
 using Baihua.Data.Entities;
-using Baihua.Family.Models;
+using Baihua.Core.Models;
 using Baihua.Core.Security;
 
-namespace Baihua.Family.Services;
+namespace Baihua.Core.Services;
 
 /// <summary>
 /// AI 配置管理服务 - 使用 SQLite + EF Core 加密存储 API Key

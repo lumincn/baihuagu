@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using System.Net;
 
-namespace Baihua.Family.Services.Strategies;
+namespace Baihua.Core.Services.Strategies;
 
 /// <summary>
 /// 家庭版同步授权策略：Bearer Token + 设备授权验证

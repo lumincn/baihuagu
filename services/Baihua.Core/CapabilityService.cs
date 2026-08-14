@@ -4,7 +4,7 @@ using Baihua.Contracts.Capability;
 using Baihua.Contracts.LocalModels;
 using Baihua.Core.Localization;
 
-namespace Baihua.Family.Services;
+namespace Baihua.Core.Services;
 
 /// <summary>
 /// 需要本地算力的功能标识

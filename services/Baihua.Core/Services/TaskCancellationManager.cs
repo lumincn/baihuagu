@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace Baihua.Family.Services;
+namespace Baihua.Core.Services;
 
 /// <summary>
 /// 任务 CancellationTokenSource 管理器

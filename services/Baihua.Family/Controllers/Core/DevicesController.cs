@@ -16,11 +16,11 @@ namespace Baihua.Family.Controllers
     {
         private readonly DeviceService _deviceService;
         private readonly IHubContext<DeviceHub> _hubContext;
-        private readonly Services.VaultSettingsService _vaultSettings;
+        private readonly Baihua.Core.Services.VaultSettingsService _vaultSettings;
         private readonly ILogger<DevicesController> _logger;
         private readonly IStringLocalizer<SharedResources> _loc;
 
-        public DevicesController(DeviceService deviceService, IHubContext<DeviceHub> hubContext, Services.VaultSettingsService vaultSettings, ILogger<DevicesController> logger, IStringLocalizer<SharedResources> loc)
+        public DevicesController(DeviceService deviceService, IHubContext<DeviceHub> hubContext, Baihua.Core.Services.VaultSettingsService vaultSettings, ILogger<DevicesController> logger, IStringLocalizer<SharedResources> loc)
         {
             _deviceService = deviceService;
             _hubContext = hubContext;

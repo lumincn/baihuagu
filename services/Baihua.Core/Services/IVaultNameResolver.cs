@@ -1,4 +1,4 @@
-namespace Baihua.Family.Services;
+namespace Baihua.Core.Services;
 
 public interface IVaultNameResolver
 {

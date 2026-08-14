@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Baihua.Data;
 
-namespace Baihua.Family.Services;
+namespace Baihua.Core.Services;
 
 /// <summary>
 /// API Key 加密迁移服务：处理因加密密钥变化导致无法解密的 API Key 迁移。

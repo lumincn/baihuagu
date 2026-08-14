@@ -2,7 +2,7 @@ using System.Text.Json;
 using Baihua.Core;
 using Baihua.Data.Entities;
 
-namespace Baihua.Family.Services;
+namespace Baihua.Core.Services;
 
 /// <summary>
 /// 任务实体映射器——从 TaskManager 中提取的 TaskEntity→TaskInfo 转换关注点

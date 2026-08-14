@@ -1,8 +1,8 @@
 using Baihua.Core.Notifications;
 using Microsoft.AspNetCore.Mvc;
 using Baihua.Data.Entities;
-using Baihua.Family.Models;
-using Baihua.Family.Services;
+using Baihua.Core.Models;
+using Baihua.Core.Services;
 using Baihua.Core.Security;
 using Baihua.Contracts.Ai;
 using Baihua.Contracts.Pairing;

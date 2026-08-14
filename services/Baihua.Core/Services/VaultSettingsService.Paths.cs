@@ -4,7 +4,7 @@ using Baihua.Data;
 using Baihua.Data.Entities;
 using Baihua.Contracts.Vaults;
 
-namespace Baihua.Family.Services;
+namespace Baihua.Core.Services;
 
 
 public partial class VaultSettingsService

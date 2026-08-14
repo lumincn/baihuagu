@@ -1,3 +1,5 @@
+using Baihua.Core.Models;
+using Baihua.Core.Services;
 using Baihua.Core;
 using Baihua.Core.Security;
 using Baihua.Family.Services;
@@ -229,7 +231,7 @@ builder.Services.AddSingleton<PairingService>();
 
 // Family 版固定使用 Family 配对和同步授权策略
 builder.Services.AddSingleton<Baihua.Family.Services.Strategies.IPairingStrategy, Baihua.Family.Services.Strategies.FamilyPairingStrategy>();
-builder.Services.AddSingleton<Baihua.Family.Services.Strategies.ISyncAuthorizationStrategy, Baihua.Family.Services.Strategies.FamilySyncAuthorizationStrategy>();
+builder.Services.AddSingleton<Baihua.Core.Services.Strategies.ISyncAuthorizationStrategy, Baihua.Core.Services.Strategies.FamilySyncAuthorizationStrategy>();
 builder.Services.AddSingleton<ServerAddressService>();
 builder.Services.AddSingleton<WebUINotificationService>();
 builder.Services.AddSingleton<RequestSignatureService>();
@@ -854,7 +856,7 @@ app.MapControllers();
 
 
 // 根路径健康检查（快速响应，供外部探活使用）
-app.MapGet("/health", (Baihua.Family.Services.ServerAddressService sas) =>
+app.MapGet("/health", (Baihua.Core.Services.ServerAddressService sas) =>
 {
     var settings = sas.GetSettings();
     return Results.Ok(new
@@ -875,7 +877,7 @@ app.MapHub<DeviceHub>("/hubs/devices");
 
 // 纯 WebSocket 端点（供移动端使用，无需 SignalR 协议）
 app.Map("/ws/devices", async (HttpContext context, Baihua.Core.WebSocket.DeviceWebSocketHub hub,
-    Baihua.Family.Services.ServerAddressService sas) =>
+    Baihua.Core.Services.ServerAddressService sas) =>
 {
     if (!context.WebSockets.IsWebSocketRequest)
     {

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Baihua.Data;
 
 
-namespace Baihua.Family.Services
+namespace Baihua.Core.Services
 {
     /// <summary>
     /// 笔记文件指纹（mtime + 大小），用于增量索引的变更检测

@@ -1,3 +1,5 @@
+using Baihua.Core.Models;
+using Baihua.Core.Services;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Runtime.InteropServices;

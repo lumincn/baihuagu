@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Localization;
 using Baihua.Contracts.Ai;
-using Baihua.Family.Models;
-using Baihua.Family.Services;
+using Baihua.Core.Models;
+using Baihua.Core.Services;
 
 namespace Baihua.Family.Controllers;
 

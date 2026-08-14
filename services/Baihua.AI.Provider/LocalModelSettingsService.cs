@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using System.Runtime.InteropServices;
-using Baihua.Family.Services;
+using Baihua.Core.Services;
 
 namespace Baihua.AI.Provider;
 

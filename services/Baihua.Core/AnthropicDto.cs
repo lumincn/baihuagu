@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Baihua.Family.Services;
+namespace Baihua.Core.Services;
 
 public class AnthropicRequest
 {

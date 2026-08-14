@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Localization;
 using Baihua.Core.Localization;
 
-namespace Baihua.Family.Services;
+namespace Baihua.Core.Services;
 
 /// <summary>
 /// Anthropic API 客户端（HTTP 直调，不依赖第三方 SDK）

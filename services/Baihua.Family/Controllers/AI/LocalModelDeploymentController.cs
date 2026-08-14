@@ -1,3 +1,5 @@
+using Baihua.Core.Models;
+using Baihua.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Baihua.Contracts.LocalModels;
 using Baihua.Contracts.OpenClaw;

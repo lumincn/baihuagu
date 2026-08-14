@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
-namespace Baihua.Family.Services;
+namespace Baihua.Core.Services;
 
 public class DefaultPromptProvider
 {

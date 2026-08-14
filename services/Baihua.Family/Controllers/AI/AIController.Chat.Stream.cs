@@ -1,3 +1,5 @@
+using Baihua.Core.Models;
+using Baihua.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
 using Baihua.Contracts.Ai;
@@ -64,7 +66,7 @@ namespace Baihua.Family.Controllers
                 }
                 messages = enrichedMessages;
 
-                var options = Services.AiClientService.BuildChatOptions();
+                var options = Baihua.Core.Services.AiClientService.BuildChatOptions();
                 var enableTools = request.EnableTools ?? true;
 
                 // 收集完整 AI 回复用于记忆存储

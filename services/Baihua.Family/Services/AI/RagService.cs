@@ -1,3 +1,5 @@
+using Baihua.Core.Models;
+using Baihua.Core.Services;
 using Microsoft.Extensions.AI;
 using Baihua.Family.Controllers;
 

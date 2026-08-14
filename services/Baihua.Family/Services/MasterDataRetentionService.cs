@@ -1,3 +1,5 @@
+using Baihua.Core.Models;
+using Baihua.Core.Services;
 using Baihua.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
@@ -156,7 +158,7 @@ public class MasterDataRetentionService : BackgroundService
         }
     }
 
-    private (Models.AiProviderConfig Provider, string Model) ResolveProviderAndModel(
+    private (Baihua.Core.Models.AiProviderConfig Provider, string Model) ResolveProviderAndModel(
         AiSettingsService aiSettings, string? providerId, string? model)
     {
         var providers = aiSettings.GetAiProviders();

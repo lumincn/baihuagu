@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-namespace Baihua.Family.Services
+namespace Baihua.Core.Services
 {
     /// <summary>
     /// 知识库 FTS5 索引定时更新服务

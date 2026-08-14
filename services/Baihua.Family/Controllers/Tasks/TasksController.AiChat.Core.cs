@@ -83,7 +83,7 @@ namespace Baihua.Family.Controllers
                 new(ChatRole.System, systemPrompt),
                 new(ChatRole.User, query)
             };
-            var options = Services.AiClientService.BuildChatOptions();
+            var options = Baihua.Core.Services.AiClientService.BuildChatOptions();
 
             ChatResponse response;
             try

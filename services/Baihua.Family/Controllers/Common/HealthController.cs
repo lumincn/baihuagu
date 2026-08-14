@@ -14,16 +14,16 @@ namespace Baihua.Family.Controllers;
     public partial class HealthController : ControllerBase
     {
         private readonly Services.SystemHealthService _healthService;
-        private readonly Services.AiSettingsService _aiSettings;
-        private readonly Services.LocalAiAutoStarter _localAiAutoStarter;
+        private readonly Baihua.Core.Services.AiSettingsService _aiSettings;
+        private readonly Baihua.Core.Services.LocalAiAutoStarter _localAiAutoStarter;
         private readonly Baihua.AI.Provider.ILocalAiConfigService _localAiConfig;
         private readonly ILogger<HealthController> _logger;
         private readonly IStringLocalizer<SharedResources> _loc;
 
         public HealthController(
             Services.SystemHealthService healthService,
-            Services.AiSettingsService aiSettings,
-            Services.LocalAiAutoStarter localAiAutoStarter,
+            Baihua.Core.Services.AiSettingsService aiSettings,
+            Baihua.Core.Services.LocalAiAutoStarter localAiAutoStarter,
             Baihua.AI.Provider.ILocalAiConfigService localAiConfig,
             ILogger<HealthController> logger,
             IStringLocalizer<SharedResources> loc)

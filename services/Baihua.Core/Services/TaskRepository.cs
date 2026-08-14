@@ -4,7 +4,7 @@ using Baihua.Core;
 using Baihua.Data;
 using Baihua.Data.Entities;
 
-namespace Baihua.Family.Services;
+namespace Baihua.Core.Services;
 
 /// <summary>
 /// 基于 EF Core + SQLite 的任务持久化实现

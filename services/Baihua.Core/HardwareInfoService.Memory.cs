@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using System.Runtime.InteropServices;
 using Baihua.Contracts.LocalModels;
 
-namespace Baihua.Family.Services;
+namespace Baihua.Core.Services;
 
 public partial class HardwareInfoService
 {

@@ -10,9 +10,9 @@ using System.ClientModel;
 using Microsoft.Extensions.Logging;
 using Baihua.Data;
 using Baihua.Data.Entities;
-using Baihua.Family.Models;
+using Baihua.Core.Models;
 
-namespace Baihua.Family.Services;
+namespace Baihua.Core.Services;
     /// <summary>
     /// 统一的 AI 客户端服务：基于 Microsoft.Extensions.AI 抽象层，
     /// 为任意 OpenAI 兼容提供商创建 IChatClient 和 IEmbeddingGenerator。

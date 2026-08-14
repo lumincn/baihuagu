@@ -18,8 +18,8 @@ namespace Baihua.Family.Controllers;
         private readonly Services.DailyCardService _dailyCardService;
         private readonly Services.AchievementEngine _achievementEngine;
         private readonly Services.LearnerService _learnerService;
-        private readonly Services.VaultSettingsService _vaultSettings;
-        private readonly Services.TaskManager _taskManager;
+        private readonly Baihua.Core.Services.VaultSettingsService _vaultSettings;
+        private readonly Baihua.Core.Services.TaskManager _taskManager;
         private readonly ILogger<AnkiController> _logger;
         private readonly IStringLocalizer<SharedResources> _loc;
 
@@ -28,8 +28,8 @@ namespace Baihua.Family.Controllers;
             Services.DailyCardService dailyCardService,
             Services.AchievementEngine achievementEngine,
             Services.LearnerService learnerService,
-            Services.VaultSettingsService vaultSettings,
-            Services.TaskManager taskManager,
+            Baihua.Core.Services.VaultSettingsService vaultSettings,
+            Baihua.Core.Services.TaskManager taskManager,
             ILogger<AnkiController> logger,
             IStringLocalizer<SharedResources> loc)
         {

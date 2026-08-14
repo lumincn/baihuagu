@@ -6,7 +6,7 @@ using Baihua.Data;
 using Baihua.Data.Entities;
 using Baihua.Contracts.Vaults;
 
-namespace Baihua.Family.Services;
+namespace Baihua.Core.Services;
 
 /// <summary>
 /// 知识库配置服务 - 从 SettingsService 中提取，专注管理 Vault 配置

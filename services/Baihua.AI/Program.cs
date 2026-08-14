@@ -6,7 +6,7 @@ using System.Text.Unicode;
 using System.Text;
 using Serilog;
 using Baihua.Core;
-using Baihua.Family.Services;
+using Baihua.Core.Services;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Logs;
@@ -78,8 +78,8 @@ builder.Services.AddSingleton<AiSettingsService>();
 builder.Services.AddSingleton<AiConfigService>();
 builder.Services.AddSingleton<MigrationService>();
 builder.Services.AddSingleton<Baihua.Core.Notifications.WebUINotificationService>();
-builder.Services.AddSingleton<Baihua.Family.Services.HardwareInfoService>();
-builder.Services.AddSingleton<Baihua.Family.Services.CapabilityService>();
+builder.Services.AddSingleton<Baihua.Core.Services.HardwareInfoService>();
+builder.Services.AddSingleton<Baihua.Core.Services.CapabilityService>();
 builder.Services.AddAiClientServices();
 
 // 编程 Agent（Microsoft Agent Framework）

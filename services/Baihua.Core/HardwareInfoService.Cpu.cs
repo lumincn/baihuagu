@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Baihua.Contracts.LocalModels;
 
-namespace Baihua.Family.Services;
+namespace Baihua.Core.Services;
 
 public partial class HardwareInfoService
 {

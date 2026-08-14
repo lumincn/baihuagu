@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Baihua.Family.Models;
+using Baihua.Core.Models;
 
-namespace Baihua.Family.Services;
+namespace Baihua.Core.Services;
 
 /// <summary>
 /// AI 运行时配置服务：聚合 AI 提供商、模型、API Key、请求参数、Embedding 配置。

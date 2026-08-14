@@ -1,3 +1,5 @@
+using Baihua.Core.Models;
+using Baihua.Core.Services;
 using Baihua.Core;
 using Baihua.Core.Localization;
 using Baihua.Family.Services;
@@ -17,9 +19,9 @@ namespace Baihua.Family.Controllers
     [RequestSizeLimit(10 * 1024 * 1024)] // 10MB 限制，防止 DoS
     public partial class AIController : ControllerBase
     {
-        private readonly Services.AiSettingsService _aiSettings;
-        private readonly Services.VaultSettingsService _vaultSettings;
-        private readonly Services.AiClientService _aiClientService;
+        private readonly Baihua.Core.Services.AiSettingsService _aiSettings;
+        private readonly Baihua.Core.Services.VaultSettingsService _vaultSettings;
+        private readonly Baihua.Core.Services.AiClientService _aiClientService;
         private readonly Services.LocalModelDeploymentService _localDeployment;
         private readonly Services.RagService _ragService;
         private readonly DefaultPromptProvider _scenePromptService;
@@ -32,9 +34,9 @@ namespace Baihua.Family.Controllers
         private readonly IStringLocalizer<SharedResources> _loc;
 
         public AIController(
-            Services.AiSettingsService aiSettings,
-            Services.VaultSettingsService vaultSettings,
-            Services.AiClientService aiClientService,
+            Baihua.Core.Services.AiSettingsService aiSettings,
+            Baihua.Core.Services.VaultSettingsService vaultSettings,
+            Baihua.Core.Services.AiClientService aiClientService,
             Services.LocalModelDeploymentService localDeployment,
             Services.RagService ragService,
             DefaultPromptProvider scenePromptService,

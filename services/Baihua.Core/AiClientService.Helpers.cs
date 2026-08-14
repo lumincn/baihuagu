@@ -7,9 +7,9 @@ using System.ClientModel;
 using Microsoft.Extensions.Logging;
 using Baihua.Data;
 using Baihua.Data.Entities;
-using Baihua.Family.Models;
+using Baihua.Core.Models;
 
-namespace Baihua.Family.Services;
+namespace Baihua.Core.Services;
 
 public partial class AiClientService
 {

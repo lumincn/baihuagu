@@ -1,6 +1,6 @@
 using System;
 
-namespace Baihua.Family.Services
+namespace Baihua.Core.Services
 {
     public static class ObsidianExecutableResolver
     {

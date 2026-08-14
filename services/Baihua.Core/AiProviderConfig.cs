@@ -1,6 +1,6 @@
 using Baihua.Contracts.Ai;
 
-namespace Baihua.Family.Models
+namespace Baihua.Core.Models
 {
     /// <summary>
     /// AI 模型配置项（appsettings.json 中 Models 数组的格式）

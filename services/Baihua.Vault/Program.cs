@@ -8,7 +8,7 @@ using Serilog;
 using Baihua.Core;
 using Baihua.Core.Notifications;
 using Baihua.Core.Security;
-using Baihua.Family.Services;
+using Baihua.Core.Services;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Logs;
@@ -118,7 +118,7 @@ builder.Services.AddAiClientServices();
 builder.Services.AddHostedService<VaultIndexSchedulerService>();
 
 // 同步授权策略（家庭版）
-builder.Services.AddSingleton<Baihua.Family.Services.Strategies.ISyncAuthorizationStrategy, Baihua.Family.Services.Strategies.FamilySyncAuthorizationStrategy>();
+builder.Services.AddSingleton<Baihua.Core.Services.Strategies.ISyncAuthorizationStrategy, Baihua.Core.Services.Strategies.FamilySyncAuthorizationStrategy>();
 
 // 健康检查
 builder.Services.AddHealthChecks()

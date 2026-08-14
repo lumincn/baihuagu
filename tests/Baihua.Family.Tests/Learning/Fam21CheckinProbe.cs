@@ -1,3 +1,5 @@
+using Baihua.Core.Models;
+using Baihua.Core.Services;
 using System.Reflection;
 using Baihua.Core.Localization;
 using Baihua.Data;

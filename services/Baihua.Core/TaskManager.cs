@@ -9,7 +9,7 @@ using Baihua.Core.Hubs;
 using Microsoft.EntityFrameworkCore;
 using Baihua.Data;
 
-namespace Baihua.Family.Services
+namespace Baihua.Core.Services
 {
     /// <summary>
     /// 任务管理器——统筹任务的生命周期管理

@@ -3,7 +3,7 @@ using Baihua.Contracts.Ai;
 using Baihua.Core.Localization;
 using Baihua.Data;
 using Baihua.Data.Entities;
-using Baihua.Family.Services;
+using Baihua.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Localization;

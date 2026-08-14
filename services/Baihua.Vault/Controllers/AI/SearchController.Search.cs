@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Baihua.Contracts.Search;
 using System.Diagnostics;
 
-using Baihua.Family.Services;
+using Baihua.Core.Services;
 namespace Baihua.Vault.Controllers;
 
 public partial class SearchController

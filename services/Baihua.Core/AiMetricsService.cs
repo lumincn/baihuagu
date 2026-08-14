@@ -4,7 +4,7 @@ using Baihua.Core.Localization;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 
-namespace Baihua.Family.Services;
+namespace Baihua.Core.Services;
 
 /// <summary>
 /// AI 与 Benchmark 指标服务：基于 System.Diagnostics.Metrics，

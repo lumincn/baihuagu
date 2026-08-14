@@ -25,7 +25,7 @@ public class OpenClawTaskService : IOpenClawTaskService
 {
     private readonly IDbContextFactory<FamilyDbContext> _dbFactory;
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly Baihua.Family.Services.TaskManager? _taskManager;
+    private readonly Baihua.Core.Services.TaskManager? _taskManager;
     private readonly ILogger<OpenClawTaskService> _logger;
     private readonly IStringLocalizer<SharedResources> _loc;
     private readonly string _reportsDir;
@@ -33,7 +33,7 @@ public class OpenClawTaskService : IOpenClawTaskService
     // OpenClaw TaskId -> TaskManager TaskId 映射
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<int, string> _openClawToTaskManagerMap = new();
 
-    public OpenClawTaskService(IDbContextFactory<FamilyDbContext> dbFactory, IHttpClientFactory httpClientFactory, Baihua.Family.Services.TaskManager? taskManager, ILogger<OpenClawTaskService> logger, IStringLocalizer<SharedResources> loc)
+    public OpenClawTaskService(IDbContextFactory<FamilyDbContext> dbFactory, IHttpClientFactory httpClientFactory, Baihua.Core.Services.TaskManager? taskManager, ILogger<OpenClawTaskService> logger, IStringLocalizer<SharedResources> loc)
     {
         _dbFactory = dbFactory;
         _httpClientFactory = httpClientFactory;

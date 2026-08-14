@@ -9,7 +9,7 @@ using Microsoft.Extensions.AI;
 using Baihua.Data;
 using Baihua.Data.Entities;
 
-namespace Baihua.Family.Services
+namespace Baihua.Core.Services
 {
     /// <summary>
     /// 语义向量服务：基于 SQLite BLOB 缓存 + IEmbeddingGenerator 抽象，对关键词搜索结果按相似度重排

@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Baihua.Family.Services;
+namespace Baihua.Core.Services;
 
 /// <summary>
 /// 知识库名称解析服务

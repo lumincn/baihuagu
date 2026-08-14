@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Baihua.Core;
 using Baihua.Core.Hubs;
 
-namespace Baihua.Family.Services;
+namespace Baihua.Core.Services;
 
 /// <summary>
 /// 通过 SignalR Hub 推送任务状态/进度更新
