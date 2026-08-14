@@ -231,6 +231,10 @@ dotnet test tests/Baihua.Sdk.Tests/ --filter Integration
 **组件拆分**：
 - `SyncContent.razor` / `PairingContent.razor`：可复用内容组件，供 KnowledgePage 和独立页面共用
 
+**功能边界说明**：
+- 花圃包含完整的**拜师（Master）功能**（约 2600 行：MasterService + 4 页 + 模型/缓存），功能远超"验证工具"典型范围——这是有意保留的完整产品功能（与 Web 端拜师体验对齐），非技术验证范畴；新增移动端功能时不必与花圃完全对齐，但拜师功能是例外（已正式纳入，不要裁剪）。
+- 花圃不承担正式移动客户端角色，不与鸿蒙/安卓端功能完全对齐（拜师除外）。
+
 - **Android**: `dotnet build clients/Huapu.slnx -f net9.0-android -c Release` → APK 在 `clients/Huapu/bin/Release/net9.0-android/com.lumin.BaiHua-Signed.apk`
 - **iOS**: 需要 macOS + Xcode（GitHub Actions CI 已配置 `.github/workflows/ci.yml`）
 
