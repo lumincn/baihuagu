@@ -80,24 +80,13 @@
 
                 @foreach (var msg in chatMessages)
                 {
-                    <div class="message @(msg.IsUser ? "user" : "master")">
-                        <div class="message-avatar">
-                            @(msg.IsUser ? "👤" : selectedMaster.MasterName[..1])
-                        </div>
-                        <div class="message-content">
-                            <div class="message-text">
-                                @if (msg.IsUser)
-                                {
-                                    @msg.Content
-                                }
-                                else
-                                {
-                                    @((MarkupString)RenderMarkdown(msg.Content))
-                                }
-                            </div>
-                            <div class="message-time">@msg.Time.ToString("HH:mm")</div>
-                        </div>
-                    </div>
+                    <StreamingMessage Content="@msg.Content"
+                                      IsUser="@msg.IsUser"
+                                      IsCompleted="@msg.IsCompleted"
+                                      Time="@msg.Time"
+                                      Avatar="@(msg.IsUser ? "👤" : selectedMaster.MasterName[..1])"
+                                      RoleCss="master"
+                                      @key="msg" />
                 }
 
                 @if (isThinking)
@@ -920,6 +909,7 @@
         StateHasChanged();
 
         _chatCts = new CancellationTokenSource();
+        aiMessage.IsCompleted = false;   // 流式开始：复位完成标记
         try
         {
             var history = chatMessages.Take(chatMessages.Count - 1)
@@ -958,6 +948,7 @@
         finally
         {
             isThinking = false;
+            aiMessage.IsCompleted = true;   // 流式结束：标记完成（子组件据此做单条收尾渲染）
             _chatCts?.Dispose();
             _chatCts = null;
             StateHasChanged();
@@ -1080,13 +1071,6 @@
 
     [Inject] private NavigationManager NavigationManager { get; set; } = default!;
 
-    private string RenderMarkdown(string? content)
-    {
-        if (string.IsNullOrWhiteSpace(content)) return "";
-        var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().DisableHtml().Build();
-        return Markdown.ToHtml(content, pipeline);
-    }
-
     private static string Truncate(string s, int max) =>
         s.Length <= max ? s : s[..max] + "...";
 
@@ -1105,6 +1089,9 @@
         public bool IsUser { get; set; }
         public string Content { get; set; } = "";
         public DateTime Time { get; set; }
+        /// <summary>流式完成标记（仅内存态，不序列化进 localStorage）。</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public bool IsCompleted { get; set; }
     }
 
     public void Dispose()

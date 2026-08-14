@@ -148,6 +148,10 @@ dotnet build services/BaiHua.slnx -c Release
 - **Windows**（`tools/bh/win/docker/bh.ps1`）：`ai` 服务 **native 运行**（Windows 进程，直接访问 Arc GPU 做 LlamaSharp/ONNX/OpenVINO 推理），`family`/`vault`/`webui`/`nginx` 走 docker compose；compose 里 `ai` 带 `profiles: ["docker-ai"]`（默认不启动容器），容器通过 `host.docker.internal:8791` 访问 native ai
 - **Linux**（`deploy-docker.sh`）：全部容器化，`docker compose --profile docker-ai up -d` 启动含 ai
 
+**OpenObserve 凭据约定**（默认口令 `Complexpass#123` 已废弃，appsettings 中不再有默认值）：
+- native 部署：`bh.ps1(win/native)` 启动时从 `$BAIHUA_HOME\openobserve-password.txt` 注入 `OpenObserve__Password`（文件缺失则该配置为空）
+- compose 部署：`OPENOBSERVE_PASSWORD` 环境变量必填（`bh.ps1(win/docker)` 与 `deploy-docker.sh` 会自动生成并写入 `docker/.env`）
+
 **例外（名实相符，保留原名）**：
 - `TaskRunner.Cloud` — 官网版（mdyj-cloud 仓库）的真实项目名，与本仓库无关
 - 历史文档/测试报告中的旧名 — 记录当时的客观状态

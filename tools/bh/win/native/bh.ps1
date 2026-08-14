@@ -100,6 +100,11 @@ function Start-One($svc) {
         ASPNETCORE_URLS = "http://127.0.0.1:$($svc.Port)"
         OpenObserve__Enabled = 'true'
     }
+    # OpenObserve 客户端凭据：优先从 BAIHUA_HOME 的密码文件注入（轮换后不再依赖 appsettings 默认值）
+    $ooPassFile = Join-Path $DataHome 'openobserve-password.txt'
+    if (Test-Path $ooPassFile) {
+        $envBlock['OpenObserve__Password'] = (Get-Content $ooPassFile -Raw).Trim()
+    }
     if ($svc.Name -eq 'family') {
         $envBlock['BAIHUA_VAULT_URL'] = 'http://127.0.0.1:8790'
         $envBlock['BAIHUA_AI_URL'] = 'http://127.0.0.1:8791'

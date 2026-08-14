@@ -46,41 +46,16 @@
     <div class="chat-messages">
         @foreach (var message in messages)
         {
-            <div class="message @(message.IsUser ? "user" : "ai")">
-                <div class="message-avatar">
-                    @(message.IsUser ? "👤" : "🤖")
-                </div>
-                <div class="message-content">
-                    @if (message.ToolCalls.Any())
-                    {
-                        <div class="tool-calls">
-                            @foreach (var tool in message.ToolCalls)
-                            {
-                                <span class="tool-call-badge">@tool.DisplayName</span>
-                            }
-                        </div>
-                    }
-                    <div class="message-text">
-                        @if (message.IsUser)
-                        {
-                            @message.Content
-                        }
-                        else
-                        {
-                            @((MarkupString)RenderMarkdown(message.Content))
-                        }
-                    </div>
-                    <div class="message-actions">
-                        @if (!message.IsUser)
-                        {
-                            <button class="msg-action-btn" @onclick="() => RegenerateAsync(message)" title="@L["Messages_Regenerate"]">
-                                @L["Messages_Regenerate"]
-                            </button>
-                        }
-                        <span class="message-time">@message.Time.ToString("HH:mm")</span>
-                    </div>
-                </div>
-            </div>
+            <StreamingMessage Content="@message.Content"
+                              IsUser="@message.IsUser"
+                              IsCompleted="@message.IsCompleted"
+                              Time="@message.Time"
+                              ToolCalls="@(message.ToolCalls.Select(t => t.DisplayName).ToList())"
+                              ShowActions="true"
+                              Regenerate="() => RegenerateAsync(message)"
+                              HighlightOnComplete="true"
+                              AddCopyButtons="true"
+                              @key="message" />
         }
 
         @if (isThinking)
@@ -701,8 +676,7 @@
             await LoadRunningLocalModelsAsync();
             await LoadChatHistoryAsync();
         }
-        // 每次渲染后为代码块添加复制按钮
-        await JSRuntime.InvokeVoidAsync("addCopyButtonsToCodeBlocks");
+        // 复制按钮改由 StreamingMessage 组件在自身渲染后按消息粒度添加，不再全页扫描
     }
 
     private async Task LoadProvidersAsync()
@@ -725,16 +699,6 @@
     {
         aiStatus = GlobalStateService.GetAIStatus();
         InvokeAsync(StateHasChanged);
-    }
-
-    private string RenderMarkdown(string? content)
-    {
-        if (string.IsNullOrWhiteSpace(content)) return "";
-        var pipeline = new MarkdownPipelineBuilder()
-            .UseAdvancedExtensions()
-            .DisableHtml()
-            .Build();
-        return Markdown.ToHtml(content, pipeline);
     }
 
     private async Task SaveChatHistoryAsync()
@@ -932,6 +896,7 @@
             .ToList();
 
         _chatCts = new CancellationTokenSource();
+        aiMessage.IsCompleted = false;   // 重新生成时复位完成标记（触发子组件完成瞬间高亮）
         try
         {
             if (chatMode == "remote")
@@ -1004,11 +969,13 @@
         finally
         {
             isThinking = false;
+            aiMessage.IsCompleted = true;
             _chatCts?.Dispose();
             _chatCts = null;
             StateHasChanged();
             await Task.Yield();
-            try { await JSRuntime.InvokeVoidAsync("hljs.highlightAll"); } catch { }
+            // 代码高亮改由 StreamingMessage 在完成瞬间对最后一条消息执行 hljs.highlightElement，
+            // 不再对全量消息列表 highlightAll
             await SaveChatHistoryAsync();
         }
     }
@@ -1176,6 +1143,9 @@
         public string Content { get; set; } = "";
         public DateTime Time { get; set; }
         public List<ToolCallInfo> ToolCalls { get; set; } = new();
+        /// <summary>流式完成标记：驱动 StreamingMessage 在完成瞬间做单条高亮（仅内存态，不入库）。</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public bool IsCompleted { get; set; }
     }
 
     public class ToolCallInfo

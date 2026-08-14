@@ -133,11 +133,11 @@
             <div class="card-header bg-info text-white"><i class="bi bi-diagram-3"></i> @L["CodeAgent_PipelineTitle"]</div>
             <div class="card-body">
                 <h6>@L["CodeAgent_StageResearch"]</h6>
-                <pre class="code-output mb-3"><code>@_research</code></pre>
+                <StreamingCodeBlock Class="code-output mb-3" Text="@_research" />
                 <h6>@L["CodeAgent_StageCode"]</h6>
-                <pre class="code-output mb-3"><code>@_codeOut</code></pre>
+                <StreamingCodeBlock Class="code-output mb-3" Text="@_codeOut" />
                 <h6>@L["CodeAgent_StageReview"]</h6>
-                <pre class="code-output mb-0"><code>@_review</code></pre>
+                <StreamingCodeBlock Class="code-output mb-0" Text="@_review" />
             </div>
         </div>
     }
@@ -154,7 +154,7 @@
                         }
                     </div>
                     <div class="card-body p-0">
-                        <pre class="code-output mb-0" id="code-output"><code>@_output</code></pre>
+                        <StreamingCodeBlock Class="code-output mb-0" Id="code-output" Text="@_output" />
                     </div>
                 </div>
             </div>
