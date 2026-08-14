@@ -4,6 +4,7 @@
   <Project Path="../libs/MobileContract/MobileContract.csproj" />
   <Project Path="Baihua.Core/Baihua.Core.csproj" />
   <Project Path="Baihua.Family/Baihua.Family.csproj" />
+  <Project Path="Baihua.AI.Provider/Baihua.AI.Provider.csproj" />
   <Project Path="Baihua.AI/Baihua.AI.csproj" />
   <Project Path="Baihua.Vault/Baihua.Vault.csproj" />
   <Project Path="Baihua.Web/Baihua.Web.csproj" />
