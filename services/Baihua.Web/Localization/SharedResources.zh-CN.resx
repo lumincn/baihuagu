@@ -5943,4 +5943,19 @@ Shift+Enter 换行，Enter 发送</value>
   <data name="Login_CmdHint2" xml:space="preserve">
     <value>，无需 ./ 前缀</value>
   </data>
+  <data name="Common_ConfirmTitle" xml:space="preserve">
+    <value>操作确认</value>
+  </data>
+  <data name="InitializationTasks_ConfirmCreateVaultBody" xml:space="preserve">
+    <value>自动创建失败: {0}&#10;&#10;是否手动前往知识库管理页面创建？</value>
+  </data>
+  <data name="Vaults_ConfirmRestoreBackupBody" xml:space="preserve">
+    <value>确定要从此备份恢复吗？</value>
+  </data>
+  <data name="Vaults_ConfirmRestoreBackupOverwriteBody" xml:space="preserve">
+    <value>⚠️ 将{0}，此操作不可撤销！确定要继续{1}吗？</value>
+  </data>
+  <data name="Vaults_ConfirmSyncBody" xml:space="preserve">
+    <value>同步知识库将检测并移除已不存在的知识库。确定要继续吗？</value>
+  </data>
 </root>

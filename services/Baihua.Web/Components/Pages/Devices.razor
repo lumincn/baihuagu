@@ -185,6 +185,11 @@
         </div>
 </div>
 
+<ConfirmDialog Message="@L["Devices_RevokeConfirm"]"
+               Visible="@(revokeDeviceId != null)"
+               OnConfirm="ConfirmRevokeDevice"
+               OnCancel="CancelRevokeDevice" />
+
 @code {
     // 通用状态
     private string? message;
@@ -374,10 +379,23 @@
         }
     }
 
-    private async Task RevokeDeviceAsync(string deviceId)
+    private string? revokeDeviceId;
+
+    private void RevokeDeviceAsync(string deviceId)
     {
-        if (!await JSRuntime.InvokeAsync<bool>("confirm", (string)L["Devices_RevokeConfirm"]))
-            return;
+        revokeDeviceId = deviceId;
+    }
+
+    private void CancelRevokeDevice()
+    {
+        revokeDeviceId = null;
+    }
+
+    private async Task ConfirmRevokeDevice()
+    {
+        var deviceId = revokeDeviceId;
+        revokeDeviceId = null;
+        if (deviceId == null) return;
         try
         {
             isProcessingDevice = true;

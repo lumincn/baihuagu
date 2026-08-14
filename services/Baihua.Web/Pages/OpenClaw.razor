@@ -533,6 +533,11 @@
     }
 </style>
 
+<ConfirmDialog Message="@(pendingTaskConfirm?.Action == "delete" ? L["OpenClaw_ConfirmDeleteTask"] : L["OpenClaw_ConfirmCancelTask"])"
+               Visible="@(pendingTaskConfirm != null)"
+               OnConfirm="ConfirmTaskAction"
+               OnCancel="HideTaskConfirm" />
+
 @code {
     private List<OpenClawTaskDto>? _tasks;
     private string _newPrompt = "";
@@ -1000,24 +1005,32 @@
         }
     }
 
-    private async Task CancelTaskAsync(int id)
-    {
-        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", L["OpenClaw_ConfirmCancelTask"]);
-        if (!confirmed) return;
+    private (string Action, int Id)? pendingTaskConfirm;
 
-        var success = await ApiService.CancelOpenClawTaskAsync(id);
-        if (success)
-        {
-            await RefreshTasksAsync();
-        }
+    private void CancelTaskAsync(int id)
+    {
+        pendingTaskConfirm = ("cancel", id);
     }
 
-    private async Task DeleteTaskAsync(int id)
+    private void DeleteTaskAsync(int id)
     {
-        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", L["OpenClaw_ConfirmDeleteTask"]);
-        if (!confirmed) return;
+        pendingTaskConfirm = ("delete", id);
+    }
 
-        var success = await ApiService.DeleteOpenClawTaskAsync(id);
+    private void HideTaskConfirm()
+    {
+        pendingTaskConfirm = null;
+    }
+
+    private async Task ConfirmTaskAction()
+    {
+        if (pendingTaskConfirm == null) return;
+        var (action, id) = pendingTaskConfirm.Value;
+        pendingTaskConfirm = null;
+
+        var success = action == "cancel"
+            ? await ApiService.CancelOpenClawTaskAsync(id)
+            : await ApiService.DeleteOpenClawTaskAsync(id);
         if (success)
         {
             await RefreshTasksAsync();

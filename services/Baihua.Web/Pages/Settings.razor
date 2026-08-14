@@ -823,6 +823,11 @@
     </div>
 }
 
+<ConfirmDialog Message="@string.Format(L["Settings_ConfirmRemoveMissing"], missingModels.Count)"
+               Visible="@showRemoveMissingConfirm"
+               OnConfirm="ConfirmRemoveMissing"
+               OnCancel="CancelRemoveMissing" />
+
 @code {
     private bool _canShowLocalModelSettings = false;
     private string _globalDetailLevel = "concise";
@@ -975,10 +980,21 @@
         return null;
     }
 
-    private async Task RemoveMissingModelsAsync()
+    private bool showRemoveMissingConfirm;
+
+    private void RemoveMissingModelsAsync()
     {
-        if (!await JSRuntime.InvokeAsync<bool>("confirm", string.Format(L["Settings_ConfirmRemoveMissing"], missingModels.Count)))
-            return;
+        showRemoveMissingConfirm = true;
+    }
+
+    private void CancelRemoveMissing()
+    {
+        showRemoveMissingConfirm = false;
+    }
+
+    private async Task ConfirmRemoveMissing()
+    {
+        showRemoveMissingConfirm = false;
         isRemovingMissingModels = true;
         _removeCts = new CancellationTokenSource();
         try
@@ -1343,11 +1359,6 @@
     private async Task ReloadProviders()
     {
         await LoadAiProviders();
-    }
-
-    private async Task<bool> ConfirmDelete(string message)
-    {
-        return await JSRuntime.InvokeAsync<bool>("confirm", message);
     }
 
     private class EditProviderModel

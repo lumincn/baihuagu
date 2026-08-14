@@ -851,6 +851,16 @@
     </div>
 }
 
+<ConfirmDialog Message="@restoreConfirmMessage"
+               Visible="@(restoreConfirmMessage != null)"
+               OnConfirm="ConfirmRestoreBackup"
+               OnCancel="CancelRestoreBackup" />
+
+<ConfirmDialog Message="@L["Vaults_ConfirmSyncBody"]"
+               Visible="@showSyncConfirm"
+               OnConfirm="ConfirmSyncVaults"
+               OnCancel="CancelSyncVaults" />
+
 
 @code {
     // Tab状态
@@ -1282,13 +1292,23 @@
         }
     }
 
-    private async Task RestoreBackup()
+    private string? restoreConfirmMessage;
+
+    private void RestoreBackup()
     {
-        var warnMsg = restoreOverwrite
-            ? $"⚠️ 将{L["Vaults_OverwriteData"]}，此操作不可撤销！确定要继续{L["Vaults_DoRestore"]}吗？"
-            : "确定要从此备份恢复吗？";
-        if (!await JS.InvokeAsync<bool>("confirm", warnMsg))
-            return;
+        restoreConfirmMessage = restoreOverwrite
+            ? string.Format(L["Vaults_ConfirmRestoreBackupOverwriteBody"], L["Vaults_OverwriteData"], L["Vaults_DoRestore"])
+            : L["Vaults_ConfirmRestoreBackupBody"];
+    }
+
+    private void CancelRestoreBackup()
+    {
+        restoreConfirmMessage = null;
+    }
+
+    private async Task ConfirmRestoreBackup()
+    {
+        restoreConfirmMessage = null;
         isRestoreLoading = true;
         restoreResultMessage = "";
         try
@@ -1453,10 +1473,21 @@
         }
     }
 
-    private async Task SyncVaults()
+    private bool showSyncConfirm;
+
+    private void SyncVaults()
     {
-        if (!await JS.InvokeAsync<bool>("confirm", "同步知识库将检测并移除已不存在的知识库。确定要继续吗？"))
-            return;
+        showSyncConfirm = true;
+    }
+
+    private void CancelSyncVaults()
+    {
+        showSyncConfirm = false;
+    }
+
+    private async Task ConfirmSyncVaults()
+    {
+        showSyncConfirm = false;
         isLoading = true;
         message = null;
 

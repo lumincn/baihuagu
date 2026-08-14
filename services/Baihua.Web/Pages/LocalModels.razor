@@ -1138,6 +1138,11 @@ else
     {
         <OpenVinoTab ModelsChanged="RefreshRunningModels" />
     }
+
+    <ConfirmDialog Message="@string.Format(L["LocalModels_ConfirmUnload"], unloadTarget?.DisplayName ?? "")"
+                   Visible="@(unloadTarget != null)"
+                   OnConfirm="ConfirmUnloadModel"
+                   OnCancel="CancelUnloadModel" />
 @code {
     private bool isLoading = true;
     private string loadingStatus = "";
@@ -1524,10 +1529,23 @@ else
         runningModels = await ApiService.GetRunningModelsAsync(forceRefresh: true);
         await InvokeAsync(StateHasChanged);
     }
-    private async Task UnloadModel(RunningModelDto model)
+    private RunningModelDto? unloadTarget;
+
+    private void UnloadModel(RunningModelDto model)
     {
-        if (!await JSRuntime.InvokeAsync<bool>("confirm", string.Format(L["LocalModels_ConfirmUnload"], model.DisplayName)))
-            return;
+        unloadTarget = model;
+    }
+
+    private void CancelUnloadModel()
+    {
+        unloadTarget = null;
+    }
+
+    private async Task ConfirmUnloadModel()
+    {
+        var model = unloadTarget;
+        unloadTarget = null;
+        if (model == null) return;
         isLoadingModel = true;
         try
         {

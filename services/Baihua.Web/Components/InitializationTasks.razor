@@ -3,6 +3,7 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 @inject ILogger<InitializationTasks> Logger
+@inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
 @if (isVisible && tasksResponse != null && tasksResponse.TotalCount > 0 && !tasksResponse.AllCompleted)
 {
@@ -347,6 +348,11 @@
     }
 </style>
 
+<ConfirmDialog Message="@createVaultFailMessage"
+               Visible="@(createVaultFailMessage != null)"
+               OnConfirm="ConfirmCreateVaultManual"
+               OnCancel="CancelCreateVaultManual" />
+
 @code {
     private InitTasksResponse? tasksResponse;
     private bool isVisible = true;
@@ -416,11 +422,7 @@
             else
             {
                 // 如果一键创建失败，引导用户手动创建
-                var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"自动创建失败: {result?.Message}\n\n是否手动前往知识库管理页面创建？");
-                if (confirmed)
-                {
-                    Navigation.NavigateTo("vaults");
-                }
+                createVaultFailMessage = string.Format(L["InitializationTasks_ConfirmCreateVaultBody"], result?.Message);
             }
         }
         catch (Exception ex)
@@ -441,5 +443,18 @@
     private void DismissTasks()
     {
         isVisible = false;
+    }
+
+    private string? createVaultFailMessage;
+
+    private void CancelCreateVaultManual()
+    {
+        createVaultFailMessage = null;
+    }
+
+    private void ConfirmCreateVaultManual()
+    {
+        createVaultFailMessage = null;
+        Navigation.NavigateTo("vaults");
     }
 }

@@ -1,11 +1,13 @@
 // 验证消息气泡溢出修复：发送长问题（OpenVINO 回复），暗色模式测气泡边界
-const { test, expect } = require('@playwright/test');
+// 【旧套件迁移】原 tests/Baihua.Web.E2e/overflow-check.spec.ts → tests/e2e/tests/legacy-e2e/
+// 迁移要点：CommonJS require → ESM import；登录改为共享 authorize() helper；
+// 截图输出改到 testInfo.outputPath（不再写死 cwd 相对路径）。
+import { test, expect } from '@playwright/test';
+import { authorize } from '../helpers';
 
-test('chat bubble overflow check', async ({ page }) => {
+test('[legacy-e2e] chat bubble overflow check', async ({ page }, testInfo) => {
   // 1. cli-token 登录
-  const resp = await fetch('http://127.0.0.1:5177/api/auth/cli-token', { method: 'POST' });
-  const { token } = await resp.json();
-  await page.goto(`http://127.0.0.1:5177/?cli-token=${token}`);
+  await authorize(page);
   await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {});
   await page.waitForTimeout(2500);
 
@@ -13,7 +15,7 @@ test('chat bubble overflow check', async ({ page }) => {
   await page.evaluate(() => document.documentElement.setAttribute('data-bs-theme', 'dark'));
 
   // 3. 去 AI 对话页
-  await page.goto('http://127.0.0.1:5177/messages');
+  await page.goto('/messages');
   await page.waitForTimeout(3000);
 
   // 4. 输入长问题并发送
@@ -51,6 +53,6 @@ test('chat bubble overflow check', async ({ page }) => {
   });
   console.log('VIEWPORT:', viewport.width, '| overflow issues:', JSON.stringify(overflow));
 
-  await page.screenshot({ path: 'k8s-test-data/chat-overflow-check.png', fullPage: false });
+  await page.screenshot({ path: testInfo.outputPath('chat-overflow-check.png'), fullPage: false });
   expect(overflow.issues.length, `溢出问题: ${JSON.stringify(overflow.issues)}`).toBe(0);
 });

@@ -5944,4 +5944,19 @@ Shift+Enter new line, Enter to send</value>
   <data name="Login_CmdHint2" xml:space="preserve">
     <value>— no ./ prefix needed</value>
   </data>
+  <data name="Common_ConfirmTitle" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="InitializationTasks_ConfirmCreateVaultBody" xml:space="preserve">
+    <value>Auto-creation failed: {0}&#10;&#10;Do you want to go to the vault management page to create it manually?</value>
+  </data>
+  <data name="Vaults_ConfirmRestoreBackupBody" xml:space="preserve">
+    <value>Are you sure you want to restore from this backup?</value>
+  </data>
+  <data name="Vaults_ConfirmRestoreBackupOverwriteBody" xml:space="preserve">
+    <value>⚠️ This will {0} and cannot be undone! Are you sure you want to {1}?</value>
+  </data>
+  <data name="Vaults_ConfirmSyncBody" xml:space="preserve">
+    <value>Syncing vaults will detect and remove vaults that no longer exist. Are you sure you want to continue?</value>
+  </data>
 </root>

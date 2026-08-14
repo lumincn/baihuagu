@@ -73,5 +73,8 @@ export default defineConfig({
     { name: 'migration', testDir: './tests/migration', testMatch: /.*\.spec\.ts/ },
     // 编程 Agent：页面元素、工具集模式、流水线开关（本地）
     { name: 'codeagent', testDir: './tests/codeagent', testMatch: /.*\.spec\.ts/ },
+    // 旧套件迁移（原 tests/Baihua.Web.E2e，已并入）：冒烟/听书/溢出检查（本地）。
+    // 依赖 Docker/nginx 部署的用例（deploy-verify/website）在文件内整体 test.describe.skip。
+    { name: 'legacy-e2e', testDir: './tests/legacy-e2e', testMatch: /.*\.spec\.ts/ },
   ],
 });

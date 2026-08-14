@@ -705,6 +705,11 @@
     }
 </style>
 
+<ConfirmDialog Message="@L["MasterChat_EvictConfirm"]"
+               Visible="@showEvictConfirm"
+               OnConfirm="ConfirmEvict"
+               OnCancel="CancelEvict" />
+
 @code {
     private List<MasterListItem> masters = new();
     private string selectedMasterId = "";
@@ -1041,14 +1046,24 @@
         inputMessage = question;
     }
 
+    private bool showEvictConfirm;
+
     private async Task RunEvictAsync()
     {
         if (selectedMaster == null) return;
+        showEvictConfirm = true;
+    }
+
+    private void CancelEvict()
+    {
+        showEvictConfirm = false;
+    }
+
+    private async Task ConfirmEvict()
+    {
+        showEvictConfirm = false;
         try
         {
-            if (!await JSRuntime.InvokeAsync<bool>("confirm", L["MasterChat_EvictConfirm"]))
-                return;
-
             var result = await ApiService.EvictMasterAsync(selectedMaster.MasterId);
             if (result.Success)
             {

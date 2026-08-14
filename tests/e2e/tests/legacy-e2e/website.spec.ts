@@ -1,14 +1,19 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Family 版 Docker 部署端到端测试
- * 验证 nginx 反向代理、admin 子路径、API 端点、移动端同步接口
- * Family 版无静态官网，nginx 根路径重定向到 /admin/
+ * 【旧套件迁移】原 tests/Baihua.Web.E2e/website.spec.ts → tests/e2e/tests/legacy-e2e/
+ *
+ * 整体跳过原因（test.describe.skip）：
+ *  1. 用例针对 Docker 部署形态，依赖 nginx 反向代理（http://localhost:80）提供 /admin 子路径；
+ *  2. 本地开发环境（WebUI 直连 5177）与 CI 均无 nginx 入口，运行必失败；
+ *  3. 对应覆盖点（Blazor 渲染、静态资源无 404、健康检查、/api/vaults 兼容）
+ *     已由 smoke.spec.ts / migration.spec.ts 在直连形态下覆盖。
+ * 如需部署后验证，请单独启用本文件（把 describe.skip 改为 describe）。
  */
 
 const NGINX_BASE = 'http://localhost:80';
 
-test.describe('Family 版 Docker 部署测试', () => {
+test.describe.skip('[legacy-e2e] Family 版 Docker 部署测试（nginx 入口专用，迁移后跳过）', () => {
 
   test('根路径经 nginx 重定向到登录（非 200 直出）', async ({ request }) => {
     // nginx 当前设计：根路径转发到 WebUI，未登录时 302 → /login

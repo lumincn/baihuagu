@@ -1,15 +1,19 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Family 版部署验证测试
- * 验证本地或局域网部署的服务是否正常运行
- * 适用于 Docker 部署后验证
+ * 【旧套件迁移】原 tests/Baihua.Web.E2e/deploy-verify.spec.ts → tests/e2e/tests/legacy-e2e/
+ *
+ * 整体跳过原因（test.describe.skip）：
+ *  1. 用例定位是「Docker/局域网部署后验证」，依赖部署形态（nginx、OpenObserve :5082 等）；
+ *  2. 与 smoke.spec.ts 的健康检查 / 能力评估用例高度重叠（smoke 已覆盖本地环境）；
+ *  3. 本地开发环境与 CI（无 Docker 部署）均不适用。
+ * 如需部署后验证，请单独启用本文件（把 describe.skip 改为 describe）。
  */
 
 const WEBUI_BASE = 'http://127.0.0.1:5177';
 const FAMILY_BASE = 'http://127.0.0.1:8788';
 
-test.describe('Family 版部署验证', () => {
+test.describe.skip('[legacy-e2e] Family 版部署验证（Docker 部署专用，迁移后跳过）', () => {
 
   test('Baihua.Family 健康检查', async ({ request }) => {
     const resp = await request.get(`${FAMILY_BASE}/health`);
