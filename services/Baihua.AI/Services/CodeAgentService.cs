@@ -276,6 +276,8 @@ public class CodeAgentService
                 OutputTokens = outputTokens is null ? null : (int)outputTokens,
                 TotalTokens = (int)((inputTokens ?? 0) + (outputTokens ?? 0)),
                 TokensPerSecond = tps,
+                // 修复：之前漏设 IsSuccess，SQLite 列无默认值导致所有 CodeAgent 记录恒为失败（成功率/成本失真）
+                IsSuccess = string.IsNullOrEmpty(error),
                 ErrorMessage = error
             });
             await db.SaveChangesAsync();
