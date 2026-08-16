@@ -13,7 +13,8 @@
 #   bh uninstall                 移除软链
 set -u
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# 用 readlink -f 解析软链，确保通过 ~/.local/bin/bh 软链调用时 ROOT 指向真实目录
+ROOT="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 
 case "${1:-}" in
     k8s|native)
@@ -21,28 +22,36 @@ case "${1:-}" in
         exec "$ROOT/linux/$cell/bh.sh" "$@"
         ;;
     install)
-        bin="${HOME}/.local/bin"
-        if ! mkdir -p "$bin" 2>/dev/null; then
-            echo "[install] 无法创建 $bin（权限不足）"
-            echo "         请用 root 执行: sudo bash $ROOT/bh.sh install  （或 WSL: wsl -u root）"
-            exit 1
+        if [ "$(id -u)" = "0" ]; then
+            # root 安装：放 /usr/local/bin（sudo secure_path 默认包含，sudo bh 与普通用户 bh 都可用）
+            ln -sf "$ROOT/bh.sh" /usr/local/bin/bh && \
+                echo "[install] 已软链: /usr/local/bin/bh -> $ROOT/bh.sh"
+            echo "[install] /usr/local/bin 在 sudo secure_path 内，bh 与 sudo bh 均直接可用"
+        else
+            bin="${HOME}/.local/bin"
+            if ! mkdir -p "$bin" 2>/dev/null; then
+                echo "[install] 无法创建 $bin（权限不足）"
+                echo "         请用 root 执行: sudo bash $ROOT/bh.sh install  （或 WSL: wsl -u root）"
+                exit 1
+            fi
+            ln -sf "$ROOT/bh.sh" "$bin/bh" && echo "[install] 已软链: $bin/bh -> $ROOT/bh.sh"
+            case ":$PATH:" in
+                *":$bin:"*) echo "[install] ~/.local/bin 已在 PATH，直接可用: bh <command>" ;;
+                *)
+                    if grep -q 'local/bin' "${HOME}/.bashrc" 2>/dev/null; then
+                        echo "[install] ~/.local/bin 已配置在 ~/.bashrc（重新登录或 source ~/.bashrc 后生效）"
+                    else
+                        echo "export PATH=\"$bin:\$PATH\"" >> "${HOME}/.bashrc" && \
+                            echo "[install] 已把 ~/.local/bin 追加到 ~/.bashrc（重新登录或 source ~/.bashrc 后生效）"
+                    fi
+                    ;;
+            esac
         fi
-        ln -sf "$ROOT/bh.sh" "$bin/bh" && echo "[install] 已软链: $bin/bh -> $ROOT/bh.sh"
-        case ":$PATH:" in
-            *":$bin:"*) echo "[install] ~/.local/bin 已在 PATH，直接可用: bh <command>" ;;
-            *)
-                if grep -q 'local/bin' "${HOME}/.bashrc" 2>/dev/null; then
-                    echo "[install] ~/.local/bin 已配置在 ~/.bashrc（重新登录或 source ~/.bashrc 后生效）"
-                else
-                    echo "export PATH=\"$bin:\$PATH\"" >> "${HOME}/.bashrc" && \
-                        echo "[install] 已把 ~/.local/bin 追加到 ~/.bashrc（重新登录或 source ~/.bashrc 后生效）"
-                fi
-                ;;
-        esac
         ;;
     uninstall)
-        rm -f "${HOME}/.local/bin/bh" 2>/dev/null || echo "[uninstall] 无权限删除 ${HOME}/.local/bin/bh（请用 root）"
-        echo "[uninstall] 已移除 ${HOME}/.local/bin/bh"
+        rm -f "${HOME}/.local/bin/bh" 2>/dev/null
+        rm -f /usr/local/bin/bh 2>/dev/null
+        echo "[uninstall] 已移除 bh 软链（~/.local/bin/bh、/usr/local/bin/bh；无权限删除的请用 root）"
         ;;
     help|-h|--help|"")
         echo "bh - baihua 统一 CLI（Linux）"
@@ -50,7 +59,7 @@ case "${1:-}" in
         echo "用法:"
         echo "  bh <cell> <command> [args]    路由到指定 cell（k8s | native）"
         echo "  bh <command> [args]           默认 cell（k8s）"
-        echo "  bh install / uninstall        安装到 ~/.local/bin / 移除"
+        echo "  bh install / uninstall        安装到 PATH（root→/usr/local/bin，普通用户→~/.local/bin）/ 移除"
         echo ""
         echo "提示: k8s cell 需要 root（k3s 配置 /etc/rancher/k3s/k3s.yaml 仅 root 可读），WSL 下用 wsl -u root"
         echo "cell 内可用命令: bh <cell> help"

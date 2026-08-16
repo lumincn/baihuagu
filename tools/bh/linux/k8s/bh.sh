@@ -5,6 +5,8 @@
 # 镜像构建用 nerdctl 直连 k3s 的 containerd socket（/run/k3s/containerd/containerd.sock），
 # 构建完镜像直接落在 k3s 的 containerd 存储里，无需 docker build / docker save / ctr import。
 # 前置：k3s 已安装运行（k3s 无法自动安装，见 k8s/README.md 前提条件）。
+# 权限：k3s 的 containerd socket 与 k3s.yaml 仅 root 可访问，build/deploy/status 建议整体用 sudo 执行
+#       （sudo bh build）；脚本内部对 /usr/local/bin 与 /etc 的写入会自动用 sudo，非 root 直接跑也会尽量完成。
 # nerdctl / buildkit（buildkitd+buildctl）缺失时 build 会自动下载安装（GitHub release → /usr/local/bin）。
 #
 # Usage: ./tools/bh/linux/k8s/bh.sh <command> [args]
@@ -178,10 +180,53 @@ ensure_deps() {
     if ! command -v buildkitd >/dev/null 2>&1; then return 0; fi
     if [ ! -S /run/buildkit/buildkitd.sock ]; then
         ensure_registry
+        # systemd 环境：GitHub release 的 buildkit 不带 systemd 单元文件，脚本先写入 buildkit.service 再提示 systemctl 启动
+        if [ -d /run/systemd/system ]; then
+            if [ ! -f /etc/systemd/system/buildkit.service ]; then
+                write_root /etc/systemd/system/buildkit.service << 'EOF'
+[Unit]
+Description=BuildKit
+Documentation=https://github.com/moby/buildkit
+
+[Service]
+ExecStart=/usr/local/bin/buildkitd -config /etc/buildkit/buildkitd.toml
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+            fi
+            if [ -f /etc/systemd/system/buildkit.service ]; then
+                { systemctl daemon-reload || sudo systemctl daemon-reload; } 2>/dev/null || true
+                echo "[deps] buildkitd 未运行。systemd 单元已就绪，请启动："
+                echo "        sudo systemctl enable --now buildkit"
+                echo "        （状态: systemctl status buildkit / 日志: journalctl -u buildkit -f）"
+                exit 1
+            fi
+            echo "[deps] buildkitd 未运行且无法写入 systemd 单元（需要 root 权限）" >&2
+            exit 1
+        fi
         echo "[deps] buildkitd 未运行。无 systemd 环境请手动启动："
         echo "        nohup buildkitd -config /etc/buildkit/buildkitd.toml > /tmp/buildkitd.log 2>&1 &"
-        echo "        （systemd 环境: sudo systemctl enable --now buildkit）"
         exit 1
+    fi
+}
+
+# 写 root 属主的配置文件：root 直接写；有 sudo 自动用（与 install_tool 策略一致）；否则提示手动执行
+write_root() {
+    local target="$1"
+    local dir; dir="$(dirname "$target")"
+    if [ "$(id -u)" = "0" ]; then
+        mkdir -p "$dir" || return 1
+        cat > "$target" || return 1
+    elif command -v sudo >/dev/null 2>&1; then
+        sudo mkdir -p "$dir" || return 1
+        sudo tee "$target" > /dev/null || return 1
+    else
+        echo "[deps] 需要 root 权限写入 $target（无 sudo），请手动执行:"
+        echo "        sudo mkdir -p $dir && sudo tee $target"
+        return 1
     fi
 }
 
@@ -192,8 +237,7 @@ ensure_registry() {
     local wrote=0
     # k3s registries.yaml
     if [ ! -f /etc/rancher/k3s/registries.yaml ]; then
-        mkdir -p /etc/rancher/k3s
-        cat > /etc/rancher/k3s/registries.yaml << 'EOF'
+        write_root /etc/rancher/k3s/registries.yaml << 'EOF'
 mirrors:
   docker.io:
     endpoint:
@@ -201,22 +245,34 @@ mirrors:
       - "https://docker.1ms.run"
       - "https://registry-1.docker.io"
 EOF
-        echo "[deps] 已写入 /etc/rancher/k3s/registries.yaml（daocloud 镜像加速）"
-        echo "        k3s 重启后生效（systemctl restart k3s 或重新拉起 k3s server）"
-        wrote=1
+        if [ $? -eq 0 ]; then
+            echo "[deps] 已写入 /etc/rancher/k3s/registries.yaml（daocloud 镜像加速）"
+            echo "        k3s 重启后生效（systemctl restart k3s 或重新拉起 k3s server）"
+            wrote=1
+        else
+            echo "[deps] 写入 /etc/rancher/k3s/registries.yaml 失败（需要 root）" >&2
+        fi
     fi
     # buildkitd.toml（仅当 buildkitd 存在时写）
     if command -v buildkitd >/dev/null 2>&1 && [ ! -f /etc/buildkit/buildkitd.toml ]; then
-        mkdir -p /etc/buildkit
-        cat > /etc/buildkit/buildkitd.toml << 'EOF'
+        write_root /etc/buildkit/buildkitd.toml << 'EOF'
+# 必须禁用 OCI(runc) worker：否则 nerdctl build -o type=image 导出到 buildkit 的 OCI 存储，
+# 镜像进不了 k3s containerd 的 k8s.io namespace，后续 FROM bh/* 本地镜像解析失败（会去 docker.io 拉→403）
+[worker.oci]
+  enabled = false
+
 [worker.containerd]
 address = "/run/k3s/containerd/containerd.sock"
 namespace = "k8s.io"
 [registry."docker.io"]
 mirrors = ["docker.m.daocloud.io", "docker.1ms.run"]
 EOF
-        echo "[deps] 已写入 /etc/buildkit/buildkitd.toml（daocloud 镜像加速 + k8s.io namespace）"
-        wrote=1
+        if [ $? -eq 0 ]; then
+            echo "[deps] 已写入 /etc/buildkit/buildkitd.toml（daocloud 镜像加速 + k8s.io namespace，禁用 OCI worker）"
+            wrote=1
+        else
+            echo "[deps] 写入 /etc/buildkit/buildkitd.toml 失败（需要 root）" >&2
+        fi
     fi
     return "$wrote"
 }
@@ -257,7 +313,7 @@ build_all() {
 
 deploy_all() {
     for m in 00-namespace.yaml 01-configmap.yaml 02-secret.yaml 03-pvc.yaml 10-intel-gpu-plugin.yaml \
-             20-vault.yaml 21-ai.yaml 22a-openvino.yaml 22-family.yaml 23-webui.yaml 24-nginx-configmap.yaml 25-nginx.yaml; do
+             20-vault.yaml 21-ai.yaml 22a-openvino.yaml 22-family.yaml 23-webui.yaml 24-traefik.yaml; do
         echo "[deploy] $m"
         k apply -f "$K8S_DIR/$m" >/dev/null || exit 1
     done
@@ -276,7 +332,7 @@ status_all() {
     echo "=== pvc ==="
     k -n "$NAMESPACE" get pvc
     echo ""
-    echo "entry: http://localhost:30080"
+    echo "entry: http://localhost/  (Traefik :80)"
 }
 
 show_logs() {
@@ -290,14 +346,38 @@ show_logs() {
 }
 
 open_dashboard() {
+    local url="http://localhost"
     local token
-    token=$(curl -s -X POST http://localhost:30080/api/auth/cli-token | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
+    token=$(curl -s -m 5 -X POST http://localhost/api/auth/cli-token | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
     if [ -n "$token" ]; then
-        (xdg-open "http://localhost:30080/?cli-token=$token" >/dev/null 2>&1 &) || true
-        echo "[dashboard] opened with cli-token"
+        url="http://localhost/?cli-token=$token"
+        echo "[dashboard] cli-token 获取成功"
     else
-        echo "[dashboard] cli-token failed, opening plain URL"
-        (xdg-open http://localhost:30080 >/dev/null 2>&1 &) || true
+        echo "[dashboard] cli-token 获取失败（traefik :80 未就绪？先打开无 token URL）"
+    fi
+    echo "[dashboard] URL: $url"
+
+    # root/sudo 下 xdg-open 无法直接访问用户桌面（X/Wayland 授权），
+    # 尝试以原用户身份 + 其桌面环境打开；失败则只打印 URL
+    if [ "$(id -u)" = "0" ] && [ -n "${SUDO_USER:-}" ]; then
+        local uid xdgrt
+        uid="$(id -u "$SUDO_USER" 2>/dev/null || echo 0)"
+        xdgrt="/run/user/$uid"
+        if [ -d "$xdgrt" ]; then
+            sudo -u "$SUDO_USER" env DISPLAY="${DISPLAY:-:0}" WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-0}" \
+                XDG_RUNTIME_DIR="$xdgrt" xdg-open "$url" >/dev/null 2>&1 && {
+                echo "[dashboard] 已以 $SUDO_USER 身份在桌面打开浏览器"
+                return 0
+            }
+        fi
+        echo "[dashboard] 无法代开浏览器（root 无桌面授权），请复制上面 URL 手动打开，或退出 sudo 重跑: bh dashboard"
+        return 0
+    fi
+
+    if command -v xdg-open >/dev/null 2>&1 && xdg-open "$url" >/dev/null 2>&1; then
+        echo "[dashboard] 已在默认浏览器打开"
+    else
+        echo "[dashboard] 无法自动打开浏览器（无 GUI 或未设 DISPLAY），请复制上面 URL 手动打开"
     fi
 }
 

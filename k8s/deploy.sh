@@ -91,21 +91,16 @@ build_images() {
 }
 
 # ============================================================
-# 3. 加载镜像到集群（kind / minikube）
+# 3. 加载镜像到集群（minikube；k3s 用 nerdctl 直连 containerd，无需 load）
 # ============================================================
 load_images() {
-    if command -v kind &>/dev/null; then
-        log "检测到 kind，加载镜像到集群 ..."
-        for img in "${IMAGES[@]}"; do
-            kind load docker-image "$img" 2>/dev/null && log "  已加载: $img" || warn "  加载失败: $img"
-        done
-    elif command -v minikube &>/dev/null; then
+    if command -v minikube &>/dev/null; then
         log "检测到 minikube，加载镜像到集群 ..."
         for img in "${IMAGES[@]}"; do
             minikube image load "$img" 2>/dev/null && log "  已加载: $img" || warn "  加载失败: $img"
         done
     else
-        info "未检测到 kind / minikube，假设镜像已在节点上可用"
+        info "未检测到 minikube，假设镜像已在节点上可用"
         info "如使用远程仓库，请先 docker push 镜像"
     fi
 }
@@ -128,8 +123,7 @@ deploy() {
         "22a-openvino.yaml"
         "22-family.yaml"
         "23-webui.yaml"
-        "24-nginx-configmap.yaml"
-        "25-nginx.yaml"
+        "24-traefik.yaml"
     )
 
     for manifest in "${manifests[@]}"; do
@@ -169,8 +163,8 @@ status() {
     log "=== 访问地址 ==="
     local NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}' 2>/dev/null)
     if [ -n "$NODE_IP" ]; then
-        info "  WebUI:  http://$NODE_IP:30080"
-        info "  Family: http://$NODE_IP:30080 (via nginx)"
+        info "  WebUI:  http://$NODE_IP/   (Traefik :80)"
+        info "  Family: http://$NODE_IP/   (Traefik /mg/* 转发)"
         info "  OpenVINO LLM:    http://bh-openvino:8000 (集群内)"
         info "  OpenVINO Vision: http://bh-openvino:8801 (集群内)"
     fi
@@ -289,7 +283,7 @@ case "${1:-help}" in
         echo "命令:"
         echo "  build        构建 Docker 镜像（含独立 OpenVINO 容器）"
         echo "  deploy       部署到 K8s 集群"
-        echo "  load         加载镜像到 kind/minikube 集群"
+        echo "  load         加载镜像到 minikube 集群"
         echo "  status       查看部署状态"
         echo "  logs <svc>   查看服务日志 (默认: bh-family)"
         echo "  verify-gpu   验证 Intel GPU + OpenVINO 服务可用性"

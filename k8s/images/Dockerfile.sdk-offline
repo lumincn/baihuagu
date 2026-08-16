@@ -7,7 +7,10 @@
 #   nerdctl build --build-context "nuget=<仓库根>/nuget-local" -f k8s/images/Dockerfile.sdk-offline -t bh/sdk-offline:latest .
 #   docker buildx build --build-context "nuget=<仓库根>/nuget-local" -f k8s/images/Dockerfile.sdk-offline -t bh/sdk-offline:latest .
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0
+# Ubuntu 26.04 (resolute) SDK：与运行时 aspnet 10.0-resolute 同波段。
+# 注意：Blazor 框架静态资源（blazor.web.js）已由 Baihua.Web.csproj 显式引用
+# Microsoft.AspNetCore.App.Internal.Assets 兜底，浮动 SDK 版本也不会再缺 _framework。
+FROM mcr.microsoft.com/dotnet/sdk:10.0-resolute
 WORKDIR /src
 COPY NuGet.config .
 COPY --from=nuget . ./nuget-local/

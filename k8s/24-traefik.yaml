@@ -1,0 +1,131 @@
+# Traefik IngressRoutes + Middlewares（统一入口 :80）
+# 入口：traefik svc (LoadBalancer) → 宿主机 :80（k3s svclb 绑定），WebSocket/SSE 原生支持
+#
+# 当前只用 HTTP(:80)。HTTPS 留待以后上公网（Let's Encrypt 需域名+公网可达）时再启用，
+# 届时将各 IngressRoute 复制一份加 websecure entrypoint + tls（注意：带 tls 的 IngressRoute
+# 在明文 web 入口不匹配，HTTP/HTTPS 必须拆成独立 IngressRoute）。
+#
+# 路由映射（对应原 nginx 各 location）：
+#   bh-webui(5177):  /_framework/（1 年缓存） /css/（7 天缓存） /hubs/status /api/auth/ /（兜底）
+#   bh-family(8788): /mg/ /pair* /vault/pair /ws/devices /api/（SSE） /hubs/
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: sec-headers
+  namespace: baihua
+spec:
+  headers:
+    customFrameOptionsValue: SAMEORIGIN
+    contentTypeNosniff: true
+    referrerPolicy: strict-origin-when-cross-origin
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: cache-framework
+  namespace: baihua
+spec:
+  headers:
+    customResponseHeaders:
+      Cache-Control: "public, max-age=31536000, immutable"
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: cache-css
+  namespace: baihua
+spec:
+  headers:
+    customResponseHeaders:
+      Cache-Control: "public, max-age=604800"
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: bh-webui
+  namespace: baihua
+  labels:
+    app.kubernetes.io/part-of: baihua
+spec:
+  entryPoints:
+    - web
+  routes:
+    - kind: Rule
+      match: PathPrefix(`/_framework/`)
+      priority: 1000
+      middlewares:
+        - name: sec-headers
+        - name: cache-framework
+      services:
+        - name: bh-webui
+          port: 5177
+    - kind: Rule
+      match: PathPrefix(`/css/`)
+      priority: 900
+      middlewares:
+        - name: sec-headers
+        - name: cache-css
+      services:
+        - name: bh-webui
+          port: 5177
+    - kind: Rule
+      match: Path(`/hubs/status`) || PathPrefix(`/api/auth/`)
+      priority: 800
+      middlewares:
+        - name: sec-headers
+      services:
+        - name: bh-webui
+          port: 5177
+    - kind: Rule
+      match: PathPrefix(`/`)
+      priority: 100
+      middlewares:
+        - name: sec-headers
+      services:
+        - name: bh-webui
+          port: 5177
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: bh-family
+  namespace: baihua
+  labels:
+    app.kubernetes.io/part-of: baihua
+spec:
+  entryPoints:
+    - web
+  routes:
+    - kind: Rule
+      match: PathPrefix(`/mg/`) || Path(`/pair`) || Path(`/pair/code`) || Path(`/vault/pair`)
+      priority: 750
+      middlewares:
+        - name: sec-headers
+      services:
+        - name: bh-family
+          port: 8788
+    - kind: Rule
+      match: PathPrefix(`/ws/devices`)
+      priority: 700
+      middlewares:
+        - name: sec-headers
+      services:
+        - name: bh-family
+          port: 8788
+    - kind: Rule
+      match: PathPrefix(`/api/`) && !PathPrefix(`/api/auth/`)
+      priority: 650
+      middlewares:
+        - name: sec-headers
+      services:
+        - name: bh-family
+          port: 8788
+    - kind: Rule
+      match: PathPrefix(`/hubs/`)
+      priority: 600
+      middlewares:
+        - name: sec-headers
+      services:
+        - name: bh-family
+          port: 8788

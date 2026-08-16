@@ -11,31 +11,32 @@
 #   3. 独立生命周期 — 可单独升级 OpenVINO 不影响 Family 服务
 #   4. Family 服务通过 K8s Service DNS (http://bh-openvino:8000) 调用
 
-# Ubuntu 24.04 基础：宿主机同系，可用 Intel 官方源装 NEO compute runtime（WSL2 /dev/dxg 支持）
-FROM ubuntu:24.04 AS runtime
+# Ubuntu 26.04 基础：与宿主机同系
+FROM ubuntu:26.04 AS runtime
 
-# 国内镜像源加速：Ubuntu 24.04 deb822 格式（ubuntu.sources）换华为云
-RUN printf 'Types: deb\nURIs: http://mirrors.huaweicloud.com/ubuntu/\nSuites: noble noble-updates noble-backports\nComponents: main restricted universe multiverse\nSigned-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg\n\nTypes: deb\nURIs: http://mirrors.huaweicloud.com/ubuntu/\nSuites: noble-security\nComponents: main restricted universe multiverse\nSigned-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg\n' > /etc/apt/sources.list.d/ubuntu.sources
+# 国内镜像源加速：Ubuntu 26.04 deb822 格式（ubuntu.sources）换华为云
+RUN printf 'Types: deb\nURIs: http://mirrors.huaweicloud.com/ubuntu/\nSuites: resolute resolute-updates resolute-backports\nComponents: main restricted universe multiverse\nSigned-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg\n\nTypes: deb\nURIs: http://mirrors.huaweicloud.com/ubuntu/\nSuites: resolute-security\nComponents: main restricted universe multiverse\nSigned-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg\n' > /etc/apt/sources.list.d/ubuntu.sources
 
-# Intel 官方 GPU 源（NEO compute runtime 25.x，支持 WSL2 /dev/dxg 与真机 /dev/dri）
+# Intel 官方 GPU 源（NEO compute runtime，支持 WSL2 /dev/dxg 与真机 /dev/dri）
+# 注意：Intel 源只有 noble 套件（无 resolute），noble 的 NEO 包在 26.04 上可正常安装使用
 RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates gpg && \
     curl -fsSL https://repositories.intel.com/gpu/intel-graphics.key -o /tmp/intel-key.gpg && \
     gpg --batch --yes --dearmor -o /usr/share/keyrings/intel-gpu-keyring.gpg /tmp/intel-key.gpg && \
     echo 'deb [signed-by=/usr/share/keyrings/intel-gpu-keyring.gpg] https://repositories.intel.com/gpu/ubuntu noble unified' > /etc/apt/sources.list.d/intel-gpu.list
 
 # 安装 Intel NEO GPU 运行时（走 /dev/dxg=WSL2 / /dev/dri=真机）+ 系统依赖
-# python3-pip：ubuntu:24.04 基础镜像不带 pip
+# python3-pip：基础镜像不带 pip
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         intel-opencl-icd clinfo pciutils \
         curl tini ca-certificates python3-pip python3-venv \
     && rm -rf /var/lib/apt/lists/*
 
-# 安装 OpenVINO GenAI + 依赖
+# 安装 OpenVINO GenAI + 依赖（2026.3.0 = 当前最新版）
 RUN pip3 install --break-system-packages \
         -i https://mirrors.huaweicloud.com/repository/pypi/simple \
         --trusted-host mirrors.huaweicloud.com \
-        openvino-genai==2026.2.1 openvino==2026.2.1 fastapi uvicorn numpy
+        openvino-genai==2026.3.0.0 openvino==2026.3.0 fastapi uvicorn numpy
 
 # 验证安装
 RUN python3 -c "from openvino.runtime import Core; print('OpenVINO installed, devices:', Core().available_devices)" || \

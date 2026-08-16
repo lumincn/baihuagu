@@ -7,9 +7,10 @@
 │                    K8s Cluster (baihua namespace)                │
 │                                                                  │
 │  ┌──────────┐     ┌──────────┐     ┌──────────────────────┐     │
-│  │ bh-nginx │────▶│ bh-webui │────▶│ bh-family            │     │
-│  │ :30080   │     │ :5177    │     │ :8788 (轻量, 无GPU)  │     │
-│  │ NodePort │     │ Blazor   │     │ .NET only            │     │
+│  │ Traefik  │────▶│ bh-webui │────▶│ bh-family            │     │
+│  │ :80      │     │ :5177    │     │ :8788 (轻量, 无GPU)  │     │
+│  │ Ingress  │     │          │     │ /mg/* ← traefik 转发 │     │
+│  │ Route    │     │ Blazor   │     │ .NET only            │     │
 │  └──────────┘     └──────────┘     └──────┬───────────────┘     │
 │                                            │ HTTP                │
 │                   ┌──────────┐     ┌──────▼──────────────┐      │
@@ -47,8 +48,7 @@
 | **`22b-embedding.yaml`** | **bh-embedding Deployment + Service（bge 嵌入，端口 8002，RAG 用）** |
 | `22-family.yaml` | bh-family Deployment + Service（轻量, 无 GPU） |
 | `23-webui.yaml` | bh-webui Deployment + Service |
-| `24-nginx-configmap.yaml` | Nginx 配置（K8s DNS 适配） |
-| `25-nginx.yaml` | Nginx Deployment + NodePort Service |
+| `24-traefik.yaml` | Traefik IngressRoute + Middleware（统一入口 :80，替代 nginx） |
 | `deploy.sh` | 一键部署脚本 |
 | `./images/Dockerfile.openvino-server` | OpenVINO 独立推理容器（纯 Python 源码构建） |
 | `./images/Dockerfile.family` | Family 轻量容器（无 OpenVINO） |
@@ -113,7 +113,6 @@ PVC: baihua-models-pvc (50Gi, hostPath: /opt/baihua/models)
 curl -sfL https://get.k3s.io | sh -
 ```
 
-> 不推荐 kind：kind 依赖 docker 且 GPU 不可用。
 > 生产集群（kubeadm / RKE / 云托管 K8s）同样用 containerd/CRI，无需 docker。
 
 ### 2. 节点 GPU 驱动
@@ -127,9 +126,51 @@ ls -la /dev/dri/
 lspci | grep -i vga
 # 应看到 Intel 显卡设备
 
+# 当前用户需能访问 GPU 渲染节点（非 root 运行推理时）
+groups
+# 若无 video/render 组，先加入（重新登录后生效）:
+# sudo usermod -aG video,render $USER
+
 # 安装 Intel GPU 运行时（Ubuntu/Debian）
-sudo apt install -y intel-opencl-icd level-zero-dev libigdgmm12
+# ⚠️ Ubuntu 26.04 起 Level Zero 包已改名，旧命令中的 level-zero-dev 会报"无法定位软件包"
+sudo apt install -y intel-opencl-icd libze-dev libze-intel-gpu1 libigdgmm12
 ```
+
+> **Ubuntu 26.04 包名变化**（旧教程的 `level-zero` / `level-zero-dev` / `intel-level-zero-gpu` 已不存在）：
+>
+> | 旧包名（≤24.04） | 26.04 新包名 | 说明 |
+> |---|---|---|
+> | `level-zero` | `libze1` | oneAPI Level Zero 运行时库（作为 libze-dev 依赖自动安装） |
+> | `level-zero-dev` | `libze-dev` | Level Zero 开发文件（头文件） |
+> | `intel-level-zero-gpu` | `libze-intel-gpu1` | Intel GPU 的 Level Zero 实现（Arc / UHD 计算必需） |
+>
+> `intel-opencl-icd` 必须一起装：它提供 **OpenCL ICD 注册**（`/etc/OpenCL/vendors/intel.icd` +
+> `libigdrcl.so`），只装 `libze-intel-gpu1` 时 `clinfo` 会报 `Number of platforms 0`。
+> 两者冲突仅针对旧版 `intel-opencl-icd`（`Breaks: << 23.26.26690.22-1`），当前版本可共存。
+
+> **镜像源 403 问题（2026-08 实测）**：`cn.archive.ubuntu.com` 会 302 重定向到
+> `mirrors.tuna.tsinghua.edu.cn`，tuna 对异常网段返回 **403 Forbidden**（反滥用拦截，
+> 页面提示"您所在的网段近期向本站发送过异常请求"），导致 apt 下载全部失败。
+> 已确认可用的国内镜像：`mirrors.aliyun.com` / `mirrors.ustc.edu.cn` / `mirrors.163.com` /
+> `repo.huaweicloud.com`。
+>
+> 永久切换（编辑 `/etc/apt/sources.list.d/ubuntu.sources`）：
+> ```bash
+> # URIs 改为 http://mirrors.aliyun.com/ubuntu/（aliyun 同一路径下也镜像 -security 套件）
+> # Suites: resolute resolute-updates resolute-backports resolute-security
+> sudo apt update
+> ```
+> 临时源（不动系统配置，仅本次命令生效）：
+> ```bash
+> sudo apt-get -o Dir::Etc::sourcelist=/tmp/alt.sources -o Dir::Etc::sourceparts=- update
+> sudo apt-get -o Dir::Etc::sourcelist=/tmp/alt.sources -o Dir::Etc::sourceparts=- install <pkg>
+> ```
+
+> **验证 GPU 可用**：
+> ```bash
+> clinfo | grep -E 'Number of platforms|Device Name'
+> # 期望: Number of platforms 1，Device Name 为 Intel(R) UHD Graphics / Arc 等
+> ```
 
 > **GPU 后端覆盖**：镜像已内置各推理后端的 GPU 运行时（无需额外配置）：
 > - **OpenVINO**（bh-openvino 容器）：intel-opencl-icd（NEO）→ /dev/dri（真机）或 /dev/dxg（WSL2）
@@ -150,16 +191,42 @@ buildctl --version     # 0.32.x（nerdctl build 需要）
 dotnet --version       # 10.0+（仅 native 部署需要，k8s 构建不需要）
 ```
 
-> buildkitd 是 nerdctl build 的后端守护进程，安装后需运行（无 systemd 环境手动启动）：
-> ```bash
-> nohup buildkitd -config /etc/buildkit/buildkitd.toml > /tmp/buildkitd.log 2>&1 &
-> ```
-> `bh.sh build` 会自动生成 buildkitd.toml（daocloud 镜像加速 + k8s.io namespace）和
-> `/etc/rancher/k3s/registries.yaml`（k3s 拉镜像走 daocloud，解决 pause/nginx 直连 docker.io 超时）。
-> 已存在的配置文件不会被覆盖（幂等）。k3s 的 registries.yaml 写入后需重启 k3s 生效。
+> buildkitd 是 nerdctl build 的后端守护进程，安装后需运行。`bh.sh build` 检测到 buildkitd 未运行时按环境给指引：
+>
+> - **systemd 环境（Ubuntu Server 等，默认）**：脚本自动写入 `/etc/systemd/system/buildkit.service`
+>   （GitHub release 的 buildkit **不带** systemd 单元文件），然后执行：
+>   ```bash
+>   sudo systemctl enable --now buildkit
+>   # 状态: systemctl status buildkit   /   日志: journalctl -u buildkit -f
+>   ```
+> - **无 systemd（WSL、容器等）**：手动 nohup 启动：
+>   ```bash
+>   nohup buildkitd -config /etc/buildkit/buildkitd.toml > /tmp/buildkitd.log 2>&1 &
+>   ```
+>
+> `bh.sh build` 会自动生成 buildkitd.toml（daocloud 镜像加速 + k8s.io namespace，**禁用 OCI worker**）、
+> `/etc/rancher/k3s/registries.yaml`（k3s 拉镜像走 daocloud，解决 pause/nginx 直连 docker.io 超时）
+> 和 buildkit.service 单元；写 `/etc` 下配置时自动走 sudo（无需先 `sudo bh build`）。
+> 已存在的配置文件不会被覆盖（幂等）。
+>
+> ⚠️ **两个"重启后生效"的坑（2026-08 实测）**：
+> 1. **k3s 的 registries.yaml**：k3s 启动时读取该文件，**写入后必须 `sudo systemctl restart k3s`**，
+>    否则 k3s 系统镜像（如 `rancher/mirrored-pause`）仍直连 docker.io → 超时，全部 Pod 卡 ContainerCreating。
+> 2. **buildkitd 必须禁用 OCI worker**：buildkitd.toml 中 `[worker.oci] enabled = false` 必不可少。
+>    否则 nerdctl build 走默认的 OCI(runc) worker，`-o type=image` 导出的镜像进不了 k3s containerd 的
+>    k8s.io namespace，后续 `FROM bh/base-runtime:latest` 等本地镜像解析失败 → 回退去 docker.io 拉 →
+>    daocloud 镜像返回 403（不在白名单）。现象：`n images` 看不到刚构建的镜像。
+>
+> ⚠️ **权限注意**：k3s 的 containerd socket（`/run/k3s/containerd/`）与 `k3s.yaml` 仅 root 可访问，
+> 因此 **build/deploy/status 建议整体用 `sudo bh <cmd>` 执行**（sudo 下脚本内部写配置逻辑同样正确）。
 
 > 镜像构建用 `nerdctl -a /run/k3s/containerd/containerd.sock build`，构建完直接进入 k3s 的 containerd，
 > 无需 docker，也无需 load/import。日常入口：`../tools/bh/linux/k8s/bh.sh`（build/up/status/logs）。
+
+> **容器系统版本（2026-08 起）**：全部容器基于 Ubuntu 26.04 —— .NET 服务用
+> `mcr.microsoft.com/dotnet/aspnet:10.0-resolute`（sdk-offline 用 `sdk:10.0-resolute`），
+> OpenVINO 容器用 `ubuntu:26.04`（Intel NEO 源仍指 noble，26.04 上兼容）。
+> **OpenVINO 版本**：`2026.3.0`（openvino-genai 2026.3.0.0），Dockerfile.openvino-server 锁定。
 
 ### 4. Docker Desktop（仅 Windows docker 部署用）
 
@@ -201,11 +268,8 @@ chmod +x deploy.sh
 #### 2. 加载镜像到集群
 
 ```bash
-# kind
-./deploy.sh load
-
-# k3s（本地节点，镜像已在 docker 中）
-# k3s 自动从 containerd 拉取本地镜像，无需额外操作
+# k3s（推荐）：nerdctl 构建直接进 k3s containerd，无需 load
+# minikube（可选）：./deploy.sh load
 ```
 
 #### 3. 填写 Secret
@@ -229,20 +293,37 @@ openssl rand -base64 32
 ./deploy.sh deploy
 ```
 
+> 部署完成后打开管理面板：
+> ```bash
+> bh dashboard              # 普通用户：自动带 cli-token 打开默认浏览器
+> sudo bh dashboard         # root 无桌面授权，会打印带 token 的 URL，复制到浏览器即可
+> ```
+
 #### 5. 下载模型
+
+> ⚠️ **Ubuntu 24.04+ 禁止系统级 pip（PEP 668）**：`pip install optimum[openvino]` 会报
+> `externally-managed-environment`。必须用 venv（或 pipx）；国内网络 `huggingface.co` 直连不通，
+> 需走 `hf-mirror.com` 镜像（`HF_ENDPOINT`）。
 
 ```bash
 # 在节点上创建模型目录
 sudo mkdir -p /opt/baihua/models
 
-# 下载 OpenVINO 模型（示例: Qwen2.5-VL-7B）
-# 使用 HuggingFace + optimum-cli 转换
-pip install optimum[openvino]
-optimum-cli export openvino --model Qwen/Qwen2.5-VL-7B-Instruct --task image-text-to-text --weight-format int4 /opt/baihua/models/Qwen2.5-VL-7B-Instruct-int4-ov
+# ── 方式 A（推荐）：直接下载预转换 OpenVINO 模型（无需 pip）──
+sudo apt install -y git-lfs && git lfs install
+sudo git clone https://hf-mirror.com/OpenVINO/qwen2-vl-7b-instruct-int4-ov /opt/baihua/models/Qwen2.5-VL-7B-Instruct-int4-ov
 
-# 或直接下载预转换模型
-# https://huggingface.co/OpenVINO/qwen2-vl-7b-instruct-int4-ov
+# ── 方式 B：venv + optimum-cli 现场转换（模型名可换，如 Qwen2.5-VL-3B 更快）──
+python3 -m venv ~/.venvs/optimum
+~/.venvs/optimum/bin/pip install -U pip optimum[openvino]
+export HF_ENDPOINT=https://hf-mirror.com
+~/.venvs/optimum/bin/optimum-cli export openvino \
+    --model Qwen/Qwen2.5-VL-7B-Instruct --task image-text-to-text --weight-format int4 \
+    /opt/baihua/models/Qwen2.5-VL-7B-Instruct-int4-ov
 ```
+
+> 下载/转换完成后，`bh-openvino` Pod 会自动恢复（原来 CrashLoopBackOff 因为
+> `/models/Qwen2.5-VL-7B-Instruct-int4-ov` 不存在）。可用 `sudo bh status` 确认。
 
 #### 6. 验证 GPU + OpenVINO
 
@@ -266,8 +347,15 @@ optimum-cli export openvino --model Qwen/Qwen2.5-VL-7B-Instruct --task image-tex
 # 查看状态
 ./deploy.sh status
 
-# 访问 WebUI
-# http://<节点IP>:30080
+# 访问 WebUI（统一入口 Traefik :80，dashboard 命令会自动打开）
+# http://<节点IP>/  或  http://lumin-ubuntu.local/
+
+# 移动端（花记）入口：默认 80 端口，无显式端口号
+# http://<节点IP>/          ← Traefik :80，/mg/* 走 family
+# 配对二维码默认携带 Baihua:PublicBaseUrl（如 http://192.168.3.13），不再带 :8788
+
+# 当前仅 HTTP(:80)；HTTPS 留待以后上公网时启用
+# （Let's Encrypt 需域名 + 公网可达，届时把 IngressRoute 复制一份加 websecure + tls）
 
 # 查看日志
 ./deploy.sh logs bh-family 100
@@ -322,12 +410,30 @@ Pod (bh-family)
 | OpenVINO 架构 | 嵌入 Family 容器 | 独立 bh-openvino 容器 |
 | 持久化 | bind mount | PVC |
 | 配置 | .env 文件 | ConfigMap + Secret |
-| 反向代理 | nginx container (host net) | nginx Pod (NodePort) |
+| 反向代理 | nginx container (host net) | Traefik IngressRoute (:80, svclb 绑定) |
 | 扩缩容 | 手动 | `kubectl scale` |
 | 自愈 | restart: unless-stopped | K8s 自动重启 + 健康检查 |
 | 滚动更新 | 手动重建 | `kubectl set image` + RollingUpdate |
 
 ## 故障排查
+
+### WebUI 白屏（blazor.web.js 404）
+
+**现象**：dashboard 打开后白屏，webui Pod 日志持续 `GET /_framework/blazor.web.js 404`。
+
+**根因（2026-08 实测）**：Blazor 框架静态资源 `_framework/blazor.web.js`、`blazor.server.js` 由
+NuGet 包 `Microsoft.AspNetCore.App.Internal.Assets` 提供，该包由 AspNetCore 框架引用声明。
+SDK 10.0.100 的 targeting pack **不声明**此包 → 容器内 `dotnet publish` 不产出 `_framework/`；
+本地 SDK 10.0.110（dev 环境）正常。浮动标签 `sdk:10.0` 会漂到 10.0.400 同样缺失。
+
+**修复**（已在 `Baihua.Web.csproj` 落地）：显式引用该包，任何 SDK 下 publish 都会生成 _framework：
+```xml
+<PackageReference Include="Microsoft.AspNetCore.App.Internal.Assets" Version="10.0.10" PrivateAssets="all" />
+```
+另外 `Dockerfile.sdk-offline` 已把 SDK 固定为 `10.0.100`（与运行时 aspnet 10.0.x 同波段，避免浮动漂移）。
+
+> 排查技巧：容器与本地 publish 对比 `find /publish/wwwroot` 是否有 `_framework/`；
+> 产物里 `bh-webui.staticwebassets.endpoints.json` 若不含 blazor 条目即该包缺失。
 
 ### Pod 无法调度（GPU 不足）
 
@@ -340,6 +446,13 @@ kubectl get nodes -o custom-columns=NAME:.metadata.name,GPU:.status.capacity.'in
 ```
 
 ### OpenVINO 检测不到 GPU
+
+> 先在本机（容器外）验证 GPU 驱动可用，排除宿主机问题：
+> ```bash
+> clinfo | grep -E 'Number of platforms|Device Name'   # 应为 1 个平台 + Intel GPU 设备
+> groups                                              # 运行用户需在 video/render 组（否则见上文「节点 GPU 驱动」）
+> ```
+> 若宿主机 `Number of platforms 0`，按上文「节点 GPU 驱动」安装 `intel-opencl-icd`（提供 OpenCL ICD 注册）。
 
 ```bash
 # 进入 OpenVINO Pod 检查
@@ -380,11 +493,11 @@ kubectl -n baihua exec deployment/bh-family -- ls -la /opt/baihua/models/
 scp -r Qwen2.5-VL-7B-Instruct-int4-ov user@node:/opt/baihua/models/
 ```
 
-### Nginx 502
+### Traefik 502 / 路由不达
 
 ```bash
-# 检查后端服务
-kubectl -n baihua exec deployment/bh-nginx -- nginx -t
+# 检查 IngressRoute 与后端服务
+kubectl -n baihua get ingressroute,middleware
 kubectl -n baihua get svc
 # 确保 bh-family 和 bh-webui Service 有 Endpoints
 kubectl -n baihua get endpoints

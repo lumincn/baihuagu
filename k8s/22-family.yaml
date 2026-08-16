@@ -38,6 +38,10 @@ spec:
               value: "http://0.0.0.0:8788"
             - name: BAIHUA_SKIP_MUTEX
               value: "true"
+            # 移动端二维码入口地址：走 nginx 80 端口（无显式端口号），/mg/* 由 nginx 转发到本服务
+            # 花记扫码后使用 http://<host>/（默认 80），不再出现 :8788 显式端口
+            - name: Baihua__PublicBaseUrl
+              value: "http://192.168.3.13"
             # 管理 API 访问控制：放行 Pod 网段（WebUI 等 Pod 通过 Service 调用管理 API）
             - name: BAIHUA_ADMIN_ALLOWED_NETS
               value: "10.0.0.0/8"

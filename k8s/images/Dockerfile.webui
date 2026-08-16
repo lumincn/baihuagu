@@ -18,7 +18,7 @@ COPY services/ services/
 COPY libs/ libs/
 RUN --mount=type=cache,target=/root/.nuget/packages \
     dotnet publish services/Baihua.Web/Baihua.Web.csproj \
-        -c Release -o /publish --no-restore --nologo
+        -c Release -r linux-x64 -o /publish --no-restore --nologo
 
 FROM bh/base-runtime:latest AS runtime
 WORKDIR /app

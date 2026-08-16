@@ -33,9 +33,14 @@ bh install / uninstall        安装到 PATH / 移除
 # Windows（写入用户 PATH，新终端生效）
 .\tools\bh\bh.ps1 install
 
-# Linux / WSL（软链到 ~/.local/bin/bh，需 root 时用 sudo 或 wsl -u root）
-bash tools/bh/bh.sh install
+# Linux / WSL
+bash tools/bh/bh.sh install            # 普通用户 → ~/.local/bin/bh（~/.bashrc 已含该目录时直接可用）
+sudo bash tools/bh/bh.sh install       # root → /usr/local/bin/bh（在 sudo secure_path 内，sudo bh 也可用）
 ```
+
+> **sudo 下找不到 bh？** `sudo bh` 用 root 的 `secure_path`（不含 `~/.local/bin`）。
+> 用 `sudo bash tools/bh/bh.sh install`（装到 `/usr/local/bin/bh`）即可，或直接
+> `sudo /usr/local/bin/bh <cmd>` / `sudo ln -sf <仓库>/tools/bh/bh.sh /usr/local/bin/bh`。
 
 ## 踩坑记录（实现注意）
 

@@ -158,8 +158,11 @@ dotnet build services/BaiHua.slnx -c Release
 
 ## 移动端兼容
 
-移动端（鸿蒙/安卓）通过 `http://<server>:8788` 发现服务器并调用 API。
-`Baihua.Family` 在 8788 上保留了一个**转发中间件**，将移动端调用的 Vault 域 API 路径（如 `/mg/manifest`、`/mg/file`、`/mg/cards`、`/mg/vaults` 等）透明转发到 `Baihua.Vault`（8790）。因此 **移动端代码无需任何改动**。
+移动端（鸿蒙/安卓）通过 `http://<server>/`（**默认 80 端口，无显式端口号**）发现服务器并调用 API。
+k8s 部署下 **Traefik**（IngressRoute，svclb 绑定宿主 :80）作为统一入口，`/mg/*`、`/pair` 等路径由
+Traefik 转发到 `Baihua.Family`（8788）；配对二维码的 `baseUrl` 由 `Baihua:PublicBaseUrl` 决定
+（k8s 已注入 `http://<节点IP>`，无端口）。
+`Baihua.Family` 在 8788 上保留了**转发中间件**，将移动端调用的 Vault 域 API 路径（如 `/mg/manifest`、`/mg/file`、`/mg/cards`、`/mg/vaults` 等）透明转发到 `Baihua.Vault`（8790）。因此 **移动端代码无需任何改动**。
 
 授权与认证：
 - 局域网发现/配对阶段通过 HMAC 签名（共享 `sharedSecret`）校验设备身份。

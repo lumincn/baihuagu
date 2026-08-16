@@ -8,7 +8,8 @@
 #   - 仅当系统依赖变化时需要重建
 #   - 应用代码变更无需重建此镜像
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0
+# Ubuntu 26.04 (resolute) 基础：.NET 10 mcr 镜像的 26.04 变体（与宿主机 26.04 一致）
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-resolute
 WORKDIR /app
 
 # 使用华为云镜像源（解决容器内无法访问 archive.ubuntu.com 的问题）
