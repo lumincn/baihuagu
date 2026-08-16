@@ -232,7 +232,8 @@ builder.Services.AddSingleton<DeviceService>();
 builder.Services.AddSingleton<Baihua.Family.Services.ServerMessaging.ServerMessageService>();
 builder.Services.AddHostedService<Baihua.Family.Services.ServerMessaging.ServerDiscoveryHostedService>();
 // 百花算力池：汇聚对端算力 + 自动注册可选用 AI 提供方
-builder.Services.AddHostedService<Baihua.Family.Services.ComputePool.ComputePoolService>();
+builder.Services.AddSingleton<Baihua.Family.Services.ComputePool.ComputePoolService>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<Baihua.Family.Services.ComputePool.ComputePoolService>());
 builder.Services.AddSingleton<PairingService>();
 
 // Family 版固定使用 Family 配对和同步授权策略
