@@ -98,6 +98,14 @@ spec:
     - web
   routes:
     - kind: Rule
+      match: PathPrefix(`/mg/ai/`)
+      priority: 760
+      middlewares:
+        - name: sec-headers
+      services:
+        - name: bh-ai
+          port: 8791
+    - kind: Rule
       match: PathPrefix(`/mg/`) || Path(`/pair`) || Path(`/pair/code`) || Path(`/vault/pair`)
       priority: 750
       middlewares:

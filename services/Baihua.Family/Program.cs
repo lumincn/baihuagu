@@ -231,6 +231,8 @@ builder.Services.AddSingleton<DeviceService>();
 // 百花服务器互联：对端管理 + 双向消息 + 局域网发现
 builder.Services.AddSingleton<Baihua.Family.Services.ServerMessaging.ServerMessageService>();
 builder.Services.AddHostedService<Baihua.Family.Services.ServerMessaging.ServerDiscoveryHostedService>();
+// 百花算力池：汇聚对端算力 + 自动注册可选用 AI 提供方
+builder.Services.AddHostedService<Baihua.Family.Services.ComputePool.ComputePoolService>();
 builder.Services.AddSingleton<PairingService>();
 
 // Family 版固定使用 Family 配对和同步授权策略
@@ -501,11 +503,12 @@ app.Use(async (context, next) =>
         "/api/ai/chat"
     };
 
-    // 以下路径为公开路径，无需 HMAC 签名（设备注册、密钥获取等初始化流程）
+    // 以下路径为公开路径，无需 HMAC 签名（设备注册、密钥获取、算力广播等初始化流程）
     var publicApiPaths = new[]
     {
         "/mg/register-device",
-        "/mg/auth/config"
+        "/mg/auth/config",
+        "/mg/capabilities" // 算力池：对端拉取，自校验 X-Server-Token
     };
 
     // WebUI 专用浏览 API 不需要移动端签名

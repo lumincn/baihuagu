@@ -7,6 +7,7 @@ using System.Text.Json;
 using Baihua.Contracts.Ai;
 using Baihua.Contracts.Assistant;
 using Baihua.Contracts.Budget;
+using Baihua.Contracts.ComputePool;
 using Baihua.Contracts.Stock;
 using Baihua.Contracts.Todo;
 using Microsoft.Extensions.Localization;
@@ -143,6 +144,11 @@ namespace Baihua.Web.Services
         Task<bool> DeleteAiConfigProviderAsync(string providerId);
         Task<EnvConfigHelp?> GetAiEnvConfigHelpAsync();
         Task<List<AiProviderPreset>> GetAiProviderPresetsAsync();
+
+        // 算力池（局域网算力总览与选用）
+        Task<ComputePoolViewDto?> GetComputePoolAsync();
+        Task<bool> RefreshComputePoolAsync();
+        Task<(bool ok, string? error)> SelectComputeModelAsync(string serverId, string modelName);
 
         // Embedding 配置
         Task<EmbeddingConfigDto> GetEmbeddingConfigAsync();

@@ -1,0 +1,187 @@
+@page "/compute"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@using Baihua.Contracts.ComputePool
+@inject Baihua.Web.Services.IApiService ApiService
+@inject NavigationManager Navigation
+
+<PageTitle>算力池</PageTitle>
+
+<div class="compute-header">
+    <h1 class="h4 mb-0">⚡ 百花算力池</h1>
+    <span class="text-secondary small">局域网内所有百花服务器的 AI 算力一览，点击模型即可选用</span>
+</div>
+
+<div class="compute-toolbar">
+    <span class="text-secondary small">刷新于 @_updatedAt</span>
+    <button class="btn btn-sm btn-outline-secondary ms-2" @onclick="RefreshAsync" disabled="@_busy">🔄 刷新</button>
+</div>
+
+@if (_error != null)
+{
+    <div class="alert alert-danger py-2">@_error</div>
+}
+
+@if (_pool == null)
+{
+    <div class="text-secondary p-4 text-center">加载中…</div>
+}
+else
+{
+    <div class="compute-nodes">
+        @foreach (var node in _pool.Nodes)
+        {
+            <div class="compute-node @(node.IsLocal ? "local" : "")">
+                <div class="compute-node-head">
+                    <span class="node-name">
+                        @(node.IsLocal ? "🖥️ 本机 · " : "🖧 ")@node.Name
+                    </span>
+                    <span class="node-status @(node.Online ? "ok" : "down")">
+                        @(node.Online ? "● 在线" : "○ 离线")
+                    </span>
+                </div>
+                <div class="node-meta">
+                    <span>@node.HostUrl</span>
+                    @if (node.CpuCores.HasValue)
+                    {
+                        <span class="ms-2">@node.CpuCores.Value 核 CPU</span>
+                    }
+                    @if (node.OpenAiBaseUrl.Length > 0)
+                    {
+                        <span class="ms-2 badge bg-info-subtle text-info-emphasis">推理端点 @node.OpenAiBaseUrl</span>
+                    }
+                </div>
+
+                @if (node.Providers.Count == 0)
+                {
+                    <div class="text-secondary small p-2">该节点暂无对外模型（需在对方配置 AI 提供方）</div>
+                }
+                else
+                {
+                    <div class="compute-models">
+                        @foreach (var provider in node.Providers)
+                        {
+                            <div class="compute-provider">
+                                <div class="provider-name">@provider.Name <span class="tier-badge">@TierLabel(provider.Tier)</span></div>
+                                @foreach (var model in provider.Models)
+                                {
+                                    var tps = model.TokensPerSecond;
+                                    var maxTps = _pool.Nodes
+                                        .SelectMany(n => n.Providers)
+                                        .SelectMany(p => p.Models)
+                                        .Where(m => string.Equals(m.Name, model.Name, StringComparison.OrdinalIgnoreCase))
+                                        .Select(m => m.TokensPerSecond ?? 0)
+                                        .DefaultIfEmpty(0)
+                                        .Max();
+                                    var barPct = (tps.HasValue && maxTps > 0) ? (int)(tps.Value * 100 / maxTps) : 0;
+                                    <div class="model-row">
+                                        <span class="model-name">@model.Name</span>
+                                        <div class="tps-bar-wrap">
+                                            <div class="tps-bar" style="width: @(barPct)%"></div>
+                                        </div>
+                                        <span class="tps-value">@(tps.HasValue ? tps.Value.ToString("F1") + " tok/s" : "未测速")</span>
+                                        @if (!node.IsLocal)
+                                        {
+                                            <button class="btn btn-sm @(node.ProviderRegistered ? "btn-primary" : "btn-outline-primary") select-btn"
+                                                    @onclick="() => SelectAsync(node, model.Name)" disabled="@_busy">
+                                                @(node.ProviderRegistered ? "选用" : "注册并选用")
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-secondary small ms-2">本机模型</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="mt-3 text-muted small">
+        💡 选用后，「AI 配置」中会出现该节点对应的提供方（peer- 前缀）。聊天/拜师等会默认使用所选模型；
+        对端机器离线时自动降级，本机 AI 不受影响。
+    </div>
+}
+
+<style>
+    .compute-header { padding: 0.75rem 1rem; border-bottom: 1px solid var(--bs-border-color); display: flex; align-items: baseline; gap: 0.75rem; }
+    .compute-toolbar { padding: 0.5rem 1rem; display: flex; align-items: center; }
+    .compute-nodes { padding: 0.5rem 1rem 1rem; display: flex; flex-direction: column; gap: 1rem; }
+    .compute-node { border: 1px solid var(--bs-border-color); border-radius: 12px; padding: 0.9rem 1rem; background: rgba(46,139,175,0.04); }
+    .compute-node.local { border-color: rgba(46,139,175,0.5); }
+    .compute-node-head { display: flex; justify-content: space-between; align-items: center; }
+    .node-name { font-weight: 600; }
+    .node-status.ok { color: #2e7d32; }
+    .node-status.down { color: #c62828; }
+    .node-meta { color: var(--bs-secondary-color); font-size: 0.8rem; margin: 0.25rem 0 0.6rem; word-break: break-all; }
+    .compute-models { display: flex; flex-direction: column; gap: 0.6rem; }
+    .compute-provider { display: flex; flex-direction: column; gap: 0.35rem; }
+    .provider-name { font-size: 0.8rem; font-weight: 600; color: var(--bs-secondary-color); }
+    .tier-badge { font-size: 0.7rem; background: rgba(46,139,175,0.15); color: #2e8baf; border-radius: 8px; padding: 0 0.4rem; }
+    .model-row { display: flex; align-items: center; gap: 0.6rem; }
+    .model-name { width: 16rem; font-size: 0.85rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tps-bar-wrap { flex: 1; height: 10px; background: rgba(128,128,128,0.15); border-radius: 5px; overflow: hidden; }
+    .tps-bar { height: 100%; background: linear-gradient(90deg, #2e8baf, #4db8d9); border-radius: 5px; transition: width 0.4s; }
+    .tps-value { width: 7rem; font-size: 0.8rem; color: var(--bs-secondary-color); text-align: right; }
+    .select-btn { flex-shrink: 0; }
+</style>
+
+@code {
+    private ComputePoolViewDto? _pool;
+    private string? _error;
+    private bool _busy;
+    private string _updatedAt = "—";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _pool = await ApiService.GetComputePoolAsync();
+        if (_pool != null)
+            _updatedAt = _pool.UpdatedAt.ToLocalTime().ToString("HH:mm:ss");
+        else if (_error == null)
+            _error = "加载算力池失败";
+    }
+
+    private async Task RefreshAsync()
+    {
+        _busy = true;
+        try
+        {
+            await ApiService.RefreshComputePoolAsync();
+            await LoadAsync();
+            StateHasChanged();
+        }
+        finally { _busy = false; }
+    }
+
+    private async Task SelectAsync(ComputePoolNodeDto node, string modelName)
+    {
+        _busy = true;
+        try
+        {
+            var (ok, error) = await ApiService.SelectComputeModelAsync(node.ServerId, modelName);
+            if (!ok)
+            {
+                _error = error;
+            }
+            await LoadAsync();
+            StateHasChanged();
+        }
+        finally { _busy = false; }
+    }
+
+    private static string TierLabel(string tier) => tier switch
+    {
+        "1" => "固本",
+        "2" => "本地大模型",
+        "3" => "云端",
+        _ => "未知"
+    };
+}

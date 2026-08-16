@@ -1,0 +1,107 @@
+using Baihua.Contracts.ComputePool;
+using Baihua.Core;
+using Baihua.Core.Services;
+using Baihua.Family.Services;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Baihua.Family.Controllers.ComputePool;
+
+/// <summary>
+/// 本机算力能力广播端点（/mg/capabilities，X-Server-Token 鉴权，公开路径自校验）。
+/// 供局域网内其他百花服务器发现本机的 AI 提供方/模型/算力，实现跨机选用。
+/// </summary>
+[ApiController]
+public class CapabilitiesController : ControllerBase
+{
+    private readonly ServerAddressService _serverAddress;
+    private readonly AiSettingsService _aiSettings;
+    private readonly BenchmarkRepository _benchmarkRepository;
+    private readonly IConfiguration _configuration;
+    private readonly ILogger<CapabilitiesController> _logger;
+
+    public CapabilitiesController(
+        ServerAddressService serverAddress,
+        AiSettingsService aiSettings,
+        BenchmarkRepository benchmarkRepository,
+        IConfiguration configuration,
+        ILogger<CapabilitiesController> logger)
+    {
+        _serverAddress = serverAddress;
+        _aiSettings = aiSettings;
+        _benchmarkRepository = benchmarkRepository;
+        _configuration = configuration;
+        _logger = logger;
+    }
+
+    /// <summary>本机能力清单（对端服务器用 X-Server-Token 拉取）</summary>
+    [HttpGet("/mg/capabilities")]
+    public ActionResult<ComputeNodeCapabilitiesDto> GetCapabilities()
+    {
+        var localToken = _configuration["BAIHUA_SERVER_MSG_TOKEN"] ?? "";
+        var token = Request.Headers["X-Server-Token"].FirstOrDefault();
+        if (!string.IsNullOrEmpty(localToken) && !string.Equals(token, localToken, StringComparison.Ordinal))
+        {
+            _logger.LogWarning("[ComputePool] capabilities rejected: 口令校验失败");
+            return Unauthorized(new { error = "口令校验失败" });
+        }
+
+        var settings = _serverAddress.GetSettings();
+        var hostIp = _configuration["BAIHUA_HOST_IP"];
+        var hostUrl = !string.IsNullOrWhiteSpace(hostIp)
+            ? $"http://{hostIp}"
+            : _serverAddress.GetLocalPublicBaseUrl();
+        // 对外 OpenAI 兼容推理端点：显式配置 BAIHUA_PUBLIC_OPENAI_BASE_URL 优先；
+        // 未配置时默认 {入口}/mg/ai/v1（k8s 由 Traefik 把 /mg/ai/ 转发到 AI 服务 shim；
+        // native 部署需显式配成 http://<IP>:8791/mg/ai/v1）
+        var openAiBaseUrl = _configuration["BAIHUA_PUBLIC_OPENAI_BASE_URL"];
+        if (string.IsNullOrWhiteSpace(openAiBaseUrl))
+            openAiBaseUrl = $"{hostUrl}/mg/ai/v1";
+
+        var providers = _aiSettings.GetAiProviders()
+            .Where(p => p.Models is { Count: > 0 })
+            .Select(p => new ComputeProviderDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Tier = ((int)p.Tier).ToString(),
+                Models = p.Models.Select(m => new ComputeModelDto
+                {
+                    Name = m.Name,
+                    IsMain = m.IsMain,
+                    // 本机实测 token/s（来自 ModelBenchmark 排行榜），对端算力图表据此展示
+                    TokensPerSecond = GetBenchmarkTps(m.Name)
+                }).ToList()
+            })
+            .ToList();
+
+        return Ok(new ComputeNodeCapabilitiesDto
+        {
+            ServerId = _serverAddress.GetServerInstanceId(),
+            Name = string.IsNullOrWhiteSpace(settings.DisplayName) ? Environment.MachineName : settings.DisplayName,
+            HostUrl = hostUrl,
+            OpenAiBaseUrl = openAiBaseUrl,
+            Providers = providers,
+            GpuName = null,
+            GpuVramGb = null,
+            CpuCores = Environment.ProcessorCount,
+            UpdatedAt = DateTime.UtcNow
+        });
+    }
+
+    /// <summary>查排行榜里该模型最近一次实测 token/s（无记录返回 null）。</summary>
+    private double? GetBenchmarkTps(string modelName)
+    {
+        try
+        {
+            return _benchmarkRepository.GetLeaderboard()
+                .Where(h => string.Equals(h.ModelName, modelName, StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(h => h.LastTestedAt)
+                .Select(h => h.AvgTokensPerSecond)
+                .FirstOrDefault();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+}
