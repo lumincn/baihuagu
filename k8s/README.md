@@ -377,7 +377,13 @@ WebUI 侧边栏「服务器互联」页面（`/server-messages`）：登记其�
 
 **使用**：WebUI → 服务器互联 → 「添加」→ 填对方名称 + 地址（`http://<对方节点IP>/`）+ 口令 → 打开对话收发。
 
-**局域网自动发现**：Family 每 30s 在 UDP 45678 广播自身身份并监听，自动登记同网段其它百花服务器（Source=lan）。k8s Pod 网络跨机器广播不可达时，用手动添加兜底（配置 `BAIHUA_SERVER_PUBLIC_BASE_URL` 后广播携带入口地址）。
+**局域网自动发现**：Family 每 30s 在 UDP 45678 广播自身身份并监听，自动登记同网段其它百花服务器（Source=lan）。
+
+> ⚠️ **实测限制（2026-08）**：**k8s 容器收不到局域网 UDP 广播**（Pod 网络隔离，只收到自身广播回环）。
+> - **native 服务器 → 能自动发现 k8s 服务器**（native 收广播；k8s 广播经节点出口可达）
+> - **k8s 服务器 → 不能自动发现 native/其它机器**，需在 WebUI 手动添加对方
+> - 广播必须携带正确入口：k8s 配 `BAIHUA_SERVER_PUBLIC_BASE_URL`；native 配
+>   `BAIHUA_SERVER_DISCOVERY_HTTP_PORT=<实际端口>`（默认广播 80，native 跑 8788 时必改）
 
 ## Intel GPU 配置详解
 
