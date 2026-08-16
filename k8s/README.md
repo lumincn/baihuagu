@@ -373,7 +373,8 @@ WebUI 侧边栏「服务器互联」页面（`/server-messages`）：登记其�
 | 环境变量 | 说明 |
 |---|---|
 | `BAIHUA_SERVER_MSG_TOKEN` | 共享口令，**两台机器配成相同值**（留空则不鉴权，仅限可信局域网） |
-| `BAIHUA_SERVER_PUBLIC_BASE_URL` | 本机对外入口（如 `http://192.168.3.13/`），广播与回发用 |
+| `BAIHUA_HOST_IP` | **k8s 自动注入**（下行 API `status.hostIP`），无需手动配置 |
+| `BAIHUA_SERVER_PUBLIC_BASE_URL` | 可选覆盖（入口不在 80 或想用域名时配置） |
 
 **使用**：WebUI → 服务器互联 → 「添加」→ 填对方名称 + 地址（`http://<对方节点IP>/`）+ 口令 → 打开对话收发。
 
@@ -382,8 +383,8 @@ WebUI 侧边栏「服务器互联」页面（`/server-messages`）：登记其�
 > ⚠️ **实测限制（2026-08）**：**k8s 容器收不到局域网 UDP 广播**（Pod 网络隔离，只收到自身广播回环）。
 > - **native 服务器 → 能自动发现 k8s 服务器**（native 收广播；k8s 广播经节点出口可达）
 > - **k8s 服务器 → 不能自动发现 native/其它机器**，需在 WebUI 手动添加对方
-> - 广播必须携带正确入口：k8s 配 `BAIHUA_SERVER_PUBLIC_BASE_URL`；native 配
->   `BAIHUA_SERVER_DISCOVERY_HTTP_PORT=<实际端口>`（默认广播 80，native 跑 8788 时必改）
+> - 广播必须携带正确入口：**自动探测**——k8s 经下行 API 注入节点 IP（入口 traefik :80）；
+>   native 自动探测本机 IP + Kestrel 端口；特殊入口再用 `BAIHUA_SERVER_PUBLIC_BASE_URL` 覆盖
 
 ## Intel GPU 配置详解
 

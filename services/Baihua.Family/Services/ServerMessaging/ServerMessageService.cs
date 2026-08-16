@@ -269,12 +269,24 @@ public class ServerMessageService
         AddedAtUtc = p.AddedAtUtc
     };
 
-    /// <summary>本机公网/局域网入口地址（优先 BAIHUA_SERVER_PUBLIC_BASE_URL，供对端回发）。</summary>
+    /// <summary>
+    /// 本机局域网/公网入口地址（供广播与回发）。自动探测，无需手动配置：
+    /// 1. BAIHUA_SERVER_PUBLIC_BASE_URL 显式配置优先；
+    /// 2. k8s 下行 API 注入的 BAIHUA_HOST_IP（节点 IP，入口为 traefik :80）；
+    /// 3. native：自动探测本机 IP + Kestrel 监听端口。
+    /// </summary>
     public string GetOwnPublicBaseUrl()
     {
         var configured = _configuration["BAIHUA_SERVER_PUBLIC_BASE_URL"];
         if (!string.IsNullOrWhiteSpace(configured))
             return configured.Trim().TrimEnd('/');
-        return "";
+
+        // k8s：下行 API（status.hostIP）注入的节点 IP → http://<节点IP>/（traefik :80 入口）
+        var hostIp = _configuration["BAIHUA_HOST_IP"];
+        if (!string.IsNullOrWhiteSpace(hostIp))
+            return $"http://{hostIp}";
+
+        // native：自动探测本机 IP + Kestrel 监听端口
+        return _serverAddressService.GetLocalPublicBaseUrl();
     }
 }

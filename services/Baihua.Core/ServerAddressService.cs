@@ -423,5 +423,16 @@ namespace Baihua.Core.Services
                 return "127.0.0.1";
             }
         }
+
+        /// <summary>
+        /// 自动探测本机局域网 HTTP 入口（native 部署用）：本机 IP + Kestrel 监听端口。
+        /// 供服务器互联广播/回发使用，避免手动配置自己的 IP。
+        /// </summary>
+        public string GetLocalPublicBaseUrl()
+        {
+            var ip = GetLocalIpAddress();
+            var port = GetHttpPort();
+            return $"http://{ip}:{port}";
+        }
     }
 }
