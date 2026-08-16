@@ -135,7 +135,9 @@ public class ModelDownloadService
 
                 dto.CurrentFile = file.Path;
                 var url = BuildFileUrl(entry, file);
-                await DownloadFileAsync(url, localPath, file.Size, dto, () => downloaded, sw, ct);
+                await DownloadFileAsync(url, localPath, file.Size, dto, () => downloaded, sw, ct,
+                    // 大文件下载期间把字节级进度同步到任务管理页（每 ~2s），避免进度条长期停在 0%
+                    (pct, msg) => UpdateTaskManager(taskManagerId, "Running", pct, 100, msg));
 
                 downloaded += file.Size;
                 dto.DownloadedBytes = downloaded;
@@ -201,7 +203,7 @@ public class ModelDownloadService
         }
         catch (Exception ex)
         {
-            _logger.LogDebug(ex, "更新任务管理状态失败");
+            _logger.LogWarning(ex, "更新任务管理进度失败（taskId={TaskId}）", taskId);
         }
     }
 
@@ -297,7 +299,8 @@ public class ModelDownloadService
 
     private async Task DownloadFileAsync(
         string url, string localPath, long expectedSize,
-        OpenVinoDownloadTaskDto dto, Func<long> getDownloaded, Stopwatch totalSw, CancellationToken ct)
+        OpenVinoDownloadTaskDto dto, Func<long> getDownloaded, Stopwatch totalSw, CancellationToken ct,
+        Action<int, string>? onProgress = null)
     {
         using var http = _httpFactory.CreateClient();
         http.Timeout = TimeSpan.FromMinutes(30);
@@ -319,13 +322,13 @@ public class ModelDownloadService
                     {
                         var hfMirror = "https://hf-mirror.com/" + url[(url.IndexOf("/models/", StringComparison.Ordinal) + 8)..]
                             .Replace("/resolve/master/", "/resolve/main/");
-                        await DownloadFileFromAsync(http, hfMirror, localPath, expectedSize, dto, getDownloaded, totalSw, ct);
+                        await DownloadFileFromAsync(http, hfMirror, localPath, expectedSize, dto, getDownloaded, totalSw, ct, onProgress);
                         return;
                     }
                     throw new HttpRequestException($"HTTP {(int)resp.StatusCode}");
                 }
 
-                await StreamToFileAsync(resp, localPath, expectedSize, dto, getDownloaded, totalSw, ct);
+                await StreamToFileAsync(resp, localPath, expectedSize, dto, getDownloaded, totalSw, ct, onProgress);
                 return;
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
@@ -339,16 +342,18 @@ public class ModelDownloadService
 
     private static async Task DownloadFileFromAsync(
         HttpClient http, string url, string localPath, long expectedSize,
-        OpenVinoDownloadTaskDto dto, Func<long> getDownloaded, Stopwatch totalSw, CancellationToken ct)
+        OpenVinoDownloadTaskDto dto, Func<long> getDownloaded, Stopwatch totalSw, CancellationToken ct,
+        Action<int, string>? onProgress = null)
     {
         using var resp = await http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
         resp.EnsureSuccessStatusCode();
-        await StreamToFileAsync(resp, localPath, expectedSize, dto, getDownloaded, totalSw, ct);
+        await StreamToFileAsync(resp, localPath, expectedSize, dto, getDownloaded, totalSw, ct, onProgress);
     }
 
     private static async Task StreamToFileAsync(
         HttpResponseMessage resp, string localPath, long expectedSize,
-        OpenVinoDownloadTaskDto dto, Func<long> getDownloaded, Stopwatch? totalSw, CancellationToken ct)
+        OpenVinoDownloadTaskDto dto, Func<long> getDownloaded, Stopwatch? totalSw, CancellationToken ct,
+        Action<int, string>? onProgress = null)
     {
         await using var stream = await resp.Content.ReadAsStreamAsync(ct);
         await using var fs = new FileStream(localPath + ".part", FileMode.Create, FileAccess.Write, FileShare.None, 81920, useAsync: true);
@@ -374,6 +379,7 @@ public class ModelDownloadService
                     dto.ProgressPercent = (int)(total * 100 / dto.TotalBytes);
                 dto.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {Path.GetFileName(localPath)} {FormatSize(fileDone)}/{FormatSize(expectedSize)} ({dto.SpeedMBps:F1}MB/s)");
                 if (dto.Logs.Count > 200) dto.Logs.RemoveRange(0, dto.Logs.Count - 200);
+                onProgress?.Invoke(dto.ProgressPercent, $"下载中 {Path.GetFileName(localPath)} {FormatSize(total)}/{FormatSize(dto.TotalBytes)}");
             }
         }
         await fs.FlushAsync(ct);

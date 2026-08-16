@@ -279,6 +279,7 @@ else
     private HashSet<string> retryingTaskIds = new();
     private readonly SemaphoreSlim _loadTasksLock = new(1, 1);
     private HubConnection? _hubConnection;
+    private Timer? _pollTimer;
     
     // 节流控制：收到 TaskUpdated 后延迟 500ms 再刷新，避免频繁请求
     private CancellationTokenSource? _refreshDebounceCts;
@@ -291,7 +292,23 @@ else
         // 等于整页白屏/无骨架直到 /api/tasks 返回。REST 与 Hub 均在后台跑，首屏立即显示加载态。
         _ = LoadTasks();
         _ = StartHubConnectionFireAndForgetAsync();
+        // 兜底轮询：WebSocket 未连接时静默轮询刷新任务进度（避免任务页永远停在旧状态）
+        _pollTimer = new Timer(async _ =>
+        {
+            if (_disposeCts.IsCancellationRequested) return;
+            if (!isHubConnected)
+            {
+                try { await InvokeAsync(() => LoadTasks(silent: true)); }
+                catch { }
+            }
+        }, null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
         return Task.CompletedTask;
+    }
+
+    private static bool IsLoopbackUrl(string baseUrl)
+    {
+        if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out var uri)) return true;
+        return uri.Host is "127.0.0.1" or "localhost" or "::1";
     }
 
     /// <summary>后台连接 Hub，不阻塞任务列表首屏。</summary>
@@ -309,8 +326,16 @@ else
 
     private async Task StartHubConnectionAsync()
     {
-        var baseUrl = BaihuaEndpointHelper.NormalizeOutboundBaseUrl(SettingsService.BackendUrl);
-        var hubUrl = $"{baseUrl}/hubs/task-progress";
+        var backend = BaihuaEndpointHelper.NormalizeOutboundBaseUrl(SettingsService.BackendUrl);
+        var pageBase = Navigation.BaseUri.TrimEnd('/');
+        // k8s/traefik 部署下，页面经代理入口访问（如 http://192.168.3.13），
+        // 但 BackendUrl 仍是服务器本机的 127.0.0.1:8788 —— 浏览器连的是自己机器的回环，必然失败。
+        // 此时改用页面同源，由反向代理把 /hubs/ 转发到后端（traefik 已配置 /hubs/ → bh-family）。
+        if (IsLoopbackUrl(backend) && !IsLoopbackUrl(pageBase))
+        {
+            backend = pageBase;
+        }
+        var hubUrl = $"{backend}/hubs/task-progress";
 
         _hubConnection = new HubConnectionBuilder()
             .WithUrl(hubUrl, o =>
@@ -392,6 +417,7 @@ else
         isHubConnected = false;
         _refreshDebounceCts?.Cancel();
         _refreshDebounceCts?.Dispose();
+        _pollTimer?.Dispose();
         if (_hubConnection != null)
         {
             await _hubConnection.DisposeAsync();
