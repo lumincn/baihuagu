@@ -458,10 +458,33 @@
 
     /* 暗色模式 — 首页专属覆盖 */
     [data-bs-theme="dark"] {
+        /* 提醒按钮（原白色底 → 深色半透明底，红色文字提亮） */
+        .alert-button {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ff7a8c;
+        }
+        .alert-button:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        /* 区块标题 */
+        .section-header h2 {
+            color: #d4d8dd;
+        }
+
         /* 最近浏览/最近搜索空状态 */
         .section-empty {
             background: rgba(255,255,255,0.04);
             color: #91a0b0;
+        }
+
+        /* 笔记卡片（原白色底） */
+        .note-card {
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        .note-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
         }
 
         /* 笔记卡片标题/元信息 */

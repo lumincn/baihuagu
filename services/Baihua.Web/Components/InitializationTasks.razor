@@ -346,6 +346,68 @@
         background: #2e8baf;
         color: white;
     }
+
+    /* === 暗色模式（随全局 data-bs-theme 切换） === */
+    [data-bs-theme="dark"] .init-tasks-panel {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.12);
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+    }
+    [data-bs-theme="dark"] .panel-header h3,
+    [data-bs-theme="dark"] .task-title {
+        color: rgba(255, 255, 255, 0.92);
+    }
+    [data-bs-theme="dark"] .btn-close-tasks {
+        color: rgba(255, 255, 255, 0.45);
+    }
+    [data-bs-theme="dark"] .btn-close-tasks:hover {
+        color: rgba(255, 255, 255, 0.8);
+    }
+    [data-bs-theme="dark"] .progress-bar {
+        background: rgba(255, 255, 255, 0.12);
+    }
+    [data-bs-theme="dark"] .task-item {
+        background: rgba(255, 255, 255, 0.06);
+    }
+    [data-bs-theme="dark"] .task-item:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+    [data-bs-theme="dark"] .task-item.active {
+        background: rgba(46, 139, 175, 0.22);
+        border-color: rgba(46, 139, 175, 0.6);
+    }
+    [data-bs-theme="dark"] .task-item.completed .task-title {
+        color: rgba(255, 255, 255, 0.45);
+    }
+    [data-bs-theme="dark"] .status-icon.pending {
+        border-color: rgba(255, 255, 255, 0.45);
+        color: rgba(255, 255, 255, 0.45);
+    }
+    [data-bs-theme="dark"] .task-description,
+    [data-bs-theme="dark"] .action-box p {
+        color: rgba(255, 255, 255, 0.65);
+    }
+    [data-bs-theme="dark"] .action-box {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+    [data-bs-theme="dark"] .qr-placeholder {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+    [data-bs-theme="dark"] .qr-placeholder:hover {
+        border-color: #2e8baf;
+        background: rgba(46, 139, 175, 0.22);
+    }
+    [data-bs-theme="dark"] .btn-outline {
+        background: rgba(255, 255, 255, 0.08);
+        color: #4db8d9;
+        border-color: #2e8baf;
+    }
+    [data-bs-theme="dark"] .btn-outline:hover:not(:disabled) {
+        background: #2e8baf;
+        color: white;
+    }
 </style>
 
 <ConfirmDialog Message="@createVaultFailMessage"
