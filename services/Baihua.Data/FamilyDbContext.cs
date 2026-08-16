@@ -44,6 +44,9 @@ public class FamilyDbContext : DbContext
     public DbSet<TodoItem> TodoItems => Set<TodoItem>();
     public DbSet<TodoGoal> TodoGoals => Set<TodoGoal>();
 
+    public DbSet<ServerPeer> ServerPeers => Set<ServerPeer>();
+    public DbSet<ServerMessage> ServerMessages => Set<ServerMessage>();
+
     public string DatabasePath
     {
         get
@@ -375,6 +378,35 @@ public class FamilyDbContext : DbContext
             entity.Property(e => e.Title).HasMaxLength(200).IsRequired();
             entity.Property(e => e.Note).HasMaxLength(1000);
             entity.HasIndex(e => e.GoalId);
+        });
+
+        // 服务器互联（百花 ↔ 百花 互发消息）
+        modelBuilder.Entity<ServerPeer>(entity =>
+        {
+            entity.ToTable("ServerPeers");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.ServerId);
+
+            entity.Property(e => e.ServerId).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Name).HasMaxLength(200);
+            entity.Property(e => e.BaseUrl).HasMaxLength(500).IsRequired();
+            entity.Property(e => e.Token).HasMaxLength(500);
+            entity.Property(e => e.Source).HasMaxLength(20).HasDefaultValue("manual");
+            entity.Property(e => e.AddedAtUtc).HasDefaultValueSql("datetime('now')");
+        });
+
+        modelBuilder.Entity<ServerMessage>(entity =>
+        {
+            entity.ToTable("ServerMessages");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.PeerId);
+            entity.HasIndex(e => new { e.PeerServerId, e.SentAtUtc });
+
+            entity.Property(e => e.PeerServerId).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.PeerName).HasMaxLength(200);
+            entity.Property(e => e.Direction).HasMaxLength(10).IsRequired();
+            entity.Property(e => e.Content).IsRequired();
+            entity.Property(e => e.SentAtUtc).HasDefaultValueSql("datetime('now')");
         });
     }
 

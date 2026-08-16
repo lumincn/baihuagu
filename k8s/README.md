@@ -362,6 +362,23 @@ export HF_ENDPOINT=https://hf-mirror.com
 ./deploy.sh logs bh-openvino 100
 ```
 
+## 百花服务器互联（双服务器互发消息）
+
+WebUI 侧边栏「服务器互联」页面（`/server-messages`）：登记其它百花服务器 → 点击打开对话 → 互发消息，接收方实时可见（5s 轮询）。
+
+**工作原理**：发送方 Family 将消息 HTTP 推送到对方 `/mg/server-msg/inbox`（`X-Server-Token` 鉴权），接收方落库后 WebUI 轮询展示。
+
+**两台机器部署配置**（`22-family.yaml` env，各自机器改自己的值）：
+
+| 环境变量 | 说明 |
+|---|---|
+| `BAIHUA_SERVER_MSG_TOKEN` | 共享口令，**两台机器配成相同值**（留空则不鉴权，仅限可信局域网） |
+| `BAIHUA_SERVER_PUBLIC_BASE_URL` | 本机对外入口（如 `http://192.168.3.13/`），广播与回发用 |
+
+**使用**：WebUI → 服务器互联 → 「添加」→ 填对方名称 + 地址（`http://<对方节点IP>/`）+ 口令 → 打开对话收发。
+
+**局域网自动发现**：Family 每 30s 在 UDP 45678 广播自身身份并监听，自动登记同网段其它百花服务器（Source=lan）。k8s Pod 网络跨机器广播不可达时，用手动添加兜底（配置 `BAIHUA_SERVER_PUBLIC_BASE_URL` 后广播携带入口地址）。
+
 ## Intel GPU 配置详解
 
 ### Device Plugin 工作原理

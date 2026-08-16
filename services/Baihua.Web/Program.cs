@@ -282,6 +282,8 @@ builder.Services.AddScoped<Baihua.Web.Services.ObsidianStatusService>();
 
 // Add Devices service (for device authorization management)
 builder.Services.AddScoped<Baihua.Web.Services.DevicesService>();
+// Add server messaging service (百花服务器互联互发消息)
+builder.Services.AddScoped<Baihua.Web.Services.ServerMessagingService>();
 
 // Add Pairing service (for QR code pairing)
 

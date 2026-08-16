@@ -228,6 +228,9 @@ builder.Services.AddSingleton<Baihua.Family.Services.Todo.TodoAiService>();
 builder.Services.AddHostedService<StudyRecordMigrationService>();
 builder.Services.AddSingleton<Baihua.Core.WebSocket.DeviceWebSocketHub>();
 builder.Services.AddSingleton<DeviceService>();
+// 百花服务器互联：对端管理 + 双向消息 + 局域网发现
+builder.Services.AddSingleton<Baihua.Family.Services.ServerMessaging.ServerMessageService>();
+builder.Services.AddHostedService<Baihua.Family.Services.ServerMessaging.ServerDiscoveryHostedService>();
 builder.Services.AddSingleton<PairingService>();
 
 // Family 版固定使用 Family 配对和同步授权策略
@@ -578,6 +581,7 @@ app.Use(async (context, next) =>
         "/mg/auth/config", "/mg/verify-token",
         "/mg/devices/revoke",
         "/mg/device-backup", // 花记设备备份（上传/列表/下载/删除）
+        "/mg/server-msg/inbox", // 百花服务器互联：对端推送消息（X-Server-Token 鉴权）
 
         // AI 对话代理：已配对移动端经 HMAC 鉴权后访问（AI-01）
         "/api/ai/chat",
