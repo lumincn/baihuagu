@@ -7,6 +7,7 @@
 
 <PageTitle>百花服务器互联</PageTitle>
 
+<div class="server-msg-page">
 <div class="server-msg-header">
     <h1 class="h4 mb-0">🛰️ 百花服务器互联</h1>
     <span class="text-secondary small">与其他百花服务器互发消息</span>
@@ -42,9 +43,12 @@
             @foreach (var peer in _peers)
             {
                 <div class="server-msg-peer @(_selectedPeerId == peer.Id ? "active" : "")" @onclick="() => SelectPeerAsync(peer.Id)">
-                    <div class="d-flex justify-content-between">
-                        <span class="fw-medium">@peer.Name</span>
-                        <span class="small text-secondary">@peer.Source</span>
+                    <div class="d-flex justify-content-between align-items-center gap-2">
+                        <span class="fw-medium text-truncate">@peer.Name</span>
+                        <span class="d-flex align-items-center flex-shrink-0 gap-2">
+                            <span class="small text-secondary">@peer.Source</span>
+                            <button class="btn btn-sm btn-outline-danger server-msg-del" @onclick="() => DeletePeerAsync(peer.Id)" @onclick:stopPropagation="true" title="删除">🗑</button>
+                        </span>
                     </div>
                     <div class="small text-secondary text-truncate">@peer.BaseUrl</div>
                     <div class="small text-secondary">
@@ -53,7 +57,6 @@
                         else
                         { <span class="text-muted">○ 最近：@(peer.LastSeenUtc?.ToLocalTime().ToString("MM-dd HH:mm") ?? "从未")</span> }
                     </div>
-                    <button class="btn btn-sm btn-outline-danger server-msg-del" @onclick="() => DeletePeerAsync(peer.Id)" title="删除">🗑</button>
                 </div>
             }
         </div>
@@ -94,36 +97,62 @@
             </div>
 
             <div class="server-msg-inputbar">
-                <input class="form-control" placeholder="输入消息，回车发送" @bind="_draft" @onkeydown="OnKeyDownAsync" />
-                <button class="btn btn-primary ms-2" @onclick="SendAsync" disabled="@_busy">发送</button>
+                <textarea class="form-control server-msg-input" rows="3" placeholder="输入消息，Ctrl+Enter 发送，Enter 换行" @bind="_draft" @bind:event="oninput" @onkeydown="OnKeyDownAsync"></textarea>
+                <button class="btn btn-primary ms-2 server-msg-sendbtn" @onclick="SendAsync" disabled="@_busy">发送</button>
             </div>
             @if (!string.IsNullOrEmpty(_sendError)) { <div class="text-danger small px-3 pb-1">@_sendError</div> }
         }
     </div>
 </div>
+</div>
 
 <style>
-    .server-msg-header { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color, #dee2e6); display: flex; align-items: baseline; gap: 0.75rem; }
+    /* === 主题变量：亮色 / 暗色（随全局 data-bs-theme 切换） === */
+    .server-msg-page {
+        --msg-border: #dee2e6;
+        --msg-surface-alt: #f5f7fa;
+        --msg-hover: rgba(46, 139, 175, 0.08);
+        --msg-active: rgba(46, 139, 175, 0.15);
+        --msg-in-bubble: #eef2f6;
+        --msg-text: #333333;
+        --msg-out-bubble: #2e8baf;
+        --msg-out-text: #ffffff;
+        --msg-muted: #888888;
+    }
+    [data-bs-theme="dark"] .server-msg-page {
+        --msg-border: rgba(255, 255, 255, 0.12);
+        --msg-surface-alt: rgba(255, 255, 255, 0.06);
+        --msg-hover: rgba(255, 255, 255, 0.05);
+        --msg-active: rgba(46, 139, 175, 0.28);
+        --msg-in-bubble: rgba(255, 255, 255, 0.09);
+        --msg-text: #ffffff;
+        --msg-out-bubble: #2e8baf;
+        --msg-out-text: #ffffff;
+        --msg-muted: rgba(255, 255, 255, 0.5);
+    }
+
+    .server-msg-header { padding: 0.75rem 1rem; border-bottom: 1px solid var(--msg-border); display: flex; align-items: baseline; gap: 0.75rem; }
     .server-msg-layout { display: flex; height: calc(100vh - 130px); min-height: 420px; }
-    .server-msg-sidebar { width: 300px; min-width: 260px; border-right: 1px solid var(--border-color, #dee2e6); padding: 0.75rem; display: flex; flex-direction: column; overflow-y: auto; }
-    .server-msg-addform { background: var(--surface-alt, #f5f7fa); padding: 0.6rem; border-radius: 8px; margin-bottom: 0.6rem; }
+    .server-msg-sidebar { width: 300px; min-width: 260px; border-right: 1px solid var(--msg-border); padding: 0.75rem; display: flex; flex-direction: column; overflow-y: auto; }
+    .server-msg-addform { background: var(--msg-surface-alt); padding: 0.6rem; border-radius: 8px; margin-bottom: 0.6rem; }
     .server-msg-peerlist { flex: 1; overflow-y: auto; }
-    .server-msg-peer { position: relative; padding: 0.55rem 0.65rem; border-radius: 8px; margin-bottom: 0.35rem; cursor: pointer; border: 1px solid transparent; }
-    .server-msg-peer:hover { background: rgba(46, 139, 175, 0.08); }
-    .server-msg-peer.active { background: rgba(46, 139, 175, 0.15); border-color: rgba(46, 139, 175, 0.4); }
-    .server-msg-del { position: absolute; top: 0.35rem; right: 0.4rem; padding: 0 0.35rem; font-size: 0.75rem; }
+    .server-msg-peer { padding: 0.55rem 0.65rem; border-radius: 8px; margin-bottom: 0.35rem; cursor: pointer; border: 1px solid transparent; }
+    .server-msg-peer:hover { background: var(--msg-hover); }
+    .server-msg-peer.active { background: var(--msg-active); border-color: rgba(46, 139, 175, 0.4); }
     .server-msg-chat { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-    .server-msg-chat-head { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border-color, #dee2e6); }
+    .server-msg-chat-head { padding: 0.6rem 1rem; border-bottom: 1px solid var(--msg-border); }
     .server-msg-thread { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
     .server-msg-bubble { max-width: 70%; }
     .server-msg-bubble.in { align-self: flex-start; }
     .server-msg-bubble.out { align-self: flex-end; }
     .server-msg-bubble-text { padding: 0.5rem 0.8rem; border-radius: 12px; word-break: break-word; white-space: pre-wrap; }
-    .server-msg-bubble.in .server-msg-bubble-text { background: var(--surface-alt, #eef2f6); border-top-left-radius: 2px; }
-    .server-msg-bubble.out .server-msg-bubble-text { background: #2e8baf; color: #fff; border-top-right-radius: 2px; }
-    .server-msg-bubble-time { font-size: 0.7rem; color: var(--text-muted, #888); margin-top: 2px; }
+    .server-msg-bubble.in .server-msg-bubble-text { background: var(--msg-in-bubble); color: var(--msg-text); border-top-left-radius: 2px; }
+    .server-msg-bubble.out .server-msg-bubble-text { background: var(--msg-out-bubble); color: var(--msg-out-text); border-top-right-radius: 2px; }
+    .server-msg-bubble-time { font-size: 0.7rem; color: var(--msg-muted); margin-top: 2px; }
     .server-msg-bubble.out .server-msg-bubble-time { text-align: right; }
-    .server-msg-inputbar { display: flex; padding: 0.6rem 1rem; border-top: 1px solid var(--border-color, #dee2e6); }
+    .server-msg-inputbar { display: flex; align-items: flex-end; padding: 0.6rem 1rem; border-top: 1px solid var(--msg-border); }
+    .server-msg-input { resize: vertical; }
+    .server-msg-sendbtn { flex-shrink: 0; }
 </style>
 
 @code {
@@ -236,7 +265,8 @@
 
     private async Task OnKeyDownAsync(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
     {
-        if (e.Key == "Enter" && !e.ShiftKey)
+        // 多行输入：Enter 换行；Ctrl+Enter（或 Mac 的 Cmd+Enter）发送
+        if (e.Key == "Enter" && (e.CtrlKey || e.MetaKey))
         {
             await SendAsync();
         }
