@@ -90,11 +90,10 @@ public class AuthenticationMiddleware
         // 未认证，记录日志
         _logger.LogDebug("Unauthorized request to {Path}, redirecting to login", path);
 
-        // API 请求返回 401
+        // API 请求返回 401（不加 WWW-Authenticate：该头会让浏览器弹出"需要授权访问"对话框）
         if (path.StartsWith("/api/", StringComparison.OrdinalIgnoreCase))
         {
             context.Response.StatusCode = 401;
-            context.Response.Headers.Append("WWW-Authenticate", "Cookie");
             await context.Response.WriteAsJsonAsync(new { error = "Unauthorized", message = "请先登录" });
             return;
         }

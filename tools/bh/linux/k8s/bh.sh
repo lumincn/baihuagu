@@ -346,12 +346,19 @@ show_logs() {
 }
 
 open_dashboard() {
-    local url="http://localhost"
+    # 用局域网 IP 而非 localhost：打印的 URL 在本机或局域网其它设备的浏览器都能打开
+    local host="localhost"
+    local lanip
+    lanip="$(hostname -I 2>/dev/null | awk '{print $1}')"
+    if [ -n "$lanip" ] && [[ "$lanip" =~ ^[0-9.]+$ ]]; then
+        host="$lanip"
+    fi
+    local url="http://$host"
     local token
-    token=$(curl -s -m 5 -X POST http://localhost/api/auth/cli-token | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
+    token=$(curl -s -m 5 -X POST "http://$host/api/auth/cli-token" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
     if [ -n "$token" ]; then
-        url="http://localhost/?cli-token=$token"
-        echo "[dashboard] cli-token 获取成功"
+        url="http://$host/?cli-token=$token"
+        echo "[dashboard] cli-token 获取成功（5 分钟内可重复打开）"
     else
         echo "[dashboard] cli-token 获取失败（traefik :80 未就绪？先打开无 token URL）"
     fi

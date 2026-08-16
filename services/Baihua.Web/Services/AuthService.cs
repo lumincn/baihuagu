@@ -175,10 +175,11 @@ public class AuthService
         if (string.IsNullOrEmpty(token))
             return false;
 
-        if (_cliTokens.TryRemove(token, out var expiry))
+        // 有效期内可重复使用（dashboard 打印的 URL 可能被打开多次）；
+        // 过期后由 CleanupExpiredCliTokens 清理。
+        if (_cliTokens.TryGetValue(token, out var expiry))
         {
-            if (DateTime.UtcNow < expiry)
-                return true;
+            return DateTime.UtcNow < expiry;
         }
         return false;
     }
