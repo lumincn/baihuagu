@@ -132,12 +132,42 @@ open_dashboard() {
     local token
     token=$(curl -s -m 5 -X POST http://127.0.0.1:5177/api/auth/cli-token | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
     if [ -n "$token" ]; then
-        (xdg-open "http://127.0.0.1:5177/?cli-token=$token" >/dev/null 2>&1 &) || true
+        open_browser "http://127.0.0.1:5177/?cli-token=$token"
         echo "[dashboard] opened with cli-token"
     else
-        (xdg-open "http://127.0.0.1:5177" >/dev/null 2>&1 &) || true
+        open_browser "http://127.0.0.1:5177"
         echo "[dashboard] cli-token failed, opened plain URL"
     fi
+}
+
+# 在用户桌面打开浏览器：普通用户直接 xdg-open；
+# root/sudo 下优先走桌面 portal（GNOME 标准路径），兜底 xdg-open 并补全
+# 桌面环境变量 + 超时保护（sudo 下缺 DBUS/XDG_CURRENT_DESKTOP 时 xdg-open 会挂死）。
+open_browser() {
+    local url="$1"
+    if [ "$(id -u)" = "0" ] && [ -n "${SUDO_USER:-}" ]; then
+        local uid xdgrt home
+        uid="$(id -u "$SUDO_USER" 2>/dev/null || echo 0)"
+        xdgrt="/run/user/$uid"
+        home="$(getent passwd "$SUDO_USER" 2>/dev/null | cut -d: -f6 || echo "/home/$SUDO_USER")"
+        [ -d "$xdgrt" ] || return 0
+        if sudo -u "$SUDO_USER" env HOME="$home" \
+            DBUS_SESSION_BUS_ADDRESS="unix:path=$xdgrt/bus" \
+            gdbus call --session --dest org.freedesktop.portal.Desktop \
+            --object-path /org/freedesktop/portal/desktop \
+            --method org.freedesktop.portal.OpenURI.OpenURI \
+            "" "$url" {} >/dev/null 2>&1; then
+            return 0
+        fi
+        sudo -u "$SUDO_USER" env HOME="$home" DISPLAY="${DISPLAY:-:0}" \
+            WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-0}" \
+            XDG_RUNTIME_DIR="$xdgrt" \
+            DBUS_SESSION_BUS_ADDRESS="unix:path=$xdgrt/bus" \
+            XDG_CURRENT_DESKTOP="${XDG_CURRENT_DESKTOP:-ubuntu:GNOME}" \
+            timeout 10 xdg-open "$url" >/dev/null 2>&1
+        return 0
+    fi
+    (xdg-open "$url" >/dev/null 2>&1 &) || true
 }
 
 case "${1:-help}" in

@@ -365,17 +365,35 @@ open_dashboard() {
     echo "[dashboard] URL: $url"
 
     # root/sudo 下 xdg-open 无法直接访问用户桌面（X/Wayland 授权），
-    # 尝试以原用户身份 + 其桌面环境打开；失败则只打印 URL
+    # 尝试以原用户身份打开；失败则只打印 URL。
     if [ "$(id -u)" = "0" ] && [ -n "${SUDO_USER:-}" ]; then
-        local uid xdgrt
+        local uid xdgrt home
         uid="$(id -u "$SUDO_USER" 2>/dev/null || echo 0)"
         xdgrt="/run/user/$uid"
+        home="$(getent passwd "$SUDO_USER" 2>/dev/null | cut -d: -f6 || echo "/home/$SUDO_USER")"
         if [ -d "$xdgrt" ]; then
-            sudo -u "$SUDO_USER" env DISPLAY="${DISPLAY:-:0}" WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-0}" \
-                XDG_RUNTIME_DIR="$xdgrt" xdg-open "$url" >/dev/null 2>&1 && {
+            # 首选桌面 portal（GNOME/Wayland 打开 URL 的标准路径，最可靠）：
+            # 直接经会话总线调 org.freedesktop.portal.OpenURI，绕开 xdg-open 的桌面探测。
+            if sudo -u "$SUDO_USER" env HOME="$home" \
+                DBUS_SESSION_BUS_ADDRESS="unix:path=$xdgrt/bus" \
+                gdbus call --session --dest org.freedesktop.portal.Desktop \
+                --object-path /org/freedesktop/portal/desktop \
+                --method org.freedesktop.portal.OpenURI.OpenURI \
+                "" "$url" {} >/dev/null 2>&1; then
                 echo "[dashboard] 已以 $SUDO_USER 身份在桌面打开浏览器"
                 return 0
-            }
+            fi
+            # 兜底：xdg-open（必须带全桌面环境变量，且加超时防挂死——
+            # sudo 下缺 DBUS_SESSION_BUS_ADDRESS/XDG_CURRENT_DESKTOP 时 xdg-open 会阻塞）
+            if sudo -u "$SUDO_USER" env HOME="$home" DISPLAY="${DISPLAY:-:0}" \
+                WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-0}" \
+                XDG_RUNTIME_DIR="$xdgrt" \
+                DBUS_SESSION_BUS_ADDRESS="unix:path=$xdgrt/bus" \
+                XDG_CURRENT_DESKTOP="${XDG_CURRENT_DESKTOP:-ubuntu:GNOME}" \
+                timeout 10 xdg-open "$url" >/dev/null 2>&1; then
+                echo "[dashboard] 已以 $SUDO_USER 身份在桌面打开浏览器"
+                return 0
+            fi
         fi
         echo "[dashboard] 无法代开浏览器（root 无桌面授权），请复制上面 URL 手动打开，或退出 sudo 重跑: bh dashboard"
         return 0
