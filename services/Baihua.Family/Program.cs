@@ -891,6 +891,7 @@ app.UseWebSockets();
 
 app.MapHub<TaskProgressHub>("/hubs/task-progress");
 app.MapHub<DeviceHub>("/hubs/devices");
+app.MapHub<ServerMessageHub>("/hubs/server-messages");
 
 // 纯 WebSocket 端点（供移动端使用，无需 SignalR 协议）
 app.Map("/ws/devices", async (HttpContext context, Baihua.Core.WebSocket.DeviceWebSocketHub hub,

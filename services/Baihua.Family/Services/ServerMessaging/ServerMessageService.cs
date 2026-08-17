@@ -2,6 +2,7 @@ using Baihua.Contracts.ServerMessaging;
 using Baihua.Data;
 using Baihua.Data.Entities;
 using Baihua.Core.Services;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -19,6 +20,7 @@ public class ServerMessageService
     private readonly IConfiguration _configuration;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ServerAddressService _serverAddressService;
+    private readonly Microsoft.AspNetCore.SignalR.IHubContext<Baihua.Core.Hubs.ServerMessageHub> _hub;
     private readonly ILogger<ServerMessageService> _logger;
 
     /// <summary>本机共享口令（BAIHUA_SERVER_MSG_TOKEN）。未配置则接收端不做口令校验。 </summary>
@@ -29,12 +31,14 @@ public class ServerMessageService
         IConfiguration configuration,
         IHttpClientFactory httpClientFactory,
         ServerAddressService serverAddressService,
+        Microsoft.AspNetCore.SignalR.IHubContext<Baihua.Core.Hubs.ServerMessageHub> hub,
         ILogger<ServerMessageService> logger)
     {
         _dbFactory = dbFactory;
         _configuration = configuration;
         _httpClientFactory = httpClientFactory;
         _serverAddressService = serverAddressService;
+        _hub = hub;
         _logger = logger;
     }
 
@@ -232,6 +236,24 @@ public class ServerMessageService
             await using var db = await _dbFactory.CreateDbContextAsync(ct);
             db.ServerMessages.Add(msg);
             await db.SaveChangesAsync(ct);
+
+            // 实时推送：WebUI 服务器互联页收到后立即刷新（轮询仅兜底）
+            try
+            {
+                await _hub.Clients.All.SendAsync("NewMessage", new
+                {
+                    peerId = peer.Id,
+                    peerServerId = peer.ServerId,
+                    fromName = peer.Name,
+                    content = request.Content,
+                    sentAtUtc = msg.SentAtUtc
+                }, ct);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "服务器互联消息推送失败");
+            }
+
             return (true, null);
         }
 

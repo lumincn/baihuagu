@@ -298,7 +298,15 @@ else
             if (_disposeCts.IsCancellationRequested) return;
             if (!isHubConnected)
             {
-                try { await InvokeAsync(() => LoadTasks(silent: true)); }
+                try
+                {
+                    await InvokeAsync(() =>
+                    {
+                        LoadTasks(silent: true);
+                        // Timer 回调不自动重渲染，必须显式刷新
+                        StateHasChanged();
+                    });
+                }
                 catch { }
             }
         }, null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));

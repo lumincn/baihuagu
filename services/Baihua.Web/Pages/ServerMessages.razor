@@ -2,7 +2,10 @@
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 @using Baihua.Contracts.ServerMessaging
 @using Baihua.Web.Services
+@using Microsoft.AspNetCore.SignalR.Client
 @inject ServerMessagingService MsgService
+@inject NavigationManager Navigation
+@inject Microsoft.Extensions.Logging.ILogger<ServerMessages> Logger
 @implements IDisposable
 
 <PageTitle>百花服务器互联</PageTitle>
@@ -169,11 +172,55 @@
     private bool _busy;
     private bool _showAddForm;
     private Timer? _timer;
+    private Microsoft.AspNetCore.SignalR.Client.HubConnection? _hub;
+    private readonly System.Threading.CancellationTokenSource _disposeCts = new();
+    private System.Threading.CancellationTokenSource? _refreshDebounceCts;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadPeersAsync();
+        // 实时推送：对端消息经 SignalR 到达立即刷新（WebSocket 连不上时轮询兜底）
+        _ = StartHubAsync();
         _timer = new Timer(async _ => await PollAsync(), null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
+    }
+
+    private async Task StartHubAsync()
+    {
+        try
+        {
+            // 浏览器侧连接，走页面同源（traefik 把 /hubs/ 转发到 family）
+            var hubUrl = $"{Navigation.BaseUri.TrimEnd('/')}/hubs/server-messages";
+            _hub = new HubConnectionBuilder()
+                .WithUrl(hubUrl, o => { o.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.WebSockets; o.SkipNegotiation = true; })
+                .WithAutomaticReconnect()
+                .Build();
+            _hub.On<object>("NewMessage", _ =>
+            {
+                var cts = new System.Threading.CancellationTokenSource();
+                var old = System.Threading.Interlocked.Exchange(ref _refreshDebounceCts, cts);
+                old?.Cancel();
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await Task.Delay(300, cts.Token);
+                        await InvokeAsync(async () =>
+                        {
+                            await LoadPeersAsync();
+                            if (_selectedPeer != null)
+                                await LoadMessagesAsync(_selectedPeer.Id);
+                            StateHasChanged();
+                        });
+                    }
+                    catch (TaskCanceledException) { }
+                });
+            });
+            await _hub.StartAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "服务器互联 Hub 连接失败（轮询兜底）");
+        }
     }
 
     private async Task PollAsync()
@@ -185,6 +232,9 @@
                 await LoadPeersAsync();
                 if (_selectedPeer != null)
                     await LoadMessagesAsync(_selectedPeer.Id);
+                // Timer 回调不像事件处理器那样自动重渲染，必须显式刷新 UI，
+                // 否则对端新消息只在手动刷新页面后才显示
+                StateHasChanged();
             });
         }
         catch { }
@@ -272,5 +322,11 @@
         }
     }
 
-    public void Dispose() => _timer?.Dispose();
+    public void Dispose()
+    {
+        _timer?.Dispose();
+        _disposeCts.Cancel();
+        _refreshDebounceCts?.Cancel();
+        _hub?.DisposeAsync().AsTask().GetAwaiter().GetResult();
+    }
 }
