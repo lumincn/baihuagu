@@ -187,7 +187,17 @@ public class ComputePoolService : IHostedService, IDisposable
     /// <summary>算力池总览（本机 + 对端）。</summary>
     public async Task<ComputePoolViewDto> GetPoolViewAsync(CancellationToken ct = default)
     {
-        var nodes = new List<ComputePoolNodeDto> { GetLocalNode() };
+        var localNode = GetLocalNode();
+        // 本机节点补上 AI 服务（shim 路由）的提供方，与 /mg/capabilities 广播保持一致
+        var aiProviders = await GetAiServiceProvidersAsync(ct);
+        foreach (var remote in aiProviders)
+        {
+            if (localNode.Providers.Any(g => string.Equals(g.Id, remote.Id, StringComparison.OrdinalIgnoreCase)))
+                continue;
+            localNode.Providers.Add(remote);
+        }
+
+        var nodes = new List<ComputePoolNodeDto> { localNode };
         var peers = await _messageService.ListPeersAsync(ct);
 
         foreach (var peer in peers)
@@ -283,6 +293,36 @@ public class ComputePoolService : IHostedService, IDisposable
                 .ToList(),
             ProviderRegistered = true
         };
+    }
+
+    private async Task<List<ComputeProviderDto>> GetAiServiceProvidersAsync(CancellationToken ct)
+    {
+        try
+        {
+            var aiBase = Environment.GetEnvironmentVariable("BAIHUA_AI_URL")
+                ?? Environment.GetEnvironmentVariable("TASK_RUNNER_AI_API_URL")
+                ?? "http://127.0.0.1:8791";
+            using var client = _httpClientFactory.CreateClient("ComputePool");
+            client.Timeout = TimeSpan.FromSeconds(8);
+            var resp = await client.GetAsync($"{aiBase.TrimEnd('/')}/api/ai/config/providers", ct);
+            if (!resp.IsSuccessStatusCode)
+                return new List<ComputeProviderDto>();
+            var providers = await resp.Content.ReadFromJsonAsync<List<AiProviderConfig>>(ct);
+            return providers?
+                .Where(p => p.Models is { Count: > 0 })
+                .Select(p => new ComputeProviderDto
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Tier = ((int)p.Tier).ToString(),
+                    Models = p.Models.Select(m => new ComputeModelDto { Name = m.Name, IsMain = m.IsMain }).ToList()
+                })
+                .ToList() ?? new List<ComputeProviderDto>();
+        }
+        catch
+        {
+            return new List<ComputeProviderDto>();
+        }
     }
 
     public void Dispose() => _timer?.Dispose();

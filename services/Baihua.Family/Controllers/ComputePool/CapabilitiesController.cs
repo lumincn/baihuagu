@@ -1,5 +1,6 @@
 using Baihua.Contracts.ComputePool;
 using Baihua.Core;
+using Baihua.Core.Models;
 using Baihua.Core.Services;
 using Baihua.Family.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -35,7 +36,7 @@ public class CapabilitiesController : ControllerBase
 
     /// <summary>本机能力清单（对端服务器用 X-Server-Token 拉取）</summary>
     [HttpGet("/mg/capabilities")]
-    public ActionResult<ComputeNodeCapabilitiesDto> GetCapabilities()
+    public async Task<ActionResult<ComputeNodeCapabilitiesDto>> GetCapabilities()
     {
         var localToken = _configuration["BAIHUA_SERVER_MSG_TOKEN"] ?? "";
         var token = Request.Headers["X-Server-Token"].FirstOrDefault();
@@ -57,7 +58,10 @@ public class CapabilitiesController : ControllerBase
         if (string.IsNullOrWhiteSpace(openAiBaseUrl))
             openAiBaseUrl = $"{hostUrl}/mg/ai/v1";
 
-        var providers = _aiSettings.GetAiProviders()
+        // 本机可对外提供的模型 = 本机 Family 直接可用的提供方 + AI 服务（shim 路由的提供方）
+        // （shim 按模型名在 AI 服务内路由，因此以 AI 服务的提供方为准，合并去重）
+        var models = new List<ComputeModelDto>();
+        var providerGroups = _aiSettings.GetAiProviders()
             .Where(p => p.Models is { Count: > 0 })
             .Select(p => new ComputeProviderDto
             {
@@ -68,11 +72,17 @@ public class CapabilitiesController : ControllerBase
                 {
                     Name = m.Name,
                     IsMain = m.IsMain,
-                    // 本机实测 token/s（来自 ModelBenchmark 排行榜），对端算力图表据此展示
                     TokensPerSecond = GetBenchmarkTps(m.Name)
                 }).ToList()
             })
             .ToList();
+
+        foreach (var remote in await GetAiServiceProvidersAsync())
+        {
+            if (providerGroups.Any(g => string.Equals(g.Id, remote.Id, StringComparison.OrdinalIgnoreCase)))
+                continue;
+            providerGroups.Add(remote);
+        }
 
         return Ok(new ComputeNodeCapabilitiesDto
         {
@@ -80,7 +90,7 @@ public class CapabilitiesController : ControllerBase
             Name = string.IsNullOrWhiteSpace(settings.DisplayName) ? Environment.MachineName : settings.DisplayName,
             HostUrl = hostUrl,
             OpenAiBaseUrl = openAiBaseUrl,
-            Providers = providers,
+            Providers = providerGroups,
             GpuName = null,
             GpuVramGb = null,
             CpuCores = Environment.ProcessorCount,
@@ -102,6 +112,42 @@ public class CapabilitiesController : ControllerBase
         catch
         {
             return null;
+        }
+    }
+
+    /// <summary>拉取 AI 服务（shim 所在服务）的提供方列表，作为本机可对外提供的算力。</summary>
+    private async Task<List<ComputeProviderDto>> GetAiServiceProvidersAsync()
+    {
+        try
+        {
+            var aiBase = Environment.GetEnvironmentVariable("BAIHUA_AI_URL")
+                ?? Environment.GetEnvironmentVariable("TASK_RUNNER_AI_API_URL")
+                ?? "http://127.0.0.1:8791";
+            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(8) };
+            var resp = await client.GetAsync($"{aiBase.TrimEnd('/')}/api/ai/config/providers");
+            if (!resp.IsSuccessStatusCode)
+                return new List<ComputeProviderDto>();
+            var providers = await resp.Content.ReadFromJsonAsync<List<AiProviderConfig>>();
+            return providers?
+                .Where(p => p.Models is { Count: > 0 })
+                .Select(p => new ComputeProviderDto
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Tier = ((int)p.Tier).ToString(),
+                    Models = p.Models.Select(m => new ComputeModelDto
+                    {
+                        Name = m.Name,
+                        IsMain = m.IsMain,
+                        TokensPerSecond = GetBenchmarkTps(m.Name)
+                    }).ToList()
+                })
+                .ToList() ?? new List<ComputeProviderDto>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "拉取 AI 服务提供方失败（不影响 capabilities 主流程）");
+            return new List<ComputeProviderDto>();
         }
     }
 }

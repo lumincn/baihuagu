@@ -34,7 +34,10 @@ public partial class AiClientService
                 if (string.IsNullOrWhiteSpace(apiKey))
                     _logger.LogWarning("提供商 {ProviderId} 未配置 API Key，将以无鉴权方式请求", providerId);
 
-                var endpoint = new Uri(provider.AiBaseUrl.TrimEnd('/'));
+                // 尾斜杠关键：OpenAI SDK 在 endpoint 后追加 "chat/completions"（相对 URI 合并），
+                // 无尾斜杠时会把 endpoint 最后一个路径段（如 /v1）当文件替换掉，
+                // 导致本地服务（Ollama/OpenVINO 等以 /v1 结尾的端点）404。
+                var endpoint = new Uri(provider.AiBaseUrl.TrimEnd('/') + "/");
                 var clientOptions = new OpenAIClientOptions { Endpoint = endpoint };
 
                 // 无 API Key 时使用占位符（Ollama/LMStudio 等本地服务不需要 Key）

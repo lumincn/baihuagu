@@ -509,7 +509,8 @@ app.Use(async (context, next) =>
     {
         "/mg/register-device",
         "/mg/auth/config",
-        "/mg/capabilities" // 算力池：对端拉取，自校验 X-Server-Token
+        "/mg/capabilities", // 算力池：对端拉取，自校验 X-Server-Token
+        "/mg/ai/" // 算力池 OpenAI shim：对端调用，shim 自带 Bearer 校验
     };
 
     // WebUI 专用浏览 API 不需要移动端签名
@@ -756,11 +757,14 @@ app.Use(async (context, next) =>
 // 将移动端 AI 对话请求转发到 Baihua.AI（8791）
 // AI-01：/api/ai/chat/* 已纳入 HMAC 鉴权域（见上方签名验证中间件），
 // 此处复用设备授权检查（X-Device-Id → 已授权设备），鉴权通过则代理，否则 401。
+// /mg/ai/*（算力池 OpenAI 兼容 shim）：对端服务器调用，shim 自带 Bearer 校验，
+// 此处直接透传，不做设备检查。
 app.Use(async (context, next) =>
 {
     var path = context.Request.Path.Value ?? "";
+    var isPeerAi = path.StartsWith("/mg/ai/", StringComparison.OrdinalIgnoreCase);
     var aiChatPaths = new[] { "/api/ai/chat" };
-    if (aiChatPaths.Any(p => path.StartsWith(p, StringComparison.OrdinalIgnoreCase)))
+    if (isPeerAi || aiChatPaths.Any(p => path.StartsWith(p, StringComparison.OrdinalIgnoreCase)))
     {
         var aiBase = Environment.GetEnvironmentVariable("BAIHUA_AI_URL")
             ?? Environment.GetEnvironmentVariable("TASK_RUNNER_AI_API_URL")
@@ -784,7 +788,8 @@ app.Use(async (context, next) =>
             }
 
             // 设备授权检查：与 Vault 转发一致，防止未配对设备通过全局 HMAC 密钥绕过授权
-            if (!request.Headers.Contains("Authorization"))
+            // 设备授权检查（仅 /api/ai/chat 移动端路径需要；/mg/ai/ 对端调用由 shim 自带 Bearer 校验）
+            if (!isPeerAi && !request.Headers.Contains("Authorization"))
             {
                 var deviceService = context.RequestServices.GetService<DeviceService>();
                 var deviceId = context.Request.Headers["X-Device-Id"].FirstOrDefault();
