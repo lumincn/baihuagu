@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Baihua.Contracts.ComputePool;
 using Baihua.Family.Services.ComputePool;
 using Microsoft.AspNetCore.Mvc;
@@ -57,6 +58,44 @@ public class ComputePoolController : ControllerBase
 
         var result = await _poolService.RunPeerBenchmarkAsync(request.ServerId.Trim(), request.ModelName.Trim(), ct);
         return result != null ? Ok(result) : Ok(new BenchmarkRunResultDto { Success = false, Error = "测速失败（节点不可达或未就绪）", ModelName = request.ModelName.Trim() });
+    }
+
+    /// <summary>算力池深度任务：指定模型+提示词，经统一网关（全网路由+速度优先+failover）执行。</summary>
+    [HttpPost("chat")]
+    public async Task<IActionResult> PoolChat([FromBody] PoolChatRequest request, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.ModelName) || string.IsNullOrWhiteSpace(request.Prompt))
+            return BadRequest(new { error = "缺少 modelName 或 prompt" });
+
+        var hostIp = Environment.GetEnvironmentVariable("BAIHUA_HOST_IP");
+        var localUrl = !string.IsNullOrWhiteSpace(hostIp) ? $"http://{hostIp}" : "http://127.0.0.1";
+        try
+        {
+            using var client = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
+            var payload = new
+            {
+                model = request.ModelName.Trim(),
+                messages = new object[]
+                {
+                    new { role = "user", content = request.Prompt }
+                }
+            };
+            using var resp = await client.PostAsJsonAsync($"{localUrl}/mg/pool/v1/chat/completions", payload, ct);
+            if (!resp.IsSuccessStatusCode)
+                return StatusCode((int)resp.StatusCode, new { error = await resp.Content.ReadAsStringAsync(ct) });
+            var json = await resp.Content.ReadFromJsonAsync<JsonElement>(ct);
+            var text = "";
+            if (json.TryGetProperty("choices", out var choices) && choices.ValueKind == JsonValueKind.Array && choices.GetArrayLength() > 0)
+            {
+                var msg = choices[0].TryGetProperty("message", out var m) ? m : default;
+                text = msg.TryGetProperty("content", out var c) ? c.GetString() ?? "" : "";
+            }
+            return Ok(new { success = true, text, model = request.ModelName.Trim() });
+        }
+        catch (Exception ex)
+        {
+            return Ok(new { success = false, error = ex.Message });
+        }
     }
 
     /// <summary>从对端拉取模型（模型商店）。</summary>

@@ -124,6 +124,25 @@ else
         }
     </div>
 
+    <div class="pool-task">
+        <div class="provider-name">🧭 深度任务（走统一网关：按模型名路由全网最快节点 + 故障转移）</div>
+        <textarea class="form-control" rows="3" placeholder="输入提示词，用选中的模型在算力池执行…" @bind="_taskPrompt"></textarea>
+        <div class="d-flex align-items-center gap-2 mt-2">
+            <select class="form-select form-select-sm w-auto" @bind="_taskModel">
+                <option value="">选择模型…</option>
+                @foreach (var m in _poolModels)
+                {
+                    <option value="@m">@m</option>
+                }
+            </select>
+            <button class="btn btn-sm btn-primary" @onclick="RunTaskAsync" disabled="@_busy || string.IsNullOrWhiteSpace(_taskModel) || string.IsNullOrWhiteSpace(_taskPrompt)">▶ 执行</button>
+        </div>
+        @if (_taskResult != null)
+        {
+            <div class="task-result">@_taskResult</div>
+        }
+    </div>
+
     <div class="mt-3 text-muted small">
         💡 选用后，「AI 配置」中会出现该节点对应的提供方（peer- 前缀）。聊天/拜师等会默认使用所选模型；
         对端机器离线时自动降级，本机 AI 不受影响。
@@ -147,6 +166,8 @@ else
     .tier-badge { font-size: 0.7rem; background: rgba(46,139,175,0.15); color: #2e8baf; border-radius: 8px; padding: 0 0.4rem; }
     .fastest-badge { font-size: 0.68rem; background: rgba(255,152,0,0.18); color: #e65100; border-radius: 8px; padding: 0 0.35rem; margin-left: 0.35rem; }
     .recommend-badge { font-size: 0.68rem; background: rgba(76,175,80,0.18); color: #2e7d32; border-radius: 8px; padding: 0 0.35rem; margin-left: 0.35rem; }
+    .pool-task { margin: 0.5rem 1rem 0.5rem; border: 1px solid var(--bs-border-color); border-radius: 12px; padding: 0.8rem 1rem; }
+    .task-result { margin-top: 0.6rem; padding: 0.7rem 0.9rem; background: rgba(46,139,175,0.07); border-radius: 8px; font-size: 0.85rem; white-space: pre-wrap; max-height: 240px; overflow-y: auto; }
     [data-bs-theme="dark"] .recommend-badge { background: rgba(76,175,80,0.25); color: #81c784; }
     [data-bs-theme="dark"] .fastest-badge { background: rgba(255,152,0,0.25); color: #ffb74d; }
     .model-row { display: flex; align-items: center; gap: 0.6rem; }
@@ -160,11 +181,15 @@ else
 
 @code {
     private ComputePoolViewDto? _pool;
+    private List<string> _poolModels = new();
     private string? _error;
     private string? _message;
     private bool _busy;
     private string _updatedAt = "—";
     private string _taskType = "";
+    private string _taskPrompt = "";
+    private string _taskModel = "";
+    private string? _taskResult;
 
     protected override async Task OnInitializedAsync()
     {
@@ -175,7 +200,18 @@ else
     {
         _pool = await ApiService.GetComputePoolAsync();
         if (_pool != null)
+        {
             _updatedAt = _pool.UpdatedAt.ToLocalTime().ToString("HH:mm:ss");
+            _poolModels = _pool.Nodes
+                .SelectMany(n => n.Providers)
+                .SelectMany(p => p.Models)
+                .Select(m => m.Name)
+                .Distinct()
+                .OrderBy(n => n)
+                .ToList();
+            if (string.IsNullOrEmpty(_taskModel) && _poolModels.Count > 0)
+                _taskModel = _poolModels[0];
+        }
         else if (_error == null)
             _error = "加载算力池失败";
     }
@@ -203,6 +239,23 @@ else
                 _error = error;
             }
             await LoadAsync();
+            StateHasChanged();
+        }
+        finally { _busy = false; }
+    }
+
+    private async Task RunTaskAsync()
+    {
+        _busy = true;
+        _error = null;
+        _taskResult = null;
+        try
+        {
+            var (ok, text, error) = await ApiService.RunPoolChatAsync(_taskModel, _taskPrompt);
+            if (ok)
+                _taskResult = text;
+            else
+                _error = error ?? "任务失败";
             StateHasChanged();
         }
         finally { _busy = false; }

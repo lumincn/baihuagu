@@ -151,6 +151,7 @@ namespace Baihua.Web.Services
         Task<(bool ok, string? error)> SelectComputeModelAsync(string serverId, string modelName);
         Task<BenchmarkRunResultDto?> RunComputeBenchmarkAsync(string serverId, string modelName);
         Task<(bool ok, string? error)> PullComputeModelAsync(string serverId, string modelName);
+        Task<(bool ok, string? text, string? error)> RunPoolChatAsync(string modelName, string prompt);
 
         // Embedding 配置
         Task<EmbeddingConfigDto> GetEmbeddingConfigAsync();

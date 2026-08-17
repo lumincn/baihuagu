@@ -48,6 +48,13 @@ public class ComputeModelDto
     public double? TokensPerSecond { get; set; }
 }
 
+/// <summary>算力池深度任务请求（POST /api/compute-pool/chat）</summary>
+public class PoolChatRequest
+{
+    public string ModelName { get; set; } = "";
+    public string Prompt { get; set; } = "";
+}
+
 /// <summary>算力池总览节点（WebUI /compute 用）</summary>
 public class ComputePoolNodeDto
 {

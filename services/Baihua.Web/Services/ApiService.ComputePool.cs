@@ -83,6 +83,32 @@ public partial class ApiService
         }
     }
 
+    /// <summary>算力池深度任务：指定模型+提示词，经统一网关执行。</summary>
+    public async Task<(bool ok, string? text, string? error)> RunPoolChatAsync(string modelName, string prompt)
+    {
+        try
+        {
+            using var quick = new CancellationTokenSource(TimeSpan.FromMinutes(10));
+            var response = await _httpClient.PostAsync("/api/compute-pool/chat",
+                JsonContent.Create(new PoolChatRequest { ModelName = modelName, Prompt = prompt }),
+                quick.Token);
+            var body = await response.Content.ReadAsStringAsync(quick.Token);
+            using var doc = JsonDocument.Parse(body);
+            if (doc.RootElement.TryGetProperty("success", out var ok) && ok.GetBoolean())
+            {
+                var text = doc.RootElement.TryGetProperty("text", out var t) ? t.GetString() : "";
+                return (true, text, null);
+            }
+            var err = doc.RootElement.TryGetProperty("error", out var e) ? e.GetString() : body;
+            return (false, null, err);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "算力池任务失败");
+            return (false, null, ex.Message);
+        }
+    }
+
     /// <summary>从对端拉取模型（模型商店）。</summary>
     public async Task<(bool ok, string? error)> PullComputeModelAsync(string serverId, string modelName)
     {
