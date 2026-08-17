@@ -229,10 +229,11 @@ public class ModelBenchmarkService
             // 优先从响应中获取真实 Token 数（OpenAI 兼容端点通常返回 usage）
             int? actualOutputTokens = response.Usage?.OutputTokenCount is long ot ? (int)ot : null;
             int? actualInputTokens = response.Usage?.InputTokenCount is long it ? (int)it : null;
-            bool isEstimated = !actualOutputTokens.HasValue;
+            // 部分本地端点（Ollama/OpenVINO）usage 可能为 0/缺失：仅当 >0 才算真实值
+            bool isEstimated = !(actualOutputTokens is > 0);
 
             // 无真实 Token 时 fallback 估算：中文字符约1.5 tokens，英文约0.25 tokens，混合取平均约0.7 tokens/char
-            int effectiveOutputTokens = actualOutputTokens ?? (int)(text.Length * 0.7);
+            int effectiveOutputTokens = actualOutputTokens is > 0 ? actualOutputTokens.Value : (int)(text.Length * 0.7);
             result.TokensPerSecond = effectiveOutputTokens / Math.Max(sw.Elapsed.TotalSeconds, 0.001);
 
             // 质量评分：关键词匹配

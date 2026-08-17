@@ -47,4 +47,26 @@ public class ComputePoolController : ControllerBase
             return BadRequest(new { error });
         return Ok(new { success = true, message = $"已选用 {request.ModelName}" });
     }
+
+    /// <summary>跨机测速：在指定节点（本机或对端）运行该模型的快速 benchmark。</summary>
+    [HttpPost("benchmark")]
+    public async Task<ActionResult<BenchmarkRunResultDto>> Benchmark([FromBody] SelectComputeModelRequest request, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.ServerId) || string.IsNullOrWhiteSpace(request.ModelName))
+            return BadRequest(new { error = "缺少 serverId 或 modelName" });
+
+        var result = await _poolService.RunPeerBenchmarkAsync(request.ServerId.Trim(), request.ModelName.Trim(), ct);
+        return result != null ? Ok(result) : Ok(new BenchmarkRunResultDto { Success = false, Error = "测速失败（节点不可达或未就绪）", ModelName = request.ModelName.Trim() });
+    }
+
+    /// <summary>从对端拉取模型（模型商店）。</summary>
+    [HttpPost("pull-model")]
+    public async Task<IActionResult> PullModel([FromBody] PullModelRequest request, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.ServerId) || string.IsNullOrWhiteSpace(request.ModelName))
+            return BadRequest(new { error = "缺少 serverId 或 modelName" });
+
+        var (ok, error) = await _poolService.PullPeerModelAsync(request.ServerId.Trim(), request.ModelName.Trim(), ct);
+        return ok ? Ok(new { success = true, message = $"已拉取 {request.ModelName}" }) : BadRequest(new { error });
+    }
 }

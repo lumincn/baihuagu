@@ -510,7 +510,9 @@ app.Use(async (context, next) =>
         "/mg/register-device",
         "/mg/auth/config",
         "/mg/capabilities", // 算力池：对端拉取，自校验 X-Server-Token
-        "/mg/ai/" // 算力池 OpenAI shim：对端调用，shim 自带 Bearer 校验
+        "/mg/ai/", // 算力池 OpenAI shim：对端调用，shim 自带 Bearer 校验
+        "/mg/benchmark/run", // 算力池：对端发起测速，自校验 X-Server-Token
+        "/mg/model-store" // 算力池：模型商店，自校验 X-Server-Token
     };
 
     // WebUI 专用浏览 API 不需要移动端签名

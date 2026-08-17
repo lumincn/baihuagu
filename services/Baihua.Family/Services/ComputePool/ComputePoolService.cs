@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Formats.Tar;
 using System.Text.Json;
 using Baihua.Contracts.Ai;
 using Baihua.Contracts.ComputePool;
@@ -109,6 +110,7 @@ public class ComputePoolService : IHostedService, IDisposable
                     continue;
 
                 caps.HostUrl = peer.BaseUrl;
+                caps.ModelStore = await FetchPeerModelStoreAsync(peer, token, client, ct);
                 _peerCapabilities[caps.ServerId] = caps;
                 _logger.LogDebug("[ComputePool] 已缓存对端能力: {Name} ({ServerId}) {ProviderCount} 个提供方",
                     caps.Name, caps.ServerId, caps.Providers.Count);
@@ -127,6 +129,26 @@ public class ComputePoolService : IHostedService, IDisposable
         {
             if (!knownIds.Contains(key))
                 _peerCapabilities.TryRemove(key, out _);
+        }
+    }
+
+
+    /// <summary>拉取对端模型商店清单（无则空列表）。</summary>
+    private async Task<List<ModelStoreEntryDto>> FetchPeerModelStoreAsync(ServerPeer peer, string token, HttpClient client, CancellationToken ct)
+    {
+        try
+        {
+            using var req = new HttpRequestMessage(HttpMethod.Get, $"{peer.BaseUrl.TrimEnd('/')}/mg/model-store/list");
+            if (!string.IsNullOrEmpty(token))
+                req.Headers.TryAddWithoutValidation("X-Server-Token", token);
+            using var resp = await client.SendAsync(req, ct);
+            if (!resp.IsSuccessStatusCode)
+                return new List<ModelStoreEntryDto>();
+            return await resp.Content.ReadFromJsonAsync<List<ModelStoreEntryDto>>(ct) ?? new List<ModelStoreEntryDto>();
+        }
+        catch
+        {
+            return new List<ModelStoreEntryDto>();
         }
     }
 
@@ -215,7 +237,8 @@ public class ComputePoolService : IHostedService, IDisposable
                 LastSeenUtc = caps?.UpdatedAt ?? peer.LastSeenUtc,
                 CpuCores = caps?.CpuCores,
                 Providers = caps?.Providers ?? new List<ComputeProviderDto>(),
-                ProviderRegistered = registered
+                ProviderRegistered = registered,
+                ModelStore = caps?.ModelStore ?? new List<ModelStoreEntryDto>()
             });
         }
 
@@ -293,6 +316,152 @@ public class ComputePoolService : IHostedService, IDisposable
                 .ToList(),
             ProviderRegistered = true
         };
+    }
+
+    /// <summary>跨机测速：对端运行单模型快速 benchmark，结果回写能力缓存并返回。</summary>
+    public async Task<BenchmarkRunResultDto?> RunPeerBenchmarkAsync(string serverId, string modelName, CancellationToken ct = default)
+    {
+        // 本机模型 → 本地测速（经本机 /mg/benchmark/run 同一逻辑，直接调用）
+        if (string.Equals(serverId, GetLocalServerId(), StringComparison.OrdinalIgnoreCase))
+        {
+            return await RunLocalBenchmarkAsync(modelName, ct);
+        }
+
+        var peer = (await _messageService.ListPeersAsync(ct)).FirstOrDefault(p => p.ServerId == serverId);
+        if (peer == null) return null;
+
+        try
+        {
+            using var client = _httpClientFactory.CreateClient("ComputePool");
+            client.Timeout = TimeSpan.FromMinutes(10);
+            using var req = new HttpRequestMessage(HttpMethod.Post, $"{peer.BaseUrl.TrimEnd('/')}/mg/benchmark/run");
+            var token = !string.IsNullOrWhiteSpace(peer.Token) ? peer.Token! : _messageService.LocalToken;
+            if (!string.IsNullOrEmpty(token))
+                req.Headers.TryAddWithoutValidation("X-Server-Token", token);
+            req.Content = JsonContent.Create(new PeerBenchmarkRequest { ModelName = modelName });
+
+            using var resp = await client.SendAsync(req, ct);
+            if (!resp.IsSuccessStatusCode) return null;
+            var result = await resp.Content.ReadFromJsonAsync<BenchmarkRunResultDto>(ct);
+            if (result is { Success: true })
+            {
+                // 回写能力缓存：对端该模型的 TPS 更新
+                if (_peerCapabilities.TryGetValue(peer.ServerId, out var caps))
+                {
+                    foreach (var p in caps.Providers)
+                    foreach (var m in p.Models)
+                    {
+                        if (string.Equals(m.Name, modelName, StringComparison.OrdinalIgnoreCase))
+                            m.TokensPerSecond = result.TokensPerSecond;
+                    }
+                }
+            }
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "跨机测速失败 {Server} {Model}", serverId, modelName);
+            return null;
+        }
+    }
+
+    /// <summary>从对端拉取模型（模型商店）：下载 tar 流并解压到本机模型根目录。</summary>
+    public async Task<(bool ok, string? error)> PullPeerModelAsync(string serverId, string modelName, CancellationToken ct = default)
+    {
+        var peer = (await _messageService.ListPeersAsync(ct)).FirstOrDefault(p => p.ServerId == serverId);
+        if (peer == null) return (false, "对端未登记");
+        if (string.IsNullOrWhiteSpace(modelName) || modelName.Contains('/') || modelName.Contains('\\') || modelName == "..")
+            return (false, "非法的模型名");
+
+        var root = GetLocalModelRoot();
+        Directory.CreateDirectory(root);
+        var target = Path.Combine(root, modelName);
+        if (Directory.Exists(target))
+            return (false, $"本机已存在 {modelName}");
+
+        try
+        {
+            using var client = _httpClientFactory.CreateClient("ComputePool");
+            client.Timeout = TimeSpan.FromMinutes(60);
+            using var req = new HttpRequestMessage(HttpMethod.Get, $"{peer.BaseUrl.TrimEnd('/')}/mg/model-store/download/{Uri.EscapeDataString(modelName)}");
+            var token = !string.IsNullOrWhiteSpace(peer.Token) ? peer.Token! : _messageService.LocalToken;
+            if (!string.IsNullOrEmpty(token))
+                req.Headers.TryAddWithoutValidation("X-Server-Token", token);
+
+            using var resp = await client.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
+            if (!resp.IsSuccessStatusCode)
+                return (false, $"对端返回 {(int)resp.StatusCode}");
+
+            var tmp = target + ".pulling";
+            if (Directory.Exists(tmp)) Directory.Delete(tmp, recursive: true);
+            Directory.CreateDirectory(tmp);
+            await using var stream = await resp.Content.ReadAsStreamAsync(ct);
+            await using var tar = new TarReader(stream);
+            TarEntry? entry;
+            while ((entry = await tar.GetNextEntryAsync(copyData: false, ct)) != null)
+            {
+                if (entry.EntryType is not TarEntryType.RegularFile && entry.EntryType is not TarEntryType.V7RegularFile)
+                    continue;
+                var name = entry.Name.Replace('/', Path.DirectorySeparatorChar);
+                if (name.Contains(".." + Path.DirectorySeparatorChar))
+                    continue;
+                var dest = Path.Combine(tmp, name);
+                Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
+                await using var outStream = new FileStream(dest, FileMode.Create, FileAccess.Write, FileShare.None, 81920, useAsync: true);
+                await using var inStream = entry.DataStream;
+                if (inStream != null)
+                    await inStream.CopyToAsync(outStream, ct);
+            }
+
+            Directory.Move(tmp, target);
+            _logger.LogInformation("[ComputePool] 已从 {Server} 拉取模型 {Model}", peer.Name, modelName);
+            return (true, null);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "拉取模型失败 {Server} {Model}", serverId, modelName);
+            try { if (Directory.Exists(target + ".pulling")) Directory.Delete(target + ".pulling", recursive: true); } catch { }
+            return (false, ex.Message);
+        }
+    }
+
+    private async Task<BenchmarkRunResultDto?> RunLocalBenchmarkAsync(string modelName, CancellationToken ct)
+    {
+        // 复用对端端点逻辑：直接构造请求交给同一 controller 不可行，改为通过本机 HTTP 调用
+        var hostIp = _configuration["BAIHUA_HOST_IP"];
+        var localUrl = !string.IsNullOrWhiteSpace(hostIp)
+            ? $"http://{hostIp}"
+            : _serverAddress.GetLocalPublicBaseUrl();
+        if (string.IsNullOrEmpty(localUrl)) return null;
+        try
+        {
+            using var client = _httpClientFactory.CreateClient("ComputePool");
+            client.Timeout = TimeSpan.FromMinutes(10);
+            using var resp = await client.PostAsJsonAsync($"{localUrl}/mg/benchmark/run",
+                new PeerBenchmarkRequest { ModelName = modelName }, ct);
+            if (!resp.IsSuccessStatusCode) return null;
+            return await resp.Content.ReadFromJsonAsync<BenchmarkRunResultDto>(ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "本机测速失败 {Model}", modelName);
+            return null;
+        }
+    }
+
+    private string GetLocalServerId()
+    {
+        try { return _serverAddress.GetServerInstanceId(); }
+        catch { return ""; }
+    }
+
+    private string GetLocalModelRoot()
+    {
+        // 与 ModelDownloadService 一致：DownloadDirectory 或 $BAIHUA_HOME/models
+        var dl = _configuration["LocalAI:DownloadDirectory"];
+        if (!string.IsNullOrWhiteSpace(dl)) return dl;
+        var home = _configuration["BAIHUA_HOME"];
+        return string.IsNullOrWhiteSpace(home) ? Path.Combine(Environment.CurrentDirectory, "models") : Path.Combine(home, "models");
     }
 
     private async Task<List<ComputeProviderDto>> GetAiServiceProvidersAsync(CancellationToken ct)

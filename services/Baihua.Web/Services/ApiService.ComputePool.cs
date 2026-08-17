@@ -63,4 +63,49 @@ public partial class ApiService
             return (false, ex.Message);
         }
     }
+
+    /// <summary>跨机测速：在指定节点运行该模型的快速 benchmark（耗时数秒~数十秒）。</summary>
+    public async Task<BenchmarkRunResultDto?> RunComputeBenchmarkAsync(string serverId, string modelName)
+    {
+        try
+        {
+            using var quick = new CancellationTokenSource(TimeSpan.FromMinutes(10));
+            var response = await _httpClient.PostAsync("/api/compute-pool/benchmark",
+                JsonContent.Create(new SelectComputeModelRequest { ServerId = serverId, ModelName = modelName }),
+                quick.Token);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<BenchmarkRunResultDto>(quick.Token);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "跨机测速失败");
+            return null;
+        }
+    }
+
+    /// <summary>从对端拉取模型（模型商店）。</summary>
+    public async Task<(bool ok, string? error)> PullComputeModelAsync(string serverId, string modelName)
+    {
+        try
+        {
+            using var quick = new CancellationTokenSource(TimeSpan.FromMinutes(60));
+            var response = await _httpClient.PostAsync("/api/compute-pool/pull-model",
+                JsonContent.Create(new PullModelRequest { ServerId = serverId, ModelName = modelName }),
+                quick.Token);
+            if (response.IsSuccessStatusCode)
+                return (true, null);
+            var body = await response.Content.ReadAsStringAsync(quick.Token);
+            try
+            {
+                using var doc = JsonDocument.Parse(body);
+                return (false, doc.RootElement.TryGetProperty("error", out var e) ? e.GetString() : body);
+            }
+            catch { return (false, body); }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "拉取模型失败");
+            return (false, ex.Message);
+        }
+    }
 }

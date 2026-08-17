@@ -149,6 +149,8 @@ namespace Baihua.Web.Services
         Task<ComputePoolViewDto?> GetComputePoolAsync();
         Task<bool> RefreshComputePoolAsync();
         Task<(bool ok, string? error)> SelectComputeModelAsync(string serverId, string modelName);
+        Task<BenchmarkRunResultDto?> RunComputeBenchmarkAsync(string serverId, string modelName);
+        Task<(bool ok, string? error)> PullComputeModelAsync(string serverId, string modelName);
 
         // Embedding 配置
         Task<EmbeddingConfigDto> GetEmbeddingConfigAsync();

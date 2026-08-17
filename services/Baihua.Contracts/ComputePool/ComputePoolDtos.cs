@@ -25,6 +25,9 @@ public class ComputeNodeCapabilitiesDto
     public int? CpuCores { get; set; }
 
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>该节点模型商店（可拉取的已下载模型）</summary>
+    public List<ModelStoreEntryDto> ModelStore { get; set; } = new();
 }
 
 public class ComputeProviderDto
@@ -62,6 +65,9 @@ public class ComputePoolNodeDto
 
     /// <summary>本机是否已自动注册该节点的提供方（可选用）</summary>
     public bool ProviderRegistered { get; set; }
+
+    /// <summary>该节点模型商店（可拉取的已下载模型）</summary>
+    public List<ModelStoreEntryDto> ModelStore { get; set; } = new();
 }
 
 public class ComputePoolViewDto
@@ -71,6 +77,40 @@ public class ComputePoolViewDto
 }
 
 public class SelectComputeModelRequest
+{
+    public string ServerId { get; set; } = "";
+    public string ModelName { get; set; } = "";
+}
+
+/// <summary>跨机测速请求（POST /mg/benchmark/run，X-Server-Token 鉴权）</summary>
+public class PeerBenchmarkRequest
+{
+    public string ModelName { get; set; } = "";
+    /// <summary>提示词分类（"tcm"/"coding"，默认 tcm），取该分类第一个提示快速测速</summary>
+    public string? Category { get; set; }
+}
+
+/// <summary>单模型快速测速结果</summary>
+public class BenchmarkRunResultDto
+{
+    public bool Success { get; set; }
+    public string? Error { get; set; }
+    public string ModelName { get; set; } = "";
+    public double TokensPerSecond { get; set; }
+    public double LatencyMs { get; set; }
+    public DateTime TestedAt { get; set; } = DateTime.UtcNow;
+}
+
+/// <summary>局域网模型商店条目（对端可拉取的已下载模型）</summary>
+public class ModelStoreEntryDto
+{
+    public string Name { get; set; } = "";
+    public long SizeBytes { get; set; }
+    public int FileCount { get; set; }
+}
+
+/// <summary>从对端拉取模型（POST /api/compute-pool/pull-model）</summary>
+public class PullModelRequest
 {
     public string ServerId { get; set; } = "";
     public string ModelName { get; set; } = "";
