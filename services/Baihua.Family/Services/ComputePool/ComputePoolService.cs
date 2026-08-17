@@ -34,6 +34,8 @@ public class ComputePoolService : IHostedService, IDisposable
     private readonly ILogger<ComputePoolService> _logger;
 
     private readonly ConcurrentDictionary<string, ComputeNodeCapabilitiesDto> _peerCapabilities = new();
+    /// <summary>对端 /health 可达时间（capabilities 未就绪时仍能判断在线）</summary>
+    private readonly ConcurrentDictionary<string, DateTime> _peerReachable = new();
     private Timer? _timer;
 
     public ComputePoolService(
@@ -101,7 +103,9 @@ public class ComputePoolService : IHostedService, IDisposable
                 using var resp = await client.SendAsync(req, ct);
                 if (!resp.IsSuccessStatusCode)
                 {
+                    // capabilities 未就绪（对端是旧代码/未配置）→ 用 /health 判定在线，算力状态留空
                     _peerCapabilities.TryRemove(peer.ServerId, out _);
+                    await ProbePeerHealthAsync(peer, client, ct);
                     continue;
                 }
 
@@ -132,6 +136,24 @@ public class ComputePoolService : IHostedService, IDisposable
         }
     }
 
+
+    /// <summary>对端 /health 探测：可达则记录在线（供 UI 显示"在线但未接入算力池"）。</summary>
+    private async Task ProbePeerHealthAsync(ServerPeer peer, HttpClient client, CancellationToken ct)
+    {
+        try
+        {
+            using var req = new HttpRequestMessage(HttpMethod.Get, $"{peer.BaseUrl.TrimEnd('/')}/health");
+            using var resp = await client.SendAsync(req, ct);
+            if (resp.IsSuccessStatusCode)
+                _peerReachable[peer.ServerId] = DateTime.UtcNow;
+            else
+                _peerReachable.TryRemove(peer.ServerId, out _);
+        }
+        catch
+        {
+            _peerReachable.TryRemove(peer.ServerId, out _);
+        }
+    }
 
     /// <summary>拉取对端模型商店清单（无则空列表）。</summary>
     private async Task<List<ModelStoreEntryDto>> FetchPeerModelStoreAsync(ServerPeer peer, string token, HttpClient client, CancellationToken ct)
@@ -233,7 +255,9 @@ public class ComputePoolService : IHostedService, IDisposable
                 HostUrl = peer.BaseUrl,
                 OpenAiBaseUrl = caps?.OpenAiBaseUrl ?? "",
                 IsLocal = false,
-                Online = caps != null || (peer.LastSeenUtc.HasValue && peer.LastSeenUtc.Value > DateTime.UtcNow.AddMinutes(-5)),
+                Online = caps != null
+                    || (_peerReachable.TryGetValue(peer.ServerId, out var rt) && rt > DateTime.UtcNow.AddMinutes(-5))
+                    || (peer.LastSeenUtc.HasValue && peer.LastSeenUtc.Value > DateTime.UtcNow.AddMinutes(-5)),
                 LastSeenUtc = caps?.UpdatedAt ?? peer.LastSeenUtc,
                 CpuCores = caps?.CpuCores,
                 Providers = caps?.Providers ?? new List<ComputeProviderDto>(),
