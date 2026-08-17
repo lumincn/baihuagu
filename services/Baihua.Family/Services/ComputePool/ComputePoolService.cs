@@ -468,33 +468,41 @@ public class ComputePoolService : IHostedService, IDisposable
     /// <summary>网关路由：查找拥有该模型的节点（本机 AI 服务优先，其余按实测 TPS 从快到慢）。</summary>
     public async Task<(string baseUrl, string providerId, string name, bool isLocal, double? tps)?> FindBestNodeAsync(string modelName, CancellationToken ct = default)
     {
+        var nodes = await FindCandidateNodesAsync(modelName, ct);
+        return nodes.Count > 0 ? nodes[0] : null;
+    }
+
+    /// <summary>网关 failover：拥有该模型的所有候选节点（本机优先，对端按实测 TPS 降序）。</summary>
+    public async Task<List<(string baseUrl, string providerId, string name, bool isLocal, double? tps)>> FindCandidateNodesAsync(string modelName, CancellationToken ct = default)
+    {
+        var result = new List<(string baseUrl, string providerId, string name, bool isLocal, double? tps)>();
+
         // 本机 AI 服务（shim）是否提供该模型
         var aiProviders = await GetAiServiceProvidersAsync(ct);
         if (aiProviders.Any(p => p.Models.Any(m => string.Equals(m.Name, modelName, StringComparison.OrdinalIgnoreCase))))
         {
             var hostIp = _configuration["BAIHUA_HOST_IP"];
             var localHost = !string.IsNullOrWhiteSpace(hostIp) ? $"http://{hostIp}" : _serverAddress.GetLocalPublicBaseUrl();
-            // 本地 AI 服务 OpenAI shim 的 API 根
-            return ($"{localHost}/mg/ai/v1", aiProviders.First(p => p.Models.Any(m => string.Equals(m.Name, modelName, StringComparison.OrdinalIgnoreCase))).Id, "本机", true, null);
+            result.Add(($"{localHost}/mg/ai/v1", aiProviders.First(p => p.Models.Any(m => string.Equals(m.Name, modelName, StringComparison.OrdinalIgnoreCase))).Id, "本机", true, null));
         }
 
         // 对端：拥有该模型的节点按 TPS 降序
-        var candidates = new List<(string baseUrl, string providerId, string name, double? tps)>();
+        var peers = new List<(string baseUrl, string providerId, string name, double? tps)>();
         foreach (var kv in _peerCapabilities)
         {
             var caps = kv.Value;
+            if (string.IsNullOrWhiteSpace(caps.OpenAiBaseUrl)) continue;
             var p = caps.Providers.FirstOrDefault(p => p.Models.Any(m => string.Equals(m.Name, modelName, StringComparison.OrdinalIgnoreCase)));
             if (p == null) continue;
             var model = p.Models.First(m => string.Equals(m.Name, modelName, StringComparison.OrdinalIgnoreCase));
-            candidates.Add((caps.OpenAiBaseUrl, p.Id, caps.Name, model.TokensPerSecond));
+            peers.Add((caps.OpenAiBaseUrl, p.Id, caps.Name, model.TokensPerSecond));
         }
-        if (candidates.Count == 0) return null;
-
-        return candidates
+        result.AddRange(peers
             .OrderByDescending(c => c.tps.HasValue)
             .ThenByDescending(c => c.tps ?? 0)
-            .Select(c => (c.baseUrl, c.providerId, c.name, false, c.tps))
-            .First();
+            .Select(c => (c.baseUrl, c.providerId, c.name, false, c.tps)));
+
+        return result;
     }
 
     private async Task<List<ComputeProviderDto>> GetAiServiceProvidersAsync(CancellationToken ct)

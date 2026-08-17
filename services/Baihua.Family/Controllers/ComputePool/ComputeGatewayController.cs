@@ -89,54 +89,67 @@ public class ComputeGatewayController : ControllerBase
             return;
         }
 
-        var node = await _poolService.FindBestNodeAsync(modelName, ct);
-        if (node == null)
+        var candidates = await _poolService.FindCandidateNodesAsync(modelName, ct);
+        if (candidates.Count == 0)
         {
             Response.StatusCode = 404;
             await Response.WriteAsJsonAsync(new { error = new { message = $"全网无模型 {modelName}", type = "not_found" } });
             return;
         }
 
-        _logger.LogInformation("[ComputePool] 网关路由 {Model} → {Node} ({Tps} t/s)",
-            modelName, node.Value.name, node.Value.tps?.ToString("F1") ?? "—");
+        // failover：依次尝试候选节点（本机优先，对端按 TPS 降序），成功或流式开始即返回
+        var aiToken = _configuration["BAIHUA_AI_EXTERNAL_TOKEN"] ?? "";
+        var msgToken = _configuration["BAIHUA_SERVER_MSG_TOKEN"] ?? "";
+        var bearer = !string.IsNullOrEmpty(aiToken) ? aiToken : msgToken;
 
-        // 透传请求到目标节点（OpenAI 兼容端点 + /chat/completions）
-        var target = $"{node.Value.baseUrl.TrimEnd('/')}/chat/completions";
-        try
+        Exception? lastEx = null;
+        foreach (var node in candidates)
         {
-            using var client = new HttpClient { Timeout = TimeSpan.FromMinutes(30) };
-            using var forward = new HttpRequestMessage(HttpMethod.Post, target);
-            forward.Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json");
-            // 携带鉴权：优先 Bearer（配置了 BAIHUA_AI_EXTERNAL_TOKEN 时），否则用互联口令
-            var aiToken = _configuration["BAIHUA_AI_EXTERNAL_TOKEN"] ?? "";
-            var msgToken = _configuration["BAIHUA_SERVER_MSG_TOKEN"] ?? "";
-            var bearer = !string.IsNullOrEmpty(aiToken) ? aiToken : msgToken;
-            if (!string.IsNullOrEmpty(bearer))
-                forward.Headers.TryAddWithoutValidation("Authorization", $"Bearer {bearer}");
+            _logger.LogInformation("[ComputePool] 网关路由 {Model} → {Node} ({Tps} t/s)",
+                modelName, node.name, node.tps?.ToString("F1") ?? "—");
+            var target = $"{node.baseUrl.TrimEnd('/')}/chat/completions";
+            try
+            {
+                using var client = new HttpClient { Timeout = TimeSpan.FromMinutes(30) };
+                using var forward = new HttpRequestMessage(HttpMethod.Post, target);
+                forward.Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json");
+                if (!string.IsNullOrEmpty(bearer))
+                    forward.Headers.TryAddWithoutValidation("Authorization", $"Bearer {bearer}");
 
-            using var resp = await client.SendAsync(forward, HttpCompletionOption.ResponseHeadersRead, ct);
-            Response.StatusCode = (int)resp.StatusCode;
-            foreach (var h in resp.Headers)
-            {
-                if (h.Key.Equals("Transfer-Encoding", StringComparison.OrdinalIgnoreCase)) continue;
-                Response.Headers[h.Key] = h.Value.ToArray();
+                using var resp = await client.SendAsync(forward, HttpCompletionOption.ResponseHeadersRead, ct);
+                if ((int)resp.StatusCode >= 500)
+                {
+                    lastEx = new Exception($"HTTP {(int)resp.StatusCode}");
+                    continue; // 上游 5xx → 尝试下一个节点
+                }
+
+                Response.StatusCode = (int)resp.StatusCode;
+                foreach (var h in resp.Headers)
+                {
+                    if (h.Key.Equals("Transfer-Encoding", StringComparison.OrdinalIgnoreCase)) continue;
+                    Response.Headers[h.Key] = h.Value.ToArray();
+                }
+                foreach (var h in resp.Content.Headers)
+                {
+                    if (h.Key.Equals("Content-Length", StringComparison.OrdinalIgnoreCase) ||
+                        h.Key.Equals("Transfer-Encoding", StringComparison.OrdinalIgnoreCase)) continue;
+                    Response.Headers[h.Key] = h.Value.ToArray();
+                }
+                await resp.Content.CopyToAsync(Response.Body, ct);
+                return; // 已响应，无需再试
             }
-            foreach (var h in resp.Content.Headers)
+            catch (Exception ex)
             {
-                if (h.Key.Equals("Content-Length", StringComparison.OrdinalIgnoreCase) ||
-                    h.Key.Equals("Transfer-Encoding", StringComparison.OrdinalIgnoreCase)) continue;
-                Response.Headers[h.Key] = h.Value.ToArray();
+                lastEx = ex;
+                _logger.LogWarning(ex, "网关节点失败，尝试下一个: {Model} → {Target}", modelName, target);
             }
-            await resp.Content.CopyToAsync(Response.Body, ct);
         }
-        catch (Exception ex)
+
+        _logger.LogWarning("网关全部节点失败 {Model}: {Msg}", modelName, lastEx?.Message);
+        if (!Response.HasStarted)
         {
-            _logger.LogWarning(ex, "网关转发失败 {Model} → {Target}", modelName, target);
-            if (!Response.HasStarted)
-            {
-                Response.StatusCode = 502;
-                await Response.WriteAsJsonAsync(new { error = new { message = $"路由失败: {ex.Message}", type = "upstream_error" } });
-            }
+            Response.StatusCode = 502;
+            await Response.WriteAsJsonAsync(new { error = new { message = $"所有节点均失败: {lastEx?.Message}", type = "upstream_error" } });
         }
     }
 }
