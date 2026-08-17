@@ -511,6 +511,7 @@ app.Use(async (context, next) =>
         "/mg/auth/config",
         "/mg/capabilities", // 算力池：对端拉取，自校验 X-Server-Token
         "/mg/ai/", // 算力池 OpenAI shim：对端调用，shim 自带 Bearer 校验
+        "/mg/pool/", // 算力池统一推理网关：对端调用，网关自带鉴权
         "/mg/benchmark/run", // 算力池：对端发起测速，自校验 X-Server-Token
         "/mg/model-store" // 算力池：模型商店，自校验 X-Server-Token
     };

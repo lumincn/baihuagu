@@ -77,8 +77,15 @@ else
                                         .DefaultIfEmpty(0)
                                         .Max();
                                     var barPct = (tps.HasValue && maxTps > 0) ? (int)(tps.Value * 100 / maxTps) : 0;
+                                    var isFastest = tps.HasValue && tps.Value > 0 && tps.Value == maxTps;
                                     <div class="model-row">
-                                        <span class="model-name">@model.Name</span>
+                                        <span class="model-name">
+                                            @model.Name
+                                            @if (isFastest)
+                                            {
+                                                <span class="fastest-badge">⚡最快</span>
+                                            }
+                                        </span>
                                         <div class="tps-bar-wrap">
                                             <div class="tps-bar" style="width: @(barPct)%"></div>
                                         </div>
@@ -126,6 +133,8 @@ else
     .compute-provider { display: flex; flex-direction: column; gap: 0.35rem; }
     .provider-name { font-size: 0.8rem; font-weight: 600; color: var(--bs-secondary-color); }
     .tier-badge { font-size: 0.7rem; background: rgba(46,139,175,0.15); color: #2e8baf; border-radius: 8px; padding: 0 0.4rem; }
+    .fastest-badge { font-size: 0.68rem; background: rgba(255,152,0,0.18); color: #e65100; border-radius: 8px; padding: 0 0.35rem; margin-left: 0.35rem; }
+    [data-bs-theme="dark"] .fastest-badge { background: rgba(255,152,0,0.25); color: #ffb74d; }
     .model-row { display: flex; align-items: center; gap: 0.6rem; }
     .model-name { width: 16rem; font-size: 0.85rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .tps-bar-wrap { flex: 1; height: 10px; background: rgba(128,128,128,0.15); border-radius: 5px; overflow: hidden; }

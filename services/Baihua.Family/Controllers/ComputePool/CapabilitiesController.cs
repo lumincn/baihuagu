@@ -51,12 +51,11 @@ public class CapabilitiesController : ControllerBase
         var hostUrl = !string.IsNullOrWhiteSpace(hostIp)
             ? $"http://{hostIp}"
             : _serverAddress.GetLocalPublicBaseUrl();
-        // 对外 OpenAI 兼容推理端点：显式配置 BAIHUA_PUBLIC_OPENAI_BASE_URL 优先；
-        // 未配置时默认 {入口}/mg/ai/v1（k8s 由 Traefik 把 /mg/ai/ 转发到 AI 服务 shim；
-        // native 部署需显式配成 http://<IP>:8791/mg/ai/v1）
+        // 对外推理端点：统一网关 /mg/pool/v1（按模型名路由全网最快节点）；
+        // 显式配置 BAIHUA_PUBLIC_OPENAI_BASE_URL 可覆盖
         var openAiBaseUrl = _configuration["BAIHUA_PUBLIC_OPENAI_BASE_URL"];
         if (string.IsNullOrWhiteSpace(openAiBaseUrl))
-            openAiBaseUrl = $"{hostUrl}/mg/ai/v1";
+            openAiBaseUrl = $"{hostUrl}/mg/pool/v1";
 
         // 本机可对外提供的模型 = 本机 Family 直接可用的提供方 + AI 服务（shim 路由的提供方）
         // （shim 按模型名在 AI 服务内路由，因此以 AI 服务的提供方为准，合并去重）

@@ -120,7 +120,7 @@ GET /mg/capabilities
 | **M1** | `/mg/capabilities` + `ComputePoolService` + 对端提供方自动注册 + Traefik `/mg/ai/` 路由 + AI 服务 OpenAI 兼容 shim + WebUI `/compute` 页 | ✅ 已实施（见下） |
 | **M2** | `/mg/benchmark/run` 跨机测速 + ECharts 趋势折线 + 一键选用完善 | 待实施 |
 | **M2.5** | 局域网模型商店（模型去重共享、断点续传） | 待实施 |
-| **M3** | 统一推理网关：模型名路由 + 速度优先 + failover + 任务级调度 | 待实施 |
+| **M3** | 统一推理网关 /mg/pool/v1：模型名全网路由 + 速度优先（v1） | ✅ 已实施 |
 
 ### M1 已实施内容（commit 记录见 git）
 
@@ -156,6 +156,16 @@ GET /mg/capabilities
   （tar 流式下发，PAX 格式）；对端经
    拉取并解压到本机模型根；/compute 页模型商店区「⬇ 拉取」按钮
 - 实测：本机 qwen2-5-vl-7b（GPU）快速测速 ≈ 3 t/s、稳定；模型商店 8.4GB Qwen-14B 可 tar 下发
+
+### M3 已实施内容（v1）
+
+- **统一推理网关** `POST /mg/pool/v1/chat/completions` + `GET /mg/pool/v1/models`：
+  按模型名在"本机 AI 服务 + 对端广播"里找候选节点，本机优先，对端按实测 TPS 从快到慢
+  路由（`FindBestNodeAsync`），请求/响应按字节流透传（支持流式 SSE）；全网无该模型 → 404。
+  每台机器的对外推理端点统一为 `{入口}/mg/pool/v1`（capabilities 自动广播）。
+- 路由示例：本机 qwen2-5-vl-7b → 本机 AI shim → GPU；对端有更快的同名模型 → 自动走对端。
+- /compute 页：同名模型跨节点对比，"⚡最快"角标 + TPS 排序。
+- 注：failover（首选节点失败自动降级）与任务级调度留待 M3 v2。
 
 ### 待办（M1 收尾 / M2 入口）
 
