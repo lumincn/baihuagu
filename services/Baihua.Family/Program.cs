@@ -591,6 +591,15 @@ app.Use(async (context, next) =>
         "/mg/device-backup", // 花记设备备份（上传/列表/下载/删除）
         "/mg/server-msg/inbox", // 百花服务器互联：对端推送消息（X-Server-Token 鉴权）
 
+        // 算力池：对端访问，各自端点自校验（X-Server-Token / Bearer）
+        // 注意：publicApiPaths 只豁免 HMAC 签名；这里才是真正的"非本机放行"检查，
+        // 必须同时加，否则 k8s 里被 admin-nets 掩盖、native 上直接 403。
+        "/mg/capabilities",
+        "/mg/ai/",
+        "/mg/pool/",
+        "/mg/benchmark/run",
+        "/mg/model-store",
+
         // AI 对话代理：已配对移动端经 HMAC 鉴权后访问（AI-01）
         "/api/ai/chat",
     };
