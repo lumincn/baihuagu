@@ -57,6 +57,20 @@ ensure_dotnet() {
     export PATH="$HOME/.dotnet:$PATH"
 }
 
+# 一键更新：git pull 最新代码 → 重新构建 → 重启（供局域网内其他百花机器升级用）
+update_all() {
+    local root
+    root="$(cd "$(dirname "$0")/../../../.." && pwd)"
+    echo "[update] git pull origin main ..."
+    git -C "$root" pull origin main || { echo "[update] git pull 失败，请检查 .9 的网络/代理"; exit 1; }
+    echo "[update] build ..."
+    build_all
+    echo "[update] restart ..."
+    stop_all
+    start_all
+    echo "[update] done"
+}
+
 build_all() {
     ensure_dotnet
     for entry in $SERVICES; do
@@ -73,7 +87,11 @@ start_one() {
     [ -x "$bin" ] || { echo "[$name] not built: $bin (run build first)"; exit 1; }
     port_open "$port" && { echo "[$name] port $port already in use, skip"; return; }
     mkdir -p "$PID_DIR" "$LOG_DIR" "$DATA_HOME"
-    local envs=(BAIHUA_HOME="$DATA_HOME" BAIHUA_SKIP_MUTEX=true ASPNETCORE_URLS="http://127.0.0.1:$port" OpenObserve__Enabled=false)
+    # family 是跨机入口（算力池 /mg/capabilities、/mg/ai/、/mg/pool/、服务器互联），
+    # 必须绑定 0.0.0.0 才能被局域网内其他百花服务器访问；其余服务保持回环。
+    local bind="127.0.0.1"
+    [ "$name" = "family" ] && bind="0.0.0.0"
+    local envs=(BAIHUA_HOME="$DATA_HOME" BAIHUA_SKIP_MUTEX=true ASPNETCORE_URLS="http://$bind:$port" OpenObserve__Enabled=false)
     case "$name" in
         family) envs+=(BAIHUA_VAULT_URL=http://127.0.0.1:8790 BAIHUA_AI_URL=http://127.0.0.1:8791) ;;
         webui)  envs+=(WEBUI_CONFIG_DIR="$DATA_HOME" FamilyApi__BaseUrl=http://127.0.0.1:8788/ AiApi__BaseUrl=http://127.0.0.1:8791/ VaultApi__BaseUrl=http://127.0.0.1:8790/) ;;
@@ -175,6 +193,7 @@ case "${1:-help}" in
     start)     start_all ;;
     stop)      stop_all ;;
     restart)   stop_all; start_all ;;
+    update)    update_all ;;
     status)    status_all ;;
     logs)      show_logs "${2:-family}" "${3:-50}" ;;
     dashboard) open_dashboard ;;

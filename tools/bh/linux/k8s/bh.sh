@@ -410,6 +410,7 @@ case "${1:-help}" in
     build)     build_all ;;
     deploy)    deploy_all ;;
     up)        build_all; deploy_all ;;
+    update)    git pull origin main && build_all && deploy_all ;;
     status)    status_all ;;
     logs)      show_logs "${2:-bh-family}" "${3:-50}" ;;
     destroy)   k delete namespace "$NAMESPACE"; echo "[destroy] done" ;;
