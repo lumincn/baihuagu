@@ -9,6 +9,7 @@
     start               start all 4 services (processes, pid files)
     stop                stop all 4 services
     restart             stop + start
+    update              git pull 最新代码 + 重建 + 重启（局域网机器一键升级）
     status              show port/process state per service
     logs <svc> [n]      tail service log (default 50 lines)
     dashboard           open browser with cli-token auto-login
@@ -74,6 +75,22 @@ function Invoke-Build {
     Write-Host "[build] done -> $OutDir"
 }
 
+# 一键更新：git pull 最新代码 → 重新构建 → 重启 + 放行防火墙（局域网算力池入口 8788）
+function Update-Services {
+    Write-Host '[update] git pull origin main ...'
+    git -C $Root pull origin main
+    if ($LASTEXITCODE -ne 0) { throw 'git pull 失败，请检查网络/代理' }
+    Invoke-Build
+    Start-Services
+    # Windows 防火墙默认拦截局域网入站：放行 family 8788（算力池/互联入口）
+    $rule = netsh advfirewall firewall show rule name='Baihua Family 8788' 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        netsh advfirewall firewall add rule name='Baihua Family 8788' dir=in action=allow protocol=TCP localport=8788 | Out-Null
+        Write-Host '[update] 已放行防火墙 TCP 8788（局域网算力池/互联入口）'
+    }
+    Write-Host '[update] done'
+}
+
 function Get-PidFile($name) { Join-Path $PidDir "$name.pid" }
 
 function Test-PortOpen($port) {
@@ -94,10 +111,14 @@ function Start-One($svc) {
     $exe = Join-Path $OutDir "$($svc.Name)\$($svc.Exe)"
     if (-not (Test-Path $exe)) { throw "not built: $exe (run 'build' first)" }
     if (Test-PortOpen $svc.Port) { Write-Warning "[$($svc.Name)] port $($svc.Port) already in use, skip"; return }
+    # family 是跨机入口（算力池 /mg/capabilities、/mg/ai/、/mg/pool/、服务器互联），
+    # 必须绑定 0.0.0.0 才能被局域网内其他百花服务器访问；其余服务保持回环。
+    $bind = '127.0.0.1'
+    if ($svc.Name -eq 'family') { $bind = '0.0.0.0' }
     $envBlock = @{
         BAIHUA_HOME = $DataHome
         BAIHUA_SKIP_MUTEX = 'true'
-        ASPNETCORE_URLS = "http://127.0.0.1:$($svc.Port)"
+        ASPNETCORE_URLS = "http://$bind`:$($svc.Port)"
         OpenObserve__Enabled = 'true'
     }
     # OpenObserve 客户端凭据：优先从 BAIHUA_HOME 的密码文件注入（轮换后不再依赖 appsettings 默认值）
@@ -251,6 +272,7 @@ switch ($Command.ToLower()) {
             $svc = $null; if (Resolve-SingleService $Arg1 ([ref]$svc)) { Stop-One $svc; Start-One $svc; Write-Host "[restart] $($svc.Name) restarting..." }
         } else { Stop-Services; Start-Services }
     }
+    'update'    { Update-Services }
     'status'    { Show-Status }
     'logs'      { $count = 50; if ($Arg2) { $count = [int]$Arg2 }; Show-Logs $Arg1 $count }
     'dashboard' { Open-Dashboard }
