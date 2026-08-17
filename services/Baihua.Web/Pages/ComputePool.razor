@@ -13,6 +13,13 @@
 
 <div class="compute-toolbar">
     <span class="text-secondary small">刷新于 @_updatedAt</span>
+    <select class="form-select form-select-sm d-inline-block w-auto ms-3" @bind="_taskType">
+        <option value="">全部任务</option>
+        <option value="chat">💬 闲聊</option>
+        <option value="deep">🧠 深度思考</option>
+        <option value="vision">🖼 视觉</option>
+        <option value="code">💻 代码</option>
+    </select>
     <button class="btn btn-sm btn-outline-secondary ms-2" @onclick="RefreshAsync" disabled="@_busy">🔄 刷新</button>
 </div>
 
@@ -78,9 +85,14 @@ else
                                         .Max();
                                     var barPct = (tps.HasValue && maxTps > 0) ? (int)(tps.Value * 100 / maxTps) : 0;
                                     var isFastest = tps.HasValue && tps.Value > 0 && tps.Value == maxTps;
+                                    var isRecommended = !string.IsNullOrEmpty(_taskType) && IsRecommendedFor(model.Name, _taskType);
                                     <div class="model-row">
                                         <span class="model-name">
                                             @model.Name
+                                            @if (isRecommended)
+                                            {
+                                                <span class="recommend-badge">✨推荐</span>
+                                            }
                                             @if (isFastest)
                                             {
                                                 <span class="fastest-badge">⚡最快</span>
@@ -134,6 +146,8 @@ else
     .provider-name { font-size: 0.8rem; font-weight: 600; color: var(--bs-secondary-color); }
     .tier-badge { font-size: 0.7rem; background: rgba(46,139,175,0.15); color: #2e8baf; border-radius: 8px; padding: 0 0.4rem; }
     .fastest-badge { font-size: 0.68rem; background: rgba(255,152,0,0.18); color: #e65100; border-radius: 8px; padding: 0 0.35rem; margin-left: 0.35rem; }
+    .recommend-badge { font-size: 0.68rem; background: rgba(76,175,80,0.18); color: #2e7d32; border-radius: 8px; padding: 0 0.35rem; margin-left: 0.35rem; }
+    [data-bs-theme="dark"] .recommend-badge { background: rgba(76,175,80,0.25); color: #81c784; }
     [data-bs-theme="dark"] .fastest-badge { background: rgba(255,152,0,0.25); color: #ffb74d; }
     .model-row { display: flex; align-items: center; gap: 0.6rem; }
     .model-name { width: 16rem; font-size: 0.85rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -150,6 +164,7 @@ else
     private string? _message;
     private bool _busy;
     private string _updatedAt = "—";
+    private string _taskType = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -225,6 +240,26 @@ else
             StateHasChanged();
         }
         finally { _busy = false; }
+    }
+
+    /// <summary>任务类型 → 模型推荐（按模型名启发式：尺寸/视觉能力）。</summary>
+    private static bool IsRecommendedFor(string modelName, string taskType)
+    {
+        var lower = modelName.ToLowerInvariant();
+        var isVision = lower.Contains("vl") || lower.Contains("vision");
+        // 提取模型尺寸（如 1.5b / 7b / 14b）
+        double size = 0;
+        var m = System.Text.RegularExpressions.Regex.Match(lower, @"(\d+(?:\.\d+)?)b");
+        if (m.Success && double.TryParse(m.Groups[1].Value, out var s)) size = s;
+
+        return taskType switch
+        {
+            "vision" => isVision,
+            "chat" => !isVision && size > 0 && size <= 3,
+            "deep" => !isVision && size >= 14,
+            "code" => !isVision && size is > 0 and < 14 && size >= 7,
+            _ => false
+        };
     }
 
     private static string FormatSize(long bytes)
