@@ -126,7 +126,7 @@ else
 
     <div class="pool-task">
         <div class="provider-name">🧭 深度任务（走统一网关：按模型名路由全网最快节点 + 故障转移）</div>
-        <textarea class="form-control" rows="3" placeholder="输入提示词，用选中的模型在算力池执行…" @bind="_taskPrompt"></textarea>
+        <textarea class="form-control" rows="3" placeholder="输入提示词，用选中的模型在算力池执行…" @bind="_taskPrompt" @bind:event="oninput"></textarea>
         <div class="d-flex align-items-center gap-2 mt-2">
             <select class="form-select form-select-sm w-auto" @bind="_taskModel">
                 <option value="">选择模型…</option>
@@ -135,7 +135,7 @@ else
                     <option value="@m">@m</option>
                 }
             </select>
-            <button class="btn btn-sm btn-primary" @onclick="RunTaskAsync" disabled="@_busy || string.IsNullOrWhiteSpace(_taskModel) || string.IsNullOrWhiteSpace(_taskPrompt)">▶ 执行</button>
+            <button class="btn btn-sm btn-primary" @onclick="RunTaskAsync" disabled="@(_busy || string.IsNullOrWhiteSpace(_taskModel) || string.IsNullOrWhiteSpace(_taskPrompt))">▶ 执行</button>
         </div>
         @if (_taskResult != null)
         {

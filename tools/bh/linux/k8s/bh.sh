@@ -278,7 +278,7 @@ EOF
 }
 
 # nerdctl 直接构建进 k3s containerd（构建即入库，无 docker）
-# -o type=image：产物直接写入 containerd（默认 tarball 导出在 containerd worker 下会报 content not found）
+# 标准构建：镜像 unpack 进 k3s containerd（-o type=image 导出不可靠——tag 不更新会部署到旧镜像）
 build_all() {
     ensure_deps
     ensure_registry
@@ -298,15 +298,15 @@ build_all() {
         echo "[build] bh/sdk-offline"
     fi
     # .NET 镜像：多阶段源码构建（容器内 dotnet publish，restore 走 sdk-offline 里的离线包源），context 需仓库根（services/ 源码）
-    n build -o type=image -f "$IMAGE_DIR/Dockerfile.vault"     -t bh-vault:latest    "$ROOT" >/dev/null || exit 1
+    n build -f "$IMAGE_DIR/Dockerfile.vault"     -t bh-vault:latest    "$ROOT" >/dev/null || exit 1
     echo "[build] bh-vault"
-    n build -o type=image -f "$IMAGE_DIR/Dockerfile.ai"        -t bh-ai:latest       "$ROOT" >/dev/null || exit 1
+    n build -f "$IMAGE_DIR/Dockerfile.ai"        -t bh-ai:latest       "$ROOT" >/dev/null || exit 1
     echo "[build] bh-ai"
-    n build -o type=image -f "$IMAGE_DIR/Dockerfile.webui"     -t bh-webui:latest    "$ROOT" >/dev/null || exit 1
+    n build -f "$IMAGE_DIR/Dockerfile.webui"     -t bh-webui:latest    "$ROOT" >/dev/null || exit 1
     echo "[build] bh-webui"
-    n build -o type=image -f "$IMAGE_DIR/Dockerfile.family"    -t bh-family:latest   "$ROOT" >/dev/null || exit 1
+    n build -f "$IMAGE_DIR/Dockerfile.family"    -t bh-family:latest   "$ROOT" >/dev/null || exit 1
     echo "[build] bh-family"
-    n build -o type=image -f "$IMAGE_DIR/Dockerfile.openvino-server" -t bh-openvino:latest "$ROOT" >/dev/null || exit 1  # COPY services/... 需仓库根上下文
+    n build -f "$IMAGE_DIR/Dockerfile.openvino-server" -t bh-openvino:latest "$ROOT" >/dev/null || exit 1  # COPY services/... 需仓库根上下文
     echo "[build] bh-openvino"
     echo "[build] 5 images done (已直接进入 k3s containerd，无需 load)"
 }

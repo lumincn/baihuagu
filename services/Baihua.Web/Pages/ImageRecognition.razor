@@ -90,7 +90,7 @@ else
                         <textarea class="form-control" rows="3" @bind="prompt">@prompt</textarea>
                     </div>
 
-                    <button class="btn btn-primary" @onclick="RecognizeAsync" disabled="@isRecognizing || string.IsNullOrEmpty(imagePreviewBase64)">
+                    <button class="btn btn-primary" @onclick="RecognizeAsync" disabled="@(isRecognizing || string.IsNullOrEmpty(imagePreviewBase64))">
                         @(isRecognizing ? "⏳ " + L["Vision_Recognizing"] : "🔍 " + L["Vision_RecognizeBtn"])
                     </button>
                 </div>
