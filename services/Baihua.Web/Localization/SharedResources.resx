@@ -707,6 +707,10 @@
   <data name="LocalModels_NoDownloadedModels" xml:space="preserve">
     <value>No downloaded models. Deploy from recommendations below.</value>
   </data>
+  <data name="LocalModels_DownloadedTitle" xml:space="preserve">
+    <value>Downloaded Models</value>
+  </data>
+
   <data name="LocalModels_DlName" xml:space="preserve">
     <value>Model</value>
   </data>

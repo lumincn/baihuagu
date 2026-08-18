@@ -707,6 +707,10 @@
   <data name="LocalModels_NoDownloadedModels" xml:space="preserve">
     <value>暂无已下载模型。上方推荐列表可部署新模型。</value>
   </data>
+  <data name="LocalModels_DownloadedTitle" xml:space="preserve">
+    <value>已下载模型</value>
+  </data>
+
   <data name="LocalModels_DlName" xml:space="preserve">
     <value>模型</value>
   </data>
