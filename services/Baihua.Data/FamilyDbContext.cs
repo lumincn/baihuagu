@@ -73,7 +73,7 @@ public class FamilyDbContext : DbContext
         if (!optionsBuilder.IsConfigured)
         {
             var dbPath = GetDefaultDbPath();
-            optionsBuilder.UseSqlite($"Data Source={dbPath};Foreign Keys=True;Default Timeout=5;");
+            optionsBuilder.UseNpgsql(Baihua.Data.DbConnections.For("family"));
         }
     }
 
@@ -112,8 +112,8 @@ public class FamilyDbContext : DbContext
             entity.Property(e => e.TaskType).HasMaxLength(50).IsRequired();
             entity.Property(e => e.Status).HasMaxLength(50).IsRequired().HasDefaultValue("Pending");
             entity.Property(e => e.Progress).HasDefaultValue(0);
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
-            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<OpenClawTask>(entity =>
@@ -128,7 +128,7 @@ public class FamilyDbContext : DbContext
             entity.Property(e => e.Prompt).IsRequired();
             entity.Property(e => e.Status).HasMaxLength(50).IsRequired().HasDefaultValue("pending");
             entity.Property(e => e.ReportPath).HasMaxLength(1000);
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<OnboardingState>(entity =>
@@ -137,8 +137,8 @@ public class FamilyDbContext : DbContext
             entity.HasKey(e => e.Id);
 
             entity.Property(e => e.IsCompleted).HasDefaultValue(false);
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
-            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<InitTaskProgress>(entity =>
@@ -151,8 +151,8 @@ public class FamilyDbContext : DbContext
             entity.Property(e => e.TaskType).HasMaxLength(50).IsRequired();
             entity.Property(e => e.IsCompleted).HasDefaultValue(false);
             entity.Property(e => e.IsSkipped).HasDefaultValue(false);
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
-            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<LearnerProfile>(entity =>
@@ -164,7 +164,7 @@ public class FamilyDbContext : DbContext
             entity.Property(e => e.Name).HasMaxLength(50).IsRequired();
             entity.Property(e => e.AvatarEmoji).HasMaxLength(10);
             entity.Property(e => e.Color).HasMaxLength(20);
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<Achievement>(entity =>
@@ -179,7 +179,7 @@ public class FamilyDbContext : DbContext
             entity.Property(e => e.Icon).HasMaxLength(20);
             entity.Property(e => e.Tier).HasMaxLength(20);
             entity.Property(e => e.Category).HasMaxLength(20);
-            entity.Property(e => e.UnlockedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.UnlockedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<StudyActivity>(entity =>
@@ -193,7 +193,7 @@ public class FamilyDbContext : DbContext
             entity.Property(e => e.ActivityType).HasMaxLength(30).IsRequired();
             entity.Property(e => e.CardId).HasMaxLength(100);
             entity.Property(e => e.Result).HasMaxLength(20);
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<CardReviewState>(entity =>
@@ -206,8 +206,8 @@ public class FamilyDbContext : DbContext
             entity.Property(e => e.VaultId).HasMaxLength(50).IsRequired();
             entity.Property(e => e.CardId).HasMaxLength(100).IsRequired();
             entity.Property(e => e.LastResult).HasMaxLength(20);
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
-            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<AuthorizedDevice>(entity =>
@@ -223,9 +223,9 @@ public class FamilyDbContext : DbContext
             entity.Property(e => e.AccessToken).HasMaxLength(500).IsRequired();
             entity.Property(e => e.Status).HasMaxLength(50).IsRequired().HasDefaultValue("Authorized");
             entity.Property(e => e.IpAddress).HasMaxLength(50);
-            entity.Property(e => e.AuthorizedTime).HasDefaultValueSql("datetime('now')");
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
-            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.AuthorizedTime).HasDefaultValueSql("now()");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<DeviceSyncLog>(entity =>
@@ -240,7 +240,7 @@ public class FamilyDbContext : DbContext
             entity.Property(e => e.IpAddress).HasMaxLength(50);
             entity.Property(e => e.VaultId).HasMaxLength(50);
             entity.Property(e => e.SyncType).HasMaxLength(50).IsRequired().HasDefaultValue("manifest");
-            entity.Property(e => e.SyncTime).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.SyncTime).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<ServerAddressSetting>(entity =>
@@ -252,8 +252,8 @@ public class FamilyDbContext : DbContext
             entity.Property(e => e.Url).HasMaxLength(500).IsRequired().HasDefaultValue("");
             entity.Property(e => e.DisplayName).HasMaxLength(200).IsRequired().HasDefaultValue("");
             entity.Property(e => e.ServerInstanceId).HasMaxLength(100).IsRequired().HasDefaultValue("");
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
-            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<ChatMemoryEntry>(entity =>
@@ -265,7 +265,7 @@ public class FamilyDbContext : DbContext
             entity.Property(e => e.SessionId).HasMaxLength(100).IsRequired();
             entity.Property(e => e.UserSummary).IsRequired();
             entity.Property(e => e.AssistantSummary).IsRequired();
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<Master>(entity =>
@@ -281,8 +281,8 @@ public class FamilyDbContext : DbContext
             entity.Property(e => e.CurrentStage).HasMaxLength(20).IsRequired().HasDefaultValue("入道");
             entity.Property(e => e.GraduatedStagesJson).IsRequired().HasDefaultValue("[]");
             entity.Property(e => e.Status).HasMaxLength(20).IsRequired().HasDefaultValue("active");
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
-            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<MasterConversation>(entity =>
@@ -296,7 +296,7 @@ public class FamilyDbContext : DbContext
             entity.Property(e => e.Role).HasMaxLength(20).IsRequired();
             entity.Property(e => e.Content).IsRequired();
             entity.Property(e => e.Stage).HasMaxLength(20);
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<StageSummary>(entity =>
@@ -308,7 +308,7 @@ public class FamilyDbContext : DbContext
             entity.Property(e => e.MasterId).HasMaxLength(64).IsRequired();
             entity.Property(e => e.StageName).HasMaxLength(20).IsRequired();
             entity.Property(e => e.Summary).IsRequired();
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<ApprenticeProfile>(entity =>
@@ -318,7 +318,7 @@ public class FamilyDbContext : DbContext
             entity.HasIndex(e => e.MasterId).IsUnique();
 
             entity.Property(e => e.MasterId).HasMaxLength(64).IsRequired();
-            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<ExamCheckpoint>(entity =>
@@ -332,7 +332,7 @@ public class FamilyDbContext : DbContext
             entity.Property(e => e.StageName).HasMaxLength(20).IsRequired();
             entity.Property(e => e.WeakPointsJson).IsRequired().HasDefaultValue("[]");
             entity.Property(e => e.Advice).IsRequired().HasDefaultValue("");
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<VaultFocusState>(entity =>
@@ -346,7 +346,7 @@ public class FamilyDbContext : DbContext
             entity.Property(e => e.VaultId).IsRequired();
             entity.Property(e => e.State).HasMaxLength(20).IsRequired().HasDefaultValue("focused");
             entity.Property(e => e.StageName).HasMaxLength(20);
-            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<VaultFreeState>(entity =>
@@ -357,7 +357,7 @@ public class FamilyDbContext : DbContext
 
             entity.Property(e => e.VaultId).IsRequired();
             entity.Property(e => e.State).HasMaxLength(20).IsRequired().HasDefaultValue("discovered");
-            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<TodoGoal>(entity =>
@@ -365,7 +365,7 @@ public class FamilyDbContext : DbContext
             entity.ToTable("TodoGoals");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Title).HasMaxLength(200).IsRequired();
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
 
             // 删除目标时级联删除其下全部待办（SQLite 单级级联，无环，安全）
             entity.HasMany(e => e.Items)
@@ -395,7 +395,7 @@ public class FamilyDbContext : DbContext
             entity.Property(e => e.BaseUrl).HasMaxLength(500).IsRequired();
             entity.Property(e => e.Token).HasMaxLength(500);
             entity.Property(e => e.Source).HasMaxLength(20).HasDefaultValue("manual");
-            entity.Property(e => e.AddedAtUtc).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.AddedAtUtc).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<ServerMessage>(entity =>
@@ -409,7 +409,7 @@ public class FamilyDbContext : DbContext
             entity.Property(e => e.PeerName).HasMaxLength(200);
             entity.Property(e => e.Direction).HasMaxLength(10).IsRequired();
             entity.Property(e => e.Content).IsRequired();
-            entity.Property(e => e.SentAtUtc).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.SentAtUtc).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<BenchmarkSessionEntity>(entity =>
@@ -426,7 +426,7 @@ public class FamilyDbContext : DbContext
             entity.Property(e => e.ProviderId).HasMaxLength(50).IsRequired();
             entity.Property(e => e.ModelId).HasMaxLength(100).IsRequired();
             entity.Property(e => e.ResultsJson).IsRequired().HasDefaultValue("[]");
-            entity.Property(e => e.TestedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.TestedAt).HasDefaultValueSql("now()");
         });
     }
 

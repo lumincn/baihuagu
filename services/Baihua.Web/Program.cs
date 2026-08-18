@@ -23,17 +23,6 @@ using Baihua.Web.Middleware;
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 
-// Initialize native SQLite provider early to avoid Microsoft.Data.Sqlite type initializer issues
-try
-{
-    // Batteries_V2 is provided by SQLitePCLRaw.bundle_e_sqlite3 package
-    SQLitePCL.Batteries_V2.Init();
-}
-catch
-{
-    // Ignore if initialization not required or fails; later errors will show up when opening DB
-}
-
 var builder = WebApplication.CreateBuilder(args);
 
 var dataProtectionKeyPath = Path.Combine(AppContext.BaseDirectory, "data", "dp-keys");

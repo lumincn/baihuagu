@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Baihua.Data;
@@ -24,80 +23,6 @@ namespace Baihua.Core.Services
             _dbContextFactory = dbContextFactory;
             _logger = logger;
             _configuration = configuration;
-            EnsureTableExists();
-        }
-
-        /// <summary>
-        /// 确保表存在
-        /// </summary>
-        private void EnsureTableExists()
-        {
-            using var dbContext = _dbContextFactory.CreateDbContext();
-            try
-            {
-                var connection = dbContext.Database.GetDbConnection();
-                if (connection.State != System.Data.ConnectionState.Open)
-                    connection.Open();
-
-                // 全新空库（无任何业务表）：不要用裸 SQL 建表，交给 EF Migrate 统一建 schema，
-                // 否则会和迁移里的 CREATE TABLE 冲突，导致全新部署迁移失败（EnsureCreated 兜底又会因库非空而罢工）。
-                using (var probeCmd = connection.CreateCommand())
-                {
-                    probeCmd.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '__EF%'";
-                    var userTableCount = Convert.ToInt32(probeCmd.ExecuteScalar());
-                    if (userTableCount == 0)
-                    {
-                        _logger.LogDebug("全新数据库，跳过裸 SQL 建表（由 EF Migrate 创建 schema）");
-                        return;
-                    }
-                }
-
-                using var command = connection.CreateCommand();
-                command.CommandText = @"
-                    CREATE TABLE IF NOT EXISTS ServerAddressSettings (
-                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        Domain TEXT NOT NULL DEFAULT '',
-                        Url TEXT NOT NULL DEFAULT '',
-                        ServerInstanceId TEXT NOT NULL DEFAULT '',
-                        SharedSecret TEXT NOT NULL DEFAULT '',
-                        DisplayName TEXT NOT NULL DEFAULT '',
-                        CreatedAt TEXT NOT NULL DEFAULT (datetime('now')),
-                        UpdatedAt TEXT NOT NULL DEFAULT (datetime('now'))
-                    );
-                ";
-                command.ExecuteNonQuery();
-
-                // 兼容迁移：为旧版本数据库添加 DisplayName 列
-                try
-                {
-                    using var alterCmd = connection.CreateCommand();
-                    alterCmd.CommandText = "ALTER TABLE ServerAddressSettings ADD COLUMN DisplayName TEXT NOT NULL DEFAULT '';";
-                    alterCmd.ExecuteNonQuery();
-                    _logger.LogInformation("已为旧数据库添加 DisplayName 列");
-                }
-                catch
-                {
-                    // 列已存在，忽略
-                }
-
-                try
-                {
-                    using var alterCmd2 = connection.CreateCommand();
-                    alterCmd2.CommandText = "ALTER TABLE ServerAddressSettings ADD COLUMN SharedSecret TEXT NOT NULL DEFAULT '';";
-                    alterCmd2.ExecuteNonQuery();
-                    _logger.LogInformation("已为旧数据库添加 SharedSecret 列");
-                }
-                catch
-                {
-                    // 列已存在，忽略
-                }
-
-                _logger.LogDebug("ServerAddressSettings 表已确保存在");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "创建 ServerAddressSettings 表失败");
-            }
         }
 
         /// <summary>
@@ -185,76 +110,9 @@ namespace Baihua.Core.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "更新服务器地址配置失败，尝试直接执行 SQL");
-
-                // 如果 EF Core 失败，使用原始 SQL
-                var connection = dbContext.Database.GetDbConnection();
-                if (connection.State != System.Data.ConnectionState.Open)
-                    await connection.OpenAsync();
-
-                // 先确保表存在
-                using (var createCmd = connection.CreateCommand())
-                {
-                    createCmd.CommandText = @"
-                        CREATE TABLE IF NOT EXISTS ServerAddressSettings (
-                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                            Domain TEXT NOT NULL DEFAULT '',
-                            Url TEXT NOT NULL DEFAULT '',
-                            ServerInstanceId TEXT NOT NULL DEFAULT '',
-                            DisplayName TEXT NOT NULL DEFAULT '',
-                            CreatedAt TEXT NOT NULL DEFAULT (datetime('now')),
-                            UpdatedAt TEXT NOT NULL DEFAULT (datetime('now'))
-                        );
-                    ";
-                    await createCmd.ExecuteNonQueryAsync();
-                }
-
-                // 检查是否有记录
-                using (var checkCmd = connection.CreateCommand())
-                {
-                    checkCmd.CommandText = "SELECT COUNT(*) FROM ServerAddressSettings;";
-                    var count = Convert.ToInt32(await checkCmd.ExecuteScalarAsync());
-
-                    using var cmd = connection.CreateCommand();
-                    if (count == 0)
-                    {
-                        var newId = GenerateServerInstanceId();
-                        cmd.CommandText = @"
-                            INSERT INTO ServerAddressSettings (Domain, Url, ServerInstanceId, CreatedAt, UpdatedAt)
-                            VALUES (@domain, '', @serverInstanceId, datetime('now'), datetime('now'));";
-
-                        var pId = cmd.CreateParameter();
-                        pId.ParameterName = "@serverInstanceId";
-                        pId.Value = newId;
-                        cmd.Parameters.Add(pId);
-                    }
-                    else
-                    {
-                        cmd.CommandText = @"
-                            UPDATE ServerAddressSettings
-                            SET Domain = @domain, Url = '', UpdatedAt = datetime('now'),
-                                ServerInstanceId = CASE WHEN ServerInstanceId = '' THEN @serverInstanceId ELSE ServerInstanceId END
-                            WHERE Id = (SELECT Id FROM ServerAddressSettings LIMIT 1);";
-
-                        var pId = cmd.CreateParameter();
-                        pId.ParameterName = "@serverInstanceId";
-                        pId.Value = GenerateServerInstanceId();
-                        cmd.Parameters.Add(pId);
-                    }
-
-                    var p1 = cmd.CreateParameter();
-                    p1.ParameterName = "@domain";
-                    p1.Value = normalizedDomain;
-                    cmd.Parameters.Add(p1);
-
-                    await cmd.ExecuteNonQueryAsync();
-                }
-
-                return new ServerAddressSetting
-                {
-                    Domain = normalizedDomain,
-                    Url = ""
-                };
+                // PostgreSQL：schema 由 EF EnsureCreated 统一创建，不再用裸 SQL 兜底
+                _logger.LogError(ex, "更新服务器地址配置失败");
+                throw;
             }
         }
 

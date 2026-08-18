@@ -25,6 +25,10 @@ data:
   BAIHUA_VAULT_URL: "http://bh-vault:8790"
   BAIHUA_AI_URL: "http://bh-ai:8791"
 
+  # PostgreSQL（一服务一数据库：family / vault / ai 三库；密码经 Secret 注入 PG_PASSWORD）
+  PG_HOST: "bh-postgres"
+  PG_USER: "baihua"
+
   # WebUI → 后端服务（K8s Service DNS）
   FamilyApi__BaseUrl: "http://bh-family:8788/"
   AiApi__BaseUrl: "http://bh-ai:8791/"

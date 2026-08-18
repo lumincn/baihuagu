@@ -34,15 +34,6 @@ using Microsoft.AspNetCore.Localization;
 using System.Globalization;
 using Baihua.AI.Provider;
 
-// Initialize native SQLite provider early to avoid Microsoft.Data.Sqlite type initializer issues
-try
-{
-    SQLitePCL.Batteries_V2.Init();
-}
-catch
-{
-    // Ignore if initialization not required or fails; later errors will show up when opening DB
-}
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -131,32 +122,29 @@ builder.Services.AddSignalR()
 
 // 注册核心服务
 // Family 数据库上下文
+// PostgreSQL（一服务一数据库：family / vault 独立库）
 builder.Services.AddDbContext<Baihua.Data.FamilyDbContext>(options =>
 {
-    var dbPath = Baihua.Data.FamilyDbContext.GetDbPath();
-    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;", sqlite => sqlite.MigrationsAssembly("Baihua.Data"))
+    options.UseNpgsql(Baihua.Data.DbConnections.For("family"))
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Scoped, ServiceLifetime.Singleton);
 
 builder.Services.AddDbContextFactory<Baihua.Data.FamilyDbContext>(options =>
 {
-    var dbPath = Baihua.Data.FamilyDbContext.GetDbPath();
-    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;", sqlite => sqlite.MigrationsAssembly("Baihua.Data"))
+    options.UseNpgsql(Baihua.Data.DbConnections.For("family"))
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Singleton);
 
 // Vault 数据库上下文（Family 需要读取知识库信息）
 builder.Services.AddDbContext<Baihua.Data.VaultDbContext>(options =>
 {
-    var dbPath = Baihua.Data.VaultDbContext.GetDbPath();
-    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;", sqlite => sqlite.MigrationsAssembly("Baihua.Data"))
+    options.UseNpgsql(Baihua.Data.DbConnections.For("vault"))
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Scoped, ServiceLifetime.Singleton);
 
 builder.Services.AddDbContextFactory<Baihua.Data.VaultDbContext>(options =>
 {
-    var dbPath = Baihua.Data.VaultDbContext.GetDbPath();
-    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;", sqlite => sqlite.MigrationsAssembly("Baihua.Data"))
+    options.UseNpgsql(Baihua.Data.DbConnections.For("vault"))
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Singleton);
 

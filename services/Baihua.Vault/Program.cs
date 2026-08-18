@@ -58,15 +58,13 @@ builder.Services.AddSwaggerGen(c =>
 // Vault 数据库上下文
 builder.Services.AddDbContext<Baihua.Data.VaultDbContext>(options =>
 {
-    var dbPath = Baihua.Data.VaultDbContext.GetDbPath();
-    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;", sqlite => sqlite.MigrationsAssembly("Baihua.Data"))
+    options.UseNpgsql(Baihua.Data.DbConnections.For("vault"))
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Scoped, ServiceLifetime.Singleton);
 
 builder.Services.AddDbContextFactory<Baihua.Data.VaultDbContext>(options =>
 {
-    var dbPath = Baihua.Data.VaultDbContext.GetDbPath();
-    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;", sqlite => sqlite.MigrationsAssembly("Baihua.Data"))
+    options.UseNpgsql(Baihua.Data.DbConnections.For("vault"))
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Singleton);
 
@@ -75,15 +73,13 @@ builder.Services.AddDbContextFactory<Baihua.Data.VaultDbContext>(options =>
 // EmbeddingService 已改经 AI 服务 HTTP API 读取嵌入配置。
 builder.Services.AddDbContext<Baihua.Data.FamilyDbContext>(options =>
 {
-    var dbPath = Baihua.Data.FamilyDbContext.GetDbPath();
-    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;", sqlite => sqlite.MigrationsAssembly("Baihua.Data"))
+    options.UseNpgsql(Baihua.Data.DbConnections.For("family"))
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Scoped, ServiceLifetime.Singleton);
 
 builder.Services.AddDbContextFactory<Baihua.Data.FamilyDbContext>(options =>
 {
-    var dbPath = Baihua.Data.FamilyDbContext.GetDbPath();
-    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;", sqlite => sqlite.MigrationsAssembly("Baihua.Data"))
+    options.UseNpgsql(Baihua.Data.DbConnections.For("family"))
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Singleton);
 
@@ -280,44 +276,18 @@ app.Use(async (context, next) =>
 app.UseAuthorization();
 app.MapControllers();
 
-// 执行核心数据库迁移
+// 建库建表（PostgreSQL：EnsureCreated 生成完整 schema；原 SQLite 的 PRAGMA/ALTER 兼容逻辑不再需要）
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 try
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<Baihua.Data.VaultDbContext>();
-    db.Database.Migrate();
-    Baihua.Core.Data.SqliteSetup.EnableWal(db, logger);
-    var conn = db.Database.GetDbConnection();
-    conn.Open();
-    using var cmd = conn.CreateCommand();
-    cmd.CommandText = "PRAGMA table_info(Vaults)";
-    var columns = new HashSet<string>();
-    using (var reader = cmd.ExecuteReader())
-    {
-        while (reader.Read()) columns.Add(reader.GetString(1));
-    }
-    if (!columns.Contains("PushedByDeviceId"))
-    {
-        cmd.CommandText = "ALTER TABLE Vaults ADD COLUMN PushedByDeviceId TEXT NOT NULL DEFAULT ''";
-        cmd.ExecuteNonQuery();
-    }
-    if (!columns.Contains("PushedByDeviceName"))
-    {
-        cmd.CommandText = "ALTER TABLE Vaults ADD COLUMN PushedByDeviceName TEXT NOT NULL DEFAULT ''";
-        cmd.ExecuteNonQuery();
-    }
-    if (!columns.Contains("PushedAt"))
-    {
-        cmd.CommandText = "ALTER TABLE Vaults ADD COLUMN PushedAt TEXT NULL";
-        cmd.ExecuteNonQuery();
-    }
-    conn.Close();
-    logger.LogInformation("Vault 数据库迁移完成");
+    db.Database.EnsureCreated();
+    logger.LogInformation("Vault 数据库初始化完成");
 }
 catch (Exception ex)
 {
-    logger.LogError(ex, "核心数据库迁移失败");
+    logger.LogError(ex, "核心数据库初始化失败");
 }
 
 logger.LogInformation("===========================================");

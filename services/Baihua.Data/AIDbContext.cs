@@ -35,7 +35,7 @@ public class AIDbContext : DbContext
         if (!optionsBuilder.IsConfigured)
         {
             var dbPath = GetDefaultDbPath();
-            optionsBuilder.UseSqlite($"Data Source={dbPath};Foreign Keys=True;Default Timeout=5;");
+            optionsBuilder.UseNpgsql(Baihua.Data.DbConnections.For("ai"));
         }
     }
 
@@ -78,8 +78,8 @@ public class AIDbContext : DbContext
             entity.Property(e => e.IsEnabled).HasDefaultValue(true);
             entity.Property(e => e.IsMain).HasDefaultValue(false);
             entity.Property(e => e.Tier).HasDefaultValue(0);
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
-            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<AiUsageMetric>(entity =>
@@ -96,7 +96,7 @@ public class AIDbContext : DbContext
             entity.Property(e => e.ModelId).HasMaxLength(100).IsRequired();
             entity.Property(e => e.Operation).HasMaxLength(50).IsRequired();
             entity.Property(e => e.ErrorMessage).HasMaxLength(2000);
-            entity.Property(e => e.CalledAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.CalledAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<BenchmarkSessionEntity>(entity =>
@@ -113,7 +113,7 @@ public class AIDbContext : DbContext
             entity.Property(e => e.ProviderId).HasMaxLength(50).IsRequired();
             entity.Property(e => e.ModelId).HasMaxLength(100).IsRequired();
             entity.Property(e => e.ResultsJson).IsRequired().HasDefaultValue("[]");
-            entity.Property(e => e.TestedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.TestedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<EmbeddingConfig>(entity =>
@@ -127,8 +127,8 @@ public class AIDbContext : DbContext
             entity.Property(e => e.BaseUrl).HasMaxLength(500).IsRequired();
             entity.Property(e => e.EncryptedApiKey).HasMaxLength(2000);
             entity.Property(e => e.IsEnabled).HasDefaultValue(true);
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
-            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<ComfyArtworkEntity>(entity =>
@@ -148,7 +148,7 @@ public class AIDbContext : DbContext
             entity.Property(e => e.FileType).HasMaxLength(20).HasDefaultValue("output");
             entity.Property(e => e.PromptId).HasMaxLength(64).IsRequired();
             entity.Property(e => e.ErrorMessage).HasMaxLength(2000);
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<CodeAgentSession>(entity =>
@@ -165,7 +165,7 @@ public class AIDbContext : DbContext
             entity.Property(e => e.ToolMode).HasMaxLength(20).IsRequired().HasDefaultValue("All");
             entity.Property(e => e.FileName).HasMaxLength(300);
             entity.Property(e => e.SessionStateJson).HasColumnType("TEXT");
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
         });
 
     }

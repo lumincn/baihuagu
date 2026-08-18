@@ -51,21 +51,14 @@ public class StartupOrchestratorHostedService : IHostedService
 
     private void LoadFromDatabase()
     {
-        TryMigrateDatabase("Family", () =>
-        {
-            using var familyDb = _familyDbContextFactory.CreateDbContext();
-            MigrateDatabase(familyDb, "Family");
-        }, () =>
+        // PostgreSQL：EnsureCreated 生成完整 schema（一服务一数据库，无迁移历史）
+        TryEnsureCreated("Family", () =>
         {
             using var familyDb = _familyDbContextFactory.CreateDbContext();
             familyDb.Database.EnsureCreated();
         });
 
-        TryMigrateDatabase("Vault", () =>
-        {
-            using var vaultDb = _vaultDbContextFactory.CreateDbContext();
-            MigrateDatabase(vaultDb, "Vault");
-        }, () =>
+        TryEnsureCreated("Vault", () =>
         {
             using var vaultDb = _vaultDbContextFactory.CreateDbContext();
             vaultDb.Database.EnsureCreated();
@@ -74,34 +67,17 @@ public class StartupOrchestratorHostedService : IHostedService
         // AI 库 schema 与 API Key 加密密钥迁移完全归 AI 服务独占（一服务一数据库）：
         // Family 不再等待/检查 ai.db，也不再参与 key 迁移（Family 不持有/不解密 key）。
     }
-    private void TryMigrateDatabase(string domainName, Action migrateAction, Action ensureCreatedFallback)
-    {
-        try
-        {
-            migrateAction();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "{Domain} Migrate 失败，改用 EnsureCreated 补偿", domainName);
-            try { ensureCreatedFallback(); _logger.LogInformation("{Domain} EnsureCreated 完成"); }
-            catch (Exception ex2) { _logger.LogError(ex2, "{Domain} EnsureCreated 也失败"); }
-        }
-    }
 
-    private void MigrateDatabase(DbContext dbContext, string domainName)
+    private void TryEnsureCreated(string domainName, Action action)
     {
         try
         {
-            // 清空 SQLite 连接池，避免同进程先前打开的连接持有读锁导致 BEGIN EXCLUSIVE 自锁
-            Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
-            dbContext.Database.Migrate();
-            Baihua.Core.Data.SqliteSetup.EnableWal(dbContext, _logger);
-            _logger.LogDebug("{Domain} migrate completed successfully", domainName);
+            action();
+            _logger.LogDebug("{Domain} 数据库初始化完成", domainName);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "{Domain} 数据库迁移失败: {Message}", domainName, ex.Message);
-            throw;
+            _logger.LogError(ex, "{Domain} 数据库初始化失败: {Message}", domainName, ex.Message);
         }
     }
 

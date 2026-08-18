@@ -57,15 +57,13 @@ builder.Services.AddSwaggerGen(c =>
 // AI 域数据库上下文
 builder.Services.AddDbContext<Baihua.Data.AIDbContext>(options =>
 {
-    var dbPath = Baihua.Data.AIDbContext.GetDbPath();
-    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;")
+    options.UseNpgsql(Baihua.Data.DbConnections.For("ai"))
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Scoped, ServiceLifetime.Singleton);
 
 builder.Services.AddDbContextFactory<Baihua.Data.AIDbContext>(options =>
 {
-    var dbPath = Baihua.Data.AIDbContext.GetDbPath();
-    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;")
+    options.UseNpgsql(Baihua.Data.DbConnections.For("ai"))
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Singleton);
 
@@ -290,22 +288,17 @@ catch (Exception ex)
     logger.LogWarning(ex, "API Key 迁移失败（不影响启动）");
 }
 
-// 再执行 EF 数据库迁移
-// 注意：必须先清空 SQLite 连接池——MigrateApiKeysIfNeeded 的查询会打开到 ai.db 的连接
-// 且被连接池保留（物理连接仍持有读锁），此时 Migrate() 的 BEGIN EXCLUSIVE 会 SQLITE_BUSY 无限等待
-// （AcquireDatabaseLock 自锁，进程卡死、端口不监听）
+// 建库建表（PostgreSQL：EnsureCreated 生成完整 schema；不做迁移历史，schema 演进后续引入 Npgsql 迁移）
 try
 {
-    Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
     using var scope = app.Services.CreateScope();
     var aiDb = scope.ServiceProvider.GetRequiredService<Baihua.Data.AIDbContext>();
-    aiDb.Database.Migrate();
-    Baihua.Core.Data.SqliteSetup.EnableWal(aiDb, logger);
-    logger.LogInformation("AI 数据库迁移完成");
+    aiDb.Database.EnsureCreated();
+    logger.LogInformation("AI 数据库初始化完成");
 }
 catch (Exception ex)
 {
-    logger.LogWarning(ex, "AI 数据库迁移失败（不影响启动，表已存在则跳过）");
+    logger.LogWarning(ex, "AI 数据库初始化失败（不影响启动）");
 }
 logger.LogInformation("===========================================");
 logger.LogInformation("Baihua.AI Service Starting...");
