@@ -32,6 +32,7 @@ public class ComputePoolService : IHostedService, IDisposable
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
     private readonly ILogger<ComputePoolService> _logger;
+    private readonly BenchmarkRepository _benchmarkRepository;
 
     private readonly ConcurrentDictionary<string, ComputeNodeCapabilitiesDto> _peerCapabilities = new();
     /// <summary>对端 /health 可达时间（capabilities 未就绪时仍能判断在线）</summary>
@@ -45,7 +46,8 @@ public class ComputePoolService : IHostedService, IDisposable
         ServerAddressService serverAddress,
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
-        ILogger<ComputePoolService> logger)
+        ILogger<ComputePoolService> logger,
+        BenchmarkRepository benchmarkRepository)
     {
         _messageService = messageService;
         _aiConfig = aiConfig;
@@ -54,6 +56,7 @@ public class ComputePoolService : IHostedService, IDisposable
         _httpClientFactory = httpClientFactory;
         _configuration = configuration;
         _logger = logger;
+        _benchmarkRepository = benchmarkRepository;
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
@@ -335,11 +338,33 @@ public class ComputePoolService : IHostedService, IDisposable
                     Id = p.Id,
                     Name = p.Name,
                     Tier = ((int)p.Tier).ToString(),
-                    Models = p.Models.Select(m => new ComputeModelDto { Name = m.Name, IsMain = m.IsMain }).ToList()
+                    Models = p.Models.Select(m => new ComputeModelDto
+                    {
+                        Name = m.Name,
+                        IsMain = m.IsMain,
+                        TokensPerSecond = GetBenchmarkTps(m.Name)
+                    }).ToList()
                 })
                 .ToList(),
             ProviderRegistered = true
         };
+    }
+
+    /// <summary>排行榜里该模型最近一次实测 token/s（无记录返回 null）。</summary>
+    private double? GetBenchmarkTps(string modelName)
+    {
+        try
+        {
+            return _benchmarkRepository.GetLeaderboard()
+                .Where(h => string.Equals(h.ModelName, modelName, StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(h => h.LastTestedAt)
+                .Select(h => h.AvgTokensPerSecond)
+                .FirstOrDefault();
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     /// <summary>跨机测速：对端运行单模型快速 benchmark，结果回写能力缓存并返回。</summary>
@@ -503,11 +528,13 @@ public class ComputePoolService : IHostedService, IDisposable
 
         // 本机 AI 服务（shim）是否提供该模型
         var aiProviders = await GetAiServiceProvidersAsync(ct);
-        if (aiProviders.Any(p => p.Models.Any(m => string.Equals(m.Name, modelName, StringComparison.OrdinalIgnoreCase))))
+        var localAiProvider = aiProviders.FirstOrDefault(p => p.Models.Any(m => string.Equals(m.Name, modelName, StringComparison.OrdinalIgnoreCase)));
+        if (localAiProvider != null)
         {
             var hostIp = _configuration["BAIHUA_HOST_IP"];
             var localHost = !string.IsNullOrWhiteSpace(hostIp) ? $"http://{hostIp}" : _serverAddress.GetLocalPublicBaseUrl();
-            result.Add(($"{localHost}/mg/ai/v1", aiProviders.First(p => p.Models.Any(m => string.Equals(m.Name, modelName, StringComparison.OrdinalIgnoreCase))).Id, "本机", true, null));
+            var localModel = localAiProvider.Models.First(m => string.Equals(m.Name, modelName, StringComparison.OrdinalIgnoreCase));
+            result.Add(($"{localHost}/mg/ai/v1", localAiProvider.Id, "本机", true, localModel.TokensPerSecond));
         }
 
         // 对端：拥有该模型的节点按 TPS 降序
@@ -549,7 +576,12 @@ public class ComputePoolService : IHostedService, IDisposable
                     Id = p.Id,
                     Name = p.Name,
                     Tier = ((int)p.Tier).ToString(),
-                    Models = p.Models.Select(m => new ComputeModelDto { Name = m.Name, IsMain = m.IsMain }).ToList()
+                    Models = p.Models.Select(m => new ComputeModelDto
+                    {
+                        Name = m.Name,
+                        IsMain = m.IsMain,
+                        TokensPerSecond = GetBenchmarkTps(m.Name)
+                    }).ToList()
                 })
                 .ToList() ?? new List<ComputeProviderDto>();
         }

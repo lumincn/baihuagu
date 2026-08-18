@@ -22,19 +22,22 @@ public class ModelStoreController : ControllerBase
     private readonly Microsoft.Extensions.Options.IOptions<LocalAiOptions> _localAiOptions;
     private readonly IConfiguration _configuration;
     private readonly ILogger<ModelStoreController> _logger;
+    private readonly BenchmarkRepository _benchmarkRepository;
 
     public ModelStoreController(
         AiSettingsService aiSettings,
         AiClientService aiClient,
         Microsoft.Extensions.Options.IOptions<LocalAiOptions> localAiOptions,
         IConfiguration configuration,
-        ILogger<ModelStoreController> logger)
+        ILogger<ModelStoreController> logger,
+        BenchmarkRepository benchmarkRepository)
     {
         _aiSettings = aiSettings;
         _aiClient = aiClient;
         _localAiOptions = localAiOptions;
         _configuration = configuration;
         _logger = logger;
+        _benchmarkRepository = benchmarkRepository;
     }
 
     private string ModelRoot => _localAiOptions.Value.GetModelRoot();
@@ -80,12 +83,38 @@ public class ModelStoreController : ControllerBase
             var text = response.Text ?? "";
             var actualTokens = response.Usage?.OutputTokenCount is long ot && ot > 0 ? (int)ot : (int?)(text.Length * 0.7);
             var elapsedSec = Math.Max(sw.Elapsed.TotalSeconds, 0.001);
+            var tps = Math.Round(actualTokens.Value / elapsedSec, 1);
+
+            // 持久化到 Benchmark 排行榜（category="quick"，不影响模型评测页的 tcm/coding 分类），
+            // 使本机 /mg/capabilities 的 GetBenchmarkTps 能持续广播该模型的实测 TPS，
+            // 否则算力池总览只有内存里的一次性回写，60 秒刷新后又被清空。
+            await _benchmarkRepository.SaveSessionAsync(new BenchmarkSession
+            {
+                ModelName = modelName,
+                Category = "quick",
+                ProviderId = provider.Id,
+                ModelId = modelName,
+                TestedAt = DateTime.UtcNow,
+                Results = new List<BenchmarkPromptResult>
+                {
+                    new()
+                    {
+                        PromptId = "quick",
+                        PromptTitle = "算力池快速测速",
+                        LatencyMs = (long)Math.Round(sw.Elapsed.TotalMilliseconds),
+                        OutputChars = text.Length,
+                        TokensPerSecond = tps,
+                        ResponseText = text.Length > 200 ? text[..200] : text,
+                        QualityScore = 0
+                    }
+                }
+            });
 
             return Ok(new BenchmarkRunResultDto
             {
                 Success = true,
                 ModelName = modelName,
-                TokensPerSecond = Math.Round(actualTokens.Value / elapsedSec, 1),
+                TokensPerSecond = tps,
                 LatencyMs = Math.Round(sw.Elapsed.TotalMilliseconds, 1),
                 TestedAt = DateTime.UtcNow
             });
