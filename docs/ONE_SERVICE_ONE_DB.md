@@ -99,7 +99,13 @@ shim 带 tools 返回 `tool_calls`（arguments 为 JSON 字符串）✓；本地
 - 部署注意事项落实：family.db 自动迁移新增 BenchmarkSessions 表 ✓；
   ai.db 中 BenchmarkSessions/ComfyArtworks 旧表成为孤儿表（不影响运行）
 - 后续可选项：AI 服务 embedding shim（云端鉴权嵌入模型支持）、ai.db 孤儿表清理迁移
-- 寻芳居 .9 需 `bh update` 拉最新代码后回归对端互调（peer 注册/选用/布署）
+- ✅ 寻芳居(.9) 已 `bh update` 并对端互调回归（2026-08-19）：
+  - 对端测速：本机→寻芳居 deepseek-v4-flash = 11.5 tok/s
+  - 选用模型：select 寻芳居模型设主成功（经写收口 HTTP），验证后恢复 deepseek 为主
+  - 跨机布署：本机→寻芳居 /mg/model-store/deploy 路由与对端存在性校验正常
+    （寻芳居已有 14B 模型，返回"已存在"守卫；完整拉取+启动路径见 LAN_COMPUTE_POOL.md M2.5）
+  - 反向注册：寻芳居自动注册本机提供方（peer-srv-dea4f8… 出现在其节点）
+  - 注：寻芳居管理 API 仅本机可调（设计如此），反向测速需在寻芳居本机发起
 
 ## 关键实现点
 
