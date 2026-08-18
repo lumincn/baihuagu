@@ -1796,6 +1796,13 @@
   <data name="Settings_ApiKeyNotConfigured" xml:space="preserve">
     <value>API Key not configured</value>
   </data>
+  <data name="Settings_ApiKeyDecryptError" xml:space="preserve">
+    <value>Key cannot be decrypted, please re-save it</value>
+  </data>
+  <data name="Settings_ApiKeyDecryptErrorHint" xml:space="preserve">
+    <value>Encryption key changed (upgrade/container rebuild); re-saving the key will recover</value>
+  </data>
+
   <data name="Settings_ApiKeyOptional" xml:space="preserve">
     <value>API Key (leave empty for local Ollama)</value>
   </data>

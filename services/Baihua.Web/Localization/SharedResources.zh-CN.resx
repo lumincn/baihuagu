@@ -1796,6 +1796,13 @@
   <data name="Settings_ApiKeyNotConfigured" xml:space="preserve">
     <value>未配置 API Key</value>
   </data>
+  <data name="Settings_ApiKeyDecryptError" xml:space="preserve">
+    <value>密钥无法解密，请重新保存</value>
+  </data>
+  <data name="Settings_ApiKeyDecryptErrorHint" xml:space="preserve">
+    <value>加密密钥已变更（如升级/容器重建），原密钥无法解密，重新保存即可恢复</value>
+  </data>
+
   <data name="Settings_ApiKeyOptional" xml:space="preserve">
     <value>API Key（本地 Ollama 可留空）</value>
   </data>

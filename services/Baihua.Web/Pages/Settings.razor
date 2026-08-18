@@ -85,7 +85,11 @@
                 <label>@L["Settings_ApiKey"]</label>
                 <input type="password" class="form-control" @bind="editingProvider.ApiKey" 
                        placeholder="sk-..." />
-                @if (!string.IsNullOrEmpty(editingProvider.ExistingKeyMask))
+                @if (editingProvider.ExistingKeyMask == "***error***")
+                {
+                    <div class="text-danger small">⚠ @L["Settings_ApiKeyDecryptError"]</div>
+                }
+                else if (!string.IsNullOrEmpty(editingProvider.ExistingKeyMask))
                 {
                     <small class="form-text">@L["Settings_ApiKeyKeepExisting"]@editingProvider.ExistingKeyMask</small>
                 }
@@ -254,7 +258,11 @@
                         </div>
 
                         <div class="api-key-status">
-                            @if (provider.HasApiKey)
+                            @if (provider.KeyMask == "***error***")
+                            {
+                                <span class="badge badge-danger" title="@L["Settings_ApiKeyDecryptErrorHint"]">⚠ @L["Settings_ApiKeyDecryptError"]</span>
+                            }
+                            else if (provider.HasApiKey)
                             {
                                 <span class="badge badge-success" title="@L["Settings_ApiKeyEncrypted"]">
                                     @L["Settings_ApiKeyConfigured"]@(provider.KeyMask ?? "***")
