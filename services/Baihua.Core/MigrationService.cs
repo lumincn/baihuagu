@@ -64,6 +64,15 @@ public class MigrationService
 
                 if (string.IsNullOrEmpty(legacyDecrypted))
                 {
+                    // 当前/旧指纹都解不开（如密钥来自已丢失的 BAIHUA_ENCRYPTION_KEY 或已消失的旧 pod 指纹）：
+                    // 仍然生成固定密钥文件，保证之后的加密/解密稳定（Family 与 AI 双进程、pod 重建都不再漂移），
+                    // 解不开的旧 Key 由用户重存。
+                    if (needsKeyFile)
+                    {
+                        Baihua.Core.Security.AesApiKeyEncryption.GenerateKeyFile();
+                        needsKeyFile = false;
+                        _logger.LogInformation("已生成固定加密密钥文件（存在无法迁移的旧 Key，等待在 WebUI 重新配置）");
+                    }
                     _logger.LogWarning("API Key 无法解密（Provider={ProviderId}），可能使用了已丢失的 BAIHUA_ENCRYPTION_KEY。请重新在 WebUI 中设置 API Key。", provider.ProviderId);
                     continue;
                 }

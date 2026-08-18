@@ -140,6 +140,16 @@ public static class AesApiKeyEncryption
     public static string GenerateKeyFile()
     {
         var keyFile = KeyFilePath;
+
+        // 已存在则复用（Family/AI 双进程可能并发启动各自生成不同密钥，先到先得，后到者读取同一文件，
+        // 保证共享卷上两进程密钥一致；也防止已有固定密钥时被意外覆盖）
+        if (File.Exists(keyFile))
+        {
+            var existing = File.ReadAllText(keyFile).Trim();
+            if (!string.IsNullOrWhiteSpace(existing))
+                return existing;
+        }
+
         var randomKey = Convert.ToHexString(RandomNumberGenerator.GetBytes(KeySize));
 
         EnsureKeyFileDirectory();
