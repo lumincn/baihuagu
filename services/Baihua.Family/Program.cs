@@ -928,22 +928,6 @@ app.Map("/ws/devices", async (HttpContext context, Baihua.Core.WebSocket.DeviceW
 var host = app.Services.GetRequiredService<IHostEnvironment>().ContentRootPath;
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
-// 执行 API Key 加密密钥迁移（与 AI 服务共用 ai.db；Family 也要解密 key，必须与 AI 用同一固定密钥）。
-// 在 EF 迁移（StartupOrchestratorHostedService 内异步执行）前先落盘 .baihua-key，保证两进程/重建后密钥稳定。
-try
-{
-    using var scope = app.Services.CreateScope();
-    var aiDb = scope.ServiceProvider.GetRequiredService<Baihua.Data.AIDbContext>();
-    var migrationService = scope.ServiceProvider.GetRequiredService<MigrationService>();
-    migrationService.MigrateApiKeysIfNeeded(aiDb);
-}
-catch (Exception ex)
-{
-    logger.LogWarning(ex, "API Key 迁移失败（不影响启动）");
-}
-// 清空 SQLite 连接池：释放 key 迁移打开的 ai.db 连接，避免后续 EF Migrate 的 BEGIN EXCLUSIVE 自锁
-Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
-
 // 全局未捕获异常与未观察到的任务异常处理，以提高可观测性
 AppDomain.CurrentDomain.UnhandledException += (s, e) =>
 {

@@ -13,6 +13,7 @@ public class StartupOrchestratorHostedService : IHostedService
     private readonly IDbContextFactory<AIDbContext> _aiDbContextFactory;
     private readonly VaultSettingsService _vaultSettings;
     private readonly LocalModelSettingsService _localModelSettings;
+    private readonly MigrationService _migrationService;
     private readonly ILogger<StartupOrchestratorHostedService> _logger;
 
     public StartupOrchestratorHostedService(
@@ -21,6 +22,7 @@ public class StartupOrchestratorHostedService : IHostedService
         IDbContextFactory<AIDbContext> aiDbContextFactory,
         VaultSettingsService vaultSettings,
         LocalModelSettingsService localModelSettings,
+        MigrationService migrationService,
         ILogger<StartupOrchestratorHostedService> logger)
     {
         _familyDbContextFactory = familyDbContextFactory;
@@ -28,6 +30,7 @@ public class StartupOrchestratorHostedService : IHostedService
         _aiDbContextFactory = aiDbContextFactory;
         _vaultSettings = vaultSettings;
         _localModelSettings = localModelSettings;
+        _migrationService = migrationService;
         _logger = logger;
     }
 
@@ -74,15 +77,52 @@ public class StartupOrchestratorHostedService : IHostedService
             vaultDb.Database.EnsureCreated();
         });
 
-        TryMigrateDatabase("AI", () =>
+        // AI 库 schema 由 AI 服务独占迁移（两进程并发 Migrate 会因 BEGIN EXCLUSIVE 自锁卡死）。
+        // Family 只等待其就绪（表存在即视为已迁移），绝不迁移/EnsureCreated AI 库；
+        // 就绪后顺便执行 API Key 加密密钥迁移（保证 .baihua-key 与 AI 服务一致）。
+        TryWaitForAiDatabase();
+        TryMigrateApiKeys();
+    }
+
+    /// <summary>等待 AI 服务完成 ai.db 迁移（轮询只读检查关键表，最多 30s）。</summary>
+    private void TryWaitForAiDatabase()
+    {
+        var deadline = DateTime.UtcNow.AddSeconds(30);
+        while (DateTime.UtcNow < deadline)
+        {
+            try
+            {
+                using var aiDb = _aiDbContextFactory.CreateDbContext();
+                var tables = aiDb.Database.SqlQueryRaw<string>(
+                        "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('AiProviderSettings','__EFMigrationsHistory')")
+                    .ToList();
+                if (tables.Count >= 2)
+                {
+                    _logger.LogInformation("AI 数据库 schema 已就绪（由 AI 服务迁移）");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "检查 AI 数据库 schema 失败（AI 服务可能尚未创建库）");
+            }
+            Thread.Sleep(2000);
+        }
+        _logger.LogWarning("等待 AI 服务迁移超时（30s）：AI 配置读取将回退到 appsettings，AI 服务就绪后自动恢复");
+    }
+
+    /// <summary>API Key 加密密钥迁移（ai.db schema 就绪后执行；与 AI 服务共用同一固定密钥）。</summary>
+    private void TryMigrateApiKeys()
+    {
+        try
         {
             using var aiDb = _aiDbContextFactory.CreateDbContext();
-            MigrateDatabase(aiDb, "AI");
-        }, () =>
+            _migrationService.MigrateApiKeysIfNeeded(aiDb);
+        }
+        catch (Exception ex)
         {
-            using var aiDb = _aiDbContextFactory.CreateDbContext();
-            aiDb.Database.EnsureCreated();
-        });
+            _logger.LogWarning(ex, "API Key 加密密钥迁移失败（不影响启动）");
+        }
     }
 
     private void TryMigrateDatabase(string domainName, Action migrateAction, Action ensureCreatedFallback)

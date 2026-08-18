@@ -36,13 +36,22 @@ public class AiConfigService
     /// </summary>
     public List<AiProviderConfig> GetProviders()
     {
-        using var dbContext = _dbContextFactory.CreateDbContext();
-        var dbProviders = dbContext.AiProviderSettings
-            .Where(p => p.IsEnabled)
-            .OrderBy(p => p.SortOrder)
-            .ThenBy(p => p.Id)
-            .ToList();
-        return dbProviders.Select(MapToProviderConfig).ToList();
+        try
+        {
+            using var dbContext = _dbContextFactory.CreateDbContext();
+            var dbProviders = dbContext.AiProviderSettings
+                .Where(p => p.IsEnabled)
+                .OrderBy(p => p.SortOrder)
+                .ThenBy(p => p.Id)
+                .ToList();
+            return dbProviders.Select(MapToProviderConfig).ToList();
+        }
+        catch (Exception ex)
+        {
+            // ai.db 由 AI 服务迁移；本进程（Family）启动早期表可能尚未就绪，防御性降级
+            _logger.LogWarning(ex, "读取 AI 提供方配置失败（AI 数据库可能尚未就绪），返回空列表");
+            return new List<AiProviderConfig>();
+        }
     }
 
     /// <summary>
