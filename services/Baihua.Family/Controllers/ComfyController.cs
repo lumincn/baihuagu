@@ -1,30 +1,30 @@
 using System.Text.Json;
 using Baihua.Core.Services;
-using Baihua.Data;
-using Baihua.Data.Entities;
+using Baihua.Family.Services.AI;
+using Baihua.Contracts.Ai;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Baihua.Family.Controllers;
 
 /// <summary>
 /// AI 绘图（ComfyUI）接口：提交生成任务、查询历史、获取生成文件。
+/// 一服务一数据库：生成历史（ComfyArtworks 表）存于 AI 服务 ai.db，经 AiComfyArtworksClient HTTP 读写。
 /// </summary>
 [ApiController]
 [Route("api/comfy")]
 public class ComfyController : ControllerBase
 {
     private readonly ComfyUiClient _comfy;
-    private readonly IDbContextFactory<AIDbContext> _dbFactory;
+    private readonly AiComfyArtworksClient _artworks;
     private readonly ILogger<ComfyController> _logger;
 
     public ComfyController(
         ComfyUiClient comfy,
-        IDbContextFactory<AIDbContext> dbFactory,
+        AiComfyArtworksClient artworks,
         ILogger<ComfyController> logger)
     {
         _comfy = comfy;
-        _dbFactory = dbFactory;
+        _artworks = artworks;
         _logger = logger;
     }
 
@@ -190,11 +190,10 @@ public class ComfyController : ControllerBase
         });
     }
 
-    private async Task<ComfyArtworkEntity> SaveVideoRecordAsync(
+    private async Task<AiComfyArtworkDto?> SaveVideoRecordAsync(
         GenerateVideoRequest req, string promptId, bool success, string? error, double duration, ComfyOutputFile? file)
     {
-        await using var db = await _dbFactory.CreateDbContextAsync();
-        var entity = new ComfyArtworkEntity
+        return await _artworks.CreateAsync(new SaveAiComfyArtworkRequest
         {
             Kind = "video",
             Prompt = req.Prompt,
@@ -207,10 +206,7 @@ public class ComfyController : ControllerBase
             IsSuccess = success,
             ErrorMessage = error,
             DurationSeconds = Math.Round(duration, 1)
-        };
-        db.ComfyArtworks.Add(entity);
-        await db.SaveChangesAsync();
-        return entity;
+        });
     }
 
     /// <summary>获取生成文件（图片/视频）</summary>
@@ -246,10 +242,7 @@ public class ComfyController : ControllerBase
     [HttpGet("history")]
     public async Task<ActionResult<object>> History(int limit = 50, string? kind = null, CancellationToken ct = default)
     {
-        await using var db = await _dbFactory.CreateDbContextAsync(ct);
-        var query = db.ComfyArtworks.AsNoTracking().AsQueryable();
-        if (!string.IsNullOrEmpty(kind)) query = query.Where(e => e.Kind == kind);
-        var items = await query.OrderByDescending(e => e.Id).Take(limit).ToListAsync(ct);
+        var items = await _artworks.ListAsync(limit, kind, ct);
         return Ok(items.Select(e => new
         {
             e.Id, e.Kind, e.Prompt, e.Model, e.FileName, e.Subfolder, e.IsSuccess, e.ErrorMessage,
@@ -262,20 +255,15 @@ public class ComfyController : ControllerBase
     [HttpDelete("history/{id}")]
     public async Task<IActionResult> DeleteHistory(int id, CancellationToken ct = default)
     {
-        await using var db = await _dbFactory.CreateDbContextAsync(ct);
-        var entity = await db.ComfyArtworks.FindAsync([id], ct);
-        if (entity == null) return NotFound();
-        db.ComfyArtworks.Remove(entity);
-        await db.SaveChangesAsync(ct);
-        return Ok(new { ok = true });
+        var ok = await _artworks.DeleteAsync(id, ct);
+        return ok ? Ok(new { ok = true }) : NotFound();
     }
 
-    private async Task<ComfyArtworkEntity> SaveRecordAsync(
+    private async Task<AiComfyArtworkDto?> SaveRecordAsync(
         GenerateImageRequest req, string kind, string model, string promptId,
         bool success, string? error, double duration, int seed, ComfyOutputFile? file)
     {
-        await using var db = await _dbFactory.CreateDbContextAsync();
-        var entity = new ComfyArtworkEntity
+        return await _artworks.CreateAsync(new SaveAiComfyArtworkRequest
         {
             Kind = kind,
             Prompt = req.Prompt,
@@ -288,9 +276,6 @@ public class ComfyController : ControllerBase
             IsSuccess = success,
             ErrorMessage = error,
             DurationSeconds = Math.Round(duration, 1)
-        };
-        db.ComfyArtworks.Add(entity);
-        await db.SaveChangesAsync();
-        return entity;
+        });
     }
 }

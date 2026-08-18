@@ -160,28 +160,17 @@ builder.Services.AddDbContextFactory<Baihua.Data.VaultDbContext>(options =>
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Singleton);
 
-// AI 域数据库上下文
-builder.Services.AddDbContext<Baihua.Data.AIDbContext>(options =>
-{
-    var dbPath = Baihua.Data.AIDbContext.GetDbPath();
-    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;")
-           .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
-}, ServiceLifetime.Scoped, ServiceLifetime.Singleton);
-
-builder.Services.AddDbContextFactory<Baihua.Data.AIDbContext>(options =>
-{
-    var dbPath = Baihua.Data.AIDbContext.GetDbPath();
-    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;")
-           .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
-}, ServiceLifetime.Singleton);
+// AI 域数据库上下文：一服务一数据库——ai.db 完全归 AI 服务独占，Family 不再注册/引用 AIDbContext。
+// Family 的 AI 配置读取经 HttpAiConfigService（AI 服务 HTTP API），推理经 /mg/ai/v1 shim 转发。
 
 builder.Services.AddSingleton<TaskManager>();
 // 一服务一数据库：Family 推理统一经 AI 服务 shim 转发（不直连模型、不持有 key）
 builder.Configuration["AiClient__UseShim"] = "true";
 builder.Services.AddSingleton<AiSettingsService>();
-builder.Services.AddSingleton<AiConfigService>();
-builder.Services.AddSingleton<MigrationService>();
+// AI 配置数据源：Family 经 AI 服务 HTTP API（不直读 ai.db、不持有 API Key）
+builder.Services.AddSingleton<IAiConfigService, HttpAiConfigService>();
 builder.Services.AddSingleton<AiProviderRegistryClient>();
+builder.Services.AddSingleton<AiComfyArtworksClient>();
 
 builder.Services.AddSingleton<LocalModelSettingsService>();
 
@@ -256,11 +245,7 @@ builder.Services.AddSingleton<MobileContract.Admin.IDeviceAdminService, Baihua.F
 builder.Services.AddSingleton<MobileContract.Admin.IPushAdminService, Baihua.Family.Services.Adapters.MobileDeviceServiceAdapter>();
 
 
-// 注册 AI 配置服务（Data Protection + SQLite）
-builder.Services.AddDataProtection();
-builder.Services.AddSingleton<Baihua.Core.Security.ApiKeyProtectionService>();
-builder.Services.AddSingleton<Baihua.Core.Security.DataEncryptionService>();
-
+// 一服务一数据库：API Key 只存在于 AI 服务进程（Family 不再注册 ApiKeyProtectionService/DataEncryptionService）
 builder.Services.AddSingleton<Baihua.Family.Services.RestoreService>();
 builder.Services.AddSingleton<Baihua.Family.Services.BackupService>();
 builder.Services.AddSingleton<Baihua.Family.Services.DeviceBackupService>();

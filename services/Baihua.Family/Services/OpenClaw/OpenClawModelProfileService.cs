@@ -21,13 +21,13 @@ public interface IOpenClawModelProfileService
 public class OpenClawModelProfileService : IOpenClawModelProfileService
 {
     private readonly ILocalAiConfigService _localAiConfig;
-    private readonly AiConfigService _aiConfig;
+    private readonly IAiConfigService _aiConfig;
     private readonly ILogger<OpenClawModelProfileService> _logger;
     private readonly IStringLocalizer<SharedResources> _loc;
 
     private List<ModelProfileDto> BuiltInProfiles = new();
 
-    public OpenClawModelProfileService(ILocalAiConfigService localAiConfig, AiConfigService aiConfig,
+    public OpenClawModelProfileService(ILocalAiConfigService localAiConfig, IAiConfigService aiConfig,
         IStringLocalizer<SharedResources> loc, ILogger<OpenClawModelProfileService> logger)
     {
         _localAiConfig = localAiConfig;

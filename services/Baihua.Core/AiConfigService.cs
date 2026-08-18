@@ -5,30 +5,37 @@ using Baihua.Data;
 using Baihua.Data.Entities;
 using Baihua.Core.Models;
 using Baihua.Core.Security;
+using Baihua.Contracts.Ai;
 
 namespace Baihua.Core.Services;
 
 /// <summary>
-/// AI 配置管理服务 - 使用 SQLite + EF Core 加密存储 API Key
+/// AI 配置管理服务 - 使用 SQLite + EF Core 加密存储 API Key（AI 服务进程内实现，直读/写 ai.db）。
+/// 
+/// 一服务一数据库：本实现仅供 AI 服务使用（唯一持有 API Key 的进程）；
+/// Family 进程通过 <see cref="IAiConfigService"/> 的 HTTP 实现访问，不接触 ai.db。
 /// 
 /// 加密方案：
 /// - AES-256-GCM + 机器指纹派生密钥（默认）
 /// - 兼容 Data Protection 旧数据
 /// </summary>
-public class AiConfigService
+public class AiConfigService : IAiConfigService
 {
     private readonly IDbContextFactory<AIDbContext> _dbContextFactory;
     private readonly ApiKeyProtectionService _protectionService;
+    private readonly DataEncryptionService? _dataEncryption;
     private readonly ILogger<AiConfigService> _logger;
 
     public AiConfigService(
         IDbContextFactory<AIDbContext> dbContextFactory,
         ApiKeyProtectionService protectionService,
-        ILogger<AiConfigService> logger)
+        DataEncryptionService? dataEncryption = null,
+        ILogger<AiConfigService>? logger = null)
     {
         _dbContextFactory = dbContextFactory;
         _protectionService = protectionService;
-        _logger = logger;
+        _dataEncryption = dataEncryption;
+        _logger = logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<AiConfigService>.Instance;
     }
 
     /// <summary>
@@ -311,6 +318,125 @@ public class AiConfigService
             return new List<AiModelConfig>();
         }
     }
+
+    #region 备份导出/导入（全量备份 ZIP 的 db/ai_providers.json）
+
+    /// <summary>
+    /// 导出全部 Provider（含禁用项）用于备份：API Key 解密后按备份密码/机器密钥重新加密。
+    /// 一服务一数据库：加解密只发生在 AI 服务进程（唯一持有 key 的进程），Family 不参与。
+    /// </summary>
+    public List<AiProviderBackupItem> ExportForBackup(string? password)
+    {
+        using var dbContext = _dbContextFactory.CreateDbContext();
+        var providers = dbContext.AiProviderSettings.OrderBy(p => p.Id).ToList();
+
+        return providers.Select(p =>
+        {
+            var plainApiKey = "";
+            if (!string.IsNullOrEmpty(p.EncryptedApiKey))
+            {
+                try { plainApiKey = _protectionService.Decrypt(p.EncryptedApiKey); }
+                catch (Exception ex) { _logger.LogWarning(ex, "备份时解密 Provider {ProviderId} 的 API Key 失败", p.ProviderId); }
+            }
+
+            string protectedApiKey;
+            string keyProtection;
+            if (!string.IsNullOrEmpty(password) && !string.IsNullOrEmpty(plainApiKey) && _dataEncryption != null)
+            {
+                protectedApiKey = _dataEncryption.Encrypt(plainApiKey, password);
+                keyProtection = "BackupPassword";
+            }
+            else if (!string.IsNullOrEmpty(plainApiKey))
+            {
+                protectedApiKey = _protectionService.Encrypt(plainApiKey);
+                keyProtection = "MachineKey";
+            }
+            else
+            {
+                protectedApiKey = "";
+                keyProtection = "MachineKey";
+            }
+
+            return new AiProviderBackupItem
+            {
+                Id = p.Id,
+                ProviderId = p.ProviderId,
+                ProviderName = p.ProviderName,
+                BaseUrl = p.BaseUrl,
+                AnthropicBaseUrl = p.AnthropicBaseUrl,
+                ProtectedApiKey = protectedApiKey,
+                KeyProtection = keyProtection,
+                ModelsJson = p.ModelsJson,
+                IsMain = p.IsMain,
+                IsEnabled = p.IsEnabled,
+                SortOrder = p.SortOrder,
+                CreatedAt = p.CreatedAt,
+                UpdatedAt = p.UpdatedAt
+            };
+        }).ToList();
+    }
+
+    /// <summary>
+    /// 从备份条目恢复 Provider（兼容旧备份格式：PLAINTEXT: 前缀 / MachineKey / BackupPassword）。
+    /// 解密后以 AI 服务自己的密钥重新加密入库。
+    /// </summary>
+    public void ImportFromBackup(List<AiProviderBackupItem> items, string? password, bool replaceAll = false)
+    {
+        if (items == null || items.Count == 0)
+            return;
+
+        using var dbContext = _dbContextFactory.CreateDbContext();
+        if (replaceAll)
+        {
+            dbContext.AiProviderSettings.RemoveRange(dbContext.AiProviderSettings);
+            dbContext.SaveChanges();
+        }
+
+        foreach (var item in items)
+        {
+            try
+            {
+                var plainApiKey = DecryptBackupKey(item, password);
+                var setting = new AiProviderSetting
+                {
+                    ProviderId = item.ProviderId,
+                    ProviderName = item.ProviderName,
+                    BaseUrl = item.BaseUrl,
+                    AnthropicBaseUrl = item.AnthropicBaseUrl,
+                    ModelsJson = string.IsNullOrWhiteSpace(item.ModelsJson) ? "[]" : item.ModelsJson,
+                    IsMain = item.IsMain,
+                    IsEnabled = item.IsEnabled,
+                    SortOrder = item.SortOrder,
+                    CreatedAt = item.CreatedAt,
+                    UpdatedAt = item.UpdatedAt
+                };
+                SaveProvider(setting, plainApiKey);
+                _logger.LogInformation("已从备份恢复 AI 提供方: {ProviderId}", item.ProviderId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "从备份恢复 AI 提供方 {ProviderId} 失败", item.ProviderId);
+            }
+        }
+    }
+
+    private string DecryptBackupKey(AiProviderBackupItem item, string? password)
+    {
+        var protectedKey = item.ProtectedApiKey ?? "";
+        if (string.IsNullOrEmpty(protectedKey))
+            return "";
+
+        if (protectedKey.StartsWith("PLAINTEXT:", StringComparison.Ordinal))
+            return protectedKey["PLAINTEXT:".Length..];
+
+        if (item.KeyProtection == "BackupPassword" && !string.IsNullOrEmpty(password) && _dataEncryption != null)
+            return _dataEncryption.Decrypt(protectedKey, password);
+
+        // MachineKey 或未知保护方式 → 尝试机器密钥解密（.baihua-key 固定密钥，跨进程一致）
+        return _protectionService.Decrypt(protectedKey);
+    }
+
+    #endregion
 }
 
 

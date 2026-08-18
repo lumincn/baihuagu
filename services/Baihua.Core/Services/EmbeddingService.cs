@@ -3,16 +3,21 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text.Json;
+using System.Net.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 
 using Baihua.Data;
 using Baihua.Data.Entities;
+using Baihua.Contracts.Ai;
 
 namespace Baihua.Core.Services
 {
     /// <summary>
     /// 语义向量服务：基于 SQLite BLOB 缓存 + IEmbeddingGenerator 抽象，对关键词搜索结果按相似度重排
+    /// 
+    /// 一服务一数据库：Embedding 配置（EmbeddingConfigs 表）只存在于 AI 服务 ai.db，
+    /// 本服务（Family/Vault 进程）经 AI 服务 HTTP API（GET /api/embedding/config）读取，不直连 ai.db。
     /// </summary>
     public class EmbeddingService
     {
@@ -20,9 +25,14 @@ namespace Baihua.Core.Services
         private readonly AiSettingsService _aiSettings;
         private readonly VaultSettingsService _vaultSettings;
         private readonly IDbContextFactory<VaultDbContext> _vaultDbFactory;
-        private readonly IDbContextFactory<AIDbContext> _aiDbFactory;
-        private readonly Baihua.Core.Security.ApiKeyProtectionService _protectionService;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<EmbeddingService> _logger;
+
+        // Embedding 配置短缓存（避免每个向量调用都经 HTTP 打 AI 服务）
+        private EmbeddingConfig? _cachedEmbeddingConfig;
+        private DateTime _embeddingConfigFetchedAtUtc;
+        private readonly object _embeddingConfigLock = new();
+        private static readonly TimeSpan EmbeddingConfigCacheTtl = TimeSpan.FromSeconds(30);
 
         private const int MaxNotesToRerank = 50;
 
@@ -40,16 +50,14 @@ namespace Baihua.Core.Services
             AiSettingsService aiSettings,
             VaultSettingsService vaultSettings,
             IDbContextFactory<VaultDbContext> vaultDbFactory,
-            IDbContextFactory<AIDbContext> aiDbFactory,
-            Baihua.Core.Security.ApiKeyProtectionService protectionService,
+            IHttpClientFactory httpClientFactory,
             ILogger<EmbeddingService> logger)
         {
             _aiClientService = aiClientService;
             _aiSettings = aiSettings;
             _vaultSettings = vaultSettings;
             _vaultDbFactory = vaultDbFactory;
-            _aiDbFactory = aiDbFactory;
-            _protectionService = protectionService;
+            _httpClientFactory = httpClientFactory;
             _logger = logger;
         }
 
@@ -69,7 +77,7 @@ namespace Baihua.Core.Services
         }
 
         /// <summary>
-        /// 获取语义搜索配置（优先 EmbeddingConfig 表）
+        /// 获取语义搜索配置（优先 AI 服务 EmbeddingConfig 表，经 HTTP 读取）
         /// </summary>
         public bool IsSemanticSearchEnabled()
         {
@@ -80,17 +88,52 @@ namespace Baihua.Core.Services
                    !string.IsNullOrEmpty(_aiSettings.SemanticEmbeddingModel);
         }
 
+        /// <summary>
+        /// 读取 Embedding 配置（一服务一数据库：经 AI 服务 HTTP API，不直读 ai.db）。
+        /// 注意：HTTP 响应不含 API Key（掩码），本地嵌入模型（bge/Ollama/OpenVINO 等）无需 Key；
+        /// 需要鉴权的云端嵌入模型暂不支持（后续可加 AI 服务 embedding shim）。
+        /// 带 30s 短缓存：向量索引/重排高频调用，避免反复打 AI 服务。
+        /// </summary>
         private EmbeddingConfig? GetEmbeddingConfig()
         {
-            try
+            lock (_embeddingConfigLock)
             {
-                using var db = _aiDbFactory.CreateDbContext();
-                return db.EmbeddingConfigs.OrderBy(e => e.Id).FirstOrDefault();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogDebug(ex, "读取 EmbeddingConfig 失败");
-                return null;
+                if (_cachedEmbeddingConfig != null &&
+                    DateTime.UtcNow - _embeddingConfigFetchedAtUtc < EmbeddingConfigCacheTtl)
+                {
+                    return _cachedEmbeddingConfig;
+                }
+
+                EmbeddingConfig? config = null;
+                try
+                {
+                    var aiBase = AiServiceEndpoints.ResolveAiBaseUrl();
+                    using var client = _httpClientFactory.CreateClient();
+                    client.Timeout = TimeSpan.FromSeconds(5);
+                    var dto = client.GetFromJsonAsync<EmbeddingConfigDto>(
+                        $"{aiBase.TrimEnd('/')}/api/embedding/config").GetAwaiter().GetResult();
+                    if (dto != null)
+                    {
+                        config = new EmbeddingConfig
+                        {
+                            ProviderId = dto.ProviderId,
+                            Model = dto.Model,
+                            BaseUrl = dto.BaseUrl,
+                            IsEnabled = dto.IsEnabled,
+                            Dimensions = dto.Dimensions,
+                            EncryptedApiKey = null // Family/Vault 不持有 key
+                        };
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogDebug(ex, "经 AI 服务读取 EmbeddingConfig 失败");
+                }
+
+                // 失败也短暂缓存 null（AI 服务不可达时避免每次调用都打 HTTP）
+                _cachedEmbeddingConfig = config;
+                _embeddingConfigFetchedAtUtc = DateTime.UtcNow;
+                return config;
             }
         }
 
@@ -115,13 +158,9 @@ namespace Baihua.Core.Services
 
                 if (config != null && config.IsEnabled && !string.IsNullOrEmpty(config.BaseUrl) && !string.IsNullOrEmpty(config.Model))
                 {
-                    string? apiKey = null;
-                    if (!string.IsNullOrEmpty(config.EncryptedApiKey))
-                    {
-                        try { apiKey = _protectionService.Decrypt(config.EncryptedApiKey); }
-                        catch (Exception ex) { _logger.LogDebug(ex, "操作失败"); }
-                    }
-                    generator = _aiClientService.CreateEmbeddingGenerator(config.BaseUrl, config.Model, apiKey);
+                    // 一服务一数据库：HTTP 配置不含 key（掩码）；本地嵌入模型（bge/Ollama/OpenVINO）无需 Key，
+                    // CreateEmbeddingGenerator 无 key 时使用占位凭证。
+                    generator = _aiClientService.CreateEmbeddingGenerator(config.BaseUrl, config.Model, apiKey: null);
                     providerId = config.ProviderId;
                     modelName = config.Model;
                 }
@@ -136,19 +175,18 @@ namespace Baihua.Core.Services
 
                 if (result.Count > 0)
                 {
-                    await RecordEmbeddingMetricAsync(providerId, modelName, sw.ElapsedMilliseconds, true, null);
+                    _logger.LogDebug("Embedding 成功：{Provider}/{Model}，{Latency}ms", providerId, modelName, sw.ElapsedMilliseconds);
                     return result[0].Vector.ToArray().Select(v => (double)v).ToList();
                 }
 
                 sw.Stop();
-                await RecordEmbeddingMetricAsync(providerId, modelName, sw.ElapsedMilliseconds, false, "Empty result");
+                _logger.LogDebug("Embedding 返回空结果：{Provider}/{Model}", providerId, modelName);
                 return null;
             }
             catch (Exception ex)
             {
                 sw.Stop();
-                await RecordEmbeddingMetricAsync("embedding", _aiSettings.SemanticEmbeddingModel, sw.ElapsedMilliseconds, false, ex.Message);
-                _logger.LogDebug(ex, "获取 Embedding 失败");
+                _logger.LogDebug(ex, "获取 Embedding 失败（{Provider}/{Model}）", "embedding", _aiSettings.SemanticEmbeddingModel);
                 return null;
             }
         }
@@ -159,34 +197,6 @@ namespace Baihua.Core.Services
         /// </summary>
         protected virtual Task<List<double>?> ComputeEmbeddingAsync(string text, CancellationToken ct = default)
             => GetEmbeddingAsync(text);
-
-        private async Task RecordEmbeddingMetricAsync(string providerId, string modelName, long latencyMs, bool isSuccess, string? errorMessage)
-        {
-            try
-            {
-                var providers = _aiSettings.GetAiProviders();
-                var matchedProvider = providers.FirstOrDefault(p =>
-                    p.Id.Equals(providerId, StringComparison.OrdinalIgnoreCase));
-
-                using var aiDb = await _aiDbFactory.CreateDbContextAsync();
-                aiDb.AiUsageMetrics.Add(new AiUsageMetric
-                {
-                    CalledAt = DateTime.UtcNow,
-                    ProviderId = matchedProvider?.Id ?? providerId,
-                    ProviderName = matchedProvider?.Name ?? providerId,
-                    ModelId = modelName,
-                    Operation = "embedding",
-                    LatencyMs = latencyMs,
-                    IsSuccess = isSuccess,
-                    ErrorMessage = errorMessage,
-                });
-                await aiDb.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogDebug(ex, "记录 Embedding 指标失败（不影响主流程）");
-            }
-        }
 
         /// <summary>
         /// 纯向量检索：对知识库全部已索引笔记做余弦相似度排序（无需关键词命中）

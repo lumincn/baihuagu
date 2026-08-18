@@ -45,7 +45,9 @@ public partial class AiClientService
                 {
                     response = await client.GetResponseAsync(messages, options, ct);
                 }
-                catch (Exception ex) when (IsConnectionFailure(ex) && IsLocalProvider(provider))
+                // 一服务一数据库：Family（shim 模式）不直连本地模型，连接失败也不自动启动本地服务
+                //（本地模型由 AI 服务进程内启动/路由）；此重试仅适用于 AI 服务进程内直连场景。
+                catch (Exception ex) when (IsConnectionFailure(ex) && IsLocalProvider(provider) && !_aiSettings.RouteInferenceViaShim)
                 {
                     _logger.LogWarning("本地 AI 服务连接失败，尝试自动启动: {Provider}", provider.Id);
                     var started = await _autoStarter.TryEnsureRunningAsync(provider.Id, provider.AiBaseUrl);
@@ -58,8 +60,10 @@ public partial class AiClientService
                     response = await client.GetResponseAsync(retryMessages, options, ct);
                 }
 
-                // Anthropic fallback：若返回为空，尝试 Anthropic 协议
-                if (IsEmptyResponse(response) && !string.IsNullOrWhiteSpace(provider.AnthropicBaseUrl))
+                // Anthropic fallback：若返回为空，尝试 Anthropic 协议。
+                // 仅 AI 服务进程内可用（Family shim 模式不持有 key，
+                // shim 转发时由 AI 服务侧自行处理 Anthropic 协议回退）。
+                if (IsEmptyResponse(response) && !string.IsNullOrWhiteSpace(provider.AnthropicBaseUrl) && !_aiSettings.RouteInferenceViaShim)
                 {
                     _logger.LogWarning("AI ({Provider}/{Model}) OpenAI 响应为空，尝试 Anthropic fallback", provider.Name, model);
                     var apiKey = _aiSettings.GetAiApiKey(provider.Id);

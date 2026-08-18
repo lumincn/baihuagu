@@ -21,7 +21,9 @@ namespace Baihua.Core.Services;
     {
         private readonly AiSettingsService _aiSettings;
         private readonly LocalAiAutoStarter _autoStarter;
-        private readonly IDbContextFactory<AIDbContext> _dbFactory;
+        // 一服务一数据库：Family（shim 模式）不注册 AIDbContext → 为 null，AI 调用指标不落 ai.db
+        //（AI 服务在 shim 转发时自行记录到自己的 ai.db）；AI 服务进程内为真实 factory。
+        private readonly IDbContextFactory<AIDbContext>? _dbFactory;
         private readonly AiMetricsService _metrics;
         private readonly IDistributedCache _cache;
         private readonly AnthropicAiClient _anthropicClient;
@@ -32,12 +34,12 @@ namespace Baihua.Core.Services;
         public AiClientService(
             AiSettingsService aiSettings,
             LocalAiAutoStarter autoStarter,
-            IDbContextFactory<AIDbContext> dbFactory,
             AiMetricsService metrics,
             IDistributedCache cache,
             AnthropicAiClient anthropicClient,
             ILogger<AiClientService> logger,
-            IStringLocalizer<SharedResources> loc)
+            IStringLocalizer<SharedResources> loc,
+            IDbContextFactory<AIDbContext>? dbFactory = null)
         {
             _aiSettings = aiSettings;
             _autoStarter = autoStarter;

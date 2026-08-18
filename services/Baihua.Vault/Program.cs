@@ -70,7 +70,9 @@ builder.Services.AddDbContextFactory<Baihua.Data.VaultDbContext>(options =>
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Singleton);
 
-// Family 和 AI 域数据库上下文（Core.Shared 中的 TaskManager/AiClientService 依赖）
+// Family 数据库上下文（Core.Shared 中的 TaskManager 等依赖）
+// 注意：不再注册 AI 域 AIDbContext——一服务一数据库，ai.db 完全归 AI 服务独占；
+// EmbeddingService 已改经 AI 服务 HTTP API 读取嵌入配置。
 builder.Services.AddDbContext<Baihua.Data.FamilyDbContext>(options =>
 {
     var dbPath = Baihua.Data.FamilyDbContext.GetDbPath();
@@ -82,20 +84,6 @@ builder.Services.AddDbContextFactory<Baihua.Data.FamilyDbContext>(options =>
 {
     var dbPath = Baihua.Data.FamilyDbContext.GetDbPath();
     options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;", sqlite => sqlite.MigrationsAssembly("Baihua.Data"))
-           .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
-}, ServiceLifetime.Singleton);
-
-builder.Services.AddDbContext<Baihua.Data.AIDbContext>(options =>
-{
-    var dbPath = Baihua.Data.AIDbContext.GetDbPath();
-    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;")
-           .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
-}, ServiceLifetime.Scoped, ServiceLifetime.Singleton);
-
-builder.Services.AddDbContextFactory<Baihua.Data.AIDbContext>(options =>
-{
-    var dbPath = Baihua.Data.AIDbContext.GetDbPath();
-    options.UseSqlite($"Data Source={dbPath};Foreign Keys=True;")
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Singleton);
 
@@ -230,10 +218,6 @@ var openobservePass = builder.Configuration["OpenObserve:Password"] ?? "";
         });
     }
 }
-
-// API Key 加密保护（EmbeddingService 依赖）
-builder.Services.AddDataProtection();
-builder.Services.AddSingleton<Baihua.Core.Security.ApiKeyProtectionService>();
 
 // 反向代理头部转发：默认只信任 loopback 代理，其他网段经 BAIHUA_TRUSTED_PROXY_NETS 显式声明
 builder.Services.Configure<ForwardedHeadersOptions>(options =>

@@ -23,7 +23,8 @@ public partial class ChatMemoryService
     private readonly AiClientService _aiClientService;
     private readonly EmbeddingService _embeddingService;
     private readonly DefaultPromptProvider _scenePromptService;
-    private readonly IDbContextFactory<AIDbContext> _dbFactory;
+    // 一服务一数据库：聊天记忆（ChatMemoryEntries 表）归 Family 自有库（family.db）
+    private readonly IDbContextFactory<FamilyDbContext> _dbFactory;
     private readonly ILogger<ChatMemoryService> _logger;
     private readonly IStringLocalizer<SharedResources> _loc;
 
@@ -43,7 +44,7 @@ public partial class ChatMemoryService
         AiClientService aiClientService,
         EmbeddingService embeddingService,
         DefaultPromptProvider scenePromptService,
-        IDbContextFactory<AIDbContext> dbFactory,
+        IDbContextFactory<FamilyDbContext> dbFactory,
         ILogger<ChatMemoryService> logger,
         IStringLocalizer<SharedResources> loc)
     {

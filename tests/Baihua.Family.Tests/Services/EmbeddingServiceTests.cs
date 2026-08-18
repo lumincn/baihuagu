@@ -71,11 +71,7 @@ public class EmbeddingServiceTests : IDisposable
             { "EmbeddingModel", "test-embed-model" },
         };
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(configData).Build();
-        var mockServiceProvider = new Mock<IServiceProvider>();
-        mockServiceProvider
-            .Setup(x => x.GetService(It.IsAny<Type>()))
-            .Returns((object?)null);
-        return new AiSettingsService(configuration, mockServiceProvider.Object, NullLogger<AiSettingsService>.Instance);
+        return new AiSettingsService(configuration, TestDoubles.StubAiConfigService.Empty, NullLogger<AiSettingsService>.Instance);
     }
 
     /// <summary>
@@ -101,17 +97,17 @@ public class EmbeddingServiceTests : IDisposable
     private CountingEmbeddingService CreateService(TimeSpan? delay = null, IDbContextFactory<VaultDbContext>? vaultFactory = null)
     {
         var aiClient = new Mock<AiClientService>(null!, null!, null!, null!, null!, null!, null!, null!);
-        var aiDbFactory = new Mock<IDbContextFactory<AIDbContext>>();
         var vaultSettings = new VaultSettingsService(vaultFactory ?? _vaultFactory, NullLogger<VaultSettingsService>.Instance);
-        var protection = new ApiKeyProtectionService(NullLogger<ApiKeyProtectionService>.Instance);
+        // 一服务一数据库：EmbeddingService 不再依赖 ai.db；HTTP 工厂返回 null 使
+        // GetEmbeddingConfig 快速失败并回退到 AiSettingsService 配置（EmbeddingUrl/Model）
+        var httpClientFactory = new Mock<IHttpClientFactory>();
 
         return new CountingEmbeddingService(
             aiClient.Object,
             CreateAiSettings(),
             vaultSettings,
             vaultFactory ?? _vaultFactory,
-            aiDbFactory.Object,
-            protection,
+            httpClientFactory.Object,
             NullLogger<EmbeddingService>.Instance,
             delay ?? TimeSpan.Zero);
     }
@@ -288,11 +284,10 @@ public class EmbeddingServiceTests : IDisposable
             AiSettingsService aiSettings,
             VaultSettingsService vaultSettings,
             IDbContextFactory<VaultDbContext> vaultDbFactory,
-            IDbContextFactory<AIDbContext> aiDbFactory,
-            ApiKeyProtectionService protectionService,
+            IHttpClientFactory httpClientFactory,
             ILogger<EmbeddingService> logger,
             TimeSpan delay)
-            : base(aiClientService, aiSettings, vaultSettings, vaultDbFactory, aiDbFactory, protectionService, logger)
+            : base(aiClientService, aiSettings, vaultSettings, vaultDbFactory, httpClientFactory, logger)
         {
             _delay = delay;
         }

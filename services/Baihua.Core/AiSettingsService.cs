@@ -11,17 +11,17 @@ namespace Baihua.Core.Services;
 public class AiSettingsService
 {
     private readonly IConfiguration _configuration;
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IAiConfigService _aiConfigService;
     private readonly ILogger<AiSettingsService> _logger;
     private IReadOnlyList<AiProviderConfig>? _aiProvidersCache;
 
     public AiSettingsService(
         IConfiguration configuration,
-        IServiceProvider serviceProvider,
+        IAiConfigService aiConfigService,
         ILogger<AiSettingsService> logger)
     {
         _configuration = configuration;
-        _serviceProvider = serviceProvider;
+        _aiConfigService = aiConfigService;
         _logger = logger;
     }
 
@@ -33,27 +33,31 @@ public class AiSettingsService
 
     public IReadOnlyList<AiProviderConfig> GetAiProviders()
     {
-        if (_aiProvidersCache != null)
+        // 一服务一数据库：Family（shim 模式）不缓存——每次经 AI 服务 HTTP 拉取，
+        // 保证算力池对端注册/选用后的新 Provider 立即可见；AI 服务（直读 ai.db）可缓存。
+        var cacheable = !RouteInferenceViaShim;
+        if (cacheable && _aiProvidersCache != null)
             return _aiProvidersCache;
 
         try
         {
-            var aiConfigService = _serviceProvider.GetService(typeof(AiConfigService)) as AiConfigService;
-            var dbProviders = aiConfigService?.GetProviders();
+            var dbProviders = _aiConfigService.GetProviders();
             if (dbProviders != null && dbProviders.Count > 0)
             {
-                _aiProvidersCache = dbProviders;
-                return _aiProvidersCache;
+                if (cacheable)
+                    _aiProvidersCache = dbProviders;
+                return dbProviders;
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "从数据库加载 AI 提供商配置失败，回退到 appsettings.json");
+            _logger.LogError(ex, "加载 AI 提供商配置失败，回退到 appsettings.json");
         }
 
         var list = _configuration.GetSection("Ai").Get<List<AiProviderConfig>>() ?? new List<AiProviderConfig>();
-        _aiProvidersCache = list;
-        return _aiProvidersCache;
+        if (cacheable)
+            _aiProvidersCache = list;
+        return list;
     }
 
     public AiProviderConfig? GetAiProvider(string id)
@@ -68,14 +72,13 @@ public class AiSettingsService
     {
         try
         {
-            var aiConfigService = _serviceProvider.GetService(typeof(AiConfigService)) as AiConfigService;
-            var mainFromDb = aiConfigService?.GetMainProvider();
+            var mainFromDb = _aiConfigService.GetMainProvider();
             if (mainFromDb != null)
                 return mainFromDb;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "从数据库加载主 AI 提供商失败，回退到配置文件中查找");
+            _logger.LogError(ex, "加载主 AI 提供商失败，回退到配置文件中查找");
         }
 
         var list = GetAiProviders();
@@ -94,14 +97,13 @@ public class AiSettingsService
 
         try
         {
-            var aiConfigService = _serviceProvider.GetService(typeof(AiConfigService)) as AiConfigService;
-            var keyFromDb = aiConfigService?.GetApiKey(idTrim);
+            var keyFromDb = _aiConfigService.GetApiKey(idTrim);
             if (!string.IsNullOrEmpty(keyFromDb))
                 return keyFromDb;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "从数据库加载 AI 提供商 API Key 失败: {ProviderId}", idTrim);
+            _logger.LogError(ex, "加载 AI 提供商 API Key 失败: {ProviderId}", idTrim);
         }
 
         return "";

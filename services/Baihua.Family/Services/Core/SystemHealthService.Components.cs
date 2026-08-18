@@ -173,7 +173,8 @@ namespace Baihua.Family.Services
         }
 
         /// <summary>
-        /// 检查 AI API Key 配置状态
+        /// 检查 AI API Key 配置状态（一服务一数据库：Family 不持有明文 key，
+        /// 仅依据 AI 服务提供的摘要（HasApiKey/KeyMask）判断）。
         /// </summary>
         private Task<ComponentStatus> CheckApiKeyAsync(CancellationToken cancellationToken)
         {
@@ -193,10 +194,14 @@ namespace Baihua.Family.Services
                 }
 
                 var mainProvider = providers.FirstOrDefault(p => p.IsMain) ?? providers.First();
-                var apiKey = _aiConfigService.GetApiKey(mainProvider.Id);
                 var isLocalProvider = HealthCheckHelper.IsLocalAiProvider(mainProvider);
 
-                if (string.IsNullOrEmpty(apiKey))
+                var summaries = _aiConfigService.GetApiKeySummaries();
+                var summary = summaries.FirstOrDefault(s => 
+                    s.ProviderId.Equals(mainProvider.Id, StringComparison.OrdinalIgnoreCase));
+                var hasApiKey = summary?.HasApiKey == true;
+
+                if (!hasApiKey)
                 {
                     // 本地 AI 服务不需要 API Key
                     if (isLocalProvider)
@@ -217,30 +222,16 @@ namespace Baihua.Family.Services
                     });
                 }
 
-                var summaries = _aiConfigService.GetApiKeySummaries();
-                var summary = summaries.FirstOrDefault(s => 
-                    s.ProviderId.Equals(mainProvider.Id, StringComparison.OrdinalIgnoreCase));
-
-                if (summary?.HasApiKey == true)
+                var scheme = summary!.Scheme switch
                 {
-                    var scheme = summary.Scheme switch
-                    {
-                        EncryptionScheme.AesGcm => _loc["Health_AesEncrypted"],
-                        _ => _loc["Health_Encrypted"]
-                    };
-                    return Task.FromResult(new ComponentStatus
-                    {
-                        Name = "API Key",
-                        Status = "healthy",
-                        Message = string.Format(_loc["Health_ApiKeyConfigured"], mainProvider.Name, scheme)
-                    });
-                }
-
+                    EncryptionScheme.AesGcm => _loc["Health_AesEncrypted"],
+                    _ => _loc["Health_Encrypted"]
+                };
                 return Task.FromResult(new ComponentStatus
                 {
                     Name = "API Key",
-                    Status = "critical",
-                    Message = string.Format(_loc["Health_ProviderNoKey"], mainProvider.Name)
+                    Status = "healthy",
+                    Message = string.Format(_loc["Health_ApiKeyConfigured"], mainProvider.Name, scheme)
                 });
             }
             catch (OperationCanceledException)

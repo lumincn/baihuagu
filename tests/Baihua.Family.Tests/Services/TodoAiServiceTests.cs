@@ -25,12 +25,8 @@ public class TodoAiServiceTests
     private static AiSettingsService CreateEmptyAiSettingsService()
     {
         var configuration = new ConfigurationBuilder().Build();
-        var mockServiceProvider = new Mock<IServiceProvider>();
-        mockServiceProvider
-            .Setup(x => x.GetService(It.IsAny<Type>()))
-            .Returns((object?)null);
         var logger = LoggerFactory.Create(b => { }).CreateLogger<AiSettingsService>();
-        return new AiSettingsService(configuration, mockServiceProvider.Object, logger);
+        return new AiSettingsService(configuration, TestDoubles.StubAiConfigService.Empty, logger);
     }
 
     // ============ 参数校验 ============

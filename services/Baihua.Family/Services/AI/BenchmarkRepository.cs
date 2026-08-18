@@ -7,10 +7,12 @@ using Baihua.Data.Entities;
 namespace Baihua.Family.Services;
 
 /// <summary>
-/// Benchmark 历史记录仓库：持久化与查询
+/// Benchmark 历史记录仓库：持久化与查询。
+/// 一服务一数据库：测速历史归 Family 自有库（family.db 的 BenchmarkSessions 表），
+/// 不再读写 AI 服务 ai.db（旧数据仍在 ai.db 中，不影响）。
 /// </summary>
 public class BenchmarkRepository(
-    IDbContextFactory<AIDbContext> dbFactory,
+    IDbContextFactory<FamilyDbContext> dbFactory,
     ILogger<BenchmarkRepository> logger)
 {
     /// <summary>

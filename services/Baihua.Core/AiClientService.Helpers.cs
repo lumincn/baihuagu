@@ -81,24 +81,28 @@ public partial class AiClientService
                     latencyMs, isSuccess,
                     inputTokens, outputTokens, tps);
 
-                // 2. 记录到 SQLite（保留本地历史查询能力）
-                using var db = await _dbFactory.CreateDbContextAsync();
-                db.AiUsageMetrics.Add(new AiUsageMetric
+                // 2. 记录到 SQLite（保留本地历史查询能力；仅 AI 服务进程内直写 ai.db，
+                //    Family shim 模式由 AI 服务转发时自行记录，避免 Family 写 ai.db）
+                if (_dbFactory != null && !_aiSettings.RouteInferenceViaShim)
                 {
-                    CalledAt = DateTime.UtcNow,
-                    ProviderId = provider.Id,
-                    ProviderName = provider.Name ?? provider.Id,
-                    ModelId = model,
-                    Operation = operation,
-                    LatencyMs = latencyMs,
-                    InputTokens = inputTokens,
-                    OutputTokens = outputTokens,
-                    TotalTokens = totalTokens,
-                    TokensPerSecond = tps,
-                    IsSuccess = isSuccess,
-                    ErrorMessage = errorMessage,
-                });
-                await db.SaveChangesAsync();
+                    using var db = await _dbFactory.CreateDbContextAsync();
+                    db.AiUsageMetrics.Add(new AiUsageMetric
+                    {
+                        CalledAt = DateTime.UtcNow,
+                        ProviderId = provider.Id,
+                        ProviderName = provider.Name ?? provider.Id,
+                        ModelId = model,
+                        Operation = operation,
+                        LatencyMs = latencyMs,
+                        InputTokens = inputTokens,
+                        OutputTokens = outputTokens,
+                        TotalTokens = totalTokens,
+                        TokensPerSecond = tps,
+                        IsSuccess = isSuccess,
+                        ErrorMessage = errorMessage,
+                    });
+                    await db.SaveChangesAsync();
+                }
             }
             catch (Exception ex)
             {

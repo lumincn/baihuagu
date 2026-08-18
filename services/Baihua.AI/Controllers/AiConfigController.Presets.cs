@@ -130,26 +130,3 @@ public partial class AiConfigController
         return Ok(presets);
     }
 }
-
-// View Models
-public class AiProviderViewModel
-{
-    public string Id { get; set; } = "";
-    public string Name { get; set; } = "";
-    public string BaseUrl { get; set; } = "";
-    public string? AnthropicBaseUrl { get; set; }
-    public bool IsMain { get; set; }
-    public List<AiModelViewModel> Models { get; set; } = new();
-    public bool HasApiKey { get; set; }
-    public string? KeyMask { get; set; }
-    public Baihua.Contracts.Ai.AiModelTier Tier { get; set; }
-}
-
-public class AiModelViewModel
-{
-    public string Name { get; set; } = "";
-    public bool IsPaid { get; set; }
-    public bool IsMain { get; set; }
-}
-
-

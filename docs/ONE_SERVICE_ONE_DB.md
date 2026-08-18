@@ -62,26 +62,39 @@ Family(8788) ──HTTP /mg/ai/v1──► AI(8791) ──直连──► 云端
 | Family 推理切 shim | ✅ 代码完成 | `AiClientService.CreateChatClient` 按 `AiClient__UseShim=true`（仅 Family 设）走 shim；AI 服务内部保持直连（避免自指转发） |
 | AI 服务 OOM 修复 | ✅ 代码完成 | 转发代理不缓存响应：`NoOpDistributedCache` 替代无限内存缓存；shim 调用 `GetChatResponseWithAutoStartAsync(..., useCache:false)` |
 | k8s AI 内存限制 | ✅ 已改 | 21-ai.yaml：limits 1Gi→2Gi（转发链路内存峰值） |
-| 部署验证 | ⏳ 待完成 | bh-ai 新镜像（arguments 字符串修复）构建/rollout；测速/聊天/tools 端到端回归 |
+| 部署验证 | ⏳ 待完成 | 由 Linux 侧执行：bh-ai 新镜像（arguments 字符串修复）构建/rollout；测速/聊天/tools 端到端回归 |
 | 全链路回归 | ⏳ 待做 | 流式、工具调用（拜师/任务）、本地模型（OpenVINO shim 转发） |
 
 已验证（阶段1 部分）：测速 `Family→shim→deepseek` = 22.9 tok/s ✓；pool 网关聊天 ✓；
 shim 直接带 tools 请求返回 `tool_calls` ✓（arguments 曾为对象格式，已修为 JSON 字符串，待部署验证）。
 
-### 阶段 2：Family 删 AIDbContext（⏳ 待做）
-- Program.cs 移除 `AddDbContext<AIDbContext>`
-- StartupOrchestratorHostedService：移除 ai.db schema 等待与 key 迁移（归 AI 服务）
-- `AiConfigService` 读（provider 列表/掩码）→ Family 改经 AI 服务 HTTP API
-- Family 侧 `GetAiApiKey` 不再被使用（推理已走 shim）
+### 阶段 2：Family 删 AIDbContext（✅ 代码完成，待部署验证）
+- Program.cs 移除 `AddDbContext<AIDbContext>` / `AddDbContextFactory<AIDbContext>`（ai.db 不再注册）
+- StartupOrchestratorHostedService：移除 ai.db schema 等待与 key 迁移（完全归 AI 服务）
+- 新增 `IAiConfigService` 抽象（Core）：AI 服务用 `AiConfigService`（直读 ai.db），
+  Family 用 `HttpAiConfigService`（经 `GET /api/ai/config/providers|apikeys|providers/{id}` + POST/DELETE 写入）
+- `AiSettingsService` 改依赖接口；Family（shim 模式）不缓存 Provider 列表（对端注册后立即可见）
+- Family 侧 `GetApiKey` 不再可用（HTTP 实现返回空串）；健康检查改依据 KeyMask/HasApiKey 摘要
+- Vault 同步移除 AIDbContext 注册（Vault 也共享过 ai.db）；`EmbeddingService` 改经
+  `GET /api/embedding/config` HTTP 读取嵌入配置（30s 缓存），不再直读 ai.db
 
-### 阶段 3：ai.db 使用点改道（⏳ 待做）
-- `ChatMemoryService`：聊天记忆（ai.db）→ AI 服务 API 或 Family 自有库
-- `ComfyController`：ComfyArtworks（ai.db）→ 归 AI 服务
-- `BenchmarkRepository`：测速结果（ai.db）→ AI 服务写（Family 测速经 HTTP 触发）或 Family 自有库
-- `BackupService/RestoreService`：ai.db 备份恢复 → 由 AI 服务负责
+### 阶段 3：ai.db 使用点改道（✅ 代码完成，待部署验证）
+- `ChatMemoryService`：聊天记忆改存 Family 自有库（family.db 的 ChatMemoryEntries 表）——
+  顺带修复了 2026-07-19 迁移后一直静默失效的记忆存取（原代码仍指向 AIDbContext，实体已不在 ai.db 模型）
+- `ComfyController`：ComfyArtworks 归 AI 服务——新增 `ComfyArtworksController`
+  （`/api/ai/comfy/artworks` GET/POST/DELETE），Family 经 `AiComfyArtworksClient` HTTP 读写，生成/取文件仍在 Family
+- `BenchmarkRepository`：测速结果迁至 Family 自有库（family.db 新增 BenchmarkSessions 表 + EF 迁移）
+  （旧数据仍留在 ai.db 的孤儿表，不影响；如需清理可后续 AI 迁移 DROP）
+- `BackupService/RestoreService`：AI 提供方备份/恢复由 AI 服务负责——新增
+  `GET /api/ai/config/export`（解密后用备份密码/机器密钥重加密）与 `POST /api/ai/config/import`
+  （含 ReplaceAll=overwrite 语义）；Family 只搬运 JSON，不接触明文 key
 
-### 收尾（⏳ 待做）
+### 收尾（⏳ 待做：部署在 Linux 侧执行）
 - 三镜像重建 + rollout + 全链路回归（聊天/拜师/任务/算力池/本地模型）
+- 部署注意事项：family.db 自动迁移新增 BenchmarkSessions 表；Embedding 配置经 AI 服务
+  HTTP 读取（AI 服务需在线，否则回退环境变量 TASK_RUNNER_EMBEDDING_URL/MODEL）；
+  ai.db 中 BenchmarkSessions/ComfyArtworks 旧表成为孤儿表（不影响运行）
+- 后续可选项：AI 服务 embedding shim（云端鉴权嵌入模型支持）、ai.db 孤儿表清理迁移
 - docs 更新（本文件 + LAN_COMPUTE_POOL.md 的 Provider 分层章节）
 - 提交推送
 

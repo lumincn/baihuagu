@@ -27,7 +27,7 @@ public class ComputePoolService : IHostedService, IDisposable
     private static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(60);
 
     private readonly ServerMessageService _messageService;
-    private readonly AiConfigService _aiConfig;
+    private readonly IAiConfigService _aiConfig;
     private readonly AiProviderRegistryClient _providerRegistry;
     private readonly AiSettingsService _aiSettings;
     private readonly ServerAddressService _serverAddress;
@@ -43,7 +43,7 @@ public class ComputePoolService : IHostedService, IDisposable
 
     public ComputePoolService(
         ServerMessageService messageService,
-        AiConfigService aiConfig,
+        IAiConfigService aiConfig,
         AiProviderRegistryClient providerRegistry,
         AiSettingsService aiSettings,
         ServerAddressService serverAddress,

@@ -102,14 +102,9 @@ public class AnkiCardGeneratorTests : IDisposable
             .AddInMemoryCollection(configData)
             .Build();
 
-        var mockServiceProvider = new Mock<IServiceProvider>();
-        mockServiceProvider
-            .Setup(x => x.GetService(It.Is<Type>(t => t == typeof(AiConfigService))))
-            .Returns((object?)null);
-
         var logger = LoggerFactory.Create(b => b.AddConsole()).CreateLogger<AiSettingsService>();
 
-        return new AiSettingsService(configuration, mockServiceProvider.Object, logger);
+        return new AiSettingsService(configuration, TestDoubles.StubAiConfigService.Empty, logger);
     }
 
     /// <summary>
@@ -118,13 +113,9 @@ public class AnkiCardGeneratorTests : IDisposable
     private AiSettingsService CreateEmptyAiSettingsService()
     {
         var configuration = new ConfigurationBuilder().Build();
-        var mockServiceProvider = new Mock<IServiceProvider>();
-        mockServiceProvider
-            .Setup(x => x.GetService(It.IsAny<Type>()))
-            .Returns((object?)null);
         var logger = LoggerFactory.Create(b => b.AddConsole()).CreateLogger<AiSettingsService>();
 
-        return new AiSettingsService(configuration, mockServiceProvider.Object, logger);
+        return new AiSettingsService(configuration, TestDoubles.StubAiConfigService.Empty, logger);
     }
 
     /// <summary>
@@ -148,12 +139,12 @@ public class AnkiCardGeneratorTests : IDisposable
         return new AiClientService(
             aiSettings,
             mockAutoStarter.Object,
-            mockAiDbFactory.Object,
             metricsService,
             mockCache.Object,
             anthropicClient,
             aiClientLogger,
-            _loc);
+            _loc,
+            mockAiDbFactory.Object);
     }
 
     // ===================== Unit Tests: ExtractJsonArray =====================

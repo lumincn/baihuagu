@@ -82,4 +82,64 @@ public class AiProviderRegistryClient
             return false;
         }
     }
+
+    /// <summary>
+    /// 导出全部 AI 提供方（含禁用项）用于全量备份：返回 db/ai_providers.json 的 JSON 数组文本。
+    /// 一服务一数据库：API Key 的加解密/重加密全部由 AI 服务完成，Family 不接触明文 key。
+    /// </summary>
+    public async Task<string?> ExportProvidersAsync(string? password, CancellationToken ct = default)
+    {
+        try
+        {
+            using var client = _httpClientFactory.CreateClient("ComputePool");
+            client.Timeout = TimeSpan.FromSeconds(30);
+            var url = $"{AiBaseUrl.TrimEnd('/')}/api/ai/config/export";
+            if (!string.IsNullOrEmpty(password))
+                url += $"?password={Uri.EscapeDataString(password)}";
+            var resp = await client.GetAsync(url, ct);
+            if (!resp.IsSuccessStatusCode)
+            {
+                var body = await resp.Content.ReadAsStringAsync(ct);
+                _logger.LogWarning("AI 提供方导出失败：HTTP {(int)resp.StatusCode} {Body}", resp.StatusCode, body.Length > 300 ? body[..300] : body);
+                return null;
+            }
+            return await resp.Content.ReadAsStringAsync(ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "AI 提供方导出失败（AI 服务不可达）");
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// 从备份恢复 AI 提供方：把 ZIP 中 db/ai_providers.json 的内容（JSON 数组）交给 AI 服务导入。
+    /// </summary>
+    public async Task<bool> ImportProvidersAsync(string providersJson, string? password, bool replaceAll = false, CancellationToken ct = default)
+    {
+        try
+        {
+            var providers = JsonSerializer.Deserialize<List<AiProviderBackupItem>>(providersJson)
+                ?? new List<AiProviderBackupItem>();
+            var request = new ImportAiProvidersRequest { Providers = providers, Password = password, ReplaceAll = replaceAll };
+
+            using var client = _httpClientFactory.CreateClient("ComputePool");
+            client.Timeout = TimeSpan.FromSeconds(120);
+            using var resp = await client.PostAsJsonAsync(
+                $"{AiBaseUrl.TrimEnd('/')}/api/ai/config/import", request, ct);
+            if (!resp.IsSuccessStatusCode)
+            {
+                var body = await resp.Content.ReadAsStringAsync(ct);
+                _logger.LogWarning("AI 提供方导入失败：HTTP {(int)resp.StatusCode} {Body}", resp.StatusCode, body.Length > 300 ? body[..300] : body);
+                return false;
+            }
+            _logger.LogInformation("AI 提供方已从备份导入（{Count} 条）", providers.Count);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "AI 提供方导入失败（AI 服务不可达）");
+            return false;
+        }
+    }
 }

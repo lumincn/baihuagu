@@ -51,7 +51,7 @@ public class MasterControllerTests
         var config = new ConfigurationBuilder().AddInMemoryCollection(
             new Dictionary<string, string?>()).Build();
         var aiSettings = new AiSettingsService(
-            config, Mock.Of<IServiceProvider>(), Mock.Of<ILogger<AiSettingsService>>());
+            config, Mock.Of<IAiConfigService>(), Mock.Of<ILogger<AiSettingsService>>());
 
         var vaultSettingsMock = new Mock<VaultSettingsService>(
             Mock.Of<IDbContextFactory<VaultDbContext>>(),

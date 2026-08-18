@@ -8,6 +8,7 @@ using Baihua.Core.Localization;
 using Baihua.Core.Security;
 using Baihua.Data;
 using Baihua.Data.Entities;
+using Baihua.Family.Services.AI;
 
 namespace Baihua.Family.Services;
 
@@ -19,9 +20,8 @@ public class RestoreService
     private readonly VaultSettingsService _vaultSettings;
     private readonly IDbContextFactory<VaultDbContext> _vaultDbContextFactory;
     private readonly IDbContextFactory<FamilyDbContext> _familyDbContextFactory;
-    private readonly IDbContextFactory<AIDbContext> _aiDbContextFactory;
-    private readonly ApiKeyProtectionService _apiKeyProtection;
-    private readonly DataEncryptionService _dataEncryption;
+    // 一服务一数据库：AI 提供方（含 API Key）由 AI 服务导入（Family 不接触明文 key）
+    private readonly AiProviderRegistryClient _providerRegistry;
     private readonly ILogger<RestoreService> _logger;
     private readonly IStringLocalizer<SharedResources> _loc;
 
@@ -29,18 +29,14 @@ public class RestoreService
         VaultSettingsService vaultSettings,
         IDbContextFactory<VaultDbContext> vaultDbContextFactory,
         IDbContextFactory<FamilyDbContext> familyDbContextFactory,
-        IDbContextFactory<AIDbContext> aiDbContextFactory,
-        ApiKeyProtectionService apiKeyProtection,
-        DataEncryptionService dataEncryption,
+        AiProviderRegistryClient providerRegistry,
         ILogger<RestoreService> logger,
         IStringLocalizer<SharedResources> loc)
     {
         _vaultSettings = vaultSettings;
         _vaultDbContextFactory = vaultDbContextFactory;
         _familyDbContextFactory = familyDbContextFactory;
-        _aiDbContextFactory = aiDbContextFactory;
-        _apiKeyProtection = apiKeyProtection;
-        _dataEncryption = dataEncryption;
+        _providerRegistry = providerRegistry;
         _logger = logger;
         _loc = loc;
     }
@@ -138,7 +134,6 @@ public class RestoreService
 
         using var db = _vaultDbContextFactory.CreateDbContext();
         using var familyDb = _familyDbContextFactory.CreateDbContext();
-        using var aiDb = _aiDbContextFactory.CreateDbContext();
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -181,66 +176,16 @@ public class RestoreService
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        // AiProviderSettings
+        // AiProviderSettings——一服务一数据库：由 AI 服务导入（解密/重加密全在 AI 服务进程内）
         var providersPath = Path.Combine(dbDir, "ai_providers.json");
         if (File.Exists(providersPath))
         {
             var json = await File.ReadAllTextAsync(providersPath, cancellationToken);
-            var providersData = JsonSerializer.Deserialize<List<JsonElement>>(json);
-            if (providersData != null)
+            var ok = await _providerRegistry.ImportProvidersAsync(json, password, replaceAll: overwrite, cancellationToken);
+            if (!ok)
             {
-                if (overwrite) aiDb.AiProviderSettings.RemoveRange(aiDb.AiProviderSettings);
-
-                foreach (var p in providersData)
-                {
-                    var protectedApiKey = p.GetProperty("ProtectedApiKey").GetString() ?? "";
-                    var keyProtection = p.TryGetProperty("KeyProtection", out var kp) ? kp.GetString() : "Plaintext";
-
-                    string plainApiKey = "";
-                    if (protectedApiKey.StartsWith("PLAINTEXT:"))
-                    {
-                        plainApiKey = protectedApiKey["PLAINTEXT:".Length..];
-                    }
-                    else if (keyProtection == "MachineKey")
-                    {
-                        plainApiKey = _apiKeyProtection.Decrypt(protectedApiKey);
-                    }
-                    else if (keyProtection == "BackupPassword" && !string.IsNullOrEmpty(password))
-                    {
-                        try
-                        {
-                            plainApiKey = _dataEncryption.Decrypt(protectedApiKey, password);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogWarning(ex, "解密 API Key 失败，可能密码错误");
-                        }
-                    }
-
-                    var encryptedApiKey = !string.IsNullOrEmpty(plainApiKey)
-                        ? _apiKeyProtection.Encrypt(plainApiKey)
-                        : "";
-
-                    var provider = new AiProviderSetting
-                    {
-                        ProviderId = p.GetProperty("ProviderId").GetString() ?? Guid.NewGuid().ToString(),
-                        ProviderName = p.GetProperty("ProviderName").GetString() ?? "",
-                        BaseUrl = p.GetProperty("BaseUrl").GetString() ?? "",
-                        EncryptedApiKey = encryptedApiKey,
-                        ModelsJson = p.GetProperty("ModelsJson").GetString() ?? "[]",
-                        IsMain = p.TryGetProperty("IsMain", out var im) && im.GetBoolean(),
-                        IsEnabled = p.TryGetProperty("IsEnabled", out _) || !p.TryGetProperty("IsEnabled", out _),
-                        SortOrder = p.TryGetProperty("SortOrder", out var so) ? so.GetInt32() : 0,
-                        CreatedAt = p.GetProperty("CreatedAt").GetDateTime(),
-                        UpdatedAt = p.GetProperty("UpdatedAt").GetDateTime()
-                    };
-
-                    if (!aiDb.AiProviderSettings.Any(x => x.ProviderId == provider.ProviderId))
-                    {
-                        aiDb.AiProviderSettings.Add(provider);
-                    }
-                }
-                await aiDb.SaveChangesAsync(cancellationToken);
+                _logger.LogWarning("AI 提供方导入失败（AI 服务不可达或数据无效），恢复中止");
+                return false;
             }
         }
 

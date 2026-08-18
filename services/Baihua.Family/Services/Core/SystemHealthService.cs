@@ -18,7 +18,7 @@ namespace Baihua.Family.Services
     {
         private readonly ILogger<SystemHealthService> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly AiConfigService _aiConfigService;
+        private readonly IAiConfigService _aiConfigService;
         private readonly VaultSettingsService _vaultSettings;
         private readonly AiMetricsService _metrics;
         private readonly IStringLocalizer<SharedResources> _loc;
@@ -26,7 +26,7 @@ namespace Baihua.Family.Services
         public SystemHealthService(
             IHttpClientFactory httpClientFactory,
             ILogger<SystemHealthService> logger,
-            AiConfigService aiConfigService,
+            IAiConfigService aiConfigService,
             VaultSettingsService vaultSettings,
             AiMetricsService metrics,
             IStringLocalizer<SharedResources> loc)

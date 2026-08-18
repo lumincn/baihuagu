@@ -41,10 +41,10 @@ public partial class AiConfigController : ControllerBase
     }
 
     /// <summary>
-    /// 获取所有 AI 提供商配置（不含敏感信息）
+    /// 获取所有 AI 提供商配置（不含敏感信息；含 KeyMask/HasApiKey 供设置页展示）
     /// </summary>
     [HttpGet("providers")]
-    public ActionResult<List<AiProviderViewModel>> GetProviders()
+    public ActionResult<List<AiConfigProvider>> GetProviders()
     {
         var providers = _aiConfigService.GetProviders();
         var summaries = _aiConfigService.GetApiKeySummaries();
@@ -52,14 +52,14 @@ public partial class AiConfigController : ControllerBase
         var result = providers.Select(p =>
         {
             var summary = summaries.FirstOrDefault(s => s.ProviderId == p.Id);
-            return new AiProviderViewModel
+            return new AiConfigProvider
             {
                 Id = p.Id,
                 Name = p.Name,
                 BaseUrl = p.AiBaseUrl,
                 AnthropicBaseUrl = p.AnthropicBaseUrl,
                 IsMain = p.IsMain,
-                Models = p.GetModelOptions().Select(m => new AiModelViewModel
+                Models = p.GetModelOptions().Select(m => new AiConfigModel
                 {
                     Name = m.Name,
                     IsPaid = m.IsPaid,
@@ -87,7 +87,7 @@ public partial class AiConfigController : ControllerBase
     /// 获取单个提供商配置
     /// </summary>
     [HttpGet("providers/{providerId}")]
-    public ActionResult<AiProviderViewModel> GetProvider(string providerId)
+    public ActionResult<AiConfigProvider> GetProvider(string providerId)
     {
         var provider = _aiConfigService.GetProvider(providerId);
         if (provider == null)
@@ -95,14 +95,14 @@ public partial class AiConfigController : ControllerBase
 
         var summary = _aiConfigService.GetApiKeySummaries().FirstOrDefault(s => s.ProviderId == providerId);
 
-        return Ok(new AiProviderViewModel
+        return Ok(new AiConfigProvider
         {
             Id = provider.Id,
             Name = provider.Name,
             BaseUrl = provider.AiBaseUrl,
             AnthropicBaseUrl = provider.AnthropicBaseUrl,
             IsMain = provider.IsMain,
-            Models = provider.GetModelOptions().Select(m => new AiModelViewModel
+            Models = provider.GetModelOptions().Select(m => new AiConfigModel
             {
                 Name = m.Name,
                 IsPaid = m.IsPaid,
@@ -112,6 +112,49 @@ public partial class AiConfigController : ControllerBase
             KeyMask = summary?.KeyMask,
             Tier = provider.Tier
         });
+    }
+
+    /// <summary>
+    /// 导出全部 AI 提供方（含禁用项）用于全量备份（db/ai_providers.json）。
+    /// 一服务一数据库：API Key 加解密只发生在 AI 服务进程内（唯一持有 key 的进程）。
+    /// </summary>
+    [HttpGet("export")]
+    public ActionResult<List<AiProviderBackupItem>> ExportProviders([FromQuery] string? password)
+    {
+        try
+        {
+            var items = _aiConfigService.ExportForBackup(password);
+            _logger.LogInformation("已导出 {Count} 个 AI 提供方用于备份", items.Count);
+            return Ok(items);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "导出 AI 提供方失败");
+            return StatusCode(500, new { error = $"导出失败: {ex.Message}" });
+        }
+    }
+
+    /// <summary>
+    /// 从备份恢复 AI 提供方（POST 全量恢复时调用）。
+    /// </summary>
+    [HttpPost("import")]
+    public ActionResult ImportProviders([FromBody] ImportAiProvidersRequest request)
+    {
+        try
+        {
+            if (request?.Providers == null || request.Providers.Count == 0)
+                return Ok(new { success = true, imported = 0 });
+
+            _aiConfigService.ImportFromBackup(request.Providers, request.Password, request.ReplaceAll);
+            _aiSettings.ClearAiProvidersCache();
+            _ = _webUINotification.NotifyAIStatusChangedAsync();
+            return Ok(new { success = true, imported = request.Providers.Count });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "从备份导入 AI 提供方失败");
+            return StatusCode(500, new { error = $"导入失败: {ex.Message}" });
+        }
     }
 
 }

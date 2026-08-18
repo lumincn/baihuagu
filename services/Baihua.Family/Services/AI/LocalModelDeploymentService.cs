@@ -21,7 +21,7 @@ namespace Baihua.Family.Services;
         private readonly ILogger<LocalModelDeploymentService> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly LocalAiAutoStarter _autoStarter;
-        private readonly AiConfigService _aiConfigService;
+        private readonly IAiConfigService _aiConfigService;
         private readonly AiProviderRegistryClient _providerRegistry;
         private readonly LocalModelSettingsService _localModelSettings;
         private readonly AiSettingsService _aiSettings;
@@ -47,7 +47,7 @@ namespace Baihua.Family.Services;
             ILogger<LocalModelDeploymentService> logger,
             IHttpClientFactory httpClientFactory,
             LocalAiAutoStarter autoStarter,
-            AiConfigService aiConfigService,
+            IAiConfigService aiConfigService,
             AiProviderRegistryClient providerRegistry,
             LocalModelSettingsService localModelSettings,
             AiSettingsService aiSettings,

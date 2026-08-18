@@ -47,6 +47,9 @@ public class FamilyDbContext : DbContext
     public DbSet<ServerPeer> ServerPeers => Set<ServerPeer>();
     public DbSet<ServerMessage> ServerMessages => Set<ServerMessage>();
 
+    // 一服务一数据库：测速历史从 ai.db 迁至 Family 自有库（BenchmarkRepository 使用）
+    public DbSet<BenchmarkSessionEntity> BenchmarkSessions => Set<BenchmarkSessionEntity>();
+
     public string DatabasePath
     {
         get
@@ -407,6 +410,23 @@ public class FamilyDbContext : DbContext
             entity.Property(e => e.Direction).HasMaxLength(10).IsRequired();
             entity.Property(e => e.Content).IsRequired();
             entity.Property(e => e.SentAtUtc).HasDefaultValueSql("datetime('now')");
+        });
+
+        modelBuilder.Entity<BenchmarkSessionEntity>(entity =>
+        {
+            entity.ToTable("BenchmarkSessions");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.SessionId).IsUnique();
+            entity.HasIndex(e => e.Category);
+            entity.HasIndex(e => e.TestedAt);
+
+            entity.Property(e => e.SessionId).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.ModelName).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Category).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.ProviderId).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.ModelId).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.ResultsJson).IsRequired().HasDefaultValue("[]");
+            entity.Property(e => e.TestedAt).HasDefaultValueSql("datetime('now')");
         });
     }
 

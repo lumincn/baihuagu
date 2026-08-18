@@ -22,7 +22,7 @@ public partial class OnboardingController : ControllerBase
     private readonly FamilyDbContext _dbContext;
     private readonly VaultSettingsService _vaultSettings;
     private readonly DeviceService _deviceService;
-    private readonly AiConfigService _aiConfigService;
+    private readonly IAiConfigService _aiConfigService;
     private readonly ILogger<OnboardingController> _logger;
     private readonly IStringLocalizer<SharedResources> _loc;
 
@@ -30,7 +30,7 @@ public partial class OnboardingController : ControllerBase
         FamilyDbContext dbContext,
         VaultSettingsService vaultSettings,
         DeviceService deviceService,
-        AiConfigService aiConfigService,
+        IAiConfigService aiConfigService,
         ILogger<OnboardingController> logger,
         IStringLocalizer<SharedResources> loc)
     {

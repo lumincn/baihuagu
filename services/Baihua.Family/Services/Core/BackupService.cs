@@ -9,6 +9,7 @@ using Baihua.Core.Localization;
 using Baihua.Data;
 using Baihua.Data.Entities;
 using Baihua.Contracts.Backup;
+using Baihua.Family.Services.AI;
 
 namespace Baihua.Family.Services;
 
@@ -48,9 +49,8 @@ public class BackupService
     private readonly VaultSettingsService _vaultSettings;
     private readonly IDbContextFactory<VaultDbContext> _vaultDbContextFactory;
     private readonly IDbContextFactory<FamilyDbContext> _familyDbContextFactory;
-    private readonly IDbContextFactory<AIDbContext> _aiDbContextFactory;
-    private readonly ApiKeyProtectionService _apiKeyProtection;
-    private readonly DataEncryptionService _dataEncryption;
+    // 一服务一数据库：AI 提供方（含 API Key）由 AI 服务导出/导入（Family 不接触明文 key）
+    private readonly AiProviderRegistryClient _providerRegistry;
     private readonly RestoreService _restoreService;
     private readonly ILogger<BackupService> _logger;
     private readonly IStringLocalizer<SharedResources> _loc;
@@ -65,9 +65,7 @@ public class BackupService
         VaultSettingsService vaultSettings,
         IDbContextFactory<VaultDbContext> vaultDbContextFactory,
         IDbContextFactory<FamilyDbContext> familyDbContextFactory,
-        IDbContextFactory<AIDbContext> aiDbContextFactory,
-        ApiKeyProtectionService apiKeyProtection,
-        DataEncryptionService dataEncryption,
+        AiProviderRegistryClient providerRegistry,
         RestoreService restoreService,
         ILogger<BackupService> logger,
         IStringLocalizer<SharedResources> loc)
@@ -75,9 +73,7 @@ public class BackupService
         _vaultSettings = vaultSettings;
         _vaultDbContextFactory = vaultDbContextFactory;
         _familyDbContextFactory = familyDbContextFactory;
-        _aiDbContextFactory = aiDbContextFactory;
-        _apiKeyProtection = apiKeyProtection;
-        _dataEncryption = dataEncryption;
+        _providerRegistry = providerRegistry;
         _restoreService = restoreService;
         _logger = logger;
         _loc = loc;
@@ -180,7 +176,6 @@ public class BackupService
 
         using var db = _vaultDbContextFactory.CreateDbContext();
         using var familyDb = _familyDbContextFactory.CreateDbContext();
-        using var aiDb = _aiDbContextFactory.CreateDbContext();
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -197,39 +192,13 @@ public class BackupService
         await File.WriteAllTextAsync(Path.Combine(dbDir, "vaults.json"),
             JsonSerializer.Serialize(vaultsData, _jsonOpts));
 
-        // AiProviderSettings - API Key 解密后用备份密码重新加密
-        var providers = await aiDb.AiProviderSettings.ToListAsync(cancellationToken);
-        var providersData = providers.Select(p =>
-        {
-            var plainApiKey = _apiKeyProtection.Decrypt(p.EncryptedApiKey ?? "");
-            string protectedApiKey;
-            if (!string.IsNullOrEmpty(password) && !string.IsNullOrEmpty(plainApiKey))
-            {
-                // 用备份密码加密 API Key
-                protectedApiKey = _dataEncryption.Encrypt(plainApiKey, password);
-            }
-            else if (!string.IsNullOrEmpty(plainApiKey))
-            {
-                // 无备份密码时，使用机器指纹加密（避免明文存储）
-                protectedApiKey = _apiKeyProtection.Encrypt(plainApiKey);
-            }
-            else
-            {
-                protectedApiKey = "";
-            }
-
-            return new
-            {
-                p.Id, p.ProviderId, p.ProviderName, p.BaseUrl,
-                ProtectedApiKey = protectedApiKey,
-                KeyProtection = !string.IsNullOrEmpty(password) ? "BackupPassword" : "MachineKey",
-                p.ModelsJson, p.IsMain, p.IsEnabled, p.SortOrder,
-                p.CreatedAt, p.UpdatedAt
-            };
-        }).ToList();
-        cancellationToken.ThrowIfCancellationRequested();
+        // AiProviderSettings（含 API Key）——一服务一数据库：由 AI 服务导出
+        // （AI 服务内解密后用备份密码/机器密钥重新加密，Family 不接触明文 key）
+        var providersJson = await _providerRegistry.ExportProvidersAsync(password, cancellationToken);
+        if (providersJson == null)
+            throw new Exception("AI 服务导出 AI 提供方失败（备份中止）：请确认 AI 服务（8791）在线");
         await File.WriteAllTextAsync(Path.Combine(dbDir, "ai_providers.json"),
-            JsonSerializer.Serialize(providersData, _jsonOpts), cancellationToken);
+            providersJson, cancellationToken);
 
         // Tasks
         var tasks = await familyDb.Tasks.ToListAsync(cancellationToken);

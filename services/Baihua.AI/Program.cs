@@ -76,8 +76,11 @@ builder.Services.AddSingleton<Microsoft.Extensions.Caching.Distributed.IDistribu
 
 // AI 配置与客户端基础设施（共享自 Core.Shared）
 builder.Services.AddSingleton<AiSettingsService>();
+// 一服务一数据库：AI 服务是 ai.db 唯一持有者；IAiConfigService 映射到同一 AiConfigService 单例
 builder.Services.AddSingleton<AiConfigService>();
+builder.Services.AddSingleton<IAiConfigService>(sp => sp.GetRequiredService<AiConfigService>());
 builder.Services.AddSingleton<MigrationService>();
+builder.Services.AddSingleton<Baihua.Core.Security.DataEncryptionService>();
 builder.Services.AddSingleton<Baihua.Core.Notifications.WebUINotificationService>();
 builder.Services.AddSingleton<Baihua.Core.Services.HardwareInfoService>();
 builder.Services.AddSingleton<Baihua.Core.Services.CapabilityService>();
