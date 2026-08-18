@@ -14,7 +14,7 @@ public partial class LocalModelDeploymentService
 {
         #region Provider Auto-Configuration
 
-        private void ConfigureOllamaProvider(ModelEntry model)
+        private async Task ConfigureOllamaProviderAsync(ModelEntry model)
         {
             const string providerId = "ollama";
             const string defaultProviderName = "Local Ollama";
@@ -72,11 +72,13 @@ public partial class LocalModelDeploymentService
                 IsEnabled = true
             };
 
-            _aiConfigService.SaveProvider(setting, "");
+            if (!await _providerRegistry.SaveProviderAsync(setting, "", ct: default))
+                _logger.LogWarning("自动配置 Ollama Provider 失败（AI 服务不可达？），模型 {Model} 可能未注册", model.OllamaModelName);
+            _aiSettings.ClearAiProvidersCache();
             _logger.LogInformation("已自动配置 Ollama Provider，新增模型: {Model}", model.OllamaModelName);
         }
 
-        private void ConfigureLmStudioProvider(ModelEntry model)
+        private async Task ConfigureLmStudioProviderAsync(ModelEntry model)
         {
             const string providerId = "lmstudio";
             const string defaultProviderName = "Local LM Studio";
@@ -134,11 +136,13 @@ public partial class LocalModelDeploymentService
                 IsEnabled = true
             };
 
-            _aiConfigService.SaveProvider(setting, "");
+            if (!await _providerRegistry.SaveProviderAsync(setting, "", ct: default))
+                _logger.LogWarning("自动配置 LM Studio Provider 失败（AI 服务不可达？），模型 {Model} 可能未注册", model.Name);
+            _aiSettings.ClearAiProvidersCache();
             _logger.LogInformation("已自动配置 LM Studio Provider，新增模型: {Model}", model.Name);
         }
 
-        private void RemoveModelFromProviderConfig(string toolId, string modelName)
+        private async Task RemoveModelFromProviderConfigAsync(string toolId, string modelName)
         {
             try
             {
@@ -164,7 +168,8 @@ public partial class LocalModelDeploymentService
                     IsEnabled = true,
                 };
 
-                _aiConfigService.SaveProvider(setting, plainApiKey: null);
+                if (!await _providerRegistry.SaveProviderAsync(setting, plainApiKey: null))
+                    _logger.LogWarning("移除模型 {ModelName} 后保存 Provider {ProviderId} 失败（AI 服务不可达？）", modelName, providerId);
                 _aiSettings.ClearAiProvidersCache();
                 _logger.LogInformation("已从 AI Provider {ProviderId} 的配置中移除模型 {ModelName}", providerId, modelName);
             }

@@ -19,8 +19,8 @@ public partial class AiConfigController
     {
         try
         {
-            // 验证 API Key 格式
-            if (!string.IsNullOrEmpty(request.ApiKey) && !_aiConfigService.ValidateApiKeyFormat(request.ApiKey))
+            // 验证 API Key 格式（空/空白 = 清空 key，不校验；本地 Ollama 等无 key 提供方传空串）
+            if (!string.IsNullOrWhiteSpace(request.ApiKey) && !_aiConfigService.ValidateApiKeyFormat(request.ApiKey))
             {
                 return BadRequest(new { error = _loc["AiConfig_InvalidApiKeyFormat"] });
             }

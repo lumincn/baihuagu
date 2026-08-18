@@ -3,6 +3,7 @@ using Baihua.Core.Services;
 using Baihua.Core;
 using Baihua.Core.Security;
 using Baihua.Family.Services;
+using Baihua.Family.Services.AI;
 using Baihua.Core.Notifications;
 using Baihua.Data;
 
@@ -178,6 +179,7 @@ builder.Services.AddSingleton<TaskManager>();
 builder.Services.AddSingleton<AiSettingsService>();
 builder.Services.AddSingleton<AiConfigService>();
 builder.Services.AddSingleton<MigrationService>();
+builder.Services.AddSingleton<AiProviderRegistryClient>();
 
 builder.Services.AddSingleton<LocalModelSettingsService>();
 

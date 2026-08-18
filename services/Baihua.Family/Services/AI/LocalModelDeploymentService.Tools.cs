@@ -219,7 +219,7 @@ public partial class LocalModelDeploymentService
                 var result = await _ollama.DeleteModelAsync(modelName, ct);
                 if (result)
                 {
-                    RemoveModelFromProviderConfig("ollama", modelName);
+                    await RemoveModelFromProviderConfigAsync("ollama", modelName);
                 }
                 return result;
             }

@@ -132,7 +132,7 @@ public partial class LocalModelDeploymentService
 
             task.CurrentStep = _loc["LocalModel_ConfigureAiProvider"];
             task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {_loc["LocalModel_AddingProvider"]}");
-            ConfigureOllamaProvider(model);
+            await ConfigureOllamaProviderAsync(model);
             task.AutoConfiguredProvider = true;
             task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {_loc["LocalModel_ProviderConfigured"]}");
 
@@ -194,7 +194,7 @@ public partial class LocalModelDeploymentService
 
             task.CurrentStep = _loc["LocalModel_ConfigureAiProvider"];
             task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {_loc["LocalModel_AddingProvider"]}");
-            ConfigureLmStudioProvider(model);
+            await ConfigureLmStudioProviderAsync(model);
             task.AutoConfiguredProvider = true;
             task.Logs.Add($"[{DateTime.Now:HH:mm:ss}] {_loc["LocalModel_ProviderConfigured"]}");
 

@@ -8,6 +8,7 @@ using Baihua.Core.Models;
 using Baihua.Core.Services;
 using Baihua.Data;
 using Baihua.Data.Entities;
+using Baihua.Family.Services.AI;
 using Baihua.Family.Services.ServerMessaging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
@@ -27,6 +28,7 @@ public class ComputePoolService : IHostedService, IDisposable
 
     private readonly ServerMessageService _messageService;
     private readonly AiConfigService _aiConfig;
+    private readonly AiProviderRegistryClient _providerRegistry;
     private readonly AiSettingsService _aiSettings;
     private readonly ServerAddressService _serverAddress;
     private readonly IHttpClientFactory _httpClientFactory;
@@ -42,6 +44,7 @@ public class ComputePoolService : IHostedService, IDisposable
     public ComputePoolService(
         ServerMessageService messageService,
         AiConfigService aiConfig,
+        AiProviderRegistryClient providerRegistry,
         AiSettingsService aiSettings,
         ServerAddressService serverAddress,
         IHttpClientFactory httpClientFactory,
@@ -51,6 +54,7 @@ public class ComputePoolService : IHostedService, IDisposable
     {
         _messageService = messageService;
         _aiConfig = aiConfig;
+        _providerRegistry = providerRegistry;
         _aiSettings = aiSettings;
         _serverAddress = serverAddress;
         _httpClientFactory = httpClientFactory;
@@ -225,7 +229,12 @@ public class ComputePoolService : IHostedService, IDisposable
         };
 
         var localToken = _messageService.LocalToken;
-        _aiConfig.SaveProvider(setting, string.IsNullOrEmpty(localToken) ? null : localToken);
+        // 写收口：经 AI 服务保存（避免 Family/AI 双进程并发写同一 ai.db）
+        if (!await _providerRegistry.SaveProviderAsync(setting, string.IsNullOrEmpty(localToken) ? null : localToken, ct))
+        {
+            _logger.LogWarning("[ComputePool] 注册对端提供方 {ProviderId} 失败（AI 服务不可达？）", providerId);
+            return;
+        }
         _aiSettings.ClearAiProvidersCache();
         _logger.LogInformation("[ComputePool] 已注册对端提供方 {ProviderId} ({Name}): {ModelCount} 个模型, {Url}",
             providerId, caps.Name, models.Count, caps.OpenAiBaseUrl);
@@ -272,25 +281,18 @@ public class ComputePoolService : IHostedService, IDisposable
         return new ComputePoolViewDto { Nodes = nodes, UpdatedAt = DateTime.UtcNow };
     }
 
-    /// <summary>选用某个节点+模型：把对端提供方设为本机主提供方并选主模型。</summary>
-    public bool SelectModel(string serverId, string modelName, out string? error)
+    /// <summary>选用某个节点+模型：把对端提供方设为本机主提供方并选主模型（写收口到 AI 服务）。</summary>
+    public async Task<(bool ok, string? error)> SelectModelAsync(string serverId, string modelName, CancellationToken ct = default)
     {
-        error = null;
         var providerId = $"peer-{serverId}";
         var provider = _aiConfig.GetProvider(providerId);
         if (provider == null)
-        {
-            error = "该节点尚未注册为可选用提供方（对端需配置 BAIHUA_PUBLIC_OPENAI_BASE_URL）";
-            return false;
-        }
+            return (false, "该节点尚未注册为可选用提供方（对端需配置 BAIHUA_PUBLIC_OPENAI_BASE_URL）");
         var model = provider.Models.FirstOrDefault(m => m.Name == modelName);
         if (model == null)
-        {
-            error = $"对端未提供模型 {modelName}";
-            return false;
-        }
+            return (false, $"对端未提供模型 {modelName}");
 
-        _aiConfig.SaveProvider(new AiProviderSetting
+        var setting = new AiProviderSetting
         {
             ProviderId = providerId,
             ProviderName = provider.Name,
@@ -305,9 +307,11 @@ public class ComputePoolService : IHostedService, IDisposable
             IsEnabled = true,
             Tier = (int)provider.Tier,
             SortOrder = 0
-        }, null);
+        };
+        if (!await _providerRegistry.SaveProviderAsync(setting, plainApiKey: null, ct))
+            return (false, "保存选用配置失败（AI 服务不可达？）");
         _aiSettings.ClearAiProvidersCache();
-        return true;
+        return (true, null);
     }
 
     private ComputePoolNodeDto GetLocalNode()

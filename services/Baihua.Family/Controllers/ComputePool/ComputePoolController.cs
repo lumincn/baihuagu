@@ -38,12 +38,12 @@ public class ComputePoolController : ControllerBase
 
     /// <summary>选用某个节点+模型为本机主 AI 提供方。</summary>
     [HttpPost("select")]
-    public IActionResult Select([FromBody] SelectComputeModelRequest request)
+    public async Task<IActionResult> Select([FromBody] SelectComputeModelRequest request, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(request.ServerId) || string.IsNullOrWhiteSpace(request.ModelName))
             return BadRequest(new { error = "缺少 serverId 或 modelName" });
 
-        var ok = _poolService.SelectModel(request.ServerId.Trim(), request.ModelName.Trim(), out var error);
+        var (ok, error) = await _poolService.SelectModelAsync(request.ServerId.Trim(), request.ModelName.Trim(), ct);
         if (!ok)
             return BadRequest(new { error });
         return Ok(new { success = true, message = $"已选用 {request.ModelName}" });

@@ -8,6 +8,7 @@ using Baihua.Contracts.OpenClaw;
 using Baihua.Core.Localization;
 using Baihua.Data.Entities;
 using Baihua.Family.Models;
+using Baihua.Family.Services.AI;
 using Microsoft.Extensions.Localization;
 using Baihua.AI.Provider;
 
@@ -21,6 +22,7 @@ namespace Baihua.Family.Services;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly LocalAiAutoStarter _autoStarter;
         private readonly AiConfigService _aiConfigService;
+        private readonly AiProviderRegistryClient _providerRegistry;
         private readonly LocalModelSettingsService _localModelSettings;
         private readonly AiSettingsService _aiSettings;
         private readonly IMemoryCache _cache;
@@ -46,6 +48,7 @@ namespace Baihua.Family.Services;
             IHttpClientFactory httpClientFactory,
             LocalAiAutoStarter autoStarter,
             AiConfigService aiConfigService,
+            AiProviderRegistryClient providerRegistry,
             LocalModelSettingsService localModelSettings,
             AiSettingsService aiSettings,
             IMemoryCache cache,
@@ -60,6 +63,7 @@ namespace Baihua.Family.Services;
             _httpClientFactory = httpClientFactory;
             _autoStarter = autoStarter;
             _aiConfigService = aiConfigService;
+            _providerRegistry = providerRegistry;
             _localModelSettings = localModelSettings;
             _aiSettings = aiSettings;
             _cache = cache;
