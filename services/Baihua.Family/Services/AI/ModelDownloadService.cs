@@ -7,6 +7,7 @@ using System.Text.Json;
 using Baihua.Contracts.LocalModels;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Baihua.Core;
 
 namespace Baihua.Family.Services;
 

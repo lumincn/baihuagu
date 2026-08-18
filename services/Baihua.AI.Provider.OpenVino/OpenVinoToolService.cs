@@ -5,7 +5,7 @@ using System.Text.Json;
 using Baihua.Contracts.LocalModels;
 using Microsoft.Extensions.Options;
 
-namespace Baihua.AI.Provider;
+namespace Baihua.AI.Provider.OpenVino;
 
 /// <summary>
 /// OpenVINO 工具配置（与 Baihua.AI 的 LocalVision 配置同名同结构）
@@ -35,7 +35,7 @@ public class OpenVinoModelOption
 /// <summary>
 /// OpenVINO GenAI 本地视觉工具（对接常驻 vision_server.py：模型加载/卸载/运行状态）
 /// </summary>
-public class OpenVinoToolService
+public class OpenVinoToolService : ILocalModelTool
 {
     private readonly OpenVinoToolOptions _options;
     private readonly ILogger<OpenVinoToolService> _logger;
@@ -54,6 +54,10 @@ public class OpenVinoToolService
         _logger = logger;
         _httpClientFactory = httpClientFactory;
     }
+
+    /// <summary>ILocalModelTool 标识</summary>
+    public string Id => "openvino";
+    public string Name => "OpenVINO";
 
     private string BaseUrl => $"http://127.0.0.1:{_options.Port}";
 

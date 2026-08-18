@@ -30,7 +30,7 @@ namespace Baihua.Family.Services;
         private readonly LmStudioService _lmStudio;
         private readonly LmStudioDownloadService _lmStudioDownload;
         private readonly LlamaCppService _llamaCpp;
-    private readonly OpenVinoToolService _openVino;
+    private readonly ILocalModelTool _openVino;
 
         // 内存中的部署任务状态
         private static readonly ConcurrentDictionary<string, DeployTaskStatusDto> _tasks = new();
@@ -53,7 +53,7 @@ namespace Baihua.Family.Services;
             LmStudioService lmStudio,
             LmStudioDownloadService lmStudioDownload,
             LlamaCppService llamaCpp,
-            OpenVinoToolService openVino,
+            ILocalModelTool openVino,
             IStringLocalizer<SharedResources> loc)
         {
             _logger = logger;

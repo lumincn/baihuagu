@@ -113,11 +113,31 @@ else
                                         else
                                         {
                                             <span class="text-secondary small ms-2">本机模型</span>
+                                            @if (_remoteNodes.Count > 0)
+                                            {
+                                                <button class="btn btn-sm btn-outline-secondary ms-1 deploy-btn" @onclick="() => OpenDeployAsync(model.Name)" disabled="@_busy">📦 布署</button>
+                                            }
                                         }
                                     </div>
                                 }
                             </div>
                         }
+                    </div>
+                }
+
+                @if (node.IsLocal && _deployModel != null)
+                {
+                    <div class="deploy-panel mt-2">
+                        <span class="small">📦 布署 <b>@_deployModel</b> 到：</span>
+                        <select class="form-select form-select-sm d-inline-block w-auto" @bind="_deployTarget">
+                            @foreach (var rn in _remoteNodes)
+                            {
+                                <option value="@rn.ServerId">@rn.Name（@rn.HostUrl）</option>
+                            }
+                        </select>
+                        <button class="btn btn-sm btn-primary ms-2" @onclick="ConfirmDeployAsync" disabled="@(_busy || string.IsNullOrEmpty(_deployTarget))">执行布署</button>
+                        <button class="btn btn-sm btn-outline-secondary ms-1" @onclick="CancelDeploy" disabled="@_busy">取消</button>
+                        <div class="form-text small">对端将从本机模型商店拉取模型并启动常驻推理服务（大模型需数分钟，页面请勿关闭）</div>
                     </div>
                 }
             </div>
@@ -177,11 +197,14 @@ else
     .tps-value { width: 7rem; font-size: 0.8rem; color: var(--bs-secondary-color); text-align: right; }
     .select-btn { flex-shrink: 0; }
     .bench-btn { flex-shrink: 0; }
+    .deploy-btn { flex-shrink: 0; }
+    .deploy-panel { border: 1px dashed rgba(46,139,175,0.5); border-radius: 8px; padding: 0.5rem 0.7rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 </style>
 
 @code {
     private ComputePoolViewDto? _pool;
     private List<string> _poolModels = new();
+    private List<ComputePoolNodeDto> _remoteNodes = new();
     private string? _error;
     private string? _message;
     private bool _busy;
@@ -190,6 +213,8 @@ else
     private string _taskPrompt = "";
     private string _taskModel = "";
     private string? _taskResult;
+    private string? _deployModel;
+    private string _deployTarget = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -202,6 +227,7 @@ else
         if (_pool != null)
         {
             _updatedAt = _pool.UpdatedAt.ToLocalTime().ToString("HH:mm:ss");
+            _remoteNodes = _pool.Nodes.Where(n => !n.IsLocal).ToList();
             _poolModels = _pool.Nodes
                 .SelectMany(n => n.Providers)
                 .SelectMany(p => p.Models)
@@ -211,6 +237,8 @@ else
                 .ToList();
             if (string.IsNullOrEmpty(_taskModel) && _poolModels.Count > 0)
                 _taskModel = _poolModels[0];
+            if (_deployTarget == "" && _remoteNodes.Count > 0)
+                _deployTarget = _remoteNodes[0].ServerId;
         }
         else if (_error == null)
             _error = "加载算力池失败";
@@ -287,6 +315,41 @@ else
             var (ok, error) = await ApiService.PullComputeModelAsync(node.ServerId, modelName);
             if (ok)
                 _message = $"已从 {node.Name} 拉取 {modelName}";
+            else
+                _error = error;
+            await LoadAsync();
+            StateHasChanged();
+        }
+        finally { _busy = false; }
+    }
+
+    private void OpenDeployAsync(string modelName)
+    {
+        _deployModel = modelName;
+        if (_deployTarget == "" && _remoteNodes.Count > 0)
+            _deployTarget = _remoteNodes[0].ServerId;
+    }
+
+    private void CancelDeploy()
+    {
+        _deployModel = null;
+    }
+
+    private async Task ConfirmDeployAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_deployModel) || string.IsNullOrWhiteSpace(_deployTarget)) return;
+        _busy = true;
+        _error = null;
+        _message = null;
+        try
+        {
+            var target = _remoteNodes.FirstOrDefault(n => n.ServerId == _deployTarget);
+            var (ok, message, error) = await ApiService.DeployComputeModelAsync(_deployTarget, _deployModel);
+            if (ok)
+            {
+                _message = message ?? $"已布署 {_deployModel} 到 {target?.Name}";
+                _deployModel = null;
+            }
             else
                 _error = error;
             await LoadAsync();

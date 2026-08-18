@@ -5,13 +5,16 @@ using Baihua.Contracts.LocalModels;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Baihua.Family.Services;
+namespace Baihua.AI.Provider.OpenVino;
+
+using Baihua.AI.Provider;
+using Baihua.Core;
 
 /// <summary>
 /// OpenVINO LLM 运行管理器：把已下载的模型目录启动为 openvino_llm_server.py 子进程
 /// （Intel Arc 核显 GPU 推理），支持停止/状态探测。
 /// </summary>
-public class OpenVinoRuntimeManager
+public class OpenVinoRuntimeManager : ILocalRuntimeManager
 {
     private readonly ILogger<OpenVinoRuntimeManager> _logger;
     private readonly LocalAiOptions _options;

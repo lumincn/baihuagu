@@ -134,4 +134,35 @@ public partial class ApiService
             return (false, ex.Message);
         }
     }
+
+    /// <summary>跨机布署：把本机模型布署到对端跑（对端拉取 + 启动运行时，大模型需数分钟）。</summary>
+    public async Task<(bool ok, string? message, string? error)> DeployComputeModelAsync(string serverId, string modelName)
+    {
+        try
+        {
+            using var quick = new CancellationTokenSource(TimeSpan.FromMinutes(60));
+            var response = await _httpClient.PostAsync("/api/compute-pool/deploy",
+                JsonContent.Create(new DeployModelRequest { ServerId = serverId, ModelName = modelName }),
+                quick.Token);
+            var body = await response.Content.ReadAsStringAsync(quick.Token);
+            try
+            {
+                using var doc = JsonDocument.Parse(body);
+                if (response.IsSuccessStatusCode)
+                {
+                    var port = doc.RootElement.TryGetProperty("port", out var p) ? p.GetInt32() : 0;
+                    var device = doc.RootElement.TryGetProperty("device", out var d) ? d.GetString() : "";
+                    return (true, $"已布署 {modelName} 到对端（{device} · :{port}）", null);
+                }
+                var err = doc.RootElement.TryGetProperty("error", out var e) ? e.GetString() : body;
+                return (false, null, err);
+            }
+            catch { return (false, null, body); }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "跨机布署失败");
+            return (false, null, ex.Message);
+        }
+    }
 }

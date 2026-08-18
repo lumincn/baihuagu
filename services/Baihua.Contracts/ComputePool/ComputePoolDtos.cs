@@ -122,3 +122,41 @@ public class PullModelRequest
     public string ServerId { get; set; } = "";
     public string ModelName { get; set; } = "";
 }
+
+/// <summary>跨机模型布署请求（POST /api/compute-pool/deploy）</summary>
+public class DeployModelRequest
+{
+    public string ServerId { get; set; } = "";
+    public string ModelName { get; set; } = "";
+
+    /// <summary>目标设备（GPU/CPU/AUTO，默认 GPU；GPU 失败自动回退 CPU）</summary>
+    public string? Device { get; set; }
+}
+
+/// <summary>跨机模型布署结果（对端拉取 + 启动运行时后返回）</summary>
+public class DeployModelResultDto
+{
+    public bool Success { get; set; }
+    public string? Error { get; set; }
+    public string ModelName { get; set; } = "";
+    /// <summary>实际使用设备（GPU/CPU…）</summary>
+    public string Device { get; set; } = "";
+    public int Port { get; set; }
+    public string Endpoint { get; set; } = "";
+    public DateTime DeployedAt { get; set; } = DateTime.UtcNow;
+}
+
+/// <summary>对端布署请求（POST /mg/model-store/deploy，X-Server-Token 鉴权）</summary>
+public class PeerDeployRequest
+{
+    /// <summary>来源服务器 ID（对端据此查该机的互联口令来拉取模型）</summary>
+    public string SourceServerId { get; set; } = "";
+
+    /// <summary>模型 tar 下载地址（必须指向来源服务器的 /mg/model-store/download/{name}）</summary>
+    public string SourceUrl { get; set; } = "";
+
+    public string ModelName { get; set; } = "";
+
+    /// <summary>目标设备（GPU/CPU/AUTO，默认 GPU；GPU 失败自动回退 CPU）</summary>
+    public string? Device { get; set; }
+}

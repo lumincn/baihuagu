@@ -5,7 +5,7 @@ using System.Text.Json;
 using Baihua.Contracts.Ai;
 using Microsoft.Extensions.Options;
 
-namespace Baihua.AI.Provider;
+namespace Baihua.AI.Provider.OpenVino;
 
 /// <summary>
 /// 本地视觉推理配置（Qwen2.5-VL + OpenVINO，通过常驻 Python 服务调用）
@@ -48,7 +48,7 @@ public class LocalVisionModelOptions
 /// <summary>
 /// 本地视觉推理服务：管理常驻 Python 进程（vision_server.py），提供图片识别能力
 /// </summary>
-public class OpenVinoVisionService
+public class OpenVinoVisionService : ILocalVisionInference
 {
     private readonly LocalVisionOptions _options;
     private readonly ILogger<OpenVinoVisionService> _logger;

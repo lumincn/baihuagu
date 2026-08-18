@@ -1,6 +1,6 @@
 using Baihua.Contracts;
 
-namespace Baihua.Family.Services;
+namespace Baihua.Core;
 
 /// <summary>
 /// 本地 AI 模型存储配置（绑定配置节 LocalAI）

@@ -432,45 +432,79 @@ public class ComputePoolService : IHostedService, IDisposable
         {
             using var client = _httpClientFactory.CreateClient("ComputePool");
             client.Timeout = TimeSpan.FromMinutes(60);
-            using var req = new HttpRequestMessage(HttpMethod.Get, $"{peer.BaseUrl.TrimEnd('/')}/mg/model-store/download/{Uri.EscapeDataString(modelName)}");
+            var url = $"{peer.BaseUrl.TrimEnd('/')}/mg/model-store/download/{Uri.EscapeDataString(modelName)}";
             var token = !string.IsNullOrWhiteSpace(peer.Token) ? peer.Token! : _messageService.LocalToken;
-            if (!string.IsNullOrEmpty(token))
-                req.Headers.TryAddWithoutValidation("X-Server-Token", token);
-
-            using var resp = await client.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
-            if (!resp.IsSuccessStatusCode)
-                return (false, $"对端返回 {(int)resp.StatusCode}");
-
-            var tmp = target + ".pulling";
-            if (Directory.Exists(tmp)) Directory.Delete(tmp, recursive: true);
-            Directory.CreateDirectory(tmp);
-            await using var stream = await resp.Content.ReadAsStreamAsync(ct);
-            await using var tar = new TarReader(stream);
-            TarEntry? entry;
-            while ((entry = await tar.GetNextEntryAsync(copyData: false, ct)) != null)
-            {
-                if (entry.EntryType is not TarEntryType.RegularFile && entry.EntryType is not TarEntryType.V7RegularFile)
-                    continue;
-                var name = entry.Name.Replace('/', Path.DirectorySeparatorChar);
-                if (name.Contains(".." + Path.DirectorySeparatorChar))
-                    continue;
-                var dest = Path.Combine(tmp, name);
-                Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
-                await using var outStream = new FileStream(dest, FileMode.Create, FileAccess.Write, FileShare.None, 81920, useAsync: true);
-                await using var inStream = entry.DataStream;
-                if (inStream != null)
-                    await inStream.CopyToAsync(outStream, ct);
-            }
-
-            Directory.Move(tmp, target);
+            var (ok, error) = await ModelTarTransfer.DownloadAndExtractAsync(client, url, token, target, modelName, ct);
+            if (!ok)
+                return (false, error);
             _logger.LogInformation("[ComputePool] 已从 {Server} 拉取模型 {Model}", peer.Name, modelName);
             return (true, null);
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "拉取模型失败 {Server} {Model}", serverId, modelName);
-            try { if (Directory.Exists(target + ".pulling")) Directory.Delete(target + ".pulling", recursive: true); } catch { }
             return (false, ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// 跨机布署：本机已有模型 → 请求对端从本机 model-store 拉取并启动运行时（对端常驻服务）。
+    /// 对端拉取完成后调用 ILocalRuntimeManager.StartAsync 启动推理（GPU 失败自动回退 CPU）。
+    /// </summary>
+    public async Task<DeployModelResultDto> DeployPeerModelAsync(string serverId, string modelName, string? device, CancellationToken ct = default)
+    {
+        // 本机布署到本机没有意义
+        if (string.Equals(serverId, GetLocalServerId(), StringComparison.OrdinalIgnoreCase))
+            return new DeployModelResultDto { Success = false, Error = "目标不能是本机", ModelName = modelName };
+
+        var peer = (await _messageService.ListPeersAsync(ct)).FirstOrDefault(p => p.ServerId == serverId);
+        if (peer == null)
+            return new DeployModelResultDto { Success = false, Error = "对端未登记", ModelName = modelName };
+        if (string.IsNullOrWhiteSpace(modelName) || modelName.Contains('/') || modelName.Contains('\\') || modelName == "..")
+            return new DeployModelResultDto { Success = false, Error = "非法的模型名", ModelName = modelName };
+
+        // 本机必须已有该模型（布署 = 把本机模型推给对端跑）
+        var localRoot = GetLocalModelRoot();
+        if (!Directory.Exists(Path.Combine(localRoot, modelName)))
+            return new DeployModelResultDto { Success = false, Error = $"本机模型根中不存在 {modelName}（先在本机下载）", ModelName = modelName };
+
+        // 本机对外下载地址：对端将从这里拉取 tar
+        var hostIp = _configuration["BAIHUA_HOST_IP"];
+        var localUrl = !string.IsNullOrWhiteSpace(hostIp)
+            ? $"http://{hostIp}"
+            : _serverAddress.GetLocalPublicBaseUrl();
+        if (string.IsNullOrEmpty(localUrl))
+            return new DeployModelResultDto { Success = false, Error = "无法确定本机对外地址（BAIHUA_HOST_IP 未配置）", ModelName = modelName };
+
+        try
+        {
+            using var client = _httpClientFactory.CreateClient("ComputePool");
+            client.Timeout = TimeSpan.FromMinutes(60);
+            using var req = new HttpRequestMessage(HttpMethod.Post, $"{peer.BaseUrl.TrimEnd('/')}/mg/model-store/deploy");
+            var token = !string.IsNullOrWhiteSpace(peer.Token) ? peer.Token! : _messageService.LocalToken;
+            if (!string.IsNullOrEmpty(token))
+                req.Headers.TryAddWithoutValidation("X-Server-Token", token);
+            req.Content = JsonContent.Create(new PeerDeployRequest
+            {
+                SourceServerId = GetLocalServerId(),
+                SourceUrl = $"{localUrl}/mg/model-store/download/{Uri.EscapeDataString(modelName)}",
+                ModelName = modelName,
+                Device = device
+            });
+
+            using var resp = await client.SendAsync(req, ct);
+            var result = await resp.Content.ReadFromJsonAsync<DeployModelResultDto>(ct);
+            if (result == null)
+                return new DeployModelResultDto { Success = false, Error = $"对端返回 {(int)resp.StatusCode}", ModelName = modelName };
+            if (result.Success)
+                _logger.LogInformation("[ComputePool] 已布署 {Model} 到 {Server}（{Device} @ :{Port}）",
+                    modelName, peer.Name, result.Device, result.Port);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "跨机布署失败 {Server} {Model}", serverId, modelName);
+            return new DeployModelResultDto { Success = false, Error = ex.Message, ModelName = modelName };
         }
     }
 

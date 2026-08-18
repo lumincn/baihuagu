@@ -88,12 +88,12 @@ builder.Services.AddSingleton<Baihua.AI.Services.CodeAgentService>();
 // 本地模型推理后端（GGUF / ONNX），实现位于 Baihua.AI.Provider
 builder.Services.AddSingleton<Baihua.AI.Provider.ILocalModelInference, Baihua.AI.Provider.LlamaSharpInference>();
 builder.Services.AddSingleton<Baihua.AI.Provider.ILocalModelInference, Baihua.AI.Provider.OnnxRuntimeGenAIInference>();
-builder.Services.AddSingleton<Baihua.AI.Provider.ILocalModelInference, Baihua.AI.Provider.OpenVinoChatInference>();
+builder.Services.AddSingleton<Baihua.AI.Provider.ILocalModelInference, Baihua.AI.Provider.OpenVino.OpenVinoChatInference>();
 
 // 本地视觉分析（Qwen2.5-VL + OpenVINO）
-builder.Services.Configure<Baihua.AI.Provider.LocalVisionOptions>(
+builder.Services.Configure<Baihua.AI.Provider.OpenVino.LocalVisionOptions>(
     builder.Configuration.GetSection("LocalVision"));
-builder.Services.AddSingleton<Baihua.AI.Provider.OpenVinoVisionService>();
+builder.Services.AddSingleton<Baihua.AI.Provider.ILocalVisionInference, Baihua.AI.Provider.OpenVino.OpenVinoVisionService>();
 
 
 

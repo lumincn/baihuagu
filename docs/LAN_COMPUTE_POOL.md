@@ -118,8 +118,8 @@ GET /mg/capabilities
 | 里程碑 | 内容 | 状态 |
 |--------|------|------|
 | **M1** | `/mg/capabilities` + `ComputePoolService` + 对端提供方自动注册 + Traefik `/mg/ai/` 路由 + AI 服务 OpenAI 兼容 shim + WebUI `/compute` 页 | ✅ 已实施（见下） |
-| **M2** | `/mg/benchmark/run` 跨机测速 + ECharts 趋势折线 + 一键选用完善 | 待实施 |
-| **M2.5** | 局域网模型商店（模型去重共享、断点续传） | 待实施 |
+| **M2** | `/mg/benchmark/run` 跨机测速 + ECharts 趋势折线 + 一键选用完善 | ✅ 跨机测速已实施（见下） |
+| **M2.5** | 局域网模型商店（模型去重共享、断点续传）+ **跨机布署（拉取 + 启动运行时）** | ✅ 模型商店 + 布署已实施（见下） |
 | **M3** | 统一推理网关 /mg/pool/v1：模型名全网路由 + 速度优先（v1） | ✅ 已实施 |
 
 ### M1 已实施内容（commit 记录见 git）
@@ -167,12 +167,57 @@ GET /mg/capabilities
 - /compute 页：同名模型跨节点对比，"⚡最快"角标 + TPS 排序。
 - 注：failover（首选节点失败自动降级）与任务级调度留待 M3 v2。
 
-### 待办（M1 收尾 / M2 入口）
+### M2.5 已实施内容（局域网模型商店 + 跨机布署）
+
+- **模型商店**：`GET /mg/model-store/list`（已下载模型清单，含大小/文件数）、
+  `GET /mg/model-store/download/{name}`（tar 流式下发，PAX 格式；条目带 `{name}/` 前缀，
+  对端解压时自动剥掉一层，避免双重嵌套）。
+- **拉取**：`POST /api/compute-pool/pull-model` → `PullPeerModelAsync`：对端 tar 流下载 +
+  解压到本机模型根（临时目录 + 原子改名）。共享解压助手 `ModelTarTransfer.DownloadAndExtractAsync`。
+- **跨机布署（一键推模型到对端跑）**：
+  - 管理端点 `POST /api/compute-pool/deploy`（`DeployModelRequest{ServerId, ModelName, Device?}`）
+    → `ComputePoolService.DeployPeerModelAsync`：校验本机已有该模型 → 算出本机对外下载地址
+    （`BAIHUA_HOST_IP` 优先，否则 `GetLocalPublicBaseUrl`）→ 携带 `SourceServerId/Device` 请求对端。
+  - 对端端点 `POST /mg/model-store/deploy`（`PeerDeployRequest{SourceServerId, SourceUrl, ModelName, Device}`）：
+    SSRF 防护（仅回环/私网 IP + 必须 `/mg/model-store/download/` 路径且模型名一致）→ 按
+    SourceServerId 解析来源机互联口令 → 拉取解压到本机模型根 → `ILocalRuntimeManager.StartAsync`
+    启动常驻推理进程（OpenVINO：openvino_llm_server.py），GPU 失败自动回退 CPU，返回
+    `DeployModelResultDto{Success, Device, Port, Endpoint}`。
+  - WebUI /compute 页：本机模型行「📦 布署」→ 选择目标节点 → 执行（大模型需数分钟，60min 超时）。
+- 语义：**布署 = 本机已有模型 → 对端拉取 + 对端启动运行时**；对端跑起来后其
+  `/mg/capabilities` 自动广播该模型（含 TPS），本机即可经网关/选用直接调用。
+
+### Provider 分层设计（跨机布署/推理的厂商扩展点）
+
+> 目标：`Baihua.AI.Provider` 只保留"所有厂商都提供的最大公约数"接口；
+> Intel 专有的高效实现独立成 `Baihua.AI.Provider.OpenVino`；NVIDIA/AMD 预留同接口接入。
+
+- **厂商中立接口（Baihua.AI.Provider，新）**：
+  - `ILocalModelTool`：工具信息 / 运行中模型 / 可下载目录 / 已下载清单 / 加载卸载模型 / 确保运行时就绪
+  - `ILocalVisionInference`：视觉服务状态 / 识别图片 / 启停（`VisionStatusDto` 来自 Contracts）
+  - `ILocalRuntimeManager`：模型根 / 已安装扫描 / 运行实例 / `StartAsync(modelPath, device)` /
+    `StopAsync(port)` —— 跨机布署的对端启动即调用本接口
+  - `ILocalModelInference`：本地模型流式推理（GGUF/ONNX 后端，原已有）
+- **Intel 实现（Baihua.AI.Provider.OpenVino，新项目）**：`OpenVinoToolService`、`OpenVinoVisionService`、
+  `OpenVinoRuntimeManager`、`OpenVinoChatInference`、`LocalVisionOptions` 全部在此；
+  LocalVision 的 `vision_server.py` / `openvino_llm_server.py` 随发布拷贝。
+- **NVIDIA / AMD 预留**：新项目 `Baihua.AI.Provider.Cuda` / `Baihua.AI.Provider.Rocm` 分别实现
+  上述四个接口即可接入（Family/AI/WebUI 零改动）：
+  - CUDA：`ILocalRuntimeManager` → vLLM / TensorRT-LLM 进程；`ILocalVisionInference` → VL 模型服务
+  - ROCm：`ILocalRuntimeManager` → vLLM-ROCm / llama.cpp ROCm；`ILocalModelTool.Id` = `"cuda"` / `"rocm"`
+- DI 注册（Family Program.cs）：`AddSingleton<ILocalModelTool, OpenVinoToolService>()`、
+  `AddSingleton<ILocalRuntimeManager, OpenVinoRuntimeManager>()`（AI Program.cs 同理注册视觉/推理）。
+- 命名空间迁移：`LocalAiOptions` 移至 `Baihua.Core`（Family/AI 共用）；其余 OpenVINO 类型命名空间
+  改为 `Baihua.AI.Provider.OpenVino`。
+
+### 待办（收尾）
 
 - 本机本地模型接入 OpenAI 提供方（把已下载的 OpenVINO 模型注册为指向 bh-openvino:8000 的提供方），
   让本机算力真正可被对端选用
 - AI 服务各提供方 API Key 需在「AI 配置」页确认有效（shim 会透传其存储的 key）
-- 跨机测速 `/mg/benchmark/run`（M2）：对端可主动发起本机测速，结果回传
+- k8s 部署（如桃夭馆 .13）的 Family 容器内无 OpenVINO 运行时 → 对端布署到此类节点会返回
+  "未找到可用 Python/设备不支持"；需把布署目标指向 native（Windows/Linux 本机）或先实现
+  OpenVINO 服务 pod 代理后接 runtime 接口
 
 ## 5. 额外点子（按性价比排序）
 

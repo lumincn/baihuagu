@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 
-namespace Baihua.AI.Provider;
+namespace Baihua.AI.Provider.OpenVino;
 
 /// <summary>
 /// OpenVINO 本地模型对话推理（对接 vision_server.py 的 /v1/chat 纯文本端点）

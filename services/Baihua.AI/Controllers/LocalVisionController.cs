@@ -11,10 +11,10 @@ namespace Baihua.Family.Controllers;
 [Route("api/local-ai/vision")]
 public class LocalVisionController : ControllerBase
 {
-    private readonly OpenVinoVisionService _vision;
+    private readonly ILocalVisionInference _vision;
     private readonly ILogger<LocalVisionController> _logger;
 
-    public LocalVisionController(OpenVinoVisionService vision, ILogger<LocalVisionController> logger)
+    public LocalVisionController(ILocalVisionInference vision, ILogger<LocalVisionController> logger)
     {
         _vision = vision;
         _logger = logger;

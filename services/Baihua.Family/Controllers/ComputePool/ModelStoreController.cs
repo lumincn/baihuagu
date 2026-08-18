@@ -1,10 +1,15 @@
 using System.Formats.Tar;
 using System.IO.Compression;
+using System.Net;
+using Baihua.AI.Provider;
 using Baihua.Contracts.Benchmark;
 using Baihua.Contracts.ComputePool;
 using Baihua.Core.Services;
 using Baihua.Family.Services;
+using Baihua.Family.Services.ComputePool;
+using Baihua.Family.Services.ServerMessaging;
 using Microsoft.AspNetCore.Mvc;
+using Baihua.Core;
 
 namespace Baihua.Family.Controllers.ComputePool;
 
@@ -13,6 +18,7 @@ namespace Baihua.Family.Controllers.ComputePool;
 /// - POST /mg/benchmark/run：对端发起本机单模型快速测速（实测 token/s）
 /// - GET  /mg/model-store/list：本机已下载模型清单（可被对端拉取）
 /// - GET  /mg/model-store/download/{name}：以 tar 流式下发模型目录
+/// - POST /mg/model-store/deploy：对端从来源服务器拉取模型并启动运行时（跨机布署）
 /// </summary>
 [ApiController]
 public class ModelStoreController : ControllerBase
@@ -23,6 +29,8 @@ public class ModelStoreController : ControllerBase
     private readonly IConfiguration _configuration;
     private readonly ILogger<ModelStoreController> _logger;
     private readonly BenchmarkRepository _benchmarkRepository;
+    private readonly ServerMessageService _messageService;
+    private readonly ILocalRuntimeManager _runtime;
 
     public ModelStoreController(
         AiSettingsService aiSettings,
@@ -30,7 +38,9 @@ public class ModelStoreController : ControllerBase
         Microsoft.Extensions.Options.IOptions<LocalAiOptions> localAiOptions,
         IConfiguration configuration,
         ILogger<ModelStoreController> logger,
-        BenchmarkRepository benchmarkRepository)
+        BenchmarkRepository benchmarkRepository,
+        ServerMessageService messageService,
+        ILocalRuntimeManager runtime)
     {
         _aiSettings = aiSettings;
         _aiClient = aiClient;
@@ -38,6 +48,8 @@ public class ModelStoreController : ControllerBase
         _configuration = configuration;
         _logger = logger;
         _benchmarkRepository = benchmarkRepository;
+        _messageService = messageService;
+        _runtime = runtime;
     }
 
     private string ModelRoot => _localAiOptions.Value.GetModelRoot();
@@ -200,5 +212,95 @@ public class ModelStoreController : ControllerBase
             await tar.WriteEntryAsync(entry, ct);
             await entry.DataStream.DisposeAsync();
         }
+    }
+
+    /// <summary>
+    /// 跨机布署：从来源服务器的 /mg/model-store/download 拉取模型 tar，解压到本机模型根，
+    /// 再启动运行时（OpenVINO 推理进程）常驻服务。GPU 失败自动回退 CPU。
+    /// </summary>
+    [HttpPost("/mg/model-store/deploy")]
+    public async Task<ActionResult<DeployModelResultDto>> DeployModel([FromBody] PeerDeployRequest request, CancellationToken ct)
+    {
+        if (!AuthorizePeer()) return Unauthorized(new DeployModelResultDto { Success = false, Error = "口令校验失败", ModelName = request.ModelName });
+        if (string.IsNullOrWhiteSpace(request.ModelName) || request.ModelName.Contains('/') || request.ModelName.Contains('\\') || request.ModelName == "..")
+            return BadRequest(new DeployModelResultDto { Success = false, Error = "非法的模型名", ModelName = request.ModelName });
+
+        // SSRF 防护：来源必须是局域网/回环地址，且路径必须是模型商店下载端点
+        if (!IsAllowedSourceUrl(request.SourceUrl, request.ModelName))
+            return BadRequest(new DeployModelResultDto { Success = false, Error = "来源地址不合法（仅允许局域网模型商店）", ModelName = request.ModelName });
+
+        try
+        {
+            // 来源服务器互联口令（与拉取模型一致：对端登记的口令，缺省用本机口令）
+            string? sourceToken = null;
+            if (!string.IsNullOrWhiteSpace(request.SourceServerId))
+            {
+                var sourcePeer = (await _messageService.ListPeersAsync(ct))
+                    .FirstOrDefault(p => p.ServerId == request.SourceServerId);
+                sourceToken = sourcePeer?.Token;
+            }
+            if (string.IsNullOrWhiteSpace(sourceToken))
+                sourceToken = _messageService.LocalToken;
+
+            var root = ModelRoot;
+            Directory.CreateDirectory(root);
+            var target = Path.Combine(root, request.ModelName);
+            if (Directory.Exists(target))
+                return Ok(new DeployModelResultDto { Success = false, Error = $"本机已存在 {request.ModelName}（先删除或选用现有模型）", ModelName = request.ModelName });
+
+            _logger.LogInformation("[ModelStore] 布署 {Model}：从 {Url} 拉取", request.ModelName, request.SourceUrl);
+            using var client = new HttpClient { Timeout = TimeSpan.FromMinutes(60) };
+            var (ok, error) = await ModelTarTransfer.DownloadAndExtractAsync(
+                client, request.SourceUrl, sourceToken, target, request.ModelName, ct);
+            if (!ok)
+                return Ok(new DeployModelResultDto { Success = false, Error = $"拉取模型失败：{error}", ModelName = request.ModelName });
+
+            // 启动运行时：请求的设备优先，失败自动回退 CPU（如对端无 GPU）
+            var device = string.IsNullOrWhiteSpace(request.Device) ? "GPU" : request.Device.Trim();
+            var run = await _runtime.StartAsync(target, device, ct);
+            if (!run.Success && !device.Equals("CPU", StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogWarning("[ModelStore] {Model} 用 {Device} 启动失败（{Msg}），回退 CPU", request.ModelName, device, run.Error);
+                device = "CPU";
+                run = await _runtime.StartAsync(target, device, ct);
+            }
+
+            var result = new DeployModelResultDto
+            {
+                Success = run.Success,
+                Error = run.Success ? null : run.Error,
+                ModelName = request.ModelName,
+                Device = device,
+                Port = run.Port,
+                Endpoint = run.Endpoint,
+                DeployedAt = DateTime.UtcNow
+            };
+            _logger.LogInformation("[ModelStore] 布署 {Model} 完成：{Device} @ :{Port}", request.ModelName, device, run.Port);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "跨机布署失败 {Model}", request.ModelName);
+            return Ok(new DeployModelResultDto { Success = false, Error = ex.Message, ModelName = request.ModelName });
+        }
+    }
+
+    /// <summary>来源 URL 白名单：仅 http(s) + 回环/私网 IP + 模型商店下载路径，防 SSRF。</summary>
+    private static bool IsAllowedSourceUrl(string url, string modelName)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return false;
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)) return false;
+        if (uri.Scheme != "http" && uri.Scheme != "https") return false;
+        if (!uri.AbsolutePath.StartsWith("/mg/model-store/download/", StringComparison.OrdinalIgnoreCase)) return false;
+        // 路径末尾的模型名必须与请求一致
+        var name = uri.AbsolutePath.Split('/').Last();
+        if (!string.Equals(Uri.UnescapeDataString(name), modelName, StringComparison.OrdinalIgnoreCase)) return false;
+        var host = uri.Host;
+        if (host.Equals("localhost", StringComparison.OrdinalIgnoreCase)) return true;
+        // 只允许字面 IP（拒绝域名，避免 DNS rebinding）
+        if (!IPAddress.TryParse(host, out var ip)) return false;
+        if (IPAddress.IsLoopback(ip)) return true;
+        var b = ip.GetAddressBytes();
+        return b.Length == 4 && (b[0] == 10 || (b[0] == 172 && b[1] is >= 16 and <= 31) || (b[0] == 192 && b[1] == 168));
     }
 }

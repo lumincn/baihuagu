@@ -13,6 +13,7 @@ COPY services/Baihua.Contracts/Baihua.Contracts.csproj services/Baihua.Contracts
 COPY services/Baihua.Data/Baihua.Data.csproj services/Baihua.Data/
 COPY services/Baihua.Core/Baihua.Core.csproj services/Baihua.Core/
 COPY services/Baihua.AI.Provider/Baihua.AI.Provider.csproj services/Baihua.AI.Provider/
+COPY services/Baihua.AI.Provider.OpenVino/Baihua.AI.Provider.OpenVino.csproj services/Baihua.AI.Provider.OpenVino/
 COPY services/Baihua.AI/Baihua.AI.csproj services/Baihua.AI/
 RUN --mount=type=cache,target=/root/.nuget/packages \
     dotnet restore services/Baihua.AI/Baihua.AI.csproj -r linux-x64 --nologo

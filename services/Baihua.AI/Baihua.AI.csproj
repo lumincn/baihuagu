@@ -39,6 +39,7 @@
     <ProjectReference Include="..\Baihua.Core\Baihua.Core.csproj" />
     <ProjectReference Include="..\Baihua.Contracts\Baihua.Contracts.csproj" />
     <ProjectReference Include="..\Baihua.AI.Provider\Baihua.AI.Provider.csproj" />
+    <ProjectReference Include="..\Baihua.AI.Provider.OpenVino\Baihua.AI.Provider.OpenVino.csproj" />
   </ItemGroup>
 
   <ItemGroup>

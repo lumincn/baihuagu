@@ -108,4 +108,15 @@ public class ComputePoolController : ControllerBase
         var (ok, error) = await _poolService.PullPeerModelAsync(request.ServerId.Trim(), request.ModelName.Trim(), ct);
         return ok ? Ok(new { success = true, message = $"已拉取 {request.ModelName}" }) : BadRequest(new { error });
     }
+
+    /// <summary>跨机布署：本机已有模型 → 对端拉取并启动运行时（常驻推理服务）。</summary>
+    [HttpPost("deploy")]
+    public async Task<ActionResult<DeployModelResultDto>> Deploy([FromBody] DeployModelRequest request, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.ServerId) || string.IsNullOrWhiteSpace(request.ModelName))
+            return BadRequest(new DeployModelResultDto { Success = false, Error = "缺少 serverId 或 modelName", ModelName = request.ModelName });
+
+        var result = await _poolService.DeployPeerModelAsync(request.ServerId.Trim(), request.ModelName.Trim(), request.Device, ct);
+        return result.Success ? Ok(result) : BadRequest(result);
+    }
 }
