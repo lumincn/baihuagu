@@ -95,7 +95,40 @@ public class OpenVinoToolService
         var version = await DetectOpenVinoVersionAsync(ct);
         var installed = exists && !string.IsNullOrEmpty(version);
         var running = await IsServerRunningAsync(ct);
+
+        // k8s：OpenVINO 由 bh-openvino pod 托管（本容器无 python/openvino-genai），
+        // 探测 OPENVINO_LLM_URL/OPENVINO_HOST_URL 的 /health 视为"已安装且运行中"
+        if (!installed && await IsRemotePodServingAsync(ct))
+        {
+            installed = true;
+            running = true;
+            version ??= "pod (k8s)";
+        }
         return (installed, version, running, ModelRoot);
+    }
+
+    private async Task<bool> IsRemotePodServingAsync(CancellationToken ct = default)
+    {
+        var podUrl = Environment.GetEnvironmentVariable("OPENVINO_LLM_URL")
+            ?? Environment.GetEnvironmentVariable("OPENVINO_HOST_URL");
+        if (string.IsNullOrWhiteSpace(podUrl)) return false;
+        try
+        {
+            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
+            var health = await client.GetFromJsonAsync<RemoteHealthDto>(podUrl.TrimEnd('/') + "/health", ct);
+            return health is { Ok: true };
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private sealed class RemoteHealthDto
+    {
+        public bool Ok { get; set; }
+        public string? Model { get; set; }
+        public string? ModelPath { get; set; }
     }
 
     private async Task<string?> DetectOpenVinoVersionAsync(CancellationToken ct = default)
@@ -410,11 +443,5 @@ public class OpenVinoToolService
         }
 
         return result;
-    }
-
-    private sealed class RemoteHealthDto
-    {
-        public string? Model { get; set; }
-        public string? ModelPath { get; set; }
     }
 }
