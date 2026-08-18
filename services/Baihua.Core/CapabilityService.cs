@@ -82,7 +82,9 @@ public class CapabilityService
         var cap = GetCapability();
         return feature switch
         {
-            LocalComputeFeature.LocalModelsPage => cap >= MachineCapability.LowEndGpu,
+            // 本地模型页是管理下载/目录/运行的入口——CPU 机器同样需要（慢但可用），
+            // 不应因未检测到 GPU 而整个隐藏（低配机器集显未被检测到时尤其常见）
+            LocalComputeFeature.LocalModelsPage => cap >= MachineCapability.CpuOnly,
             LocalComputeFeature.ModelBenchmark => cap >= MachineCapability.LowEndGpu,
             LocalComputeFeature.LocalModelDeployment => cap >= MachineCapability.LowEndGpu,
             LocalComputeFeature.LocalAiInference => cap >= MachineCapability.LowEndGpu,
