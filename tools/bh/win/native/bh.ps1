@@ -173,7 +173,9 @@ function Stop-One($svc) {
 }
 
 function Stop-Services {
-    foreach ($svc in $Services) { Stop-One $svc }
+    # 停止顺序与启动相反：先停依赖者（webui/family），被依赖的（ai/vault）最后停，
+    # 避免停止过程中仍有服务在调用已死的下游（如 family 转发 /mg/* 到 vault）。
+    for ($i = $Services.Count - 1; $i -ge 0; $i--) { Stop-One $Services[$i] }
     Write-Host '[stop] done'
 }
 

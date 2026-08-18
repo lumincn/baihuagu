@@ -178,8 +178,10 @@ function Start-Services {
 }
 
 function Stop-Services {
-    Stop-Native-Ai
+    # 先停 compose 容器（family/vault/webui/nginx 依赖 native ai），
+    # 最后停 native ai，避免容器还在运行时其 AI 依赖已被杀掉。
     Invoke-Compose @('down')
+    Stop-Native-Ai
     Write-Host '[stop] done'
 }
 

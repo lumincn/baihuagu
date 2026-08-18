@@ -113,8 +113,12 @@ start_all() {
 }
 
 stop_all() {
-    for entry in $SERVICES; do
-        IFS=: read -r name proj exe port <<<"$entry"
+    # 停止顺序与启动相反：先停依赖者（webui/family），被依赖的（ai/vault）最后停，
+    # 避免停止过程中仍有服务在调用已死的下游（如 family 转发 /mg/* 到 vault）。
+    local entries=()
+    for entry in $SERVICES; do entries+=("$entry"); done
+    for ((i = ${#entries[@]} - 1; i >= 0; i--)); do
+        IFS=: read -r name proj exe port <<<"${entries[$i]}"
         local pf="$PID_DIR/$name.pid"
         if [ -f "$pf" ]; then
             local pid
