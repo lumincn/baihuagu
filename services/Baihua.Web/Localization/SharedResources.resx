@@ -6007,4 +6007,13 @@ Shift+Enter new line, Enter to send</value>
   <data name="Vaults_ConfirmSyncBody" xml:space="preserve">
     <value>Syncing vaults will detect and remove vaults that no longer exist. Are you sure you want to continue?</value>
   </data>
+  <data name="LocalModels_OpenVinoNotSupported" xml:space="preserve">
+    <value>No Intel GPU detected; OpenVINO local inference is unavailable (other local tools are unaffected).</value>
+  </data>
+  <data name="LocalModels_OpenVinoHostManualHint" xml:space="preserve">
+    <value>The OpenVINO host service (BaihuaOpenVinoHost) is a standalone Windows service: install/uninstall/start/stop are manual (admin required, see scripts/install-openvino-host-service.ps1). Status shown here only.</value>
+  </data>
+  <data name="OpenClaw_OpenVinoNotSupported" xml:space="preserve">
+    <value>No Intel GPU detected; OpenVINO local models are unavailable (use Ollama / llama.cpp or other local tools instead).</value>
+  </data>
 </root>

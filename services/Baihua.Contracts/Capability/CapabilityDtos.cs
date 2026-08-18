@@ -34,6 +34,9 @@ public class CapabilityInfo
     /// <summary>GPU 名称</summary>
     public string GpuName { get; set; } = "";
 
+    /// <summary>是否存在 Intel GPU（OpenVINO 本地推理的前提，用于前端隐藏/置灰相关入口）</summary>
+    public bool IsIntelGpu { get; set; }
+
     /// <summary>可用功能名称列表</summary>
     public List<string> AvailableFeatures { get; set; } = new();
 

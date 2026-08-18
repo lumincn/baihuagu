@@ -143,6 +143,10 @@ public class CapabilityService
             GpuName = hardware.Gpus.FirstOrDefault(g => !g.IsIntegrated)?.Name
                 ?? hardware.Gpus.FirstOrDefault()?.Name
                 ?? "无",
+            // OpenVINO 本地推理要求 Intel GPU（Arc 独显 / 核显）；检测失败（无 GPU 信息）时视为不可用，
+            // 前端据此隐藏或置灰 OpenVINO 相关入口。
+            IsIntelGpu = hardware.Gpus.Count > 0 && hardware.Gpus.Any(g =>
+                string.Equals(g.Vendor, "Intel", StringComparison.OrdinalIgnoreCase)),
             AvailableFeatures = Enum.GetValues<LocalComputeFeature>()
                 .Where(f => CanUse(f))
                 .Select(f => f.ToString())

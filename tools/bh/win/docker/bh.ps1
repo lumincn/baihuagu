@@ -85,49 +85,13 @@ function Test-PortOpen($port) {
 }
 
 # ---- OpenVINO 托管服务（Windows SCM 服务 BaihuaOpenVinoHost，端口 8866）----
-# 本地模型推理（Arc GPU / OpenVINO）走宿主机托管服务，bh 只做启停编排，
-# 注册/开机自启仍由 Windows SCM 负责（scripts/install-openvino-host-service.ps1）。
-# 它是 native ai 本地推理的依赖：启动最先、停止最后（与"被依赖的先启动"一致）。
+# 独立系统服务：安装/卸载/启停由用户手动（管理员权限）管理
+# （scripts/install-openvino-host-service.ps1），bh 不参与启停，仅在 status 中展示状态。
 $OpenVinoServiceName = 'BaihuaOpenVinoHost'
 $OpenVinoPort = 8866
 
-function Wait-Port($port, $seconds) {
-    $deadline = (Get-Date).AddSeconds($seconds)
-    while ((Get-Date) -lt $deadline) {
-        if (Test-PortOpen $port) { return $true }
-        Start-Sleep -Milliseconds 500
-    }
-    return $false
-}
-
 function Get-OpenVinoHostService {
     Get-Service -Name $OpenVinoServiceName -ErrorAction SilentlyContinue
-}
-
-function Start-OpenVinoHost {
-    $svc = Get-OpenVinoHostService
-    if (-not $svc) {
-        Write-Warning "[openvino] 未安装服务 $OpenVinoServiceName（scripts/install-openvino-host-service.ps1 安装），本地 OpenVINO 推理不可用（云端 AI 不受影响）"
-        return
-    }
-    if ($svc.Status -eq 'Running') { Write-Host '[openvino] already running (service)'; return }
-    try {
-        Start-Service -Name $OpenVinoServiceName -ErrorAction Stop
-        Write-Host "[openvino] service starting (port $OpenVinoPort) ..."
-        if (-not (Wait-Port $OpenVinoPort 30)) { Write-Warning "[openvino] port $OpenVinoPort not ready in 30s" }
-        else { Write-Host "[openvino] ready on $OpenVinoPort" }
-    } catch {
-        Write-Warning "[openvino] 启动失败: $($_.Exception.Message)（云端 AI 不受影响）"
-    }
-}
-
-function Stop-OpenVinoHost {
-    $svc = Get-OpenVinoHostService
-    if (-not $svc) { return }
-    if ($svc.Status -eq 'Running') {
-        try { Stop-Service -Name $OpenVinoServiceName -Force -ErrorAction Stop; Write-Host '[openvino] service stopped' }
-        catch { Write-Warning "[openvino] 停止失败: $($_.Exception.Message)" }
-    }
 }
 
 # ---- native ai ----
@@ -210,8 +174,6 @@ function Invoke-Build {
 }
 
 function Start-Services {
-    # 本地推理依赖（OpenVINO 宿主）最先启动，再启动 native ai 与 compose 容器
-    Start-OpenVinoHost
     Start-Native-Ai
     Invoke-Compose @('up', '-d')
     Write-Host '[start] waiting for health ...'
@@ -227,10 +189,9 @@ function Start-Services {
 
 function Stop-Services {
     # 停止顺序：先停 compose 容器（family/vault/webui/nginx 依赖 native ai），
-    # 再停 native ai，最后停本地推理依赖 OpenVINO 宿主。
+    # 再停 native ai（OpenVINO 宿主为独立服务，启停由用户手动管理）。
     Invoke-Compose @('down')
     Stop-Native-Ai
-    Stop-OpenVinoHost
     Write-Host '[stop] done'
 }
 

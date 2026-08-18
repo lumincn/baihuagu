@@ -5,6 +5,7 @@
 @using Baihua.Contracts.Benchmark
 @using Baihua.Web.Components.LocalModels
 @inject Baihua.Web.Services.IApiService ApiService
+@inject Baihua.Web.Services.CapabilityService CapabilityService
 @inject Baihua.Web.Services.AIStatusService AIStatusService
 @inject Baihua.Web.Hubs.StatusUpdateService StatusUpdateService
 @inject NavigationManager NavigationManager
@@ -22,9 +23,12 @@
     <li class="nav-item">
         <button class="nav-link @(_activeTab == "overview" ? "active" : "")" @onclick='async () => await OnTabChanged("overview")'>📊 @L["LocalModels_TabOverview"]</button>
     </li>
-    <li class="nav-item">
-        <button class="nav-link @(_activeTab == "openvino" ? "active" : "")" @onclick='async () => await OnTabChanged("openvino")'>🧿 OpenVINO</button>
-    </li>
+    @if (_isIntelGpu != false)
+    {
+        <li class="nav-item">
+            <button class="nav-link @(_activeTab == "openvino" ? "active" : "")" @onclick='async () => await OnTabChanged("openvino")'>🧿 OpenVINO</button>
+        </li>
+    }
 </ul>
 
 
@@ -1136,7 +1140,14 @@ else
 
     @if (_activeTab == "openvino")
     {
-        <OpenVinoTab ModelsChanged="RefreshRunningModels" />
+        @if (_isIntelGpu == false)
+        {
+            <div class="alert alert-warning" role="alert">⚠️ @L["LocalModels_OpenVinoNotSupported"]</div>
+        }
+        else
+        {
+            <OpenVinoTab ModelsChanged="RefreshRunningModels" />
+        }
     }
 
     <ConfirmDialog Message="@string.Format(L["LocalModels_ConfirmUnload"], unloadTarget?.DisplayName ?? "")"
@@ -1160,6 +1171,7 @@ else
     private System.Timers.Timer? _statusTimer;
 
     private string _activeTab = "overview";
+    private bool? _isIntelGpu; // null=未知/加载中（默认不隐藏 OpenVINO）
 
     // 区域折叠状态（默认只展开最常用的：模型推荐）
     private bool _showHardware = false;
@@ -1232,7 +1244,12 @@ else
             SetLoadingStatus(L["LocalModels_LoadingHardware"]);
             var hwTask = ApiService.GetHardwareInfoAsync();
             var toolsTask = ApiService.GetLocalToolsAsync();
-            await Task.WhenAll(hwTask, toolsTask);
+            var capTask = SafeLoadAsync(async () =>
+            {
+                try { _isIntelGpu = (await CapabilityService.GetCapabilityAsync()).IsIntelGpu; }
+                catch { _isIntelGpu = true; }
+            });
+            await Task.WhenAll(hwTask, toolsTask, capTask);
 
             hardwareInfo = hwTask.Result;
             localTools = toolsTask.Result;

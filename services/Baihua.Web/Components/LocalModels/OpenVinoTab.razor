@@ -1,5 +1,6 @@
 @using Baihua.Contracts.LocalModels
 @inject Baihua.Web.Services.IApiService ApiService
+@inject Baihua.Web.Services.CapabilityService CapabilityService
 @inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 @inject Microsoft.Extensions.Logging.ILogger<OpenVinoTab> Logger
 @implements IDisposable
@@ -7,6 +8,15 @@
 @* OpenVINO 模型区（从 LocalModels.razor 抽取，行为零变化）。
    父页面负责：Tab 导航、概览区、运行中模型（含卸载）、部署任务轮询；
    本组件负责：OpenVINO 目录/下载任务/已下载模型/LLM 托管服务 + 三个弹窗 + 下载轮询。 *@
+
+@if (_isIntelGpu == false)
+{
+    <div class="alert alert-warning" role="alert">
+        ⚠️ @L["LocalModels_OpenVinoNotSupported"]
+    </div>
+}
+else
+{
 
 <!-- OpenVINO 模型（Intel Arc GPU） -->
 <div class="section-header" style="cursor:pointer;" @onclick="() => ToggleSection(ref _showOpenVino)">
@@ -241,6 +251,9 @@
     </div>
     @if (_showOpenVinoLlm)
     {
+        <div class="alert alert-light border small" style="margin-top:0.5rem;">
+            <i class="bi bi-info-circle me-1"></i>@L["LocalModels_OpenVinoHostManualHint"]
+        </div>
         @if (openVinoLlmError != null)
         {
             <div class="alert alert-warning" style="margin-top:0.5rem;">@openVinoLlmError</div>
@@ -404,12 +417,14 @@
         </div>
     </div>
 }
+}
 
 @code {
     /// <summary>模型变更后通知父页面刷新（运行中模型列表等）</summary>
     [Parameter] public EventCallback ModelsChanged { get; set; }
 
     // 区域折叠状态
+    private bool? _isIntelGpu; // null=未知/加载中（默认不隐藏）
     private bool _showOpenVino = true;
     private bool _showDownloadedModels = true;
     private bool _showOpenVinoLlm = true;
@@ -461,9 +476,22 @@
         if (!firstRender) return;
         // 首次渲染后并行加载（懒加载：切到 OpenVINO Tab 才加载，与父页分块加载策略一致）
         await Task.WhenAll(
+            SafeLoadAsync(LoadIntelGpuAsync),
             SafeLoadAsync(LoadOpenVinoAsync),
             SafeLoadAsync(RefreshDownloadedModels),
             SafeLoadAsync(LoadOpenVinoLlmStatus));
+    }
+
+    private async Task LoadIntelGpuAsync()
+    {
+        try
+        {
+            _isIntelGpu = (await CapabilityService.GetCapabilityAsync()).IsIntelGpu;
+        }
+        catch
+        {
+            _isIntelGpu = true; // 能力查询失败时默认不隐藏
+        }
     }
 
     private async Task SafeLoadAsync(Func<Task> fn)
