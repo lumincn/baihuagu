@@ -176,6 +176,8 @@ builder.Services.AddDbContextFactory<Baihua.Data.AIDbContext>(options =>
 }, ServiceLifetime.Singleton);
 
 builder.Services.AddSingleton<TaskManager>();
+// 一服务一数据库：Family 推理统一经 AI 服务 shim 转发（不直连模型、不持有 key）
+builder.Configuration["AiClient__UseShim"] = "true";
 builder.Services.AddSingleton<AiSettingsService>();
 builder.Services.AddSingleton<AiConfigService>();
 builder.Services.AddSingleton<MigrationService>();

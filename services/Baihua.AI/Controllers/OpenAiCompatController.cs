@@ -85,13 +85,14 @@ public class OpenAiCompatController : ControllerBase
                 return;
             }
 
+            var tools = ParseTools(body);
             if (stream)
             {
                 await StreamResponseAsync(provider, resolvedModel, messages, ct);
             }
             else
             {
-                await NonStreamResponseAsync(provider, resolvedModel, messages, ct);
+                await NonStreamResponseAsync(provider, resolvedModel, messages, tools, ct);
             }
         }
         catch (Exception ex)
@@ -125,14 +126,78 @@ public class OpenAiCompatController : ControllerBase
         {
             var role = item.TryGetProperty("role", out var r) ? r.GetString() ?? "user" : "user";
             var content = item.TryGetProperty("content", out var c) ? c.GetString() ?? "" : "";
-            list.Add(role.ToLowerInvariant() switch
+            switch (role.ToLowerInvariant())
             {
-                "assistant" => new ChatMessage(ChatRole.Assistant, content),
-                "system" => new ChatMessage(ChatRole.System, content),
-                _ => new ChatMessage(ChatRole.User, content)
-            });
+                case "system":
+                    list.Add(new ChatMessage(ChatRole.System, content));
+                    break;
+                case "assistant":
+                    if (item.TryGetProperty("tool_calls", out var tcs) && tcs.ValueKind == JsonValueKind.Array && tcs.GetArrayLength() > 0)
+                    {
+                        var contents = new List<AIContent>();
+                        if (!string.IsNullOrEmpty(content))
+                            contents.Add(new TextContent(content));
+                        foreach (var tc in tcs.EnumerateArray())
+                        {
+                            var id = tc.TryGetProperty("id", out var i) ? i.GetString() ?? "" : "";
+                            var fn = tc.TryGetProperty("function", out var f) ? f : default;
+                            var name = fn.TryGetProperty("name", out var n) ? n.GetString() ?? "" : "";
+                            var argsJson = fn.TryGetProperty("arguments", out var a) ? a.GetString() ?? "" : "";
+                            IDictionary<string, object?>? argDict = null;
+                            if (!string.IsNullOrWhiteSpace(argsJson))
+                            {
+                                try { argDict = JsonSerializer.Deserialize<Dictionary<string, object?>>(argsJson); }
+                                catch { argDict = null; }
+                            }
+                            contents.Add(new FunctionCallContent(id, name, argDict));
+                        }
+                        list.Add(new ChatMessage(ChatRole.Assistant, contents));
+                    }
+                    else
+                    {
+                        list.Add(new ChatMessage(ChatRole.Assistant, content));
+                    }
+                    break;
+                case "tool":
+                    var callId = item.TryGetProperty("tool_call_id", out var tid) ? tid.GetString() ?? "" : "";
+                    var toolContent = item.TryGetProperty("content", out var tc2) ? tc2.GetString() ?? "" : "";
+                    list.Add(new ChatMessage(ChatRole.Tool, new[] { new FunctionResultContent(callId, toolContent) }));
+                    break;
+                default:
+                    list.Add(new ChatMessage(ChatRole.User, content));
+                    break;
+            }
         }
         return list;
+    }
+
+    /// <summary>解析 OpenAI 协议 tools 数组为 M.E.AI 工具声明（无实现体，只透传给模型用于 function call）。</summary>
+    private static List<AITool> ParseTools(JsonElement body)
+    {
+        var tools = new List<AITool>();
+        if (!body.TryGetProperty("tools", out var arr) || arr.ValueKind != JsonValueKind.Array)
+            return tools;
+        foreach (var t in arr.EnumerateArray())
+        {
+            try
+            {
+                if (!t.TryGetProperty("type", out var type) || type.GetString() != "function") continue;
+                if (!t.TryGetProperty("function", out var fn)) continue;
+                var name = fn.TryGetProperty("name", out var n) ? n.GetString() ?? "" : "";
+                if (string.IsNullOrWhiteSpace(name)) continue;
+                var description = fn.TryGetProperty("description", out var d) ? d.GetString() ?? "" : "";
+                var parameters = fn.TryGetProperty("parameters", out var p) && p.ValueKind == JsonValueKind.Object
+                    ? p
+                    : JsonSerializer.SerializeToElement(new { type = "object", properties = new Dictionary<string, object>(), required = new List<string>() });
+                tools.Add(AIFunctionFactory.CreateDeclaration(name, description, parameters, null));
+            }
+            catch (Exception ex)
+            {
+                // 单个工具解析失败不影响其余工具
+                System.Diagnostics.Debug.WriteLine($"ParseTools skipped tool: {ex.Message}");
+            }
+        }
+        return tools;
     }
 
     private (AiProviderConfig? Provider, string Model) ResolveProviderAndModel(string modelName)
@@ -154,11 +219,38 @@ public class OpenAiCompatController : ControllerBase
     }
 
     private async Task NonStreamResponseAsync(
-        AiProviderConfig provider, string model, List<ChatMessage> messages, CancellationToken ct)
+        AiProviderConfig provider, string model, List<ChatMessage> messages, List<AITool> tools, CancellationToken ct)
     {
         var sw = System.Diagnostics.Stopwatch.StartNew();
-        var result = await _aiClientService.GetChatResponseWithAutoStartAsync(provider, model, messages, AiClientService.BuildChatOptions(), ct);
+        var options = AiClientService.BuildChatOptions();
+        if (tools.Count > 0)
+            options.Tools = tools;
+        // useCache: false —— AI 服务是转发代理，不缓存响应（Family 侧已有缓存层）
+        var result = await _aiClientService.GetChatResponseWithAutoStartAsync(provider, model, messages, options, ct, useCache: false);
         sw.Stop();
+
+        // Function Calling 透传：把模型的 tool_calls 原样返回给调用方（Family 侧负责执行工具）。
+        // OpenAI 协议要求 arguments 为 JSON 字符串。
+        object? toolCalls = null;
+        var functionCall = result.Messages
+            .SelectMany(m => m.Contents)
+            .OfType<FunctionCallContent>()
+            .FirstOrDefault();
+        if (functionCall != null)
+        {
+            var argsJson = functionCall.Arguments is { Count: > 0 }
+                ? JsonSerializer.Serialize(functionCall.Arguments)
+                : "";
+            toolCalls = new[]
+            {
+                new
+                {
+                    id = functionCall.CallId,
+                    type = "function",
+                    function = new { name = functionCall.Name, arguments = argsJson }
+                }
+            };
+        }
 
         Response.ContentType = "application/json";
         await Response.WriteAsJsonAsync(new
@@ -172,8 +264,8 @@ public class OpenAiCompatController : ControllerBase
                 new
                 {
                     index = 0,
-                    message = new { role = "assistant", content = result.Text ?? "" },
-                    finish_reason = "stop"
+                    message = new { role = "assistant", content = result.Text ?? "", tool_calls = toolCalls },
+                    finish_reason = functionCall != null ? "tool_calls" : "stop"
                 }
             },
             usage = new

@@ -30,16 +30,17 @@ public partial class AiClientService
         /// <param name="options">聊天选项</param>
         /// <param name="ct">取消令牌</param>
         /// <param name="operation">操作类型，用于指标统计：chat, benchmark, task, split, index, openclaw 等</param>
+        /// <param name="useCache">是否使用分布式缓存（转发代理场景传 false：避免缓存哈希长消息与无限缓存内存膨胀）</param>
         public async Task<ChatResponse> GetChatResponseWithAutoStartAsync(
             AiProviderConfig provider, string model,
             IList<ChatMessage> messages, ChatOptions options, CancellationToken ct,
-            string operation = "chat")
+            string operation = "chat", bool useCache = true)
         {
             var sw = Stopwatch.StartNew();
             ChatResponse? response = null;
             try
             {
-                var client = CreateChatClientWithCache(provider, model);
+                var client = useCache ? CreateChatClientWithCache(provider, model) : CreateChatClient(provider, model);
                 try
                 {
                     response = await client.GetResponseAsync(messages, options, ct);
@@ -51,7 +52,7 @@ public partial class AiClientService
                     if (!started)
                         throw new Exception(_loc["AiClient_LocalServiceStartFailed", provider.Name]);
 
-                    client = CreateChatClientWithCache(provider, model);
+                    client = useCache ? CreateChatClientWithCache(provider, model) : CreateChatClient(provider, model);
                     // 克隆消息列表，避免外界修改导致重试使用脏上下文
                     var retryMessages = messages.Select(m => new ChatMessage(m.Role, m.Contents)).ToList();
                     response = await client.GetResponseAsync(retryMessages, options, ct);

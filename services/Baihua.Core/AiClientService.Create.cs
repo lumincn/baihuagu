@@ -21,15 +21,32 @@ public partial class AiClientService
         /// <summary>
         /// 为指定提供商+模型创建 IChatClient（支持 Function Calling）
         /// 使用缓存避免每次创建新的 TCP 连接
+        ///
+        /// 一服务一数据库：Family 进程（AiClient__UseShim=true）统一经本机 AI 服务的
+        /// OpenAI 兼容 shim（/mg/ai/v1）按模型名转发——API Key 与模型路由只存在于 AI 服务；
+        /// AI 服务进程（默认 false）内部直连真实 provider，避免 shim 自指转发。
         /// </summary>
         public IChatClient CreateChatClient(string providerId, string model, IList<AITool>? tools)
         {
-            var provider = _aiSettings.GetAiProvider(providerId)
-                ?? throw new Exception(_loc["AiClient_ProviderNotFound", providerId]);
-
             var cacheKey = $"{providerId}:{model}";
             return _chatClientCache.GetOrAdd(cacheKey, _ =>
             {
+                if (_aiSettings.RouteInferenceViaShim)
+                {
+                    var shimBase = _aiSettings.AiShimUrl;
+                    // 尾斜杠关键：OpenAI SDK 在 endpoint 后追加 "chat/completions"（相对 URI 合并）
+                    var shimEndpoint = new Uri($"{shimBase.TrimEnd('/')}/mg/ai/v1/");
+                    var shimOptions = new OpenAIClientOptions { Endpoint = shimEndpoint };
+                    // shim 鉴权：未配置 BAIHUA_AI_EXTERNAL_TOKEN 时局域网信任，占位即可
+                    var shimCredential = new ApiKeyCredential("local-shim");
+                    var shimClient = new OpenAIClient(shimCredential, shimOptions);
+                    var routedClient = shimClient.GetChatClient(model).AsIChatClient();
+                    return routedClient.AsBuilder().UseOpenTelemetry().Build();
+                }
+
+                var provider = _aiSettings.GetAiProvider(providerId)
+                    ?? throw new Exception(_loc["AiClient_ProviderNotFound", providerId]);
+
                 var apiKey = _aiSettings.GetAiApiKey(providerId);
                 if (string.IsNullOrWhiteSpace(apiKey))
                     _logger.LogWarning("提供商 {ProviderId} 未配置 API Key，将以无鉴权方式请求", providerId);

@@ -112,6 +112,25 @@ public class AiSettingsService
         return GetApiKeyForProvider(providerId);
     }
 
+    /// <summary>
+    /// 本机 AI 服务的 OpenAI 兼容 shim 地址（/mg/ai/v1）。
+    /// 一服务一数据库：Family 的模型推理统一经此转发（AI 服务持有 API Key 与模型路由），
+    /// Family 不再直连云端/本地模型。
+    /// </summary>
+    public string AiShimUrl =>
+        Environment.GetEnvironmentVariable("BAIHUA_AI_URL")
+        ?? Environment.GetEnvironmentVariable("TASK_RUNNER_AI_API_URL")
+        ?? _configuration["AiApi:BaseUrl"]
+        ?? "http://127.0.0.1:8791";
+
+    /// <summary>
+    /// 推理是否经本机 AI shim 转发（一服务一库的转发开关）：
+    /// Family 进程设为 true（经 shim，不持有 key）；AI 服务进程默认 false（shim 内部直连真实 provider，
+    /// 避免 AI 服务自指转发）。
+    /// </summary>
+    public bool RouteInferenceViaShim =>
+        string.Equals(_configuration["AiClient__UseShim"], "true", StringComparison.OrdinalIgnoreCase);
+
     public string AiApiKey => GetApiKeyForProvider(GetMainAiProvider()?.Id ?? "");
 
     public string AiApiUrl

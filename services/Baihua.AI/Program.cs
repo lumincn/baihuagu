@@ -71,7 +71,8 @@ builder.Services.AddDbContextFactory<Baihua.Data.AIDbContext>(options =>
 
 builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
-builder.Services.AddDistributedMemoryCache();
+// AI 服务是转发代理：不缓存推理响应（缓存由调用方 Family 承担），避免无限内存缓存 OOM
+builder.Services.AddSingleton<Microsoft.Extensions.Caching.Distributed.IDistributedCache, Baihua.Core.Services.NoOpDistributedCache>();
 
 // AI 配置与客户端基础设施（共享自 Core.Shared）
 builder.Services.AddSingleton<AiSettingsService>();

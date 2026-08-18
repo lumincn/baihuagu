@@ -64,10 +64,10 @@ spec:
             failureThreshold: 3
           resources:
             limits:
-              memory: 1Gi
+              memory: 2Gi
             requests:
               cpu: 100m
-              memory: 256Mi
+              memory: 512Mi
       volumes:
         - name: data
           persistentVolumeClaim:
