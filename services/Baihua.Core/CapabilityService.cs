@@ -31,6 +31,11 @@ public class CapabilityService
     private readonly ILogger<CapabilityService> _logger;
     private readonly IStringLocalizer<SharedResources> _loc;
     private MachineCapability? _cachedCapability;
+    private DateTimeOffset _cachedAt = DateTimeOffset.MinValue;
+    // 与硬件信息缓存（5 分钟滑动）保持一致的 TTL：
+    // 启动瞬间硬件检测可能暂时失败（如驱动未就绪、PowerShell 冷启动超时），
+    // 若能力评估缓存不过期，GPU 功能菜单会被永久隐藏，直到手动 POST /api/capability/refresh。
+    private static readonly TimeSpan CacheTtl = TimeSpan.FromMinutes(5);
     private readonly object _lock = new();
 
     public CapabilityService(
@@ -48,16 +53,21 @@ public class CapabilityService
     /// </summary>
     public MachineCapability GetCapability()
     {
-        if (_cachedCapability.HasValue)
+        var now = DateTimeOffset.UtcNow;
+        if (_cachedCapability.HasValue && now - _cachedAt < CacheTtl)
             return _cachedCapability.Value;
 
         lock (_lock)
         {
-            if (_cachedCapability.HasValue)
+            now = DateTimeOffset.UtcNow;
+            if (_cachedCapability.HasValue && now - _cachedAt < CacheTtl)
                 return _cachedCapability.Value;
 
+            var previous = _cachedCapability;
             _cachedCapability = ComputeCapability();
-            _logger.LogInformation("机器能力评估: {Capability}", _cachedCapability.Value);
+            _cachedAt = DateTimeOffset.UtcNow;
+            if (previous != _cachedCapability)
+                _logger.LogInformation("机器能力评估: {Capability}", _cachedCapability.Value);
             return _cachedCapability.Value;
         }
     }
@@ -70,6 +80,7 @@ public class CapabilityService
         lock (_lock)
         {
             _cachedCapability = null;
+            _cachedAt = DateTimeOffset.MinValue;
             return GetCapability();
         }
     }
