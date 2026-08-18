@@ -107,6 +107,43 @@ function Wait-Port($port, $seconds) {
     return $false
 }
 
+# ---- OpenVINO 托管服务（Windows SCM 服务 BaihuaOpenVinoHost，端口 8866）----
+# 本地模型推理（Arc GPU / OpenVINO）走宿主机托管服务，bh 只做启停编排，
+# 注册/开机自启仍由 Windows SCM 负责（scripts/install-openvino-host-service.ps1）。
+# 它是 ai/family 本地推理的依赖：启动最先、停止最后（与"被依赖的先启动"一致）。
+$OpenVinoServiceName = 'BaihuaOpenVinoHost'
+$OpenVinoPort = 8866
+
+function Get-OpenVinoHostService {
+    Get-Service -Name $OpenVinoServiceName -ErrorAction SilentlyContinue
+}
+
+function Start-OpenVinoHost {
+    $svc = Get-OpenVinoHostService
+    if (-not $svc) {
+        Write-Warning "[openvino] 未安装服务 $OpenVinoServiceName（scripts/install-openvino-host-service.ps1 安装），本地 OpenVINO 推理不可用（云端 AI 不受影响）"
+        return
+    }
+    if ($svc.Status -eq 'Running') { Write-Host '[openvino] already running (service)'; return }
+    try {
+        Start-Service -Name $OpenVinoServiceName -ErrorAction Stop
+        Write-Host "[openvino] service starting (port $OpenVinoPort) ..."
+        if (-not (Wait-Port $OpenVinoPort 30)) { Write-Warning "[openvino] port $OpenVinoPort not ready in 30s" }
+        else { Write-Host "[openvino] ready on $OpenVinoPort" }
+    } catch {
+        Write-Warning "[openvino] 启动失败: $($_.Exception.Message)（云端 AI 不受影响）"
+    }
+}
+
+function Stop-OpenVinoHost {
+    $svc = Get-OpenVinoHostService
+    if (-not $svc) { return }
+    if ($svc.Status -eq 'Running') {
+        try { Stop-Service -Name $OpenVinoServiceName -Force -ErrorAction Stop; Write-Host '[openvino] service stopped' }
+        catch { Write-Warning "[openvino] 停止失败: $($_.Exception.Message)" }
+    }
+}
+
 function Start-One($svc) {
     $exe = Join-Path $OutDir "$($svc.Name)\$($svc.Exe)"
     if (-not (Test-Path $exe)) { throw "not built: $exe (run 'build' first)" }
@@ -146,6 +183,8 @@ function Start-One($svc) {
 
 function Start-Services {
     New-Item -ItemType Directory -Force -Path $DataHome | Out-Null
+    # 本地推理依赖（OpenVINO 宿主）最先启动，再启动 .NET 服务
+    Start-OpenVinoHost
     foreach ($svc in $Services) { Start-One $svc }
     Write-Host "[start] waiting for health ..."
     $ok = $true
@@ -176,6 +215,8 @@ function Stop-Services {
     # 停止顺序与启动相反：先停依赖者（webui/family），被依赖的（ai/vault）最后停，
     # 避免停止过程中仍有服务在调用已死的下游（如 family 转发 /mg/* 到 vault）。
     for ($i = $Services.Count - 1; $i -ge 0; $i--) { Stop-One $Services[$i] }
+    # 本地推理依赖最后停
+    Stop-OpenVinoHost
     Write-Host '[stop] done'
 }
 
@@ -224,6 +265,11 @@ function Show-Status {
                  else { 'stopped' }
         Write-Host ("{0,-8} port={1,-5} {2}" -f $svc.Name, $svc.Port, $state)
     }
+    # OpenVINO 宿主（Windows 服务 + 端口）
+    $ovSvc = Get-OpenVinoHostService
+    $ovState = if ($ovSvc) { $ovSvc.Status.ToString() } else { 'not installed' }
+    if (Test-PortOpen $OpenVinoPort) { $ovState = 'RUNNING (port 8866)' }
+    Write-Host ("{0,-8} port={1,-5} {2}" -f 'openvino', $OpenVinoPort, $ovState)
 }
 
 function Show-Logs($svcName, $n) {
