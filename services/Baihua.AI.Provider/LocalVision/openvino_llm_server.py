@@ -79,6 +79,30 @@ def model_id() -> str:
     return os.path.basename(MODEL_DIR).replace('.', '-').lower()
 
 
+def gpu_info():
+    """尽力获取 GPU 设备名与可用显存（FULL_DEVICE_NAME / AVAILABLE_MEMORY）。"""
+    name, vram = None, None
+    try:
+        import openvino as ov_core
+        core = ov_core.Core()
+        try:
+            name = core.get_property(DEVICE, 'FULL_DEVICE_NAME')
+        except Exception:  # noqa: BLE001
+            pass
+        try:
+            vram = core.get_property(DEVICE, 'AVAILABLE_MEMORY')  # 单位字节（部分版本返回 int）
+        except Exception:  # noqa: BLE001
+            pass
+        if isinstance(vram, str):
+            try:
+                vram = int(vram)
+            except ValueError:
+                vram = None
+    except Exception:  # noqa: BLE001
+        pass
+    return name, vram
+
+
 def get_pipe():
     """懒加载并缓存 pipeline（VL 必须 VLMPipeline，嵌入模型用 TextEmbeddingPipeline，纯文本用 LLMPipeline）"""
     global _pipe, OV_CORE
@@ -198,10 +222,13 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         path = urlparse(self.path).path
         if path == '/health' or path == '/status':
+            _dev_name, _vram = gpu_info()
             self._send_json(200, {
                 'ok': True,
                 'model': model_id(),
                 'device': DEVICE,
+                'deviceName': _dev_name,
+                'vramBytes': _vram,
                 'vl': IS_VL,
                 'embedding': IS_EMBEDDING,
                 'modelPath': MODEL_DIR,

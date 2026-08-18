@@ -84,16 +84,17 @@ namespace Baihua.Family.Controllers;
                 // pod 报告非 CPU 设备时，把它合并进硬件信息，避免页面误报"未检测到显卡/将使用 CPU"
                 if (info.Gpus is null or { Count: 0 })
                 {
-                    var podDevice = ProbeOpenVinoPodDevice();
-                    _logger.LogInformation("[HW-ENRICH] Gpus={GpuCount} podDevice={PodDevice}", info.Gpus?.Count ?? 0, podDevice);
-                    if (!string.IsNullOrWhiteSpace(podDevice) && !podDevice.Equals("CPU", StringComparison.OrdinalIgnoreCase))
+                    var pod = ProbeOpenVinoPodInfo();
+                    _logger.LogInformation("[HW-ENRICH] Gpus={GpuCount} podDevice={PodDevice}", info.Gpus?.Count ?? 0, pod.Device);
+                    if (!string.IsNullOrWhiteSpace(pod.Device) && !pod.Device.Equals("CPU", StringComparison.OrdinalIgnoreCase))
                     {
                         info.Gpus = new List<GpuInfoDto>
                         {
                             new GpuInfoDto
                             {
-                                Name = $"Intel GPU（OpenVINO 服务 · {podDevice}）",
-                                IsIntegrated = true
+                                Name = pod.DeviceName ?? $"Intel GPU（OpenVINO 服务 · {pod.Device}）",
+                                IsIntegrated = true,
+                                VramBytes = pod.VramBytes
                             }
                         };
                     }
@@ -106,29 +107,31 @@ namespace Baihua.Family.Controllers;
                 return StatusCode(500, new { error = _loc["LocalModel_GetHardwareFailed"], message = ex.Message });
             }
         }
-        private string ProbeOpenVinoPodDevice()
+        private PodHealthDto ProbeOpenVinoPodInfo()
         {
             var podUrl = Environment.GetEnvironmentVariable("OPENVINO_LLM_URL")
                 ?? Environment.GetEnvironmentVariable("OPENVINO_HOST_URL");
-            if (string.IsNullOrWhiteSpace(podUrl)) return "";
+            if (string.IsNullOrWhiteSpace(podUrl)) return new PodHealthDto();
             try
             {
                 using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
                 var health = System.Text.Json.JsonSerializer.Deserialize<PodHealthDto>(
                     client.GetStringAsync(podUrl.TrimEnd('/') + "/health").GetAwaiter().GetResult(),
                     new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                return health?.Device ?? "";
+                return health ?? new PodHealthDto();
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "[HW-ENRICH] 探测 OpenVINO pod 失败 ({Url})", podUrl);
-                return "";
+                return new PodHealthDto();
             }
         }
 
         private sealed class PodHealthDto
         {
             public string? Device { get; set; }
+            public string? DeviceName { get; set; }
+            public long? VramBytes { get; set; }
         }
 
         /// <summary>
