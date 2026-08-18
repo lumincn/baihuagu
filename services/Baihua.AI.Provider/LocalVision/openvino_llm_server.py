@@ -197,7 +197,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         path = urlparse(self.path).path
-        if path == '/health':
+        if path == '/health' or path == '/status':
             self._send_json(200, {
                 'ok': True,
                 'model': model_id(),
@@ -205,6 +205,8 @@ class Handler(BaseHTTPRequestHandler):
                 'vl': IS_VL,
                 'embedding': IS_EMBEDDING,
                 'modelPath': MODEL_DIR,
+                'port': PORT,
+                'pid': os.getpid(),
             })
         elif path == '/v1/models':
             self._send_json(200, {

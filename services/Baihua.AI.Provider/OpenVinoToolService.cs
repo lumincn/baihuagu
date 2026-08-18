@@ -375,6 +375,46 @@ public class OpenVinoToolService
                 IsRunning = runningIds.Contains(m.Id),
             });
         }
+
+        // k8s：视觉/LLM 模型托管在 bh-openvino pod（/models），本机模型根没有——
+        // 通过 OPENVINO_LLM_URL/OPENVINO_HOST_URL 的 /health 合并显示为"已下载且运行中"
+        try
+        {
+            var podUrl = Environment.GetEnvironmentVariable("OPENVINO_LLM_URL")
+                ?? Environment.GetEnvironmentVariable("OPENVINO_HOST_URL");
+            if (!string.IsNullOrWhiteSpace(podUrl))
+            {
+                using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
+                var health = await client.GetFromJsonAsync<RemoteHealthDto>(podUrl.TrimEnd('/') + "/health", ct);
+                if (health != null && !string.IsNullOrWhiteSpace(health.ModelPath))
+                {
+                    var name = Path.GetFileName(health.ModelPath.TrimEnd('/').TrimEnd('\\'));
+                    if (!string.IsNullOrWhiteSpace(name) && !result.Any(r => r.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        result.Add(new DownloadedModelDto
+                        {
+                            Name = name,
+                            ToolId = "openvino",
+                            ToolName = "OpenVINO",
+                            SizeBytes = 0,
+                            ModifiedAt = DateTime.Now,
+                            IsRunning = true,
+                        });
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // 远端不可达则忽略
+        }
+
         return result;
+    }
+
+    private sealed class RemoteHealthDto
+    {
+        public string? Model { get; set; }
+        public string? ModelPath { get; set; }
     }
 }

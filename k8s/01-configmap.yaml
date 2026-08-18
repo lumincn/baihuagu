@@ -36,5 +36,5 @@ data:
   OPENVINO_LLM_URL: "http://bh-openvino:8000"
   OPENVINO_VISION_URL: "http://bh-openvino:8801"
 
-  # OpenVINO LLM 托管服务（宿主机 openvino_host.py：8000/8001 实例的启停/状态）
-  OPENVINO_HOST_URL: "http://192.168.3.9:8866"
+  # OpenVINO LLM 托管服务（k8s 由 bh-openvino pod 承担：LLM :8000 提供 /status；native 才是宿主机 8866）
+  OPENVINO_HOST_URL: "http://bh-openvino:8000"

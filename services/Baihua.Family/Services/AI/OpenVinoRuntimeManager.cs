@@ -62,7 +62,57 @@ public class OpenVinoRuntimeManager
         {
             _logger.LogWarning(ex, "扫描模型目录失败");
         }
+
+        // 尽力合并 OpenVINO 服务 pod（k8s 部署：模型托管在 bh-openvino，不在本机模型根）
+        MergeRemoteServed(result);
+
         return result.OrderBy(m => m.Name).ToList();
+    }
+
+    /// <summary>
+    /// 合并 OpenVINO 服务（pod/远端）正在托管的模型，使其在"已下载模型"里可见。
+    /// k8s 部署下视觉模型在 bh-openvino 的 /models 目录（LLM :8000 / Vision :8801），
+    /// 本机 Family 的模型根里没有——通过 OPENVINO_LLM_URL/OPENVINO_HOST_URL 的 /health 探测。
+    /// </summary>
+    private void MergeRemoteServed(List<OpenVinoInstalledModelDto> result)
+    {
+        var podUrl = Environment.GetEnvironmentVariable("OPENVINO_LLM_URL")
+            ?? Environment.GetEnvironmentVariable("OPENVINO_HOST_URL");
+        if (string.IsNullOrWhiteSpace(podUrl)) return;
+        try
+        {
+            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
+            var health = client.GetFromJsonAsync<RemoteHealthDto>(podUrl.TrimEnd('/') + "/health")
+                .GetAwaiter().GetResult();
+            if (health == null || string.IsNullOrWhiteSpace(health.ModelPath)) return;
+
+            var name = Path.GetFileName(health.ModelPath.TrimEnd('/').TrimEnd('\\'));
+            if (string.IsNullOrWhiteSpace(name)) name = health.Model;
+            if (string.IsNullOrWhiteSpace(name)) return;
+            if (result.Any(m => m.Name.Equals(name, StringComparison.OrdinalIgnoreCase))) return;
+
+            result.Add(new OpenVinoInstalledModelDto
+            {
+                Name = name,
+                Path = health.ModelPath,
+                SizeBytes = 0,
+                HasOpenVinoBin = true,
+                IsRunning = true,
+                Port = health.Port ?? 8000,
+                LastModified = DateTime.Now
+            });
+        }
+        catch
+        {
+            // 远端服务不可达（native 未启动 / pod 未就绪）→ 忽略，保持本地扫描结果
+        }
+    }
+
+    private sealed class RemoteHealthDto
+    {
+        public string? Model { get; set; }
+        public string? ModelPath { get; set; }
+        public int? Port { get; set; }
     }
 
     /// <summary>启动模型（GPU 推理），等待就绪后返回端口</summary>

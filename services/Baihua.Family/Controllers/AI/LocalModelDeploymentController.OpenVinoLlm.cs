@@ -14,7 +14,9 @@ namespace Baihua.Family.Controllers;
 public partial class LocalModelDeploymentController
 {
     private string OpenVinoHostUrl =>
-        Environment.GetEnvironmentVariable("OPENVINO_HOST_URL") ?? "http://127.0.0.1:8866";
+        Environment.GetEnvironmentVariable("OPENVINO_HOST_URL")
+        ?? Environment.GetEnvironmentVariable("OPENVINO_LLM_URL") // k8s：bh-openvino 服务（LLM :8000）
+        ?? "http://127.0.0.1:8866";
 
     private HttpClient CreateOpenVinoHostClient() => new() { Timeout = TimeSpan.FromSeconds(15) };
 
