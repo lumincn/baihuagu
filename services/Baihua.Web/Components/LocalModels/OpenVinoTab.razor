@@ -492,6 +492,7 @@ else
         {
             _isIntelGpu = true; // 能力查询失败时默认不隐藏
         }
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task SafeLoadAsync(Func<Task> fn)
@@ -671,6 +672,9 @@ else
         finally
         {
             isLoadingOpenVinoLlm = false;
+            // 首次加载发生在 OnAfterRenderAsync（非事件处理器），必须显式重渲染，
+            // 否则界面停留在初始空状态（"暂无实例配置"），要点刷新才显示。
+            await InvokeAsync(StateHasChanged);
         }
     }
 
