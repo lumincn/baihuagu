@@ -108,19 +108,45 @@ load_images() {
 # ============================================================
 # 4. 部署到 K8s
 # ============================================================
+
+# Intel GPU 探测：决定是否部署 openvino 相关服务（10-intel-gpu-plugin + 22a-openvino）
+# 顺序：显式开关 BAIHUA_ENABLE_OPENVINO（1/0）> WSL2 /dev/dxg > 真机 /dev/dri + lspci 厂商为 Intel
+has_intel_gpu() {
+    case "${BAIHUA_ENABLE_OPENVINO:-auto}" in
+        1|true|yes|on)  log "Intel GPU: BAIHUA_ENABLE_OPENVINO=on 强制启用"; return 0 ;;
+        0|false|no|off) log "Intel GPU: BAIHUA_ENABLE_OPENVINO=off 强制停用"; return 1 ;;
+    esac
+    if [ -e /dev/dxg ]; then
+        log "Intel GPU: 检测到 /dev/dxg（WSL2 GPU-PV）"
+        return 0
+    fi
+    if [ ! -d /dev/dri ] || ! ls /dev/dri/renderD* >/dev/null 2>&1; then
+        log "Intel GPU: 未检测到 /dev/dri 渲染节点"
+        return 1
+    fi
+    if command -v lspci >/dev/null 2>&1; then
+        if lspci | grep -qiE '(vga|3d|display).*intel'; then
+            log "Intel GPU: 检测到 Intel GPU（lspci）"
+            return 0
+        fi
+        log "Intel GPU: 有 /dev/dri 但非 Intel 显卡（openvino 需要 Intel GPU，跳过）"
+        return 1
+    fi
+    log "Intel GPU: 检测到 /dev/dri（无 lspci，按有 GPU 处理）"
+    return 0
+}
+
 deploy() {
     log "部署到 K8s 集群 (namespace: $NAMESPACE) ..."
 
-    # 按顺序应用清单
+    # 基础清单（与 GPU 无关，始终部署）
     local manifests=(
         "00-namespace.yaml"
         "01-configmap.yaml"
         "02-secret.yaml"
         "03-pvc.yaml"
-        "10-intel-gpu-plugin.yaml"
         "20-vault.yaml"
         "21-ai.yaml"
-        "22a-openvino.yaml"
         "22-family.yaml"
         "23-webui.yaml"
         "24-traefik.yaml"
@@ -130,6 +156,22 @@ deploy() {
         log "  应用 $manifest ..."
         kubectl apply -f "$K8S_DIR/$manifest" 2>&1 | sed 's/^/    /'
     done
+
+    # GPU 按需：有 Intel GPU 才部署 intel-gpu-plugin（kube-system）+ bh-openvino
+    if has_intel_gpu; then
+        for manifest in "10-intel-gpu-plugin.yaml" "22a-openvino.yaml"; do
+            log "  应用 $manifest ..."
+            kubectl apply -f "$K8S_DIR/$manifest" 2>&1 | sed 's/^/    /'
+        done
+    else
+        warn "无 Intel GPU：跳过 openvino 相关服务（10-intel-gpu-plugin / 22a-openvino）"
+        # 之前部署过的话停掉，避免在无 GPU 节点上空转/崩溃循环
+        # （DaemonSet 不支持 scale，用 delete --ignore-not-found；on 时 apply 清单会重建）
+        kubectl -n kube-system delete ds intel-gpu-plugin --ignore-not-found >/dev/null 2>&1 && \
+            warn "intel-gpu-plugin 已删除（无 GPU）"
+        kubectl -n "$NAMESPACE" scale deploy bh-openvino --replicas=0 >/dev/null 2>&1 && \
+            warn "bh-openvino 已缩容至 0"
+    fi
 
     log "等待 Pod 就绪 ..."
     kubectl -n "$NAMESPACE" wait --for=condition=ready pod -l app.kubernetes.io/part-of=baihua --timeout=300s 2>&1 || \

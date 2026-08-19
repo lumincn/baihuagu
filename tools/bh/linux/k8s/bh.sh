@@ -17,6 +17,8 @@
 #   logs <svc> [n]   tail pod logs (default 50)
 #   destroy     delete namespace baihua
 #   dashboard   open browser with cli-token auto-login
+#   openvino <on|off|status>   按需启停 Intel GPU 相关服务（10-intel-gpu-plugin + bh-openvino）
+#                              deploy 时自动探测：无 Intel GPU 则跳过；可用 BAIHUA_ENABLE_OPENVINO=1/0 强制
 #   help        this help
 set -u
 
@@ -51,7 +53,37 @@ k() {
 }
 
 help_text() {
-    sed -n 's/^#   //p' "$0" | sed -n '2,14p'
+    sed -n 's/^#   //p' "$0" | grep -E '^[a-z]'
+}
+
+# Intel GPU 探测：决定是否部署/启动 openvino 相关服务（10-intel-gpu-plugin + 22a-openvino）
+# 顺序：显式开关 BAIHUA_ENABLE_OPENVINO（1/0）> WSL2 /dev/dxg > 真机 /dev/dri + lspci 厂商为 Intel
+has_intel_gpu() {
+    case "${BAIHUA_ENABLE_OPENVINO:-auto}" in
+        1|true|yes|on)  echo "[gpu] BAIHUA_ENABLE_OPENVINO=on 强制启用 openvino 服务"; return 0 ;;
+        0|false|no|off) echo "[gpu] BAIHUA_ENABLE_OPENVINO=off 强制停用 openvino 服务"; return 1 ;;
+    esac
+    # WSL2 GPU-PV：Intel NEO 驱动走 /dev/dxg
+    if [ -e /dev/dxg ]; then
+        echo "[gpu] 检测到 /dev/dxg（WSL2 GPU-PV）"
+        return 0
+    fi
+    # 真机：无 /dev/dri 渲染节点 → 无 GPU
+    if [ ! -d /dev/dri ] || ! ls /dev/dri/renderD* >/dev/null 2>&1; then
+        echo "[gpu] 未检测到 /dev/dri 渲染节点"
+        return 1
+    fi
+    # Intel 厂商判断（lspci 可用时）；lspci 缺失时以 /dev/dri 存在为准
+    if command -v lspci >/dev/null 2>&1; then
+        if lspci | grep -qiE '(vga|3d|display).*intel'; then
+            echo "[gpu] 检测到 Intel GPU（lspci）"
+            return 0
+        fi
+        echo "[gpu] 有 /dev/dri 但非 Intel 显卡（openvino 需要 Intel GPU，跳过）"
+        return 1
+    fi
+    echo "[gpu] 检测到 /dev/dri（无 lspci，按有 GPU 处理）"
+    return 0
 }
 
 # 自动安装缺失的构建依赖（nerdctl / buildkitd）
@@ -312,14 +344,71 @@ build_all() {
 }
 
 deploy_all() {
-    for m in 00-namespace.yaml 01-configmap.yaml 02-secret.yaml 03-pvc.yaml 10-intel-gpu-plugin.yaml \
-             20-vault.yaml 21-ai.yaml 22a-openvino.yaml 22-family.yaml 23-webui.yaml 24-traefik.yaml; do
+    # 基础清单（与 GPU 无关，始终部署）
+    for m in 00-namespace.yaml 01-configmap.yaml 02-secret.yaml 03-pvc.yaml \
+             20-vault.yaml 21-ai.yaml 22-family.yaml 23-webui.yaml 24-traefik.yaml; do
         echo "[deploy] $m"
         k apply -f "$K8S_DIR/$m" >/dev/null || exit 1
     done
+    # GPU 按需：有 Intel GPU 才部署 intel-gpu-plugin（kube-system）+ bh-openvino
+    if has_intel_gpu; then
+        for m in 10-intel-gpu-plugin.yaml 22a-openvino.yaml; do
+            echo "[deploy] $m"
+            k apply -f "$K8S_DIR/$m" >/dev/null || exit 1
+        done
+    else
+        echo "[deploy] 无 Intel GPU：跳过 openvino 相关服务（10-intel-gpu-plugin / 22a-openvino）"
+        # 之前部署过的话停掉，避免在无 GPU 节点上空转/崩溃循环
+        # （DaemonSet 不支持 scale，用 delete --ignore-not-found；on 时 apply 清单会重建）
+        k -n kube-system delete ds intel-gpu-plugin --ignore-not-found >/dev/null 2>&1 && \
+            echo "[deploy] intel-gpu-plugin 已删除（无 GPU）"
+        k -n "$NAMESPACE" scale deploy bh-openvino --replicas=0 >/dev/null 2>&1 && \
+            echo "[deploy] bh-openvino 已缩容至 0"
+    fi
     echo "[deploy] waiting for pods ..."
     k -n "$NAMESPACE" wait --for=condition=ready pod -l app.kubernetes.io/part-of=baihua --timeout=300s || echo "[deploy] some pods not ready (see status)"
     status_all
+}
+
+# openvino 按需启停：on 启动（无 GPU 时拒绝，除非 BAIHUA_ENABLE_OPENVINO=1 强制），off 缩容至 0，status 查看
+openvino_cmd() {
+    local action="${1:-status}"
+    case "$action" in
+        on|start)
+            if ! has_intel_gpu; then
+                echo "[openvino] 未检测到 Intel GPU，拒绝启动。如确需强制请: BAIHUA_ENABLE_OPENVINO=1 $0 openvino on" >&2
+                return 1
+            fi
+            k apply -f "$K8S_DIR/10-intel-gpu-plugin.yaml" -f "$K8S_DIR/22a-openvino.yaml" >/dev/null || exit 1
+            k -n kube-system scale ds intel-gpu-plugin --replicas=1 >/dev/null 2>&1 || true
+            k -n "$NAMESPACE" scale deploy bh-openvino --replicas=1 >/dev/null 2>&1
+            echo "[openvino] 已启动，等待就绪（kubectl -n baihua rollout status deploy/bh-openvino）"
+            ;;
+        off|stop)
+            k -n "$NAMESPACE" scale deploy bh-openvino --replicas=0 >/dev/null 2>&1
+            # DaemonSet 不支持 scale，用 delete（on 时 apply 清单重建）
+            k -n kube-system delete ds intel-gpu-plugin --ignore-not-found >/dev/null 2>&1
+            echo "[openvino] 已停止（bh-openvino 缩容至 0、intel-gpu-plugin 已删除，可随时 on 恢复）"
+            ;;
+        status)
+            echo "=== Intel GPU 探测 ==="
+            has_intel_gpu
+            echo ""
+            echo "=== bh-openvino ==="
+            k -n "$NAMESPACE" get deploy bh-openvino 2>/dev/null || echo "  (未部署)"
+            k -n "$NAMESPACE" get pods -l app=bh-openvino 2>/dev/null || true
+            echo ""
+            echo "=== intel-gpu-plugin ==="
+            k -n kube-system get ds intel-gpu-plugin 2>/dev/null || echo "  (未部署)"
+            echo ""
+            echo "=== 节点 Intel GPU 资源 ==="
+            k get nodes -o custom-columns=NAME:.metadata.name,GPU:.status.capacity.'intel\.com/gpu' 2>/dev/null || echo "  (device-plugin 未注册)"
+            ;;
+        *)
+            echo "用法: $0 openvino <on|off|status>"
+            return 1
+            ;;
+    esac
 }
 
 status_all() {
@@ -412,6 +501,7 @@ case "${1:-help}" in
     up)        build_all; deploy_all ;;
     update)    git pull origin main && build_all && deploy_all ;;
     status)    status_all ;;
+    openvino)  openvino_cmd "${2:-status}" ;;
     logs)      show_logs "${2:-bh-family}" "${3:-50}" ;;
     destroy)   k delete namespace "$NAMESPACE"; echo "[destroy] done" ;;
     dashboard) open_dashboard ;;

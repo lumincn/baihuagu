@@ -293,6 +293,29 @@ openssl rand -base64 32
 ./deploy.sh deploy
 ```
 
+### GPU 按需部署（只有 Intel GPU 才启动 OpenVINO 服务）
+
+`deploy` / `bh up` 会自动探测节点是否有 Intel GPU，**有才部署** `10-intel-gpu-plugin`（kube-system）与 `22a-openvino`：
+
+- 探测顺序：`BAIHUA_ENABLE_OPENVINO` 环境变量开关 → WSL2 `/dev/dxg` → 真机 `/dev/dri` + `lspci` 厂商为 Intel
+- 无 Intel GPU 时跳过这两个清单；若之前部署过，自动停掉（`bh-openvino` 缩容至 0、`intel-gpu-plugin` 删除），避免无 GPU 节点上空转/崩溃循环
+- Family 对远程 OpenVINO 有 5 秒超时优雅降级，无 openvino 时服务照常健康运行，仅 AI 推理功能不可用
+
+显式强制开关（跳过自动探测）：
+
+```bash
+BAIHUA_ENABLE_OPENVINO=1 ./deploy.sh deploy   # 无 GPU 也强制部署（不推荐）
+BAIHUA_ENABLE_OPENVINO=0 ./deploy.sh deploy   # 有 GPU 也强制跳过
+```
+
+运行时按需启停（`tools/bh/linux/k8s/bh.sh`，清单保留、随时可恢复）：
+
+```bash
+sudo bh openvino status     # 探测结果 + bh-openvino / intel-gpu-plugin 状态 + 节点 GPU 资源
+sudo bh openvino off        # 停止：bh-openvino 缩容至 0，intel-gpu-plugin 删除
+sudo bh openvino on         # 启动：重新 apply 两个清单并恢复副本数（无 GPU 时拒绝，除非 BAIHUA_ENABLE_OPENVINO=1）
+```
+
 > 部署完成后打开管理面板：
 > ```bash
 > bh dashboard              # 普通用户：自动带 cli-token 打开默认浏览器
