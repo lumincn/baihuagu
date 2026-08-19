@@ -297,7 +297,8 @@ openssl rand -base64 32
 
 `deploy` / `bh up` 会自动探测节点是否有 Intel GPU，**有才部署** `10-intel-gpu-plugin`（kube-system）与 `22a-openvino`：
 
-- 探测顺序：`BAIHUA_ENABLE_OPENVINO` 环境变量开关 → WSL2 `/dev/dxg` → 真机 `/dev/dri` + `lspci` 厂商为 Intel
+- 探测顺序：`BAIHUA_ENABLE_OPENVINO` 环境变量开关 → WSL2 GPU-PV（内核含 microsoft 且 `/dev/dxg` 为字符设备）→ 真机 `/dev/dri` 渲染节点 + `lspci` 厂商为 Intel
+- ⚠️ 不把 `/dev/dxg` 存在当 WSL2 依据：k8s 的 `hostPath type: DirectoryOrCreate`（22a-openvino.yaml 的 dxg 挂载）会在**原生 Linux** 宿主机上自动建出空的 `/dev/dxg` 目录，只有字符设备（`-c`）才是真实的 WSL2 GPU-PV
 - 无 Intel GPU 时跳过这两个清单；若之前部署过，自动停掉（`bh-openvino` 缩容至 0、`intel-gpu-plugin` 删除），避免无 GPU 节点上空转/崩溃循环
 - Family 对远程 OpenVINO 有 5 秒超时优雅降级，无 openvino 时服务照常健康运行，仅 AI 推理功能不可用
 

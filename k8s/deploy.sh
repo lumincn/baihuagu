@@ -109,16 +109,35 @@ load_images() {
 # 4. 部署到 K8s
 # ============================================================
 
+# WSL2 判定：内核版本/ /proc/version 含 microsoft，或 systemd-detect-virt=wsl
+# （不能拿 /dev/dxg 当依据——k8s hostPath DirectoryOrCreate 会在原生 Linux 上建出空目录）
+is_wsl() {
+    if [ -f /proc/sys/kernel/osrelease ] && grep -qi microsoft /proc/sys/kernel/osrelease 2>/dev/null; then
+        return 0
+    fi
+    if [ -f /proc/version ] && grep -qi microsoft /proc/version 2>/dev/null; then
+        return 0
+    fi
+    if command -v systemd-detect-virt >/dev/null 2>&1; then
+        [ "$(systemd-detect-virt)" = "wsl" ] && return 0
+    fi
+    return 1
+}
+
 # Intel GPU 探测：决定是否部署 openvino 相关服务（10-intel-gpu-plugin + 22a-openvino）
-# 顺序：显式开关 BAIHUA_ENABLE_OPENVINO（1/0）> WSL2 /dev/dxg > 真机 /dev/dri + lspci 厂商为 Intel
+# 顺序：显式开关 BAIHUA_ENABLE_OPENVINO（1/0）> WSL2 GPU-PV（内核判定 + /dev/dxg 字符设备）> 真机 /dev/dri + lspci 厂商为 Intel
 has_intel_gpu() {
     case "${BAIHUA_ENABLE_OPENVINO:-auto}" in
         1|true|yes|on)  log "Intel GPU: BAIHUA_ENABLE_OPENVINO=on 强制启用"; return 0 ;;
         0|false|no|off) log "Intel GPU: BAIHUA_ENABLE_OPENVINO=off 强制停用"; return 1 ;;
     esac
-    if [ -e /dev/dxg ]; then
-        log "Intel GPU: 检测到 /dev/dxg（WSL2 GPU-PV）"
-        return 0
+    # WSL2：GPU-PV 走 /dev/dxg（必须是字符设备；空目录是 k8s hostPath 建的，不作数）
+    if is_wsl; then
+        if [ -c /dev/dxg ]; then
+            log "Intel GPU: WSL2 GPU-PV（/dev/dxg 字符设备）"
+            return 0
+        fi
+        log "Intel GPU: WSL2 未检测到 /dev/dxg 字符设备，继续查 /dev/dri"
     fi
     if [ ! -d /dev/dri ] || ! ls /dev/dri/renderD* >/dev/null 2>&1; then
         log "Intel GPU: 未检测到 /dev/dri 渲染节点"
