@@ -411,6 +411,21 @@
         line-height: 1.5;
     }
 
+    /* 暗色模式适配：app.css 的全局暗色规则会把 .feature-card 背景压成深色(#232a3b)，
+       而本页标题/描述仍是深色文字，导致标题与背景色过于接近。
+       这里在暗色模式下恢复浅色卡片，保证标题与描述保持可读。 */
+    [data-bs-theme="dark"] .feature-card {
+        background: #f5f8fa;
+    }
+
+    [data-bs-theme="dark"] .feature-card h3 {
+        color: #1e3a4c;
+    }
+
+    [data-bs-theme="dark"] .feature-card p {
+        color: #5a6a72;
+    }
+
     /* 信息框 */
     .info-box {
         background: linear-gradient(135deg, #e0ecf4 0%, #c8dde8 100%);
