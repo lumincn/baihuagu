@@ -13,7 +13,7 @@ public class ComfyArtworkEntity
     /// <summary>
     /// 生成时间
     /// </summary>
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// 生成类型：image / video

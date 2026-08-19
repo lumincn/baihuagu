@@ -450,21 +450,21 @@ public class FamilyDbContext : DbContext
         foreach (var entry in entries)
         {
             if (entry.Entity is TaskEntity task)
-                task.UpdatedAt = DateTime.Now;
+                task.UpdatedAt = DateTime.UtcNow;
             else if (entry.Entity is OnboardingState onboarding)
-                onboarding.UpdatedAt = DateTime.Now;
+                onboarding.UpdatedAt = DateTime.UtcNow;
             else if (entry.Entity is InitTaskProgress initTask)
-                initTask.UpdatedAt = DateTime.Now;
+                initTask.UpdatedAt = DateTime.UtcNow;
             else if (entry.Entity is CardReviewState reviewState)
-                reviewState.UpdatedAt = DateTime.Now;
+                reviewState.UpdatedAt = DateTime.UtcNow;
             else if (entry.Entity is AuthorizedDevice device)
-                device.UpdatedAt = DateTime.Now;
+                device.UpdatedAt = DateTime.UtcNow;
             else if (entry.Entity is ServerAddressSetting setting)
-                setting.UpdatedAt = DateTime.Now;
+                setting.UpdatedAt = DateTime.UtcNow;
             else if (entry.Entity is Master master)
-                master.UpdatedAt = DateTime.Now;
+                master.UpdatedAt = DateTime.UtcNow;
             else if (entry.Entity is ApprenticeProfile profile)
-                profile.UpdatedAt = DateTime.Now;
+                profile.UpdatedAt = DateTime.UtcNow;
         }
     }
 }

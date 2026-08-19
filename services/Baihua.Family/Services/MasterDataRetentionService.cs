@@ -54,7 +54,7 @@ public class MasterDataRetentionService : BackgroundService
         {
             var graduated = System.Text.Json.JsonSerializer.Deserialize<List<string>>(master.GraduatedStagesJson) ?? new();
 
-            var compressCutoff = DateTime.Now.AddDays(-7);
+            var compressCutoff = DateTime.UtcNow.AddDays(-7);
             foreach (var stage in graduated)
             {
                 var existingSummary = await db.StageSummaries
@@ -95,7 +95,7 @@ public class MasterDataRetentionService : BackgroundService
                 }
             }
 
-            var evictCutoff = DateTime.Now.AddDays(-30);
+            var evictCutoff = DateTime.UtcNow.AddDays(-30);
             var profile = await db.ApprenticeProfiles.FirstOrDefaultAsync(p => p.MasterId == master.MasterId, ct);
             if (profile == null)
             {

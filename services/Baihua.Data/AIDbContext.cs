@@ -191,11 +191,11 @@ public class AIDbContext : DbContext
         {
             if (entry.Entity is AiProviderSetting provider)
             {
-                provider.UpdatedAt = DateTime.Now;
+                provider.UpdatedAt = DateTime.UtcNow;
             }
             else if (entry.Entity is EmbeddingConfig embedding)
             {
-                embedding.UpdatedAt = DateTime.Now;
+                embedding.UpdatedAt = DateTime.UtcNow;
             }
 
         }

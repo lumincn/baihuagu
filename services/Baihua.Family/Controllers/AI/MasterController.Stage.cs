@@ -97,7 +97,7 @@ public partial class MasterController
                 foreach (var v in focusedVaults)
                 {
                     v.State = "archived";
-                    v.UpdatedAt = DateTime.Now;
+                    v.UpdatedAt = DateTime.UtcNow;
                 }
                 var discoveredVaults = await db.VaultFocusStates
                     .Where(v => v.MasterId == id && v.State == "discovered" && v.StageName == nextStageName)
@@ -105,7 +105,7 @@ public partial class MasterController
                 foreach (var v in discoveredVaults)
                 {
                     v.State = "focused";
-                    v.UpdatedAt = DateTime.Now;
+                    v.UpdatedAt = DateTime.UtcNow;
                 }
                 await db.SaveChangesAsync();
             }

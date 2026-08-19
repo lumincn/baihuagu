@@ -54,7 +54,7 @@ public class VaultFocusController : ControllerBase
         {
             existing.State = "focused";
             existing.StageName = request.StageName;
-            existing.UpdatedAt = DateTime.Now;
+            existing.UpdatedAt = DateTime.UtcNow;
         }
         else
         {
@@ -86,7 +86,7 @@ public class VaultFocusController : ControllerBase
         if (existing != null)
         {
             existing.State = "archived";
-            existing.UpdatedAt = DateTime.Now;
+            existing.UpdatedAt = DateTime.UtcNow;
         }
         else
         {

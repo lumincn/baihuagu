@@ -33,7 +33,7 @@ public partial class MasterController
                 return NotFound(new { Success = false, Message = _loc["Master_NotFound"] });
 
             var graduated = System.Text.Json.JsonSerializer.Deserialize<List<string>>(master.GraduatedStagesJson) ?? new();
-            var cutoff = DateTime.Now.AddDays(-7);
+            var cutoff = DateTime.UtcNow.AddDays(-7);
 
             var compressedCount = 0;
             foreach (var stage in graduated)
@@ -102,7 +102,7 @@ public partial class MasterController
                 return NotFound(new { Success = false, Message = _loc["Master_NotFound"] });
 
             var graduated = System.Text.Json.JsonSerializer.Deserialize<List<string>>(master.GraduatedStagesJson) ?? new();
-            var cutoff = DateTime.Now.AddDays(-30);
+            var cutoff = DateTime.UtcNow.AddDays(-30);
 
             var evictedCount = 0;
             var profile = await db.ApprenticeProfiles.FirstOrDefaultAsync(p => p.MasterId == id);
@@ -187,7 +187,7 @@ public partial class MasterController
             foreach (var master in masters)
             {
                 var graduated = System.Text.Json.JsonSerializer.Deserialize<List<string>>(master.GraduatedStagesJson) ?? new();
-                var compressCutoff = DateTime.Now.AddDays(-7);
+                var compressCutoff = DateTime.UtcNow.AddDays(-7);
 
                 foreach (var stage in graduated)
                 {
@@ -234,7 +234,7 @@ public partial class MasterController
                     }
                 }
 
-                var evictCutoff = DateTime.Now.AddDays(-30);
+                var evictCutoff = DateTime.UtcNow.AddDays(-30);
                 var profile = await db.ApprenticeProfiles.FirstOrDefaultAsync(p => p.MasterId == master.MasterId);
                 if (profile == null)
                 {

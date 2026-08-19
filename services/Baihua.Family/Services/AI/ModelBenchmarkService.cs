@@ -118,7 +118,7 @@ public class ModelBenchmarkService
                 lock (_statusLock) _status.CompletedCount++;
             }
 
-            session.TestedAt = DateTime.Now;
+            session.TestedAt = DateTime.UtcNow;
             await _repo.SaveSessionAsync(session);
 
             lock (_statusLock)

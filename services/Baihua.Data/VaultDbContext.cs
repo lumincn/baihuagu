@@ -126,11 +126,11 @@ public class VaultDbContext : DbContext
         {
             if (entry.Entity is Vault vault)
             {
-                vault.UpdatedAt = DateTime.Now;
+                vault.UpdatedAt = DateTime.UtcNow;
             }
             else if (entry.Entity is NoteEmbedding noteEmbedding)
             {
-                noteEmbedding.UpdatedAt = DateTime.Now;
+                noteEmbedding.UpdatedAt = DateTime.UtcNow;
             }
         }
     }

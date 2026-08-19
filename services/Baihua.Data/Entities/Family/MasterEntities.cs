@@ -34,8 +34,8 @@ public class Master
     [MaxLength(20)]
     public string Status { get; set; } = "active";
 
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
-    public DateTime UpdatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
 
 public class MasterConversation
@@ -58,7 +58,7 @@ public class MasterConversation
     [MaxLength(20)]
     public string Stage { get; set; } = "";
 
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
 
 public class StageSummary
@@ -78,7 +78,7 @@ public class StageSummary
     [Required]
     public string Summary { get; set; } = "";
 
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
 
 public class ApprenticeProfile
@@ -96,7 +96,7 @@ public class ApprenticeProfile
     public string? Strengths { get; set; }
     public string? Weaknesses { get; set; }
 
-    public DateTime UpdatedAt { get; set; } = DateTime.Now;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
 
 public class ExamCheckpoint
@@ -118,7 +118,7 @@ public class ExamCheckpoint
     public string WeakPointsJson { get; set; } = "[]";
     public string Advice { get; set; } = "";
 
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
 
 public class VaultFocusState
@@ -141,7 +141,7 @@ public class VaultFocusState
     [MaxLength(20)]
     public string? StageName { get; set; }
 
-    public DateTime UpdatedAt { get; set; } = DateTime.Now;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
 
 public class VaultFreeState
@@ -157,5 +157,5 @@ public class VaultFreeState
     [MaxLength(20)]
     public string State { get; set; } = "discovered";
 
-    public DateTime UpdatedAt { get; set; } = DateTime.Now;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

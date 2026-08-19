@@ -197,7 +197,7 @@ public partial class MasterController
             if (request.LearningStyle != null) profile.LearningStyle = request.LearningStyle;
             if (request.Strengths != null) profile.Strengths = request.Strengths;
             if (request.Weaknesses != null) profile.Weaknesses = request.Weaknesses;
-            profile.UpdatedAt = DateTime.Now;
+            profile.UpdatedAt = DateTime.UtcNow;
 
             await db.SaveChangesAsync();
 
@@ -384,14 +384,14 @@ public partial class MasterController
                     VaultId = request.VaultId,
                     State = request.State,
                     StageName = request.StageName,
-                    UpdatedAt = DateTime.Now
+                    UpdatedAt = DateTime.UtcNow
                 });
             }
             else
             {
                 existing.State = request.State;
                 existing.StageName = request.StageName;
-                existing.UpdatedAt = DateTime.Now;
+                existing.UpdatedAt = DateTime.UtcNow;
             }
 
             await db.SaveChangesAsync();
@@ -430,7 +430,7 @@ public partial class MasterController
                 return NotFound(new VaultFocusUpdateResponse { Success = false, Message = _loc["Master_VaultFocusNotFound"] });
 
             existing.State = "archived";
-            existing.UpdatedAt = DateTime.Now;
+            existing.UpdatedAt = DateTime.UtcNow;
             await db.SaveChangesAsync();
 
             return Ok(new VaultFocusUpdateResponse { Success = true, Message = _loc["Master_VaultFocusRemoved"] });

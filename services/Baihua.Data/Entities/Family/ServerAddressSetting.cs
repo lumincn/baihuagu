@@ -44,11 +44,11 @@ namespace Baihua.Data.Entities
         /// <summary>
         /// 创建时间
         /// </summary>
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// 更新时间
         /// </summary>
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     }
 }

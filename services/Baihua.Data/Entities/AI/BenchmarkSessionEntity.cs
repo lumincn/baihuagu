@@ -18,7 +18,7 @@ public class BenchmarkSessionEntity
     /// <summary>
     /// 测试时间
     /// </summary>
-    public DateTime TestedAt { get; set; } = DateTime.Now;
+    public DateTime TestedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// 显示名称，如 ollama/qwen2.5:7b
