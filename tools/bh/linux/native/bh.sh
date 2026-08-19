@@ -21,7 +21,9 @@ PID_DIR="$OUT_DIR/pids"
 LOG_DIR="$OUT_DIR/logs"
 DATA_HOME="${BAIHUA_HOME:-$HOME/.baihua}"
 
-SERVICES="vault:services/Baihua.Vault:bh-vault:8790 ai:services/Baihua.AI:bh-ai:8791 family:services/Baihua.Family:bh-family:8788 webui:services/Baihua.Web:bh-webui:5177"
+# 依赖链 ai -> vault -> family -> webui（vault 语义搜索经 HTTP 调 AI；family 转发 /mg/* 到 vault 并调 AI；webui 调三者）
+# 数组即启动顺序（被依赖的先启动）；stop_all 逆序遍历（依赖者先停）-> webui -> family -> vault -> ai
+SERVICES="ai:services/Baihua.AI:bh-ai:8791 vault:services/Baihua.Vault:bh-vault:8790 family:services/Baihua.Family:bh-family:8788 webui:services/Baihua.Web:bh-webui:5177"
 
 help_text() {
     sed -n 's/^#   //p' "$0" | sed -n '2,12p'
@@ -35,6 +37,16 @@ wait_port() {
     local port=$1 secs=$2
     for _ in $(seq 1 $((secs * 2))); do
         port_open "$port" && return 0
+        sleep 0.5
+    done
+    return 1
+}
+
+# 等待端口关闭（restart 时 kill 后 socket 释放有延迟，避免 start_one 误判 already in use）
+wait_port_closed() {
+    local port=$1 secs=$2
+    for _ in $(seq 1 $((secs * 2))); do
+        port_open "$port" || return 0
         sleep 0.5
     done
     return 1
@@ -85,7 +97,23 @@ start_one() {
     IFS=: read -r name proj exe port <<<"$1"
     local bin="$OUT_DIR/$name/$exe"
     [ -x "$bin" ] || { echo "[$name] not built: $bin (run build first)"; exit 1; }
-    port_open "$port" && { echo "[$name] port $port already in use, skip"; return; }
+    if port_open "$port"; then
+        # 端口被占：若是我们的残留进程（pid 文件在且进程活着），补杀后重试；否则跳过
+        local pf="$PID_DIR/$name.pid"
+        if [ -f "$pf" ]; then
+            local oldpid
+            oldpid=$(cat "$pf")
+            if kill -0 "$oldpid" 2>/dev/null; then
+                echo "[$name] port $port 被残留进程 $oldpid 占用，补杀后重试"
+                kill "$oldpid" 2>/dev/null
+                if ! wait_port_closed "$port" 10; then echo "[$name] port $port 仍被占用，跳过"; return; fi
+            else
+                echo "[$name] port $port already in use, skip"; return
+            fi
+        else
+            echo "[$name] port $port already in use, skip"; return
+        fi
+    fi
     mkdir -p "$PID_DIR" "$LOG_DIR" "$DATA_HOME"
     # family 是跨机入口（算力池 /mg/capabilities、/mg/ai/、/mg/pool/、服务器互联），
     # 必须绑定 0.0.0.0 才能被局域网内其他百花服务器访问；其余服务保持回环。
@@ -126,6 +154,11 @@ stop_all() {
             kill "$pid" 2>/dev/null && echo "[$name] stopped pid=$pid" || echo "[$name] pid $pid not running"
             rm -f "$pf"
         fi
+    done
+    # 等待端口全部释放（kill 后 socket 关闭有延迟，restart 立即 start 会误判 already in use）
+    for entry in $SERVICES; do
+        IFS=: read -r name proj exe port <<<"$entry"
+        if ! wait_port_closed "$port" 15; then echo "[$name] port $port 15s 内未释放（有残留进程？）"; fi
     done
     echo "[stop] done"
 }

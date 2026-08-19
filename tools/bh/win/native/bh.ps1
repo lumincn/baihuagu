@@ -37,9 +37,14 @@ $PidDir = Join-Path $OutDir 'pids'
 $LogDir = Join-Path $OutDir 'logs'
 $DataHome = if ($env:BAIHUA_HOME) { $env:BAIHUA_HOME } else { Join-Path $HOME '.baihua' }
 
+# 依赖链：ai → vault → family → webui
+#  - vault 的语义搜索（EmbeddingService）经 HTTP 调 AI 服务（/api/embedding/config + embedding API）
+#  - family 转发 /mg/* 到 vault、调 AI（BAIHUA_VAULT_URL / BAIHUA_AI_URL）
+#  - webui 调 family/ai/vault（FamilyApi/AiApi/VaultApi）
+# 数组即启动顺序（被依赖的先启动）；Stop-Services 逆序遍历（依赖者先停）→ webui → family → vault → ai
 $Services = @(
-    @{ Name = 'vault';  Project = 'services\Baihua.Vault';  Exe = 'bh-vault.exe';  Port = 8790 },
     @{ Name = 'ai';     Project = 'services\Baihua.AI';     Exe = 'bh-ai.exe';     Port = 8791 },
+    @{ Name = 'vault';  Project = 'services\Baihua.Vault';  Exe = 'bh-vault.exe';  Port = 8790 },
     @{ Name = 'family'; Project = 'services\Baihua.Family'; Exe = 'bh-family.exe'; Port = 8788 },
     @{ Name = 'webui';  Project = 'services\Baihua.Web';    Exe = 'bh-webui.exe';  Port = 5177 }
 )
@@ -107,6 +112,24 @@ function Wait-Port($port, $seconds) {
     return $false
 }
 
+function Wait-PortClosed($port, $seconds) {
+    $deadline = (Get-Date).AddSeconds($seconds)
+    while ((Get-Date) -lt $deadline) {
+        if (-not (Test-PortOpen $port)) { return $true }
+        Start-Sleep -Milliseconds 300
+    }
+    return $false
+}
+
+function Wait-ProcessExit($pid2, $seconds) {
+    $deadline = (Get-Date).AddSeconds($seconds)
+    while ((Get-Date) -lt $deadline) {
+        if (-not (Get-Process -Id $pid2 -ErrorAction SilentlyContinue)) { return $true }
+        Start-Sleep -Milliseconds 200
+    }
+    return $false
+}
+
 # ---- OpenVINO 托管服务（Windows SCM 服务 BaihuaOpenVinoHost，端口 8866）----
 # 独立系统服务：安装/卸载/启停由用户手动（管理员权限）管理
 # （scripts/install-openvino-host-service.ps1），bh 不参与启停，仅在 status 中展示状态。
@@ -120,7 +143,20 @@ function Get-OpenVinoHostService {
 function Start-One($svc) {
     $exe = Join-Path $OutDir "$($svc.Name)\$($svc.Exe)"
     if (-not (Test-Path $exe)) { throw "not built: $exe (run 'build' first)" }
-    if (Test-PortOpen $svc.Port) { Write-Warning "[$($svc.Name)] port $($svc.Port) already in use, skip"; return }
+    if (Test-PortOpen $svc.Port) {
+        # 端口被占：若是我们的残留进程（bh-*.exe，restart 时 Stop-Process 未杀透/pid 文件过期），
+        # 补杀后重试；否则（外部进程占用）才跳过。
+        $conn = Get-NetTCPConnection -LocalPort $svc.Port -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
+        $owner = if ($conn) { Get-Process -Id $conn.OwningProcess -ErrorAction SilentlyContinue } else { $null }
+        if ($owner -and $owner.ProcessName -like 'bh-*') {
+            Write-Warning "[$($svc.Name)] port $($svc.Port) 被残留进程 $($owner.ProcessName)($($owner.Id)) 占用，补杀后重试"
+            Stop-Process -Id $owner.Id -Force -ErrorAction SilentlyContinue
+            if (-not (Wait-PortClosed $svc.Port 10)) { Write-Warning "[$($svc.Name)] port $($svc.Port) 仍被占用，跳过"; return }
+        } else {
+            Write-Warning "[$($svc.Name)] port $($svc.Port) already in use, skip"
+            return
+        }
+    }
     # family 是跨机入口（算力池 /mg/capabilities、/mg/ai/、/mg/pool/、服务器互联），
     # 必须绑定 0.0.0.0 才能被局域网内其他百花服务器访问；其余服务保持回环。
     $bind = '127.0.0.1'
@@ -172,7 +208,13 @@ function Stop-One($svc) {
     if (Test-Path $pf) {
         $pid2 = [int](Get-Content $pf)
         $proc = Get-Process -Id $pid2 -ErrorAction SilentlyContinue
-        if ($proc) { Stop-Process -Id $pid2 -Force -ErrorAction SilentlyContinue; Write-Host "[$($svc.Name)] stopped pid=$pid2"; $stopped = $true }
+        if ($proc) {
+            Stop-Process -Id $pid2 -Force -ErrorAction SilentlyContinue
+            # 等待进程真正退出（TerminateProcess 后进程对象退出/句柄清理有延迟，
+            # 不等待的话 restart 立即 Start-One 会误判端口 already in use）
+            if (-not (Wait-ProcessExit $pid2 10)) { Write-Warning "[$($svc.Name)] pid $pid2 10s 内未退出" }
+            $stopped = $true
+        }
         Remove-Item $pf -Force -ErrorAction SilentlyContinue
     }
     if (-not $stopped -and (Test-PortOpen $svc.Port)) {
@@ -186,6 +228,13 @@ function Stop-Services {
     # 停止顺序与启动相反：先停依赖者（webui/family），被依赖的（ai/vault）最后停，
     # 避免停止过程中仍有服务在调用已死的下游（如 family 转发 /mg/* 到 vault）。
     for ($i = $Services.Count - 1; $i -ge 0; $i--) { Stop-One $Services[$i] }
+    # 等待端口全部释放：进程退出后监听 socket 关闭有延迟，
+    # restart/update 紧接着 Start-Services 会误判 already in use 而 skip。
+    foreach ($svc in $Services) {
+        if (-not (Wait-PortClosed $svc.Port 15)) {
+            Write-Warning "[$($svc.Name)] port $($svc.Port) 15s 内未释放（有残留进程？请检查）"
+        }
+    }
     Write-Host '[stop] done'
 }
 
@@ -286,7 +335,12 @@ switch ($Command.ToLower()) {
     }
     'restart'   {
         if ($Arg1) {
-            $svc = $null; if (Resolve-SingleService $Arg1 ([ref]$svc)) { Stop-One $svc; Start-One $svc; Write-Host "[restart] $($svc.Name) restarting..." }
+            $svc = $null; if (Resolve-SingleService $Arg1 ([ref]$svc)) {
+                Stop-One $svc
+                if (-not (Wait-PortClosed $svc.Port 15)) { Write-Warning "[$($svc.Name)] port $($svc.Port) 15s 内未释放" }
+                Start-One $svc
+                Write-Host "[restart] $($svc.Name) restarting..."
+            }
         } else { Stop-Services; Start-Services }
     }
     'update'    { Update-Services }

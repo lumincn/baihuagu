@@ -84,6 +84,24 @@ function Test-PortOpen($port) {
     try { $c.Connect('127.0.0.1', $port); return $true } catch { return $false } finally { $c.Dispose() }
 }
 
+function Wait-PortClosed($port, $seconds) {
+    $deadline = (Get-Date).AddSeconds($seconds)
+    while ((Get-Date) -lt $deadline) {
+        if (-not (Test-PortOpen $port)) { return $true }
+        Start-Sleep -Milliseconds 300
+    }
+    return $false
+}
+
+function Wait-ProcessExit($pid2, $seconds) {
+    $deadline = (Get-Date).AddSeconds($seconds)
+    while ((Get-Date) -lt $deadline) {
+        if (-not (Get-Process -Id $pid2 -ErrorAction SilentlyContinue)) { return $true }
+        Start-Sleep -Milliseconds 200
+    }
+    return $false
+}
+
 # ---- OpenVINO 托管服务（Windows SCM 服务 BaihuaOpenVinoHost，端口 8866）----
 # 独立系统服务：安装/卸载/启停由用户手动（管理员权限）管理
 # （scripts/install-openvino-host-service.ps1），bh 不参与启停，仅在 status 中展示状态。
@@ -132,8 +150,17 @@ function Start-Native-Ai {
         $pid2 = Get-Content $AiPidFile -ErrorAction SilentlyContinue
         $proc = Get-Process -Id $pid2 -ErrorAction SilentlyContinue
         if ($proc) { Write-Host '[ai] already running (pid='$pid2')'; return }
-        Write-Warning '[ai] port 8791 in use by foreign process, skip'
-        return
+        # 端口被占但 pid 文件进程不存在：若是 bh-ai 残留进程，补杀后重试
+        $conn = Get-NetTCPConnection -LocalPort 8791 -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
+        $owner = if ($conn) { Get-Process -Id $conn.OwningProcess -ErrorAction SilentlyContinue } else { $null }
+        if ($owner -and $owner.ProcessName -like 'bh-*') {
+            Write-Warning "[ai] port 8791 被残留进程 $($owner.ProcessName)($($owner.Id)) 占用，补杀后重试"
+            Stop-Process -Id $owner.Id -Force -ErrorAction SilentlyContinue
+            if (-not (Wait-PortClosed 8791 10)) { Write-Warning '[ai] port 8791 仍被占用，跳过'; return }
+        } else {
+            Write-Warning '[ai] port 8791 in use by foreign process, skip'
+            return
+        }
     }
     $envBlock = @{
         BAIHUA_HOME = $DataHome
@@ -155,13 +182,19 @@ function Stop-Native-Ai {
     if (Test-Path $AiPidFile) {
         $pid2 = [int](Get-Content $AiPidFile)
         $proc = Get-Process -Id $pid2 -ErrorAction SilentlyContinue
-        if ($proc) { Stop-Process -Id $pid2 -Force -ErrorAction SilentlyContinue; Write-Host "[ai] stopped pid=$pid2"; $stopped = $true }
+        if ($proc) {
+            Stop-Process -Id $pid2 -Force -ErrorAction SilentlyContinue
+            # 等待进程退出/端口释放（restart 时避免 Start-Native-Ai 误判 already in use）
+            if (-not (Wait-ProcessExit $pid2 10)) { Write-Warning "[ai] pid $pid2 10s 内未退出" }
+            $stopped = $true
+        }
         Remove-Item $AiPidFile -Force -ErrorAction SilentlyContinue
     }
     if (-not $stopped -and (Test-PortOpen 8791)) {
         $conn = Get-NetTCPConnection -LocalPort 8791 -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
         if ($conn) { Stop-Process -Id $conn.OwningProcess -Force -ErrorAction SilentlyContinue; Write-Host "[ai] stopped by port pid=$($conn.OwningProcess)" }
     }
+    if (-not (Wait-PortClosed 8791 15)) { Write-Warning '[ai] port 8791 15s 内未释放（有残留进程？）' }
 }
 
 # ---- compose services ----
