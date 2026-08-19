@@ -13,6 +13,7 @@
 #   build       nerdctl 构建 5 个镜像（直接进 k3s containerd）
 #   deploy      kubectl apply k8s/ manifests + wait ready
 #   up          build + deploy
+#   update      git pull + build + deploy（pull 以真实用户执行，build/deploy 自动提权，sudo 与否均可）
 #   status      pods / svc / pvc overview
 #   logs <svc> [n]   tail pod logs (default 50)
 #   destroy     delete namespace baihua
@@ -330,6 +331,11 @@ EOF
 # nerdctl 直接构建进 k3s containerd（构建即入库，无 docker）
 # 标准构建：镜像 unpack 进 k3s containerd（-o type=image 导出不可靠——tag 不更新会部署到旧镜像）
 build_all() {
+    if [ "$(id -u)" != "0" ]; then
+        echo "[build] 需要 root 权限（k3s containerd socket $K3S_CONTAINERD_SOCK 仅 root 可读）" >&2
+        echo "        请用: sudo $0 build   或直接 bh update（自动提权）" >&2
+        exit 1
+    fi
     ensure_deps
     ensure_registry
     if ! n info >/dev/null 2>&1; then
@@ -362,6 +368,11 @@ build_all() {
 }
 
 deploy_all() {
+    if [ "$(id -u)" != "0" ]; then
+        echo "[deploy] 需要 root 权限（/etc/rancher/k3s/k3s.yaml 仅 root 可读）" >&2
+        echo "        请用: sudo $0 deploy   或直接 bh update（自动提权）" >&2
+        exit 1
+    fi
     # 基础清单（与 GPU 无关，始终部署）
     for m in 00-namespace.yaml 01-configmap.yaml 02-secret.yaml 03-pvc.yaml \
              20-vault.yaml 21-ai.yaml 22-family.yaml 23-webui.yaml 24-traefik.yaml; do
@@ -383,6 +394,9 @@ deploy_all() {
         k -n "$NAMESPACE" scale deploy bh-openvino --replicas=0 >/dev/null 2>&1 && \
             echo "[deploy] bh-openvino 已缩容至 0"
     fi
+    echo "[deploy] 滚动重启应用新镜像（本地 :latest 镜像不重启不会生效）"
+    # 显式列出应用 deployment，避免误重启 bh-postgres（数据库无需随应用重建而重启）
+    k -n "$NAMESPACE" rollout restart deployment bh-vault bh-ai bh-webui bh-family bh-openvino >/dev/null 2>&1 || true
     echo "[deploy] waiting for pods ..."
     k -n "$NAMESPACE" wait --for=condition=ready pod -l app.kubernetes.io/part-of=baihua --timeout=300s || echo "[deploy] some pods not ready (see status)"
     status_all
@@ -513,11 +527,52 @@ open_dashboard() {
     fi
 }
 
+# 找到真实用户的 SSH agent socket（sudo 默认剥离 SSH_AUTH_SOCK，而 GitHub 密钥常只存在于 agent）
+find_ssh_auth_sock() {
+    local uid sock
+    [ -n "${SSH_AUTH_SOCK:-}" ] && [ -S "${SSH_AUTH_SOCK:-}" ] && { echo "$SSH_AUTH_SOCK"; return 0; }
+    uid="$(id -u "${SUDO_USER:-$(id -un)}" 2>/dev/null || echo 1000)"
+    for sock in "/run/user/$uid/gcr/ssh" "/run/user/$uid/keyring/ssh" "/run/user/$uid/gnupg/S.gpg-agent.ssh" /tmp/ssh-*/agent.*; do
+        [ -S "$sock" ] && { echo "$sock"; return 0; }
+    done
+    return 1
+}
+
+# update：git pull + build + deploy
+# 关键：git pull 必须以真实用户身份执行（root 的 SSH 密钥通常无 GitHub 权限，会 Permission denied）；
+#       build/deploy 需要 root（k3s containerd socket / k3s.yaml 仅 root 可读），非 root 自动提权。
+# 因此 update 无论 sudo 与否都能跑通：sudo bh update / bh update 均可。
+update_all() {
+    if [ "$(id -u)" = "0" ] && [ -n "${SUDO_USER:-}" ]; then
+        local sock
+        sock="$(find_ssh_auth_sock)" || {
+            echo "[update] 找不到 $SUDO_USER 的 ssh-agent socket，git pull 无法认证" >&2
+            echo "        请改用: bh update（不带 sudo，脚本会自动提权 build/deploy）" >&2
+            return 1
+        }
+        echo "[update] git pull 以 $SUDO_USER 身份执行（agent: $sock）"
+        sudo -u "$SUDO_USER" SSH_AUTH_SOCK="$sock" -H git pull origin main || { echo "[update] git pull 失败"; return 1; }
+    else
+        git pull origin main || { echo "[update] git pull 失败"; return 1; }
+    fi
+    local self
+    self="$(readlink -f "$0")"
+    if [ "$(id -u)" != "0" ]; then
+        echo "[update] build/deploy 需要 root，自动提权执行"
+        sudo "$self" build || return 1
+        sudo "$self" deploy || return 1
+    else
+        build_all || return 1
+        deploy_all || return 1
+    fi
+    echo "[update] 完成"
+}
+
 case "${1:-help}" in
     build)     build_all ;;
     deploy)    deploy_all ;;
     up)        build_all; deploy_all ;;
-    update)    git pull origin main && build_all && deploy_all ;;
+    update)    update_all ;;
     status)    status_all ;;
     openvino)  openvino_cmd "${2:-status}" ;;
     logs)      show_logs "${2:-bh-family}" "${3:-50}" ;;

@@ -192,6 +192,11 @@ deploy() {
             warn "bh-openvino 已缩容至 0"
     fi
 
+    log "滚动重启应用新镜像（本地 :latest 镜像不重启不会生效）..."
+    # 显式列出应用 deployment，避免误重启 bh-postgres（数据库无需随应用重建而重启）
+    kubectl -n "$NAMESPACE" rollout restart deployment bh-vault bh-ai bh-webui bh-family bh-openvino >/dev/null 2>&1 || \
+        warn "rollout restart 失败（首次部署可忽略）"
+
     log "等待 Pod 就绪 ..."
     kubectl -n "$NAMESPACE" wait --for=condition=ready pod -l app.kubernetes.io/part-of=baihua --timeout=300s 2>&1 || \
         warn "部分 Pod 未在 300s 内就绪，请用 'status' 命令查看详情"
