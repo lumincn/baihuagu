@@ -14,6 +14,7 @@ using Baihua.Core.Security;
 using Baihua.Data;
 using Baihua.Data.Entities;
 using Baihua.Family.Services;
+using Baihua.Family.Tests.TestDoubles;
 using Xunit;
 
 namespace Baihua.Family.Tests.Auth;
@@ -166,6 +167,7 @@ public sealed class AiChatEndpointsAuthFixture : IDisposable
         _oldAiApiUrl = Environment.GetEnvironmentVariable("TASK_RUNNER_AI_API_URL") ?? "";
 
         _tempHome = Path.Combine(Path.GetTempPath(), "baihua-ai01-test-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(_tempHome);
         Environment.SetEnvironmentVariable("BAIHUA_HOME", _tempHome);
         Baihua.Contracts.BaihuaPaths.Reset();
 
@@ -190,9 +192,16 @@ public sealed class AiChatEndpointsAuthFixture : IDisposable
         // 本仓库启动链路：StartupOrchestrator 先 Migrate（干净库成功）→ 失败后 EnsureCreated 兜底。
         // 但 ServerAddressService 在 host 启动早期会抢先建出部分表，导致 Migrate 撞"table already exists"
         // 且 EnsureCreated 因库已有表而跳过 → 留下残缺库。测试环境在 host 创建前先 EnsureCreated 建全表。
-        using (var preCtx = new FamilyDbContext())
+        // 产品已迁移 PostgreSQL，测试 host 统一覆盖为 SQLite（见 TestSqliteDb.ConfigureSqlite）。
+        var familyDbPath = Path.Combine(_tempHome, "family.db");
+        var vaultDbPath = Path.Combine(_tempHome, "vault.db");
+        using (var preCtx = new FamilyDbContext(TestSqliteDb.FamilyOptions(familyDbPath)))
         {
             preCtx.Database.EnsureCreated();
+        }
+        using (var preVault = new VaultDbContext(TestSqliteDb.VaultOptions(vaultDbPath)))
+        {
+            preVault.Database.EnsureCreated();
         }
 
         // ---- 真实 Family Host（TestServer，loopback）----
@@ -202,6 +211,8 @@ public sealed class AiChatEndpointsAuthFixture : IDisposable
                 builder.UseSetting("MobileAuth:SharedSecret", TestSecret);
                 builder.UseSetting("BAIHUA_SKIP_MUTEX", "true");
                 builder.UseSetting("AiApi:BaseUrl", _aiStub.BaseUrl + "/");
+                builder.ConfigureServices(services =>
+                    TestSqliteDb.ConfigureSqlite(services, familyDbPath, vaultDbPath));
             });
         Client = _factory.CreateClient();
 

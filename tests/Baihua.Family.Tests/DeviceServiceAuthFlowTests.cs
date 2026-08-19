@@ -2,6 +2,7 @@ using System.Reflection;
 using Baihua.Core;
 using Baihua.Core.WebSocket;
 using Baihua.Data;
+using Baihua.Family.Tests.TestDoubles;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -23,9 +24,9 @@ public class DeviceServiceAuthFlowTests : IDisposable
 
     public DeviceServiceAuthFlowTests()
     {
-        // SQLite 内存库（真实约束：DeviceId UNIQUE），每个测试独立连接
-        _sqlite = new SqliteConnection("DataSource=:memory:");
-        _sqlite.Open();
+        // SQLite 内存库（真实约束：DeviceId UNIQUE），每个测试独立连接；
+        // 产品已用 PG now() 默认值，SQLite 需注册 now() 函数（见 TestSqliteDb）
+        _sqlite = TestSqliteDb.OpenInMemory();
         var options = new DbContextOptionsBuilder<FamilyDbContext>()
             .UseSqlite(_sqlite)
             .Options;

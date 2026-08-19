@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Baihua.Contracts.Achievements;
 using Baihua.Data;
 using Baihua.Data.Entities;
+using Baihua.Family.Tests.TestDoubles;
 using Xunit;
 
 namespace Baihua.Family.Tests.Learning;
@@ -90,6 +91,7 @@ public sealed class Fam22SettingsRouteFixture : IDisposable
     {
         _oldBaihuaHome = Environment.GetEnvironmentVariable("BAIHUA_HOME") ?? "";
         _tempHome = Path.Combine(Path.GetTempPath(), "baihua-fam22-route-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(_tempHome);
         Environment.SetEnvironmentVariable("BAIHUA_HOME", _tempHome);
         Baihua.Contracts.BaihuaPaths.Reset();
 
@@ -97,10 +99,17 @@ public sealed class Fam22SettingsRouteFixture : IDisposable
         Environment.SetEnvironmentVariable("BAIHUA_VAULT_URL", _vaultStub.BaseUrl);
 
         // 预建库表（同 AiChatEndpointsAuthTests：ServerAddressService 会抢先建表，
-        // 测试环境在 host 创建前先 EnsureCreated 建全表，避免 Migrate 撞表）
-        using (var preCtx = new FamilyDbContext())
+        // 测试环境在 host 创建前先 EnsureCreated 建全表，避免 Migrate 撞表）。
+        // 产品已迁移 PostgreSQL，测试 host 统一覆盖为 SQLite（见 TestSqliteDb.ConfigureSqlite）。
+        var familyDbPath = Path.Combine(_tempHome, "family.db");
+        var vaultDbPath = Path.Combine(_tempHome, "vault.db");
+        using (var preCtx = new FamilyDbContext(TestSqliteDb.FamilyOptions(familyDbPath)))
         {
             preCtx.Database.EnsureCreated();
+        }
+        using (var preVault = new VaultDbContext(TestSqliteDb.VaultOptions(vaultDbPath)))
+        {
+            preVault.Database.EnsureCreated();
         }
 
         _factory = new WebApplicationFactory<Program>()
@@ -108,6 +117,8 @@ public sealed class Fam22SettingsRouteFixture : IDisposable
             {
                 builder.UseSetting("BAIHUA_SKIP_MUTEX", "true");
                 builder.UseSetting("BAIHUA_SKIP_ACCESS_CONTROL", "true");
+                builder.ConfigureServices(services =>
+                    TestSqliteDb.ConfigureSqlite(services, familyDbPath, vaultDbPath));
             });
         Client = _factory.CreateClient();
     }

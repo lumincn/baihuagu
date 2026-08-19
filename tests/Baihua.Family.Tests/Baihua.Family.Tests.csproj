@@ -21,6 +21,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.0" />
+    <!-- SQLite EF 提供程序：部分测试（VaultNoteIndexer FTS5 / EmbeddingService 并发事务）
+         依赖真实 SQLite 语义，不能换 InMemory；产品已迁 PostgreSQL 不影响测试。 -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
     <PackageReference Include="Moq" Version="4.20.70" />
   </ItemGroup>
 
