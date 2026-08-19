@@ -44,9 +44,9 @@ RUN python3 -c "from openvino.runtime import Core; print('OpenVINO installed, de
 
 WORKDIR /app
 
-# 拷贝 Python 推理脚本（自 Baihua.AI.Provider 项目）
-COPY services/Baihua.AI.Provider/LocalVision/openvino_llm_server.py /app/
-COPY services/Baihua.AI.Provider/LocalVision/vision_server.py /app/
+# 拷贝 Python 推理脚本（自 Baihua.AI.Provider.OpenVino 项目，7be1a5e 拆分后路径变更）
+COPY services/Baihua.AI.Provider.OpenVino/LocalVision/openvino_llm_server.py /app/
+COPY services/Baihua.AI.Provider.OpenVino/LocalVision/vision_server.py /app/
 
 # 拷贝启动脚本
 COPY k8s/images/openvino-server-entrypoint.sh /app/entrypoint.sh
