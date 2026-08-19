@@ -197,9 +197,9 @@ deploy() {
     kubectl -n "$NAMESPACE" rollout restart deployment bh-vault bh-ai bh-webui bh-family bh-openvino >/dev/null 2>&1 || \
         warn "rollout restart 失败（首次部署可忽略）"
 
-    log "等待 Pod 就绪 ..."
-    kubectl -n "$NAMESPACE" wait --for=condition=ready pod -l app.kubernetes.io/part-of=baihua --timeout=300s 2>&1 || \
-        warn "部分 Pod 未在 300s 内就绪，请用 'status' 命令查看详情"
+    log "等待应用滚动完成（rollout status，确保新 pod 全部就绪）..."
+    kubectl -n "$NAMESPACE" rollout status deployment bh-vault bh-ai bh-webui bh-family bh-openvino --timeout=300s 2>&1 || \
+        warn "部分 deployment 未在 300s 内就绪，请用 'status' 命令查看详情"
 
     log "部署完成！"
     status

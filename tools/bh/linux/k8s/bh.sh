@@ -397,8 +397,9 @@ deploy_all() {
     echo "[deploy] 滚动重启应用新镜像（本地 :latest 镜像不重启不会生效）"
     # 显式列出应用 deployment，避免误重启 bh-postgres（数据库无需随应用重建而重启）
     k -n "$NAMESPACE" rollout restart deployment bh-vault bh-ai bh-webui bh-family bh-openvino >/dev/null 2>&1 || true
-    echo "[deploy] waiting for pods ..."
-    k -n "$NAMESPACE" wait --for=condition=ready pod -l app.kubernetes.io/part-of=baihua --timeout=300s || echo "[deploy] some pods not ready (see status)"
+    echo "[deploy] 等待应用滚动完成（rollout status，确保新 pod 全部就绪）..."
+    k -n "$NAMESPACE" rollout status deployment bh-vault bh-ai bh-webui bh-family bh-openvino --timeout=300s \
+        || echo "[deploy] 部分 deployment 未在 300s 内就绪（可稍后 bh status 复查，或 bh logs <svc> 查看原因）"
     status_all
 }
 
@@ -475,8 +476,14 @@ open_dashboard() {
         host="$lanip"
     fi
     local url="http://$host"
-    local token
-    token=$(curl -s -m 5 -X POST "http://$host/api/auth/cli-token" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
+    local token="" attempt
+    # 服务可能刚滚动完还在热身（openvino 加载模型约 1 分钟），cli-token 获取失败自动重试
+    for attempt in 1 2 3 4 5; do
+        token=$(curl -s -m 5 -X POST "http://$host/api/auth/cli-token" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
+        [ -n "$token" ] && break
+        echo "[dashboard] cli-token 获取失败（第 $attempt/5 次，服务可能仍在热身），3 秒后重试 ..."
+        sleep 3
+    done
     if [ -n "$token" ]; then
         url="http://$host/?cli-token=$token"
         echo "[dashboard] cli-token 获取成功（5 分钟内可重复打开）"
