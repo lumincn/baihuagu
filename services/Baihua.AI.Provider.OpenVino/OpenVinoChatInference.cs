@@ -5,28 +5,32 @@ using Microsoft.Extensions.Options;
 namespace Baihua.AI.Provider.OpenVino;
 
 /// <summary>
-/// OpenVINO 本地模型对话推理（对接 vision_server.py 的 /v1/chat 纯文本端点）
-/// modelPath 形如 "openvino://3b" 或 "3b"，对应 LocalVision 配置里的模型 Id
+/// OpenVINO 本地模型对话推理（对接 OVMS 的 /v3/chat/completions 纯文本端点）
+/// modelPath 形如 "openvino://3b" 或 "3b"，统一映射到 OVMS 对话模型 qwen2.5。
 /// </summary>
 public class OpenVinoChatInference : ILocalModelInference
 {
     private readonly LocalVisionOptions _options;
+    private readonly OmsOptions _omsOptions;
     private readonly ILogger<OpenVinoChatInference> _logger;
     private readonly IHttpClientFactory _httpClientFactory;
 
     public OpenVinoChatInference(
         IOptions<LocalVisionOptions> options,
+        IOptions<OmsOptions> omsOptions,
         ILogger<OpenVinoChatInference> logger,
         IHttpClientFactory httpClientFactory)
     {
         _options = options.Value;
+        _omsOptions = omsOptions.Value;
         _logger = logger;
         _httpClientFactory = httpClientFactory;
     }
 
     public string ModelType => "openvino";
 
-    private string BaseUrl => $"http://127.0.0.1:{_options.Port}";
+    /// <summary>OVMS REST 基地址</summary>
+    private string BaseUrl => _omsOptions.Enabled ? _omsOptions.BaseUrl.TrimEnd('/') : string.Empty;
 
     private static string NormalizeModelId(string modelPath)
     {
@@ -38,20 +42,22 @@ public class OpenVinoChatInference : ILocalModelInference
 
     public async Task<bool> IsModelAvailableAsync(string modelPath)
     {
-        var id = NormalizeModelId(modelPath);
+        _ = NormalizeModelId(modelPath);
+        if (string.IsNullOrEmpty(BaseUrl)) return false;
         try
         {
             using var client = _httpClientFactory.CreateClient();
             client.Timeout = TimeSpan.FromSeconds(3);
-            var health = await client.GetFromJsonAsync<JsonElement>(BaseUrl + "/health");
-            if (health.TryGetProperty("loaded", out var loaded) && loaded.ValueKind == JsonValueKind.Array)
+            var data = await client.GetFromJsonAsync<JsonElement>(BaseUrl + "/v1/models");
+            if (data.TryGetProperty("data", out var list) && list.ValueKind == JsonValueKind.Array)
             {
-                return loaded.EnumerateArray().Any(e => e.GetString() == id);
+                return list.EnumerateArray().Any(e =>
+                    e.TryGetProperty("id", out var id) && id.GetString() == OmsModelMap.ChatModelId);
             }
         }
         catch (Exception ex)
         {
-            _logger.LogDebug(ex, "检查 OpenVINO 模型可用性失败");
+            _logger.LogDebug(ex, "检查 OVMS 对话模型可用性失败");
         }
         return false;
     }
@@ -63,15 +69,35 @@ public class OpenVinoChatInference : ILocalModelInference
         List<(string Role, string Content)>? history = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var id = NormalizeModelId(modelPath);
-        var prompt = BuildPrompt(message, systemPrompt, history);
-        var text = await ChatOnceAsync(id, prompt, cancellationToken);
+        _ = NormalizeModelId(modelPath);
+        var text = await ChatOnceAsync(message, systemPrompt, history, cancellationToken);
         if (!string.IsNullOrWhiteSpace(text))
             yield return text;
     }
 
-    private async Task<string?> ChatOnceAsync(string modelId, string prompt, CancellationToken cancellationToken)
+    private async Task<string?> ChatOnceAsync(string message, string? systemPrompt,
+        List<(string Role, string Content)>? history, CancellationToken cancellationToken)
     {
+        if (string.IsNullOrEmpty(BaseUrl))
+        {
+            _logger.LogWarning("OVMS 未启用");
+            return "[OpenVINO 对话失败: OVMS 未启用]";
+        }
+
+        // 组装 OpenAI 风格 messages
+        var messages = new List<object>();
+        if (!string.IsNullOrWhiteSpace(systemPrompt))
+            messages.Add(new { role = "system", content = systemPrompt });
+        if (history != null)
+        {
+            foreach (var (role, content) in history)
+            {
+                var r = role.Equals("user", StringComparison.OrdinalIgnoreCase) ? "user" : "assistant";
+                messages.Add(new { role = r, content });
+            }
+        }
+        messages.Add(new { role = "user", content = message });
+
         try
         {
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -79,36 +105,29 @@ public class OpenVinoChatInference : ILocalModelInference
             using var client = _httpClientFactory.CreateClient();
             client.Timeout = TimeSpan.FromMinutes(5);
             var resp = await client.PostAsJsonAsync(
-                BaseUrl + "/v1/chat",
-                new { model = modelId, prompt, max_tokens = 1024 },
+                BaseUrl + "/v3/chat/completions",
+                new { model = OmsModelMap.ChatModelId, messages, max_tokens = 1024, stream = false },
                 cts.Token);
             resp.EnsureSuccessStatusCode();
             var json = await resp.Content.ReadFromJsonAsync<JsonElement>(cts.Token);
-            return json.TryGetProperty("text", out var t) ? t.GetString() : null;
+            // 解析 choices[0].message.content
+            if (json.TryGetProperty("choices", out var choices) && choices.ValueKind == JsonValueKind.Array
+                && choices.GetArrayLength() > 0)
+            {
+                var first = choices[0];
+                if (first.TryGetProperty("message", out var msg)
+                    && msg.TryGetProperty("content", out var content) && content.ValueKind == JsonValueKind.String)
+                {
+                    return content.GetString();
+                }
+            }
+            _logger.LogWarning("OVMS 对话响应缺少 choices[0].message.content");
+            return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "OpenVINO 对话失败");
+            _logger.LogError(ex, "OVMS 对话失败");
             return $"[OpenVINO 对话失败: {ex.Message}]";
         }
-    }
-
-    private static string BuildPrompt(string message, string? systemPrompt, List<(string Role, string Content)>? history)
-    {
-        var sb = new System.Text.StringBuilder();
-        if (!string.IsNullOrWhiteSpace(systemPrompt))
-        {
-            sb.Append("<|im_start|>system\n").Append(systemPrompt).Append("\n<|im_end|>\n");
-        }
-        if (history != null)
-        {
-            foreach (var (role, content) in history)
-            {
-                var r = role.Equals("user", StringComparison.OrdinalIgnoreCase) ? "user" : "assistant";
-                sb.Append("<|im_start|>").Append(r).Append('\n').Append(content).Append("\n<|im_end|>\n");
-            }
-        }
-        sb.Append("<|im_start|>user\n").Append(message).Append("\n<|im_end|>\n<|im_start|>assistant\n");
-        return sb.ToString();
     }
 }

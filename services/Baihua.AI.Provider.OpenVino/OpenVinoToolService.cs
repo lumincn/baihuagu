@@ -1,6 +1,4 @@
-using System.Diagnostics;
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json;
 using Baihua.Contracts.LocalModels;
 using Microsoft.Extensions.Options;
@@ -33,24 +31,29 @@ public class OpenVinoModelOption
 }
 
 /// <summary>
-/// OpenVINO GenAI 本地视觉工具（对接常驻 vision_server.py：模型加载/卸载/运行状态）
+/// OpenVINO GenAI 本地工具（对接 OVMS 常驻服务）：模型已由 OVMS 托管（config.json 注册，
+/// 首次推理自动加载），本类负责状态探测 / 目录扫描 / 详情。不再启动自研 Python 服务。
 /// </summary>
 public class OpenVinoToolService : ILocalModelTool
 {
     private readonly OpenVinoToolOptions _options;
+    private readonly OmsOptions _omsOptions;
     private readonly ILogger<OpenVinoToolService> _logger;
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly object _startLock = new();
-    private bool _started;
 
     // 版本探测/目录扫描缓存（避免每次页面刷新都冷启动 python / 遍历大目录）
     private string? _versionCache;
     private DateTime _versionCacheAt;
     private readonly System.Collections.Concurrent.ConcurrentDictionary<string, (long Size, DateTime At)> _dirSizeCache = new();
 
-    public OpenVinoToolService(IOptions<OpenVinoToolOptions> options, ILogger<OpenVinoToolService> logger, IHttpClientFactory httpClientFactory)
+    public OpenVinoToolService(
+        IOptions<OpenVinoToolOptions> options,
+        IOptions<OmsOptions> omsOptions,
+        ILogger<OpenVinoToolService> logger,
+        IHttpClientFactory httpClientFactory)
     {
         _options = options.Value;
+        _omsOptions = omsOptions.Value;
         _logger = logger;
         _httpClientFactory = httpClientFactory;
     }
@@ -59,7 +62,8 @@ public class OpenVinoToolService : ILocalModelTool
     public string Id => "openvino";
     public string Name => "OpenVINO";
 
-    private string BaseUrl => $"http://127.0.0.1:{_options.Port}";
+    /// <summary>OVMS REST 基地址</summary>
+    private string BaseUrl => _omsOptions.BaseUrl.TrimEnd('/');
 
     /// <summary>去重后的模型配置（options 绑定可能因默认值+配置叠加产生重复）</summary>
     private IEnumerable<OpenVinoModelOption> DistinctModels()
@@ -143,7 +147,7 @@ public class OpenVinoToolService : ILocalModelTool
         try
         {
             var python = ResolvePythonExe();
-            var psi = new ProcessStartInfo
+            var psi = new System.Diagnostics.ProcessStartInfo
             {
                 FileName = python,
                 RedirectStandardOutput = true,
@@ -153,7 +157,7 @@ public class OpenVinoToolService : ILocalModelTool
             };
             psi.ArgumentList.Add("-c");
             psi.ArgumentList.Add("import openvino; print(openvino.__version__)");
-            using var p = Process.Start(psi);
+            using var p = System.Diagnostics.Process.Start(psi);
             if (p == null) return null;
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
             cts.CancelAfter(TimeSpan.FromSeconds(8));
@@ -173,6 +177,13 @@ public class OpenVinoToolService : ILocalModelTool
             _logger.LogDebug(ex, "detect openvino version failed");
             return null;
         }
+    }
+
+    private string ResolvePythonExe()
+    {
+        if (!string.IsNullOrWhiteSpace(_options.PythonExe))
+            return _options.PythonExe;
+        return OperatingSystem.IsWindows() ? "python" : "python3";
     }
 
     /// <summary>目录总大小（30s 缓存，避免每次轮询都遍历模型目录）</summary>
@@ -197,6 +208,7 @@ public class OpenVinoToolService : ILocalModelTool
         }
     }
 
+    /// <summary>探测 OVMS 是否运行（查询模型列表端点）</summary>
     public async Task<bool> IsServerRunningAsync(CancellationToken ct = default)
     {
         try
@@ -205,7 +217,7 @@ public class OpenVinoToolService : ILocalModelTool
             cts.CancelAfter(TimeSpan.FromSeconds(3));
             using var client = _httpClientFactory.CreateClient();
             client.Timeout = TimeSpan.FromSeconds(3);
-            var resp = await client.GetAsync(BaseUrl + "/health", cts.Token);
+            var resp = await client.GetAsync(BaseUrl + "/v1/models", cts.Token);
             return resp.IsSuccessStatusCode;
         }
         catch
@@ -214,112 +226,42 @@ public class OpenVinoToolService : ILocalModelTool
         }
     }
 
+    /// <summary>确保 OVMS 在运行（模型常驻，无需启动 Python）</summary>
     public async Task EnsureServerRunningAsync(CancellationToken ct = default)
     {
         if (await IsServerRunningAsync(ct))
             return;
-        if (!_options.AutoStart)
-            throw new InvalidOperationException("OpenVINO 视觉服务未运行（AutoStart 关闭）");
+        throw new InvalidOperationException("OVMS 服务不可达：请确认 ovms 服务已启动（http://127.0.0.1:8000）且 OpenVinoOms:BaseUrl 配置正确");
+    }
 
-        lock (_startLock)
+    /// <summary>OVMS 当前注册的模型 id 集合（探测 /v1/models）</summary>
+    private async Task<HashSet<string>> GetOmsModelIdsAsync(CancellationToken ct = default)
+    {
+        var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        try
         {
-            if (!_started)
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            cts.CancelAfter(TimeSpan.FromSeconds(3));
+            using var client = _httpClientFactory.CreateClient();
+            client.Timeout = TimeSpan.FromSeconds(3);
+            var data = await client.GetFromJsonAsync<JsonElement>(BaseUrl + "/v1/models", cts.Token);
+            if (data.TryGetProperty("data", out var list) && list.ValueKind == JsonValueKind.Array)
             {
-                StartPythonServer();
-                _started = true;
+                foreach (var e in list.EnumerateArray())
+                {
+                    if (e.ValueKind == JsonValueKind.Object && e.TryGetProperty("id", out var id) && id.ValueKind == JsonValueKind.String)
+                        result.Add(id.GetString()!);
+                }
             }
         }
-
-        var deadline = DateTime.UtcNow.AddSeconds(_options.StartupTimeoutSeconds);
-        while (DateTime.UtcNow < deadline)
+        catch (Exception ex)
         {
-            ct.ThrowIfCancellationRequested();
-            if (await IsServerRunningAsync(ct))
-                return;
-            await Task.Delay(1000, ct);
+            _logger.LogDebug(ex, "获取 OVMS 模型列表失败");
         }
-        throw new TimeoutException($"OpenVINO 视觉服务启动超时（{_options.StartupTimeoutSeconds}s），请检查日志");
+        return result;
     }
 
-    private void StartPythonServer()
-    {
-        var scriptPath = ResolveScriptPath();
-        if (!File.Exists(scriptPath))
-            throw new FileNotFoundException($"vision_server.py 不存在: {scriptPath}");
-
-        var logDir = Path.Combine(AppContext.BaseDirectory, "logs");
-        Directory.CreateDirectory(logDir);
-        var logFile = Path.Combine(logDir, "vision_server.log");
-
-        var psi = new ProcessStartInfo
-        {
-            FileName = ResolvePythonExe(),
-            WorkingDirectory = Path.GetDirectoryName(scriptPath) ?? AppContext.BaseDirectory,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-        };
-        psi.ArgumentList.Add(scriptPath);
-        psi.Environment["VISION_PORT"] = _options.Port.ToString();
-        // 把解析后的模型路径传给子进程，避免 vision_server.py 退回 ~/.openclaw/models 的默认路径
-        // （实际模型在 $BAIHUA_HOME/models 下，路径不一致会导致 reload "model directory not found"）
-        foreach (var m in DistinctModels())
-        {
-            var envVar = m.Id == "7b" ? "VISION_MODEL_7B" : "VISION_MODEL_3B";
-            psi.Environment[envVar] = ResolveModelPath(m);
-        }
-
-        _logger.LogInformation("启动 OpenVINO 视觉服务: {Script} (port={Port})", scriptPath, _options.Port);
-        var process = Process.Start(psi);
-        if (process == null)
-            throw new InvalidOperationException("无法启动 Python 视觉服务进程");
-
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                using var writer = new StreamWriter(logFile, append: true, Encoding.UTF8) { AutoFlush = true };
-                writer.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] === vision server started (pid={process.Id}) ===");
-                var stdout = process.StandardOutput.ReadToEndAsync();
-                var stderr = process.StandardError.ReadToEndAsync();
-                await Task.WhenAll(
-                    stdout.ContinueWith(t => writer.WriteLine(t.IsCompletedSuccessfully ? t.Result : "")),
-                    stderr.ContinueWith(t => writer.WriteLine(t.IsCompletedSuccessfully ? t.Result : "")));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "写入 vision_server 日志失败");
-            }
-        });
-    }
-
-    private string ResolveScriptPath()
-    {
-        if (!string.IsNullOrWhiteSpace(_options.ScriptPath) && File.Exists(_options.ScriptPath))
-            return _options.ScriptPath;
-        var candidates = new[]
-        {
-            Path.Combine(AppContext.BaseDirectory, "LocalVision", "vision_server.py"),
-            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "Baihua.AI.Provider", "LocalVision", "vision_server.py"),
-            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "services", "Baihua.AI.Provider", "LocalVision", "vision_server.py"),
-        };
-        foreach (var c in candidates)
-        {
-            if (File.Exists(Path.GetFullPath(c)))
-                return Path.GetFullPath(c);
-        }
-        return Path.GetFullPath(candidates[0]);
-    }
-
-    private string ResolvePythonExe()
-    {
-        if (!string.IsNullOrWhiteSpace(_options.PythonExe))
-            return _options.PythonExe;
-        return OperatingSystem.IsWindows() ? "python" : "python3";
-    }
-
-    /// <summary>可用模型列表（返回模型 Id：3b / 7b）</summary>
+    /// <summary>可用模型列表（本地目录中存在的 OpenVINO 模型 id）</summary>
     public async Task<List<string>> GetAvailableModelsAsync(CancellationToken ct = default)
     {
         var result = new List<string>();
@@ -328,97 +270,75 @@ public class OpenVinoToolService : ILocalModelTool
             if (Directory.Exists(ResolveModelPath(m)))
                 result.Add(m.Id);
         }
-        return result;
+        return await Task.FromResult(result);
     }
 
     /// <summary>
     /// 把前端传入的模型名（可能是显示名 Name 或内部 Id，如 "Qwen2.5-VL-3B-Instruct (INT4)" 或 "3b"）
-    /// 规整为 vision_server 认可的 Id（3b/7b）。前端 list 里 model.Name 是显示名，
-    /// 直接透传给 /v1/vision/reload 会导致 "unknown model id" 而加载失败。
+    /// 规整为内部 Id（3b/7b）。模型由 OVMS 托管，此处仅用于目录扫描/详情/状态匹配。
     /// </summary>
     private string NormalizeModelId(string modelOrName)
     {
         var key = modelOrName?.Trim();
         if (string.IsNullOrWhiteSpace(key))
             return "3b";
-        // 精确 Id 或显示名匹配
         foreach (var m in DistinctModels())
         {
             if (string.Equals(m.Id, key, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(m.Name, key, StringComparison.OrdinalIgnoreCase))
                 return m.Id;
         }
-        // 前端可能传 "3b"/"7b" 大小写变体，兜底
         if (key.Equals("3b", StringComparison.OrdinalIgnoreCase)) return "3b";
         if (key.Equals("7b", StringComparison.OrdinalIgnoreCase)) return "7b";
-        return key; // 未知：原样透传，由 vision_server 决定
+        return key;
     }
 
+    /// <summary>
+    /// 加载模型：模型由 OVMS 常驻托管（config.json 已注册），首次推理自动加载。
+    /// 这里校验该模型在 OVMS 可见（或本地目录存在）即返回成功，不做真正加载/卸载。
+    /// </summary>
     public async Task<bool> LoadModelAsync(string modelId, CancellationToken ct = default)
     {
-        await EnsureServerRunningAsync(ct);
-        var id = NormalizeModelId(modelId);
-        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        cts.CancelAfter(TimeSpan.FromMinutes(5));
-        using var client = _httpClientFactory.CreateClient();
-        client.Timeout = TimeSpan.FromMinutes(5);
-        var resp = await client.PostAsJsonAsync(BaseUrl + "/v1/vision/reload", new { model = id }, cts.Token);
-        return resp.IsSuccessStatusCode;
+        _ = NormalizeModelId(modelId);
+        // OVMS 已注册则视为已加载（懒加载，首次请求自动编译）；探测失败时退回目录存在判定
+        var omsIds = await GetOmsModelIdsAsync(ct);
+        var registered = omsIds.Count > 0 &&
+            (omsIds.Contains(OmsModelMap.VisionModelId("3b")) || omsIds.Contains(OmsModelMap.VisionModelId("7b")));
+        return registered || omsIds.Count == 0;
     }
 
+    /// <summary>卸载模型：OVMS 常驻托管，不支持手动卸载，始终返回成功（幂等）+ 状态探测</summary>
     public async Task<bool> UnloadModelAsync(string modelId, CancellationToken ct = default)
     {
+        _ = NormalizeModelId(modelId);
         if (!await IsServerRunningAsync(ct))
-            return true;
-        var id = NormalizeModelId(modelId);
-        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        cts.CancelAfter(TimeSpan.FromSeconds(10));
-        using var client = _httpClientFactory.CreateClient();
-        client.Timeout = TimeSpan.FromSeconds(10);
-        var resp = await client.PostAsJsonAsync(BaseUrl + "/v1/vision/unload", new { model = id }, cts.Token);
-        return resp.IsSuccessStatusCode;
+            return true; // 服务不可达视为无需卸载
+        return true;
     }
 
-    /// <summary>已加载（运行中）模型</summary>
+    /// <summary>已加载（运行中）模型：探测 OVMS 注册的视觉模型</summary>
     public async Task<List<RunningModelDto>> GetRunningModelsAsync(CancellationToken ct = default)
     {
         var result = new List<RunningModelDto>();
-        if (!await IsServerRunningAsync(ct))
-            return result;
-
-        try
+        var omsIds = await GetOmsModelIdsAsync(ct);
+        foreach (var m in DistinctModels())
         {
-            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            cts.CancelAfter(TimeSpan.FromSeconds(3));
-            using var client = _httpClientFactory.CreateClient();
-            client.Timeout = TimeSpan.FromSeconds(3);
-            var health = await client.GetFromJsonAsync<JsonElement>(BaseUrl + "/health", cts.Token);
-            if (health.TryGetProperty("loaded", out var loaded) && loaded.ValueKind == JsonValueKind.Array)
+            var ovmsId = OmsModelMap.VisionModelId(m.Id);
+            if (omsIds.Contains(ovmsId))
             {
-                var loadedIds = loaded.EnumerateArray().Select(e => e.GetString()).ToHashSet();
-                foreach (var m in DistinctModels())
+                var path = ResolveModelPath(m);
+                result.Add(new RunningModelDto
                 {
-                    if (loadedIds.Contains(m.Id))
-                    {
-                        var path = ResolveModelPath(m);
-                        result.Add(new RunningModelDto
-                        {
-                            ToolId = "openvino",
-                            ToolName = "OpenVINO",
-                            ModelName = m.Id,
-                            DisplayName = m.Name,
-                            SizeBytes = Directory.Exists(path) ? GetDirSizeCached(path) : 0,
-                            RamBytes = null,
-                            VramBytes = null,
-                            Family = "Qwen2.5-VL",
-                        });
-                    }
-                }
+                    ToolId = "openvino",
+                    ToolName = "OpenVINO",
+                    ModelName = m.Id,
+                    DisplayName = m.Name,
+                    SizeBytes = Directory.Exists(path) ? GetDirSizeCached(path) : 0,
+                    RamBytes = null,
+                    VramBytes = null,
+                    Family = "Qwen2.5-VL",
+                });
             }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogDebug(ex, "获取 OpenVINO 运行模型失败");
         }
         return result;
     }
@@ -479,5 +399,70 @@ public class OpenVinoToolService : ILocalModelTool
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// OpenVINO 模型详情：定位模型目录并读取大小 / Vision 类型 / dtype（openvino_config.json）
+    /// 与 config.json 的 model_type / architectures，供『详情』弹窗展示。
+    /// </summary>
+    public async Task<ModelDetailsDto?> GetModelDetailsAsync(string modelName, CancellationToken ct = default)
+    {
+        var key = NormalizeModelId(modelName);
+        var model = DistinctModels().FirstOrDefault(m => string.Equals(m.Id, key, StringComparison.OrdinalIgnoreCase));
+        if (model == null) return null;
+
+        var path = ResolveModelPath(model);
+        var details = new ModelDetailsDto { Name = model.Name, ToolId = "openvino" };
+        if (!Directory.Exists(path))
+            return details;
+
+        var sb = new List<string>
+        {
+            $"路径: {path}",
+            $"大小: {FormatSizeText(GetDirSizeCached(path))}",
+        };
+        var isVl = File.Exists(Path.Combine(path, "openvino_vision_embeddings_model.xml"))
+                   || File.Exists(Path.Combine(path, "openvino_language_model.bin"))
+                   || File.Exists(Path.Combine(path, "openvino_vision_embeddings_model.bin"));
+        sb.Add($"类型: {(isVl ? "Vision-Language (VL)" : "LLM")}");
+        sb.Add($"托管: OVMS (模型 id: {OmsModelMap.VisionModelId(model.Id)})");
+
+        // 从 openvino_config.json 读 dtype/量化
+        var ovCfg = Path.Combine(path, "openvino_config.json");
+        if (File.Exists(ovCfg))
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(File.ReadAllText(ovCfg));
+                if (doc.RootElement.TryGetProperty("weight_format", out var wf) && wf.ValueKind == JsonValueKind.String)
+                    sb.Add($"量化: {wf.GetString()}");
+            }
+            catch { }
+        }
+        // 从 config.json 读 model_type / architectures
+        var cfg = Path.Combine(path, "config.json");
+        if (File.Exists(cfg))
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(File.ReadAllText(cfg));
+                if (doc.RootElement.TryGetProperty("model_type", out var mt) && mt.ValueKind == JsonValueKind.String)
+                    sb.Add($"模型类型: {mt.GetString()}");
+                if (doc.RootElement.TryGetProperty("architectures", out var arch) && arch.ValueKind == JsonValueKind.Array)
+                    sb.Add($"架构: {string.Join(", ", arch.EnumerateArray().Select(e => e.GetString()))}");
+            }
+            catch { }
+        }
+
+        details.Parameters = string.Join("\n", sb);
+        await Task.CompletedTask;
+        return details;
+    }
+
+    private static string FormatSizeText(long bytes)
+    {
+        if (bytes >= 1L << 30) return $"{bytes / 1024d / 1024d / 1024d:F2} GB";
+        if (bytes >= 1L << 20) return $"{bytes / 1024d / 1024d:F1} MB";
+        return $"{bytes / 1024d:F0} KB";
     }
 }

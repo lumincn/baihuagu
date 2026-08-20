@@ -29,10 +29,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- 本地视觉推理服务（Qwen2.5-VL + OpenVINO）Python 脚本，随发布拷贝 -->
-    <None Include="LocalVision\vision_server.py" CopyToOutputDirectory="PreserveNewest" />
+    <!-- OpenVINO 宿主机托管服务（openvino_host.py 管理 openvino_llm_server.py 实例；服务包装 + 托管）。
+         vision_server.py 已废弃：百花视觉推理已由 OVMS 常驻服务接管，不再随发布拷贝。 -->
     <None Include="LocalVision\openvino_llm_server.py" CopyToOutputDirectory="PreserveNewest" />
-    <!-- OpenVINO 宿主机托管服务（openvino_host.py 管理 openvino_llm_server.py 实例；服务包装 + 托管） -->
     <None Include="LocalVision\openvino_host.py" CopyToOutputDirectory="PreserveNewest" />
     <None Include="LocalVision\openvino_host_service.py" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

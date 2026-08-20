@@ -38,4 +38,10 @@ public interface ILocalModelTool
 
     /// <summary>卸载（停止）指定模型</summary>
     Task<bool> UnloadModelAsync(string modelName, CancellationToken ct = default);
+
+    /// <summary>
+    /// 查询模型详情（路径 / 参数等）。默认实现不支持详情，各 Provider 可覆盖。
+    /// </summary>
+    Task<ModelDetailsDto?> GetModelDetailsAsync(string modelName, CancellationToken ct = default)
+        => Task.FromResult<ModelDetailsDto?>(null);
 }

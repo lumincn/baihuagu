@@ -741,6 +741,12 @@
   <data name="LocalModels_DetailsBtn" xml:space="preserve">
     <value>详情</value>
   </data>
+  <data name="LocalModels_LoadedBadge" xml:space="preserve">
+    <value>已加载</value>
+  </data>
+  <data name="LocalModels_OmsHostedBadge" xml:space="preserve">
+    <value>由 OVMS 托管</value>
+  </data>
   <data name="LocalModels_DeleteBtn" xml:space="preserve">
     <value>删除</value>
   </data>

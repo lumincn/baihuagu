@@ -741,6 +741,12 @@
   <data name="LocalModels_DetailsBtn" xml:space="preserve">
     <value>Details</value>
   </data>
+  <data name="LocalModels_LoadedBadge" xml:space="preserve">
+    <value>Loaded</value>
+  </data>
+  <data name="LocalModels_OmsHostedBadge" xml:space="preserve">
+    <value>Hosted by OVMS</value>
+  </data>
   <data name="LocalModels_DeleteBtn" xml:space="preserve">
     <value>Delete</value>
   </data>

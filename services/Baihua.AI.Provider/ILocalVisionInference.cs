@@ -20,9 +20,13 @@ public interface ILocalVisionInference
     Task<VisionResultDto> RecognizeAsync(
         byte[] imageBytes, string prompt, string modelId, CancellationToken cancellationToken = default);
 
-    /// <summary>确保视觉服务运行（首次调用冷启动 Python 服务）</summary>
+    /// <summary>确保视觉服务运行（首次调用冷启动）</summary>
     Task EnsureServerRunningAsync(CancellationToken cancellationToken = default);
 
-    /// <summary>停止视觉服务</summary>
-    Task<bool> StopServerAsync(CancellationToken cancellationToken = default);
+    /// <summary>
+    /// 停止视觉服务。对于常驻托管后端（如 OVMS）无独立服务可停，默认返回 false；
+    /// 自启进程型实现（如自研 Python 服务）可覆盖。
+    /// </summary>
+    Task<bool> StopServerAsync(CancellationToken cancellationToken = default)
+        => Task.FromResult(false);
 }

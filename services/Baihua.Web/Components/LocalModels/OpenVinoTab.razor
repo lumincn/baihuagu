@@ -212,9 +212,8 @@ else
                         }
                     </span>
                     <span class="col-dl-actions">
-                        <button class="btn btn-primary btn-sm" @onclick='() => LoadDownloadedModel(dm)' disabled="@isLoadingModel">
-                            @L["LocalModels_LoadBtn"]
-                        </button>
+                        <!-- OpenVINO 模型由 OVMS 常驻托管（config.json 注册，首次推理自动加载），无需手动加载/卸载 -->
+                        <span class="badge" style="background:#2e7d32;color:#fff;">✅ @L["LocalModels_OmsHostedBadge"]</span>
                         <button class="btn btn-secondary btn-sm" @onclick='() => ShowModelDetails(dm)' disabled="@isLoadingDetails">
                             @L["LocalModels_DetailsBtn"]
                         </button>

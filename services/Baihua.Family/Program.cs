@@ -271,6 +271,9 @@ builder.Services.AddSingleton<LmStudioService>();
 builder.Services.AddSingleton<LlamaCppService>();
 builder.Services.Configure<Baihua.AI.Provider.OpenVino.OpenVinoToolOptions>(
     builder.Configuration.GetSection("LocalVision"));
+// OVMS（OpenVINO Model Server）端点：统一承载 OpenVINO 推理
+builder.Services.Configure<Baihua.AI.Provider.OpenVino.OmsOptions>(
+    builder.Configuration.GetSection("OpenVinoOms"));
 // 若 LocalVision:ModelRoot 未设置，则从 LocalAI:DownloadDirectory 读取，保持模型路径统一
 builder.Services.PostConfigure<Baihua.AI.Provider.OpenVino.OpenVinoToolOptions>(opts =>
 {

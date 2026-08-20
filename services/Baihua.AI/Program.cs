@@ -95,6 +95,9 @@ builder.Services.AddSingleton<Baihua.AI.Provider.ILocalModelInference, Baihua.AI
 // 本地视觉分析（Qwen2.5-VL + OpenVINO）
 builder.Services.Configure<Baihua.AI.Provider.OpenVino.LocalVisionOptions>(
     builder.Configuration.GetSection("LocalVision"));
+// OVMS（OpenVINO Model Server）端点：统一承载 LLM 文本/视觉/嵌入推理
+builder.Services.Configure<Baihua.AI.Provider.OpenVino.OmsOptions>(
+    builder.Configuration.GetSection("OpenVinoOms"));
 builder.Services.AddSingleton<Baihua.AI.Provider.ILocalVisionInference, Baihua.AI.Provider.OpenVino.OpenVinoVisionService>();
 
 

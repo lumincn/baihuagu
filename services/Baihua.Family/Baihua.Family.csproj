@@ -52,9 +52,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- 本地视觉推理服务（OpenVINO），随发布拷贝 -->
-    <None Include="..\Baihua.AI.Provider.OpenVino\LocalVision\vision_server.py" Link="LocalVision\vision_server.py" CopyToOutputDirectory="PreserveNewest" />
-    <!-- OpenVINO OpenAI 兼容推理服务（OpenClaw 本地 AI 配置启动用），随发布拷贝 -->
+    <!-- 本地视觉推理已由 OVMS 接管，vision_server.py 不再随发布拷贝 -->
+    <!-- OpenVINO OpenAI 兼容推理服务（OpenClaw 本地 AI 配置启动用 / 算力池跨机部署），随发布拷贝 -->
     <None Include="..\Baihua.AI.Provider.OpenVino\LocalVision\openvino_llm_server.py" Link="LocalVision\openvino_llm_server.py" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

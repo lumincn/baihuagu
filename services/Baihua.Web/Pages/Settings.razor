@@ -1463,9 +1463,9 @@
                 embeddingConfig.Dimensions = null;
                 break;
             case "openvino":
-                // 本地 OpenVINO 嵌入服务（openvino_host 托管的 bge-small-zh-v1.5，端口 8002）
-                embeddingConfig.Model = "bge-small-zh-v1-5";
-                embeddingConfig.BaseUrl = "http://127.0.0.1:8002/v1";
+                // OpenVINO Model Server (OVMS) 寄存的 bge-small-zh-v1.5 嵌入模型（OpenAI 兼容 /v3/embeddings）
+                embeddingConfig.Model = "bge-small-zh";
+                embeddingConfig.BaseUrl = "http://127.0.0.1:8000/v3";
                 embeddingConfig.Dimensions = 512;
                 break;
         }
@@ -1479,7 +1479,7 @@
             "ollama" => model == "nomic-embed-text" && baseUrl == "http://localhost:11434/v1",
             "openai" => model == "text-embedding-3-small" && baseUrl == "https://api.openai.com/v1",
             "siliconflow" => model == "BAAI/bge-large-zh-v1.5" && baseUrl == "https://api.siliconflow.cn/v1",
-            "openvino" => model == "bge-small-zh-v1-5" && baseUrl == "http://127.0.0.1:8002/v1",
+            "openvino" => model == "bge-small-zh" && baseUrl == "http://127.0.0.1:8000/v3",
             _ => false,
         };
     }

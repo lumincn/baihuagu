@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -8,26 +7,26 @@ using Microsoft.Extensions.Options;
 namespace Baihua.AI.Provider.OpenVino;
 
 /// <summary>
-/// 本地视觉推理配置（Qwen2.5-VL + OpenVINO，通过常驻 Python 服务调用）
+/// 本地视觉推理配置（Qwen2.5-VL + OpenVINO，通过 OVMS 的 /v3/chat/completions 调用）
 /// </summary>
 public class LocalVisionOptions
 {
     /// <summary>功能开关</summary>
     public bool Enabled { get; set; } = true;
 
-    /// <summary>Python 视觉服务端口</summary>
+    /// <summary>遗留字段：视觉端口（已由 OVMS BaseUrl 取代，保留兼容）</summary>
     public int Port { get; set; } = 8801;
 
-    /// <summary>Python 可执行文件（缺省用 PATH 里的 python）</summary>
+    /// <summary>Python 可执行文件（已废弃——不再自研 Python 服务，保留字段兼容配置）</summary>
     public string? PythonExe { get; set; }
 
-    /// <summary>vision_server.py 路径（缺省在 Baihua.AI 内容根目录 LocalVision 下）</summary>
+    /// <summary>vision_server.py 路径（已废弃，保留兼容）</summary>
     public string? ScriptPath { get; set; }
 
-    /// <summary>首次调用时自动拉起 Python 服务</summary>
+    /// <summary>首次调用时自动拉起服务（已由 OVMS 常驻取代，保留兼容）</summary>
     public bool AutoStart { get; set; } = true;
 
-    /// <summary>服务启动健康检查超时（秒）</summary>
+    /// <summary>服务启动健康检查超时（秒，保留兼容）</summary>
     public int StartupTimeoutSeconds { get; set; } = 60;
 
     /// <summary>模型配置</summary>
@@ -46,29 +45,27 @@ public class LocalVisionModelOptions
 }
 
 /// <summary>
-/// 本地视觉推理服务：管理常驻 Python 进程（vision_server.py），提供图片识别能力
+/// 本地视觉推理服务：通过 OVMS 的 OpenAI 兼容 /v3/chat/completions 提供图片识别。
+/// 模型常驻 OVMS（config.json 注册），首次看图自动加载，无需手动启动 Python 服务。
 /// </summary>
 public class OpenVinoVisionService : ILocalVisionInference
 {
     private readonly LocalVisionOptions _options;
+    private readonly OmsOptions _omsOptions;
     private readonly ILogger<OpenVinoVisionService> _logger;
-    private readonly string _baseUrl;
-    private readonly object _startLock = new();
-    private bool _started;
-    private System.Diagnostics.Process? _serverProcess;
 
-    public OpenVinoVisionService(IOptions<LocalVisionOptions> options, ILogger<OpenVinoVisionService> logger)
+    public OpenVinoVisionService(IOptions<LocalVisionOptions> options, IOptions<OmsOptions> omsOptions, ILogger<OpenVinoVisionService> logger)
     {
         _options = options.Value;
+        _omsOptions = omsOptions.Value;
         _logger = logger;
-        _baseUrl = $"http://127.0.0.1:{_options.Port}";
     }
 
-    public bool Enabled => _options.Enabled;
+    public bool Enabled => _options.Enabled && _omsOptions.Enabled;
 
-    private string BaseUrl => _baseUrl;
+    private string BaseUrl => _omsOptions.BaseUrl.TrimEnd('/');
 
-    /// <summary>模型目录解析：配置路径 -> 环境变量覆盖 -> 用户目录默认</summary>
+    /// <summary>模型目录解析：配置路径 -> 环境变量覆盖 -> 用户目录默认（详情展示用，不启动服务）</summary>
     private static string ResolveModelPath(LocalVisionModelOptions model)
     {
         if (!string.IsNullOrWhiteSpace(model.Path))
@@ -77,164 +74,34 @@ public class OpenVinoVisionService : ILocalVisionInference
         var env = Environment.GetEnvironmentVariable(envVar);
         if (!string.IsNullOrWhiteSpace(env))
             return env;
-        // 目录名中的 B 为大写（Qwen2.5-VL-3B-Instruct-int4-ov）
         var folderSuffix = model.Id == "7b" ? "7B" : "3B";
         return Path.Combine(Baihua.Contracts.BaihuaPaths.Home, "models", $"Qwen2.5-VL-{folderSuffix}-Instruct-int4-ov");
     }
 
     /// <summary>
-    /// 确保 Python 视觉服务在运行（未运行且 AutoStart 时自动拉起）
+    /// 确保 OVMS 在运行（不可达则抛异常提示）。模型懒加载，由 OVMS 自动编译。
     /// </summary>
     public async Task EnsureServerRunningAsync(CancellationToken cancellationToken = default)
     {
         if (await IsServerRunningAsync(cancellationToken))
             return;
-
-        if (!_options.AutoStart)
-            throw new InvalidOperationException("本地视觉服务未运行");
-
-        lock (_startLock)
-        {
-            if (_started)
-            {
-                // 已尝试启动过（可能失败），再查一次
-            }
-            else
-            {
-                StartPythonServer();
-                _started = true;
-            }
-        }
-
-        var deadline = DateTime.UtcNow.AddSeconds(_options.StartupTimeoutSeconds);
-        while (DateTime.UtcNow < deadline)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            if (await IsServerRunningAsync(cancellationToken))
-                return;
-            await Task.Delay(1000, cancellationToken);
-        }
-
-        throw new TimeoutException($"本地视觉服务启动超时（{_options.StartupTimeoutSeconds}s），请检查 vision_server.log");
+        throw new InvalidOperationException("OVMS 服务不可达：请确认 ovms 服务已启动（http://127.0.0.1:8000）");
     }
 
-    private void StartPythonServer()
-    {
-        var scriptPath = ResolveScriptPath();
-        if (!File.Exists(scriptPath))
-            throw new FileNotFoundException($"vision_server.py 不存在: {scriptPath}");
-
-        var pythonExe = ResolvePythonExe();
-        var logDir = Path.Combine(AppContext.BaseDirectory, "logs");
-        Directory.CreateDirectory(logDir);
-        var logFile = Path.Combine(logDir, "vision_server.log");
-
-        var psi = new ProcessStartInfo
-        {
-            FileName = pythonExe,
-            WorkingDirectory = Path.GetDirectoryName(scriptPath) ?? AppContext.BaseDirectory,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardOutput = false,
-            RedirectStandardError = false,
-        };
-        psi.ArgumentList.Add(scriptPath);
-        psi.Environment["VISION_PORT"] = _options.Port.ToString();
-        // 输出重定向到日志文件
-        psi.RedirectStandardOutput = true;
-        psi.RedirectStandardError = true;
-
-        _logger.LogInformation("启动本地视觉服务: {Python} {Script} (port={Port})", pythonExe, scriptPath, _options.Port);
-        var process = Process.Start(psi);
-        if (process == null)
-            throw new InvalidOperationException("无法启动 Python 视觉服务进程");
-        _serverProcess = process;
-
-        // 异步把输出写入日志文件，避免管道阻塞
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                using var writer = new StreamWriter(logFile, append: true, Encoding.UTF8) { AutoFlush = true };
-                writer.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] === vision server started (pid={process.Id}) ===");
-                var stdout = process.StandardOutput.ReadToEndAsync();
-                var stderr = process.StandardError.ReadToEndAsync();
-                var outTask = stdout.ContinueWith(t => writer.WriteLine(t.IsCompletedSuccessfully ? t.Result : ""));
-                var errTask = stderr.ContinueWith(t => writer.WriteLine(t.IsCompletedSuccessfully ? t.Result : ""));
-                await Task.WhenAll(outTask, errTask);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "写入 vision_server 日志失败");
-            }
-        });
-    }
-
-    private string ResolveScriptPath()
-    {
-        if (!string.IsNullOrWhiteSpace(_options.ScriptPath) && File.Exists(_options.ScriptPath))
-            return _options.ScriptPath;
-
-        // 默认：Baihua.AI.Provider 内容根目录/LocalVision/vision_server.py
-        var candidates = new[]
-        {
-            Path.Combine(AppContext.BaseDirectory, "LocalVision", "vision_server.py"),
-            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "Baihua.AI.Provider", "LocalVision", "vision_server.py"),
-            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "services", "Baihua.AI.Provider", "LocalVision", "vision_server.py"),
-        };
-        foreach (var c in candidates)
-        {
-            if (File.Exists(Path.GetFullPath(c)))
-                return Path.GetFullPath(c);
-        }
-        return Path.GetFullPath(candidates[0]);
-    }
-
-    private string ResolvePythonExe()
-    {
-        if (!string.IsNullOrWhiteSpace(_options.PythonExe))
-            return _options.PythonExe;
-        return OperatingSystem.IsWindows() ? "python" : "python3";
-    }
-
-    /// <summary>停止视觉服务进程（幂等：未运行直接返回）</summary>
-    public async Task<bool> StopServerAsync(CancellationToken cancellationToken = default)
-    {
-        var proc = _serverProcess;
-        if (proc == null || proc.HasExited)
-        {
-            _started = false;
-            return false;
-        }
-        try
-        {
-            proc.Kill(entireProcessTree: true);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "停止视觉服务进程失败");
-            return false;
-        }
-        try { await proc.WaitForExitAsync(cancellationToken); } catch { }
-        _serverProcess = null;
-        _started = false;
-        _logger.LogInformation("本地视觉服务已停止");
-        return true;
-    }
-
-    /// <summary>查询视觉服务运行状态</summary>
+    /// <summary>查询 OVMS 运行状态（探测模型列表端点）</summary>
     public async Task<bool> IsServerRunningAsync(CancellationToken cancellationToken = default)
     {
         try
         {
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             cts.CancelAfter(TimeSpan.FromSeconds(3));
-            using var client = new HttpClient { BaseAddress = new Uri(BaseUrl) };
-            var resp = await client.GetAsync("/health", cts.Token);
+            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
+            var resp = await client.GetAsync(BaseUrl + "/v1/models", cts.Token);
             return resp.IsSuccessStatusCode;
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogDebug(ex, "探测 OVMS 状态失败");
             return false;
         }
     }
@@ -242,11 +109,10 @@ public class OpenVinoVisionService : ILocalVisionInference
     /// <summary>获取完整状态（含模型信息）</summary>
     public async Task<VisionStatusDto> GetStatusAsync(CancellationToken cancellationToken = default)
     {
-        var status = new VisionStatusDto { Enabled = Enabled, Port = _options.Port };
+        var status = new VisionStatusDto { Enabled = Enabled, Port = _omsOptions.Enabled ? 8000 : 0 };
         var seen = new HashSet<string>();
         foreach (var model in _options.Models)
         {
-            // 配置绑定可能因默认值+配置叠加产生重复项，按 Id 去重
             if (!seen.Add(model.Id))
                 continue;
             var path = ResolveModelPath(model);
@@ -268,44 +134,63 @@ public class OpenVinoVisionService : ILocalVisionInference
         return status;
     }
 
-    /// <summary>识别图片</summary>
+    /// <summary>识别图片（调用 OVMS /v3/chat/completions，image_url 传 base64）</summary>
     public async Task<VisionResultDto> RecognizeAsync(
         byte[] imageBytes, string prompt, string modelId, CancellationToken cancellationToken = default)
     {
         var sw = System.Diagnostics.Stopwatch.StartNew();
         await EnsureServerRunningAsync(cancellationToken);
 
-        var request = new VisionRequestDto
+        var ovmsModel = OmsModelMap.VisionModelId(modelId);
+        var imageB64 = Convert.ToBase64String(imageBytes);
+        var promptText = string.IsNullOrWhiteSpace(prompt) ? "请详细描述这张图片的内容。" : prompt;
+
+        var messages = new[]
         {
-            ImageBase64 = Convert.ToBase64String(imageBytes),
-            Prompt = string.IsNullOrWhiteSpace(prompt) ? "请详细描述这张图片的内容。" : prompt,
-            Model = string.IsNullOrWhiteSpace(modelId) ? "3b" : modelId,
+            new
+            {
+                role = "user",
+                content = new object[]
+                {
+                    new { type = "text", text = promptText },
+                    new { type = "image_url", image_url = new { url = $"data:image/png;base64,{imageB64}" } },
+                },
+            }
         };
 
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         cts.CancelAfter(TimeSpan.FromMinutes(10)); // 首次加载模型可能较慢
 
-        using var client = new HttpClient { BaseAddress = new Uri(BaseUrl) };
-        var response = await client.PostAsJsonAsync("/v1/vision", request, cts.Token);
+        using var client = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
+        var response = await client.PostAsJsonAsync(
+            BaseUrl + "/v3/chat/completions",
+            new { model = ovmsModel, messages, max_tokens = 1024, stream = false },
+            cts.Token);
         if (!response.IsSuccessStatusCode)
         {
             var errorBody = await response.Content.ReadAsStringAsync(cts.Token);
-            throw new InvalidOperationException($"视觉服务返回 {(int)response.StatusCode}: {errorBody}");
+            throw new InvalidOperationException($"OVMS 视觉返回 {(int)response.StatusCode}: {errorBody}");
         }
-        response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync(cts.Token);
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
-        var text = root.TryGetProperty("text", out var t) ? t.GetString() ?? "" : "";
+        var text = "";
+        if (root.TryGetProperty("choices", out var choices) && choices.ValueKind == JsonValueKind.Array
+            && choices.GetArrayLength() > 0
+            && choices[0].TryGetProperty("message", out var msg)
+            && msg.TryGetProperty("content", out var content) && content.ValueKind == JsonValueKind.String)
+        {
+            text = content.GetString() ?? "";
+        }
         if (root.TryGetProperty("error", out var err))
-            throw new InvalidOperationException($"本地视觉服务错误: {err.GetString()}");
+            throw new InvalidOperationException($"OVMS 视觉服务错误: {err.GetString()}");
 
         sw.Stop();
         return new VisionResultDto
         {
             Text = text,
-            Model = request.Model,
+            Model = ovmsModel,
             ElapsedMs = sw.ElapsedMilliseconds,
             ServerRunning = true,
         };

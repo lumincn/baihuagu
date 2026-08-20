@@ -256,6 +256,9 @@ public partial class LocalModelDeploymentService
             if (toolId.Equals("llamacpp", StringComparison.OrdinalIgnoreCase))
                 return await _llamaCpp.GetModelDetailsAsync(modelName, ct);
 
+            if (toolId.Equals("openvino", StringComparison.OrdinalIgnoreCase))
+                return await _openVino.GetModelDetailsAsync(modelName, ct);
+
             return null;
         }
 

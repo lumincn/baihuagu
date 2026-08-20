@@ -60,11 +60,11 @@ test.describe('Embedding 配置提供商切换', () => {
     expect(baseUrl).toBe('https://api.siliconflow.cn/v1');
   });
 
-  test('从 custom 切换到本地 OpenVINO 联动预填 bge-small-zh + 127.0.0.1:8002', async ({ page }) => {
+  test('从 custom 切换到本地 OpenVINO 联动预填 bge-small-zh + 127.0.0.1:8000', async ({ page }) => {
     await clickProvider(page, /OpenVINO/);
     const { model, baseUrl } = await getModelBaseUrl(page);
-    expect(model).toBe('bge-small-zh-v1-5');
-    expect(baseUrl).toBe('http://127.0.0.1:8002/v1');
+    expect(model).toBe('bge-small-zh');
+    expect(baseUrl).toBe('http://127.0.0.1:8000/v3');
   });
 
   test('切换到 custom 保留当前值', async ({ page }) => {

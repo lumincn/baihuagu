@@ -28,4 +28,17 @@ test.describe('本地模型部署页（OpenVINO Tab 组件）', () => {
     await page.getByRole('button', { name: /概览/ }).first().click();
     await expect(page.getByText(/硬件|运行中/).first()).toBeVisible({ timeout: 20000 });
   });
+
+  test('OpenVINO 视觉模型行：显示 OVMS 托管纸章 + 详情按钮', async ({ page }) => {
+    await page.getByRole('button', { name: /OpenVINO/ }).first().click();
+    // OVMS 托管纸章（替代旧的手动加载/卸载按钮）
+    const badge = page.getByText(/由 OVMS 托管/, { exact: false }).first();
+    await expect(badge).toBeVisible({ timeout: 20000 });
+    // 详情按钮
+    const detailsBtn = page.getByRole('button', { name: /详情/ }).first();
+    await expect(detailsBtn).toBeVisible({ timeout: 20000 });
+    // 点击详情按钮弹出详情弹窗
+    await detailsBtn.click();
+    await expect(page.getByText(/模型详情|详情/).first()).toBeVisible({ timeout: 20000 });
+  });
 });
