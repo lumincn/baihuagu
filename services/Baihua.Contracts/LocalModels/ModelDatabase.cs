@@ -105,6 +105,56 @@ public static class ModelDatabase
             Company = "Microsoft",
         },
 
+        // ========== 视觉 / 多模态（图像理解，Ollama 直拉） ==========
+        new()
+        {
+            Id = "qwen2.5-vl-3b",
+            Name = "Qwen 2.5 VL 3B（视觉）",
+            OllamaModelName = "qwen2.5-vl:3b",
+            LmStudioSearchName = "qwen2.5-vl-3b-instruct",
+            Description = "轻量视觉语言模型，图像理解/OCR，速度快，纯文本/UI 场景够用",
+            ParameterSize = "3B",
+            Quantization = "Q4_K_M",
+            SizeGiB = 2.6,
+            MinVramGiB = 3.0,
+            MinRamGiB = 4.0,
+            Tags = new() { "vision", "multimodal", "chinese" },
+            Company = "阿里云",
+            Modality = "vision",
+        },
+        new()
+        {
+            Id = "qwen2.5-vl-7b",
+            Name = "Qwen 2.5 VL 7B（视觉）",
+            OllamaModelName = "qwen2.5-vl:7b",
+            LmStudioSearchName = "qwen2.5-vl-7b-instruct",
+            Description = "视觉语言模型，图像理解/OCR/图表，推荐视觉任务首选",
+            ParameterSize = "7B",
+            Quantization = "Q4_K_M",
+            SizeGiB = 5.5,
+            MinVramGiB = 7.0,
+            MinRamGiB = 10.0,
+            Tags = new() { "vision", "multimodal", "chinese" },
+            Company = "阿里云",
+            Modality = "vision",
+        },
+        new()
+        {
+            Id = "qwen2.5-vl-32b",
+            Name = "Qwen 2.5 VL 32B（视觉）",
+            OllamaModelName = "qwen2.5-vl:32b",
+            LmStudioSearchName = "qwen2.5-vl-32b-instruct",
+            Description = "旗舰视觉语言模型，复杂图像/长文档理解，需要大显存",
+            ParameterSize = "32B",
+            Quantization = "Q4_K_M",
+            SizeGiB = 19.5,
+            MinVramGiB = 22.0,
+            MinRamGiB = 26.0,
+            Tags = new() { "vision", "multimodal", "chinese" },
+            Company = "阿里云",
+            Modality = "vision",
+        },
+
         // ========== 7B-8B 级别（主流消费级显卡） ==========
         new()
         {
@@ -380,4 +430,10 @@ public class ModelEntry
     public double MinRamGiB { get; set; }
     public List<string> Tags { get; set; } = new();
     public string Company { get; set; } = "";
+
+    /// <summary>
+    /// 模态：text（纯文本）/ vision（视觉）/ multimodal（多模态，含图像理解）。
+    /// 默认 text；视觉类模型（如 Qwen2.5-VL）必须显式标记。
+    /// </summary>
+    public string Modality { get; set; } = "text";
 }

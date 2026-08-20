@@ -53,6 +53,11 @@ public class AiConfigModel
     public string Name { get; set; } = "";
     public bool IsPaid { get; set; }
     public bool IsMain { get; set; }
+
+    /// <summary>
+    /// 任务分类（chat/reasoning/code/vision），用于按用途路由模型
+    /// </summary>
+    public string Category { get; set; } = AiTaskCategory.Chat;
 }
 
 public class SaveAiProviderRequest
@@ -73,6 +78,9 @@ public class AiModelRequest
     public string Name { get; set; } = "";
     public bool IsPaid { get; set; }
     public bool IsMain { get; set; }
+
+    /// <summary>任务分类（chat/reasoning/code/vision）</summary>
+    public string Category { get; set; } = AiTaskCategory.Chat;
 }
 
 public class SaveAiProviderResult
@@ -96,6 +104,9 @@ public class AiProviderPresetModel
     public string Name { get; set; } = "";
     public bool IsPaid { get; set; }
     public bool IsMain { get; set; }
+
+    /// <summary>任务分类（chat/reasoning/code/vision）</summary>
+    public string Category { get; set; } = AiTaskCategory.Chat;
 }
 
 public class LocalModelInfo
@@ -150,6 +161,9 @@ public class ChatRequest
     public string Message { get; set; } = string.Empty;
     public string? ProviderId { get; set; }
     public string? Model { get; set; }
+
+    /// <summary>任务分类（chat/reasoning/code/vision）；未指定提供方/模型时按分类路由</summary>
+    public string? Category { get; set; }
     public List<ChatHistoryItem>? History { get; set; }
     public string? SessionId { get; set; }
     public bool? EnableTools { get; set; }

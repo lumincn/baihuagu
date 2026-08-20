@@ -6183,4 +6183,101 @@ Shift+Enter new line, Enter to send</value>
   <data name="Medical_DiagnoseFailed" xml:space="preserve">
     <value>AI diagnosis failed. Please try again later.</value>
   </data>
+
+  <data name="Settings_CategoryAssignedBadge" xml:space="preserve">
+    <value>Assigned</value>
+  </data>
+  <data name="Settings_CategoryChat" xml:space="preserve">
+    <value>General Chat</value>
+  </data>
+  <data name="Settings_CategoryChatDesc" xml:space="preserve">
+    <value>Everyday conversation, Q&amp;A and writing; lightweight or balanced models recommended.</value>
+  </data>
+  <data name="Settings_CategoryCode" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="Settings_CategoryCodeDesc" xml:space="preserve">
+    <value>Code generation, completion, explanation and debugging; code-specialized models recommended (e.g. Qwen2.5-Coder).</value>
+  </data>
+  <data name="Settings_CategoryConfigNote" xml:space="preserve">
+    <value>Different tasks need different model types. Assign one provider and model per category (one model config per category); chat and other features route by category, falling back to the main provider's main model when unassigned. You can also tag individual models with a purpose in the model list below.</value>
+  </data>
+  <data name="Settings_CategoryConfigTitle" xml:space="preserve">
+    <value>Per-Task Model Configuration</value>
+  </data>
+  <data name="Settings_CategoryFallback" xml:space="preserve">
+    <value>fallback</value>
+  </data>
+  <data name="Settings_CategoryModel" xml:space="preserve">
+    <value>Model</value>
+  </data>
+  <data name="Settings_CategoryModelDefault" xml:space="preserve">
+    <value>(provider default)</value>
+  </data>
+  <data name="Settings_CategoryProvider" xml:space="preserve">
+    <value>Provider</value>
+  </data>
+  <data name="Settings_CategoryProviderDefault" xml:space="preserve">
+    <value>(auto)</value>
+  </data>
+  <data name="Settings_CategoryReasoning" xml:space="preserve">
+    <value>Deep Reasoning</value>
+  </data>
+  <data name="Settings_CategoryReasoningDesc" xml:space="preserve">
+    <value>Math, logic, deep analysis and long-chain reasoning; reasoning models recommended (e.g. DeepSeek-R1).</value>
+  </data>
+  <data name="Settings_CategoryResolved" xml:space="preserve">
+    <value>Currently active</value>
+  </data>
+  <data name="Settings_CategorySave" xml:space="preserve">
+    <value>Save Category Configuration</value>
+  </data>
+  <data name="Settings_CategorySavedSuccess" xml:space="preserve">
+    <value>Category configuration saved</value>
+  </data>
+  <data name="Settings_CategorySaveFailed" xml:space="preserve">
+    <value>Failed to save category configuration, please retry</value>
+  </data>
+  <data name="Settings_CategoryUnresolved" xml:space="preserve">
+    <value>Not configured (will use main provider default)</value>
+  </data>
+  <data name="Settings_CategoryVision" xml:space="preserve">
+    <value>Vision</value>
+  </data>
+  <data name="Settings_CategoryVisionDesc" xml:space="preserve">
+    <value>Image understanding / OCR; requires a vision or multimodal model (e.g. Qwen2.5-VL).</value>
+  </data>
+  <data name="Settings_LocalProvidersTitle" xml:space="preserve">
+    <value>Local AI Providers</value>
+  </data>
+  <data name="Settings_ModelCategoryHint" xml:space="preserve">
+    <value>Tag the purpose of this model; chat and other features route by category</value>
+  </data>
+  <data name="Settings_NoLocalProviders" xml:space="preserve">
+    <value>No locally configured providers yet. Click "Add AI Provider" to create one.</value>
+  </data>
+  <data name="Settings_PeerBadge" xml:space="preserve">
+    <value>Peer</value>
+  </data>
+  <data name="Settings_PeerProvidersNote" xml:space="preserve">
+    <value>These are peer entries auto-registered by the compute pool (peer- prefix). They are local pointers to the peer's OpenAI-compatible endpoint; editing or deleting them here only affects this machine and never modifies the peer's own configuration.</value>
+  </data>
+  <data name="Settings_PeerProvidersTitle" xml:space="preserve">
+    <value>Compute Pool Peer Entries</value>
+  </data>
+  <data name="LocalModels_ModalityText" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="LocalModels_ModalityVision" xml:space="preserve">
+    <value>Vision</value>
+  </data>
+  <data name="LocalModels_ModalityMultimodal" xml:space="preserve">
+    <value>Multimodal</value>
+  </data>
+  <data name="LocalModels_ModalityAudio" xml:space="preserve">
+    <value>Audio</value>
+  </data>
+  <data name="LocalModels_ModalityHint" xml:space="preserve">
+    <value>Model modality: text / vision / multimodal</value>
+  </data>
 </root>

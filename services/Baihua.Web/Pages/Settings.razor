@@ -137,6 +137,12 @@
                     <div class="model-edit-row">
                         <input type="text" class="form-control model-name" 
                                @bind="model.Name" placeholder="@L["Settings_ModelNamePlaceholder"]" />
+                        <select class="form-select model-category-select" @bind="model.Category" title="@L["Settings_ModelCategoryHint"]">
+                            <option value="chat">💬 @L["Settings_CategoryChat"]</option>
+                            <option value="reasoning">🧠 @L["Settings_CategoryReasoning"]</option>
+                            <option value="code">💻 @L["Settings_CategoryCode"]</option>
+                            <option value="vision">🖼️ @L["Settings_CategoryVision"]</option>
+                        </select>
                         <label class="checkbox-label">
                             <input type="checkbox" @bind="model.IsPaid" />
                             <span>@L["Settings_Paid"]</span>
@@ -218,85 +224,32 @@
         }
         else
         {
-            <div class="ai-providers-list">
-                @foreach (var provider in aiProviders)
-                {
-                    <div class="ai-provider-card">
-                        <div class="provider-header">
-                            <div class="provider-title">
-                                <span class="provider-name">@provider.Name</span>
-                                @if (provider.IsMain)
-                                {
-                                    <span class="badge badge-primary">@L["Settings_MainBadge"]</span>
-                                }
-                                @switch (provider.Tier)
-                                {
-                                    case AiModelTier.Tier1_Embedding:
-                                        <span class="badge" style="background:#e8d5f2;color:#6b2c91;">@L["Settings_Tier1"]</span>
-                                        break;
-                                    case AiModelTier.Tier2_Local:
-                                        <span class="badge" style="background:#e0f0e5;color:#3d6b45;">@L["Settings_Tier2"]</span>
-                                        break;
-                                    case AiModelTier.Tier3_Cloud:
-                                        <span class="badge" style="background:#e0ecf4;color:#4a2a30;">@L["Settings_Tier3"]</span>
-                                        break;
-                                }
-                            </div>
-                            <div class="provider-actions">
-                                <button class="btn btn-icon" @onclick="() => EditProvider(provider)" title="@L["Settings_Edit"]">
-                                    @L["Settings_Edit"]
-                                </button>
-                                <button class="btn btn-icon btn-danger" @onclick="() => DeleteProvider(provider)" title="@L["Common_Delete"]">
-                                    @L["Common_Delete"]
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="provider-info">
-                            <code class="provider-id">@provider.Id</code>
-                            <span class="provider-url">@provider.BaseUrl</span>
-                        </div>
+            <h2 class="settings-section-title">🔌 @L["Settings_LocalProvidersTitle"]</h2>
+            @if (localProviders.Count == 0)
+            {
+                <div class="alert alert-info">@L["Settings_NoLocalProviders"]</div>
+            }
+            else
+            {
+                <div class="ai-providers-list">
+                    @foreach (var provider in localProviders)
+                    {
+                        @RenderProviderCard(provider)
+                    }
+                </div>
+            }
 
-                        <div class="api-key-status">
-                            @if (provider.KeyMask == "***error***")
-                            {
-                                <span class="badge badge-danger" title="@L["Settings_ApiKeyDecryptErrorHint"]">⚠ @L["Settings_ApiKeyDecryptError"]</span>
-                            }
-                            else if (provider.HasApiKey)
-                            {
-                                <span class="badge badge-success" title="@L["Settings_ApiKeyEncrypted"]">
-                                    @L["Settings_ApiKeyConfigured"]@(provider.KeyMask ?? "***")
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="badge badge-warning">@L["Settings_ApiKeyNotConfigured"]</span>
-                            }
-                        </div>
-
-                        <div class="provider-models">
-                            @foreach (var model in provider.Models)
-                            {
-                                <div class="model-item">
-                                    <span class="model-name">@(model.Name.Split('/').LastOrDefault() ?? model.Name)</span>
-                                    @if (model.IsMain)
-                                    {
-                                        <span class="badge badge-secondary">@L["Settings_DefaultModel"]</span>
-                                    }
-                                    @if (model.IsPaid)
-                                    {
-                                        <span class="badge badge-paid">@L["Settings_PaidModel"]</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge badge-free">@L["Settings_FreeModel"]</span>
-                                    }
-                                </div>
-                            }
-                        </div>
-                    </div>
-                }
-            </div>
+            @if (peerProviders.Count > 0)
+            {
+                <h2 class="settings-section-title" style="margin-top: 1.75rem;">🖧 @L["Settings_PeerProvidersTitle"]</h2>
+                <p class="config-note">@L["Settings_PeerProvidersNote"]</p>
+                <div class="ai-providers-list">
+                    @foreach (var provider in peerProviders)
+                    {
+                        @RenderProviderCard(provider)
+                    }
+                </div>
+            }
         }
 
         <div class="list-actions">
@@ -307,6 +260,71 @@
         <p class="config-note">
             @L["Settings_ApiKeyEncryptedNote"]
         </p>
+
+        <!-- 任务分类模型配置（每类一个模型配置） -->
+        <div class="embedding-config-section" style="margin-top: 2rem; padding-top: 1.5rem; border-color: var(--master-border, #2d3548);">
+            <h2>🎯 @L["Settings_CategoryConfigTitle"]</h2>
+            <p style="color: var(--master-text-muted, #91a0b0);font-size:0.9rem;margin-bottom:1rem;">
+                @L["Settings_CategoryConfigNote"]
+            </p>
+            <div class="category-grid">
+                @foreach (var cat in categoryAssignments)
+                {
+                    var def = categoryDefinitions.FirstOrDefault(d => d.Key == cat.Category);
+                    var resolved = categoryResolved.FirstOrDefault(r => r.Category == cat.Category);
+                    <div class="category-card">
+                        <div class="category-card-header">
+                            <span class="category-icon">@(def?.Icon ?? "🎯")</span>
+                            <span class="category-name">@GetCategoryName(cat.Category)</span>
+                            @if (resolved is { FromAssignment: true })
+                            {
+                                <span class="badge badge-success" style="margin-left:auto;">@L["Settings_CategoryAssignedBadge"]</span>
+                            }
+                        </div>
+                        <div class="category-desc">@GetCategoryDescription(cat.Category)</div>
+                        <div class="form-group">
+                            <label>@L["Settings_CategoryProvider"]</label>
+                            <select class="form-control" value="@cat.ProviderId" @onchange="(e) => OnCategoryProviderChanged(cat, e)">
+                                <option value="">@L["Settings_CategoryProviderDefault"]</option>
+                                @foreach (var p in aiProviders)
+                                {
+                                    <option value="@p.Id">@p.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0.5rem;">
+                            <label>@L["Settings_CategoryModel"]</label>
+                            <select class="form-control" @bind="cat.ModelName">
+                                <option value="">@L["Settings_CategoryModelDefault"]</option>
+                                @foreach (var m in GetCategoryModels(cat))
+                                {
+                                    <option value="@m.Name">@(m.Name.Split('/').LastOrDefault() ?? m.Name)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="category-resolved">
+                            <span class="text-muted">@L["Settings_CategoryResolved"]</span>
+                            <b>@GetCategoryResolvedLabel(cat.Category)</b>
+                            @if (resolved is { FromAssignment: false })
+                            {
+                                <span class="text-muted">(@L["Settings_CategoryFallback"])</span>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="form-actions" style="margin-top:1.25rem;">
+                <button class="btn btn-primary" @onclick="SaveCategories" disabled="@isSavingCategories">
+                    @(isSavingCategories ? L["Common_Loading"] : L["Settings_CategorySave"])
+                </button>
+            </div>
+            @if (!string.IsNullOrEmpty(categoryConfigMessage))
+            {
+                <div class="alert @(categoryConfigSuccess ? "alert-success" : "alert-error")" style="margin-top: 0.75rem;">
+                    @categoryConfigMessage
+                </div>
+            }
+        </div>
     }
 
     <!-- 全局生成详细度（所有 AI 内容生成默认应用，编程任务除外） -->
@@ -434,19 +452,92 @@
 </div>
 
 <style>
-    /* AI 提供商列表 */
+    /* AI 提供商列表（宽屏多列网格） */
     .ai-providers-list {
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
         gap: 1rem;
         margin-bottom: 1.5rem;
+        align-items: start;
+    }
+
+    .settings-section-title {
+        font-size: 1.15rem;
+        font-weight: 600;
+        margin: 1.5rem 0 0.85rem;
+        color: #2c3e50;
     }
 
     .ai-provider-card {
         background: #f5f8fa;
         border: 1px solid #e8eef2;
-        border-radius: 8px;
+        border-radius: 10px;
         padding: 1rem;
+        box-shadow: 0 1px 3px rgba(20,40,60,0.06);
+        transition: box-shadow 0.15s ease;
+        height: 100%;
+    }
+
+    .ai-provider-card:hover {
+        box-shadow: 0 3px 10px rgba(20,40,60,0.10);
+    }
+
+    /* 任务分类模型配置 */
+    .category-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1rem;
+    }
+
+    .category-card {
+        background: #f5f8fa;
+        border: 1px solid #e8eef2;
+        border-radius: 10px;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+        box-shadow: 0 1px 3px rgba(20,40,60,0.06);
+        height: 100%;
+    }
+
+    .category-card-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .category-icon {
+        font-size: 1.3rem;
+    }
+
+    .category-name {
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .category-desc {
+        font-size: 0.82rem;
+        color: #5a6a72;
+        line-height: 1.45;
+        min-height: 2.4em;
+    }
+
+    .category-resolved {
+        font-size: 0.85rem;
+        padding-top: 0.5rem;
+        border-top: 1px dashed #d8e2e8;
+        word-break: break-all;
+    }
+
+    .category-resolved b {
+        color: #2e8baf;
+    }
+
+    .category-tag {
+        background: #eef3f7;
+        color: #2e6da4;
     }
 
     .provider-header {
@@ -591,6 +682,7 @@
     .model-edit-row {
         display: flex;
         align-items: center;
+        flex-wrap: wrap;
         gap: 0.5rem;
         padding: 0.5rem;
         background: white;
@@ -600,6 +692,17 @@
 
     .model-edit-row .model-name {
         flex: 1;
+        min-width: 180px;
+    }
+
+    .model-category-select {
+        flex-shrink: 0;
+        max-width: 170px;
+        padding: 0.35rem 0.5rem;
+        border: 1px solid #c8d4dc;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        background: white;
     }
 
     .form-actions {
@@ -847,6 +950,26 @@
     
     private List<AiConfigProvider> aiProviders = new();
 
+    /// <summary>本机手配提供方（不含算力池对端登记）</summary>
+    private List<AiConfigProvider> localProviders =>
+        aiProviders.Where(p => !IsPeerProvider(p)).ToList();
+
+    /// <summary>算力池自动登记的对端提供方（peer- 前缀，仅本机登记项）</summary>
+    private List<AiConfigProvider> peerProviders =>
+        aiProviders.Where(IsPeerProvider).ToList();
+
+    /// <summary>是否为算力池对端登记（peer- 前缀，本机指向对端 OpenAI 兼容端点的登记项）</summary>
+    private static bool IsPeerProvider(AiConfigProvider provider) =>
+        provider.Id.StartsWith("peer-", StringComparison.OrdinalIgnoreCase);
+
+    // 任务分类模型配置（每类一个模型配置）
+    private List<AiCategoryDefinitionDto> categoryDefinitions = new();
+    private List<AiCategoryAssignmentDto> categoryAssignments = new();
+    private List<AiCategoryResolutionDto> categoryResolved = new();
+    private bool isSavingCategories = false;
+    private string categoryConfigMessage = "";
+    private bool categoryConfigSuccess = false;
+
     // 视图状态
     private bool isEditing = false;
     private bool isSaving = false;
@@ -920,6 +1043,7 @@
 
                 await Task.WhenAll(
                     LoadAiProviders(),
+                    LoadCategoryConfigAsync(),
                     LoadLocalModelConfigAsync(),
                     LoadEmbeddingConfigAsync()
                 );
@@ -951,6 +1075,188 @@
             });
         }
     }
+
+    private async Task LoadCategoryConfigAsync()
+    {
+        try
+        {
+            var config = await ApiService.GetAiCategoryConfigAsync();
+            categoryDefinitions = config.Categories ?? new List<AiCategoryDefinitionDto>();
+            categoryResolved = config.Resolved ?? new List<AiCategoryResolutionDto>();
+            // 只保留有效分类的指派行（缺失的用空行补齐，保证每个分类都有一张卡片）
+            var existing = (config.Assignments ?? new List<AiCategoryAssignmentDto>())
+                .Where(a => Baihua.Contracts.Ai.AiTaskCategory.IsValid(a.Category))
+                .ToDictionary(a => a.Category, a => a, StringComparer.OrdinalIgnoreCase);
+            categoryAssignments = Baihua.Contracts.Ai.AiTaskCategory.All
+                .Select(cat => existing.TryGetValue(cat, out var a)
+                    ? new AiCategoryAssignmentDto { Category = a.Category, ProviderId = a.ProviderId, ModelName = a.ModelName }
+                    : new AiCategoryAssignmentDto { Category = cat })
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "加载任务分类模型配置失败");
+            categoryAssignments = Baihua.Contracts.Ai.AiTaskCategory.All
+                .Select(cat => new AiCategoryAssignmentDto { Category = cat })
+                .ToList();
+        }
+    }
+
+    private async Task SaveCategories()
+    {
+        isSavingCategories = true;
+        categoryConfigMessage = "";
+        try
+        {
+            var ok = await ApiService.SaveAiCategoryConfigAsync(categoryAssignments);
+            categoryConfigSuccess = ok;
+            categoryConfigMessage = ok ? L["Settings_CategorySavedSuccess"] : L["Settings_CategorySaveFailed"];
+            if (ok)
+            {
+                await LoadCategoryConfigAsync();
+                await StatusUpdateService.NotifyAIStatusChangedAsync();
+                AIStatusService.NotifyStateChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            categoryConfigSuccess = false;
+            categoryConfigMessage = string.Format(L["Settings_SaveFailedWithMessage"], ex.Message);
+        }
+        finally
+        {
+            isSavingCategories = false;
+        }
+    }
+
+    private string GetCategoryName(string category) => category.ToLowerInvariant() switch
+    {
+        "chat" => L["Settings_CategoryChat"],
+        "reasoning" => L["Settings_CategoryReasoning"],
+        "code" => L["Settings_CategoryCode"],
+        "vision" => L["Settings_CategoryVision"],
+        _ => category
+    };
+
+    private string GetCategoryDescription(string category) => category.ToLowerInvariant() switch
+    {
+        "chat" => L["Settings_CategoryChatDesc"],
+        "reasoning" => L["Settings_CategoryReasoningDesc"],
+        "code" => L["Settings_CategoryCodeDesc"],
+        "vision" => L["Settings_CategoryVisionDesc"],
+        _ => ""
+    };
+
+    private void OnCategoryProviderChanged(AiCategoryAssignmentDto cat, ChangeEventArgs e)
+    {
+        cat.ProviderId = e.Value?.ToString() ?? "";
+        cat.ModelName = ""; // 切换提供方后重置模型，避免跨提供方残留
+    }
+
+    private List<AiConfigModel> GetCategoryModels(AiCategoryAssignmentDto cat)
+    {
+        var provider = aiProviders.FirstOrDefault(p => p.Id == cat.ProviderId);
+        return provider?.Models ?? new List<AiConfigModel>();
+    }
+
+    private string GetCategoryResolvedLabel(string category)
+    {
+        var resolved = categoryResolved.FirstOrDefault(r =>
+            r.Category.Equals(category, StringComparison.OrdinalIgnoreCase));
+        if (resolved == null || string.IsNullOrEmpty(resolved.ModelName))
+            return L["Settings_CategoryUnresolved"];
+        var providerName = string.IsNullOrEmpty(resolved.ProviderName)
+            ? resolved.ProviderId
+            : resolved.ProviderName;
+        var modelShort = resolved.ModelName.Split('/').LastOrDefault() ?? resolved.ModelName;
+        return $"{providerName} · {modelShort}";
+    }
+
+    private RenderFragment RenderProviderCard(AiConfigProvider provider) => __builder =>
+    {
+        <div class="ai-provider-card">
+            <div class="provider-header">
+                <div class="provider-title">
+                    <span class="provider-name">@provider.Name</span>
+                    @if (IsPeerProvider(provider))
+                    {
+                        <span class="badge" style="background:#e6eef7;color:#2e6da4;">🖧 @L["Settings_PeerBadge"]</span>
+                    }
+                    @if (provider.IsMain)
+                    {
+                        <span class="badge badge-primary">@L["Settings_MainBadge"]</span>
+                    }
+                    @switch (provider.Tier)
+                    {
+                        case AiModelTier.Tier1_Embedding:
+                            <span class="badge" style="background:#e8d5f2;color:#6b2c91;">@L["Settings_Tier1"]</span>
+                            break;
+                        case AiModelTier.Tier2_Local:
+                            <span class="badge" style="background:#e0f0e5;color:#3d6b45;">@L["Settings_Tier2"]</span>
+                            break;
+                        case AiModelTier.Tier3_Cloud:
+                            <span class="badge" style="background:#e0ecf4;color:#4a2a30;">@L["Settings_Tier3"]</span>
+                            break;
+                    }
+                </div>
+                <div class="provider-actions">
+                    <button class="btn btn-icon" @onclick="() => EditProvider(provider)" title="@L["Settings_Edit"]">
+                        @L["Settings_Edit"]
+                    </button>
+                    <button class="btn btn-icon btn-danger" @onclick="() => DeleteProvider(provider)" title="@L["Common_Delete"]">
+                        @L["Common_Delete"]
+                    </button>
+                </div>
+            </div>
+
+            <div class="provider-info">
+                <code class="provider-id">@provider.Id</code>
+                <span class="provider-url">@provider.BaseUrl</span>
+            </div>
+
+            <div class="api-key-status">
+                @if (provider.KeyMask == "***error***")
+                {
+                    <span class="badge badge-danger" title="@L["Settings_ApiKeyDecryptErrorHint"]">⚠ @L["Settings_ApiKeyDecryptError"]</span>
+                }
+                else if (provider.HasApiKey)
+                {
+                    <span class="badge badge-success" title="@L["Settings_ApiKeyEncrypted"]">
+                        @L["Settings_ApiKeyConfigured"]@(provider.KeyMask ?? "***")
+                    </span>
+                }
+                else
+                {
+                    <span class="badge badge-warning">@L["Settings_ApiKeyNotConfigured"]</span>
+                }
+            </div>
+
+            <div class="provider-models">
+                @foreach (var model in provider.Models)
+                {
+                    <div class="model-item">
+                        <span class="model-name">@(model.Name.Split('/').LastOrDefault() ?? model.Name)</span>
+                        @if (!string.IsNullOrEmpty(model.Category) && model.Category != "chat")
+                        {
+                            <span class="badge category-tag">@GetCategoryName(model.Category)</span>
+                        }
+                        @if (model.IsMain)
+                        {
+                            <span class="badge badge-secondary">@L["Settings_DefaultModel"]</span>
+                        }
+                        @if (model.IsPaid)
+                        {
+                            <span class="badge badge-paid">@L["Settings_PaidModel"]</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-free">@L["Settings_FreeModel"]</span>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    };
 
     private async Task CheckMissingLocalModelsAsync()
     {
@@ -1026,7 +1332,8 @@
                     {
                         Name = m.Name,
                         IsPaid = m.IsPaid,
-                        IsMain = m.IsMain
+                        IsMain = m.IsMain,
+                        Category = m.Category
                     })
                     .ToList();
 
@@ -1129,7 +1436,8 @@
             {
                 Name = m.Name,
                 IsPaid = m.IsPaid,
-                IsMain = m.IsMain
+                IsMain = m.IsMain,
+                Category = m.Category
             }).ToList();
         }
     }
@@ -1148,7 +1456,8 @@
             {
                 Name = m.Name,
                 IsPaid = m.IsPaid,
-                IsMain = m.IsMain
+                IsMain = m.IsMain,
+                Category = m.Category
             }).ToList(),
             ApiKey = "", // 为了安全不填充 API Key
             ExistingKeyMask = provider.KeyMask
@@ -1223,7 +1532,8 @@
                 {
                     Name = m.Name,
                     IsPaid = m.IsPaid,
-                    IsMain = m.IsMain
+                    IsMain = m.IsMain,
+                    Category = m.Category
                 }).ToList(),
                 ApiKey = string.IsNullOrWhiteSpace(editingProvider.ApiKey) ? null : editingProvider.ApiKey,
                 Tier = editingProvider.Tier
@@ -1263,7 +1573,8 @@
         {
             Name = "",
             IsPaid = false,
-            IsMain = editingProvider.Models.Count == 0
+            IsMain = editingProvider.Models.Count == 0,
+            Category = Baihua.Contracts.Ai.AiTaskCategory.Chat
         });
     }
 
@@ -1392,6 +1703,7 @@
         public string Name { get; set; } = "";
         public bool IsPaid { get; set; }
         public bool IsMain { get; set; }
+        public string Category { get; set; } = Baihua.Contracts.Ai.AiTaskCategory.Chat;
     }
 
     // Embedding 配置

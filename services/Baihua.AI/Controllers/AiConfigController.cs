@@ -19,6 +19,7 @@ public partial class AiConfigController : ControllerBase
 {
     private readonly AiConfigService _aiConfigService;
     private readonly AiSettingsService _aiSettings;
+    private readonly Baihua.Core.Services.AiCategorySettingsService _categorySettings;
     private readonly WebUINotificationService _webUINotification;
     private readonly Baihua.Core.Services.CapabilityService _capabilityService;
     private readonly ILogger<AiConfigController> _logger;
@@ -27,6 +28,7 @@ public partial class AiConfigController : ControllerBase
     public AiConfigController(
         AiConfigService aiConfigService,
         AiSettingsService aiSettings,
+        Baihua.Core.Services.AiCategorySettingsService categorySettings,
         WebUINotificationService webUINotification,
         Baihua.Core.Services.CapabilityService capabilityService,
         ILogger<AiConfigController> logger,
@@ -34,6 +36,7 @@ public partial class AiConfigController : ControllerBase
     {
         _aiConfigService = aiConfigService;
         _aiSettings = aiSettings;
+        _categorySettings = categorySettings;
         _webUINotification = webUINotification;
         _capabilityService = capabilityService;
         _logger = logger;
@@ -63,7 +66,8 @@ public partial class AiConfigController : ControllerBase
                 {
                     Name = m.Name,
                     IsPaid = m.IsPaid,
-                    IsMain = m.IsMain
+                    IsMain = m.IsMain,
+                    Category = m.Category
                 }).ToList(),
                 HasApiKey = summary?.HasApiKey ?? false,
                 KeyMask = summary?.KeyMask,
@@ -106,7 +110,8 @@ public partial class AiConfigController : ControllerBase
             {
                 Name = m.Name,
                 IsPaid = m.IsPaid,
-                IsMain = m.IsMain
+                IsMain = m.IsMain,
+                Category = m.Category
             }).ToList(),
             HasApiKey = summary?.HasApiKey ?? false,
             KeyMask = summary?.KeyMask,

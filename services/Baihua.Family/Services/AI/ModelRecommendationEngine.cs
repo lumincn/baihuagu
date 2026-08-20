@@ -160,6 +160,7 @@ namespace Baihua.Family.Services
                 MinRamGiB = model.MinRamGiB,
                 Tags = new List<string>(model.Tags),
                 Company = model.Company,
+                Modality = model.Modality,
                 Sources = GetModelSources(model),
             };
 

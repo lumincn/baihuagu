@@ -10,6 +10,7 @@
 @inject GlobalStateService GlobalStateService
 @inject IJSRuntime JSRuntime
 @inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
+@inject ILogger<Messages> Logger
 @implements IDisposable
 
 <PageTitle>@L["Messages_PageTitle"]</PageTitle>
@@ -682,14 +683,45 @@
     private async Task LoadProvidersAsync()
     {
         providers = await ApiService.GetAiConfigProvidersAsync();
+
         // 默认选中主提供商；无主提供商则选第一个
-        var defaultProvider = providers.FirstOrDefault(p => p.IsMain) ?? providers.FirstOrDefault();
+        // 若「任务分类模型配置」为通用对话指派了模型，则优先使用该指派（每类一个模型配置）
+        string? chatCategoryProviderId = null;
+        string? chatCategoryModel = null;
+        try
+        {
+            var categoryConfig = await ApiService.GetAiCategoryConfigAsync();
+            var chatResolved = categoryConfig?.Resolved?.FirstOrDefault(r =>
+                r.Category.Equals("chat", StringComparison.OrdinalIgnoreCase));
+            if (chatResolved != null && !string.IsNullOrEmpty(chatResolved.ModelName))
+            {
+                chatCategoryProviderId = chatResolved.ProviderId;
+                chatCategoryModel = chatResolved.ModelName;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogDebug(ex, "读取通用对话分类指派失败，使用主提供方默认");
+        }
+
+        var defaultProvider = providers.FirstOrDefault(p =>
+                                  p.Id == chatCategoryProviderId)
+                              ?? providers.FirstOrDefault(p => p.IsMain)
+                              ?? providers.FirstOrDefault();
         if (defaultProvider != null)
         {
             selectedProviderId = defaultProvider.Id;
-            var defaultModel = defaultProvider.Models.FirstOrDefault(m => m.IsMain)
-                               ?? defaultProvider.Models.FirstOrDefault();
-            selectedModel = defaultModel?.Name ?? "";
+            string? defaultModel;
+            if (defaultProvider.Id == chatCategoryProviderId && !string.IsNullOrEmpty(chatCategoryModel))
+            {
+                defaultModel = chatCategoryModel;
+            }
+            else
+            {
+                defaultModel = defaultProvider.Models.FirstOrDefault(m => m.IsMain)?.Name
+                               ?? defaultProvider.Models.FirstOrDefault()?.Name;
+            }
+            selectedModel = defaultModel ?? "";
         }
 
         StateHasChanged();

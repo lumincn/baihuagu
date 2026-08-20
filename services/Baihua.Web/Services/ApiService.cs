@@ -157,6 +157,8 @@ namespace Baihua.Web.Services
         Task<bool> DeleteAiConfigProviderAsync(string providerId);
         Task<EnvConfigHelp?> GetAiEnvConfigHelpAsync();
         Task<List<AiProviderPreset>> GetAiProviderPresetsAsync();
+        Task<AiCategoryConfigDto> GetAiCategoryConfigAsync();
+        Task<bool> SaveAiCategoryConfigAsync(List<AiCategoryAssignmentDto> assignments);
 
         // 算力池（局域网算力总览与选用）
         Task<ComputePoolViewDto?> GetComputePoolAsync();

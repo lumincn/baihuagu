@@ -163,6 +163,41 @@ namespace Baihua.Web.Services
             }
         }
 
+        public async Task<AiCategoryConfigDto> GetAiCategoryConfigAsync()
+        {
+            try
+            {
+                using var quick = new CancellationTokenSource(QuickCallTimeout);
+                var response = await _aiHttpClient.GetAsync("/api/ai/config/categories", quick.Token);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadFromJsonAsync<AiCategoryConfigDto>(quick.Token)
+                       ?? new AiCategoryConfigDto();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取任务分类模型配置失败");
+                return new AiCategoryConfigDto();
+            }
+        }
+
+        public async Task<bool> SaveAiCategoryConfigAsync(List<AiCategoryAssignmentDto> assignments)
+        {
+            try
+            {
+                using var quick = new CancellationTokenSource(QuickCallTimeout);
+                var response = await _aiHttpClient.PutAsync("/api/ai/config/categories",
+                    JsonContent.Create(new SaveAiCategoriesRequest { Assignments = assignments ?? new List<AiCategoryAssignmentDto>() }),
+                    quick.Token);
+                response.EnsureSuccessStatusCode();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "保存任务分类模型配置失败");
+                return false;
+            }
+        }
+
         public async Task<EmbeddingConfigDto> GetEmbeddingConfigAsync()
         {
             try

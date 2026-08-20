@@ -6182,4 +6182,101 @@ Shift+Enter 换行，Enter 发送</value>
   <data name="Medical_DiagnoseFailed" xml:space="preserve">
     <value>AI 诊断失败，请稍后重试</value>
   </data>
+
+  <data name="Settings_CategoryAssignedBadge" xml:space="preserve">
+    <value>已指派</value>
+  </data>
+  <data name="Settings_CategoryChat" xml:space="preserve">
+    <value>通用对话</value>
+  </data>
+  <data name="Settings_CategoryChatDesc" xml:space="preserve">
+    <value>日常对话、问答、写作等通用文本场景，建议轻量/均衡模型。</value>
+  </data>
+  <data name="Settings_CategoryCode" xml:space="preserve">
+    <value>代码编程</value>
+  </data>
+  <data name="Settings_CategoryCodeDesc" xml:space="preserve">
+    <value>代码生成、补全、解释与调试，建议代码专项模型（如 Qwen2.5-Coder）。</value>
+  </data>
+  <data name="Settings_CategoryConfigNote" xml:space="preserve">
+    <value>不同任务需要不同类型的模型。为每个分类指派一个提供方与模型（每类一个模型配置），聊天等场景将按分类路由；未指派时自动回退到主提供方的主模型。也可在下方“模型列表”中为单个模型打上用途标签。</value>
+  </data>
+  <data name="Settings_CategoryConfigTitle" xml:space="preserve">
+    <value>任务分类模型配置</value>
+  </data>
+  <data name="Settings_CategoryFallback" xml:space="preserve">
+    <value>回退</value>
+  </data>
+  <data name="Settings_CategoryModel" xml:space="preserve">
+    <value>模型</value>
+  </data>
+  <data name="Settings_CategoryModelDefault" xml:space="preserve">
+    <value>（提供方默认）</value>
+  </data>
+  <data name="Settings_CategoryProvider" xml:space="preserve">
+    <value>提供方</value>
+  </data>
+  <data name="Settings_CategoryProviderDefault" xml:space="preserve">
+    <value>（自动选择）</value>
+  </data>
+  <data name="Settings_CategoryReasoning" xml:space="preserve">
+    <value>深度推理</value>
+  </data>
+  <data name="Settings_CategoryReasoningDesc" xml:space="preserve">
+    <value>数学、逻辑、深度分析与长链条推理，建议推理型模型（如 DeepSeek-R1）。</value>
+  </data>
+  <data name="Settings_CategoryResolved" xml:space="preserve">
+    <value>当前生效</value>
+  </data>
+  <data name="Settings_CategorySave" xml:space="preserve">
+    <value>保存分类配置</value>
+  </data>
+  <data name="Settings_CategorySavedSuccess" xml:space="preserve">
+    <value>分类配置已保存</value>
+  </data>
+  <data name="Settings_CategorySaveFailed" xml:space="preserve">
+    <value>保存分类配置失败，请重试</value>
+  </data>
+  <data name="Settings_CategoryUnresolved" xml:space="preserve">
+    <value>未配置（将使用主提供方默认）</value>
+  </data>
+  <data name="Settings_CategoryVision" xml:space="preserve">
+    <value>图像视觉</value>
+  </data>
+  <data name="Settings_CategoryVisionDesc" xml:space="preserve">
+    <value>图像理解/OCR，必须使用视觉或多模态模型（如 Qwen2.5-VL）。</value>
+  </data>
+  <data name="Settings_LocalProvidersTitle" xml:space="preserve">
+    <value>本机 AI 提供方</value>
+  </data>
+  <data name="Settings_ModelCategoryHint" xml:space="preserve">
+    <value>标记该模型的用途分类，聊天等场景按分类路由</value>
+  </data>
+  <data name="Settings_NoLocalProviders" xml:space="preserve">
+    <value>暂无本机手配的提供方，点击“添加提供商”创建。</value>
+  </data>
+  <data name="Settings_PeerBadge" xml:space="preserve">
+    <value>对端</value>
+  </data>
+  <data name="Settings_PeerProvidersNote" xml:space="preserve">
+    <value>以下为算力池自动登记的对端节点入口（peer- 前缀）。它们只是本机的登记项，指向对端机器的 OpenAI 兼容端点；在这里编辑或删除仅影响本机使用，不会改动对端机器的任何配置。</value>
+  </data>
+  <data name="Settings_PeerProvidersTitle" xml:space="preserve">
+    <value>算力池对端登记</value>
+  </data>
+  <data name="LocalModels_ModalityText" xml:space="preserve">
+    <value>文本</value>
+  </data>
+  <data name="LocalModels_ModalityVision" xml:space="preserve">
+    <value>视觉</value>
+  </data>
+  <data name="LocalModels_ModalityMultimodal" xml:space="preserve">
+    <value>多模态</value>
+  </data>
+  <data name="LocalModels_ModalityAudio" xml:space="preserve">
+    <value>音频</value>
+  </data>
+  <data name="LocalModels_ModalityHint" xml:space="preserve">
+    <value>模型模态：文本 / 视觉 / 多模态</value>
+  </data>
 </root>

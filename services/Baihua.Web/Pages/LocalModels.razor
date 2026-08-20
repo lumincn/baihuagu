@@ -925,6 +925,11 @@ else
         color: white;
     }
 
+    .modality-badge {
+        background: #f0e6ff;
+        color: #6b2c91;
+    }
+
     .badge-warning {
         background: #d4a574;
         color: #1e3a4c;
@@ -1424,6 +1429,10 @@ else
             <div class="model-meta">
                 <span class="badge badge-secondary">@model.ParameterSize</span>
                 <span class="badge badge-info">@model.Quantization</span>
+                @if (model.Modality != "text")
+                {
+                    <span class="badge modality-badge" title="@L["LocalModels_ModalityHint"]">@GetModalityLabel(model.Modality)</span>
+                }
                 @foreach (var tag in model.Tags)
                 {
                     <span class="badge badge-light">@tag</span>
@@ -1534,6 +1543,14 @@ else
             _ => ""
         };
     }
+
+    private string GetModalityLabel(string modality) => modality.ToLowerInvariant() switch
+    {
+        "vision" => $"🖼️ {L["LocalModels_ModalityVision"]}",
+        "multimodal" => $"🖼️ {L["LocalModels_ModalityMultimodal"]}",
+        "audio" => $"🔊 {L["LocalModels_ModalityAudio"]}",
+        _ => $"📄 {L["LocalModels_ModalityText"]}"
+    };
 
     private static string GetSuitabilityClass(string suitability)
     {

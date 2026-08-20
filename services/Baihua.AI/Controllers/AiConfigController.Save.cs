@@ -31,7 +31,8 @@ public partial class AiConfigController
                 {
                     Name = m.Name,
                     IsPaid = m.IsPaid,
-                    IsMain = m.IsMain
+                    IsMain = m.IsMain,
+                    Category = m.Category
                 }).ToList() ?? new List<AiModelConfig>());
 
             var setting = new AiProviderSetting

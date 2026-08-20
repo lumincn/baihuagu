@@ -17,17 +17,20 @@ namespace Baihua.Family.Controllers;
 public class AiChatController : ControllerBase
 {
     private readonly AiSettingsService _aiSettings;
+    private readonly Baihua.Core.Services.AiCategorySettingsService _categorySettings;
     private readonly AiClientService _aiClientService;
     private readonly ILogger<AiChatController> _logger;
     private readonly IStringLocalizer<SharedResources> _loc;
 
     public AiChatController(
         AiSettingsService aiSettings,
+        Baihua.Core.Services.AiCategorySettingsService categorySettings,
         AiClientService aiClientService,
         ILogger<AiChatController> logger,
         IStringLocalizer<SharedResources> loc)
     {
         _aiSettings = aiSettings;
+        _categorySettings = categorySettings;
         _aiClientService = aiClientService;
         _logger = logger;
         _loc = loc;
@@ -44,7 +47,7 @@ public class AiChatController : ControllerBase
 
         try
         {
-            var (provider, model) = ResolveProviderAndModel(request.ProviderId, request.Model);
+            var (provider, model) = ResolveProviderAndModel(request.ProviderId, request.Model, request.Category);
             var messages = BuildMessages(request.History, request.Message);
 
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
@@ -98,7 +101,7 @@ public class AiChatController : ControllerBase
                 return;
             }
 
-            (provider, model) = ResolveProviderAndModel(request.ProviderId, request.Model);
+            (provider, model) = ResolveProviderAndModel(request.ProviderId, request.Model, request.Category);
 
             var ready = await _aiClientService.EnsureProviderReadyAsync(provider);
             if (!ready && IsLocalProvider(provider))
@@ -138,9 +141,20 @@ public class AiChatController : ControllerBase
         }
     }
 
-    private (AiProviderConfig Provider, string Model) ResolveProviderAndModel(string? providerId, string? model)
+    private (AiProviderConfig Provider, string Model) ResolveProviderAndModel(string? providerId, string? model, string? category = null)
     {
         var providers = _aiSettings.GetAiProviders();
+
+        // 任务分类路由：未显式指定提供方/模型时，按分类指派解析（每类一个模型配置）
+        if (string.IsNullOrEmpty(providerId) && string.IsNullOrEmpty(model) && AiTaskCategory.IsValid(category))
+        {
+            var (categoryProviderId, categoryModel, _) = _categorySettings.Resolve(category, providers);
+            var categorizedProvider = providers.FirstOrDefault(p =>
+                p.Id.Equals(categoryProviderId, StringComparison.OrdinalIgnoreCase));
+            if (categorizedProvider != null && !string.IsNullOrWhiteSpace(categoryModel))
+                return (categorizedProvider, categoryModel);
+        }
+
         var provider = string.IsNullOrEmpty(providerId)
             ? (string.IsNullOrEmpty(model)
                 ? providers.FirstOrDefault(p => p.IsMain) ?? providers.FirstOrDefault()

@@ -21,6 +21,12 @@ namespace Baihua.Core.Models
         /// 是否为主模型（默认使用）
         /// </summary>
         public bool IsMain { get; set; }
+
+        /// <summary>
+        /// 任务分类（chat/reasoning/code/vision），用于按用途路由模型。
+        /// 序列化进 ModelsJson，旧数据缺省为 chat。
+        /// </summary>
+        public string Category { get; set; } = Baihua.Contracts.Ai.AiTaskCategory.Chat;
     }
 
     /// <summary>

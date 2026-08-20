@@ -74,6 +74,8 @@ builder.Services.AddSingleton<Microsoft.Extensions.Caching.Distributed.IDistribu
 
 // AI 配置与客户端基础设施（共享自 Core.Shared）
 builder.Services.AddSingleton<AiSettingsService>();
+// 任务分类模型指派（每类一个模型配置，JSON 持久化，聊天按分类路由）
+builder.Services.AddSingleton<Baihua.Core.Services.AiCategorySettingsService>();
 // 一服务一数据库：AI 服务是 ai.db 唯一持有者；IAiConfigService 映射到同一 AiConfigService 单例
 builder.Services.AddSingleton<AiConfigService>();
 builder.Services.AddSingleton<IAiConfigService>(sp => sp.GetRequiredService<AiConfigService>());

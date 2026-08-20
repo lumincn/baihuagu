@@ -95,6 +95,9 @@ public class RecommendedModelDto
     public bool IsDownloadedLlamaCpp { get; set; }
     public string Company { get; set; } = "";
 
+    /// <summary>模态：text / vision / multimodal</summary>
+    public string Modality { get; set; } = "text";
+
     /// <summary>
     /// 在当前硬件上的估算输出速度（tokens/秒）。null 表示无法估算。
     /// </summary>
