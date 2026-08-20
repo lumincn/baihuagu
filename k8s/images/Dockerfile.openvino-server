@@ -1,67 +1,15 @@
-# bh-openvino: 独立 OpenVINO 推理服务器
-# 提供 OpenAI 兼容的 LLM 推理 API (端口 8000) + 视觉推理 API (端口 8801)
-# 需要 Intel GPU Device Plugin 注入 /dev/dri 设备
+# bh-openvino: OpenVINO Model Server（官方镜像别名）
+# 2026-xx 起百花本地 OpenVINO 推理由 Intel OVMS（OpenVINO Model Server）承载，
+# 不再构建自研 Python 推理服务（openvino_llm_server.py / vision_server.py 已弃用）。
 #
-# 构建命令（由 deploy.sh / bh.sh 调用，context=仓库根）：
-#   nerdctl build -f k8s/images/Dockerfile.openvino-server -t bh-openvino:latest .
+# 部署形态（见 k8s/22a-openvino.yaml）：
+#   - 模型仓库 = baihua-models-pvc（/models，预下载的 OpenVINO IR 模型目录）
+#   - config.json 经 ConfigMap 注入，注册 4 个 servable（mediapipe_config_list）：
+#       qwen2.5（对话）、qwen2.5-vl-3b / qwen2.5-vl-7b（视觉）、bge-small-zh（嵌入）
+#   - 每个模型目录的 graph.pbtxt 由 initContainer 的 `ovms --configure` 幂等生成
+#   - 对外 OpenAI 兼容 REST：/v3/chat/completions、/v3/embeddings、/v1/models
 #
-# 与旧版内嵌式（family-openvino）的区别：
-#   1. 不含 .NET 运行时 — 纯 Python 推理服务
-#   2. 镜像更小 (~1.5GB vs ~3GB)
-#   3. 独立生命周期 — 可单独升级 OpenVINO 不影响 Family 服务
-#   4. Family 服务通过 K8s Service DNS (http://bh-openvino:8000) 调用
-
-# Ubuntu 26.04 基础：与宿主机同系
-FROM ubuntu:26.04 AS runtime
-
-# 国内镜像源加速：Ubuntu 26.04 deb822 格式（ubuntu.sources）换华为云
-RUN printf 'Types: deb\nURIs: http://mirrors.huaweicloud.com/ubuntu/\nSuites: resolute resolute-updates resolute-backports\nComponents: main restricted universe multiverse\nSigned-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg\n\nTypes: deb\nURIs: http://mirrors.huaweicloud.com/ubuntu/\nSuites: resolute-security\nComponents: main restricted universe multiverse\nSigned-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg\n' > /etc/apt/sources.list.d/ubuntu.sources
-
-# Intel 官方 GPU 源（NEO compute runtime，支持 WSL2 /dev/dxg 与真机 /dev/dri）
-# 注意：Intel 源只有 noble 套件（无 resolute），noble 的 NEO 包在 26.04 上可正常安装使用
-RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates gpg && \
-    curl -fsSL https://repositories.intel.com/gpu/intel-graphics.key -o /tmp/intel-key.gpg && \
-    gpg --batch --yes --dearmor -o /usr/share/keyrings/intel-gpu-keyring.gpg /tmp/intel-key.gpg && \
-    echo 'deb [signed-by=/usr/share/keyrings/intel-gpu-keyring.gpg] https://repositories.intel.com/gpu/ubuntu noble unified' > /etc/apt/sources.list.d/intel-gpu.list
-
-# 安装 Intel NEO GPU 运行时（走 /dev/dxg=WSL2 / /dev/dri=真机）+ 系统依赖
-# python3-pip：基础镜像不带 pip
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        intel-opencl-icd clinfo pciutils \
-        curl tini ca-certificates python3-pip python3-venv \
-    && rm -rf /var/lib/apt/lists/*
-
-# 安装 OpenVINO GenAI + 依赖（2026.3.0 = 当前最新版）
-RUN pip3 install --break-system-packages \
-        -i https://mirrors.huaweicloud.com/repository/pypi/simple \
-        --trusted-host mirrors.huaweicloud.com \
-        openvino-genai==2026.3.0.0 openvino==2026.3.0 fastapi uvicorn numpy
-
-# 验证安装
-RUN python3 -c "from openvino.runtime import Core; print('OpenVINO installed, devices:', Core().available_devices)" || \
-    echo "OpenVINO installed (GPU will be available when /dev/dri is mounted)"
-
-WORKDIR /app
-
-# 拷贝 Python 推理脚本（自 Baihua.AI.Provider.OpenVino 项目，7be1a5e 拆分后路径变更）
-COPY services/Baihua.AI.Provider.OpenVino/LocalVision/openvino_llm_server.py /app/
-COPY services/Baihua.AI.Provider.OpenVino/LocalVision/vision_server.py /app/
-
-# 拷贝启动脚本
-COPY k8s/images/openvino-server-entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
-
-EXPOSE 8000 8801
-
-ENV OPENVINO_DEVICE=GPU
-ENV OPENVINO_LLM_PORT=8000
-ENV OPENVINO_VISION_PORT=8801
-ENV OPENVINO_MAX_CONTEXT=4096
-ENV START_VISION=true
-
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
-
-ENTRYPOINT ["tini", "--"]
-CMD ["/app/entrypoint.sh"]
+# 官方镜像 tag：latest-gpu = CPU+GPU+NPU（Intel GPU 经 /dev/dri、WSL2 /dev/dxg 直通）；
+# 稳定版可换 2026.2-gpu。本镜像仅作本地别名（bh build openvino → bh-openvino:latest），
+# 也可在清单里直接引用官方 tag。
+FROM openvino/model_server:latest-gpu

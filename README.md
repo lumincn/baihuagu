@@ -60,6 +60,16 @@ cd services/Baihua.Web && dotnet run
 | Baihua.AI | 8791 | AI 模型、聊天、配置管理 |
 | Baihua.Vault | 8790 | 知识库、同步、搜索、索引 |
 | Baihua.Web | 5177 | Blazor Server 管理后台 |
+| OpenVINO Model Server | 8000 | 本地 OpenVINO 推理（OVMS，OpenAI 兼容 /v3：对话/视觉/嵌入） |
+
+## 本地 OpenVINO 推理（OVMS）
+
+百花本地 OpenVINO 推理由 **Intel OVMS（OpenVINO Model Server）** 统一承载（OpenAI 兼容 `/v3/chat/completions`、`/v3/embeddings`，模型 id：`qwen2.5` / `qwen2.5-vl-3b` / `qwen2.5-vl-7b` / `bge-small-zh`），不再运行自研 Python 服务。
+
+- **Windows**：管理员运行 `scripts/install-openvino-ovms-service.ps1` 一键安装为系统服务（`ovms`，:8000），模型目录 `%USERPROFILE%/.baihua/models/`
+- **Linux k8s**：`bh-openvino` Deployment（官方 `openvino/model_server` 镜像），详见 `k8s/README.md`
+- 模型目录需包含 4 个 OpenVINO IR 模型目录（缺失的模型 OVMS 不会加载）
+
 
 ## Windows (PowerShell) 运行
 

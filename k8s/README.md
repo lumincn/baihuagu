@@ -15,8 +15,8 @@
 │                                            │ HTTP                │
 │                   ┌──────────┐     ┌──────▼──────────────┐      │
 │                   │ bh-ai    │     │ bh-openvino         │      │
-│                   │ :8791    │     │ :8000 LLM  :8801 VS │      │
-│                   │ AI 代理  │     │ OpenVINO + Intel GPU│      │
+│                   │ :8791    │     │ :8000 OVMS REST     │      │
+│                   │ AI 代理  │     │ (OVMS+Intel GPU)    │      │
 │                   └──────────┘     └─────────────────────┘      │
 │                                                                  │
 │  ┌──────────┐     ┌──────────┐                                  │
@@ -44,13 +44,12 @@
 | `10-intel-gpu-plugin.yaml` | Intel GPU Device Plugin DaemonSet |
 | `20-vault.yaml` | bh-vault Deployment + Service |
 | `21-ai.yaml` | bh-ai Deployment + Service |
-| **`22a-openvino.yaml`** | **bh-openvino Deployment + Service（GPU 推理）** |
-| **`22b-embedding.yaml`** | **bh-embedding Deployment + Service（bge 嵌入，端口 8002，RAG 用）** |
+| **`22a-openvino.yaml`** | **bh-openvino Deployment + Service = Intel OVMS（OpenAI 兼容 /v3 推理：LLM / 视觉 / 嵌入，REST :8000）** |
 | `22-family.yaml` | bh-family Deployment + Service（轻量, 无 GPU） |
 | `23-webui.yaml` | bh-webui Deployment + Service |
 | `24-traefik.yaml` | Traefik IngressRoute + Middleware（统一入口 :80，替代 nginx） |
 | `deploy.sh` | 一键部署脚本 |
-| `./images/Dockerfile.openvino-server` | OpenVINO 独立推理容器（纯 Python 源码构建） |
+| `./images/Dockerfile.openvino-server` | OpenVINO 推理容器 = 官方 `openvino/model_server` 镜像别名（bh build openvino 产出 bh-openvino:latest） |
 | `./images/Dockerfile.family` | Family 轻量容器（无 OpenVINO） |
 | `./images/Dockerfile.{vault,ai,webui}` | .NET 服务镜像（多阶段源码构建，容器内 publish） |
 
@@ -64,21 +63,26 @@
 | GPU 资源 | 绑定在 Family Pod | 仅 OpenVINO Pod |
 | 升级 OpenVINO | 需重建 Family 镜像 | 独立重建 OpenVINO 镜像 |
 | 扩缩容 | Family + GPU 一起扩 | 可独立扩 OpenVINO |
-| 代码改动 | — | 极小（HTTP 接口不变） |
+| 代码改动 | — | 推理对接 OVMS OpenAI 兼容 /v3 接口 |
 
-### 通信方式
+### 通信方式（Intel OVMS）
 
-Family 服务**已经通过 HTTP** 调用 OpenVINO（`openvino_llm_server.py` 的 `/v1/chat/completions`）。
-改造只是把 `localhost:8000` 换成 `http://bh-openvino:8000`（K8s Service DNS）。
+自 777f860 起，百花本地 OpenVINO 推理由 **Intel OVMS（OpenVINO Model Server，官方 `openvino/model_server` 镜像）** 统一承载，
+不再运行自研 Python 服务（`openvino_llm_server.py` / `vision_server.py` 已弃用）。AI/Family 通过 OpenAI 兼容 REST 调用：
 
-- **本地模式**（Docker Compose / 开发环境）：Family 通过 `Process.Start` 拉起本地 Python 服务
-- **远程模式**（K8s）：设置 `OPENVINO_LLM_URL=http://bh-openvino:8000`，Family 跳过进程启动，直接调用远程 API
+- `http://bh-openvino:8000/v3/chat/completions` — LLM 对话（模型 id：`qwen2.5`）与视觉识别（`qwen2.5-vl-3b` / `qwen2.5-vl-7b`）
+- `http://bh-openvino:8000/v3/embeddings` — RAG 嵌入（`bge-small-zh`，原 22b-embedding 已并入 OVMS）
+- `http://bh-openvino:8000/v1/models` — 状态 / 模型列表探测
+
+配置：`OpenVinoOms__BaseUrl`（ConfigMap 注入 `http://bh-openvino:8000`）或环境变量 `OPENVINO_LLM_URL`。
+OVMS 模型由 `config.json`（`model_config_list`，22a-openvino.yaml 内联 ConfigMap）注册；
+每个模型目录的 `graph.pbtxt` 由 bh-openvino Pod 的 initContainer `ovms --configure` 启动时幂等生成（模型缺失则跳过）。
 
 ### 模型文件存储
 
 ```
 PVC: baihua-models-pvc (50Gi, hostPath: /opt/baihua/models)
-├── bh-openvino Pod:  挂载 /models (RW) — 推理读取
+├── bh-openvino Pod:  挂载 /models (RW) — OVMS 读取模型 + initContainer 写 graph.pbtxt
 └── bh-family Pod:    挂载 /opt/baihua/models (RO) — 模型扫描（UI 列表）
 ```
 
@@ -263,7 +267,7 @@ chmod +x deploy.sh
 - `bh-ai:latest` — 标准镜像
 - `bh-webui:latest` — 标准镜像
 - `bh-family:latest` — **轻量镜像（无 OpenVINO）**
-- `bh-openvino:latest` — **OpenVINO 推理服务 + Intel GPU 运行时**
+- `bh-openvino:latest` — **Intel OVMS 推理服务（官方 `openvino/model_server` 镜像别名，CPU+GPU+NPU）**
 
 #### 2. 加载镜像到集群
 
@@ -346,8 +350,17 @@ export HF_ENDPOINT=https://hf-mirror.com
     /opt/baihua/models/Qwen2.5-VL-7B-Instruct-int4-ov
 ```
 
-> 下载/转换完成后，`bh-openvino` Pod 会自动恢复（原来 CrashLoopBackOff 因为
-> `/models/Qwen2.5-VL-7B-Instruct-int4-ov` 不存在）。可用 `sudo bh status` 确认。
+OVMS（`config.json`）注册的 4 个模型目录（22a-openvino.yaml 内联 ConfigMap），缺哪个 OVMS 就加载不了哪个：
+
+| OVMS 模型 id | 目录（/opt/baihua/models/） | 任务 / 设备 | 下载 |
+|---|---|---|---|
+| `qwen2.5` | `Qwen2.5-7B-Instruct-int4-ov` | 对话 / GPU | `git clone https://hf-mirror.com/OpenVINO/Qwen2.5-7B-Instruct-int4-ov` |
+| `qwen2.5-vl-7b` | `Qwen2.5-VL-7B-Instruct-int4-ov` | 视觉 / GPU | `git clone https://hf-mirror.com/OpenVINO/Qwen2.5-VL-7B-Instruct-int4-ov`（方式 A） |
+| `qwen2.5-vl-3b` | `Qwen2.5-VL-3B-Instruct-int4-ov` | 视觉 / GPU | gated（需 HF Token 或方式 B 转换 Qwen/Qwen2.5-VL-3B-Instruct） |
+| `bge-small-zh` | `bge-small-zh-v1.5` | 嵌入 / CPU | gated（或方式 B 转换 BAAI/bge-small-zh-v1.5） |
+
+> 下载/转换完成后，`bh-openvino` Pod 会自动恢复（initContainer 会为已存在的模型目录生成 graph.pbtxt；
+> 若模型目录缺失则跳过，OVMS 只加载已注册且可用的 servable）。可用 `sudo bh status` 确认。
 
 #### 6. 验证 GPU + OpenVINO
 
@@ -359,10 +372,9 @@ export HF_ENDPOINT=https://hf-mirror.com
 ```
 1. Device Plugin 已部署
 2. 节点有 1 个 Intel GPU
-3. OpenVINO 可用设备: ['CPU', 'GPU']
-   Intel GPU 可用
-4. 模型: Qwen2.5-VL-7B-Instruct-int4-ov, 设备: GPU, VL: True
-5. Family → OpenVINO 连通性: OK
+3. bh-openvino Pod OVMS 版本 ...（ovms --version）
+4. bh-openvino Ready（/v2/health/ready 通过）+ /v1/models 模型列表
+5. Family → OVMS 连通性: OK
 ```
 
 ## 验证部署
@@ -423,28 +435,31 @@ WebUI 侧边栏「服务器互联」页面（`/server-messages`）：登记其�
 
 ```
 Pod (bh-openvino)
-├── /dev/dri/renderD128  ← Intel GPU Device Plugin 自动挂载
-├── Python + openvino-genai
-│   └── Core().available_devices → ['CPU', 'GPU', 'NPU']
-├── openvino_llm_server.py  ← OpenAI 兼容推理服务 (:8000)
-│   └── --device GPU  ← 使用 Intel GPU 推理
-├── vision_server.py        ← 视觉推理服务 (:8801)
-│   └── Qwen2.5-VL 3B/7B
+├── /dev/dri/renderD128  ← Intel GPU Device Plugin 自动挂载（WSL2 另挂 /dev/dxg）
+├── initContainer: ovms --configure
+│   └── 为 /models 下已下载模型生成 graph.pbtxt（幂等，缺失跳过）
+├── ovms (OpenVINO Model Server) ← OpenAI 兼容推理服务 (:8000 REST / :9000 gRPC)
+│   ├── config.json (ConfigMap) ← model_config_list 注册 4 个 servable
+│   │   ├── qwen2.5         → /models/Qwen2.5-7B-Instruct-int4-ov       (GPU)
+│   │   ├── qwen2.5-vl-3b   → /models/Qwen2.5-VL-3B-Instruct-int4-ov    (GPU)
+│   │   ├── qwen2.5-vl-7b   → /models/Qwen2.5-VL-7B-Instruct-int4-ov    (GPU)
+│   │   └── bge-small-zh    → /models/bge-small-zh-v1.5                 (CPU)
+│   └── /v3/chat/completions · /v3/embeddings · /v1/models
 └── /models/ ← PVC 挂载（模型文件）
 ```
 
 ### bh-family Pod（无 GPU）
 
 ```
-Pod (bh-family)
-├── .NET bh-family.dll
-│   ├── OPENVINO_LLM_URL=http://bh-openvino:8000 (ConfigMap)
-│   ├── DetectAndStartOpenVinoAsync()
-│   │   └── 检测到远程 URL → 跳过本地 Python 启动
-│   ├── ProbeOpenVinoDevicesAsync()
-│   │   └── 调用 http://bh-openvino:8000/health 获取设备
-│   └── ScanOpenVinoModelsAsync()
-│       └── 扫描 /opt/baihua/models/ (RO PVC) → UI 模型列表
+Pod (bh-family / bh-ai)
+├── .NET 服务
+│   ├── OpenVinoOms__BaseUrl=http://bh-openvino:8000 (ConfigMap)
+│   ├── OpenVinoChatInference / OpenVinoVisionService
+│   │   └── /v3/chat/completions → OVMS（对话 qwen2.5 · 视觉 qwen2.5-vl-*）
+│   ├── 嵌入（RAG）→ /v3/embeddings（bge-small-zh）
+│   ├── OpenVinoToolService 探测
+│   │   └── OPENVINO_LLM_URL/v1/models → OVMS 是否托管模型（200 + data[] 非空）
+│   └── 模型扫描 → /opt/baihua/models/ (RO PVC) → UI 模型列表
 └── /opt/baihua/models/ ← PVC 只读挂载（模型扫描）
 ```
 
@@ -484,7 +499,7 @@ buildkit 每次构建解析 `FROM` 基础镜像时会直连 `registry-1.docker.i
 | 网络 | host (Linux) / bridge (Windows) | Service DNS |
 | GPU 访问 | `--gpus all` (仅 NVIDIA) | `intel.com/gpu` (Device Plugin) |
 | OpenVINO | ❌ WSL2 不支持 Intel GPU | ✅ 原生 Linux |
-| OpenVINO 架构 | 嵌入 Family 容器 | 独立 bh-openvino 容器 |
+| OpenVINO 架构 | 嵌入 Family 容器 | 独立 bh-openvino 容器（Intel OVMS，OpenAI 兼容 /v3） |
 | 持久化 | bind mount | PVC |
 | 配置 | .env 文件 | ConfigMap + Secret |
 | 反向代理 | nginx container (host net) | Traefik IngressRoute (:80, svclb 绑定) |
@@ -532,18 +547,16 @@ kubectl get nodes -o custom-columns=NAME:.metadata.name,GPU:.status.capacity.'in
 > 若宿主机 `Number of platforms 0`，按上文「节点 GPU 驱动」安装 `intel-opencl-icd`（提供 OpenCL ICD 注册）。
 
 ```bash
-# 进入 OpenVINO Pod 检查
+# 进入 OpenVINO Pod 检查（官方 OVMS 镜像无 python，用 ovms 与系统工具）
 kubectl -n baihua exec -it deployment/bh-openvino -- bash
 
 # 检查设备节点
 ls -la /dev/dri/
-# 应看到 renderD128
+# 应看到 renderD128（WSL2 为 /dev/dxg）
 
-# 检查 OpenCL
-clinfo | head -20
-
-# 检查 OpenVINO
-python3 -c "from openvino.runtime import Core; print(Core().available_devices)"
+# 检查 OVMS 版本与模型列表
+ovms --version
+curl -s http://localhost:8000/v2/health/ready   # 200 = 就绪（若镜像无 curl，从 Family 侧探测）
 ```
 
 ### Family 无法连接 OpenVINO
@@ -553,8 +566,9 @@ python3 -c "from openvino.runtime import Core; print(Core().available_devices)"
 kubectl -n baihua get svc bh-openvino
 # 应有 Endpoints
 
-# 从 Family Pod 测试连通性
-kubectl -n baihua exec deployment/bh-family -- curl -s http://bh-openvino:8000/health
+# 从 Family Pod 测试连通性（OVMS 不提供 /health，用 /v1/models 或 /v2/health/ready）
+kubectl -n baihua exec deployment/bh-family -- curl -s http://bh-openvino:8000/v1/models
+kubectl -n baihua exec deployment/bh-family -- curl -s http://bh-openvino:8000/v2/health/ready
 ```
 
 ### 模型文件缺失

@@ -4108,12 +4108,6 @@ Shift+Enter new line, Enter to send</value>
   <data name="LocalModels_DownloadedOpenVino" xml:space="preserve">
     <value>OpenVINO Vision Models</value>
   </data>
-  <data name="LocalModels_OpenVinoLlmTitle" xml:space="preserve">
-    <value>OpenVINO LLM Services (host-managed)</value>
-  </data>
-  <data name="LocalModels_OpenVinoLlmEmpty" xml:space="preserve">
-    <value>No instances configured (host openvino_host.py returned no data)</value>
-  </data>
   <data name="LocalModels_LoadOpenVinoTitle" xml:space="preserve">
     <value>Load OpenVINO Model</value>
   </data>
@@ -5616,21 +5610,6 @@ Shift+Enter new line, Enter to send</value>
   <data name="LocalModels_DownloadedHint" xml:space="preserve">
     <value>(Load = preheat the vision model into VRAM so image recognition avoids cold loading)</value>
   </data>
-  <data name="LocalModels_LlmHint" xml:space="preserve">
-    <value>(resident LLM services on the host, one model per port, for chat/coding)</value>
-  </data>
-  <data name="LocalModels_LlmRunning" xml:space="preserve">
-    <value>Running</value>
-  </data>
-  <data name="LocalModels_LlmStarting" xml:space="preserve">
-    <value>Starting</value>
-  </data>
-  <data name="LocalModels_LlmStopped" xml:space="preserve">
-    <value>Stopped</value>
-  </data>
-  <data name="LocalModels_Managed" xml:space="preserve">
-    <value>(managed)</value>
-  </data>
   <data name="LocalModels_LoadingHardware" xml:space="preserve">
     <value>Detecting hardware environment…</value>
   </data>
@@ -5669,9 +5648,6 @@ Shift+Enter new line, Enter to send</value>
   </data>
   <data name="LocalModels_SpeedEstimateHint" xml:space="preserve">
     <value>Estimated speed based on the current hardware, for reference only</value>
-  </data>
-  <data name="LocalModels_LlmStatusUnavailable" xml:space="preserve">
-    <value>Unable to get the OpenVINO hosted service status (is the host port 8866 running?)</value>
   </data>
   <data name="LocalModels_SpeedVeryFast" xml:space="preserve">
     <value>🚀 About {0} tok/s</value>
@@ -6026,9 +6002,6 @@ Shift+Enter new line, Enter to send</value>
   </data>
   <data name="LocalModels_OpenVinoNotSupported" xml:space="preserve">
     <value>No Intel GPU detected; OpenVINO local inference is unavailable (other local tools are unaffected).</value>
-  </data>
-  <data name="LocalModels_OpenVinoHostManualHint" xml:space="preserve">
-    <value>The OpenVINO host service (BaihuaOpenVinoHost) is a standalone Windows service: install/uninstall/start/stop are manual (admin required, see scripts/install-openvino-host-service.ps1). Status shown here only.</value>
   </data>
   <data name="OpenClaw_OpenVinoNotSupported" xml:space="preserve">
     <value>No Intel GPU detected; OpenVINO local models are unavailable (use Ollama / llama.cpp or other local tools instead).</value>

@@ -221,8 +221,6 @@ namespace Baihua.Web.Services
         Task<HardwareInfoDto?> GetHardwareInfoAsync(bool forceRefresh = false, CancellationToken cancellationToken = default);
         Task<List<RecommendedModelDto>> GetRecommendedModelsAsync(string? scenario = null, bool forceRefresh = false, CancellationToken cancellationToken = default);
         Task<bool> RefreshLibraryAsync(CancellationToken cancellationToken = default);
-        Task<OpenVinoLlmStatusDto?> GetOpenVinoLlmStatusAsync(CancellationToken cancellationToken = default);
-        Task<(bool Success, string Message)> ControlOpenVinoLlmAsync(string action, int port, CancellationToken cancellationToken = default);
         Task<DeployLocalModelResult> DeployLocalModelAsync(DeployLocalModelRequest request, CancellationToken cancellationToken = default);
         Task<DeployTaskStatusDto?> GetDeployTaskStatusAsync(string taskId, CancellationToken cancellationToken = default);
         Task<bool> CancelDeployTaskAsync(string taskId, CancellationToken cancellationToken = default);

@@ -174,8 +174,8 @@ status_all() {
         port_open "$port" && state=RUNNING
         printf "%-8s port=%-5s %s%s\n" "$name" "$port" "$state" "${pid:+ (pid=${pid})}"
     done
-    # OpenVINO 宿主（独立手动管理，bh 仅展示状态——对齐 win/native；端口 8866）
-    local ov_port=8866
+    # OpenVINO Model Server（独立手动管理，bh 仅展示状态——对齐 win/native；REST :8000）
+    local ov_port=8000
     if port_open "$ov_port"; then
         printf "%-8s port=%-5s %s\n" "openvino" "$ov_port" "RUNNING (port $ov_port)"
     else

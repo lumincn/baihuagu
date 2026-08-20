@@ -1,7 +1,35 @@
-# bh-openvino: 独立 OpenVINO 推理服务
-# 提供 LLM 推理 (端口 8000) + 视觉推理 (端口 8801)
-# 这是唯一需要 Intel GPU 的服务 — 通过 resources.limits.intel.com/gpu 请求 GPU
-# Family 服务通过 K8s Service DNS (http://bh-openvino:8000) 调用，无需本地 Python
+# bh-openvino: OpenVINO Model Server（Intel OVMS）
+# 提供 OpenAI 兼容推理 API：/v3/chat/completions（LLM+视觉）、/v3/embeddings（RAG）、/v1/models（状态）
+# 模型仓库 = baihua-models-pvc（/models，预下载的 OpenVINO IR 模型目录）：
+#   qwen2.5          /models/Qwen2.5-7B-Instruct-int4-ov      （对话，GPU）
+#   qwen2.5-vl-3b    /models/Qwen2.5-VL-3B-Instruct-int4-ov   （视觉，GPU）
+#   qwen2.5-vl-7b    /models/Qwen2.5-VL-7B-Instruct-int4-ov   （视觉，GPU）
+#   bge-small-zh     /models/bge-small-zh-v1.5                （嵌入，CPU）
+# 说明：
+#   - 这是唯一需要 Intel GPU 的服务 —— /dev/dri（真机）/ /dev/dxg（WSL2）由 intel-gpu-plugin 注入
+#   - 每个模型目录的 graph.pbtxt 由 initContainer 的 `ovms --configure` 幂等生成（模型缺失则跳过）
+#   - AI/Family 通过 K8s Service DNS http://bh-openvino:8000 调用（OpenVinoOms__BaseUrl / OPENVINO_LLM_URL）
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bh-openvino-ovms-config
+  namespace: baihua
+  labels:
+    app: bh-openvino
+    app.kubernetes.io/part-of: baihua
+data:
+  # OVMS 多模型配置：model_config_list 同时支持经典/生成式（LLM/VLM/嵌入）servable，
+  # 由模型目录自动识别任务类型（结合 initContainer 生成的 graph.pbtxt）。
+  config.json: |
+    {
+      "model_config_list": [
+        { "config": { "name": "qwen2.5",       "base_path": "/models/Qwen2.5-7B-Instruct-int4-ov" } },
+        { "config": { "name": "qwen2.5-vl-3b", "base_path": "/models/Qwen2.5-VL-3B-Instruct-int4-ov" } },
+        { "config": { "name": "qwen2.5-vl-7b", "base_path": "/models/Qwen2.5-VL-7B-Instruct-int4-ov" } },
+        { "config": { "name": "bge-small-zh",  "base_path": "/models/bge-small-zh-v1.5" } }
+      ]
+    }
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -24,36 +52,61 @@ spec:
       # 限制调度到有 Intel GPU 的节点
       # nodeSelector:
       #   intel-gpu: "true"
+      initContainers:
+        # 为已下载的本地模型生成 graph.pbtxt（幂等；缺失的模型跳过）
+        - name: ovms-configure
+          image: bh-openvino:latest
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -u
+              echo "[ovms] 为本地模型生成 graph.pbtxt（--configure，幂等）"
+              # 格式: task device model_dir
+              for spec in \
+                "text_generation GPU /models/Qwen2.5-7B-Instruct-int4-ov" \
+                "text_generation GPU /models/Qwen2.5-VL-3B-Instruct-int4-ov" \
+                "text_generation GPU /models/Qwen2.5-VL-7B-Instruct-int4-ov" \
+                "embeddings CPU /models/bge-small-zh-v1.5"; do
+                task="${spec%% *}"; rest="${spec#* }"; dev="${rest%% *}"; path="${rest#* }"
+                if [ -d "$path" ]; then
+                  echo "[ovms] configure $path (task=$task device=$dev)"
+                  ovms --configure --model_path "$path" --task "$task" --target_device "$dev" \
+                    || echo "[ovms] !! configure 失败（已跳过，请检查模型目录完整性）"
+                else
+                  echo "[ovms] 跳过缺失模型目录: $path（请先下载模型，见 k8s/README.md）"
+                fi
+              done
+          volumeMounts:
+            - name: models
+              mountPath: /models
       containers:
         - name: bh-openvino
           image: bh-openvino:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
-              name: llm
-            - containerPort: 8801
-              name: vision
+              name: rest
+            - containerPort: 9000
+              name: grpc
+          args:
+            - --config_path=/ovms-config/config.json
+            - --rest_port=8000
+            - --port=9000
+            - --log_level=INFO
+            - --cache_dir=/cache
           env:
-            - name: OPENVINO_MODEL_PATH
-              value: "/models/Qwen2.5-VL-7B-Instruct-int4-ov"
-            - name: OPENVINO_DEVICE
-              value: "GPU"
-            - name: OPENVINO_LLM_PORT
-              value: "8000"
-            - name: OPENVINO_VISION_PORT
-              value: "8801"
-            - name: OPENVINO_MAX_CONTEXT
-              value: "4096"
-            - name: START_VISION
-              value: "true"
-            - name: VISION_MODEL_3B
-              value: "/models/Qwen2.5-VL-3B-Instruct-int4-ov"
-            - name: VISION_MODEL_7B
-              value: "/models/Qwen2.5-VL-7B-Instruct-int4-ov"
+            # 备用：若改用 OVMS --pull 下载模型，走国内 HF 镜像
+            - name: HF_ENDPOINT
+              value: "https://hf-mirror.com"
           volumeMounts:
             - name: models
               mountPath: /models
-              readOnly: false
+            - name: ovms-config
+              mountPath: /ovms-config
+              readOnly: true
+            - name: cache
+              mountPath: /cache
             # Intel GPU 设备节点（由 intel-gpu-plugin 自动注入）
             - name: dri
               mountPath: /dev/dri
@@ -66,16 +119,17 @@ spec:
               readOnly: true
           readinessProbe:
             httpGet:
-              path: /health
+              path: /v2/health/ready
               port: 8000
-            initialDelaySeconds: 30
-            periodSeconds: 15
-            failureThreshold: 5
+            # 冷启动首次加载 7B 模型编译较慢，放宽等待窗口
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            failureThreshold: 12
           livenessProbe:
             httpGet:
-              path: /health
+              path: /v2/health/live
               port: 8000
-            initialDelaySeconds: 60
+            initialDelaySeconds: 90
             periodSeconds: 30
             failureThreshold: 3
           resources:
@@ -92,6 +146,11 @@ spec:
         - name: models
           persistentVolumeClaim:
             claimName: baihua-models-pvc
+        - name: ovms-config
+          configMap:
+            name: bh-openvino-ovms-config
+        - name: cache
+          emptyDir: {}
         # /dev/dri 由 Intel GPU Device Plugin 自动注入（真机场景）
         - name: dri
           hostPath:
@@ -119,11 +178,11 @@ spec:
   selector:
     app: bh-openvino
   ports:
-    - name: llm
+    - name: rest
       port: 8000
       targetPort: 8000
       protocol: TCP
-    - name: vision
-      port: 8801
-      targetPort: 8801
+    - name: grpc
+      port: 9000
+      targetPort: 9000
       protocol: TCP

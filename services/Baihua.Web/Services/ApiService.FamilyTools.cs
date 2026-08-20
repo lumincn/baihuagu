@@ -979,49 +979,6 @@ namespace Baihua.Web.Services
             }
         }
 
-        /// <summary>OpenVINO LLM 服务托管状态（宿主机 openvino_host.py）</summary>
-        public async Task<OpenVinoLlmStatusDto?> GetOpenVinoLlmStatusAsync(CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                using var quick = new CancellationTokenSource(QuickCallTimeout);
-                using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
-                var response = await GetWithMetricsAsync("/api/local-models/openvino-llm/status", linked.Token);
-                response.EnsureSuccessStatusCode();
-                return await response.Content.ReadFromJsonAsync<OpenVinoLlmStatusDto>(linked.Token);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取 OpenVINO LLM 托管状态失败");
-                return null;
-            }
-        }
-
-        /// <summary>启动/停止 OpenVINO LLM 实例（转发宿主机托管服务）</summary>
-        public async Task<(bool Success, string Message)> ControlOpenVinoLlmAsync(string action, int port, CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                using var quick = new CancellationTokenSource(QuickCallTimeout);
-                using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
-                var content = new StringContent(JsonSerializer.Serialize(new { port }), Encoding.UTF8, "application/json");
-                var response = await PostWithMetricsAsync($"/api/local-models/openvino-llm/{action}", content, linked.Token);
-                var body = await response.Content.ReadAsStringAsync(linked.Token);
-                try
-                {
-                    var obj = JsonSerializer.Deserialize<JsonElement>(body);
-                    var msg = obj.TryGetProperty("message", out var m) ? m.GetString() : obj.TryGetProperty("error", out var e) ? e.GetString() : body;
-                    return (response.IsSuccessStatusCode, msg ?? body);
-                }
-                catch { return (response.IsSuccessStatusCode, body); }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "控制 OpenVINO LLM 实例失败: {Action}:{Port}", action, port);
-                return (false, ex.Message);
-            }
-        }
-
         public async Task<DeployLocalModelResult> DeployLocalModelAsync(DeployLocalModelRequest request, CancellationToken cancellationToken = default)
         {
             try

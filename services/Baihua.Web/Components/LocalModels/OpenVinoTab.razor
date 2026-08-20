@@ -240,79 +240,7 @@ else
     }
 </div>
 
-<!-- OpenVINO LLM 服务（宿主机托管） -->
-<div class="load-model-section">
-    <div class="section-header" style="cursor:pointer;" @onclick="() => ToggleSection(ref _showOpenVinoLlm)">
-        <h3>@(_showOpenVinoLlm ? "▼" : "▶") 🤖 @L["LocalModels_OpenVinoLlmTitle"] <span class="text-muted small fw-normal">@L["LocalModels_LlmHint"]</span></h3>
-        <button class="btn btn-secondary btn-sm" @onclick="LoadOpenVinoLlmStatus" disabled="@isLoadingOpenVinoLlm" title="@L["Common_Refresh"]" style="margin-left:0.5rem;">
-            @(isLoadingOpenVinoLlm ? "⏳" : "🔄")
-        </button>
-    </div>
-    @if (_showOpenVinoLlm)
-    {
-        <div class="alert alert-light border small" style="margin-top:0.5rem;">
-            <i class="bi bi-info-circle me-1"></i>@L["LocalModels_OpenVinoHostManualHint"]
-        </div>
-        @if (openVinoLlmError != null)
-        {
-            <div class="alert alert-warning" style="margin-top:0.5rem;">@openVinoLlmError</div>
-        }
-        @if (openVinoLlmInstances.Count == 0 && openVinoLlmError == null)
-        {
-            <div class="alert alert-info" style="margin-top:0.5rem;">@L["LocalModels_OpenVinoLlmEmpty"]</div>
-        }
-        <div class="downloaded-models-table" style="margin-top:0.5rem;">
-            <div class="downloaded-table-header">
-                <span>@L["LocalModels_Col_Port"]</span><span>@L["LocalModels_Col_Name"]</span><span>@L["LocalModels_Col_Model"]</span><span>@L["LocalModels_Col_Status"]</span><span>PID</span><span>@L["LocalModels_Col_Actions"]</span>
-            </div>
-            @foreach (var inst in openVinoLlmInstances)
-            {
-                <div class="downloaded-table-row">
-                    <span><code>@inst.Port</code></span>
-                    <span>@inst.Name</span>
-                    <span style="font-size:0.75rem;color:#888;">@(inst.Model.Replace("C:\\Users\\lumin\\", "~/"))</span>
-                    <span>
-                        @if (inst.Running && inst.Healthy)
-                        {
-                            <span class="badge" style="background:#2e7d32;color:#fff;">@L["LocalModels_LlmRunning"]</span>
-                        }
-                        else if (inst.Running)
-                        {
-                            <span class="badge" style="background:#f9a825;color:#fff;">@L["LocalModels_LlmStarting"]</span>
-                        }
-                        else
-                        {
-                            <span class="badge" style="background:#757575;color:#fff;">@L["LocalModels_LlmStopped"]</span>
-                        }
-                        @if (inst.Managed)
-                        {
-                            <span style="font-size:0.7rem;color:#888;">@L["LocalModels_Managed"]</span>
-                        }
-                    </span>
-                    <span style="font-size:0.75rem;color:#888;">@(inst.Pid?.ToString() ?? "-")</span>
-                    <span>
-                        @if (inst.Running)
-                        {
-                            <button class="btn btn-secondary btn-sm" @onclick='() => ControlOpenVinoLlm("stop", inst.Port)' disabled="@isControllingOpenVinoLlm">@L["LocalModels_StopBtn"]</button>
-                        }
-                        else
-                        {
-                            <button class="btn btn-primary btn-sm" @onclick='() => ControlOpenVinoLlm("start", inst.Port)' disabled="@isControllingOpenVinoLlm">@L["LocalModels_StartBtn"]</button>
-                        }
-                    </span>
-                </div>
-            }
-        </div>
-        @if (!string.IsNullOrEmpty(openVinoLlmMessage))
-        {
-            <div class="load-message @(openVinoLlmSuccess ? "text-success" : "text-error")" style="margin-top:0.5rem;">
-                @openVinoLlmMessage
-            </div>
-        }
-    }
-</div>
 
-<!-- OpenVINO 已下载模型删除确认 -->
 @if (openVinoToDelete != null)
 {
     <div class="modal-overlay" @onclick="CancelDeleteOpenVino">
@@ -426,7 +354,6 @@ else
     private bool? _isIntelGpu; // null=未知/加载中（默认不隐藏）
     private bool _showOpenVino = true;
     private bool _showDownloadedModels = true;
-    private bool _showOpenVinoLlm = true;
 
     // OpenVINO 模型区
     private List<OpenVinoCatalogItemDto> openVinoCatalog = new();
@@ -437,13 +364,6 @@ else
     // OpenVINO 已下载模型删除确认
     private OpenVinoCatalogItemDto? openVinoToDelete;
 
-    // OpenVINO LLM 托管服务（宿主机 openvino_host.py）
-    private List<OpenVinoLlmInstanceDto> openVinoLlmInstances = new();
-    private string? openVinoLlmError;
-    private string openVinoLlmMessage = "";
-    private bool openVinoLlmSuccess = true;
-    private bool isLoadingOpenVinoLlm;
-    private bool isControllingOpenVinoLlm;
 
     // 加载模型（已下载模型区）
     private string loadToolId = "";
@@ -477,8 +397,7 @@ else
         await Task.WhenAll(
             SafeLoadAsync(LoadIntelGpuAsync),
             SafeLoadAsync(LoadOpenVinoAsync),
-            SafeLoadAsync(RefreshDownloadedModels),
-            SafeLoadAsync(LoadOpenVinoLlmStatus));
+            SafeLoadAsync(RefreshDownloadedModels));
     }
 
     private async Task LoadIntelGpuAsync()
@@ -645,57 +564,6 @@ else
         if (bytes >= 1L << 30) return $"{bytes / 1024d / 1024d / 1024d:F2}GB";
         if (bytes >= 1L << 20) return $"{bytes / 1024d / 1024d:F1}MB";
         return $"{bytes / 1024d:F0}KB";
-    }
-
-    private async Task LoadOpenVinoLlmStatus()
-    {
-        isLoadingOpenVinoLlm = true;
-        openVinoLlmError = null;
-        try
-        {
-            var status = await ApiService.GetOpenVinoLlmStatusAsync();
-            if (status == null)
-            {
-                openVinoLlmError = L["LocalModels_LlmStatusUnavailable"];
-                openVinoLlmInstances = new();
-            }
-            else
-            {
-                openVinoLlmInstances = status.Instances;
-            }
-        }
-        catch (Exception ex)
-        {
-            openVinoLlmError = ex.Message;
-        }
-        finally
-        {
-            isLoadingOpenVinoLlm = false;
-            // 首次加载发生在 OnAfterRenderAsync（非事件处理器），必须显式重渲染，
-            // 否则界面停留在初始空状态（"暂无实例配置"），要点刷新才显示。
-            await InvokeAsync(StateHasChanged);
-        }
-    }
-
-    private async Task ControlOpenVinoLlm(string action, int port)
-    {
-        isControllingOpenVinoLlm = true;
-        try
-        {
-            var (success, message) = await ApiService.ControlOpenVinoLlmAsync(action, port);
-            openVinoLlmSuccess = success;
-            openVinoLlmMessage = message;
-            await LoadOpenVinoLlmStatus();
-        }
-        catch (Exception ex)
-        {
-            openVinoLlmSuccess = false;
-            openVinoLlmMessage = ex.Message;
-        }
-        finally
-        {
-            isControllingOpenVinoLlm = false;
-        }
     }
 
     private async Task RefreshDownloadedModels()

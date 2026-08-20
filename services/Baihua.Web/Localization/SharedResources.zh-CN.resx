@@ -4107,12 +4107,6 @@ Shift+Enter 换行，Enter 发送</value>
   <data name="LocalModels_DownloadedOpenVino" xml:space="preserve">
     <value>OpenVINO 视觉模型</value>
   </data>
-  <data name="LocalModels_OpenVinoLlmTitle" xml:space="preserve">
-    <value>OpenVINO LLM 服务（宿主机托管）</value>
-  </data>
-  <data name="LocalModels_OpenVinoLlmEmpty" xml:space="preserve">
-    <value>暂无实例配置（宿主机 openvino_host.py 未返回数据）</value>
-  </data>
   <data name="LocalModels_LoadOpenVinoTitle" xml:space="preserve">
     <value>加载 OpenVINO 模型</value>
   </data>
@@ -5615,21 +5609,6 @@ Shift+Enter 换行，Enter 发送</value>
   <data name="LocalModels_DownloadedHint" xml:space="preserve">
     <value>（加载＝预热视觉模型到显存，图片识别免冷加载）</value>
   </data>
-  <data name="LocalModels_LlmHint" xml:space="preserve">
-    <value>（宿主机常驻 LLM 服务，一模型一端口，供对话/编程调用）</value>
-  </data>
-  <data name="LocalModels_LlmRunning" xml:space="preserve">
-    <value>运行中</value>
-  </data>
-  <data name="LocalModels_LlmStarting" xml:space="preserve">
-    <value>启动中</value>
-  </data>
-  <data name="LocalModels_LlmStopped" xml:space="preserve">
-    <value>已停止</value>
-  </data>
-  <data name="LocalModels_Managed" xml:space="preserve">
-    <value>(托管)</value>
-  </data>
   <data name="LocalModels_LoadingHardware" xml:space="preserve">
     <value>正在检测硬件环境…</value>
   </data>
@@ -5668,9 +5647,6 @@ Shift+Enter 换行，Enter 发送</value>
   </data>
   <data name="LocalModels_SpeedEstimateHint" xml:space="preserve">
     <value>基于当前硬件的估算速度，仅供参考</value>
-  </data>
-  <data name="LocalModels_LlmStatusUnavailable" xml:space="preserve">
-    <value>无法获取 OpenVINO 托管服务状态（宿主机 8866 未运行？）</value>
   </data>
   <data name="LocalModels_SpeedVeryFast" xml:space="preserve">
     <value>🚀 约 {0} tok/s</value>
@@ -6025,9 +6001,6 @@ Shift+Enter 换行，Enter 发送</value>
   </data>
   <data name="LocalModels_OpenVinoNotSupported" xml:space="preserve">
     <value>当前机器未检测到 Intel GPU，OpenVINO 本地推理不可用（其他本地工具不受影响）。</value>
-  </data>
-  <data name="LocalModels_OpenVinoHostManualHint" xml:space="preserve">
-    <value>OpenVINO 宿主服务（BaihuaOpenVinoHost）为独立 Windows 服务：安装/卸载/启停需管理员权限手动操作（scripts/install-openvino-host-service.ps1），此处仅显示运行状态。</value>
   </data>
   <data name="OpenClaw_OpenVinoNotSupported" xml:space="preserve">
     <value>当前机器未检测到 Intel GPU，OpenVINO 本地模型不可用（可改用 Ollama / llama.cpp 等其他本地工具）。</value>

@@ -61,7 +61,7 @@ C:\Users\lumin\DevecostudioProjects\
 ## 助手 / 自动化约定
 
 - **服务运行由用户手动按需启停**，助手不自动拉起/保持后台进程：
-  - Baihua.Family **8788**、Baihua.AI **8791**、Baihua.Vault **8790**、Baihua.Web **5177**（Windows native 下 OpenVINO 宿主 8866 随 `bh start/stop` 一并编排）
+  - Baihua.Family **8788**、Baihua.AI **8791**、Baihua.Vault **8790**、Baihua.Web **5177**（Windows native 下 OpenVINO 由 OVMS 系统服务承载（服务名 `ovms`，REST :8000，安装见 `scripts/install-openvino-ovms-service.ps1`），`bh status` 展示状态）
   - 启停统一用 `bh start` / `bh stop`；开发调试可单独 `dotnet watch run`
   - 若某服务未监听，先询问用户是否需要启动，不要擅自拉起
 - **WebUI 与后端之间的共享数据类型和 API 接口定义必须放在 `Baihua.Contracts`**，两边禁止各自重复定义。新增或修改 API 契约时，先更新 Contracts，再让两边引用同一版本。

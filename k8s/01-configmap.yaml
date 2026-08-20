@@ -34,11 +34,10 @@ data:
   AiApi__BaseUrl: "http://bh-ai:8791/"
   VaultApi__BaseUrl: "http://bh-vault:8790/"
 
-  # OpenVINO 推理服务（独立容器，K8s Service DNS）
-  # Family 服务通过此 URL 调用 OpenVINO LLM/Vision API
-  # 设为非 localhost 时，Family 跳过本地 Python 进程启动
+  # OpenVINO 推理服务（bh-openvino = Intel OVMS，K8s Service DNS :8000 REST）
+  # Family/AI 通过此 URL 探测 OVMS 是否在托管模型（OpenAI 兼容 /v1/models）
   OPENVINO_LLM_URL: "http://bh-openvino:8000"
-  OPENVINO_VISION_URL: "http://bh-openvino:8801"
-
-  # OpenVINO LLM 托管服务（k8s 由 bh-openvino pod 承担：LLM :8000 提供 /status；native 才是宿主机 8866）
   OPENVINO_HOST_URL: "http://bh-openvino:8000"
+
+  # OVMS（OpenVINO Model Server）REST 基地址 —— AI/Family 推理统一走 /v3/chat/completions、/v3/embeddings
+  OpenVinoOms__BaseUrl: "http://bh-openvino:8000"

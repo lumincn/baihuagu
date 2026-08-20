@@ -231,8 +231,7 @@ status() {
     if [ -n "$NODE_IP" ]; then
         info "  WebUI:  http://$NODE_IP/   (Traefik :80)"
         info "  Family: http://$NODE_IP/   (Traefik /mg/* 转发)"
-        info "  OpenVINO LLM:    http://bh-openvino:8000 (集群内)"
-        info "  OpenVINO Vision: http://bh-openvino:8801 (集群内)"
+        info "  OpenVINO (OVMS): http://bh-openvino:8000 (集群内, OpenAI 兼容 /v3)"
     fi
 }
 
@@ -285,29 +284,26 @@ verify_gpu() {
         info "  请检查: 1) 节点有 /dev/dri/renderD128  2) Device Plugin Pod 正常运行"
     fi
 
-    # 检查 bh-openvino Pod 的 GPU
-    log "3. 检查 bh-openvino Pod GPU 访问 ..."
-    kubectl -n "$NAMESPACE" exec deployment/bh-openvino -- python3 -c "
-from openvino.runtime import Core
-core = Core()
-devices = core.available_devices
-print(f'  OpenVINO 可用设备: {devices}')
-if 'GPU' in devices:
-    print('  Intel GPU 可用')
-else:
-    print('  GPU 未检测到（可能 /dev/dri 未挂载或驱动未安装）')
-" 2>&1 || err "  无法在 bh-openvino Pod 中执行 OpenVINO 检测"
+    # 检查 bh-openvino Pod（OVMS 官方镜像，无 python；用 --version 确认）
+    log "3. 检查 bh-openvino Pod（OVMS 版本） ..."
+    kubectl -n "$NAMESPACE" exec deployment/bh-openvino -- ovms --version 2>&1 | head -2 || \
+        err "  无法在 bh-openvino Pod 中执行 OVMS 检测"
 
-    # 检查 LLM 服务健康
-    log "4. 检查 OpenVINO LLM 服务 ..."
-    kubectl -n "$NAMESPACE" exec deployment/bh-openvino -- curl -s http://localhost:8000/health 2>&1 | \
-        python3 -c "import sys,json; d=json.load(sys.stdin); print(f'  模型: {d.get(\"model\",\"?\")}, 设备: {d.get(\"device\",\"?\")}, VL: {d.get(\"vl\",False)}')" 2>/dev/null || \
-        warn "  LLM 服务未就绪（模型可能仍在加载中）"
+    # 检查 OVMS 就绪（readiness 探针 = /v2/health/ready）
+    log "4. 检查 OVMS（OpenVINO Model Server）就绪 ..."
+    local ovms_ready
+    ovms_ready=$(kubectl -n "$NAMESPACE" get pod -l app=bh-openvino -o jsonpath='{.items[0].status.conditions[?(@.type=="Ready")].status}' 2>/dev/null)
+    if [ "$ovms_ready" = "True" ]; then
+        log "  bh-openvino Ready（/v2/health/ready 通过）"
+        kubectl -n "$NAMESPACE" exec deployment/bh-openvino -- bash -c 'command -v curl >/dev/null 2>&1 && curl -s http://localhost:8000/v1/models || echo "(OVMS 镜像无 curl，可从 Family 侧探测)"' 2>&1 | head -c 300 || true
+    else
+        warn "  bh-openvino 未就绪（首次加载 7B 模型编译较慢，需数分钟；稍后 bh status 复查）"
+    fi
 
-    # 检查 Family → OpenVINO 连通性
-    log "5. 检查 Family → OpenVINO 连通性 ..."
-    kubectl -n "$NAMESPACE" exec deployment/bh-family -- curl -s http://bh-openvino:8000/health 2>&1 | head -1 || \
-        warn "  Family 无法连接到 bh-openvino:8000"
+    # 检查 Family → OVMS 连通性（Family 镜像自带 curl）
+    log "5. 检查 Family → OVMS 连通性 ..."
+    kubectl -n "$NAMESPACE" exec deployment/bh-family -- curl -s -m 5 http://bh-openvino:8000/v1/models 2>&1 | head -c 200 || \
+        warn "  Family 暂时无法连接到 bh-openvino:8000（OVMS 可能仍在启动）"
 }
 
 # ============================================================

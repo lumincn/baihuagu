@@ -130,11 +130,11 @@ function Wait-ProcessExit($pid2, $seconds) {
     return $false
 }
 
-# ---- OpenVINO 托管服务（Windows SCM 服务 BaihuaOpenVinoHost，端口 8866）----
+# ---- OpenVINO Model Server（Windows SCM 服务 ovms，REST :8000）----
 # 独立系统服务：安装/卸载/启停由用户手动（管理员权限）管理
-# （scripts/install-openvino-host-service.ps1），bh 不参与启停，仅在 status 中展示状态。
-$OpenVinoServiceName = 'BaihuaOpenVinoHost'
-$OpenVinoPort = 8866
+# （scripts/install-openvino-ovms-service.ps1），bh 不参与启停，仅在 status 中展示状态。
+$OpenVinoServiceName = 'ovms'
+$OpenVinoPort = 8000
 
 function Get-OpenVinoHostService {
     Get-Service -Name $OpenVinoServiceName -ErrorAction SilentlyContinue
@@ -286,7 +286,7 @@ function Show-Status {
     # OpenVINO 宿主（Windows 服务 + 端口）
     $ovSvc = Get-OpenVinoHostService
     $ovState = if ($ovSvc) { $ovSvc.Status.ToString() } else { 'not installed' }
-    if (Test-PortOpen $OpenVinoPort) { $ovState = 'RUNNING (port 8866)' }
+    if (Test-PortOpen $OpenVinoPort) { $ovState = 'RUNNING (port 8000)' }
     Write-Host ("{0,-8} port={1,-5} {2}" -f 'openvino', $OpenVinoPort, $ovState)
 }
 

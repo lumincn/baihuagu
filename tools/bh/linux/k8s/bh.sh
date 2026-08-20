@@ -442,12 +442,23 @@ deploy_all() {
 # openvino 按需启停：on 启动（无 GPU 时拒绝，除非 BAIHUA_ENABLE_OPENVINO=1 强制），off 缩容至 0，status 查看
 
 # 依据 git 变更推断需要重建的镜像（无变更 → 空；git 不可用/仓库异常 → 全部，保守）
+# 变更来源两类：
+#   1) 工作区未提交修改 + 未跟踪文件（本地开发流：改了代码直接 bh up）
+#   2) 最近一次 pull/merge 引入的提交（update 流：git pull 后工作区是干净的，
+#      HEAD 已前移，必须对照 ORIG_HEAD（pull 前的 HEAD）才能看到拉下来的变更）
 changed_images() {
     if ! command -v git >/dev/null 2>&1 || [ ! -d "$ROOT/.git" ]; then
         echo "$ALL_DOTNET openvino"; return 0
     fi
     local files
-    files="$(cd "$ROOT" && { git diff --name-only HEAD 2>/dev/null; git ls-files --others --exclude-standard 2>/dev/null; } | sort -u)"
+    files="$(cd "$ROOT" && {
+        git diff --name-only HEAD 2>/dev/null
+        git ls-files --others --exclude-standard 2>/dev/null
+        if git rev-parse -q --verify ORIG_HEAD >/dev/null 2>&1 && \
+           [ "$(git rev-parse ORIG_HEAD 2>/dev/null)" != "$(git rev-parse HEAD 2>/dev/null)" ]; then
+            git diff --name-only ORIG_HEAD HEAD 2>/dev/null
+        fi
+    } | sort -u)"
     [ -z "$files" ] && { echo ""; return 0; }
 
     local imgs=""

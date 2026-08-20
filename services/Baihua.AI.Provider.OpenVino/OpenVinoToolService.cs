@@ -122,21 +122,18 @@ public class OpenVinoToolService : ILocalModelTool
         if (string.IsNullOrWhiteSpace(podUrl)) return false;
         try
         {
+            // OVMS（OpenVINO Model Server）不提供 /health，用 OpenAI 兼容的 /v1/models 探测；
+            // 旧自研 host（openvino_llm_server.py）同样提供 /v1/models，双兼容。
             using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
-            var health = await client.GetFromJsonAsync<RemoteHealthDto>(podUrl.TrimEnd('/') + "/health", ct);
-            return health is { Ok: true };
+            var data = await client.GetFromJsonAsync<JsonElement>(podUrl.TrimEnd('/') + "/v1/models", ct);
+            return data.TryGetProperty("data", out var list)
+                && list.ValueKind == JsonValueKind.Array
+                && list.GetArrayLength() > 0;
         }
         catch
         {
             return false;
         }
-    }
-
-    private sealed class RemoteHealthDto
-    {
-        public bool Ok { get; set; }
-        public string? Model { get; set; }
-        public string? ModelPath { get; set; }
     }
 
     private async Task<string?> DetectOpenVinoVersionAsync(CancellationToken ct = default)
@@ -365,8 +362,8 @@ public class OpenVinoToolService : ILocalModelTool
             });
         }
 
-        // k8s：视觉/LLM 模型托管在 bh-openvino pod（/models），本机模型根没有——
-        // 通过 OPENVINO_LLM_URL/OPENVINO_HOST_URL 的 /health 合并显示为"已下载且运行中"
+        // k8s：视觉/LLM 模型托管在 bh-openvino pod（OVMS，/models PVC），本机模型根没有——
+        // 通过 OPENVINO_LLM_URL/OPENVINO_HOST_URL 的 /v1/models 合并显示为"已下载且运行中"
         try
         {
             var podUrl = Environment.GetEnvironmentVariable("OPENVINO_LLM_URL")
@@ -374,12 +371,16 @@ public class OpenVinoToolService : ILocalModelTool
             if (!string.IsNullOrWhiteSpace(podUrl))
             {
                 using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
-                var health = await client.GetFromJsonAsync<RemoteHealthDto>(podUrl.TrimEnd('/') + "/health", ct);
-                if (health != null && !string.IsNullOrWhiteSpace(health.ModelPath))
+                var data = await client.GetFromJsonAsync<JsonElement>(podUrl.TrimEnd('/') + "/v1/models", ct);
+                if (data.TryGetProperty("data", out var list) && list.ValueKind == JsonValueKind.Array)
                 {
-                    var name = Path.GetFileName(health.ModelPath.TrimEnd('/').TrimEnd('\\'));
-                    if (!string.IsNullOrWhiteSpace(name) && !result.Any(r => r.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+                    foreach (var item in list.EnumerateArray())
                     {
+                        if (!item.TryGetProperty("id", out var idEl) || idEl.ValueKind != JsonValueKind.String) continue;
+                        var id = idEl.GetString();
+                        if (string.IsNullOrWhiteSpace(id)) continue;
+                        var name = id.Split('/').Last();
+                        if (result.Any(r => r.Name.Equals(name, StringComparison.OrdinalIgnoreCase))) continue;
                         result.Add(new DownloadedModelDto
                         {
                             Name = name,

@@ -29,11 +29,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- OpenVINO 宿主机托管服务（openvino_host.py 管理 openvino_llm_server.py 实例；服务包装 + 托管）。
-         vision_server.py 已废弃：百花视觉推理已由 OVMS 常驻服务接管，不再随发布拷贝。 -->
+    <!-- 本地回退推理脚本（openvino_llm_server.py：OpenVinoRuntimeManager 本地进程兜底）。
+         宿主机托管（openvino_host.py / openvino_host_service.py）与 vision_server.py 已废弃：
+         百花 OpenVINO 推理由 OVMS 常驻服务（/v3）接管，不再随发布拷贝。 -->
     <None Include="LocalVision\openvino_llm_server.py" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="LocalVision\openvino_host.py" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="LocalVision\openvino_host_service.py" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
