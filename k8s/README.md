@@ -448,6 +448,35 @@ Pod (bh-family)
 └── /opt/baihua/models/ ← PVC 只读挂载（模型扫描）
 ```
 
+## 构建与部署提速
+
+### 常见瓶颈：docker.io 解析黑洞
+
+buildkit 每次构建解析 `FROM` 基础镜像时会直连 `registry-1.docker.io`（`buildkitd.toml` 的 mirror 配置不参与该解析），
+国内网络下 docker.io CDN 常被黑洞（SYN 丢弃），每次连接超时 30s×2，单次构建凭空多花 60-150s。
+
+**修复（本机已应用）**：在 `/etc/hosts` 钉死 docker.io，让解析瞬时失败、buildkit 立即回退本地镜像存储：
+
+```
+127.0.0.1 registry-1.docker.io auth.docker.io
+```
+
+修复前空 Dockerfile 构建 144s → 修复后 7s（约 20 倍）。如需从 docker.io 拉取真实镜像，删除这两行并 `sudo systemctl restart buildkit`。
+
+### 缓存并发安全
+
+各服务 Dockerfile 的 NuGet 缓存挂载已加 `sharing=locked`：并发构建不会互相写坏 `/root/.nuget/packages`（此前并行构建曾导致 restore/publish 报 NETSDK1064 / 缺 .vdm 文件）。
+
+### 只构建变更镜像
+
+- `bh up` 按 git 变更（含未跟踪文件）自动推断受影响镜像，未变更镜像跳过；`bh up --all` 强制全量
+- `bh build family webui` 手动指定只构建部分镜像
+- `bh prune` 清空 buildkit 缓存（释放磁盘、修复缓存损坏）；缓存膨胀到百 GB 级时建议定期执行
+
+### 免 sudo 状态查看
+
+`bh status` / `bh logs` / `bh dashboard` 在 k3s 配置（/etc/rancher/k3s/k3s.yaml，root 600）不可读时自动提权，普通用户可直接使用；`build`/`deploy`/`update` 仍建议 sudo。
+
 ## 与 Docker Compose 对比
 
 | 维度 | Docker Compose | K8s |

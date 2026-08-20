@@ -5,8 +5,9 @@
 # 镜像构建用 nerdctl 直连 k3s 的 containerd socket（/run/k3s/containerd/containerd.sock），
 # 构建完镜像直接落在 k3s 的 containerd 存储里，无需 docker build / docker save / ctr import。
 # 前置：k3s 已安装运行（k3s 无法自动安装，见 k8s/README.md 前提条件）。
-# 权限：k3s 的 containerd socket 与 k3s.yaml 仅 root 可访问，build/deploy/status 建议整体用 sudo 执行
-#       （sudo bh build）；脚本内部对 /usr/local/bin 与 /etc 的写入会自动用 sudo，非 root 直接跑也会尽量完成。
+# 权限：containerd socket 与 k3s.yaml 仅 root 可访问——build/deploy 需 sudo（sudo bh build）；
+#       status/logs/dashboard 等只读命令检测到 k3s 配置不可读时自动提权，无需手动 sudo。
+#       脚本内部对 /usr/local/bin 与 /etc 的写入会自动用 sudo，非 root 直接跑也会尽量完成。
 # nerdctl / buildkit（buildkitd+buildctl）缺失时 build 会自动下载安装（GitHub release → /usr/local/bin）。
 #
 # Usage: ./tools/bh/linux/k8s/bh.sh <command> [args]
@@ -59,6 +60,13 @@ ALL_DOTNET="vault ai webui family"
 # kubectl 封装：优先 k3s 自带 kubectl（k3s kubectl），再 PATH 里的 kubectl
 # 惰性解析——help 等不实际用 kubectl 的命令在 k3s 缺失时也能跑
 k() {
+    # k3s.yaml 仅 root 可读：非 root 调用时自动提权（status/logs/dashboard 等只读命令无需手动 sudo）
+    if [ "$(id -u)" != "0" ] && [ -f /etc/rancher/k3s/k3s.yaml ] && [ ! -r /etc/rancher/k3s/k3s.yaml ]; then
+        if command -v sudo >/dev/null 2>&1 && command -v k3s >/dev/null 2>&1; then
+            sudo k3s kubectl "$@"
+            return $?
+        fi
+    fi
     if command -v k3s >/dev/null 2>&1; then
         if [ -z "${KUBECONFIG:-}" ] && [ -f /etc/rancher/k3s/k3s.yaml ]; then
             export KUBECONFIG=/etc/rancher/k3s/k3s.yaml

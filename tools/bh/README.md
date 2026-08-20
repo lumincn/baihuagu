@@ -24,8 +24,23 @@ bh install / uninstall        安装到 PATH / 移除
 ```
 
 - Windows 默认 cell 是 native（本机 dotnet 服务）；`bh k8s ...` 自动经 WSL root 路由到 Linux k3s。
-- Linux 默认 cell 是 k8s；k8s cell 需要 root（k3s 配置仅 root 可读）。
+- Linux 默认 cell 是 k8s；`build`/`deploy`/`update` 需 root（containerd socket / k3s.yaml 仅 root 可读），`status`/`logs`/`dashboard` 等只读命令检测到配置不可读时自动提权，无需手动 sudo。
 - 各 cell 内部命令见 `bh <cell> help`。
+
+### k8s cell 命令速查
+
+| 命令 | 说明 |
+|------|------|
+| `bh build [img...]` | 构建镜像进 k3s containerd；默认全部 5 个，可指定部分（如 `bh build family webui`） |
+| `bh deploy` | `kubectl apply` k8s/ 清单 + 滚动重启应用 |
+| `bh up` | 按 git 变更只构建受影响镜像 + deploy（未变更镜像跳过）；`bh up --all` 强制全量 |
+| `bh update` | `git pull` + `up` |
+| `bh status` | pods / svc / pvc 总览（免 sudo） |
+| `bh logs <svc> [n]` | tail pod 日志，默认 50 行（免 sudo） |
+| `bh prune` | 清空 buildkit 构建缓存（释放磁盘、修复 nuget 缓存损坏导致的构建失败） |
+| `bh dashboard` | 打开 WebUI（cli-token 自动登录） |
+| `bh openvino <on\|off\|status>` | Intel GPU 相关服务按需启停 |
+| `bh destroy` | 删除 baihua 命名空间 |
 
 ## 安装
 

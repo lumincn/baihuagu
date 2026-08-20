@@ -6,7 +6,7 @@
 
 ```
 services/
-  Baihua.Family/    # 家庭版主服务（亲子功能、任务、设备管理）
+  Baihua.Family/    # 家庭版主服务（亲子功能、任务、设备管理、家庭病历本）
   Baihua.AI/        # AI 模型、聊天、配置管理
   Baihua.Vault/     # 知识库、同步、搜索、索引
   Baihua.Web/       # 家庭版 Web 界面（Blazor Server）
@@ -56,7 +56,7 @@ cd services/Baihua.Web && dotnet run
 
 | 服务 | 端口 | 说明 |
 |------|------|------|
-| Baihua.Family | 8788 | 家庭/亲子功能（任务、成就、OpenClaw、设备配对） |
+| Baihua.Family | 8788 | 家庭/亲子功能（任务、成就、OpenClaw、设备配对、家庭病历本/AI 诊断） |
 | Baihua.AI | 8791 | AI 模型、聊天、配置管理 |
 | Baihua.Vault | 8790 | 知识库、同步、搜索、索引 |
 | Baihua.Web | 5177 | Blazor Server 管理后台 |
