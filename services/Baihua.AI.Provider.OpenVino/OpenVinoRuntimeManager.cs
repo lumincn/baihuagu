@@ -148,12 +148,22 @@ public class OpenVinoRuntimeManager : ILocalRuntimeManager
             var psi = new ProcessStartInfo
             {
                 FileName = python,
-                Arguments = $"\"{script}\" --model \"{modelPath}\" --device {device} --port {port} --max-context-size 4096",
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
             };
+            psi.ArgumentList.Add(script);
+            psi.ArgumentList.Add("--model");
+            psi.ArgumentList.Add(modelPath);
+            psi.ArgumentList.Add("--device");
+            psi.ArgumentList.Add(device);
+            psi.ArgumentList.Add("--port");
+            psi.ArgumentList.Add(port.ToString());
+            psi.ArgumentList.Add("--max-context-size");
+            psi.ArgumentList.Add("4096");
+            // 避免继承被污染的 PYTHONHOME/PYTHONPATH 导致解释器初始化崩溃
+            StripPythonEnv(psi);
             var proc = Process.Start(psi);
             if (proc == null)
                 return new OpenVinoRunResult { Success = false, Error = "进程启动失败" };
@@ -272,26 +282,29 @@ public class OpenVinoRuntimeManager : ILocalRuntimeManager
         lock (PythonLock)
         {
             if (_pythonCache != null) return _pythonCache;
-            foreach (var candidate in new[] { "python", "py" })
+
+            foreach (var candidate in PythonCandidates())
             {
                 try
                 {
                     var psi = new ProcessStartInfo
                     {
                         FileName = candidate,
-                        Arguments = candidate == "py" ? "-3 -c \"import openvino_genai\"" : "-c \"import openvino_genai\"",
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
                         UseShellExecute = false,
                         CreateNoWindow = true,
                     };
+                    psi.ArgumentList.Add("-c");
+                    psi.ArgumentList.Add("import openvino_genai");
+                    StripPythonEnv(psi);
                     using var proc = Process.Start(psi);
                     if (proc == null) continue;
                     _ = proc.StandardError.ReadToEndAsync();
                     proc.WaitForExit(15000);
                     if (proc.HasExited && proc.ExitCode == 0)
                     {
-                        _pythonCache = candidate == "py" ? "py" : "python";
+                        _pythonCache = candidate;
                         return _pythonCache;
                     }
                 }
@@ -299,6 +312,51 @@ public class OpenVinoRuntimeManager : ILocalRuntimeManager
             }
         }
         return null;
+    }
+
+    /// <summary>
+    /// 候选 Python 列表（按优先级）：
+    /// 1) 显式配置 LocalAI:PythonExe；
+    /// 2) PATH 命令 python / py / python3 / py3；
+    /// 3) Windows 常见标准 Python 安装目录（LocalAppData\Programs\Python\Python3xx\python.exe）；
+    /// 4) Linux 常见路径。
+    /// 探测条件：能 import openvino_genai。
+    /// </summary>
+    private IEnumerable<string> PythonCandidates()
+    {
+        if (!string.IsNullOrWhiteSpace(_options.PythonExe))
+            yield return _options.PythonExe;
+
+        foreach (var c in new[] { "python", "py", "python3", "py3" })
+            yield return c;
+
+        if (OperatingSystem.IsWindows())
+        {
+            var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            var baseDir = Path.Combine(localAppData, "Programs", "Python");
+            // 从高到低尝试 Python313/312/311/310，均探测 openvino_genai
+            foreach (var majorMinor in new[] { "313", "312", "311", "310" })
+            {
+                var exe = Path.Combine(baseDir, $"Python{majorMinor}", "python.exe");
+                if (File.Exists(exe)) yield return exe;
+            }
+        }
+        else if (OperatingSystem.IsLinux())
+        {
+            yield return "/usr/bin/python3";
+            if (File.Exists("/usr/local/bin/python3")) yield return "/usr/local/bin/python3";
+        }
+    }
+
+    /// <summary>
+    /// 清理可能被污染的 PYTHONHOME / PYTHONPATH。当环境里存在指向其它发行版
+    /// （如 OpenVINO Model Server 自带 Python）的 PYTHONHOME 时，任何解释器都会在
+    /// 初始化阶段因找不到标准库 encodings 而崩溃，导致 import openvino_genai 必败。
+    /// </summary>
+    private static void StripPythonEnv(ProcessStartInfo psi)
+    {
+        psi.Environment.Remove("PYTHONHOME");
+        psi.Environment.Remove("PYTHONPATH");
     }
 
     #endregion

@@ -11,6 +11,13 @@ public class LocalAiOptions
     public string DownloadDirectory { get; set; } = "";
 
     /// <summary>
+    /// OpenVINO LLM / 视觉服务使用的 Python 可执行文件（绝对路径或命令名）。
+    /// 留空时自动探测 PATH 中的 python/py/python3 及常见 Python 安装目录
+    /// （能 import openvino_genai 的解释器）。对齐 LocalVision:PythonExe 的语义。
+    /// </summary>
+    public string? PythonExe { get; set; }
+
+    /// <summary>
     /// 获取模型根目录：
     /// 1. 优先使用 DownloadDirectory 配置值
     /// 2. 未配置时回退到 $BAIHUA_HOME/models（与百花统一数据根目录一致）

@@ -262,6 +262,13 @@ public class OpenVinoToolService : ILocalModelTool
         };
         psi.ArgumentList.Add(scriptPath);
         psi.Environment["VISION_PORT"] = _options.Port.ToString();
+        // 把解析后的模型路径传给子进程，避免 vision_server.py 退回 ~/.openclaw/models 的默认路径
+        // （实际模型在 $BAIHUA_HOME/models 下，路径不一致会导致 reload "model directory not found"）
+        foreach (var m in DistinctModels())
+        {
+            var envVar = m.Id == "7b" ? "VISION_MODEL_7B" : "VISION_MODEL_3B";
+            psi.Environment[envVar] = ResolveModelPath(m);
+        }
 
         _logger.LogInformation("启动 OpenVINO 视觉服务: {Script} (port={Port})", scriptPath, _options.Port);
         var process = Process.Start(psi);
@@ -324,14 +331,38 @@ public class OpenVinoToolService : ILocalModelTool
         return result;
     }
 
+    /// <summary>
+    /// 把前端传入的模型名（可能是显示名 Name 或内部 Id，如 "Qwen2.5-VL-3B-Instruct (INT4)" 或 "3b"）
+    /// 规整为 vision_server 认可的 Id（3b/7b）。前端 list 里 model.Name 是显示名，
+    /// 直接透传给 /v1/vision/reload 会导致 "unknown model id" 而加载失败。
+    /// </summary>
+    private string NormalizeModelId(string modelOrName)
+    {
+        var key = modelOrName?.Trim();
+        if (string.IsNullOrWhiteSpace(key))
+            return "3b";
+        // 精确 Id 或显示名匹配
+        foreach (var m in DistinctModels())
+        {
+            if (string.Equals(m.Id, key, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(m.Name, key, StringComparison.OrdinalIgnoreCase))
+                return m.Id;
+        }
+        // 前端可能传 "3b"/"7b" 大小写变体，兜底
+        if (key.Equals("3b", StringComparison.OrdinalIgnoreCase)) return "3b";
+        if (key.Equals("7b", StringComparison.OrdinalIgnoreCase)) return "7b";
+        return key; // 未知：原样透传，由 vision_server 决定
+    }
+
     public async Task<bool> LoadModelAsync(string modelId, CancellationToken ct = default)
     {
         await EnsureServerRunningAsync(ct);
+        var id = NormalizeModelId(modelId);
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         cts.CancelAfter(TimeSpan.FromMinutes(5));
         using var client = _httpClientFactory.CreateClient();
         client.Timeout = TimeSpan.FromMinutes(5);
-        var resp = await client.PostAsJsonAsync(BaseUrl + "/v1/vision/reload", new { model = modelId }, cts.Token);
+        var resp = await client.PostAsJsonAsync(BaseUrl + "/v1/vision/reload", new { model = id }, cts.Token);
         return resp.IsSuccessStatusCode;
     }
 
@@ -339,11 +370,12 @@ public class OpenVinoToolService : ILocalModelTool
     {
         if (!await IsServerRunningAsync(ct))
             return true;
+        var id = NormalizeModelId(modelId);
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         cts.CancelAfter(TimeSpan.FromSeconds(10));
         using var client = _httpClientFactory.CreateClient();
         client.Timeout = TimeSpan.FromSeconds(10);
-        var resp = await client.PostAsJsonAsync(BaseUrl + "/v1/vision/unload", new { model = modelId }, cts.Token);
+        var resp = await client.PostAsJsonAsync(BaseUrl + "/v1/vision/unload", new { model = id }, cts.Token);
         return resp.IsSuccessStatusCode;
     }
 

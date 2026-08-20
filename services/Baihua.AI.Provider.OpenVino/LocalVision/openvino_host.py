@@ -39,10 +39,27 @@ LOCK = threading.Lock()
 
 
 def find_script():
-    """定位 openvino_llm_server.py（与本脚本同目录）"""
+    """定位 openvino_llm_server.py（首选同级目录，跨工程路径作发布布局兜底）
+
+    当前布局（本脚本与 openvino_llm_server.py 同工程同目录）：
+      services/Baihua.AI.Provider.OpenVino/LocalVision/openvino_host.py
+      services/Baihua.AI.Provider.OpenVino/LocalVision/openvino_llm_server.py
+    下面的跨工程路径仅作旧发布布局/其他打包方式的兜底。
+    """
     here = os.path.dirname(os.path.abspath(__file__))
-    cand = os.path.join(here, "openvino_llm_server.py")
-    return cand if os.path.exists(cand) else None
+    candidates = [
+        os.path.join(here, "openvino_llm_server.py"),
+        # 兄弟工程 OpenVino Provider 的 LocalVision（旧源码布局兜底）
+        os.path.normpath(os.path.join(here, "..", "Baihua.AI.Provider.OpenVino", "LocalVision", "openvino_llm_server.py")),
+        # 发布布局：本脚本可能被拷贝到 openvino host 输出目录的 LocalVision 下
+        os.path.normpath(os.path.join(here, "..", "..", "Baihua.AI.Provider.OpenVino", "LocalVision", "openvino_llm_server.py")),
+        # 兜底：白花仓库根下 services 路径
+        os.path.normpath(os.path.join(here, "..", "..", "..", "services", "Baihua.AI.Provider.OpenVino", "LocalVision", "openvino_llm_server.py")),
+    ]
+    for cand in candidates:
+        if os.path.exists(cand):
+            return cand
+    return None
 
 
 def find_python():

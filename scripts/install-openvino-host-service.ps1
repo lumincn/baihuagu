@@ -7,7 +7,7 @@
 $ErrorActionPreference = "Stop"
 
 $PY      = "C:\Users\lumin\AppData\Local\Programs\Python\Python312\python.exe"
-$SERVICE_SCRIPT = "C:\Users\lumin\src\baihuagu\services\Baihua.AI.Provider\LocalVision\openvino_host_service.py"
+$SERVICE_SCRIPT = "C:\Users\lumin\src\baihuagu\services\Baihua.AI.Provider.OpenVino\LocalVision\openvino_host_service.py"
 $SERVICE = "BaihuaOpenVinoHost"
 
 # --- 0. 管理员检查 ---
@@ -61,7 +61,7 @@ try {
 } catch {
     Write-Host "[!] 服务状态 $($svc.Status)，但 8866 未就绪" -ForegroundColor Yellow
     Write-Host "     请检查服务日志: 事件查看器 -> Windows 日志 -> 应用程序 (来源: BaihuaOpenVinoHost)"
-    Write-Host "     或前台调试: cd services\Baihua.AI.Provider\LocalVision; python openvino_host_service.py debug"
+    Write-Host "     或前台调试: cd services\Baihua.AI.Provider.OpenVino\LocalVision; python openvino_host_service.py debug"
 }
 
 Write-Host ""
