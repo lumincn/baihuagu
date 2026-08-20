@@ -20,12 +20,12 @@ COPY services/Baihua.AI.Provider/Baihua.AI.Provider.csproj services/Baihua.AI.Pr
 COPY services/Baihua.AI.Provider.OpenVino/Baihua.AI.Provider.OpenVino.csproj services/Baihua.AI.Provider.OpenVino/
 COPY services/Baihua.Family/Baihua.Family.csproj services/Baihua.Family/
 COPY libs/MobileContract/MobileContract.csproj libs/MobileContract/
-RUN --mount=type=cache,target=/root/.nuget/packages \
+RUN --mount=type=cache,target=/root/.nuget/packages,sharing=locked \
     dotnet restore services/Baihua.Family/Baihua.Family.csproj -r linux-x64 --nologo
 # 再 COPY 源码（代码变更只影响编译层）
 COPY services/ services/
 COPY libs/ libs/
-RUN --mount=type=cache,target=/root/.nuget/packages \
+RUN --mount=type=cache,target=/root/.nuget/packages,sharing=locked \
     dotnet publish services/Baihua.Family/Baihua.Family.csproj \
         -c Release -o /publish --no-restore --nologo
 

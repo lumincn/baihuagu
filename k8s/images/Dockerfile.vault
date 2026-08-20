@@ -13,12 +13,12 @@ COPY services/Baihua.Contracts/Baihua.Contracts.csproj services/Baihua.Contracts
 COPY services/Baihua.Data/Baihua.Data.csproj services/Baihua.Data/
 COPY services/Baihua.Core/Baihua.Core.csproj services/Baihua.Core/
 COPY services/Baihua.Vault/Baihua.Vault.csproj services/Baihua.Vault/
-RUN --mount=type=cache,target=/root/.nuget/packages \
+RUN --mount=type=cache,target=/root/.nuget/packages,sharing=locked \
     dotnet restore services/Baihua.Vault/Baihua.Vault.csproj -r linux-x64 --nologo
 # 再 COPY 源码（代码变更只影响编译层）
 COPY services/ services/
 COPY libs/ libs/
-RUN --mount=type=cache,target=/root/.nuget/packages \
+RUN --mount=type=cache,target=/root/.nuget/packages,sharing=locked \
     dotnet publish services/Baihua.Vault/Baihua.Vault.csproj \
         -c Release -o /publish --no-restore --nologo
 

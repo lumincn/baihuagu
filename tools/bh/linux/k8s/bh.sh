@@ -10,10 +10,11 @@
 # nerdctl / buildkit（buildkitd+buildctl）缺失时 build 会自动下载安装（GitHub release → /usr/local/bin）。
 #
 # Usage: ./tools/bh/linux/k8s/bh.sh <command> [args]
-#   build       nerdctl 构建 5 个镜像（直接进 k3s containerd）
+#   build [img...]  nerdctl 构建镜像进 k3s containerd（默认 5 个；可指定部分，如: family webui）
 #   deploy      kubectl apply k8s/ manifests + wait ready
-#   up          build + deploy
-#   update      git pull + build + deploy（pull 以真实用户执行，build/deploy 自动提权，sudo 与否均可）
+#   up          仅构建 git 变更涉及的镜像 + deploy（未变更镜像跳过；bh up --all 强制全量重建）
+#   update      git pull + up（pull 以真实用户执行，build/deploy 自动提权，sudo 与否均可）
+#   prune       清空 buildkit 构建缓存（释放磁盘，修复 nuget 包缓存损坏导致的构建失败）
 #   status      pods / svc / pvc overview
 #   logs <svc> [n]   tail pod logs (default 50)
 #   destroy     delete namespace baihua
@@ -36,6 +37,24 @@ K3S_CONTAINERD_SOCK="/run/k3s/containerd/containerd.sock"
 # nerdctl 封装：直连 k3s containerd（在 build 时才检查，help/status 等不依赖）
 # -n k8s.io：k3s 的镜像 namespace（否则 nerdctl 默认 default，看不到 k3s 的镜像）
 n() { nerdctl -a "$K3S_CONTAINERD_SOCK" -n k8s.io "$@"; }
+
+# buildkitd socket（prune 用；nerdctl build 内部自动连接同一 daemon）
+BUILDKIT_ADDR="unix:///run/buildkit/buildkitd.sock"
+
+# 镜像名 → Dockerfile 映射（支持 "bh-family" 或 "family" 两种写法）
+dockerfile_of() {
+    case "${1#bh-}" in
+        vault)   echo "Dockerfile.vault" ;;
+        ai)      echo "Dockerfile.ai" ;;
+        webui)   echo "Dockerfile.webui" ;;
+        family)  echo "Dockerfile.family" ;;
+        openvino) echo "Dockerfile.openvino-server" ;;
+        *)       echo "" ;;
+    esac
+}
+
+# 全部 .NET 应用镜像（Contracts/Data/Core 等共享库变更时全部受影响）
+ALL_DOTNET="vault ai webui family"
 
 # kubectl 封装：优先 k3s 自带 kubectl（k3s kubectl），再 PATH 里的 kubectl
 # 惰性解析——help 等不实际用 kubectl 的命令在 k3s 缺失时也能跑
@@ -353,18 +372,27 @@ build_all() {
         n build --build-context "nuget=$ROOT/nuget-local" -o type=image -f "$IMAGE_DIR/Dockerfile.sdk-offline" -t bh/sdk-offline:latest "$ROOT" >/dev/null || exit 1
         echo "[build] bh/sdk-offline"
     fi
+    # 目标镜像：默认全部 5 个；可传参指定（bh build family webui）
+    local targets
+    if [ $# -gt 0 ]; then
+        targets=""
+        for a in "$@"; do
+            if [ -z "$(dockerfile_of "$a")" ]; then
+                echo "[build] 未知镜像: $a（可用: vault ai webui family openvino）" >&2
+                exit 1
+            fi
+            targets="$targets ${a#bh-}"
+        done
+    else
+        targets=" vault ai webui family openvino"
+    fi
+
     # .NET 镜像：多阶段源码构建（容器内 dotnet publish，restore 走 sdk-offline 里的离线包源），context 需仓库根（services/ 源码）
-    n build -f "$IMAGE_DIR/Dockerfile.vault"     -t bh-vault:latest    "$ROOT" >/dev/null || exit 1
-    echo "[build] bh-vault"
-    n build -f "$IMAGE_DIR/Dockerfile.ai"        -t bh-ai:latest       "$ROOT" >/dev/null || exit 1
-    echo "[build] bh-ai"
-    n build -f "$IMAGE_DIR/Dockerfile.webui"     -t bh-webui:latest    "$ROOT" >/dev/null || exit 1
-    echo "[build] bh-webui"
-    n build -f "$IMAGE_DIR/Dockerfile.family"    -t bh-family:latest   "$ROOT" >/dev/null || exit 1
-    echo "[build] bh-family"
-    n build -f "$IMAGE_DIR/Dockerfile.openvino-server" -t bh-openvino:latest "$ROOT" >/dev/null || exit 1  # COPY services/... 需仓库根上下文
-    echo "[build] bh-openvino"
-    echo "[build] 5 images done (已直接进入 k3s containerd，无需 load)"
+    for img in $targets; do
+        n build -f "$IMAGE_DIR/$(dockerfile_of "$img")" -t "bh-$img:latest" "$ROOT" >/dev/null || exit 1
+        echo "[build] bh-$img"
+    done
+    echo "[build] done: ${targets# }"
 }
 
 deploy_all() {
@@ -404,6 +432,74 @@ deploy_all() {
 }
 
 # openvino 按需启停：on 启动（无 GPU 时拒绝，除非 BAIHUA_ENABLE_OPENVINO=1 强制），off 缩容至 0，status 查看
+
+# 依据 git 变更推断需要重建的镜像（无变更 → 空；git 不可用/仓库异常 → 全部，保守）
+changed_images() {
+    if ! command -v git >/dev/null 2>&1 || [ ! -d "$ROOT/.git" ]; then
+        echo "$ALL_DOTNET openvino"; return 0
+    fi
+    local files
+    files="$(cd "$ROOT" && { git diff --name-only HEAD 2>/dev/null; git ls-files --others --exclude-standard 2>/dev/null; } | sort -u)"
+    [ -z "$files" ] && { echo ""; return 0; }
+
+    local imgs=""
+    local f
+    for f in $files; do
+        case "$f" in
+            services/Baihua.Family/*)                                  imgs="$imgs family" ;;
+            services/Baihua.Web/*)                                     imgs="$imgs webui" ;;
+            services/Baihua.Vault/*)                                   imgs="$imgs vault" ;;
+            services/Baihua.AI/*|services/Baihua.AI.Provider/*|services/Baihua.AI.Provider.OpenVino/*) imgs="$imgs ai" ;;
+            services/Baihua.Contracts/*|services/Baihua.Data/*|services/Baihua.Core/*|libs/*) imgs="$imgs $ALL_DOTNET" ;;
+            k8s/images/Dockerfile.vault)                               imgs="$imgs vault" ;;
+            k8s/images/Dockerfile.ai)                                  imgs="$imgs ai" ;;
+            k8s/images/Dockerfile.webui)                               imgs="$imgs webui" ;;
+            k8s/images/Dockerfile.family)                              imgs="$imgs family" ;;
+            k8s/images/Dockerfile.openvino-server)                     imgs="$imgs openvino" ;;
+            k8s/images/Dockerfile.base-runtime|k8s/images/Dockerfile.sdk-offline) : ;;
+            k8s/*) : ;;
+            tools/bh/*|docs/*|scripts/*|tests/*|*.md|README*|AGENTS.md|CLAUDE.md|LICENSE|NuGet.config) : ;;
+            *) imgs="$imgs $ALL_DOTNET openvino" ;;
+        esac
+    done
+    echo "$imgs" | tr ' ' '\n' | grep -v '^$' | sort -u | tr '\n' ' '
+}
+
+# up：仅构建变更涉及的镜像 + deploy；--all 强制全量重建
+up_all() {
+    local mode="${1:-}"
+    local targets
+    if [ "$mode" = "--all" ]; then
+        targets="$ALL_DOTNET openvino"
+        echo "[up] 强制全量构建: $targets"
+        build_all $targets || return 1
+    else
+        targets="$(changed_images)"
+        if [ -z "$targets" ]; then
+            echo "[up] 未检测到源码/Dockerfile 变更，跳过构建，仅部署（k8s/ 清单变更 deploy 即生效）"
+        else
+            echo "[up] 检测到变更，构建镜像: $targets"
+            build_all $targets || return 1
+        fi
+    fi
+    deploy_all
+}
+
+# 清空 buildkit 构建缓存（含 nuget 包缓存挂载）：释放磁盘、修复缓存损坏导致的构建失败
+prune_cache() {
+    if [ "$(id -u)" != "0" ]; then
+        echo "[prune] 需要 root 权限（buildkitd socket 仅 root 可读）" >&2
+        echo "        请用: sudo $0 prune" >&2
+        exit 1
+    fi
+    if ! command -v buildctl >/dev/null 2>&1; then
+        echo "[prune] 未找到 buildctl（请先运行 bh build 自动安装）" >&2
+        exit 1
+    fi
+    echo "[prune] 清空 buildkit 构建缓存（下次构建将重新 restore，可修复 nuget 缓存损坏）..."
+    buildctl --addr="$BUILDKIT_ADDR" prune --all
+    echo "[prune] 完成"
+}
 openvino_cmd() {
     local action="${1:-status}"
     case "$action" in
@@ -566,20 +662,19 @@ update_all() {
     self="$(readlink -f "$0")"
     if [ "$(id -u)" != "0" ]; then
         echo "[update] build/deploy 需要 root，自动提权执行"
-        sudo "$self" build || return 1
-        sudo "$self" deploy || return 1
+        sudo "$self" up || return 1
     else
-        build_all || return 1
-        deploy_all || return 1
+        up_all || return 1
     fi
     echo "[update] 完成"
 }
 
 case "${1:-help}" in
-    build)     build_all ;;
+    build)     build_all "${@:2}" ;;
     deploy)    deploy_all ;;
-    up)        build_all; deploy_all ;;
+    up)        up_all "$2" ;;
     update)    update_all ;;
+    prune)     prune_cache ;;
     status)    status_all ;;
     openvino)  openvino_cmd "${2:-status}" ;;
     logs)      show_logs "${2:-bh-family}" "${3:-50}" ;;
