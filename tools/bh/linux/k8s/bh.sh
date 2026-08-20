@@ -680,7 +680,7 @@ update_all() {
 case "${1:-help}" in
     build)     build_all "${@:2}" ;;
     deploy)    deploy_all ;;
-    up)        up_all "$2" ;;
+    up)        up_all "${2:-}" ;;
     update)    update_all ;;
     prune)     prune_cache ;;
     status)    status_all ;;
