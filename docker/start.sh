@@ -18,7 +18,9 @@ fi
 # 确保宿主机目录存在
 mkdir -p /opt/baihua/data /opt/baihua/logs \
          /opt/baihua/config/family /opt/baihua/config/ai /opt/baihua/config/vault /opt/baihua/config/webui /opt/baihua/config/nginx \
-         /opt/baihua/data/openobserve
+         /opt/baihua/data/openobserve \
+         /opt/baihua/models          # OpenVINO 模型仓库（OVMS 挂载，模型缺失则对应 servable 不加载） \
+         /opt/baihua/models          # OpenVINO 模型仓库（OVMS 挂载，模型缺失则对应 servable 不加载）
 
 # 如果 nginx 配置不存在，从项目复制默认配置
 if [[ ! -f /opt/baihua/config/nginx/nginx.conf ]]; then
@@ -34,8 +36,8 @@ if [[ "${1:-}" == "--build" ]]; then
     BUILD_FLAG="--build"
 fi
 
-echo "启动 Family Docker 服务..."
-docker compose up -d ${BUILD_FLAG} --remove-orphans
+echo "启动 Family Docker 服务（--profile docker-ai 含 ai + openvino 容器）..."
+docker compose --profile docker-ai up -d ${BUILD_FLAG} --remove-orphans
 
 echo ""
 echo "等待服务就绪..."
@@ -53,6 +55,7 @@ echo "  Baihua.Vault:  http://127.0.0.1:8790"
 echo "  WebUI:             http://127.0.0.1:5177"
 echo "  Nginx (HTTP):      http://127.0.0.1:80"
 echo "  OpenObserve:       http://127.0.0.1:5082"
+echo "  OpenVINO (OVMS):   http://127.0.0.1:8000  (/v3 OpenAI 兼容推理)"
 echo ""
 echo "数据目录: /opt/baihua/data"
 echo "日志目录: /opt/baihua/logs"

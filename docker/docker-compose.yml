@@ -42,6 +42,9 @@ services:
       - ADMIN_PASSWORD_HASH=${ADMIN_PASSWORD_HASH:-}
       # 移动端 HMAC 签名密钥（配对后自动生成，通常无需手动配置）
       - MobileAuth__SharedSecret=${MOBILE_AUTH_SECRET:-}
+      # OpenVINO Model Server（host 网络：127.0.0.1:8000 = 本机 openvino 容器，见下方服务）
+      - OPENVINO_LLM_URL=http://127.0.0.1:8000
+      - OpenVinoOms__BaseUrl=http://127.0.0.1:8000
     depends_on:
       vault:
         condition: service_healthy
@@ -187,12 +190,53 @@ services:
       - OpenObserve__Password=${OPENOBSERVE_PASSWORD:?请设置 OPENOBSERVE_PASSWORD 环境变量}
       - BAIHUA_VAULT_ROOT=/vaults
       - BAIHUA_ENCRYPTION_KEY=${BAIHUA_ENCRYPTION_KEY:-}
+      # OpenVINO Model Server（host 网络：127.0.0.1:8000 = 本机 openvino 容器）
+      - OPENVINO_LLM_URL=http://127.0.0.1:8000
+      - OpenVinoOms__BaseUrl=http://127.0.0.1:8000
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:8791/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+
+  openvino:
+    # 本地 OpenVINO 推理（Intel OVMS，官方 openvino/model_server 镜像）——与 ai 同 profile
+    # （Linux 全容器化才启用；Windows 下 OVMS 以系统服务跑在宿主机
+    #  scripts/install-openvino-ovms-service.ps1，容器经 host.docker.internal:8000 访问）。
+    # 参考: https://github.com/openvinotoolkit/model_server/blob/main/docs/deploying_server_docker.md
+    profiles: ["docker-ai"]
+    image: openvino/model_server:latest-gpu
+    container_name: bh-openvino
+    restart: unless-stopped
+    network_mode: host        # host 网络：family/ai 经 127.0.0.1:8000 访问（与既有架构一致）
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        set -euo pipefail
+        # 为已下载模型生成 graph.pbtxt（幂等；缺失跳过）
+        for spec in \
+          "text_generation GPU /models/Qwen2.5-7B-Instruct-int4-ov" \
+          "text_generation GPU /models/Qwen2.5-VL-3B-Instruct-int4-ov" \
+          "text_generation GPU /models/Qwen2.5-VL-7B-Instruct-int4-ov" \
+          "embeddings CPU /models/bge-small-zh-v1.5"; do
+          task="${spec%% *}"; rest="${spec#* }"; dev="${rest%% *}"; path="${rest#* }"
+          if [ -d "$path" ]; then
+            echo "[ovms] configure $path (task=$task device=$dev)"
+            ovms --configure --model_path "$path" --task "$task" --target_device "$dev" \
+              || echo "[ovms] !! configure 失败（已跳过，请检查模型目录完整性）"
+          else
+            echo "[ovms] 跳过缺失模型: $path（请先放到 /opt/baihua/models/）"
+          fi
+        done
+        exec ovms --config_path /models/config.json --rest_port 8000 --port 9000 --log_level INFO
+    volumes:
+      # 模型仓库（与 k8s 一致：/opt/baihua/models 下 4 个 OpenVINO IR 模型目录）
+      - /opt/baihua/models:/models
+      # OVMS 模型注册配置（model_config_list：qwen2.5 / qwen2.5-vl-3b / qwen2.5-vl-7b / bge-small-zh）
+      - ./openvino-config.json:/models/config.json:ro
+      # Intel GPU（真机 /dev/dri；WSL2 后端需另加 /dev/dxg 与 /usr/lib/wsl 挂载）
+      - /dev/dri:/dev/dri
 
   openobserve:
     # 可观测性服务（日志/指标），非核心，默认不自动启动

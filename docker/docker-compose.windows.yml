@@ -33,6 +33,10 @@ services:
       - BAIHUA_VAULT_ROOT=/vaults
       # Windows 桥接网络下 OpenObserve 通过 compose 服务名直连（宿主机端口已仅绑 127.0.0.1，host.docker.internal 不可达）
       - OpenObserve__WebUrl=http://openobserve:5080/
+      # OpenVINO Model Server 以系统服务跑在 Windows 宿主机（scripts/install-openvino-ovms-service.ps1），
+      # bridge 网络经 host.docker.internal:8000 访问（容器内 127.0.0.1 是容器自身，不可用）
+      - OPENVINO_LLM_URL=http://host.docker.internal:8000
+      - OpenVinoOms__BaseUrl=http://host.docker.internal:8000
     depends_on:
       vault:
         condition: service_healthy
@@ -74,6 +78,9 @@ services:
     environment:
       - OpenObserve__WebUrl=http://openobserve:5080/
       - BAIHUA_VAULT_ROOT=/vaults
+      # OVMS 在 Windows 宿主机（系统服务 ovms :8000），bridge 经 host.docker.internal 访问
+      - OPENVINO_LLM_URL=http://host.docker.internal:8000
+      - OpenVinoOms__BaseUrl=http://host.docker.internal:8000
 
   webui:
     network_mode: ""
