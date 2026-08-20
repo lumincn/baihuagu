@@ -1,0 +1,209 @@
+namespace Baihua.Contracts.Medical;
+
+/// <summary>
+/// 家庭病历本：家庭成员健康档案（身体状况）。
+/// 每个成员维护一份：基本信息 + 过敏史 + 慢性病/基础疾病。
+/// </summary>
+public class MedicalMemberDto
+{
+    public int Id { get; set; }
+
+    /// <summary>姓名</summary>
+    public string Name { get; set; } = "";
+
+    /// <summary>性别（男 / 女 / 未知）</summary>
+    public string Gender { get; set; } = "";
+
+    /// <summary>出生日期（用于计算年龄）</summary>
+    public DateTime? BirthDate { get; set; }
+
+    /// <summary>血型（A / B / AB / O / 未知）</summary>
+    public string BloodType { get; set; } = "";
+
+    /// <summary>过敏史（如"青霉素过敏""花生过敏"）</summary>
+    public List<string> Allergies { get; set; } = new();
+
+    /// <summary>慢性病 / 基础疾病（如"高血压""糖尿病"）</summary>
+    public List<string> ChronicDiseases { get; set; } = new();
+
+    /// <summary>其他备注</summary>
+    public string? Notes { get; set; }
+
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+}
+
+/// <summary>创建成员请求</summary>
+public class CreateMedicalMemberRequest
+{
+    /// <summary>姓名（必填，去空格后 ≤50 字）</summary>
+    public string Name { get; set; } = "";
+
+    public string Gender { get; set; } = "";
+
+    public DateTime? BirthDate { get; set; }
+
+    public string BloodType { get; set; } = "";
+
+    /// <summary>过敏史条目</summary>
+    public List<string> Allergies { get; set; } = new();
+
+    /// <summary>慢性病条目</summary>
+    public List<string> ChronicDiseases { get; set; } = new();
+
+    /// <summary>备注（≤2000 字）</summary>
+    public string? Notes { get; set; }
+}
+
+/// <summary>更新成员请求（字段均可选，至少传一项有效字段）</summary>
+public class UpdateMedicalMemberRequest
+{
+    public string? Name { get; set; }
+
+    public string? Gender { get; set; }
+
+    public DateTime? BirthDate { get; set; }
+
+    public string? BloodType { get; set; }
+
+    /// <summary>传入 null 表示不修改，传入空列表表示清空</summary>
+    public List<string>? Allergies { get; set; }
+
+    /// <summary>传入 null 表示不修改，传入空列表表示清空</summary>
+    public List<string>? ChronicDiseases { get; set; }
+
+    /// <summary>传入 null 表示不修改，传入空字符串表示清空</summary>
+    public string? Notes { get; set; }
+}
+
+/// <summary>用药条目（每次就医/发病记录中的一种药物）</summary>
+public class MedicalMedicationItemDto
+{
+    /// <summary>药名（必填）</summary>
+    public string Name { get; set; } = "";
+
+    /// <summary>剂量（如"每次 1 片"）</summary>
+    public string? Dosage { get; set; }
+
+    /// <summary>频次（如"每日 3 次"）</summary>
+    public string? Frequency { get; set; }
+
+    /// <summary>备注（如"饭后服用""疗程 5 天"）</summary>
+    public string? Note { get; set; }
+}
+
+/// <summary>
+/// 病历记录：一次就诊 / 发病 / 症状发作的记录。
+/// 包含症状、诊断、用药，方便日后查阅与就医时向医生陈述。
+/// </summary>
+public class MedicalRecordDto
+{
+    public int Id { get; set; }
+
+    public int MemberId { get; set; }
+
+    /// <summary>发生日期（就诊 / 发病时间）</summary>
+    public DateTime OccurredAt { get; set; }
+
+    /// <summary>标题（如"感冒发烧""过敏性鼻炎发作"）</summary>
+    public string Title { get; set; } = "";
+
+    /// <summary>症状（如"发热 38.5℃""流鼻涕"）</summary>
+    public List<string> Symptoms { get; set; } = new();
+
+    /// <summary>医生诊断（如"上呼吸道感染"；无就医记录可为空）</summary>
+    public List<string> Diagnoses { get; set; } = new();
+
+    /// <summary>所用药物</summary>
+    public List<MedicalMedicationItemDto> Medications { get; set; } = new();
+
+    /// <summary>备注（就诊医院、科室、医生、注意事项等）</summary>
+    public string? Notes { get; set; }
+
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+}
+
+/// <summary>创建病历记录请求</summary>
+public class CreateMedicalRecordRequest
+{
+    /// <summary>发生日期（默认当天）</summary>
+    public DateTime? OccurredAt { get; set; }
+
+    /// <summary>标题（必填，去空格后 ≤200 字）</summary>
+    public string Title { get; set; } = "";
+
+    public List<string> Symptoms { get; set; } = new();
+
+    public List<string> Diagnoses { get; set; } = new();
+
+    public List<MedicalMedicationItemDto> Medications { get; set; } = new();
+
+    /// <summary>备注（≤2000 字）</summary>
+    public string? Notes { get; set; }
+}
+
+/// <summary>更新病历记录请求（字段均可选，至少传一项有效字段）</summary>
+public class UpdateMedicalRecordRequest
+{
+    public DateTime? OccurredAt { get; set; }
+
+    public string? Title { get; set; }
+
+    /// <summary>传入 null 表示不修改，传入空列表表示清空</summary>
+    public List<string>? Symptoms { get; set; }
+
+    /// <summary>传入 null 表示不修改，传入空列表表示清空</summary>
+    public List<string>? Diagnoses { get; set; }
+
+    /// <summary>传入 null 表示不修改，传入空列表表示清空</summary>
+    public List<MedicalMedicationItemDto>? Medications { get; set; }
+
+    /// <summary>传入 null 表示不修改，传入空字符串表示清空</summary>
+    public string? Notes { get; set; }
+}
+
+/// <summary>AI 诊断记录（仅作参考，不可代替医生）</summary>
+public class AiDiagnosisDto
+{
+    public int Id { get; set; }
+
+    public int MemberId { get; set; }
+
+    /// <summary>用户提交的症状描述</summary>
+    public string SymptomText { get; set; } = "";
+
+    /// <summary>AI 生成的分析（Markdown 文本，含免责声明）</summary>
+    public string AiResponse { get; set; } = "";
+
+    public DateTime CreatedAt { get; set; }
+}
+
+/// <summary>AI 诊断请求</summary>
+public class AiDiagnoseRequest
+{
+    /// <summary>成员 Id（必填）</summary>
+    public int MemberId { get; set; }
+
+    /// <summary>症状描述（必填，去空格后 5-2000 字）</summary>
+    public string SymptomText { get; set; } = "";
+
+    /// <summary>补充背景（可选，如近期检查结果、特殊情况）</summary>
+    public string? ExtraContext { get; set; }
+}
+
+/// <summary>AI 诊断结果：成功时携带已保存的诊断记录，失败时携带面向用户的错误</summary>
+public class AiDiagnoseResultDto
+{
+    public bool Success { get; set; }
+    public string? Error { get; set; }
+    public AiDiagnosisDto? Diagnosis { get; set; }
+}
+
+/// <summary>成员详情：档案 + 病历记录列表 + AI 诊断历史</summary>
+public class MedicalMemberDetailDto
+{
+    public MedicalMemberDto Member { get; set; } = new();
+    public List<MedicalRecordDto> Records { get; set; } = new();
+    public List<AiDiagnosisDto> Diagnoses { get; set; } = new();
+}

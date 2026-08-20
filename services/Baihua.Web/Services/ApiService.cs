@@ -22,6 +22,7 @@ using Baihua.Contracts.Scene;
 using Baihua.Contracts.Master;
 using Baihua.Contracts.Onboarding;
 using Baihua.Contracts.Generate;
+using Baihua.Contracts.Medical;
 
 namespace Baihua.Web.Services
 {
@@ -48,6 +49,18 @@ namespace Baihua.Web.Services
         Task<OnboardingStatusDto> GetOnboardingStatusAsync();
         Task<bool> CompleteOnboardingAsync();
         Task<VaultGenerationResponse> CreateVaultGenerationTaskAsync(string industry, string keyword, string? model = null, int noteCount = 30, bool generateCards = false, string? detailLevel = null);
+        // 家庭病历本（成员档案 / 病历记录 / AI 诊断）
+        Task<List<MedicalMemberDto>> GetMedicalMembersAsync(CancellationToken cancellationToken = default);
+        Task<MedicalMemberDetailDto?> GetMedicalMemberDetailAsync(int id, CancellationToken cancellationToken = default);
+        Task<MedicalMemberDto> CreateMedicalMemberAsync(CreateMedicalMemberRequest request, CancellationToken cancellationToken = default);
+        Task<MedicalMemberDto?> UpdateMedicalMemberAsync(int id, UpdateMedicalMemberRequest request, CancellationToken cancellationToken = default);
+        Task<bool> DeleteMedicalMemberAsync(int id, CancellationToken cancellationToken = default);
+        Task<MedicalRecordDto> CreateMedicalRecordAsync(int memberId, CreateMedicalRecordRequest request, CancellationToken cancellationToken = default);
+        Task<MedicalRecordDto?> UpdateMedicalRecordAsync(int id, UpdateMedicalRecordRequest request, CancellationToken cancellationToken = default);
+        Task<bool> DeleteMedicalRecordAsync(int id, CancellationToken cancellationToken = default);
+        Task<AiDiagnoseResultDto> RunAiDiagnosisAsync(AiDiagnoseRequest request, CancellationToken cancellationToken = default);
+        Task<bool> DeleteAiDiagnosisAsync(int id, CancellationToken cancellationToken = default);
+
         Task<List<AiProviderInfo>> GetAiProvidersAsync();
         Task<StockRecommendationResponse> GetStockRecommendationsAsync(string? strategy = null, string? industry = null, string? horizon = null, string? prompt = null, string? direction = null, bool refresh = false, CancellationToken cancellationToken = default);
         Task<List<string>> GetStockIndustriesAsync(CancellationToken cancellationToken = default);

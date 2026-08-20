@@ -6026,4 +6026,181 @@ Shift+Enter 换行，Enter 发送</value>
   <data name="OpenClaw_OpenVinoNotSupported" xml:space="preserve">
     <value>当前机器未检测到 Intel GPU，OpenVINO 本地模型不可用（可改用 Ollama / llama.cpp 等其他本地工具）。</value>
   </data>
+  <data name="Nav_MedicalRecords" xml:space="preserve">
+    <value>病历本</value>
+  </data>
+  <data name="Medical_PageTitle" xml:space="preserve">
+    <value>家庭病历本</value>
+  </data>
+  <data name="Medical_Subtitle" xml:space="preserve">
+    <value>记录每位家人的身体状况、疾病症状与用药历史，方便随时查阅；AI 症状分析仅供就医前参考。</value>
+  </data>
+  <data name="Medical_AddMember" xml:space="preserve">
+    <value>添加成员</value>
+  </data>
+  <data name="Medical_NoMembers" xml:space="preserve">
+    <value>还没有家庭成员，点击"添加成员"开始建立家庭病历本</value>
+  </data>
+  <data name="Medical_Loading" xml:space="preserve">
+    <value>加载中...</value>
+  </data>
+  <data name="Medical_LoadFailed" xml:space="preserve">
+    <value>加载失败，请检查后台服务是否已启动</value>
+  </data>
+  <data name="Medical_Retry" xml:space="preserve">
+    <value>重试</value>
+  </data>
+  <data name="Medical_Allergies" xml:space="preserve">
+    <value>过敏史</value>
+  </data>
+  <data name="Medical_ChronicDiseases" xml:space="preserve">
+    <value>慢性病/基础疾病</value>
+  </data>
+  <data name="Medical_BloodType" xml:space="preserve">
+    <value>血型</value>
+  </data>
+  <data name="Medical_Unknown" xml:space="preserve">
+    <value>未知</value>
+  </data>
+  <data name="Medical_ViewDetail" xml:space="preserve">
+    <value>查看详情</value>
+  </data>
+  <data name="Medical_Back" xml:space="preserve">
+    <value>返回</value>
+  </data>
+  <data name="Medical_EditMember" xml:space="preserve">
+    <value>编辑档案</value>
+  </data>
+  <data name="Medical_EditMemberTitle" xml:space="preserve">
+    <value>编辑成员档案</value>
+  </data>
+  <data name="Medical_AddMemberTitle" xml:space="preserve">
+    <value>添加家庭成员</value>
+  </data>
+  <data name="Medical_EditRecordTitle" xml:space="preserve">
+    <value>编辑病历记录</value>
+  </data>
+  <data name="Medical_AddRecordTitle" xml:space="preserve">
+    <value>添加病历记录</value>
+  </data>
+  <data name="Medical_Edit" xml:space="preserve">
+    <value>编辑</value>
+  </data>
+  <data name="Medical_Delete" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="Medical_ConfirmDelete" xml:space="preserve">
+    <value>确认删除？</value>
+  </data>
+  <data name="Medical_Records" xml:space="preserve">
+    <value>病历记录</value>
+  </data>
+  <data name="Medical_NoRecords" xml:space="preserve">
+    <value>暂无病历记录，点击"添加记录"记录一次就诊或症状</value>
+  </data>
+  <data name="Medical_AddRecord" xml:space="preserve">
+    <value>添加记录</value>
+  </data>
+  <data name="Medical_Diagnoses" xml:space="preserve">
+    <value>AI 诊断</value>
+  </data>
+  <data name="Medical_History" xml:space="preserve">
+    <value>历史记录</value>
+  </data>
+  <data name="Medical_MemberName" xml:space="preserve">
+    <value>姓名</value>
+  </data>
+  <data name="Medical_Gender" xml:space="preserve">
+    <value>性别</value>
+  </data>
+  <data name="Medical_BirthDate" xml:space="preserve">
+    <value>出生日期</value>
+  </data>
+  <data name="Medical_Notes" xml:space="preserve">
+    <value>备注</value>
+  </data>
+  <data name="Medical_Save" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="Medical_Saving" xml:space="preserve">
+    <value>保存中...</value>
+  </data>
+  <data name="Medical_SaveFailed" xml:space="preserve">
+    <value>保存失败，请重试</value>
+  </data>
+  <data name="Medical_NameRequired" xml:space="preserve">
+    <value>姓名不能为空</value>
+  </data>
+  <data name="Medical_AllergiesHint" xml:space="preserve">
+    <value>过敏史（如"青霉素过敏、花生过敏"，多个用顿号分隔）</value>
+  </data>
+  <data name="Medical_ChronicHint" xml:space="preserve">
+    <value>慢性病/基础疾病（如"高血压、糖尿病"，多个用顿号分隔）</value>
+  </data>
+  <data name="Medical_OccurredAt" xml:space="preserve">
+    <value>日期</value>
+  </data>
+  <data name="Medical_RecordTitle" xml:space="preserve">
+    <value>标题</value>
+  </data>
+  <data name="Medical_RecordTitleHint" xml:space="preserve">
+    <value>如"感冒发烧""过敏性鼻炎发作"</value>
+  </data>
+  <data name="Medical_RecordTitleRequired" xml:space="preserve">
+    <value>标题不能为空</value>
+  </data>
+  <data name="Medical_Symptoms" xml:space="preserve">
+    <value>症状</value>
+  </data>
+  <data name="Medical_SymptomsHint" xml:space="preserve">
+    <value>每个症状一行，如"发热 38.5℃""流鼻涕"</value>
+  </data>
+  <data name="Medical_DiagnosesTitle" xml:space="preserve">
+    <value>医生诊断</value>
+  </data>
+  <data name="Medical_DiagnosesHint" xml:space="preserve">
+    <value>每个诊断一行（无就医记录可留空）</value>
+  </data>
+  <data name="Medical_Medications" xml:space="preserve">
+    <value>用药</value>
+  </data>
+  <data name="Medical_MedicationName" xml:space="preserve">
+    <value>药名</value>
+  </data>
+  <data name="Medical_Dosage" xml:space="preserve">
+    <value>剂量</value>
+  </data>
+  <data name="Medical_Frequency" xml:space="preserve">
+    <value>频次</value>
+  </data>
+  <data name="Medical_MedicationNote" xml:space="preserve">
+    <value>用药备注</value>
+  </data>
+  <data name="Medical_AddMedication" xml:space="preserve">
+    <value>添加药物</value>
+  </data>
+  <data name="Medical_RecordNotesHint" xml:space="preserve">
+    <value>就诊医院、科室、医生、注意事项等</value>
+  </data>
+  <data name="Medical_DiagnoseTitle" xml:space="preserve">
+    <value>AI 症状分析</value>
+  </data>
+  <data name="Medical_DiagnoseHint" xml:space="preserve">
+    <value>描述目前的不适症状（部位、性质、持续时间、变化等），越详细分析越准确</value>
+  </data>
+  <data name="Medical_ExtraContextHint" xml:space="preserve">
+    <value>补充背景（可选）：近期检查结果、正在服用的药物、特殊情况等</value>
+  </data>
+  <data name="Medical_DiagnoseButton" xml:space="preserve">
+    <value>开始分析</value>
+  </data>
+  <data name="Medical_Diagnosing" xml:space="preserve">
+    <value>AI 正在分析中，请稍候...</value>
+  </data>
+  <data name="Medical_Disclaimer" xml:space="preserve">
+    <value>⚠️ 本内容由 AI 生成，仅供参考，不能代替执业医师的诊断与治疗。如有紧急或严重症状（如高热不退、呼吸困难、剧烈疼痛等），请立即就医或拨打 120。</value>
+  </data>
+  <data name="Medical_DiagnoseFailed" xml:space="preserve">
+    <value>AI 诊断失败，请稍后重试</value>
+  </data>
 </root>

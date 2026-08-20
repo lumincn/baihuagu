@@ -6027,4 +6027,181 @@ Shift+Enter new line, Enter to send</value>
   <data name="OpenClaw_OpenVinoNotSupported" xml:space="preserve">
     <value>No Intel GPU detected; OpenVINO local models are unavailable (use Ollama / llama.cpp or other local tools instead).</value>
   </data>
+  <data name="Nav_MedicalRecords" xml:space="preserve">
+    <value>Medical Records</value>
+  </data>
+  <data name="Medical_PageTitle" xml:space="preserve">
+    <value>Family Medical Records</value>
+  </data>
+  <data name="Medical_Subtitle" xml:space="preserve">
+    <value>Keep track of each family member's health conditions, symptoms and medications. AI symptom analysis is for reference only.</value>
+  </data>
+  <data name="Medical_AddMember" xml:space="preserve">
+    <value>Add Member</value>
+  </data>
+  <data name="Medical_NoMembers" xml:space="preserve">
+    <value>No family members yet. Click "Add Member" to start building your family medical records.</value>
+  </data>
+  <data name="Medical_Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+  <data name="Medical_LoadFailed" xml:space="preserve">
+    <value>Failed to load. Please check whether the backend service is running.</value>
+  </data>
+  <data name="Medical_Retry" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="Medical_Allergies" xml:space="preserve">
+    <value>Allergies</value>
+  </data>
+  <data name="Medical_ChronicDiseases" xml:space="preserve">
+    <value>Chronic / Underlying Conditions</value>
+  </data>
+  <data name="Medical_BloodType" xml:space="preserve">
+    <value>Blood Type</value>
+  </data>
+  <data name="Medical_Unknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="Medical_ViewDetail" xml:space="preserve">
+    <value>View Details</value>
+  </data>
+  <data name="Medical_Back" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="Medical_EditMember" xml:space="preserve">
+    <value>Edit Profile</value>
+  </data>
+  <data name="Medical_EditMemberTitle" xml:space="preserve">
+    <value>Edit Member Profile</value>
+  </data>
+  <data name="Medical_AddMemberTitle" xml:space="preserve">
+    <value>Add Family Member</value>
+  </data>
+  <data name="Medical_EditRecordTitle" xml:space="preserve">
+    <value>Edit Medical Record</value>
+  </data>
+  <data name="Medical_AddRecordTitle" xml:space="preserve">
+    <value>Add Medical Record</value>
+  </data>
+  <data name="Medical_Edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="Medical_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Medical_ConfirmDelete" xml:space="preserve">
+    <value>Confirm delete?</value>
+  </data>
+  <data name="Medical_Records" xml:space="preserve">
+    <value>Medical Records</value>
+  </data>
+  <data name="Medical_NoRecords" xml:space="preserve">
+    <value>No records yet. Click "Add Record" to log a visit or symptoms.</value>
+  </data>
+  <data name="Medical_AddRecord" xml:space="preserve">
+    <value>Add Record</value>
+  </data>
+  <data name="Medical_Diagnoses" xml:space="preserve">
+    <value>AI Diagnosis</value>
+  </data>
+  <data name="Medical_History" xml:space="preserve">
+    <value>History</value>
+  </data>
+  <data name="Medical_MemberName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Medical_Gender" xml:space="preserve">
+    <value>Gender</value>
+  </data>
+  <data name="Medical_BirthDate" xml:space="preserve">
+    <value>Birth Date</value>
+  </data>
+  <data name="Medical_Notes" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+  <data name="Medical_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Medical_Saving" xml:space="preserve">
+    <value>Saving...</value>
+  </data>
+  <data name="Medical_SaveFailed" xml:space="preserve">
+    <value>Save failed. Please try again.</value>
+  </data>
+  <data name="Medical_NameRequired" xml:space="preserve">
+    <value>Name is required</value>
+  </data>
+  <data name="Medical_AllergiesHint" xml:space="preserve">
+    <value>Allergies (e.g. "penicillin, peanuts"; separate multiple items)</value>
+  </data>
+  <data name="Medical_ChronicHint" xml:space="preserve">
+    <value>Chronic / underlying conditions (e.g. "hypertension, diabetes"; separate multiple items)</value>
+  </data>
+  <data name="Medical_OccurredAt" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="Medical_RecordTitle" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="Medical_RecordTitleHint" xml:space="preserve">
+    <value>e.g. "Cold and fever", "Allergic rhinitis episode"</value>
+  </data>
+  <data name="Medical_RecordTitleRequired" xml:space="preserve">
+    <value>Title is required</value>
+  </data>
+  <data name="Medical_Symptoms" xml:space="preserve">
+    <value>Symptoms</value>
+  </data>
+  <data name="Medical_SymptomsHint" xml:space="preserve">
+    <value>One symptom per line, e.g. "Fever 38.5°C", "Runny nose"</value>
+  </data>
+  <data name="Medical_DiagnosesTitle" xml:space="preserve">
+    <value>Doctor Diagnosis</value>
+  </data>
+  <data name="Medical_DiagnosesHint" xml:space="preserve">
+    <value>One diagnosis per line (leave empty if no doctor visit)</value>
+  </data>
+  <data name="Medical_Medications" xml:space="preserve">
+    <value>Medications</value>
+  </data>
+  <data name="Medical_MedicationName" xml:space="preserve">
+    <value>Medication</value>
+  </data>
+  <data name="Medical_Dosage" xml:space="preserve">
+    <value>Dosage</value>
+  </data>
+  <data name="Medical_Frequency" xml:space="preserve">
+    <value>Frequency</value>
+  </data>
+  <data name="Medical_MedicationNote" xml:space="preserve">
+    <value>Medication Notes</value>
+  </data>
+  <data name="Medical_AddMedication" xml:space="preserve">
+    <value>Add Medication</value>
+  </data>
+  <data name="Medical_RecordNotesHint" xml:space="preserve">
+    <value>Hospital, department, doctor, precautions, etc.</value>
+  </data>
+  <data name="Medical_DiagnoseTitle" xml:space="preserve">
+    <value>AI Symptom Analysis</value>
+  </data>
+  <data name="Medical_DiagnoseHint" xml:space="preserve">
+    <value>Describe the current symptoms (location, nature, duration, changes, etc.). More detail leads to better analysis.</value>
+  </data>
+  <data name="Medical_ExtraContextHint" xml:space="preserve">
+    <value>Extra context (optional): recent test results, current medications, special situations</value>
+  </data>
+  <data name="Medical_DiagnoseButton" xml:space="preserve">
+    <value>Analyze</value>
+  </data>
+  <data name="Medical_Diagnosing" xml:space="preserve">
+    <value>AI is analyzing, please wait...</value>
+  </data>
+  <data name="Medical_Disclaimer" xml:space="preserve">
+    <value>⚠️ This content is generated by AI and is for reference only. It cannot replace diagnosis and treatment by a licensed physician. If you have urgent or severe symptoms (e.g. persistent high fever, breathing difficulty, severe pain), seek medical attention immediately or call emergency services.</value>
+  </data>
+  <data name="Medical_DiagnoseFailed" xml:space="preserve">
+    <value>AI diagnosis failed. Please try again later.</value>
+  </data>
 </root>

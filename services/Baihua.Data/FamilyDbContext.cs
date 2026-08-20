@@ -44,6 +44,11 @@ public class FamilyDbContext : DbContext
     public DbSet<TodoItem> TodoItems => Set<TodoItem>();
     public DbSet<TodoGoal> TodoGoals => Set<TodoGoal>();
 
+    // 家庭病历本：成员档案 + 病历记录 + AI 诊断
+    public DbSet<MedicalMember> MedicalMembers => Set<MedicalMember>();
+    public DbSet<MedicalRecord> MedicalRecords => Set<MedicalRecord>();
+    public DbSet<AiDiagnosis> AiDiagnoses => Set<AiDiagnosis>();
+
     public DbSet<ServerPeer> ServerPeers => Set<ServerPeer>();
     public DbSet<ServerMessage> ServerMessages => Set<ServerMessage>();
 
@@ -383,6 +388,52 @@ public class FamilyDbContext : DbContext
             entity.HasIndex(e => e.GoalId);
         });
 
+        // 家庭病历本：成员档案 + 病历记录 + AI 诊断（删除成员时级联删除其病历与诊断）
+        modelBuilder.Entity<MedicalMember>(entity =>
+        {
+            entity.ToTable("MedicalMembers");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Name);
+
+            entity.Property(e => e.Name).IsRequired();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");
+        });
+
+        modelBuilder.Entity<MedicalRecord>(entity =>
+        {
+            entity.ToTable("MedicalRecords");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.MemberId);
+            entity.HasIndex(e => e.OccurredAt);
+
+            entity.Property(e => e.Title).IsRequired();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");
+
+            entity.HasOne(e => e.Member)
+                .WithMany(m => m.Records)
+                .HasForeignKey(e => e.MemberId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<AiDiagnosis>(entity =>
+        {
+            entity.ToTable("AiDiagnoses");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.MemberId);
+            entity.HasIndex(e => new { e.MemberId, e.CreatedAt });
+
+            entity.Property(e => e.SymptomText).IsRequired();
+            entity.Property(e => e.AiResponse).IsRequired();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
+
+            entity.HasOne(e => e.Member)
+                .WithMany(m => m.Diagnoses)
+                .HasForeignKey(e => e.MemberId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
         // 服务器互联（百花 ↔ 百花 互发消息）
         modelBuilder.Entity<ServerPeer>(entity =>
         {
@@ -465,6 +516,10 @@ public class FamilyDbContext : DbContext
                 master.UpdatedAt = DateTime.UtcNow;
             else if (entry.Entity is ApprenticeProfile profile)
                 profile.UpdatedAt = DateTime.UtcNow;
+            else if (entry.Entity is MedicalMember medicalMember)
+                medicalMember.UpdatedAt = DateTime.UtcNow;
+            else if (entry.Entity is MedicalRecord medicalRecord)
+                medicalRecord.UpdatedAt = DateTime.UtcNow;
         }
     }
 }

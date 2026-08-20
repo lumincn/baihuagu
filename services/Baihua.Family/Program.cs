@@ -207,6 +207,9 @@ builder.Services.AddSingleton<RewardService>();
 builder.Services.AddSingleton<QuizService>();
 builder.Services.AddSingleton<Baihua.Family.Services.Todo.TodoService>();
 builder.Services.AddSingleton<Baihua.Family.Services.Todo.TodoAiService>();
+// 家庭病历本：成员档案 / 病历记录 / AI 诊断（仅作参考，不可代替医生）
+builder.Services.AddSingleton<Baihua.Family.Services.Medical.MedicalService>();
+builder.Services.AddSingleton<Baihua.Family.Services.Medical.MedicalAiService>();
 builder.Services.AddHostedService<StudyRecordMigrationService>();
 builder.Services.AddSingleton<Baihua.Core.WebSocket.DeviceWebSocketHub>();
 builder.Services.AddSingleton<DeviceService>();
