@@ -108,8 +108,9 @@ else if (_activeScene == 0)
         new("dashboard", "Nav_ParentDashboard", "bi bi-bar-chart-line", 1),
 
         // 🤖 AI 实验室（场景 2）
-        new("messages", "Nav_AiChat", "bi bi-chat-dots", 2, Group: "Nav_ChatLabel"),
-        new("code-agent", "CodeAgent_Title", "bi bi-code-square", 2, Group: "Nav_ChatLabel"),
+        // 已下线（AI 消费型功能迁移至 DSH 智能体 /dsh）——保留路由参与场景推断，但不显示
+        new("messages", "Nav_AiChat", "bi bi-chat-dots", 2, Group: "Nav_ChatLabel", RequiredFeature: "__hidden__"),
+        new("code-agent", "CodeAgent_Title", "bi bi-code-square", 2, Group: "Nav_ChatLabel", RequiredFeature: "__hidden__"),
         new("dsh", "Dsh_Title", "bi bi-robot", 2, Group: "Nav_ChatLabel"),
         new("master-chat", "Nav_VirtualMaster", "bi bi-mortarboard", 2, Group: "Nav_ChatLabel"),
         new("local-models", "Nav_LocalModels", "bi bi-cpu", 2, Group: "Nav_ResearchLabel", RequiredFeature: "LocalModelsPage"),
@@ -159,7 +160,7 @@ else if (_activeScene == 0)
             var home = scene switch
             {
                 1 => "family",
-                2 => "messages",
+                2 => "dsh",
                 _ => ""
             };
             NavigationManager.NavigateTo(home);
