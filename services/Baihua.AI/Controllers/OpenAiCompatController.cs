@@ -63,6 +63,11 @@ public class OpenAiCompatController : ControllerBase
         {
             var modelName = body.TryGetProperty("model", out var m) ? m.GetString() ?? "" : "";
             var stream = body.TryGetProperty("stream", out var s) && s.GetBoolean();
+            // 采样参数透传（OpenAI 协议）：本地小模型/DSH 插件需要按任务收紧输出预算，
+            // 此前 shim 固定使用 BuildChatOptions 默认值，max_tokens/temperature/top_p 全部被忽略。
+            var maxTokens = body.TryGetProperty("max_tokens", out var mt) && mt.TryGetInt32(out var mtv) ? mtv : (int?)null;
+            var temperature = body.TryGetProperty("temperature", out var tt) && tt.TryGetDouble(out var ttv) ? (float)ttv : (float?)null;
+            var topP = body.TryGetProperty("top_p", out var tpp) && tpp.TryGetDouble(out var tpv) ? (float)tpv : (float?)null;
             var messages = ParseMessages(body);
 
             if (messages.Count == 0)
@@ -88,11 +93,11 @@ public class OpenAiCompatController : ControllerBase
             var tools = ParseTools(body);
             if (stream)
             {
-                await StreamResponseAsync(provider, resolvedModel, messages, ct);
+                await StreamResponseAsync(provider, resolvedModel, messages, ct, maxTokens, temperature, topP);
             }
             else
             {
-                await NonStreamResponseAsync(provider, resolvedModel, messages, tools, ct);
+                await NonStreamResponseAsync(provider, resolvedModel, messages, tools, ct, maxTokens, temperature, topP);
             }
         }
         catch (Exception ex)
@@ -219,10 +224,11 @@ public class OpenAiCompatController : ControllerBase
     }
 
     private async Task NonStreamResponseAsync(
-        AiProviderConfig provider, string model, List<ChatMessage> messages, List<AITool> tools, CancellationToken ct)
+        AiProviderConfig provider, string model, List<ChatMessage> messages, List<AITool> tools, CancellationToken ct,
+        int? maxTokens = null, float? temperature = null, float? topP = null)
     {
         var sw = System.Diagnostics.Stopwatch.StartNew();
-        var options = AiClientService.BuildChatOptions();
+        var options = AiClientService.BuildChatOptions(temperature ?? 0.7f, maxTokens ?? 2000, topP ?? 0.95f);
         if (tools.Count > 0)
             options.Tools = tools;
         // useCache: false —— AI 服务是转发代理，不缓存响应（Family 侧已有缓存层）
@@ -270,9 +276,10 @@ public class OpenAiCompatController : ControllerBase
             },
             usage = new
             {
-                prompt_tokens = 0,
-                completion_tokens = 0,
-                total_tokens = 0,
+                // 真实用量透传（此前恒为 0）：DSH 插件/算力池需要它来做 token 统计
+                prompt_tokens = result.Usage?.InputTokenCount ?? 0,
+                completion_tokens = result.Usage?.OutputTokenCount ?? 0,
+                total_tokens = result.Usage?.TotalTokenCount ?? 0,
                 // 扩展字段：实测性能
                 elapsed_ms = sw.ElapsedMilliseconds
             }
@@ -280,7 +287,8 @@ public class OpenAiCompatController : ControllerBase
     }
 
     private async Task StreamResponseAsync(
-        AiProviderConfig provider, string model, List<ChatMessage> messages, CancellationToken ct)
+        AiProviderConfig provider, string model, List<ChatMessage> messages, CancellationToken ct,
+        int? maxTokens = null, float? temperature = null, float? topP = null)
     {
         Response.ContentType = "text/event-stream";
         Response.Headers["Cache-Control"] = "no-cache";
@@ -290,7 +298,7 @@ public class OpenAiCompatController : ControllerBase
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, timeoutCts.Token);
 
         var client = _aiClientService.CreateChatClient(provider, model);
-        await foreach (var update in client.GetStreamingResponseAsync(messages, AiClientService.BuildChatOptions(), linkedCts.Token))
+        await foreach (var update in client.GetStreamingResponseAsync(messages, AiClientService.BuildChatOptions(temperature ?? 0.7f, maxTokens ?? 2000, topP ?? 0.95f), linkedCts.Token))
         {
             var text = update.Text;
             if (string.IsNullOrEmpty(text)) continue;
