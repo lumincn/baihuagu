@@ -92,11 +92,13 @@ DshApi__Token: <与插件相同的 token>
 
 ## 6.5 百花能力 MCP server（标准对外通道）
 
-`baihua-dsh-plugin` 仓库的 `mcp-server/` 子目录是一个独立 MCP server（`@modelcontextprotocol/sdk`，
-stdio），把百花只读能力按标准 MCP 暴露给**任意** MCP 客户端（不只是 DSH）：
+独立仓库 [`luminsw/baihua-mcp-server`](https://github.com/luminsw/baihua-mcp-server)
+（`@modelcontextprotocol/sdk`，stdio），把百花只读能力按标准 MCP 暴露给**任意** MCP
+客户端（不只是 DSH）：
 
 - 工具：`baihua_vault_search` / `baihua_vault_list` / `baihua_vault_read_note` / `baihua_budget_summary` / `baihua_tasks_list`
 - 连接目标经环境变量：`BAIHUA_VAULT_URL`（默认 127.0.0.1:8790）、`BAIHUA_FAMILY_URL`（默认 127.0.0.1:8788）
+- 本机检出：`/home/lumin/src/mdyj/baihua-mcp-server`（npm install 后可直接跑）
 
 DSH 接入（profile patch，需先 `dsh plugin --profile web add @deepseek-ai/dsh-mcp-client`）：
 
@@ -108,7 +110,7 @@ DSH 接入（profile patch，需先 `dsh plugin --profile web add @deepseek-ai/d
         serverName: baihua
         transport: stdio
         command: node
-        args: ['/home/lumin/src/mdyj/baihua-dsh-plugin/mcp-server/src/index.js']
+        args: ['/home/lumin/src/mdyj/baihua-mcp-server/src/index.js']
         env:
           BAIHUA_VAULT_URL: 'http://<vault-clusterip>:8790'
           BAIHUA_FAMILY_URL: 'http://<family-clusterip>:8788'
@@ -116,7 +118,7 @@ DSH 接入（profile patch，需先 `dsh plugin --profile web add @deepseek-ai/d
 
 DSH 里工具名带 `mcp__baihua__` 前缀（如 `mcp__baihua__baihua_vault_search`）。
 其他 MCP 客户端（Claude Desktop / Cursor 等）直接以 stdio 方式指向
-`mcp-server/src/index.js` 即可。
+`baihua-mcp-server/src/index.js` 即可。
 
 ## 7. 已下线页面
 
