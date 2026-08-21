@@ -5,10 +5,10 @@
   Manages the 4 .NET services (vault/ai/family/webui) as local processes.
 
   Usage: .\tools\bh\win\native\bh.ps1 <command> [args]
-    build               dotnet publish the 4 services to out/native/
-    start               start all 4 services (processes, pid files)
-    stop                stop all 4 services
-    restart             stop + start
+    build [svc...]      dotnet publish to out/native/（可指定服务，默认全部 4 个）
+    start [svc...]      start services（可指定服务，默认全部，按依赖顺序 ai→vault→family→webui）
+    stop [svc...]       stop services（可指定服务，默认全部，逆依赖顺序）
+    restart [svc...]    stop + start 指定服务（默认全部）
     update              git pull 最新代码 + 重建 + 重启（局域网机器一键升级）
     status              show port/process state per service
     logs <svc> [n]      tail service log (default 50 lines)
@@ -23,7 +23,10 @@ param(
     [Parameter(Position = 1)]
     [string]$Arg1 = '',
     [Parameter(Position = 2)]
-    [string]$Arg2 = ''
+    [string]$Arg2 = '',
+    # build/start/stop/restart 可指定多个服务：bh build ai vault
+    [Parameter(Position = 3, ValueFromRemainingArguments = $true)]
+    [string[]]$MoreArgs = @()
 )
 
 $ErrorActionPreference = 'Stop'
@@ -67,10 +70,23 @@ function Ensure-Dotnet {
 }
 
 function Invoke-Build {
+    param([string[]]$Names = @())
     Ensure-Dotnet
-    # 服务进程会锁住 out/native 下的 dll，publish 前必须先停
-    Stop-Services
-    foreach ($svc in $Services) {
+    $targets = @(Resolve-ServiceList $Names)
+    if ($targets.Count -eq 0) { return }
+    if ($targets.Count -eq $Services.Count) {
+        Write-Host '[build] all services'
+    } else {
+        Write-Host "[build] targets: $($targets.Name -join ', ')"
+    }
+    # 服务进程会锁住自己 out/native/<name> 下的 dll，publish 前必须先停（只停要构建的）
+    for ($i = $targets.Count - 1; $i -ge 0; $i--) { Stop-One $targets[$i] }
+    foreach ($svc in $targets) {
+        if (-not (Wait-PortClosed $svc.Port 15)) {
+            Write-Warning "[$($svc.Name)] port $($svc.Port) 15s 内未释放（有残留进程？请检查）"
+        }
+    }
+    foreach ($svc in $targets) {
         Write-Host "[build] $($svc.Name) ..."
         # Project 是相对仓库根的路径，必须 Join-Path $Root（脚本可能从任意目录执行）
         $proj = Join-Path $Root $svc.Project
@@ -247,6 +263,31 @@ function Resolve-SingleService($name, [ref]$svcRef) {
     return $true
 }
 
+# 解析服务名列表（可多个），按 $Services 依赖顺序返回去重结果；未知名字黄字提示并跳过。
+# 空列表 = 全部服务。返回 @() 表示没有可用目标。
+function Resolve-ServiceList {
+    param([string[]]$Names = @())
+    if ($Names.Count -eq 0) { return $Services }
+    $found = @()
+    $unknown = @()
+    foreach ($n in $Names) {
+        if ([string]::IsNullOrWhiteSpace($n)) { continue }
+        $svc = $Services | Where-Object { $_.Name -eq $n.ToLower() }
+        if ($svc) { $found += $svc } else { $unknown += $n }
+    }
+    if ($unknown.Count -gt 0) {
+        Write-Host "unknown service: $($unknown -join ', ') (vault|ai|family|webui)" -ForegroundColor Yellow
+    }
+    if ($found.Count -eq 0) { return @() }
+    # 按 $Services 顺序（依赖先）去重：保证 start 先启动被依赖者
+    return @($Services | Where-Object { $_.Name -in ($found.Name) })
+}
+
+# 收集命令剩余参数为服务名列表
+function Get-ServiceArgs {
+    return @($Arg1) + @($Arg2) + $MoreArgs | Where-Object { $_ }
+}
+
 function Get-PortOwnerProcess($port) {
     $conn = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
     if (-not $conn) { return $null }
@@ -322,25 +363,38 @@ function Open-Dashboard {
 }
 
 switch ($Command.ToLower()) {
-    'build'     { Invoke-Build }
+    'build'     { Invoke-Build (Get-ServiceArgs) }
     'start'     {
         if ($Arg1) {
-            $svc = $null; if (Resolve-SingleService $Arg1 ([ref]$svc)) { Start-One $svc; Write-Host "[start] $($svc.Name) starting... check 'bh status'" }
+            $targets = Resolve-ServiceList (Get-ServiceArgs)
+            if ($targets.Count -eq 0) { break }
+            foreach ($svc in $targets) { Start-One $svc; Write-Host "[start] $($svc.Name) starting..." }
+            Write-Host "[start] waiting for health ..."
+            foreach ($svc in $targets) {
+                if (-not (Wait-Port $svc.Port 60)) { Write-Warning "[$($svc.Name)] port $($svc.Port) not ready in 60s" }
+                else { Write-Host "[$($svc.Name)] ready on $($svc.Port)" }
+            }
         } else { Start-Services }
     }
     'stop'      {
         if ($Arg1) {
-            $svc = $null; if (Resolve-SingleService $Arg1 ([ref]$svc)) { Stop-One $svc; Write-Host "[stop] $($svc.Name) stopped" }
+            $targets = Resolve-ServiceList (Get-ServiceArgs)
+            if ($targets.Count -eq 0) { break }
+            # 逆依赖顺序停
+            for ($i = $targets.Count - 1; $i -ge 0; $i--) { Stop-One $targets[$i] }
+            Write-Host "[stop] done: $($targets.Name -join ', ')"
         } else { Stop-Services }
     }
     'restart'   {
         if ($Arg1) {
-            $svc = $null; if (Resolve-SingleService $Arg1 ([ref]$svc)) {
-                Stop-One $svc
+            $targets = Resolve-ServiceList (Get-ServiceArgs)
+            if ($targets.Count -eq 0) { break }
+            for ($i = $targets.Count - 1; $i -ge 0; $i--) { Stop-One $targets[$i] }
+            foreach ($svc in $targets) {
                 if (-not (Wait-PortClosed $svc.Port 15)) { Write-Warning "[$($svc.Name)] port $($svc.Port) 15s 内未释放" }
-                Start-One $svc
-                Write-Host "[restart] $($svc.Name) restarting..."
             }
+            foreach ($svc in $targets) { Start-One $svc }
+            Write-Host "[restart] restarting: $($targets.Name -join ', ')"
         } else { Stop-Services; Start-Services }
     }
     'update'    { Update-Services }
