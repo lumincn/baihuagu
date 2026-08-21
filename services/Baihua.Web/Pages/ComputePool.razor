@@ -46,8 +46,16 @@ else
                     <span class="node-name">
                         @(node.IsLocal ? "🖥️ 本机 · " : "🖧 ")@node.Name
                     </span>
-                    <span class="node-status @(node.Online ? "ok" : "down")">
-                        @(node.Online ? "● 在线" : "○ 离线")
+                    <span class="d-flex align-items-center gap-2">
+                        <span class="node-status @(node.Online ? "ok" : "down")">
+                            @(node.Online ? "● 在线" : "○ 离线")
+                        </span>
+                        @if (!node.IsLocal && node.PeerId.HasValue)
+                        {
+                            <button class="btn btn-sm btn-outline-danger peer-del-btn"
+                                    title="删除该对端登记（同时移除其自动登记的对端提供方）"
+                                    @onclick="() => OpenDeletePeerAsync(node)" disabled="@_busy">🗑</button>
+                        }
                     </span>
                 </div>
                 <div class="node-meta">
@@ -169,6 +177,21 @@ else
     </div>
 }
 
+@if (_deletePeer != null)
+{
+    <div class="modal-overlay" @onclick="CancelDeletePeer">
+        <div class="modal-content" @onclick:stopPropagation="true">
+            <h3 class="h5">⚠️ 删除对端登记</h3>
+            <p class="mb-1">确定要删除对端「<b>@_deletePeer.Name</b>」（@_deletePeer.HostUrl）吗？</p>
+            <p class="text-secondary small">将同时移除该对端自动登记的 AI 提供方（peer- 前缀），此操作不可恢复；对端机器的配置不受影响。</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" @onclick="CancelDeletePeer" disabled="@_busy">取消</button>
+                <button class="btn btn-danger" @onclick="ConfirmDeletePeerAsync" disabled="@_busy">确认删除</button>
+            </div>
+        </div>
+    </div>
+}
+
 <style>
     .compute-header { padding: 0.75rem 1rem; border-bottom: 1px solid var(--bs-border-color); display: flex; align-items: baseline; gap: 0.75rem; }
     .compute-toolbar { padding: 0.5rem 1rem; display: flex; align-items: center; }
@@ -199,6 +222,10 @@ else
     .bench-btn { flex-shrink: 0; }
     .deploy-btn { flex-shrink: 0; }
     .deploy-panel { border: 1px dashed rgba(46,139,175,0.5); border-radius: 8px; padding: 0.5rem 0.7rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .peer-del-btn { flex-shrink: 0; padding: 0.1rem 0.45rem; line-height: 1.2; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 1050; }
+    .modal-content { background: var(--bs-body-bg); border: 1px solid var(--bs-border-color); border-radius: 12px; padding: 1.1rem 1.4rem; max-width: 440px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
+    .modal-actions { display: flex; gap: 12px; justify-content: center; margin-top: 12px; }
 </style>
 
 @code {
@@ -215,6 +242,7 @@ else
     private string? _taskResult;
     private string? _deployModel;
     private string _deployTarget = "";
+    private ComputePoolNodeDto? _deletePeer;
 
     protected override async Task OnInitializedAsync()
     {
@@ -349,6 +377,38 @@ else
             {
                 _message = message ?? $"已布署 {_deployModel} 到 {target?.Name}";
                 _deployModel = null;
+            }
+            else
+                _error = error;
+            await LoadAsync();
+            StateHasChanged();
+        }
+        finally { _busy = false; }
+    }
+
+    private void OpenDeletePeerAsync(ComputePoolNodeDto node)
+    {
+        _deletePeer = node;
+    }
+
+    private void CancelDeletePeer()
+    {
+        _deletePeer = null;
+    }
+
+    private async Task ConfirmDeletePeerAsync()
+    {
+        if (_deletePeer == null || !_deletePeer.PeerId.HasValue) return;
+        _busy = true;
+        _error = null;
+        _message = null;
+        try
+        {
+            var (ok, error) = await ApiService.DeleteComputePeerAsync(_deletePeer.PeerId.Value);
+            if (ok)
+            {
+                _message = $"已删除对端登记「{_deletePeer.Name}」";
+                _deletePeer = null;
             }
             else
                 _error = error;

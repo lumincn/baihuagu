@@ -132,6 +132,7 @@ public class ServerDiscoveryHostedService : BackgroundService
 
             var ownId = _serverAddressService.GetServerInstanceId();
             if (serverId == ownId) return; // 跳过自己
+            if (IsLocalAddress(remoteIp)) return; // 本机广播回环（或本机其它实例），跳过自我登记
 
             var name = root.TryGetProperty("name", out var n) ? n.GetString() ?? "百花服务器" : "百花服务器";
             var httpPort = root.TryGetProperty("httpPort", out var p) ? p.GetInt32() : 80;
@@ -147,5 +148,29 @@ public class ServerDiscoveryHostedService : BackgroundService
         {
             _logger.LogWarning(ex, "[ServerDiscovery] 解析广播失败");
         }
+    }
+
+    /// <summary>广播源是否为本机地址（回环或本机网卡 IP）——防止把自己的广播登记成对端。</summary>
+    private static bool IsLocalAddress(IPAddress address)
+    {
+        if (IPAddress.IsLoopback(address)) return true;
+        try
+        {
+            foreach (var nic in System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces())
+            {
+                if (nic.OperationalStatus != System.Net.NetworkInformation.OperationalStatus.Up)
+                    continue;
+                foreach (var uni in nic.GetIPProperties().UnicastAddresses)
+                {
+                    if (uni.Address.Equals(address))
+                        return true;
+                }
+            }
+        }
+        catch
+        {
+            // 网络接口查询失败时保守处理：不拦截，由算力池侧的自我登记判断兜底
+        }
+        return false;
     }
 }

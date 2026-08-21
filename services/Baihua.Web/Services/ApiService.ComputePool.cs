@@ -165,4 +165,28 @@ public partial class ApiService
             return (false, null, ex.Message);
         }
     }
+
+    /// <summary>删除对端登记（同时清理该对端自动登记的对端提供方，用于清理算力池里的过期节点）。</summary>
+    public async Task<(bool ok, string? error)> DeleteComputePeerAsync(Guid peerId)
+    {
+        try
+        {
+            using var quick = new CancellationTokenSource(QuickCallTimeout);
+            var response = await _httpClient.DeleteAsync($"/api/compute-pool/peers/{peerId}", quick.Token);
+            if (response.IsSuccessStatusCode)
+                return (true, null);
+            var body = await response.Content.ReadAsStringAsync(quick.Token);
+            try
+            {
+                using var doc = JsonDocument.Parse(body);
+                return (false, doc.RootElement.TryGetProperty("error", out var e) ? e.GetString() : body);
+            }
+            catch { return (false, body); }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "删除算力池对端失败");
+            return (false, ex.Message);
+        }
+    }
 }

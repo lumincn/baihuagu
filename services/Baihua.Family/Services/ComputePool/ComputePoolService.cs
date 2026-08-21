@@ -95,11 +95,35 @@ public class ComputePoolService : IHostedService, IDisposable
     {
         var peers = await _messageService.ListPeersAsync(ct);
         var localToken = _messageService.LocalToken;
+        var localServerId = GetLocalServerId();
+        var localHostUrl = GetLocalHostUrl();
         using var client = _httpClientFactory.CreateClient("ComputePool");
         client.Timeout = TimeSpan.FromSeconds(10);
 
-        foreach (var peer in peers)
+        // 本轮仍有效的对端身份（ServerId），用于清理缓存里已删除/被取代的旧条目
+        var knownIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var rawPeer in peers)
         {
+            var peer = rawPeer;
+            // 指向本机/自己登记的条目：不拉取、不展示（历史遗留的自我登记，如旧 ServerId + 本机 IP）
+            if (IsSelfPeer(peer, localServerId, localHostUrl))
+            {
+                _peerCapabilities.TryRemove(peer.ServerId, out _);
+                _peerReachable.TryRemove(peer.ServerId, out _);
+                // ServerId 与本机完全相同 → 确定是本机自我登记（幽灵节点），直接从登记表清理，
+                // 避免算力池每次刷新都出现"本机出现两次"
+                if (!string.IsNullOrEmpty(peer.ServerId)
+                    && string.Equals(peer.ServerId, localServerId, StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.LogInformation("[ComputePool] 清理本机自我登记 {Name} ({ServerId}) @ {BaseUrl}",
+                        peer.Name, peer.ServerId, peer.BaseUrl);
+                    await _messageService.DeletePeerAsync(peer.Id, ct);
+                }
+                continue;
+            }
+            knownIds.Add(peer.ServerId);
+
             try
             {
                 using var req = new HttpRequestMessage(HttpMethod.Get, $"{peer.BaseUrl.TrimEnd('/')}/mg/capabilities");
@@ -120,9 +144,44 @@ public class ComputePoolService : IHostedService, IDisposable
                 if (caps == null || string.IsNullOrEmpty(caps.ServerId))
                     continue;
 
+                // 该登记实际指向本机（如多实例/历史遗留的自我登记）→ 不缓存、不注册提供方
+                if (string.Equals(caps.ServerId, localServerId, StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.LogDebug("[ComputePool] 对端 {BaseUrl} 实为本机，跳过", peer.BaseUrl);
+                    _peerCapabilities.TryRemove(peer.ServerId, out _);
+                    _peerReachable.TryRemove(peer.ServerId, out _);
+                    continue;
+                }
+
+                // 对端改名/重装后 ServerId 变化 → 校正登记身份，让新身份在算力池里正常显示
+                if (!string.Equals(caps.ServerId, peer.ServerId, StringComparison.OrdinalIgnoreCase))
+                {
+                    var oldServerId = peer.ServerId;
+                    var reconciled = await _messageService.ReconcilePeerIdentityAsync(
+                        peer.Id, caps.ServerId, caps.Name, ct);
+                    if (reconciled == null)
+                        continue;
+                    // 旧身份失效：清缓存 + 移除旧身份自动登记的对端提供方（peer- 前缀）
+                    _peerCapabilities.TryRemove(oldServerId, out _);
+                    _peerReachable.TryRemove(oldServerId, out _);
+                    if (!string.IsNullOrEmpty(oldServerId))
+                    {
+                        var oldProviderId = $"peer-{oldServerId}";
+                        if (_aiConfig.GetProvider(oldProviderId) != null)
+                        {
+                            _aiConfig.DeleteProvider(oldProviderId);
+                            _aiSettings.ClearAiProvidersCache();
+                            _logger.LogInformation("[ComputePool] 对端 {Name} 身份变化，清理旧提供方 {ProviderId}",
+                                caps.Name, oldProviderId);
+                        }
+                    }
+                    peer = reconciled;
+                }
+
+                knownIds.Add(peer.ServerId);
                 caps.HostUrl = peer.BaseUrl;
                 caps.ModelStore = await FetchPeerModelStoreAsync(peer, token, client, ct);
-                _peerCapabilities[caps.ServerId] = caps;
+                _peerCapabilities[peer.ServerId] = caps;
                 _logger.LogDebug("[ComputePool] 已缓存对端能力: {Name} ({ServerId}) {ProviderCount} 个提供方",
                     caps.Name, caps.ServerId, caps.Providers.Count);
 
@@ -134,12 +193,16 @@ public class ComputePoolService : IHostedService, IDisposable
             }
         }
 
-        // 清理已删除的对端
-        var knownIds = peers.Select(p => p.ServerId).ToHashSet();
+        // 清理已删除/被身份校正取代的对端（能力与在线状态缓存）
         foreach (var key in _peerCapabilities.Keys)
         {
             if (!knownIds.Contains(key))
                 _peerCapabilities.TryRemove(key, out _);
+        }
+        foreach (var key in _peerReachable.Keys)
+        {
+            if (!knownIds.Contains(key))
+                _peerReachable.TryRemove(key, out _);
         }
     }
 
@@ -209,8 +272,10 @@ public class ComputePoolService : IHostedService, IDisposable
         {
             var existingNames = existing.Models.Select(m => m.Name).OrderBy(n => n, StringComparer.Ordinal).ToList();
             var newNames = models.Select(m => m.Name).OrderBy(n => n, StringComparer.Ordinal).ToList();
+            var expectedName = $"{caps.Name} · 局域网算力池";
             if (existingNames.SequenceEqual(newNames)
-                && string.Equals(existing.AiBaseUrl?.TrimEnd('/'), caps.OpenAiBaseUrl.TrimEnd('/'), StringComparison.OrdinalIgnoreCase))
+                && string.Equals(existing.AiBaseUrl?.TrimEnd('/'), caps.OpenAiBaseUrl.TrimEnd('/'), StringComparison.OrdinalIgnoreCase)
+                && string.Equals(existing.Name, expectedName, StringComparison.Ordinal))
             {
                 return;
             }
@@ -255,14 +320,21 @@ public class ComputePoolService : IHostedService, IDisposable
 
         var nodes = new List<ComputePoolNodeDto> { localNode };
         var peers = await _messageService.ListPeersAsync(ct);
+        var localServerId = GetLocalServerId();
+        var localHostUrl = GetLocalHostUrl();
 
         foreach (var peer in peers)
         {
+            // 指向本机的对端登记（历史遗留的自我登记）不展示，避免本机出现两次
+            if (IsSelfPeer(peer, localServerId, localHostUrl))
+                continue;
+
             _peerCapabilities.TryGetValue(peer.ServerId, out var caps);
             var registered = _aiConfig.GetProvider($"peer-{peer.ServerId}") != null;
             nodes.Add(new ComputePoolNodeDto
             {
                 ServerId = peer.ServerId,
+                PeerId = peer.Id,
                 Name = caps?.Name ?? peer.Name,
                 HostUrl = peer.BaseUrl,
                 OpenAiBaseUrl = caps?.OpenAiBaseUrl ?? "",
@@ -314,13 +386,39 @@ public class ComputePoolService : IHostedService, IDisposable
         return (true, null);
     }
 
+    /// <summary>
+    /// 从算力池页删除对端登记：删除登记 + 清理能力/在线缓存 + 移除该对端自动登记的对端提供方（peer- 前缀）。
+    /// </summary>
+    public async Task<(bool ok, string? error)> DeletePeerAsync(Guid peerId, CancellationToken ct = default)
+    {
+        var peer = await _messageService.GetPeerAsync(peerId, ct);
+        if (peer == null)
+            return (false, "对端登记不存在");
+
+        var serverId = peer.ServerId;
+        if (!await _messageService.DeletePeerAsync(peerId, ct))
+            return (false, "删除对端登记失败");
+
+        if (!string.IsNullOrEmpty(serverId))
+        {
+            _peerCapabilities.TryRemove(serverId, out _);
+            _peerReachable.TryRemove(serverId, out _);
+            var providerId = $"peer-{serverId}";
+            if (_aiConfig.GetProvider(providerId) != null)
+            {
+                _aiConfig.DeleteProvider(providerId);
+                _aiSettings.ClearAiProvidersCache();
+                _logger.LogInformation("[ComputePool] 删除对端 {Name} 时同步移除提供方 {ProviderId}", peer.Name, providerId);
+            }
+        }
+        _logger.LogInformation("[ComputePool] 已删除对端登记: {Name} ({ServerId})", peer.Name, serverId);
+        return (true, null);
+    }
+
     private ComputePoolNodeDto GetLocalNode()
     {
         var settings = _serverAddress.GetSettings();
-        var hostIp = _configuration["BAIHUA_HOST_IP"];
-        var hostUrl = !string.IsNullOrWhiteSpace(hostIp)
-            ? $"http://{hostIp}"
-            : _serverAddress.GetLocalPublicBaseUrl();
+        var hostUrl = GetLocalHostUrl();
         var openAiBaseUrl = _configuration["BAIHUA_PUBLIC_OPENAI_BASE_URL"];
         if (string.IsNullOrWhiteSpace(openAiBaseUrl))
             openAiBaseUrl = $"{hostUrl}/mg/pool/v1"; // 统一推理网关（全网路由）
@@ -540,6 +638,53 @@ public class ComputePoolService : IHostedService, IDisposable
     {
         try { return _serverAddress.GetServerInstanceId(); }
         catch { return ""; }
+    }
+
+    /// <summary>本机对外 HTTP 入口（算力池展示/自我登记判断用）。</summary>
+    private string GetLocalHostUrl()
+    {
+        var hostIp = _configuration["BAIHUA_HOST_IP"];
+        return !string.IsNullOrWhiteSpace(hostIp)
+            ? $"http://{hostIp}"
+            : _serverAddress.GetLocalPublicBaseUrl();
+    }
+
+    /// <summary>
+    /// 判断一条对端登记是否指向本机（历史遗留的自我登记）：
+    /// ServerId 相同、入口地址同一主机（忽略端口差异）、或缓存能力实为本机。
+    /// </summary>
+    private bool IsSelfPeer(ServerPeer peer, string localServerId, string localHostUrl)
+    {
+        if (!string.IsNullOrEmpty(peer.ServerId) && !string.IsNullOrEmpty(localServerId)
+            && string.Equals(peer.ServerId, localServerId, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (!string.IsNullOrEmpty(peer.BaseUrl) && !string.IsNullOrEmpty(localHostUrl)
+            && SameEndpoint(peer.BaseUrl, localHostUrl))
+            return true;
+
+        if (_peerCapabilities.TryGetValue(peer.ServerId, out var caps)
+            && !string.IsNullOrEmpty(caps.ServerId) && !string.IsNullOrEmpty(localServerId)
+            && string.Equals(caps.ServerId, localServerId, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    }
+
+    /// <summary>比较两个 URL 是否指向同一主机（http 默认 80 / https 默认 443 视为无端口）。</summary>
+    private static bool SameEndpoint(string a, string b)
+    {
+        if (!Uri.TryCreate(a.TrimEnd('/'), UriKind.Absolute, out var ua)
+            || !Uri.TryCreate(b.TrimEnd('/'), UriKind.Absolute, out var ub))
+            return string.Equals(a.TrimEnd('/'), b.TrimEnd('/'), StringComparison.OrdinalIgnoreCase);
+
+        if (!string.Equals(ua.Scheme, ub.Scheme, StringComparison.OrdinalIgnoreCase))
+            return false;
+        if (!string.Equals(ua.Host, ub.Host, StringComparison.OrdinalIgnoreCase))
+            return false;
+        var pa = ua.IsDefaultPort ? (ua.Scheme == "https" ? 443 : 80) : ua.Port;
+        var pb = ub.IsDefaultPort ? (ub.Scheme == "https" ? 443 : 80) : ub.Port;
+        return pa == pb;
     }
 
     private string GetLocalModelRoot()

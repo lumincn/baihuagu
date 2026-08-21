@@ -59,6 +59,10 @@ public class PoolChatRequest
 public class ComputePoolNodeDto
 {
     public string ServerId { get; set; } = "";
+
+    /// <summary>对端登记 ID（非本机节点；算力池页用于删除过期的对端登记）。</summary>
+    public Guid? PeerId { get; set; }
+
     public string Name { get; set; } = "";
     public string HostUrl { get; set; } = "";
     public string OpenAiBaseUrl { get; set; } = "";

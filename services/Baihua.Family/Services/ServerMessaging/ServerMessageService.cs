@@ -97,6 +97,36 @@ public class ServerMessageService
         return true;
     }
 
+    /// <summary>
+    /// 以对端 /mg/capabilities 返回的权威身份校正登记（对端改名/重装后 ServerId 变化时调用）。
+    /// 若另一条登记已持有该 ServerId（同一台机器的旧登记残留），删除本条旧登记并返回那条，
+    /// 避免算力池里同一台机器出现两个节点。
+    /// </summary>
+    public async Task<ServerPeer?> ReconcilePeerIdentityAsync(Guid peerId, string serverId, string name, CancellationToken ct = default)
+    {
+        await using var db = await _dbFactory.CreateDbContextAsync(ct);
+        var peer = await db.ServerPeers.FirstOrDefaultAsync(p => p.Id == peerId, ct);
+        if (peer == null) return null;
+        var oldServerId = peer.ServerId;
+
+        var owner = await db.ServerPeers.FirstOrDefaultAsync(p => p.Id != peerId && p.ServerId == serverId, ct);
+        if (owner != null)
+        {
+            db.ServerPeers.Remove(peer);
+            await db.SaveChangesAsync(ct);
+            _logger.LogInformation("[ServerMsg] 对端 {PeerId} 身份校正：旧登记 {Old} 已被新登记 {New} 取代，删除旧登记",
+                peerId, oldServerId, serverId);
+            return owner;
+        }
+
+        peer.ServerId = serverId;
+        if (!string.IsNullOrWhiteSpace(name)) peer.Name = name;
+        peer.LastSeenUtc = DateTime.UtcNow;
+        await db.SaveChangesAsync(ct);
+        _logger.LogInformation("[ServerMsg] 对端 {PeerId} 身份校正：{Old} → {New}（{Name}）", peerId, oldServerId, serverId, name);
+        return peer;
+    }
+
     /// <summary>发现/收到消息时登记对端（按 ServerId 或 BaseUrl 去重，Source=lan/remote）。</summary>
     public async Task<ServerPeer> UpsertDiscoveredPeerAsync(string serverId, string name, string baseUrl, string source, CancellationToken ct = default)
     {

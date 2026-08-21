@@ -119,4 +119,12 @@ public class ComputePoolController : ControllerBase
         var result = await _poolService.DeployPeerModelAsync(request.ServerId.Trim(), request.ModelName.Trim(), request.Device, ct);
         return result.Success ? Ok(result) : BadRequest(result);
     }
+
+    /// <summary>删除对端登记（同步清理该对端自动登记的对端提供方，供算力池页清理过期节点）。</summary>
+    [HttpDelete("peers/{id:guid}")]
+    public async Task<IActionResult> DeletePeer(Guid id, CancellationToken ct)
+    {
+        var (ok, error) = await _poolService.DeletePeerAsync(id, ct);
+        return ok ? Ok(new { success = true }) : NotFound(new { error });
+    }
 }
