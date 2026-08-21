@@ -90,10 +90,39 @@ DshApi__Token: <与插件相同的 token>
 百花 → DSH 智能体（`/dsh`）→ 右上「🧰 运维」：服务状态表 + 启停/重启/编译/更新/部署/日志。
 底层是 `bh status --json` / `bh start|stop|restart <svc>`（已并入 `tools/bh/linux/k8s/bh.sh`）。
 
+## 6.5 百花能力 MCP server（标准对外通道）
+
+`baihua-dsh-plugin` 仓库的 `mcp-server/` 子目录是一个独立 MCP server（`@modelcontextprotocol/sdk`，
+stdio），把百花只读能力按标准 MCP 暴露给**任意** MCP 客户端（不只是 DSH）：
+
+- 工具：`baihua_vault_search` / `baihua_vault_list` / `baihua_vault_read_note` / `baihua_budget_summary` / `baihua_tasks_list`
+- 连接目标经环境变量：`BAIHUA_VAULT_URL`（默认 127.0.0.1:8790）、`BAIHUA_FAMILY_URL`（默认 127.0.0.1:8788）
+
+DSH 接入（profile patch，需先 `dsh plugin --profile web add @deepseek-ai/dsh-mcp-client`）：
+
+```yaml
+- insert:                      # 新建行必须用 insert 包裹（裸 - id: 只能覆盖已有行）
+    - id: mcp-baihua
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: baihua
+        transport: stdio
+        command: node
+        args: ['/home/lumin/src/mdyj/baihua-dsh-plugin/mcp-server/src/index.js']
+        env:
+          BAIHUA_VAULT_URL: 'http://<vault-clusterip>:8790'
+          BAIHUA_FAMILY_URL: 'http://<family-clusterip>:8788'
+```
+
+DSH 里工具名带 `mcp__baihua__` 前缀（如 `mcp__baihua__baihua_vault_search`）。
+其他 MCP 客户端（Claude Desktop / Cursor 等）直接以 stdio 方式指向
+`mcp-server/src/index.js` 即可。
+
 ## 7. 已下线页面
 
 AI 对话（/messages）、编程 Agent（/code-agent）、图片识别（/image-recognition）、AI 绘图（/ai-drawing）
-——菜单已隐藏，路由保留（实现与数据未删，稳定后再删）。AI 实验室场景首页改指 `/dsh`。
+——菜单已隐藏，路由保留（实现与数据未删，稳定后再删；MAF 实现代码按决定**保留**）。
+AI 实验室场景首页改指 `/dsh`。
 
 ## 8. 插件更新后的重启
 
@@ -102,5 +131,8 @@ AI 对话（/messages）、编程 Agent（/code-agent）、图片识别（/image
 ```bash
 pkill -f "dsh web"; npx @deepseek-ai/dsh web
 ```
+
+> 注意：当前 DSH 由本机手动启动（不常驻）。重启会重新加载插件源码与 profile patch
+> （含 mcp-baihua 等 insert 行）。
 
 百花侧改动（Web 页面/后端）走 `bh build <svc> && bh restart <svc>`（或 /dsh 页「🧰 运维」）。
