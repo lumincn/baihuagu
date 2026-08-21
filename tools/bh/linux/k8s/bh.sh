@@ -572,6 +572,53 @@ status_all() {
     echo "entry: http://localhost/  (Traefik :80)"
 }
 
+# 机器可读状态（供 DSH 桥插件/运维界面消费）：每个应用 deployment 一行
+# 服务名统一不带 bh- 前缀（family/ai/vault/webui/openvino/postgres）
+status_json() {
+    local services="bh-family bh-ai bh-vault bh-webui bh-openvino bh-postgres"
+    local entries=""
+    local first=1
+    local ready_total=0 total=0
+    for svc in $services; do
+        local json phase ready replicas image age restarts
+        json="$(k -n "$NAMESPACE" get deploy "$svc" -o json 2>/dev/null)" || continue
+        phase="$(printf '%s' "$json" | python3 -c 'import json,sys; d=json.load(sys.stdin); print((d.get("status",{}).get("conditions") or [{}])[-1].get("type",""))' 2>/dev/null)"
+        ready="$(printf '%s' "$json" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("status",{}).get("readyReplicas",0))' 2>/dev/null)"
+        replicas="$(printf '%s' "$json" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("spec",{}).get("replicas",0))' 2>/dev/null)"
+        image="$(printf '%s' "$json" | python3 -c 'import json,sys; d=json.load(sys.stdin); c=(d.get("spec",{}).get("template",{}).get("spec",{}).get("containers") or [{}]); print(c[0].get("image",""))' 2>/dev/null)"
+        age="$(printf '%s' "$json" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("metadata",{}).get("creationTimestamp",""))' 2>/dev/null)"
+        restarts="$(k -n "$NAMESPACE" get pods -l "app=$svc" -o jsonpath='{.items[*].status.containerStatuses[0].restartCount}' 2>/dev/null | tr ' ' '\n' | awk '{s+=$1} END {print s+0}')"
+        [ -z "$ready" ] && ready=0
+        [ -z "$replicas" ] && replicas=0
+        [ -z "$restarts" ] && restarts=0
+        ready_total=$((ready_total + ready))
+        total=$((total + replicas))
+        local name="${svc#bh-}"
+        [ "$first" = 0 ] && entries="$entries,"
+        first=0
+        entries="$entries{\"name\":\"$name\",\"ready\":$ready,\"replicas\":$replicas,\"image\":\"$image\",\"age\":\"$age\",\"restarts\":$restarts,\"phase\":\"$phase\"}"
+    done
+    printf '{"cell":"k8s","namespace":"%s","updatedAt":"%s","services":[%s],"summary":{"ready":%s,"total":%s}}\n' \
+        "$NAMESPACE" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$entries" "$ready_total" "$total"
+}
+
+# 单个服务启停/重启（操作 deployment 副本数/滚动重启；服务名可不带 bh- 前缀）
+scale_service() {
+    local svc="${2:-}"
+    [ -z "$svc" ] && { echo "[${1}] 用法: bh ${1} <svc>（family/ai/vault/webui/openvino/postgres）" >&2; return 1; }
+    case "$svc" in bh-*) ;; *) svc="bh-$svc" ;; esac
+    if [ "$(id -u)" != "0" ]; then
+        echo "[${1}] 需要 root 权限（k3s.yaml 仅 root 可读），自动提权..." >&2
+        sudo "$0" "${1}" "$svc"
+        return $?
+    fi
+    case "$1" in
+        start)   k -n "$NAMESPACE" scale deploy "$svc" --replicas=1 && echo "[start] $svc 已扩容至 1" ;;
+        stop)    k -n "$NAMESPACE" scale deploy "$svc" --replicas=0 && echo "[stop] $svc 已缩容至 0" ;;
+        restart) k -n "$NAMESPACE" rollout restart deploy "$svc" && echo "[restart] $svc 已触发滚动重启" ;;
+    esac
+}
+
 show_logs() {
     local svc="${1:-bh-family}"
     # 自动补 bh- 前缀：logs vault → app=bh-vault
@@ -694,7 +741,8 @@ case "${1:-help}" in
     up)        up_all "${2:-}" ;;
     update)    update_all ;;
     prune)     prune_cache ;;
-    status)    status_all ;;
+    status)    if [ "${2:-}" = "--json" ]; then status_json; else status_all; fi ;;
+    start|stop|restart) scale_service "${1}" "${2:-}" ;;
     openvino)  openvino_cmd "${2:-status}" ;;
     logs)      show_logs "${2:-bh-family}" "${3:-50}" ;;
     destroy)   k delete namespace "$NAMESPACE"; echo "[destroy] done" ;;

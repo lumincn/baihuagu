@@ -130,6 +130,75 @@ public sealed class DshBridgeService
         };
     }
 
+    // ===== 百花服务运维（bh，经桥插件 /dsh-bridge/bh/*）=====
+
+    /// <summary>百花服务状态总览（各服务就绪/镜像/重启数 + 运行中的长操作）。</summary>
+    public async Task<BhStatusResultDto?> GetBhStatusAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            var json = await Client().GetStringAsync($"{_baseUrl}/dsh-bridge/bh/status", ct);
+            return JsonSerializer.Deserialize<BhStatusResultDto>(json, EventJsonOptions());
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>执行 bh 操作：start/stop/restart（快速）或 build/update/up/deploy（后台，返回 opId）。</summary>
+    public async Task<BhActionResultDto?> RunBhActionAsync(string action, string? service, CancellationToken ct = default)
+    {
+        try
+        {
+            var client = Client();
+            var payload = new { action, service };
+            var content = new StringContent(JsonSerializer.Serialize(payload, JsonOptions), Encoding.UTF8, "application/json");
+            var response = await client.PostAsync($"{_baseUrl}/dsh-bridge/bh/action", content, ct);
+            var text = await response.Content.ReadAsStringAsync(ct);
+            try
+            {
+                return JsonSerializer.Deserialize<BhActionResultDto>(text, EventJsonOptions());
+            }
+            catch
+            {
+                return new BhActionResultDto { Ok = response.IsSuccessStatusCode, Error = text };
+            }
+        }
+        catch (Exception ex)
+        {
+            return new BhActionResultDto { Ok = false, Error = ex.Message };
+        }
+    }
+
+    /// <summary>列出 bh 长操作（含最近输出）。</summary>
+    public async Task<IReadOnlyList<BhOpDto>> GetBhOpsAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            var json = await Client().GetStringAsync($"{_baseUrl}/dsh-bridge/bh/ops", ct);
+            return JsonSerializer.Deserialize<BhOpListDto>(json, EventJsonOptions())?.Ops ?? Array.Empty<BhOpDto>();
+        }
+        catch
+        {
+            return Array.Empty<BhOpDto>();
+        }
+    }
+
+    /// <summary>查看指定服务最近日志（纯文本）。</summary>
+    public async Task<string?> GetBhLogsAsync(string service, int lines = 50, CancellationToken ct = default)
+    {
+        try
+        {
+            return await Client().GetStringAsync(
+                $"{_baseUrl}/dsh-bridge/bh/logs?service={Uri.EscapeDataString(service)}&lines={lines}", ct);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     /// <summary>
     /// 监听某会话的事件流（阻塞直到连接关闭或取消）。每条消息回调 <paramref name="onFrame"/>。
     /// 新建会话时以 <paramref name="sessionId"/> 为空触发，插件会返回一个新的 sessionId。
@@ -256,4 +325,73 @@ public sealed class DshStreamFrame
     /// <summary>WS 级消息：session / connected / error / closed（未走 Type 判别时）。</summary>
     public string? Message { get; set; }
     public string? Raw { get; set; }
+}
+
+// ===== 百花服务运维（bh）DTO =====
+
+public sealed class BhStatusResultDto
+{
+    public bool Ok { get; set; }
+    public string? Error { get; set; }
+    public BhStatusDto? Status { get; set; }
+    [JsonPropertyName("runningOps")]
+    public IReadOnlyList<BhOpDto>? RunningOps { get; set; }
+}
+
+public sealed class BhStatusDto
+{
+    public string? Cell { get; set; }
+    public string? Namespace { get; set; }
+    public string? UpdatedAt { get; set; }
+    [JsonPropertyName("services")]
+    public IReadOnlyList<BhServiceDto>? Services { get; set; }
+    public BhSummaryDto? Summary { get; set; }
+}
+
+public sealed class BhServiceDto
+{
+    public string? Name { get; set; }
+    public int Ready { get; set; }
+    public int Replicas { get; set; }
+    public string? Image { get; set; }
+    public string? Age { get; set; }
+    public int Restarts { get; set; }
+    public string? Phase { get; set; }
+}
+
+public sealed class BhSummaryDto
+{
+    public int Ready { get; set; }
+    public int Total { get; set; }
+}
+
+public sealed class BhActionResultDto
+{
+    public bool Ok { get; set; }
+    public int? Code { get; set; }
+    public string? Stdout { get; set; }
+    public string? Stderr { get; set; }
+    public bool TimedOut { get; set; }
+    public string? OpId { get; set; }
+    public string? Action { get; set; }
+    public string? Error { get; set; }
+}
+
+public sealed class BhOpDto
+{
+    public string? Id { get; set; }
+    public string? Action { get; set; }
+    public string? Service { get; set; }
+    public string? StartedAt { get; set; }
+    public bool Running { get; set; }
+    public int? ExitCode { get; set; }
+    public string? Error { get; set; }
+    public string? Tail { get; set; }
+}
+
+public sealed class BhOpListDto
+{
+    public bool Ok { get; set; }
+    [JsonPropertyName("ops")]
+    public IReadOnlyList<BhOpDto>? Ops { get; set; }
 }
