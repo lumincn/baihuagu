@@ -113,6 +113,7 @@
                                                 <button class="btn btn-sm btn-outline-danger" @onclick="() => BhStopAsync(svc)" disabled="@_bhBusy">⏹ 停止</button>
                                             }
                                             <button class="btn btn-sm btn-outline-secondary" @onclick="() => BhRestartAsync(svc)" disabled="@_bhBusy">🔄 重启</button>
+                                            <button class="btn btn-sm btn-primary" @onclick="() => BhBuildRestartAsync(svc)" disabled="@_bhBusy" title="编译成功后自动滚动重启（适合经常改代码的场景）">🛠 编译并重启</button>
                                             <button class="btn btn-sm btn-outline-primary" @onclick="() => BhBuildAsync(svc)" disabled="@_bhBusy">🛠 编译</button>
                                             <button class="btn btn-sm btn-outline-info" @onclick="() => ShowLogsAsync(svc.Name)" disabled="@_bhBusy">📋 日志</button>
                                         </td>
@@ -311,6 +312,7 @@
     private List<BhOpDto> _bhRunningOps = new();
     private string? _logsService;
     private string? _logsText;
+    private System.Threading.Timer? _opsTimer;
 
     private sealed record UiMessage(string? Text, bool IsUser, DateTime Time, bool Completed, IReadOnlyList<string>? ToolCalls)
     {
@@ -350,9 +352,24 @@
         if (_showOps)
         {
             _ = LoadBhOpsAsync();
+            // 打开后每 10s 自动刷新一次（编译/重启进行中状态实时变化）
+            _opsTimer ??= new System.Threading.Timer(async _ =>
+            {
+                try
+                {
+                    await InvokeAsync(async () =>
+                    {
+                        if (_showOps && _statusOk && !_bhBusy)
+                            await LoadBhOpsAsync();
+                    });
+                }
+                catch { /* noop */ }
+            }, null, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
         }
         else
         {
+            _opsTimer?.Dispose();
+            _opsTimer = null;
             StateHasChanged();
         }
     }
@@ -394,6 +411,7 @@
     private Task BhStopAsync(BhServiceDto svc) => RunBhActionAsync("stop", svc.Name, true);
     private Task BhRestartAsync(BhServiceDto svc) => RunBhActionAsync("restart", svc.Name, true);
     private Task BhBuildAsync(BhServiceDto svc) => RunBhActionAsync("build", svc.Name, true);
+    private Task BhBuildRestartAsync(BhServiceDto svc) => RunBhActionAsync("build-restart", svc.Name, true);
     private Task BhBuildAllAsync() => RunBhActionAsync("build", "", true);
     private Task BhUpdateAsync() => RunBhActionAsync("update", "", true);
     private Task BhDeployAsync() => RunBhActionAsync("deploy", "", true);
@@ -407,6 +425,7 @@
                 "stop" => $"确认停止 {service}？",
                 "restart" => $"确认重启 {service}？",
                 "build" => string.IsNullOrEmpty(service) ? "确认编译全部镜像（耗时数分钟）？" : $"确认编译 {service} 镜像？",
+                "build-restart" => $"确认编译并重启 {service}？（编译成功后会自动滚动重启）",
                 "update" => "确认一键更新（git pull + 编译 + 重新部署，耗时较长）？",
                 "deploy" => "确认执行部署？",
                 _ => $"确认执行 {action}？"
@@ -744,5 +763,6 @@
         try { _streamCts?.Cancel(); } catch { }
         _pageCts.Cancel();
         _pageCts.Dispose();
+        _opsTimer?.Dispose();
     }
 }
