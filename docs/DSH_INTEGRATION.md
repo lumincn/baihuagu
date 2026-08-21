@@ -83,12 +83,15 @@ DshApi__Token: <与插件相同的 token>
 | `GET /status` | 健康检查（不鉴权） |
 | `GET /sessions` · `POST /chat` · `GET /sessions/{id}/history` · `WS /stream` | agent 会话驱动（百花 /dsh 页用） |
 | `GET /bh/status` · `POST /bh/action` · `GET /bh/ops[/{id}]` · `GET /bh/logs` | 百花服务运维（启停/编译/更新/日志） |
-| DSH 工具 | `bh_*`（运维）、`baihua_vault_*`（知识库）、`baihua_budget_summary`、`baihua_tasks_list`、`baihua_draw`（ComfyUI） |
+| `GET /bh/status-ui` | **只读状态**（仅 127.0.0.1、免鉴权，供 DSH 设置页卡片拉取；LAN 不暴露） |
+| DSH 工具 | `bh_*`（运维，含 `bh_build_restart` 编译并重启）、`baihua_vault_*`（知识库）、`baihua_budget_summary`、`baihua_tasks_list`、`baihua_draw`（ComfyUI） |
 
 ## 6. 运维界面
 
-百花 → DSH 智能体（`/dsh`）→ 右上「🧰 运维」：服务状态表 + 启停/重启/编译/更新/部署/日志。
+百花 → DSH 智能体（`/dsh`）→ 右上「🧰 运维」：服务状态表 + 启停/重启/编译并重启/编译/更新/部署/日志（打开后每 10s 自动刷新）。
 底层是 `bh status --json` / `bh start|stop|restart <svc>`（已并入 `tools/bh/linux/k8s/bh.sh`）。
+
+**DSH 设置页卡片**：DSH Web UI → 设置 → 插件 →「百花服务状态」卡片，只读展示百花各服务状态并自动刷新（`baihua-dsh-plugin` 的浏览器侧客户端模块，数据源 `/dsh-bridge/bh/status-ui`）。
 
 ## 6.5 百花能力 MCP server（标准对外通道）
 
