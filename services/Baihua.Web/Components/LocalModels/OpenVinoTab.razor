@@ -443,6 +443,9 @@ else
         {
             openVinoMessage = string.Format(L["LocalModels_OpenVinoLoadFailed"], ex.Message);
         }
+        // 数据到达后主动刷新 UI（首次加载可能晚于其他区块的 StateHasChanged，
+        // 否则目录会一直停留在“目录为空”，直到用户点击任意折叠头才意外出现列表）
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task RefreshOpenVinoAsync()
