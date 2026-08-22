@@ -588,6 +588,31 @@ status_all() {
 # 服务名统一不带 bh- 前缀（family/ai/vault/webui/openvino/postgres）
 # 额外输出 git 版本信息：HEAD + 各服务部署时记录的 commit（baihua.git-commit annotation），
 # 用于判断当前运行的代码是否最新（gitHead == imageCommit 即最新；unknown 表示尚未部署标注）。
+# 判断某服务在两个 commit 之间是否受影响：检查其专属源码目录 + 共享层（Contracts/Core/Data）。
+# 仅文档（docs/、*.md 等）或其他服务的变更不算本服务受影响——避免误报"落后"。
+# 参数：svc（family/ai/vault/webui/openvino）from to。输出 true/false。
+service_affected() {
+    local svc="$1" from="$2" to="$3"
+    [ "$from" = "$to" ] && { echo false; return; }
+    if ! git -C "$ROOT" rev-parse --verify "$from" >/dev/null 2>&1 || ! git -C "$ROOT" rev-parse --verify "$to" >/dev/null 2>&1; then
+        echo false; return
+    fi
+    local paths=()
+    case "$svc" in
+        family)   paths=("services/Baihua.Family/" "services/Baihua.Core/" "services/Baihua.Contracts/" "services/Baihua.Data/" "libs/");;
+        ai)       paths=("services/Baihua.AI/" "services/Baihua.AI.Provider/" "services/Baihua.Core/" "services/Baihua.Contracts/" "services/Baihua.Data/" "libs/");;
+        vault)    paths=("services/Baihua.Vault/" "services/Baihua.Core/" "services/Baihua.Contracts/" "services/Baihua.Data/" "libs/");;
+        webui)    paths=("services/Baihua.Web/" "services/Baihua.Core/" "services/Baihua.Contracts/" "services/Baihua.Data/" "libs/");;
+        openvino) paths=("k8s/images/Dockerfile.openvino" "services/Baihua.AI.Provider.OpenVino/");;
+    esac
+    local pat=""; for p in "${paths[@]}"; do pat="${pat:+"$pat|"}$p"; done
+    if git -C "$ROOT" diff --name-only "$from".."$to" 2>/dev/null | grep -E "^(${pat})" | grep -q .; then
+        echo true
+    else
+        echo false
+    fi
+}
+
 status_json() {
     local git_head="unknown" git_branch="unknown" git_dirty="false"
     if command -v git >/dev/null 2>&1 && [ -d "$ROOT/.git" ]; then
@@ -612,7 +637,12 @@ status_json() {
         restarts="$(k -n "$NAMESPACE" get pods -l "app=$svc" -o jsonpath='{.items[*].status.containerStatuses[0].restartCount}' 2>/dev/null | tr ' ' '\n' | awk '{s+=$1} END {print s+0}')"
         image_commit="$(printf '%s' "$json" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("metadata",{}).get("annotations",{}).get("baihua.git-commit","unknown"))' 2>/dev/null)"
         [ -z "$image_commit" ] && image_commit="unknown"
+        # upToDate：image_commit 等于当前 HEAD，或 HEAD 前进但该服务源码未受影响（仅文档/其他服务变更）
+        local svc_short="${svc#bh-}"
         if [ "$git_head" != "unknown" ] && [ "$image_commit" != "unknown" ] && [ "$image_commit" = "$git_head" ]; then
+            up_to_date="true"
+        elif [ "$git_head" != "unknown" ] && [ "$image_commit" != "unknown" ] && \
+             [ "$(service_affected "$svc_short" "$image_commit" "$git_head")" = "false" ]; then
             up_to_date="true"
         else
             up_to_date="false"
