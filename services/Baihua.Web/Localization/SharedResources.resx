@@ -6125,4 +6125,57 @@ Do you want to go to the vault management page to create it manually?</value>
   <data name="LocalModels_ModalityHint" xml:space="preserve">
     <value>Model modality: text / vision / multimodal</value>
   </data>
-</root>
+  <data name="Draw_Title" xml:space="preserve">
+    <value>AI Drawing</value>
+  </data>
+  <data name="Draw_Subtitle" xml:space="preserve">
+    <value>Local text-to-image (SD) &amp; text-to-video (LTX Video) via ComfyUI</value>
+  </data>
+  <data name="Draw_TabImage" xml:space="preserve">
+    <value>Text to Image</value>
+  </data>
+  <data name="Draw_TabVideo" xml:space="preserve">
+    <value>Text to Video</value>
+  </data>
+  <data name="Draw_PromptLabel" xml:space="preserve">
+    <value>Prompt (English works best)</value>
+  </data>
+  <data name="Draw_NegativePromptLabel" xml:space="preserve">
+    <value>Negative prompt (optional)</value>
+  </data>
+  <data name="Draw_Width" xml:space="preserve">
+    <value>Width</value>
+  </data>
+  <data name="Draw_Height" xml:space="preserve">
+    <value>Height</value>
+  </data>
+  <data name="Draw_Steps" xml:space="preserve">
+    <value>Steps</value>
+  </data>
+  <data name="Draw_Length" xml:space="preserve">
+    <value>Frames</value>
+  </data>
+  <data name="Draw_Fps" xml:space="preserve">
+    <value>FPS</value>
+  </data>
+  <data name="Draw_Generate" xml:space="preserve">
+    <value>Generate</value>
+  </data>
+  <data name="Draw_Generating" xml:space="preserve">
+    <value>Generating... image takes ~20-60s, video ~1-5min. Please wait.</value>
+  </data>
+  <data name="Draw_Result" xml:space="preserve">
+    <value>Result</value>
+  </data>
+  <data name="Draw_Download" xml:space="preserve">
+    <value>Download</value>
+  </data>
+  <data name="Draw_ComfyOffline" xml:space="preserve">
+    <value>Local ComfyUI is not running. Please start ComfyUI first.</value>
+  </data>
+  <data name="Draw_GenerateFailed" xml:space="preserve">
+    <value>Generation failed</value>
+  </data>
+  <data name="Draw_VideoHint" xml:space="preserve">
+    <value>Resolution ≤768, frames 25-121 (~1-5 seconds)</value>
+  </data></root>

@@ -6125,4 +6125,57 @@
   <data name="LocalModels_ModalityHint" xml:space="preserve">
     <value>模型模态：文本 / 视觉 / 多模态</value>
   </data>
-</root>
+  <data name="Draw_Title" xml:space="preserve">
+    <value>AI 绘图</value>
+  </data>
+  <data name="Draw_Subtitle" xml:space="preserve">
+    <value>本地文生图（SD）与文生视频（LTX Video），由本机 ComfyUI 生成</value>
+  </data>
+  <data name="Draw_TabImage" xml:space="preserve">
+    <value>文生图</value>
+  </data>
+  <data name="Draw_TabVideo" xml:space="preserve">
+    <value>文生视频</value>
+  </data>
+  <data name="Draw_PromptLabel" xml:space="preserve">
+    <value>提示词（英文效果更佳）</value>
+  </data>
+  <data name="Draw_NegativePromptLabel" xml:space="preserve">
+    <value>负向提示词（可选）</value>
+  </data>
+  <data name="Draw_Width" xml:space="preserve">
+    <value>宽</value>
+  </data>
+  <data name="Draw_Height" xml:space="preserve">
+    <value>高</value>
+  </data>
+  <data name="Draw_Steps" xml:space="preserve">
+    <value>步数</value>
+  </data>
+  <data name="Draw_Length" xml:space="preserve">
+    <value>帧数</value>
+  </data>
+  <data name="Draw_Fps" xml:space="preserve">
+    <value>帧率</value>
+  </data>
+  <data name="Draw_Generate" xml:space="preserve">
+    <value>生成</value>
+  </data>
+  <data name="Draw_Generating" xml:space="preserve">
+    <value>生成中，图片约 20-60 秒，视频约 1-5 分钟，请耐心等待…</value>
+  </data>
+  <data name="Draw_Result" xml:space="preserve">
+    <value>生成结果</value>
+  </data>
+  <data name="Draw_Download" xml:space="preserve">
+    <value>下载</value>
+  </data>
+  <data name="Draw_ComfyOffline" xml:space="preserve">
+    <value>本机 ComfyUI 未运行，无法绘图（请先启动 ComfyUI）</value>
+  </data>
+  <data name="Draw_GenerateFailed" xml:space="preserve">
+    <value>生成失败</value>
+  </data>
+  <data name="Draw_VideoHint" xml:space="preserve">
+    <value>分辨率建议 ≤768，帧数 25-121（约 1-5 秒）</value>
+  </data></root>

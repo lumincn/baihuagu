@@ -23,6 +23,7 @@ using Baihua.Contracts.Master;
 using Baihua.Contracts.Onboarding;
 using Baihua.Contracts.Generate;
 using Baihua.Contracts.Medical;
+using Baihua.Contracts.Draw;
 
 namespace Baihua.Web.Services
 {
@@ -62,6 +63,12 @@ namespace Baihua.Web.Services
         Task<bool> DeleteAiDiagnosisAsync(int id, CancellationToken cancellationToken = default);
 
         Task<List<AiProviderInfo>> GetAiProvidersAsync();
+
+        // 本地 AI 绘图（文生图 / 文生视频，走本机 ComfyUI）
+        Task<DrawStatusDto?> GetDrawStatusAsync(CancellationToken cancellationToken = default);
+        Task<DrawResultDto?> GenerateDrawImageAsync(DrawImageRequest request, CancellationToken cancellationToken = default);
+        Task<DrawResultDto?> GenerateDrawVideoAsync(DrawVideoRequest request, CancellationToken cancellationToken = default);
+        string GetDrawFileUrl(string filename, string subfolder = "", string type = "output");
         Task<StockRecommendationResponse> GetStockRecommendationsAsync(string? strategy = null, string? industry = null, string? horizon = null, string? prompt = null, string? direction = null, bool refresh = false, CancellationToken cancellationToken = default);
         Task<List<string>> GetStockIndustriesAsync(CancellationToken cancellationToken = default);
         Task<TopicSuggestionResponse> GetTopicSuggestionsAsync(string? context = null, bool refresh = false, CancellationToken cancellationToken = default);

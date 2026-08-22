@@ -100,6 +100,34 @@ public class ComfyUiClient
         return await _http.GetByteArrayAsync(url, ct);
     }
 
+    /// <summary>获取 CheckpointLoaderSimple 的可用 checkpoint 列表（供绘图状态接口）。</summary>
+    public async Task<List<string>> GetCheckpointsAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            using var resp = await _http.GetAsync("/object_info/CheckpointLoaderSimple", ct);
+            if (!resp.IsSuccessStatusCode) return new List<string>();
+            var json = await resp.Content.ReadFromJsonAsync<JsonElement>(ct);
+            if (json.TryGetProperty("CheckpointLoaderSimple", out var node) &&
+                node.TryGetProperty("input", out var input) &&
+                input.TryGetProperty("required", out var required) &&
+                required.TryGetProperty("ckpt_name", out var ckpt) &&
+                ckpt.ValueKind == JsonValueKind.Array && ckpt.GetArrayLength() > 0 &&
+                ckpt[0].ValueKind == JsonValueKind.Array)
+            {
+                var list = new List<string>();
+                foreach (var name in ckpt[0].EnumerateArray())
+                    if (name.ValueKind == JsonValueKind.String) list.Add(name.GetString() ?? "");
+                return list;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug("获取 ComfyUI checkpoint 列表失败: {Message}", ex.Message);
+        }
+        return new List<string>();
+    }
+
     private static string GetStr(JsonElement el, string name) =>
         el.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() ?? "" : "";
 
