@@ -1,4 +1,4 @@
-#requires -Version 5.1
+﻿#requires -Version 5.1
 <#
   baihua - Windows + Docker compose + native AI CLI
   Cell of the matrix: OS=windows, deployment=docker (ai runs native for GPU)

@@ -1,4 +1,4 @@
-#requires -Version 5.1
+﻿#requires -Version 5.1
 <#
   baihua - Windows + dotnet native CLI
   Cell of the matrix: OS=windows, deployment=dotnet-native
