@@ -3,6 +3,7 @@ using Baihua.Core;
 using Baihua.Core.Models;
 using Baihua.Core.Services;
 using Baihua.Family.Services;
+using Baihua.Family.Services.ComputePool;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Baihua.Family.Controllers.ComputePool;
@@ -59,9 +60,12 @@ public class CapabilitiesController : ControllerBase
 
         // 本机可对外提供的模型 = 本机 Family 直接可用的提供方 + AI 服务（shim 路由的提供方）
         // （shim 按模型名在 AI 服务内路由，因此以 AI 服务的提供方为准，合并去重）
+        // 只广播本地算力（Tier1/2，非 peer-）：云端模型各机器可直连、peer- 是别人的模型，
+        // 两者进池只会让算力池模型重复。
         var models = new List<ComputeModelDto>();
         var providerGroups = _aiSettings.GetAiProviders()
             .Where(p => p.Models is { Count: > 0 })
+            .Where(ComputePoolShareFilter.IsShareable)
             .Select(p => new ComputeProviderDto
             {
                 Id = p.Id,
@@ -78,6 +82,8 @@ public class CapabilitiesController : ControllerBase
 
         foreach (var remote in await GetAiServiceProvidersAsync())
         {
+            if (!ComputePoolShareFilter.IsShareable(remote))
+                continue;
             if (providerGroups.Any(g => string.Equals(g.Id, remote.Id, StringComparison.OrdinalIgnoreCase)))
                 continue;
             providerGroups.Add(remote);

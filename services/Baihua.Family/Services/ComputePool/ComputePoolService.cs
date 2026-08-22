@@ -257,7 +257,10 @@ public class ComputePoolService : IHostedService, IDisposable
         var providerId = $"peer-{peer.ServerId}";
         if (providerId.Length > 50) providerId = providerId[..50];
 
-        var models = caps.Providers
+        // 只取对端可共享的本地算力（非 peer-、非云端）：云端模型对端可直连、peer- 是它人模型，
+        // 注册进来只会让本机模型列表重复。
+        var shareable = caps.Providers.Where(ComputePoolShareFilter.IsShareable).ToList();
+        var models = shareable
             .SelectMany(p => p.Models)
             .Select(m => new AiModelConfig { Name = m.Name, IsMain = false, IsPaid = false })
             .GroupBy(m => m.Name)
@@ -265,6 +268,13 @@ public class ComputePoolService : IHostedService, IDisposable
             .ToList();
         if (models.Count == 0)
             return;
+
+        // 对端广播的层级（"1"/"2"/"3"）沿用到注册提供方，不再写死本地大模型
+        var peerTier = AiModelTier.Tier2_Local;
+        if (shareable.Count > 0
+            && Enum.TryParse<AiModelTier>(shareable[0].Tier, out var parsedTier)
+            && parsedTier != AiModelTier.Unset)
+            peerTier = parsedTier;
 
         // 已存在且模型一致 → 跳过写入（避免每次刷新都动 DB）
         var existing = _aiConfig.GetProvider(providerId);
@@ -275,7 +285,8 @@ public class ComputePoolService : IHostedService, IDisposable
             var expectedName = $"{caps.Name} · 局域网算力池";
             if (existingNames.SequenceEqual(newNames)
                 && string.Equals(existing.AiBaseUrl?.TrimEnd('/'), caps.OpenAiBaseUrl.TrimEnd('/'), StringComparison.OrdinalIgnoreCase)
-                && string.Equals(existing.Name, expectedName, StringComparison.Ordinal))
+                && string.Equals(existing.Name, expectedName, StringComparison.Ordinal)
+                && existing.Tier == peerTier)
             {
                 return;
             }
@@ -289,7 +300,7 @@ public class ComputePoolService : IHostedService, IDisposable
             ModelsJson = AiConfigService.SerializeModels(models),
             IsMain = false,
             IsEnabled = true,
-            Tier = (int)AiModelTier.Tier2_Local,
+            Tier = (int)peerTier,
             SortOrder = 100
         };
 
@@ -310,9 +321,12 @@ public class ComputePoolService : IHostedService, IDisposable
     {
         var localNode = GetLocalNode();
         // 本机节点补上 AI 服务（shim 路由）的提供方，与 /mg/capabilities 广播保持一致
+        // （同样只补可共享的本地算力，避免 peer- / 云端模型在本机节点重复出现）
         var aiProviders = await GetAiServiceProvidersAsync(ct);
         foreach (var remote in aiProviders)
         {
+            if (!ComputePoolShareFilter.IsShareable(remote))
+                continue;
             if (localNode.Providers.Any(g => string.Equals(g.Id, remote.Id, StringComparison.OrdinalIgnoreCase)))
                 continue;
             localNode.Providers.Add(remote);
@@ -344,7 +358,7 @@ public class ComputePoolService : IHostedService, IDisposable
                     || (peer.LastSeenUtc.HasValue && peer.LastSeenUtc.Value > DateTime.UtcNow.AddMinutes(-5)),
                 LastSeenUtc = caps?.UpdatedAt ?? peer.LastSeenUtc,
                 CpuCores = caps?.CpuCores,
-                Providers = caps?.Providers ?? new List<ComputeProviderDto>(),
+                Providers = caps?.Providers.Where(ComputePoolShareFilter.IsShareable).ToList() ?? new List<ComputeProviderDto>(),
                 ProviderRegistered = registered,
                 ModelStore = caps?.ModelStore ?? new List<ModelStoreEntryDto>()
             });
@@ -435,6 +449,7 @@ public class ComputePoolService : IHostedService, IDisposable
             CpuCores = Environment.ProcessorCount,
             Providers = _aiSettings.GetAiProviders()
                 .Where(p => p.Models is { Count: > 0 })
+                .Where(ComputePoolShareFilter.IsShareable) // 只展示本地算力：排除 peer- 对端登记与 Tier3 云端
                 .Select(p => new ComputeProviderDto
                 {
                     Id = p.Id,

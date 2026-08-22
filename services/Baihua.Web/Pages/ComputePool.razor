@@ -9,6 +9,7 @@
 <div class="compute-header">
     <h1 class="h4 mb-0">⚡ 百花算力池</h1>
     <span class="text-secondary small">局域网内所有百花服务器的 AI 算力一览，点击模型即可选用</span>
+    <span class="text-secondary small ms-auto">仅展示局域网本地算力（固本/本地大模型）；云端模型在「AI 配置」中管理</span>
 </div>
 
 <div class="compute-toolbar">
@@ -81,7 +82,7 @@ else
                         {
                             <div class="compute-provider">
                                 <div class="provider-name">@provider.Name <span class="tier-badge">@TierLabel(provider.Tier)</span></div>
-                                @foreach (var model in provider.Models)
+                                @foreach (var model in provider.Models.DistinctBy(m => m.Name))
                                 {
                                     var tps = model.TokensPerSecond;
                                     var maxTps = _pool.Nodes
