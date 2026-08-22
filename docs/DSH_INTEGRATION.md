@@ -58,7 +58,7 @@ dsh plugin --profile web add /home/lumin/src/mdyj/baihua-local-ai-dsh-plugin
   name: baihua-local-ai-dsh-plugin
   config:
     token: '<共享密钥>'
-    poolUrl: 'http://192.168.3.13/mg/pool/v1'             # 算力池网关（全网路由+failover）
+    poolUrl: 'http://127.0.0.1/mg/pool/v1'                # 算力池网关（全网路由+failover；宿主插件访问本机算力池用 127.0.0.1，跨机才填对方局域网 IP）
     # poolToken: '...'                                    # 网关配置了 BAIHUA_AI_EXTERNAL_TOKEN 时填写
 ```
 
