@@ -151,13 +151,6 @@ test.describe('[legacy-e2e] 冒烟测试 - Family 版', () => {
     await expect(page.locator('h1', { hasText: /家长看板|Dashboard/ })).toBeVisible();
   });
 
-  test('AI 对话页面加载', async ({ page }) => {
-    await authorize(page);
-    await page.goto('/messages');
-    await expect(page.locator('main')).toBeVisible({ timeout: 15000 });
-    await expect(page.locator('h1', { hasText: /AI 对话|AI Chat/ })).toBeVisible();
-  });
-
   test('硬件评测页面显示 INT8/INT4 算力', async ({ page }) => {
     await authorize(page);
     await page.goto('/hardware-benchmark');

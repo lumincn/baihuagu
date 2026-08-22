@@ -8,7 +8,7 @@ namespace Baihua.AI.Provider;
 /// 每个本地推理工具（Ollama / llama.cpp / LM Studio / OpenVINO / 未来 NVIDIA CUDA / AMD ROCm）
 /// 实现本接口，供 Family 的本地模型部署页与下载/运行编排统一调用。
 /// 厂商专有能力不进本接口——由各 provider 自行扩展（见 ai.provider.openvino 的
-/// ILocalVisionInference / ILocalRuntimeManager）。
+/// OpenVinoRuntimeManager 等）。
 /// </summary>
 public interface ILocalModelTool
 {

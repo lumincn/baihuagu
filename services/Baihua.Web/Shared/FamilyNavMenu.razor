@@ -108,14 +108,10 @@ else if (_activeScene == 0)
         new("dashboard", "Nav_ParentDashboard", "bi bi-bar-chart-line", 1),
 
         // 🤖 AI 实验室（场景 2）
-        // 已下线（AI 消费型功能迁移至 DSH 智能体 /dsh）——保留路由参与场景推断，但不显示
-        new("messages", "Nav_AiChat", "bi bi-chat-dots", 2, Group: "Nav_ChatLabel", RequiredFeature: "__hidden__"),
-        new("code-agent", "CodeAgent_Title", "bi bi-code-square", 2, Group: "Nav_ChatLabel", RequiredFeature: "__hidden__"),
+        // 已下线（AI 消费型功能迁移至 DSH 智能体 /dsh）——路由与实现已随死代码清理删除
         new("dsh", "Dsh_Title", "bi bi-robot", 2, Group: "Nav_ChatLabel"),
         new("master-chat", "Nav_VirtualMaster", "bi bi-mortarboard", 2, Group: "Nav_ChatLabel"),
         new("local-models", "Nav_LocalModels", "bi bi-cpu", 2, Group: "Nav_ResearchLabel", RequiredFeature: "LocalModelsPage"),
-        new("image-recognition", "Nav_ImageRecognition", "bi bi-eye", 2, Group: "Nav_ResearchLabel", RequiredFeature: "__hidden__"),
-        new("ai-drawing", "Nav_AiDrawing", "bi bi-brush", 2, Group: "Nav_ResearchLabel", RequiredFeature: "__hidden__"),
         new("stock-advisor", "Nav_StockAdvisor", "bi bi-graph-up", 2, Group: "Nav_ResearchLabel"),
         new("model-benchmark", "Nav_ModelBenchmark", "bi bi-speedometer2", 2, Group: "Nav_ResearchLabel", RequiredFeature: "ModelBenchmark"),
         new("ai-metrics", "Nav_AiMetrics", "bi bi-graph-up-arrow", 2, Group: "Nav_ResearchLabel"),
