@@ -198,6 +198,12 @@ function Start-One($svc) {
     if ($svc.Name -eq 'family') {
         $envBlock['BAIHUA_VAULT_URL'] = 'http://127.0.0.1:8790'
         $envBlock['BAIHUA_AI_URL'] = 'http://127.0.0.1:8791'
+
+        # 算力池跨机鉴权 token：优先从 BAIHUA_HOME 的密钥文件注入（对端 DSH/百花用同值）
+        $aiTokenFile = Join-Path $DataHome 'ai-external-token.txt'
+        if (Test-Path $aiTokenFile) {
+            $envBlock['BAIHUA_AI_EXTERNAL_TOKEN'] = (Get-Content $aiTokenFile -Raw).Trim()
+        }
     }
     if ($svc.Name -eq 'webui') {
         $envBlock['WEBUI_CONFIG_DIR'] = $DataHome
