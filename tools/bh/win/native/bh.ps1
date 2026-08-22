@@ -1,4 +1,4 @@
-﻿#requires -Version 5.1
+#requires -Version 5.1
 <#
   baihua - Windows + dotnet native CLI
   Cell of the matrix: OS=windows, deployment=dotnet-native
@@ -108,8 +108,14 @@ function Update-Services {
     $rule = netsh advfirewall firewall show rule name='Baihua Family 8788' 2>$null
     if ($LASTEXITCODE -ne 0) {
         netsh advfirewall firewall add rule name='Baihua Family 8788' dir=in action=allow protocol=TCP localport=8788 | Out-Null
-        Write-Host '[update] 已放行防火墙 TCP 8788（局域网算力池/互联入口）'
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host '[update] 已放行防火墙 TCP 8788（局域网算力池/互联入口）'
+        } else {
+            Write-Warning '[update] 放行防火墙 TCP 8788 失败（需要管理员权限），局域网算力池/互联可能不可达'
+        }
     }
+    # 清除 netsh 退出码残留，避免被定位器链的 exit $LASTEXITCODE 误判为失败
+    $LASTEXITCODE = 0
     Write-Host '[update] done'
 }
 
@@ -470,4 +476,8 @@ switch ($Command.ToLower()) {
     'help'      { Help-Text }
     default     { Help-Text }
 }
+
+# 正常完成统一退出 0（错误路径已由 throw / exit 1 提前结束）
+# 避免残留 $LASTEXITCODE 沿定位器链（native -> tools/bh/bh.ps1 -> ~/.local/bin/bh.ps1）的 exit $LASTEXITCODE 传播，把成功误报为失败
+exit 0
 
