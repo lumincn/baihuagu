@@ -11,6 +11,7 @@
     restart [svc...]    stop + start 指定服务（默认全部）
     update              git pull 最新代码 + 重建 + 重启（局域网机器一键升级）
     status              show port/process state per service
+    status --json       machine-readable JSON（供 DSH 桥插件）
     logs <svc> [n]      tail service log (default 50 lines)
     dashboard           open browser with cli-token auto-login
     open                open browser to http://localhost:5177
@@ -331,6 +332,70 @@ function Show-Status {
     Write-Host ("{0,-8} port={1,-5} {2}" -f 'openvino', $OpenVinoPort, $ovState)
 }
 
+function Show-StatusJson {
+    # 机器可读状态（供 DSH 桥插件 bh_status / 状态卡片消费），schema 对齐 Linux k8s 的 status --json：
+    #   cell / namespace / updatedAt / git{head,branch,dirty} /
+    #   services[{name,ready,replicas,image,age,restarts,phase,imageCommit,upToDate}] / summary{ready,total}
+    $gitHead = 'unknown'; $gitBranch = 'unknown'; $gitDirty = $false
+    if (Test-Path (Join-Path $Root '.git')) {
+        try {
+            $h = git -C $Root rev-parse --short HEAD 2>$null
+            if ($h) { $gitHead = ($h | Select-Object -First 1) }
+            $b = git -C $Root rev-parse --abbrev-ref HEAD 2>$null
+            if ($b) { $gitBranch = ($b | Select-Object -First 1) }
+            $d = git -C $Root status --porcelain 2>$null
+            if ($d) { $gitDirty = $true }
+        } catch { }
+    }
+    $entries = @()
+    foreach ($svc in $Services) {
+        $portOpen = Test-PortOpen $svc.Port
+        $pf = Get-PidFile $svc.Name
+        $pidAlive = $false
+        if (Test-Path $pf) {
+            $pid2 = [int](Get-Content $pf)
+            $pidAlive = [bool](Get-Process -Id $pid2 -ErrorAction SilentlyContinue)
+        }
+        $running = $portOpen -and $pidAlive
+        $phase = if ($running) { 'Running' } elseif ($portOpen) { 'PortOpen' } elseif ($pidAlive) { 'ProcAlive' } else { 'Stopped' }
+        $entries += [pscustomobject]@{
+            name = $svc.Name
+            ready = if ($running) { 1 } else { 0 }
+            replicas = 1
+            image = 'native'
+            age = ''
+            restarts = 0
+            phase = $phase
+            imageCommit = $gitHead
+            upToDate = $true
+        }
+    }
+    # OpenVINO 宿主（Windows 服务 + 端口）
+    $ovSvc = Get-OpenVinoHostService
+    $ovRunning = Test-PortOpen $OpenVinoPort
+    $ovPhase = if ($ovRunning) { 'Running' } elseif ($ovSvc) { $ovSvc.Status.ToString() } else { 'not installed' }
+    $entries += [pscustomobject]@{
+        name = 'openvino'
+        ready = if ($ovRunning) { 1 } else { 0 }
+        replicas = 1
+        image = 'ovms'
+        age = ''
+        restarts = 0
+        phase = $ovPhase
+        imageCommit = $gitHead
+        upToDate = $true
+    }
+    $readyTotal = @($entries | Where-Object { $_.ready -eq 1 }).Count
+    [pscustomobject]@{
+        cell = 'native'
+        namespace = 'windows'
+        updatedAt = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+        git = [pscustomobject]@{ head = $gitHead; branch = $gitBranch; dirty = $gitDirty }
+        services = $entries
+        summary = [pscustomobject]@{ ready = $readyTotal; total = $entries.Count }
+    } | ConvertTo-Json -Depth 5
+}
+
 function Show-Logs($svcName, $n) {
     $svc = $Services | Where-Object { $_.Name -eq $svcName }
     if (-not $svc) { Write-Host "unknown service: $svcName (vault|ai|family|webui)"; return }
@@ -398,7 +463,7 @@ switch ($Command.ToLower()) {
         } else { Stop-Services; Start-Services }
     }
     'update'    { Update-Services }
-    'status'    { Show-Status }
+    'status'    { if ($Arg1 -eq '--json') { Show-StatusJson } else { Show-Status } }
     'logs'      { $count = 50; if ($Arg2) { $count = [int]$Arg2 }; Show-Logs $Arg1 $count }
     'dashboard' { Open-Dashboard }
     'open'      { Start-Process 'http://127.0.0.1:5177' }
