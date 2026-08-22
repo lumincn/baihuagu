@@ -1,6 +1,6 @@
 # 向 SharedResources.resx 与 zh-CN.resx 补充 LogErrors_* 键（审计 P1：/log-errors 整页显示原始键名）
 $ErrorActionPreference = 'Stop'
-$dir = 'C:\Users\lumin\src\baihuagu\services\Baihua.Web\Localization'
+$dir = 'C:\Users\lumin\src\baihua\services\Baihua.Web\Localization'
 
 # 键表：[英文值, 中文值]
 $keys = @{

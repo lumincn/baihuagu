@@ -53,9 +53,14 @@ bash tools/bh/bh.sh install            # 普通用户 → ~/.local/bin/bh（~/.b
 sudo bash tools/bh/bh.sh install       # root → /usr/local/bin/bh（在 sudo secure_path 内，sudo bh 也可用）
 ```
 
+> **目录改名/移动后不用重装。** Linux 安装的是自包含定位器（`locator.sh` 的副本，非软链）。
+> 每次调用按 `$BAIHUA_HOME` → 常见路径（`~/src/mdyj/baihua`、`~/src/baihuagu` 等）→ 当前目录向上
+> 的顺序自动定位仓库根，再转发到仓库内的 `bh.sh`。只要仓库还在常见位置、或在仓库目录内执行、
+> 或设置了 `BAIHUA_HOME`，`bh` 都能用。想要重新定位只需 `export BAIHUA_HOME=<新路径>`。
+
 > **sudo 下找不到 bh？** `sudo bh` 用 root 的 `secure_path`（不含 `~/.local/bin`）。
 > 用 `sudo bash tools/bh/bh.sh install`（装到 `/usr/local/bin/bh`）即可，或直接
-> `sudo /usr/local/bin/bh <cmd>` / `sudo ln -sf <仓库>/tools/bh/bh.sh /usr/local/bin/bh`。
+> `sudo /usr/local/bin/bh <cmd>` / `sudo bash <仓库>/tools/bh/bh.sh install`。
 
 ## 踩坑记录（实现注意）
 

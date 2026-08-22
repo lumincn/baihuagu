@@ -4,8 +4,8 @@
 在百花 WebUI（Blazor Server）中实现虚拟师父功能。百花是开源家庭版软件，用户在自己电脑上运行，通过浏览器使用。百花是本地服务端架构：WebUI 通过后端 AI 服务调用 DeepSeek，用户在 WebUI 设置中配置 API Key。
 
 ## 项目位置
-- 百花根目录：C:\Users\lumin\src\baihuagu\
-- WebUI：C:\Users\lumin\src\baihuagu\services\WebUI.Family\
+- 百花根目录：C:\Users\lumin\src\baihua\
+- WebUI：C:\Users\lumin\src\baihua\services\WebUI.Family\
 - WebUI 页面：services\WebUI.Family\Pages\（已有 Messages.razor、KnowledgeGenerate.razor 等）
 - WebUI 导航：services\WebUI.Family\Shared\FamilyNavMenu.razor（三场景导航：知识库/家庭/AI实验室）
 - WebUI 服务层：services\WebUI.Family\Services\ApiService.cs（核心 API 调用，3 个 HttpClient）

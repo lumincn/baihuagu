@@ -11,8 +11,8 @@
   用法:
     bh <cell> <command> [args]   路由到指定 cell
     bh <command> [args]          使用默认 cell（native，Windows 平台）
-    bh install                   把本目录加入用户 PATH（含 bh.cmd shim）
-    bh uninstall                 从用户 PATH 移除本目录
+    bh install                   复制自包含定位器到 %USERPROFILE%\.local\bin（含 bh.cmd shim，加入用户 PATH）
+    bh uninstall                 移除定位器与 PATH 项
 #>
 [CmdletBinding()]
 param(
@@ -55,16 +55,24 @@ function Show-Help {
 }
 
 function Invoke-Install {
-    # 幂等：把 tools/bh 追加到用户 PATH（HKCU\Environment）
+    # 复制自包含定位器（locator.ps1 + bh.cmd shim）到 %USERPROFILE%\.local\bin，
+    # 并把该目录加入用户 PATH。定位器每次调用时自动定位仓库根（BAIHUA_HOME > 常见路径 > 向上查找），
+    # 仓库改名/移动后无需重装。
+    $bin = Join-Path $HOME '.local\bin'
+    New-Item -ItemType Directory -Force -Path $bin | Out-Null
+    Copy-Item (Join-Path $Root 'locator.ps1') (Join-Path $bin 'bh.ps1') -Force
+    Copy-Item (Join-Path $Root 'bh.cmd') (Join-Path $bin 'bh.cmd') -Force
+
+    # 幂等：把 $bin 追加到用户 PATH（HKCU\Environment）
     $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
     $parts = @($userPath -split ';' | Where-Object { $_ -ne '' })
-    $already = $parts | Where-Object { $_.TrimEnd('\') -ieq $Root }
+    $already = $parts | Where-Object { $_.TrimEnd('\') -ieq $bin }
     if ($already) {
-        Write-Host "[install] 已在用户 PATH: $Root"
+        Write-Host "[install] 已在用户 PATH: $bin"
     } else {
-        $newPath = (@($parts) + $Root) -join ';'
+        $newPath = (@($parts) + $bin) -join ';'
         [Environment]::SetEnvironmentVariable('Path', $newPath, 'User')
-        Write-Host "[install] 已加入用户 PATH: $Root"
+        Write-Host "[install] 已加入用户 PATH: $bin"
     }
     # 广播环境变量变更（explorer 与后续进程可见）
     Add-Type -Namespace Win32 -Name Native -MemberDefinition @'
@@ -74,18 +82,23 @@ public static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, UIntPtr wP
     $null = [Win32.Native]::SendMessageTimeout([IntPtr]::Zero, 0x1A, [UIntPtr]::Zero, 'Environment', 2, 5000, [ref]([UIntPtr]::Zero))
     Write-Host '[install] 完成。新开终端后可直接使用: bh <command>'
     Write-Host '         当前会话请用: .\tools\bh\bh.ps1 <command>'
+    Write-Host '[install] 定位器自动查找: $env:BAIHUA_HOME > 常见路径 > 当前目录向上；仓库改名/移动后无需重新安装'
 }
 
 function Invoke-Uninstall {
     $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
     $parts = @($userPath -split ';' | Where-Object { $_ -ne '' })
-    $kept = @($parts | Where-Object { $_.TrimEnd('\') -ine $Root })
+    $bin = Join-Path $HOME '.local\bin'
+    $kept = @($parts | Where-Object { $_.TrimEnd('\') -ine $bin })
     if ($kept.Count -eq $parts.Count) {
-        Write-Host "[uninstall] 用户 PATH 中未找到: $Root"
+        Write-Host "[uninstall] 用户 PATH 中未找到: $bin"
     } else {
         [Environment]::SetEnvironmentVariable('Path', $kept -join ';', 'User')
-        Write-Host "[uninstall] 已从用户 PATH 移除: $Root"
+        Write-Host "[uninstall] 已从用户 PATH 移除: $bin"
     }
+    Remove-Item (Join-Path $bin 'bh.ps1') -Force -ErrorAction SilentlyContinue
+    Remove-Item (Join-Path $bin 'bh.cmd') -Force -ErrorAction SilentlyContinue
+    Write-Host '[uninstall] 已移除 %USERPROFILE%\.local\bin\bh.ps1 / bh.cmd'
 }
 
 $cell = $Arg1.ToLower()

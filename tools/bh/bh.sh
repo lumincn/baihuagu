@@ -9,8 +9,8 @@
 # 用法:
 #   bh <cell> <command> [args]   路由到指定 cell
 #   bh <command> [args]          使用默认 cell（k8s）
-#   bh install                   软链到 ~/.local/bin/bh（须在 PATH）
-#   bh uninstall                 移除软链
+#   bh install                   复制自包含定位器到 PATH（~/.local/bin/bh 或 /usr/local/bin/bh）
+#   bh uninstall                 移除定位器
 set -u
 
 # 用 readlink -f 解析软链，确保通过 ~/.local/bin/bh 软链调用时 ROOT 指向真实目录
@@ -23,9 +23,9 @@ case "${1:-}" in
         ;;
     install)
         if [ "$(id -u)" = "0" ]; then
-            # root 安装：放 /usr/local/bin（sudo secure_path 默认包含，sudo bh 与普通用户 bh 都可用）
-            ln -sf "$ROOT/bh.sh" /usr/local/bin/bh && \
-                echo "[install] 已软链: /usr/local/bin/bh -> $ROOT/bh.sh"
+            # root 安装：复制自包含定位器到 /usr/local/bin（sudo secure_path 默认包含，sudo bh 与普通用户 bh 都可用）
+            install -m 0755 "$ROOT/locator.sh" /usr/local/bin/bh && \
+                echo "[install] 已安装: /usr/local/bin/bh（自包含定位器，目录改名/移动后无需重装）"
             echo "[install] /usr/local/bin 在 sudo secure_path 内，bh 与 sudo bh 均直接可用"
         else
             bin="${HOME}/.local/bin"
@@ -34,7 +34,7 @@ case "${1:-}" in
                 echo "         请用 root 执行: sudo bash $ROOT/bh.sh install  （或 WSL: wsl -u root）"
                 exit 1
             fi
-            ln -sf "$ROOT/bh.sh" "$bin/bh" && echo "[install] 已软链: $bin/bh -> $ROOT/bh.sh"
+            install -m 0755 "$ROOT/locator.sh" "$bin/bh" && echo "[install] 已安装: $bin/bh（自包含定位器，目录改名/移动后无需重装）"
             case ":$PATH:" in
                 *":$bin:"*) echo "[install] ~/.local/bin 已在 PATH，直接可用: bh <command>" ;;
                 *)
@@ -46,12 +46,13 @@ case "${1:-}" in
                     fi
                     ;;
             esac
+            echo "[install] 定位器自动查找: \$BAIHUA_HOME > 常见路径 > 当前目录向上；仓库改名/移动后无需重新安装"
         fi
         ;;
     uninstall)
         rm -f "${HOME}/.local/bin/bh" 2>/dev/null
         rm -f /usr/local/bin/bh 2>/dev/null
-        echo "[uninstall] 已移除 bh 软链（~/.local/bin/bh、/usr/local/bin/bh；无权限删除的请用 root）"
+        echo "[uninstall] 已移除 bh（~/.local/bin/bh、/usr/local/bin/bh；无权限删除的请用 root）"
         ;;
     help|-h|--help|"")
         echo "bh - baihua 统一 CLI（Linux）"
@@ -60,6 +61,7 @@ case "${1:-}" in
         echo "  bh <cell> <command> [args]    路由到指定 cell（k8s | native）"
         echo "  bh <command> [args]           默认 cell（k8s）"
         echo "  bh install / uninstall        安装到 PATH（root→/usr/local/bin，普通用户→~/.local/bin）/ 移除"
+        echo "                                安装的是自包含定位器（非软链），仓库改名/移动后无需重装"
         echo ""
         echo "提示: k8s cell 需要 root（k3s 配置 /etc/rancher/k3s/k3s.yaml 仅 root 可读），WSL 下用 wsl -u root"
         echo "cell 内可用命令: bh <cell> help"

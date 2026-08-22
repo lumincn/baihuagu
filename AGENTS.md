@@ -36,7 +36,7 @@ $PSDefaultParameterValues['*:Encoding'] = 'utf8'
 
 ```
 C:\Users\lumin\src\
-├── baihuagu/          # 百花 - 家庭版（本项目）
+├── baihua/           # 百花 - 家庭版（本项目）
 ├── mdyj-cloud/        # 花阁 - 云端版
 └── kotlin/            # 百花 Android 客户端
 
@@ -67,6 +67,30 @@ C:\Users\lumin\DevecostudioProjects\
 - **WebUI 与后端之间的共享数据类型和 API 接口定义必须放在 `Baihua.Contracts`**，两边禁止各自重复定义。新增或修改 API 契约时，先更新 Contracts，再让两边引用同一版本。
 - **共享业务服务（如 `VaultSettingsService`、`VaultNoteIndexer`）放在 `Baihua.Core`**，`Baihua.Family`、`Baihua.Vault` 和 `Baihua.AI` 均通过引用 `Baihua.Core` 使用，避免 HTTP 调用开销。
 - **`git push` 失败时**，先启动代理再重试：`pwsh -File "C:\Users\lumin\myhysteria\start.ps1"`，等待几秒后设置 `$env:HTTPS_PROXY="socks5://127.0.0.1:1080"` 再 `git push`。若代理服务器 8.216.46.73 的 443/22 端口同时超时，多半是出口 IP 变化被阿里云安全组拦截：用 `C:\Users\lumin\aliyun-cli\aliyun.exe` 放行新 IP（需先 `aliyun configure`），完整流程见 project-manager 仓库 `docs/ALIYUN_SECURITY_GROUP.md`。
+
+## DSH 插件 / 集成（3 个独立仓库）
+
+> 架构定位：**百花 = 能力提供方**（算力池 / 本机模型 / 知识库 / 家庭数据），**DSH（DeepSeek Harness）= 编排与交互面**。
+> 三个插件仓库位于 `~/src/mdyj/`（org `luminsw`）；部署与配置总文档见 `docs/DSH_INTEGRATION.md`。
+
+| 插件 | 方向 | 作用 | 安装位置 |
+|---|---|---|---|
+| `baihua-dsh-plugin` | 百花 Web → DSH | 桥接：agent 会话驱动（HTTP+WS `/dsh-bridge/*`）、`bh_*` 运维工具、百花数据工具、DSH 设置页「百花服务状态」卡片 | DSH web profile（127.0.0.1:3080），`lanListen 0.0.0.0:3081` 局域网桥 |
+| `baihua-local-ai-dsh-plugin` | DSH → 百花本地 AI | 探测 OVMS/shim/算力池，注册 `baihua-local` LLM provider + `local_ai_small_task` 小任务工具（省线上 token） | DSH web profile |
+| `baihua-mcp-server` | 百花 → 任意 MCP 客户端 | 标准 MCP（stdio）：知识库 / 家庭只读能力，DSH 经 `dsh-mcp-client` 接入（工具名带 `mcp__baihua__` 前缀） | 任意 MCP 客户端 |
+
+**agent 可直接调用的工具**（由上述插件注册）：
+
+- `bh_status` / `bh_logs` / `bh_op_status` — 只读运维，直接用
+- `bh_start` / `bh_stop` / `bh_restart` / `bh_build` / `bh_build_restart` / `bh_update` — 变更类运维，**执行前先询问用户**；编译/更新为长操作，用返回的 `opId` 轮询 `bh_op_status`
+- `baihua_vault_search` / `baihua_vault_list` / `baihua_vault_read_note` — 知识库检索 / 列表 / 读笔记
+- `baihua_budget_summary` / `baihua_tasks_list` — 家庭记账汇总 / 任务列表
+- `baihua_draw` — ComfyUI 出图（txt2img）
+- `local_ai_small_task` — 小而有界的文本任务（短摘要/分类/取词/起标题/简短改写）交给本机 AI，省线上 token；**长文档 / 多步推理 / 写代码用远程模型**
+- `mcp__baihua__*` — 经 MCP server 的同一批只读数据工具（DSH 内前缀形式）
+
+> 插件配置在 `~/.dsh/profiles/web/cordis.patch.yml`（token / bhCommand / vaultUrl / familyUrl / poolUrl 等）；
+> 改插件源码后重启 DSH 生效（`pkill -f "dsh web"; npx @deepseek-ai/dsh web`）。
 
 ## 目录
 

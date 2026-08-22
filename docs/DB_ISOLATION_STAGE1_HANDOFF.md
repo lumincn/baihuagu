@@ -51,7 +51,7 @@ function = new { name = functionCall.Name, arguments = argsJson }
 ### 构建环境与铁律（重要）
 ```bash
 # 必须标准 nerdctl build（不要 -o type=image），且一次只构建一个镜像（并发会污染共享 NuGet 缓存）
-cd /home/lumin/src/mdyj/baihuagu
+cd /home/lumin/src/mdyj/baihua
 sudo nerdctl -a /run/k3s/containerd/containerd.sock -n k8s.io build --no-cache -t bh-ai:latest -f k8s/images/Dockerfile.ai .
 # 成功标志：输出含 "unpacking to docker.io/library/bh-ai:latest ... done"
 ```

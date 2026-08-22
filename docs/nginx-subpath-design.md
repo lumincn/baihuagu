@@ -580,7 +580,7 @@ cd docker && docker compose stop nginx
 
 | 平台 | 文件 | 行号 | 当前代码 |
 |------|------|------|---------|
-| **C# (BaihuaSdk)** | [HttpTransport.cs](file:///c:/Users/lumin/src/baihuagu/libs/BaihuaSdk/src/Transport/HttpTransport.cs#L241) | 241 | `return $"http://{trimmed}:8788";` |
+| **C# (BaihuaSdk)** | [HttpTransport.cs](file:///c:/Users/lumin/src/baihua/libs/BaihuaSdk/src/Transport/HttpTransport.cs#L241) | 241 | `return $"http://{trimmed}:8788";` |
 | **Kotlin (baihua-sdk)** | `baihua-sdk/.../transport/HttpTransport.kt` | 247-249 | `val portSuffix = if (hasPort) "" else ":8788"` |
 | **ArkTS (baihua_sdk)** | `baihua_sdk/.../transport/HttpTransport.ets` | 238-239 | `` `http://${trimmed}${hasPort ? '' : ':8788'}` `` |
 
@@ -593,7 +593,7 @@ ArkTS entry 模块的常量：
 花圃 Huapu UI 占位符：
 | 平台 | 文件 | 行号 | 当前代码 |
 |------|------|------|---------|
-| **C# (Huapu)** | [PairingContent.razor](file:///c:/Users/lumin/src/baihuagu/clients/Huapu/Pages/PairingContent.razor#L30) | 30 | `placeholder="例如: http://192.168.1.100:8788"` |
+| **C# (Huapu)** | [PairingContent.razor](file:///c:/Users/lumin/src/baihua/clients/Huapu/Pages/PairingContent.razor#L30) | 30 | `placeholder="例如: http://192.168.1.100:8788"` |
 
 ### 11.3 改造方案
 
@@ -615,7 +615,7 @@ ArkTS entry 模块的常量：
 输入: "http://192.168.1.5"  → 输出: "http://192.168.1.5"       (已有协议，不补端口)
 ```
 
-**C# BaihuaSdk 改动**（[HttpTransport.cs:235-242](file:///c:/Users/lumin/src/baihuagu/libs/BaihuaSdk/src/Transport/HttpTransport.cs#L235-L242)）：
+**C# BaihuaSdk 改动**（[HttpTransport.cs:235-242](file:///c:/Users/lumin/src/baihua/libs/BaihuaSdk/src/Transport/HttpTransport.cs#L235-L242)）：
 ```csharp
 // 改前
 return $"http://{trimmed}:8788";
@@ -658,7 +658,7 @@ export const DEFAULT_SERVER_PORT: number = 80;
 - `ServerManager.ets:241,263` — `isServerAdded` / `addServerFromOneHop` 兜底拼接，需改为 80
 - `PathValidator.ets:19` — 手动输入校验补端口，需改为 80（**首版遗漏，已补充**）
 
-**花圃 Huapu 占位符改动**（[PairingContent.razor:30](file:///c:/Users/lumin/src/baihuagu/clients/Huapu/Pages/PairingContent.razor#L30)）：
+**花圃 Huapu 占位符改动**（[PairingContent.razor:30](file:///c:/Users/lumin/src/baihua/clients/Huapu/Pages/PairingContent.razor#L30)）：
 ```razor
 <!-- 改前 -->
 <input @bind="_manualUrl" placeholder="例如: http://192.168.1.100:8788" />

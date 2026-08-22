@@ -34,5 +34,5 @@ description: 百花（baihua）仓库内的编程助手——用 gitnexus 代码
 
 ## 何时不用本技能
 
-- 工作目录不在百花仓库（无 baihuagu/.dsh/skills 时本技能不会被发现，天然满足）；
+- 工作目录不在百花仓库（无 baihua/.dsh/skills 时本技能不会被发现，天然满足）；
 - 纯闲聊、与编码无关的任务。

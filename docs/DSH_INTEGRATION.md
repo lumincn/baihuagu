@@ -49,7 +49,7 @@ dsh plugin --profile web add /home/lumin/src/mdyj/baihua-local-ai-dsh-plugin
   config:
     token: '<共享密钥>'                                    # 必须（对外暴露时）
     lanListen: '0.0.0.0:3081'                             # 局域网桥（仅 /dsh-bridge/*）
-    bhCommand: '/home/lumin/src/mdyj/baihuagu/tools/bh/bh.sh'  # 运维 CLI（本机路径）
+    bhCommand: '/home/lumin/src/mdyj/baihua/tools/bh/bh.sh'  # 运维 CLI（本机路径）
     vaultUrl: 'http://10.43.242.109:8790'                 # k8s Vault ClusterIP
     familyUrl: 'http://10.43.159.101:8788'                # k8s Family ClusterIP
     comfyUrl: 'http://127.0.0.1:8188'                     # ComfyUI（本机）

@@ -29,7 +29,7 @@ public sealed class CodeAgentTools
     private const string DefaultRepo = "baihua";
 
     /// <summary>GitNexus 工作目录：目标仓库根目录。</summary>
-    private const string RepoRoot = @"C:\Users\lumin\src\baihuagu";
+    private const string RepoRoot = @"C:\Users\lumin\src\baihua";
 
     public CodeAgentTools(IConfiguration configuration, ILoggerFactory loggerFactory)
     {
