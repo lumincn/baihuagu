@@ -13,19 +13,26 @@ public sealed class DshBridgeService
 {
     private readonly IHttpClientFactory _httpFactory;
     private readonly string _baseUrl;
+    private readonly string _baseUiUrl;
     private readonly int _maxBufferBytes;
     private readonly string _token;
 
     public DshBridgeService(IHttpClientFactory httpFactory, IConfiguration config)
     {
         _httpFactory = httpFactory;
+        // 服务端调 DSH API（/dsh-bridge/*）的地址：默认 127.0.0.1:3080（同机）；k8s 容器内可配宿主局域网地址
         _baseUrl = (config["DshApi:BaseUrl"] ?? "http://127.0.0.1:3080").TrimEnd('/');
+        // 用户浏览器内嵌 DSH 完整 UI 的地址（iframe 用）：默认 127.0.0.1:3080（浏览器与 DSH 同机即可）
+        _baseUiUrl = (config["DshApi:BaseUiUrl"] ?? "http://127.0.0.1:3080").TrimEnd('/');
         _maxBufferBytes = (config.GetValue<int?>("DshApi:MaxBufferBytes") ?? 1_000_000);
         _token = config["DshApi:Token"] ?? "";
         _availableDefaultCwd = config["DshApi:DefaultCwd"] ?? "";
     }
 
     public string BaseUrl => _baseUrl;
+
+    /// <summary>浏览器 iframe 内嵌 DSH 完整 UI 的地址（独立于服务端 API 的 BaseUrl）。</summary>
+    public string BaseUiUrl => _baseUiUrl;
 
     public string DefaultCwd => _availableDefaultCwd;
     private readonly string _availableDefaultCwd;

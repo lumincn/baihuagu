@@ -226,7 +226,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _dshUrl = DshSvc.BaseUrl.TrimEnd('/') + "/";
+        _dshUrl = DshSvc.BaseUiUrl.TrimEnd('/') + "/";
         await RefreshStatus();
     }
 
