@@ -38,9 +38,7 @@ $PSDefaultParameterValues['*:Encoding'] = 'utf8'
 C:\Users\lumin\src\
 ├── baihua/           # 百花 - 家庭版（本项目）
 ├── mdyj-cloud/        # 花阁 - 云端版
-└── kotlin/            # 百花 Android 客户端
-
-C:\Users\lumin\DevecostudioProjects\
+├── kotlin/            # 百花 Android 客户端
 └── arkts/             # 百花鸿蒙客户端
 ```
 
@@ -71,7 +69,7 @@ C:\Users\lumin\DevecostudioProjects\
 ## DSH 插件 / 集成（3 个独立仓库）
 
 > 架构定位：**百花 = 能力提供方**（算力池 / 本机模型 / 知识库 / 家庭数据），**DSH（DeepSeek Harness）= 编排与交互面**。
-> 三个插件仓库位于 `~/src/mdyj/`（org `luminsw`）；部署与配置总文档见 `docs/DSH_INTEGRATION.md`。
+> 插件仓库位于 `~/src/`（org `luminsw`）；部署与配置总文档见 `docs/DSH_INTEGRATION.md`。
 
 | 插件 | 方向 | 作用 | 安装位置 |
 |---|---|---|---|
