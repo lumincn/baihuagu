@@ -1,4 +1,4 @@
-#requires -Version 5.1
+﻿#requires -Version 5.1
 <#
   baihua - Windows + dotnet native CLI
   Cell of the matrix: OS=windows, deployment=dotnet-native
@@ -104,7 +104,7 @@ function Update-Services {
     if ($LASTEXITCODE -ne 0) { throw 'git pull 失败，请检查网络/代理' }
     Invoke-Build
     Start-Services
-    # Windows 防火墙默认拦截局域网入站：放行 family 8788（算力池/互联入口）
+    # Windows 防火墙默认拦截局域网入站：放行 family 8788（算力池/互联入口）——尽力而为，失败不阻断更新
     $rule = netsh advfirewall firewall show rule name='Baihua Family 8788' 2>$null
     if ($LASTEXITCODE -ne 0) {
         netsh advfirewall firewall add rule name='Baihua Family 8788' dir=in action=allow protocol=TCP localport=8788 | Out-Null
