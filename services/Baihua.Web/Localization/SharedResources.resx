@@ -1,8 +1,7 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:schema id="root">
-    <xs:element name="root" ns1:IsDataSet="true">
-    </xs:element>
+    <xs:element name="root" ns1:IsDataSet="true"></xs:element>
   </xs:schema>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
@@ -30,11 +29,7 @@
   </data>
   <data name="Dsh_Offline" xml:space="preserve">
     <value>Offline</value>
-  </data>
-  <data name="Dsh_Cwd" xml:space="preserve">
-    <value>Working dir</value>
-  </data>
-  <data name="Dsh_Refresh" xml:space="preserve">
+  </data>  <data name="Dsh_Refresh" xml:space="preserve">
     <value>Refresh</value>
   </data>
   <data name="Dsh_OfflineHint" xml:space="preserve">
@@ -46,32 +41,8 @@
   <data name="Dsh_PluginHint" xml:space="preserve">
     <value>Load the dsh-baihua-bridge plugin in DSH (see ~/.dsh/bridge/README.md) so Baihua can drive its agent sessions.</value>
   </data>
-  <data name="Dsh_Sessions" xml:space="preserve">
-    <value>Sessions</value>
-  </data>
-  <data name="Dsh_New" xml:space="preserve">
-    <value>New</value>
-  </data>
-  <data name="Dsh_NoSessions" xml:space="preserve">
-    <value>No sessions</value>
-  </data>
-  <data name="Dsh_EmptyHint" xml:space="preserve">
-    <value>Describe a task below and the DSH agent will read files and run commands to complete it.</value>
-  </data>
-  <data name="Dsh_Running" xml:space="preserve">
-    <value>DSH working…</value>
-  </data>
-  <data name="Dsh_Tools" xml:space="preserve">
-    <value>Tool calls</value>
-  </data>
-  <data name="Dsh_InputPlaceholder" xml:space="preserve">
-    <value>Type a task and press Send to hand it to DSH…</value>
-  </data>
-  <data name="Dsh_Working" xml:space="preserve">
-    <value>Working…</value>
-  </data>
-  <data name="Dsh_Send" xml:space="preserve">
-    <value>Send</value>
+  <data name="Dsh_OpenExternal" xml:space="preserve">
+    <value>Open in a new window</value>
   </data>
   <data name="LanguageName" xml:space="preserve">
     <value>English</value>
@@ -106,7 +77,6 @@
   <data name="Search_Placeholder" xml:space="preserve">
     <value>Search notes...</value>
   </data>
-  
   <data name="Dashboard_PageTitle" xml:space="preserve">
     <value>Dashboard - Family</value>
   </data>
@@ -767,7 +737,6 @@
   <data name="LocalModels_DownloadedTitle" xml:space="preserve">
     <value>Downloaded Models</value>
   </data>
-
   <data name="LocalModels_DlName" xml:space="preserve">
     <value>Model</value>
   </data>
@@ -1869,7 +1838,6 @@
   <data name="Settings_ApiKeyDecryptErrorHint" xml:space="preserve">
     <value>Encryption key changed (upgrade/container rebuild); re-saving the key will recover</value>
   </data>
-
   <data name="Settings_ApiKeyOptional" xml:space="preserve">
     <value>API Key (leave empty for local Ollama)</value>
   </data>
@@ -2677,13 +2645,13 @@
   <data name="BrowseVault_AllIndustries" xml:space="preserve">
     <value>All</value>
   </data>
-    <data name="BrowseVault_SourceLabel" xml:space="preserve">
+  <data name="BrowseVault_SourceLabel" xml:space="preserve">
     <value>Source:</value>
   </data>
   <data name="BrowseVault_AllSources" xml:space="preserve">
     <value>All</value>
   </data>
-<data name="BrowseVault_TagLabel" xml:space="preserve">
+  <data name="BrowseVault_TagLabel" xml:space="preserve">
     <value>🏷️ Tags:</value>
   </data>
   <data name="BrowseVault_AllTags" xml:space="preserve">
@@ -2938,115 +2906,8 @@
   <data name="DailyCard_Tier_Platinum" xml:space="preserve">
     <value>Platinum</value>
   </data>
-  <data name="Messages_PageTitle" xml:space="preserve">
-    <value>AI Chat</value>
-  </data>
-  <data name="Messages_Title" xml:space="preserve">
-    <value>💬 AI Chat</value>
-  </data>
-  <data name="Messages_AiNotConfigured" xml:space="preserve">
-    <value>⚠️ AI not configured, please set up API Key first</value>
-  </data>
-  <data name="Messages_ExportChat" xml:space="preserve">
-    <value>📥 Export Chat</value>
-  </data>
-  <data name="Messages_ClearChat" xml:space="preserve">
-    <value>🗑️ Clear Chat</value>
-  </data>
   <data name="Messages_Regenerate" xml:space="preserve">
     <value>🔄 Regenerate</value>
-  </data>
-  <data name="Messages_Mode" xml:space="preserve">
-    <value>Mode</value>
-  </data>
-  <data name="Messages_ModeRemote" xml:space="preserve">
-    <value>🌐 Remote</value>
-  </data>
-  <data name="Messages_Provider" xml:space="preserve">
-    <value>Provider</value>
-  </data>
-  <data name="Messages_MainProvider" xml:space="preserve">
-    <value>(Main)</value>
-  </data>
-  <data name="Messages_Model" xml:space="preserve">
-    <value>Model</value>
-  </data>
-  <data name="Messages_NoModelsAvailable" xml:space="preserve">
-    <value>— No models available —</value>
-  </data>
-  <data name="Messages_DefaultModel" xml:space="preserve">
-    <value>(Default)</value>
-  </data>
-  <data name="Messages_GoToSettings" xml:space="preserve">
-    <value>Go to settings to get models →</value>
-  </data>
-  <data name="Messages_ModelPath" xml:space="preserve">
-    <value>Model Path</value>
-  </data>
-  <data name="Messages_Scan" xml:space="preserve">
-    <value>🔍 Scan</value>
-  </data>
-  <data name="Messages_KnowledgeBase" xml:space="preserve">
-    <value>Knowledge Base</value>
-  </data>
-  <data name="Messages_Searching" xml:space="preserve">
-    <value>🔍 Searching</value>
-  </data>
-  <data name="Messages_Closed" xml:space="preserve">
-    <value>Off</value>
-  </data>
-  <data name="Messages_InputPlaceholder" xml:space="preserve">
-    <value>Type a message...
-
-Shift+Enter new line, Enter to send</value>
-  </data>
-  <data name="Messages_Stop" xml:space="preserve">
-    <value>⏹ Stop</value>
-  </data>
-  <data name="Messages_Send" xml:space="preserve">
-    <value>Send</value>
-  </data>
-  <data name="Messages_ToolSearchVault" xml:space="preserve">
-    <value>🔍 Search Vault</value>
-  </data>
-  <data name="Messages_ToolCreateNote" xml:space="preserve">
-    <value>📝 Create Note</value>
-  </data>
-  <data name="Messages_ToolGetSystemStatus" xml:space="preserve">
-    <value>📊 Get System Status</value>
-  </data>
-  <data name="Messages_ToolGetCurrentDate" xml:space="preserve">
-    <value>📅 Get Current Date</value>
-  </data>
-  <data name="Messages_ToolListVaults" xml:space="preserve">
-    <value>📚 List Vaults</value>
-  </data>
-  <data name="Messages_ToolCallUnknown" xml:space="preserve">
-    <value>🔧 {0}</value>
-  </data>
-  <data name="Messages_Stopped" xml:space="preserve">
-    <value>(Stopped)</value>
-  </data>
-  <data name="Messages_RequestFailed" xml:space="preserve">
-    <value>Request failed: {0}</value>
-  </data>
-  <data name="Messages_DefaultModelName" xml:space="preserve">
-    <value>Default Model</value>
-  </data>
-  <data name="Messages_ExportTitle" xml:space="preserve">
-    <value># AI Chat Export</value>
-  </data>
-  <data name="Messages_ExportTimeFormat" xml:space="preserve">
-    <value>Exported: {0:yyyy-MM-dd HH:mm:ss}</value>
-  </data>
-  <data name="Messages_ExportUser" xml:space="preserve">
-    <value>**User**</value>
-  </data>
-  <data name="Messages_ExportAI" xml:space="preserve">
-    <value>**AI**</value>
-  </data>
-  <data name="Messages_ExportToolCalls" xml:space="preserve">
-    <value>&gt; 🔧 Tools used: {0}</value>
   </data>
   <data name="Login_PageTitle" xml:space="preserve">
     <value>Authorized Access - Baihua</value>
@@ -4074,14 +3935,12 @@ Shift+Enter new line, Enter to send</value>
   <data name="Api_OperationFailedWithError" xml:space="preserve">
     <value>Operation failed: {0}</value>
   </data>
-  
   <data name="Devices_RequestRejected" xml:space="preserve">
     <value>Device pairing rejected</value>
   </data>
   <data name="Devices_DeviceRevoked" xml:space="preserve">
     <value>Device authorization revoked</value>
   </data>
-  
   <data name="ObsidianStatus_Unknown" xml:space="preserve">
     <value>Obsidian status unknown</value>
   </data>
@@ -4091,170 +3950,260 @@ Shift+Enter new line, Enter to send</value>
   <data name="ObsidianStatus_CheckFailed" xml:space="preserve">
     <value>Failed to check Obsidian status</value>
   </data>
-<data name="PromptTemplates_CardChatSystemPromptLabel" xml:space="preserve"><value>Chat System Prompt:</value></data><data name="PromptTemplates_CardSplitSystemPromptLabel" xml:space="preserve"><value>Split System Prompt:</value></data><data name="PromptTemplates_CardTitleFormat" xml:space="preserve"><value>Template: {0}</value></data><data name="PromptTemplates_ChatSystemPromptHint" xml:space="preserve"><value>Default system prompt for AI chat</value></data><data name="PromptTemplates_ChatSystemPromptPlaceholder" xml:space="preserve"><value>Enter chat system prompt...</value></data><data name="PromptTemplates_ConfigurationAdvicePlaceholder" xml:space="preserve"><value>Enter configuration advice...</value></data><data name="PromptTemplates_ConfirmDelete" xml:space="preserve"><value>Are you sure you want to delete template "{0}"?</value></data><data name="PromptTemplates_CreateNewBtn" xml:space="preserve"><value>New Template</value></data><data name="PromptTemplates_DefaultCategoriesLabel" xml:space="preserve"><value>Default Categories:</value></data><data name="PromptTemplates_DefaultCategoriesPlaceholder" xml:space="preserve"><value>Separate with commas, e.g., Formulas, Herbs</value></data><data name="PromptTemplates_DeleteBtn" xml:space="preserve"><value>Delete</value></data><data name="PromptTemplates_Description" xml:space="preserve"><value>Manage AI chat and note-splitting prompt templates, customizable for different industries.</value></data><data name="PromptTemplates_EditBtn" xml:space="preserve"><value>Edit</value></data><data name="PromptTemplates_EditTemplateTitle" xml:space="preserve"><value>Edit Template - {0}</value></data><data name="PromptTemplates_IndustryNameLabel" xml:space="preserve"><value>Industry Name</value></data><data name="PromptTemplates_IndustryNamePlaceholder" xml:space="preserve"><value>e.g., TCM, Legal, Education</value></data><data name="PromptTemplates_LoadFailed" xml:space="preserve"><value>Failed to load templates</value></data><data name="PromptTemplates_ModalChatSystemPromptLabel" xml:space="preserve"><value>Chat System Prompt</value></data><data name="PromptTemplates_ModalConfigurationAdviceLabel" xml:space="preserve"><value>Configuration Advice</value></data><data name="PromptTemplates_ModalDefaultCategoriesLabel" xml:space="preserve"><value>Default Categories</value></data><data name="PromptTemplates_ModalSplitSystemPromptLabel" xml:space="preserve"><value>Split System Prompt</value></data><data name="PromptTemplates_ModalSplitUserPromptLabel" xml:space="preserve"><value>Split User Prompt</value></data><data name="PromptTemplates_ModalSupplementPromptLabel" xml:space="preserve"><value>Supplement Prompt</value></data><data name="PromptTemplates_NewTemplateTitle" xml:space="preserve"><value>New Template</value></data><data name="PromptTemplates_PageTitle" xml:space="preserve"><value>Prompt Template Manager</value></data><data name="PromptTemplates_SaveBtn" xml:space="preserve"><value>Save</value></data><data name="PromptTemplates_SaveFailed" xml:space="preserve"><value>Save failed</value></data><data name="PromptTemplates_Saving" xml:space="preserve"><value>Saving...</value></data><data name="PromptTemplates_SplitSystemPromptPlaceholder" xml:space="preserve"><value>Enter split system prompt...</value></data><data name="PromptTemplates_SplitUserPromptPlaceholder" xml:space="preserve"><value>Enter split user prompt...</value></data><data name="PromptTemplates_SupplementPromptPlaceholder" xml:space="preserve"><value>Enter supplement prompt...</value></data><data name="PromptTemplates_Title" xml:space="preserve"><value>Prompt Template Manager</value></data><data name="Search_All" xml:space="preserve"><value>All</value></data><data name="Search_AllVaults" xml:space="preserve"><value>All Vaults</value></data><data name="Search_CancelRebuild" xml:space="preserve"><value>Cancel</value></data><data name="Search_CheckVaultPath" xml:space="preserve"><value>Please check if the vault path is configured correctly</value></data><data name="Search_ClearHistory" xml:space="preserve"><value>Clear History</value></data><data name="Search_ClickToView" xml:space="preserve"><value>Click to view</value></data><data name="Search_ConfigVaultPath" xml:space="preserve"><value>Please</value></data><data name="Search_ConfigVaultPathSuffix" xml:space="preserve"><value>then search again</value></data><data name="Search_DownloadObsidian" xml:space="preserve"><value>Download Obsidian</value></data><data name="Search_ErrorMessage" xml:space="preserve"><value>Search failed, please try again later</value></data><data name="Search_FilterIndustry" xml:space="preserve"><value>Industry</value></data><data name="Search_FilterVault" xml:space="preserve"><value>Vault</value></data><data name="Search_GroupAiQuery" xml:space="preserve"><value>AI Queries</value></data><data name="Search_GroupCases" xml:space="preserve"><value>Cases</value></data><data name="Search_GroupDiagnosis" xml:space="preserve"><value>Diagnosis</value></data><data name="Search_GroupFormulas" xml:space="preserve"><value>Formulas/Herbs</value></data><data name="Search_GroupOther" xml:space="preserve"><value>Other</value></data><data name="Search_GroupPathogenesis" xml:space="preserve"><value>Pathogenesis</value></data><data name="Search_GroupSymptoms" xml:space="preserve"><value>Symptoms</value></data><data name="Search_GroupTreatment" xml:space="preserve"><value>Treatment</value></data><data name="Search_IndexCountSuffix" xml:space="preserve"><value>docs</value></data><data name="Search_IndexLabel" xml:space="preserve"><value>Index Status: </value></data><data name="Search_IndexNotBuilt" xml:space="preserve"><value>Not indexed</value></data><data name="Search_MethodFileScan" xml:space="preserve"><value>File Scan</value></data><data name="Search_MethodFts5" xml:space="preserve"><value>FTS5 Full-Text</value></data><data name="Search_MethodFts5Semantic" xml:space="preserve"><value>FTS5 + Semantic</value></data><data name="Search_MethodLabel" xml:space="preserve"><value>Search method: </value></data><data name="Search_MethodObsidianCli" xml:space="preserve"><value>Obsidian CLI</value></data><data name="Search_MethodSemantic" xml:space="preserve"><value>Semantic</value></data><data name="Search_NeedCreateVault" xml:space="preserve"><value>Please create a vault first</value></data><data name="Search_NoResults" xml:space="preserve"><value>No results found</value></data><data name="Search_ObsidianHint" xml:space="preserve"><value>Tip: </value></data><data name="Search_ObsidianNotRunning" xml:space="preserve"><value>Obsidian is not running</value></data><data name="Search_ObsidianNotRunningDesc" xml:space="preserve"><value>Install Obsidian for a more complete clipboard-linked experience.</value></data><data name="Search_ObsidianRunning" xml:space="preserve"><value>Obsidian Connected</value></data><data name="Search_ObsidianRunningDesc" xml:space="preserve"><value>Clipboard monitoring active, ready to paste and search.</value></data><data name="Search_PageTitle" xml:space="preserve"><value>Full-Text Search</value></data><data name="Search_RebuildIndex" xml:space="preserve"><value>Rebuild Index</value></data><data name="Search_RecentTitle" xml:space="preserve"><value>Recent Searches</value></data><data name="Search_ResultsCountSuffix" xml:space="preserve"><value>results</value></data><data name="Search_ResultsTitle" xml:space="preserve"><value>Search Results</value></data><data name="Search_SearchButton" xml:space="preserve"><value>Search</value></data><data name="Search_Searching" xml:space="preserve"><value>Searching...</value></data><data name="Search_SettingsPage" xml:space="preserve"><value>configure the vault path</value></data><data name="Search_Tip1" xml:space="preserve"><value>Supports full-text keyword and semantic search</value></data><data name="Search_Tip2" xml:space="preserve"><value>Use Pinyin or English keywords</value></data><data name="Search_Tip3" xml:space="preserve"><value>Select a vault to narrow your search scope</value></data><data name="Search_TipsTitle" xml:space="preserve"><value>Search Tips</value></data><data name="Search_Title" xml:space="preserve"><value>Full-Text Knowledge Search</value></data>
+  <data name="PromptTemplates_CardChatSystemPromptLabel" xml:space="preserve">
+    <value>Chat System Prompt:</value>
+  </data>
+  <data name="PromptTemplates_CardSplitSystemPromptLabel" xml:space="preserve">
+    <value>Split System Prompt:</value>
+  </data>
+  <data name="PromptTemplates_CardTitleFormat" xml:space="preserve">
+    <value>Template: {0}</value>
+  </data>
+  <data name="PromptTemplates_ChatSystemPromptHint" xml:space="preserve">
+    <value>Default system prompt for AI chat</value>
+  </data>
+  <data name="PromptTemplates_ChatSystemPromptPlaceholder" xml:space="preserve">
+    <value>Enter chat system prompt...</value>
+  </data>
+  <data name="PromptTemplates_ConfigurationAdvicePlaceholder" xml:space="preserve">
+    <value>Enter configuration advice...</value>
+  </data>
+  <data name="PromptTemplates_ConfirmDelete" xml:space="preserve">
+    <value>Are you sure you want to delete template "{0}"?</value>
+  </data>
+  <data name="PromptTemplates_CreateNewBtn" xml:space="preserve">
+    <value>New Template</value>
+  </data>
+  <data name="PromptTemplates_DefaultCategoriesLabel" xml:space="preserve">
+    <value>Default Categories:</value>
+  </data>
+  <data name="PromptTemplates_DefaultCategoriesPlaceholder" xml:space="preserve">
+    <value>Separate with commas, e.g., Formulas, Herbs</value>
+  </data>
+  <data name="PromptTemplates_DeleteBtn" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="PromptTemplates_Description" xml:space="preserve">
+    <value>Manage AI chat and note-splitting prompt templates, customizable for different industries.</value>
+  </data>
+  <data name="PromptTemplates_EditBtn" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="PromptTemplates_EditTemplateTitle" xml:space="preserve">
+    <value>Edit Template - {0}</value>
+  </data>
+  <data name="PromptTemplates_IndustryNameLabel" xml:space="preserve">
+    <value>Industry Name</value>
+  </data>
+  <data name="PromptTemplates_IndustryNamePlaceholder" xml:space="preserve">
+    <value>e.g., TCM, Legal, Education</value>
+  </data>
+  <data name="PromptTemplates_LoadFailed" xml:space="preserve">
+    <value>Failed to load templates</value>
+  </data>
+  <data name="PromptTemplates_ModalChatSystemPromptLabel" xml:space="preserve">
+    <value>Chat System Prompt</value>
+  </data>
+  <data name="PromptTemplates_ModalConfigurationAdviceLabel" xml:space="preserve">
+    <value>Configuration Advice</value>
+  </data>
+  <data name="PromptTemplates_ModalDefaultCategoriesLabel" xml:space="preserve">
+    <value>Default Categories</value>
+  </data>
+  <data name="PromptTemplates_ModalSplitSystemPromptLabel" xml:space="preserve">
+    <value>Split System Prompt</value>
+  </data>
+  <data name="PromptTemplates_ModalSplitUserPromptLabel" xml:space="preserve">
+    <value>Split User Prompt</value>
+  </data>
+  <data name="PromptTemplates_ModalSupplementPromptLabel" xml:space="preserve">
+    <value>Supplement Prompt</value>
+  </data>
+  <data name="PromptTemplates_NewTemplateTitle" xml:space="preserve">
+    <value>New Template</value>
+  </data>
+  <data name="PromptTemplates_PageTitle" xml:space="preserve">
+    <value>Prompt Template Manager</value>
+  </data>
+  <data name="PromptTemplates_SaveBtn" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="PromptTemplates_SaveFailed" xml:space="preserve">
+    <value>Save failed</value>
+  </data>
+  <data name="PromptTemplates_Saving" xml:space="preserve">
+    <value>Saving...</value>
+  </data>
+  <data name="PromptTemplates_SplitSystemPromptPlaceholder" xml:space="preserve">
+    <value>Enter split system prompt...</value>
+  </data>
+  <data name="PromptTemplates_SplitUserPromptPlaceholder" xml:space="preserve">
+    <value>Enter split user prompt...</value>
+  </data>
+  <data name="PromptTemplates_SupplementPromptPlaceholder" xml:space="preserve">
+    <value>Enter supplement prompt...</value>
+  </data>
+  <data name="PromptTemplates_Title" xml:space="preserve">
+    <value>Prompt Template Manager</value>
+  </data>
+  <data name="Search_All" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="Search_AllVaults" xml:space="preserve">
+    <value>All Vaults</value>
+  </data>
+  <data name="Search_CancelRebuild" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Search_CheckVaultPath" xml:space="preserve">
+    <value>Please check if the vault path is configured correctly</value>
+  </data>
+  <data name="Search_ClearHistory" xml:space="preserve">
+    <value>Clear History</value>
+  </data>
+  <data name="Search_ClickToView" xml:space="preserve">
+    <value>Click to view</value>
+  </data>
+  <data name="Search_ConfigVaultPath" xml:space="preserve">
+    <value>Please</value>
+  </data>
+  <data name="Search_ConfigVaultPathSuffix" xml:space="preserve">
+    <value>then search again</value>
+  </data>
+  <data name="Search_DownloadObsidian" xml:space="preserve">
+    <value>Download Obsidian</value>
+  </data>
+  <data name="Search_ErrorMessage" xml:space="preserve">
+    <value>Search failed, please try again later</value>
+  </data>
+  <data name="Search_FilterIndustry" xml:space="preserve">
+    <value>Industry</value>
+  </data>
+  <data name="Search_FilterVault" xml:space="preserve">
+    <value>Vault</value>
+  </data>
+  <data name="Search_GroupAiQuery" xml:space="preserve">
+    <value>AI Queries</value>
+  </data>
+  <data name="Search_GroupCases" xml:space="preserve">
+    <value>Cases</value>
+  </data>
+  <data name="Search_GroupDiagnosis" xml:space="preserve">
+    <value>Diagnosis</value>
+  </data>
+  <data name="Search_GroupFormulas" xml:space="preserve">
+    <value>Formulas/Herbs</value>
+  </data>
+  <data name="Search_GroupOther" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="Search_GroupPathogenesis" xml:space="preserve">
+    <value>Pathogenesis</value>
+  </data>
+  <data name="Search_GroupSymptoms" xml:space="preserve">
+    <value>Symptoms</value>
+  </data>
+  <data name="Search_GroupTreatment" xml:space="preserve">
+    <value>Treatment</value>
+  </data>
+  <data name="Search_IndexCountSuffix" xml:space="preserve">
+    <value>docs</value>
+  </data>
+  <data name="Search_IndexLabel" xml:space="preserve">
+    <value>Index Status: </value>
+  </data>
+  <data name="Search_IndexNotBuilt" xml:space="preserve">
+    <value>Not indexed</value>
+  </data>
+  <data name="Search_MethodFileScan" xml:space="preserve">
+    <value>File Scan</value>
+  </data>
+  <data name="Search_MethodFts5" xml:space="preserve">
+    <value>FTS5 Full-Text</value>
+  </data>
+  <data name="Search_MethodFts5Semantic" xml:space="preserve">
+    <value>FTS5 + Semantic</value>
+  </data>
+  <data name="Search_MethodLabel" xml:space="preserve">
+    <value>Search method: </value>
+  </data>
+  <data name="Search_MethodObsidianCli" xml:space="preserve">
+    <value>Obsidian CLI</value>
+  </data>
+  <data name="Search_MethodSemantic" xml:space="preserve">
+    <value>Semantic</value>
+  </data>
+  <data name="Search_NeedCreateVault" xml:space="preserve">
+    <value>Please create a vault first</value>
+  </data>
+  <data name="Search_NoResults" xml:space="preserve">
+    <value>No results found</value>
+  </data>
+  <data name="Search_ObsidianHint" xml:space="preserve">
+    <value>Tip: </value>
+  </data>
+  <data name="Search_ObsidianNotRunning" xml:space="preserve">
+    <value>Obsidian is not running</value>
+  </data>
+  <data name="Search_ObsidianNotRunningDesc" xml:space="preserve">
+    <value>Install Obsidian for a more complete clipboard-linked experience.</value>
+  </data>
+  <data name="Search_ObsidianRunning" xml:space="preserve">
+    <value>Obsidian Connected</value>
+  </data>
+  <data name="Search_ObsidianRunningDesc" xml:space="preserve">
+    <value>Clipboard monitoring active, ready to paste and search.</value>
+  </data>
+  <data name="Search_PageTitle" xml:space="preserve">
+    <value>Full-Text Search</value>
+  </data>
+  <data name="Search_RebuildIndex" xml:space="preserve">
+    <value>Rebuild Index</value>
+  </data>
+  <data name="Search_RecentTitle" xml:space="preserve">
+    <value>Recent Searches</value>
+  </data>
+  <data name="Search_ResultsCountSuffix" xml:space="preserve">
+    <value>results</value>
+  </data>
+  <data name="Search_ResultsTitle" xml:space="preserve">
+    <value>Search Results</value>
+  </data>
+  <data name="Search_SearchButton" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Search_Searching" xml:space="preserve">
+    <value>Searching...</value>
+  </data>
+  <data name="Search_SettingsPage" xml:space="preserve">
+    <value>configure the vault path</value>
+  </data>
+  <data name="Search_Tip1" xml:space="preserve">
+    <value>Supports full-text keyword and semantic search</value>
+  </data>
+  <data name="Search_Tip2" xml:space="preserve">
+    <value>Use Pinyin or English keywords</value>
+  </data>
+  <data name="Search_Tip3" xml:space="preserve">
+    <value>Select a vault to narrow your search scope</value>
+  </data>
+  <data name="Search_TipsTitle" xml:space="preserve">
+    <value>Search Tips</value>
+  </data>
+  <data name="Search_Title" xml:space="preserve">
+    <value>Full-Text Knowledge Search</value>
+  </data>
   <data name="Nav_ImageRecognition" xml:space="preserve">
     <value>Image Recognition</value>
   </data>
-  <data name="Vision_PageTitle" xml:space="preserve">
-    <value>Image Recognition</value>
-  </data>
-  <data name="Vision_Title" xml:space="preserve">
-    <value>Image Recognition (Local Qwen2.5-VL + OpenVINO)</value>
-  </data>
-  <data name="Vision_UploadLabel" xml:space="preserve">
-    <value>Choose Image</value>
-  </data>
-  <data name="Vision_UploadHint" xml:space="preserve">
-    <value>png / jpg / jpeg / webp / bmp, max 20MB</value>
-  </data>
-  <data name="Vision_PromptLabel" xml:space="preserve">
-    <value>Prompt (optional)</value>
-  </data>
-  <data name="Vision_PromptDefault" xml:space="preserve">
-    <value>Please describe this image in detail.</value>
-  </data>
-  <data name="Vision_ModelLabel" xml:space="preserve">
-    <value>Model</value>
-  </data>
-  <data name="Vision_RecognizeBtn" xml:space="preserve">
-    <value>Recognize</value>
-  </data>
-  <data name="Vision_Recognizing" xml:space="preserve">
-    <value>Recognizing… (first load may take 20-60s)</value>
-  </data>
-  <data name="Vision_ResultLabel" xml:space="preserve">
-    <value>Result</value>
-  </data>
-  <data name="Vision_Elapsed" xml:space="preserve">
-    <value>Elapsed {0}s</value>
-  </data>
-  <data name="Vision_ServerDown" xml:space="preserve">
-    <value>Local vision service is not running</value>
-  </data>
-  <data name="Vision_StartServer" xml:space="preserve">
-    <value>Start Service</value>
-  </data>
-  <data name="Vision_StartingServer" xml:space="preserve">
-    <value>Starting…</value>
-  </data>
-  <data name="Vision_ServerStartFail" xml:space="preserve">
-    <value>Failed to start: {0}</value>
-  </data>
-  <data name="Vision_NoImage" xml:space="preserve">
-    <value>Please choose an image first</value>
-  </data>
-  <data name="Vision_ModelMissing" xml:space="preserve">
-    <value>Model files missing: {0}</value>
-  </data>
-  <data name="Vision_CopyBtn" xml:space="preserve">
-    <value>Copy</value>
-  </data>
-  <data name="Vision_Copied" xml:space="preserve">
-    <value>Copied</value>
-  </data>
-  <data name="Vision_Model3B" xml:space="preserve">
-    <value>3B (fast, default)</value>
-  </data>
-  <data name="Vision_Model7B" xml:space="preserve">
-    <value>7B (more accurate, small text)</value>
-  </data>
-  <data name="Vision_NotEnabled" xml:space="preserve">
-    <value>Local vision disabled (config LocalVision:Enabled)</value>
-  </data>
-
   <data name="LocalModels_DownloadedOpenVino" xml:space="preserve">
     <value>OpenVINO Vision Models</value>
   </data>
   <data name="LocalModels_LoadOpenVinoTitle" xml:space="preserve">
     <value>Load OpenVINO Model</value>
   </data>
-
-  <data name="Messages_RunningLocalModels" xml:space="preserve">
-    <value>Running local models (started in Local Models)</value>
-  </data>
-  <data name="Messages_SelectRunningModel" xml:space="preserve">
-    <value>Select a running model…</value>
-  </data>
-  <data name="Messages_RunningLocalModelsHint" xml:space="preserve">
-    <value>Models loaded in the Local Models page appear here.</value>
-  </data>
-
   <data name="Messages_RunningModelUnsupported" xml:space="preserve">
     <value>Chat not supported yet (OpenVINO only)</value>
-  </data>
-
-  <data name="Messages_LocalTools" xml:space="preserve">
-    <value>Local tools</value>
-  </data>
-  <data name="Messages_NoRunningTools" xml:space="preserve">
-    <value>No local tools running, </value>
-  </data>
-  <data name="Messages_GoToDeployPage" xml:space="preserve">
-    <value>start one in Local Models page →</value>
-  </data>
-
-  <data name="Messages_GgufEngineInfo" xml:space="preserve">
-    <value>Engine: LlamaSharp (llama.cpp C# binding, CPU/GPU) · loads .gguf files</value>
-  </data>
-  <data name="Messages_OnnxEngineInfo" xml:space="preserve">
-    <value>Engine: ONNX Runtime GenAI (Microsoft, GPU accel) · loads ONNX model dirs</value>
-  </data>
-  <data name="CodeAgent_PageTitle" xml:space="preserve">
-    <value>Code Agent</value>
-  </data>
-  <data name="CodeAgent_Title" xml:space="preserve">
-    <value>Code Agent (Microsoft Agent Framework)</value>
-  </data>
-  <data name="CodeAgent_Subtitle" xml:space="preserve">
-    <value>Generate and review code with local coding models, orchestrated by Microsoft Agent Framework (MAF).</value>
-  </data>
-  <data name="CodeAgent_InputTitle" xml:space="preserve">
-    <value>Describe your requirement</value>
-  </data>
-  <data name="CodeAgent_Language" xml:space="preserve">
-    <value>Language / Stack</value>
-  </data>
-  <data name="CodeAgent_LanguageAuto" xml:space="preserve">
-    <value>Auto detect</value>
-  </data>
-  <data name="CodeAgent_Provider" xml:space="preserve">
-    <value>AI Provider</value>
-  </data>
-  <data name="CodeAgent_Model" xml:space="preserve">
-    <value>Model</value>
-  </data>
-  <data name="CodeAgent_ModelAuto" xml:space="preserve">
-    <value>Provider default</value>
-  </data>
-  <data name="CodeAgent_Prompt" xml:space="preserve">
-    <value>Requirement</value>
-  </data>
-  <data name="CodeAgent_PromptPlaceholder" xml:space="preserve">
-    <value>e.g. Write a C# console bookkeeping app with income/expense records, category stats, balance query, JSON file storage…</value>
-  </data>
-  <data name="CodeAgent_Generate" xml:space="preserve">
-    <value>Generate</value>
-  </data>
-  <data name="CodeAgent_Running" xml:space="preserve">
-    <value>Generating…</value>
-  </data>
-  <data name="CodeAgent_Stop" xml:space="preserve">
-    <value>Stop</value>
-  </data>
-  <data name="CodeAgent_Copy" xml:space="preserve">
-    <value>Copy</value>
-  </data>
-  <data name="CodeAgent_Download" xml:space="preserve">
-    <value>Download</value>
-  </data>
-  <data name="CodeAgent_OutputTitle" xml:space="preserve">
-    <value>Output</value>
-  </data>
-  <data name="CodeAgent_Streaming" xml:space="preserve">
-    <value>Streaming</value>
-  </data>
-  <data name="CodeAgent_File" xml:space="preserve">
-    <value>File</value>
   </data>
   <data name="LogErrors_ClearedLocalLogs" xml:space="preserve">
     <value>Cleared {0} local log entries</value>
@@ -4328,46 +4277,7 @@ Shift+Enter new line, Enter to send</value>
   <data name="LogErrors_Title" xml:space="preserve">
     <value>Error Logs</value>
   </data>
-  <data name="CodeAgent_ToolMode" xml:space="preserve">
-    <value>工具集</value>
-  </data>
-  <data name="CodeAgent_ToolMode_All" xml:space="preserve">
-    <value>全部（搜索+网页+代码图谱）</value>
-  </data>
-  <data name="CodeAgent_ToolMode_Search" xml:space="preserve">
-    <value>仅联网（搜索+网页）</value>
-  </data>
-  <data name="CodeAgent_ToolMode_CodeGraph" xml:space="preserve">
-    <value>仅代码图谱</value>
-  </data>
-  <data name="CodeAgent_ToolMode_None" xml:space="preserve">
-    <value>无工具（纯代码生成）</value>
-  </data>
-  <data name="CodeAgent_PipelineMode" xml:space="preserve">
-    <value>Pipeline mode (research → code → review)</value>
-  </data>
-  <data name="CodeAgent_PlanPro" xml:space="preserve">
-    <value>Plan stage uses Pro model</value>
-  </data>
-  <data name="CodeAgent_HistoryTitle" xml:space="preserve">
-    <value>History</value>
-  </data>
-  <data name="CodeAgent_HistoryChars" xml:space="preserve">
-  <value>chars</value>
-  </data>
-  <data name="CodeAgent_PipelineTitle" xml:space="preserve">
-    <value>Agent Pipeline</value>
-  </data>
-  <data name="CodeAgent_StageResearch" xml:space="preserve">
-    <value>① Research</value>
-  </data>
-  <data name="CodeAgent_StageCode" xml:space="preserve">
-    <value>② Code</value>
-  </data>
-  <data name="CodeAgent_StageReview" xml:space="preserve">
-    <value>③ Review</value>
-  </data>
-<data name="CodeAgent_NewConversation" xml:space="preserve"><value>New conversation</value></data>  <!-- 个人待办清单 TodoList -->
+  <!-- 个人待办清单 TodoList -->
   <data name="Nav_TodoList" xml:space="preserve">
     <value>Todo List</value>
   </data>
@@ -4572,111 +4482,6 @@ Shift+Enter new line, Enter to send</value>
   <data name="FamilyBudget_SaveFailed" xml:space="preserve">
     <value>Failed to save: {0}</value>
   </data>
-  <data name="AiDrawing_PageTitle" xml:space="preserve">
-    <value>AI Drawing</value>
-  </data>
-  <data name="AiDrawing_Title" xml:space="preserve">
-    <value>AI Drawing</value>
-  </data>
-  <data name="AiDrawing_ComfyUnavailable" xml:space="preserve">
-    <value>ComfyUI service is not running. Please start ComfyUI (127.0.0.1:8188), then</value>
-  </data>
-  <data name="AiDrawing_Recheck" xml:space="preserve">
-    <value>Recheck</value>
-  </data>
-  <data name="AiDrawing_GenerationParams" xml:space="preserve">
-    <value>Generation Parameters</value>
-  </data>
-  <data name="AiDrawing_Mode" xml:space="preserve">
-    <value>Mode</value>
-  </data>
-  <data name="AiDrawing_ImageMode" xml:space="preserve">
-    <value>Image</value>
-  </data>
-  <data name="AiDrawing_VideoMode" xml:space="preserve">
-    <value>Video</value>
-  </data>
-  <data name="AiDrawing_Prompt" xml:space="preserve">
-    <value>Prompt</value>
-  </data>
-  <data name="AiDrawing_PromptPlaceholder" xml:space="preserve">
-    <value>Describe the image you want, e.g. an orange cat sitting on the windowsill in warm sunlight</value>
-  </data>
-  <data name="AiDrawing_Style" xml:space="preserve">
-    <value>Style</value>
-  </data>
-  <data name="AiDrawing_StyleHint" xml:space="preserve">
-    <value>The style is appended to the end of the prompt</value>
-  </data>
-  <data name="AiDrawing_Width" xml:space="preserve">
-    <value>Width</value>
-  </data>
-  <data name="AiDrawing_Height" xml:space="preserve">
-    <value>Height</value>
-  </data>
-  <data name="AiDrawing_Steps" xml:space="preserve">
-    <value>Steps: {0}</value>
-  </data>
-  <data name="AiDrawing_Generating" xml:space="preserve">
-    <value>⏳ Generating…</value>
-  </data>
-  <data name="AiDrawing_Generate" xml:space="preserve">
-    <value>✨ Generate</value>
-  </data>
-  <data name="AiDrawing_GenerateHint" xml:space="preserve">
-    <value>Images take about 30 seconds, videos about 3-5 minutes. Please wait patiently.</value>
-  </data>
-  <data name="AiDrawing_Duration" xml:space="preserve">
-    <value>Took {0:F1} seconds</value>
-  </data>
-  <data name="AiDrawing_Download" xml:space="preserve">
-    <value>Download</value>
-  </data>
-  <data name="AiDrawing_HistoryTitle" xml:space="preserve">
-    <value>History</value>
-  </data>
-  <data name="AiDrawing_Refresh" xml:space="preserve">
-    <value>Refresh</value>
-  </data>
-  <data name="AiDrawing_NoHistory" xml:space="preserve">
-    <value>No generation records yet</value>
-  </data>
-  <data name="AiDrawing_ImageLoadFailed" xml:space="preserve">
-    <value>Image failed to load</value>
-  </data>
-  <data name="AiDrawing_VideoLoadFailed" xml:space="preserve">
-    <value>Video failed to load</value>
-  </data>
-  <data name="AiDrawing_Failed" xml:space="preserve">
-    <value>Failed</value>
-  </data>
-  <data name="AiDrawing_PromptRequired" xml:space="preserve">
-    <value>Please enter a prompt</value>
-  </data>
-  <data name="AiDrawing_StyleDefault" xml:space="preserve">
-    <value>Default</value>
-  </data>
-  <data name="AiDrawing_StyleRealistic" xml:space="preserve">
-    <value>Realistic Photography</value>
-  </data>
-  <data name="AiDrawing_StyleAnime" xml:space="preserve">
-    <value>Anime</value>
-  </data>
-  <data name="AiDrawing_StyleCyberpunk" xml:space="preserve">
-    <value>Cyberpunk</value>
-  </data>
-  <data name="AiDrawing_StyleInkWash" xml:space="preserve">
-    <value>Ink Wash</value>
-  </data>
-  <data name="AiDrawing_StyleOil" xml:space="preserve">
-    <value>Oil Painting</value>
-  </data>
-  <data name="AiDrawing_Style3D" xml:space="preserve">
-    <value>3D Render</value>
-  </data>
-  <data name="AiDrawing_StylePixel" xml:space="preserve">
-    <value>Pixel Art</value>
-  </data>
   <data name="Assistant_PageTitle" xml:space="preserve">
     <value>AI Assistant</value>
   </data>
@@ -4711,7 +4516,7 @@ Shift+Enter new line, Enter to send</value>
     <value>The assistant is analyzing today's activity, please wait…</value>
   </data>
   <data name="Assistant_NotAnalyzedToday" xml:space="preserve">
-    <value>Not analyzed today (auto-analyzed daily at {0}:00, or click &quot;Analyze Now&quot; after new activity).</value>
+    <value>Not analyzed today (auto-analyzed daily at {0}:00, or click "Analyze Now" after new activity).</value>
   </data>
   <data name="Assistant_ActivityCount" xml:space="preserve">
     <value>{0} activities recorded so far.</value>
@@ -5127,18 +4932,6 @@ Shift+Enter new line, Enter to send</value>
   <data name="KnowledgeGen_TitleNeedsVault" xml:space="preserve">
     <value>Please select a target vault first</value>
   </data>
-  <data name="Vision_Running" xml:space="preserve">
-    <value>Vision service running (127.0.0.1:{0})</value>
-  </data>
-  <data name="Vision_Stopping" xml:space="preserve">
-    <value>Stopping…</value>
-  </data>
-  <data name="Vision_StopServer" xml:space="preserve">
-    <value>⏹ Stop Service</value>
-  </data>
-  <data name="Vision_StopFailed" xml:space="preserve">
-    <value>Failed to stop: {0}</value>
-  </data>
   <data name="Search_VaultsLoading" xml:space="preserve">
     <value>Loading the vault list, please wait…</value>
   </data>
@@ -5147,12 +4940,6 @@ Shift+Enter new line, Enter to send</value>
   </data>
   <data name="LogSettings_PasswordPlaceholder" xml:space="preserve">
     <value>leave empty to use the environment variable</value>
-  </data>
-  <data name="CodeAgent_ProviderLocal" xml:space="preserve">
-    <value> (Local)</value>
-  </data>
-  <data name="CodeAgent_ProviderCloud" xml:space="preserve">
-    <value> (Cloud)</value>
   </data>
   <data name="MasterChat_IndustryPlaceholder" xml:space="preserve">
     <value>Enter or select an industry</value>
@@ -6046,7 +5833,9 @@ Shift+Enter new line, Enter to send</value>
     <value>Confirm</value>
   </data>
   <data name="InitializationTasks_ConfirmCreateVaultBody" xml:space="preserve">
-    <value>Auto-creation failed: {0}&#10;&#10;Do you want to go to the vault management page to create it manually?</value>
+    <value>Auto-creation failed: {0}
+
+Do you want to go to the vault management page to create it manually?</value>
   </data>
   <data name="Vaults_ConfirmRestoreBackupBody" xml:space="preserve">
     <value>Are you sure you want to restore from this backup?</value>
@@ -6240,7 +6029,6 @@ Shift+Enter new line, Enter to send</value>
   <data name="Medical_DiagnoseFailed" xml:space="preserve">
     <value>AI diagnosis failed. Please try again later.</value>
   </data>
-
   <data name="Settings_CategoryAssignedBadge" xml:space="preserve">
     <value>Assigned</value>
   </data>

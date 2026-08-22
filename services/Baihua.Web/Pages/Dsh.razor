@@ -30,13 +30,8 @@
                 <span class="badge bg-danger">DSH @L["Dsh_Offline"]</span>
             }
         </div>
-        <div class="col">
-            <div class="input-group input-group-sm">
-                <span class="input-group-text">@L["Dsh_Cwd"]</span>
-                <input class="form-control form-control-sm" placeholder="C:\path\to\workspace" @bind="_cwd" />
-            </div>
-        </div>
-        <div class="col-auto">
+        <div class="col text-end">
+            <a class="btn btn-sm btn-outline-primary me-2" href="@_dshUrl" target="_blank" rel="noopener">↗ @L["Dsh_OpenExternal"]</a>
             <button class="btn btn-sm btn-outline-secondary" @onclick="RefreshStatus">@L["Dsh_Refresh"]</button>
             <button class="btn btn-sm @(_showOps ? "btn-secondary" : "btn-outline-secondary")" @onclick="ToggleOps" title="百花服务运维（启停/编译/更新）">
                 🧰 运维
@@ -193,106 +188,10 @@
         </div>
     }
 
-    <div class="row flex-grow-1 g-0 dsh-body" style="min-height: 0;">
-        <!-- 左侧：会话列表 -->
-        <div class="col-md-3 dsh-sidebar border-end">
-            <div class="d-flex justify-content-between align-items-center p-2 border-bottom">
-                <strong>@L["Dsh_Sessions"]</strong>
-                <button class="btn btn-sm btn-primary" @onclick="NewSession" disabled="@_running">
-                    <i class="bi bi-plus-lg"></i> @L["Dsh_New"]
-                </button>
-            </div>
-            <div class="dsh-session-list overflow-auto" style="max-height: calc(100vh - 240px);">
-                @if (_sessionLoading)
-                {
-                    <div class="p-3 text-center text-muted"><span class="spinner-border spinner-border-sm"></span></div>
-                }
-                else if (_sessions.Count == 0)
-                {
-                    <div class="p-3 text-muted small">@L["Dsh_NoSessions"]</div>
-                }
-                else
-                {
-                    @foreach (var s in _sessions)
-                    {
-                        var isActive = s.Id == _sessionId;
-                        <div class="dsh-session-item @(isActive ? "active" : "") p-2 border-bottom"
-                             @onclick="() => OpenSession(s.Id)" style="cursor:pointer">
-                            <div class="text-truncate small fw-semibold">
-                                <i class="bi bi-chat-square-text me-1"></i>@(s.Title ?? s.Id)
-                            </div>
-                            <small class="text-muted">
-                                @DateTimeOffset.FromUnixTimeMilliseconds(s.UpdatedAt).ToLocalTime().ToString("MM-dd HH:mm")
-                                @if (s.MessageCount > 0)
-                                {
-                                    <span class="badge bg-light text-dark ms-1">@s.MessageCount</span>
-                                }
-                            </small>
-                        </div>
-                    }
-                }
-            </div>
-        </div>
-
-        <!-- 中间：对话流 + 输入 -->
-        <div class="col d-flex flex-column" style="min-height: 0;">
-            <div class="dsh-messages flex-grow-1 overflow-auto p-3" id="dsh-messages" @ref="_messagesRef">
-                @if (_messages.Count == 0 && !_running)
-                {
-                    <div class="text-center text-muted mt-5">
-                        <i class="bi bi-chat-dots" style="font-size: 2rem;"></i>
-                        <p class="mt-2">@L["Dsh_EmptyHint"]</p>
-                    </div>
-                }
-                @foreach (var m in _messages)
-                {
-                    <StreamingMessage
-                        Content="@m.Content"
-                        IsUser="@m.IsUser"
-                        IsCompleted="@m.Completed"
-                        Time="@m.Time"
-                        Avatar="@(m.IsUser ? "🧑" : "🐋")"
-                        RoleCss="ai"
-                        ToolCalls="@(m.ToolCalls?.Count > 0 ? m.ToolCalls : null)"
-                        HighlightOnComplete="true" />
-                }
-                @if (_running)
-                {
-                    <div class="dsh-running-indicator text-muted small mt-2">
-                        <span class="spinner-border spinner-border-sm me-1"></span>@L["Dsh_Running"]
-                    </div>
-                }
-            </div>
-
-            <!-- 工具调用时间线 -->
-            @if (_toolTimeline.Count > 0)
-            {
-                <div class="dsh-tools border-top bg-light p-2 overflow-auto" style="max-height: 22vh;">
-                    <small class="text-muted fw-semibold"><i class="bi bi-tools me-1"></i>@L["Dsh_Tools"]</small>
-                    <div class="d-flex flex-wrap gap-1 mt-1">
-                        @foreach (var t in _toolTimeline)
-                        {
-                            <span class="badge @(t.IsError ? "bg-danger" : "bg-info text-dark") me-1">@t.Name</span>
-                        }
-                    </div>
-                </div>
-            }
-
-            <!-- 输入区 -->
-            <div class="dsh-input p-2 border-top d-flex align-items-end gap-2">
-                <textarea class="form-control" rows="2" @bind="_input" @bind:event="oninput" placeholder="@L["Dsh_InputPlaceholder"]"
-                          disabled="@_running" @onkeydown="OnInputKeyDown" style="resize:none"></textarea>
-                <button class="btn btn-primary" @onclick="SendAsync" disabled="@(_running || string.IsNullOrWhiteSpace(_input) || _statusOk != true)">
-                    @(_running ? L["Dsh_Working"] : L["Dsh_Send"])
-                </button>
-                @if (!string.IsNullOrEmpty(_sessionId))
-                {
-                    <button class="btn btn-outline-danger" @onclick="StopAsync" disabled="@(!_running)">
-                        <i class="bi bi-stop-circle"></i>
-                    </button>
-                }
-            </div>
-        </div>
+    <!-- DSH 智能体：直接内嵌 DSH 官方 Web UI -->
+    <div class="dsh-frame-wrap flex-grow-1" style="min-height: 0;">
+        <iframe class="dsh-frame" src="@_dshUrl" title="DeepSeek Harness"
+                allow="clipboard-write; clipboard-read; fullscreen" allowfullscreen></iframe>
     </div>
 </div>
 
@@ -301,26 +200,15 @@
     .dsh-ops-tail { max-height: 120px; overflow: auto; font-size: 0.72rem; background: rgba(0,0,0,0.03); padding: 4px 8px; border-radius: 6px; white-space: pre-wrap; margin-bottom: 4px; }
     .dsh-ops-logs { max-height: 240px; overflow: auto; font-size: 0.75rem; background: rgba(0,0,0,0.04); padding: 8px; border-radius: 6px; white-space: pre-wrap; }
     [data-bs-theme="dark"] .dsh-ops-tail, [data-bs-theme="dark"] .dsh-ops-logs { background: rgba(255,255,255,0.06); }
+    .dsh-frame-wrap { border: 1px solid rgba(128,128,128,0.25); border-radius: 8px; overflow: hidden; }
+    [data-bs-theme="dark"] .dsh-frame-wrap { border-color: rgba(255,255,255,0.15); }
+    .dsh-frame { width: 100%; height: 100%; border: 0; display: block; background: #fff; }
 </style>
 
 @code {
     private bool _checkingStatus;
     private bool _statusOk;
-    private bool _sessionLoading;
-    private string _cwd = "";
-    private string _input = "";
-    private string? _sessionId;
-    private bool _running;
-
-    // 会话数据
-    private List<DshSessionMetaDto> _sessions = new();
-    private readonly List<UiMessage> _messages = new();
-    private readonly List<ToolBadge> _toolTimeline = new();
-    private ElementReference _messagesRef;
-
-    private readonly System.Threading.CancellationTokenSource _pageCts = new();
-    // 当前事件流任务（长连接）的取消源，用于“停止”
-    private System.Threading.CancellationTokenSource? _streamCts;
+    private string _dshUrl = "";
 
     // 百花服务运维（bh）
     private bool _showOps;
@@ -336,25 +224,10 @@
     private string? _logsText;
     private System.Threading.Timer? _opsTimer;
 
-    private sealed record UiMessage(string? Text, bool IsUser, DateTime Time, bool Completed, IReadOnlyList<string>? ToolCalls)
-    {
-        public string Content => Text ?? "";
-    }
-    private sealed record ToolBadge(string Name, bool IsError);
-
     protected override async Task OnInitializedAsync()
     {
-        _cwd = DshSvc.TryGetDefaultCwd();
+        _dshUrl = DshSvc.BaseUrl.TrimEnd('/') + "/";
         await RefreshStatus();
-        await LoadSessionsAsync();
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (_messages.Count > 0)
-        {
-            await JSRuntime.InvokeVoidAsync("scrollToBottom", _messagesRef);
-        }
     }
 
     private async Task RefreshStatus()
@@ -441,7 +314,8 @@
     private Task BhDeployAsync() => RunBhActionAsync("deploy", "", true);
 
     private async Task RunBhActionAsync(string action, string service, bool confirm)
-    {        if (_bhBusy) return;
+    {
+        if (_bhBusy) return;
         if (confirm)
         {
             var label = action switch
@@ -570,291 +444,8 @@
         }
     }
 
-    private async Task LoadSessionsAsync()
-    {
-        _sessionLoading = true;
-        StateHasChanged();
-        _sessions = (await DshSvc.GetSessionsAsync()).ToList();
-        _sessionLoading = false;
-        StateHasChanged();
-    }
-
-    /// <summary>文本框按键：Enter（不含 Shift）发送；Shift+Enter 走默认行为换行。</summary>
-    private async Task OnInputKeyDown(KeyboardEventArgs e)
-    {
-        if (e.Key == "Enter" && !e.ShiftKey)
-        {
-            await SendAsync();
-        }
-    }
-
-    /// <summary>新建会话：重设本地状态，延后到首次发送时经 WS 建立。</summary>
-    private async Task NewSession()
-    {
-        if (_running) return;
-        await StopStreamAsync();
-        _sessionId = null;
-        _messages.Clear();
-        _toolTimeline.Clear();
-        _input = "";
-        StateHasChanged();
-    }
-
-    /// <summary>打开历史会话：订阅 WS + 拉取历史。</summary>
-    private async Task OpenSession(string id)
-    {
-        if (_running) return;
-        await StopStreamAsync();
-        _sessionId = id;
-        _messages.Clear();
-        _toolTimeline.Clear();
-        StateHasChanged();
-
-        StartStream(id);
-
-        var history = await DshSvc.GetHistoryAsync(id);
-        if (history?.Events is { } evts)
-        {
-            RenderHistory(evts);
-        }
-        StateHasChanged();
-    }
-
-    /// <summary>把历史事件转成可渲染消息。</summary>
-    private void RenderHistory(IReadOnlyList<DshStreamFrame> events)
-    {
-        _messages.Clear();
-        _toolTimeline.Clear();
-        foreach (var e in events)
-        {
-            if (e.Type == "user/message")
-            {
-                var text = e.Data?.TryGetProperty("text", out var t) == true ? t.GetString() : "";
-                if (!string.IsNullOrWhiteSpace(text))
-                    _messages.Add(new UiMessage(text, true, DateTimeOffset.FromUnixTimeMilliseconds(e.Time).LocalDateTime, true, null));
-            }
-            else if (e.Type == "assistant/message")
-            {
-                var text = e.Data?.TryGetProperty("text", out var t) == true ? t.GetString() : "";
-                var tools = e.Data?.TryGetProperty("toolCalls", out var tc) == true
-                    ? tc.EnumerateArray().Select(x => x.TryGetProperty("name", out var n) ? n.GetString() ?? "" : "").Where(s => s.Length > 0).ToList()
-                    : new List<string>();
-                if (!string.IsNullOrWhiteSpace(text) || tools.Count > 0)
-                    _messages.Add(new UiMessage(text, false, DateTimeOffset.FromUnixTimeMilliseconds(e.Time).LocalDateTime, true, tools));
-            }
-        }
-    }
-
-    private async Task SendAsync()
-    {
-        var text = _input.Trim();
-        if (string.IsNullOrEmpty(text) || _running || _statusOk != true) return;
-        _running = true;
-        _input = "";
-        StateHasChanged();
-
-        try
-        {
-            // 新建会话：先经 WS 建立拿到 sessionId
-            if (string.IsNullOrEmpty(_sessionId))
-            {
-                await EstablishNewSessionAsync();
-            }
-
-            if (string.IsNullOrEmpty(_sessionId)) throw new InvalidOperationException("无法建立会话");
-
-            // 记录用户消息
-            _messages.Add(new UiMessage(text, true, DateTime.Now, true, null));
-            StateHasChanged();
-
-            // 提交任务（非阻塞：插件后台执行，过程经 WS 推送）
-            var result = await DshSvc.SendMessageAsync(text, _cwd, _sessionId);
-            if (!result.Ok)
-            {
-                _messages.Add(new UiMessage($"⚠️ {result.Error}", false, DateTime.Now, true, null));
-            }
-        }
-        catch (Exception ex)
-        {
-            _messages.Add(new UiMessage($"⚠️ {ex.Message}", false, DateTime.Now, true, null));
-        }
-        finally
-        {
-            _running = false;
-            StateHasChanged();
-        }
-    }
-
-    /// <summary>启动（或新建）当前会话的事件流订阅。若 <paramref name="sessionId"/> 为空则由插件新建。</summary>
-    private void StartStream(string? sessionId, TaskCompletionSource<string?>? sessionTcs = null)
-    {
-        awaitStopIfNeeded();
-        _streamCts = new System.Threading.CancellationTokenSource();
-        var ct = _streamCts.Token;
-        var tcs = sessionTcs;
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                await DshSvc.StreamEventsAsync(sessionId, _cwd, frame => InvokeStreamFrameAsync(frame, tcs), ct);
-            }
-            catch (OperationCanceledException) { /* 用户停止 */ }
-            catch (Exception) { /* 流异常结束，UI 通过 closed/error 帧处理 */ }
-        });
-    }
-
-    /// <summary>新建一个会话：启动无 sessionId 的流，等插件返回 sessionId。</summary>
-    private async Task EstablishNewSessionAsync()
-    {
-        var tcs = new TaskCompletionSource<string?>(System.Threading.Tasks.TaskCreationOptions.RunContinuationsAsynchronously);
-        StartStream(null, tcs);
-        var sid = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(30));
-        if (!string.IsNullOrEmpty(sid)) _sessionId = sid;
-        StateHasChanged();
-    }
-
-    private void awaitStopIfNeeded()
-    {
-        _ = StopStreamAsync();
-    }
-
-    private async Task InvokeStreamFrameAsync(DshStreamFrame frame, TaskCompletionSource<string?>? sessionTcs = null)
-    {
-        try
-        {
-            await InvokeAsync(() =>
-            {
-                if (frame.Kind == "session")
-                {
-                    if (!string.IsNullOrEmpty(frame.SessionId)) _sessionId = frame.SessionId;
-                    sessionTcs?.TrySetResult(frame.SessionId);
-                    StateHasChanged();
-                }
-                else if (frame.Kind == "connected")
-                {
-                    if (_sessionId is null) _sessionId = frame.SessionId;
-                    StateHasChanged();
-                }
-                else if (frame.Kind == "closed" || frame.Kind == "error")
-                {
-                    if (_running)
-                    {
-                        _running = false;
-                        if (_messages.Count > 0 && !_messages[^1].IsUser && !_messages[^1].Completed)
-                            _messages[^1] = _messages[^1] with { Completed = true };
-                    }
-                    StateHasChanged();
-                }
-                else if (frame.Type is { } type)
-                {
-                    HandleSessionEvent(frame);
-                    if (type == "turn/end" && _running) _running = false;
-                    StateHasChanged();
-                }
-            });
-        }
-        catch (Exception)
-        {
-            // UI 线程已销毁等场景，忽略
-        }
-    }
-
-    private void HandleSessionEvent(DshStreamFrame frame)
-    {
-        switch (frame.Type)
-        {
-            case "assistant/chunk":
-            {
-                var chunkType = frame.Data?.TryGetProperty("chunkType", out var ct) == true ? ct.GetString() : "";
-                if (chunkType == "text-delta")
-                {
-                    var delta = frame.Data?.TryGetProperty("text", out var t) == true ? t.GetString() ?? "" : "";
-                    if (_messages.Count == 0 || _messages[^1].IsUser)
-                        _messages.Add(new UiMessage("", false, DateTime.Now, false, null));
-                    var last = _messages[^1];
-                    _messages[^1] = last with { Text = last.Text + delta };
-                }
-                break;
-            }
-            case "assistant/message":
-            {
-                var text = frame.Data?.TryGetProperty("text", out var t) == true ? t.GetString() ?? "" : "";
-                var tools = frame.Data?.TryGetProperty("toolCalls", out var tc) == true
-                    ? tc.EnumerateArray().Select(x => x.TryGetProperty("name", out var n) ? n.GetString() ?? "" : "").Where(s => s.Length > 0).ToList()
-                    : new List<string>();
-                // 替换最后一条正在流式的消息，或追加
-                if (_messages.Count > 0 && !_messages[^1].IsUser && !_messages[^1].Completed)
-                {
-                    _messages[^1] = new UiMessage(text, false, _messages[^1].Time, true, tools);
-                }
-                else if (!string.IsNullOrWhiteSpace(text) || tools.Count > 0)
-                {
-                    _messages.Add(new UiMessage(text, false, DateTime.Now, true, tools));
-                }
-                break;
-            }
-            case "user/message":
-            {
-                var text = frame.Data?.TryGetProperty("text", out var t) == true ? t.GetString() ?? "" : "";
-                if (!string.IsNullOrWhiteSpace(text) && (_messages.Count == 0 || _messages[^1].IsUser == false))
-                    _messages.Add(new UiMessage(text, true, DateTime.Now, true, null));
-                break;
-            }
-            case "tool/call":
-            {
-                var name = frame.Data?.TryGetProperty("name", out var n) == true ? n.GetString() ?? "" : "";
-                if (!string.IsNullOrWhiteSpace(name))
-                    _toolTimeline.Insert(0, new ToolBadge(name, false));
-                break;
-            }
-            case "tool/result":
-            {
-                var isErr = frame.Data?.TryGetProperty("isError", out var er) == true && er.GetBoolean();
-                if (isErr)
-                {
-                    var name = _toolTimeline.FirstOrDefault()?.Name ?? "tool";
-                    _toolTimeline.Insert(0, new ToolBadge(name, true));
-                }
-                break;
-            }
-            case "turn/end":
-            {
-                // 回合结束：完结最后一条未完成消息
-                if (_messages.Count > 0 && !_messages[^1].IsUser && !_messages[^1].Completed)
-                    _messages[^1] = _messages[^1] with { Completed = true };
-                _running = false;
-                break;
-            }
-        }
-    }
-
-    private async Task StopAsync()
-    {
-        await StopStreamAsync();
-        _running = false;
-        if (_messages.Count > 0 && !_messages[^1].IsUser && !_messages[^1].Completed)
-            _messages[^1] = _messages[^1] with { Completed = true };
-        StateHasChanged();
-    }
-
-    /// <summary>取消当前事件流（后台 StreamEventsAsync 会 abort socket）。</summary>
-    private async Task StopStreamAsync()
-    {
-        try
-        {
-            _streamCts?.Cancel();
-            _streamCts?.Dispose();
-        }
-        catch { }
-        _streamCts = null;
-        await Task.CompletedTask;
-    }
-
     public void Dispose()
     {
-        try { _streamCts?.Cancel(); } catch { }
-        _pageCts.Cancel();
-        _pageCts.Dispose();
         _opsTimer?.Dispose();
     }
 }

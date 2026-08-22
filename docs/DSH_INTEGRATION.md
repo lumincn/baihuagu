@@ -81,7 +81,8 @@ DshApi__Token: <与插件相同的 token>
 | 端点 | 说明 |
 |---|---|
 | `GET /status` | 健康检查（不鉴权） |
-| `GET /sessions` · `POST /chat` · `GET /sessions/{id}/history` · `WS /stream` | agent 会话驱动（百花 /dsh 页用） |
+| `GET /sessions` · `POST /chat` · `GET /sessions/{id}/history` · `WS /stream` | agent 会话驱动（历史桥接接口；百花 /dsh 页已改为内嵌 DSH 官方 Web UI） |
+| `GET /baihua/open-url` | 「打开百花」入口：申请 cli-token 并返回自动登录首页 URL（仅 127.0.0.1、免鉴权，供 DSH 设置页卡片调用） |
 | `GET /bh/status` · `POST /bh/action` · `GET /bh/ops[/{id}]` · `GET /bh/logs` | 百花服务运维（启停/编译/更新/日志） |
 | `GET /bh/status-ui` | **只读状态**（仅 127.0.0.1、免鉴权，供 DSH 设置页卡片拉取；LAN 不暴露） |
 | DSH 工具 | `bh_*`（运维，含 `bh_build_restart` 编译并重启）、`baihua_vault_*`（知识库）、`baihua_budget_summary`、`baihua_tasks_list`、`baihua_draw`（ComfyUI） |
@@ -126,7 +127,8 @@ DSH 里工具名带 `mcp__baihua__` 前缀（如 `mcp__baihua__baihua_vault_sear
 ## 7. 已下线页面
 
 AI 对话（/messages）、编程 Agent（/code-agent）、图片识别（/image-recognition）、AI 绘图（/ai-drawing）
-——菜单已隐藏，路由保留（实现与数据未删，稳定后再删；MAF 实现代码按决定**保留**）。
+——菜单隐藏后，其 Web 页面、API 客户端方法、后端控制器/服务与相关 DTO 已作为死代码整体删除
+（AI 对话的 `/api/ai/chat/*` 后端保留：移动端花记客户端仍经 Family HMAC 代理使用）。
 AI 实验室场景首页改指 `/dsh`。
 
 ## 8. 插件更新后的重启
