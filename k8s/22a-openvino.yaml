@@ -1,35 +1,15 @@
 # bh-openvino: OpenVINO Model Server（Intel OVMS）
-# 提供 OpenAI 兼容推理 API：/v3/chat/completions（LLM+视觉）、/v3/embeddings（RAG）、/v1/models（状态）
+# 提供 OpenAI 兼容推理 API：/v1/chat/completions（LLM+视觉）、/v1/models（状态）
 # 模型仓库 = baihua-models-pvc（/models，预下载的 OpenVINO IR 模型目录）：
-#   qwen2.5          /models/Qwen2.5-7B-Instruct-int4-ov      （对话，GPU）
-#   qwen2.5-vl-3b    /models/Qwen2.5-VL-3B-Instruct-int4-ov   （视觉，GPU）
-#   qwen2.5-vl-7b    /models/Qwen2.5-VL-7B-Instruct-int4-ov   （视觉，GPU）
-#   bge-small-zh     /models/bge-small-zh-v1.5                （嵌入，CPU）
+#   qwen2.5-vl-7b    /models/Qwen2.5-VL-7B-Instruct-int4-ov   （视觉，CPU/GPU）
+#   （qwen2.5 文本 / qwen2.5-vl-3b / bge 嵌入：模型目录缺失，下载后加入下方 args）
 # 说明：
 #   - 这是唯一需要 Intel GPU 的服务 —— /dev/dri（真机）/ /dev/dxg（WSL2）由 intel-gpu-plugin 注入
-#   - 每个模型目录的 graph.pbtxt 由 initContainer 的 `ovms --configure` 幂等生成（模型缺失则跳过）
+#   - 用 OVMS 单模型模式（--model_path + --model_name + --task）启动：OVMS 在内存中
+#     自动创建 graph（GenAI servable），不需要 initContainer 预生成 graph.pbtxt
+#     （旧 config.json base_path 方式对 LLM/VLM 无效；--configure 对 VL 模型报错）
+#   - 多模型：OVMS 暂不支持多个 --model_path；后续加模型需分别部署或改用 --source_model
 #   - AI/Family 通过 K8s Service DNS http://bh-openvino:8000 调用（OpenVinoOms__BaseUrl / OPENVINO_LLM_URL）
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: bh-openvino-ovms-config
-  namespace: baihua
-  labels:
-    app: bh-openvino
-    app.kubernetes.io/part-of: baihua
-data:
-  # OVMS 多模型配置：model_config_list 同时支持经典/生成式（LLM/VLM/嵌入）servable，
-  # 由模型目录自动识别任务类型（结合 initContainer 生成的 graph.pbtxt）。
-  config.json: |
-    {
-      "model_config_list": [
-        { "config": { "name": "qwen2.5",       "base_path": "/models/Qwen2.5-7B-Instruct-int4-ov" } },
-        { "config": { "name": "qwen2.5-vl-3b", "base_path": "/models/Qwen2.5-VL-3B-Instruct-int4-ov" } },
-        { "config": { "name": "qwen2.5-vl-7b", "base_path": "/models/Qwen2.5-VL-7B-Instruct-int4-ov" } },
-        { "config": { "name": "bge-small-zh",  "base_path": "/models/bge-small-zh-v1.5" } }
-      ]
-    }
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -52,34 +32,6 @@ spec:
       # 限制调度到有 Intel GPU 的节点
       # nodeSelector:
       #   intel-gpu: "true"
-      initContainers:
-        # 为已下载的本地模型生成 graph.pbtxt（幂等；缺失的模型跳过）
-        - name: ovms-configure
-          image: bh-openvino:latest
-          imagePullPolicy: IfNotPresent
-          command: ["/bin/sh", "-c"]
-          args:
-            - |
-              set -u
-              echo "[ovms] 为本地模型生成 graph.pbtxt（--configure，幂等）"
-              # 格式: task device model_dir
-              for spec in \
-                "text_generation GPU /models/Qwen2.5-7B-Instruct-int4-ov" \
-                "text_generation GPU /models/Qwen2.5-VL-3B-Instruct-int4-ov" \
-                "text_generation GPU /models/Qwen2.5-VL-7B-Instruct-int4-ov" \
-                "embeddings CPU /models/bge-small-zh-v1.5"; do
-                task="${spec%% *}"; rest="${spec#* }"; dev="${rest%% *}"; path="${rest#* }"
-                if [ -d "$path" ]; then
-                  echo "[ovms] configure $path (task=$task device=$dev)"
-                  ovms --configure --model_path "$path" --task "$task" --target_device "$dev" \
-                    || echo "[ovms] !! configure 失败（已跳过，请检查模型目录完整性）"
-                else
-                  echo "[ovms] 跳过缺失模型目录: $path（请先下载模型，见 k8s/README.md）"
-                fi
-              done
-          volumeMounts:
-            - name: models
-              mountPath: /models
       containers:
         - name: bh-openvino
           image: bh-openvino:latest
@@ -90,7 +42,11 @@ spec:
             - containerPort: 9000
               name: grpc
           args:
-            - --config_path=/ovms-config/config.json
+            # 单模型 GenAI 模式：OVMS 自动创建 graph（无需 graph.pbtxt / config.json）
+            - --model_path=/models/Qwen2.5-VL-7B-Instruct-int4-ov
+            - --model_name=qwen2.5-vl-7b
+            - --task=text_generation
+            - --target_device=CPU
             - --rest_port=8000
             - --port=9000
             - --log_level=INFO
@@ -102,9 +58,6 @@ spec:
           volumeMounts:
             - name: models
               mountPath: /models
-            - name: ovms-config
-              mountPath: /ovms-config
-              readOnly: true
             - name: cache
               mountPath: /cache
             # Intel GPU 设备节点（由 intel-gpu-plugin 自动注入）
@@ -119,7 +72,7 @@ spec:
               readOnly: true
           readinessProbe:
             httpGet:
-              path: /v2/health/ready
+              path: /v1/models
               port: 8000
             # 冷启动首次加载 7B 模型编译较慢，放宽等待窗口
             initialDelaySeconds: 60
@@ -127,7 +80,7 @@ spec:
             failureThreshold: 12
           livenessProbe:
             httpGet:
-              path: /v2/health/live
+              path: /v1/models
               port: 8000
             initialDelaySeconds: 90
             periodSeconds: 30
@@ -146,9 +99,6 @@ spec:
         - name: models
           persistentVolumeClaim:
             claimName: baihua-models-pvc
-        - name: ovms-config
-          configMap:
-            name: bh-openvino-ovms-config
         - name: cache
           emptyDir: {}
         # /dev/dri 由 Intel GPU Device Plugin 自动注入（真机场景）
