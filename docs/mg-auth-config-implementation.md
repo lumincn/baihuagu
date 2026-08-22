@@ -24,10 +24,10 @@
 
 | 平台 | 项目位置 | 状态 |
 |------|----------|------|
-| **百花**（家庭版服务端） | `baihuagu/services/Baihua.Family/` | ❌ 不存在 |
+| **百花**（家庭版服务端） | `baihua/services/Baihua.Family/` | ❌ 不存在 |
 
-| **花圃**（MAUI 移动端） | `baihuagu/clients/MobileApp.Maui/` | ❌ 不存在，未引用 |
-| 安卓 SDK (Kotlin) | `baihuagu/libs/BaihuaSdk/` 或 `kotlin/baihua-sdk/` | `throw NotSupportedException("[后端未实现 /mg/auth/config]")` |
+| **花圃**（MAUI 移动端） | `baihua/clients/MobileApp.Maui/` | ❌ 不存在，未引用 |
+| 安卓 SDK (Kotlin) | `baihua/libs/BaihuaSdk/` 或 `kotlin/baihua-sdk/` | `throw NotSupportedException("[后端未实现 /mg/auth/config]")` |
 | 鸿蒙 SDK (ArkTS) | `arkts/baihua_sdk/` | ❌ 不存在，未引用 |
 
 当前安卓端已改为通过 `registerDevice` 获取密钥，但语义不合适，且每次获取都走了完整注册流程。

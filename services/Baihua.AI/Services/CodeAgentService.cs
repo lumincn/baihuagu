@@ -66,7 +66,7 @@ public class CodeAgentService
         "涉及微软技术（MAF/.NET/Azure/Windows/C# 官方 API）时优先调用 learn_docs_search / learn_docs_fetch / learn_code_sample_search 查微软官方文档与代码示例，而不是凭记忆写 API。\n";
 
     private const string CodeGraphToolRule =
-        "用户问题涉及 baihuagu 项目代码本身（某功能在哪、某符号被谁用、改某处会影响什么）时，优先调用 gitnexus_query / gitnexus_context / gitnexus_impact 基于真实代码图谱回答，不要凭记忆猜测。\n";
+        "用户问题涉及 baihua 项目代码本身（某功能在哪、某符号被谁用、改某处会影响什么）时，优先调用 gitnexus_query / gitnexus_context / gitnexus_impact 基于真实代码图谱回答，不要凭记忆猜测。\n";
 
     /// <summary>
     /// 创建 MAF ChatClientAgent（OpenAI 兼容端点），按工具模式挂载工具。
@@ -132,7 +132,7 @@ public class CodeAgentService
         {
             tools.Add(AIFunctionFactory.Create(codeAgentTools.GitNexusQuery,
                 "gitnexus_query",
-                "在本地代码知识图谱中按概念搜索代码：找某个功能/流程的实现在哪些文件、涉及哪些符号。参数 query 为概念关键词（如\"登录流程\"、\"CodeAgent\"），repo 默认 baihuagu。"));
+                "在本地代码知识图谱中按概念搜索代码：找某个功能/流程的实现在哪些文件、涉及哪些符号。参数 query 为概念关键词（如\"登录流程\"、\"CodeAgent\"），repo 默认 baihua。"));
             tools.Add(AIFunctionFactory.Create(codeAgentTools.GitNexusContext,
                 "gitnexus_context",
                 "查看某个代码符号（类/方法/函数名）的 360° 上下文：谁调用它、它调用谁、参与哪些执行流。参数 symbol 为符号名。"));

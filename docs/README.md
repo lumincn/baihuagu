@@ -18,7 +18,7 @@
 
 ## 相关文档位置
 
-- **项目根目录**：`README.md` - 项目介绍（baihuagu 仓库）
+- **项目根目录**：`README.md` - 项目介绍（baihua 仓库）
 - **开发助手**：`AGENTS.md` - 开发操作说明（构建 / 测试命令）
 - **移动端文档**：`arkts/docs/`（鸿蒙）/ `kotlin/docs/`（安卓）
 - **上架与合规**：鸿蒙 `arkts/docs/` 下 AGC_SETUP_GUIDE / AGC_SUBMISSION_COPY / CHECKLIST_BEFORE_SUBMIT / APP_ICON_GUIDE

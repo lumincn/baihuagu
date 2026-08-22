@@ -332,7 +332,7 @@ dotnet test tests/Baihua.Family.Tests/Baihua.Family.Tests.csproj
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **baihuagu** (11125 symbols, 23882 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **baihua** (11125 symbols, 23882 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > Index stale? Run `node .gitnexus/run.cjs analyze` from the project root — it auto-selects an available runner. No `.gitnexus/run.cjs` yet? `npx gitnexus analyze` (npm 11 crash → `npm i -g gitnexus`; #1939).
 
@@ -356,10 +356,10 @@ This project is indexed by GitNexus as **baihuagu** (11125 symbols, 23882 relati
 
 | Resource | Use for |
 |----------|---------|
-| `gitnexus://repo/baihuagu/context` | Codebase overview, check index freshness |
-| `gitnexus://repo/baihuagu/clusters` | All functional areas |
-| `gitnexus://repo/baihuagu/processes` | All execution flows |
-| `gitnexus://repo/baihuagu/process/{name}` | Step-by-step execution trace |
+| `gitnexus://repo/baihua/context` | Codebase overview, check index freshness |
+| `gitnexus://repo/baihua/clusters` | All functional areas |
+| `gitnexus://repo/baihua/processes` | All execution flows |
+| `gitnexus://repo/baihua/process/{name}` | Step-by-step execution trace |
 
 ## CLI
 

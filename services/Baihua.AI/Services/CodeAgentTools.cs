@@ -26,7 +26,7 @@ public sealed class CodeAgentTools
         @"C:\Users\lumin\AppData\Roaming\npm\node_modules\gitnexus\dist\cli\index.js";
 
     /// <summary>默认目标代码库（GitNexus 全局注册名）。</summary>
-    private const string DefaultRepo = "baihuagu";
+    private const string DefaultRepo = "baihua";
 
     /// <summary>GitNexus 工作目录：目标仓库根目录。</summary>
     private const string RepoRoot = @"C:\Users\lumin\src\baihuagu";

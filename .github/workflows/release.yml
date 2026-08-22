@@ -51,15 +51,15 @@ jobs:
       - name: Package zip
         run: |
           cd publish/${{ matrix.rid }}
-          zip -qr ../../baihuagu-${{ matrix.rid }}.zip ai family vault webui
+          zip -qr ../../baihua-${{ matrix.rid }}.zip ai family vault webui
           cd ../..
-          ls -lh baihuagu-${{ matrix.rid }}.zip
+          ls -lh baihua-${{ matrix.rid }}.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: baihuagu-${{ matrix.rid }}
-          path: baihuagu-${{ matrix.rid }}.zip
+          name: baihua-${{ matrix.rid }}
+          path: baihua-${{ matrix.rid }}.zip
           if-no-files-found: error
 
   release:
