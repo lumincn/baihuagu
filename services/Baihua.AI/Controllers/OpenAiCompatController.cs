@@ -122,6 +122,66 @@ public class OpenAiCompatController : ControllerBase
         return string.Equals(token, expected, StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// 解析消息 content：兼容 OpenAI 两种格式——
+    ///   字符串（纯文本，百花 Web 聊天用）
+    ///   数组（多模态：{type:text} / {type:image_url, image_url:{url:data:... 或 http...}}，图生文用）
+    /// </summary>
+    private static List<AIContent> ParseContent(JsonElement content)
+    {
+        var list = new List<AIContent>();
+        if (content.ValueKind == JsonValueKind.String)
+        {
+            var s = content.GetString() ?? "";
+            if (s.Length > 0) list.Add(new TextContent(s));
+            return list;
+        }
+        if (content.ValueKind != JsonValueKind.Array)
+            return list;
+        foreach (var part in content.EnumerateArray())
+        {
+            var type = part.TryGetProperty("type", out var t) ? t.GetString() ?? "" : "";
+            switch (type)
+            {
+                case "text":
+                    var text = part.TryGetProperty("text", out var tx) ? tx.GetString() ?? "" : "";
+                    if (text.Length > 0) list.Add(new TextContent(text));
+                    break;
+                case "image_url":
+                    var url = part.TryGetProperty("image_url", out var iu) && iu.TryGetProperty("url", out var u)
+                        ? u.GetString() ?? ""
+                        : "";
+                    // M.E.AI 的 DataContent(Uri, mediaType)：OpenAI 适配器会识别为图片输入
+                    // （image_url 支持 data:base64 与 http(s) 两种；OVMS VL 模型接收 base64）
+                    if (url.Length > 0) list.Add(new DataContent(new Uri(url), MimeFromUrl(url)));
+                    break;
+            }
+        }
+        return list;
+    }
+
+    /// <summary>从 image_url（data URL 或 http URL）推断 MIME 类型（DataContent 需要）。</summary>
+    private static string MimeFromUrl(string url)
+    {
+        if (url.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+        {
+            var semi = url.IndexOf(';');
+            var comma = url.IndexOf(',');
+            if (semi > 5 && (comma < 0 || semi < comma)) return url[5..semi]; // data:image/png;base64,...
+            if (comma > 5) return url[5..comma];
+        }
+        var ext = System.IO.Path.GetExtension(url.Split('?')[0]).ToLowerInvariant();
+        return ext switch
+        {
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".png" => "image/png",
+            ".gif" => "image/gif",
+            ".webp" => "image/webp",
+            ".bmp" => "image/bmp",
+            _ => "image/png",
+        };
+    }
+
     private static List<ChatMessage> ParseMessages(JsonElement body)
     {
         var list = new List<ChatMessage>();
@@ -130,18 +190,17 @@ public class OpenAiCompatController : ControllerBase
         foreach (var item in arr.EnumerateArray())
         {
             var role = item.TryGetProperty("role", out var r) ? r.GetString() ?? "user" : "user";
-            var content = item.TryGetProperty("content", out var c) ? c.GetString() ?? "" : "";
+            var content = item.TryGetProperty("content", out var c) ? c : default;
             switch (role.ToLowerInvariant())
             {
                 case "system":
-                    list.Add(new ChatMessage(ChatRole.System, content));
+                    list.Add(new ChatMessage(ChatRole.System, ParseContent(content)));
                     break;
                 case "assistant":
                     if (item.TryGetProperty("tool_calls", out var tcs) && tcs.ValueKind == JsonValueKind.Array && tcs.GetArrayLength() > 0)
                     {
                         var contents = new List<AIContent>();
-                        if (!string.IsNullOrEmpty(content))
-                            contents.Add(new TextContent(content));
+                        contents.AddRange(ParseContent(content));
                         foreach (var tc in tcs.EnumerateArray())
                         {
                             var id = tc.TryGetProperty("id", out var i) ? i.GetString() ?? "" : "";
@@ -160,7 +219,7 @@ public class OpenAiCompatController : ControllerBase
                     }
                     else
                     {
-                        list.Add(new ChatMessage(ChatRole.Assistant, content));
+                        list.Add(new ChatMessage(ChatRole.Assistant, ParseContent(content)));
                     }
                     break;
                 case "tool":
@@ -169,7 +228,7 @@ public class OpenAiCompatController : ControllerBase
                     list.Add(new ChatMessage(ChatRole.Tool, new[] { new FunctionResultContent(callId, toolContent) }));
                     break;
                 default:
-                    list.Add(new ChatMessage(ChatRole.User, content));
+                    list.Add(new ChatMessage(ChatRole.User, ParseContent(content)));
                     break;
             }
         }
