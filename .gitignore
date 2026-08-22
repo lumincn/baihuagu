@@ -246,3 +246,6 @@ k8s-test-data/
 # nuget-local 离线包源：只跟踪 AnkiGen 自制包，其余由 scripts/sync-nuget-local.ps1 生成
 nuget-local/*.nupkg
 !nuget-local/AnkiGen.Core.1.0.0.nupkg
+
+# CodeGraph 本机代码图谱索引（工具生成的本地缓存，不提交）
+/.codegraph/
