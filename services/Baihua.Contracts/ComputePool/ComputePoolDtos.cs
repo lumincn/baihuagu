@@ -28,6 +28,27 @@ public class ComputeNodeCapabilitiesDto
 
     /// <summary>该节点模型商店（可拉取的已下载模型）</summary>
     public List<ModelStoreEntryDto> ModelStore { get; set; } = new();
+
+    /// <summary>该节点的本地绘图能力（文生图/文生视频，ComfyUI）。空 = 不对外提供绘图。</summary>
+    public DrawCapabilityDto? Draw { get; set; }
+}
+
+public class DrawCapabilityDto
+{
+    /// <summary>本机 ComfyUI 是否在线（绘图前置条件）。</summary>
+    public bool ComfyOnline { get; set; }
+
+    /// <summary>是否支持文生图。</summary>
+    public bool Image { get; set; }
+
+    /// <summary>是否支持文生视频。</summary>
+    public bool Video { get; set; }
+
+    /// <summary>出图 checkpoint 名（可为空）。</summary>
+    public string? ImageCheckpoint { get; set; }
+
+    /// <summary>出视频 checkpoint 名（可为空）。</summary>
+    public string? VideoCheckpoint { get; set; }
 }
 
 public class ComputeProviderDto
@@ -73,6 +94,9 @@ public class ComputePoolNodeDto
     public double? GpuVramGb { get; set; }
     public int? CpuCores { get; set; }
     public List<ComputeProviderDto> Providers { get; set; } = new();
+
+    /// <summary>该节点的本地绘图能力（文生图/文生视频）。空 = 不对外提供绘图。</summary>
+    public DrawCapabilityDto? Draw { get; set; }
 
     /// <summary>本机是否已自动注册该节点的提供方（可选用）</summary>
     public bool ProviderRegistered { get; set; }

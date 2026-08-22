@@ -35,6 +35,7 @@ public class ComputePoolService : IHostedService, IDisposable
     private readonly IConfiguration _configuration;
     private readonly ILogger<ComputePoolService> _logger;
     private readonly BenchmarkRepository _benchmarkRepository;
+    private readonly ComfyDrawService _draw;
 
     private readonly ConcurrentDictionary<string, ComputeNodeCapabilitiesDto> _peerCapabilities = new();
     /// <summary>对端 /health 可达时间（capabilities 未就绪时仍能判断在线）</summary>
@@ -50,7 +51,8 @@ public class ComputePoolService : IHostedService, IDisposable
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
         ILogger<ComputePoolService> logger,
-        BenchmarkRepository benchmarkRepository)
+        BenchmarkRepository benchmarkRepository,
+        ComfyDrawService draw)
     {
         _messageService = messageService;
         _aiConfig = aiConfig;
@@ -61,6 +63,7 @@ public class ComputePoolService : IHostedService, IDisposable
         _configuration = configuration;
         _logger = logger;
         _benchmarkRepository = benchmarkRepository;
+        _draw = draw;
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
@@ -319,7 +322,7 @@ public class ComputePoolService : IHostedService, IDisposable
     /// <summary>算力池总览（本机 + 对端）。</summary>
     public async Task<ComputePoolViewDto> GetPoolViewAsync(CancellationToken ct = default)
     {
-        var localNode = GetLocalNode();
+        var localNode = await GetLocalNodeAsync();
         // 本机节点补上 AI 服务（shim 路由）的提供方，与 /mg/capabilities 广播保持一致
         // （同样只补可共享的本地算力，避免 peer- / 云端模型在本机节点重复出现）
         var aiProviders = await GetAiServiceProvidersAsync(ct);
@@ -359,6 +362,7 @@ public class ComputePoolService : IHostedService, IDisposable
                 LastSeenUtc = caps?.UpdatedAt ?? peer.LastSeenUtc,
                 CpuCores = caps?.CpuCores,
                 Providers = caps?.Providers.Where(ComputePoolShareFilter.IsShareable).ToList() ?? new List<ComputeProviderDto>(),
+                Draw = caps?.Draw,
                 ProviderRegistered = registered,
                 ModelStore = caps?.ModelStore ?? new List<ModelStoreEntryDto>()
             });
@@ -429,13 +433,16 @@ public class ComputePoolService : IHostedService, IDisposable
         return (true, null);
     }
 
-    private ComputePoolNodeDto GetLocalNode()
+    private async Task<ComputePoolNodeDto> GetLocalNodeAsync()
     {
         var settings = _serverAddress.GetSettings();
         var hostUrl = GetLocalHostUrl();
         var openAiBaseUrl = _configuration["BAIHUA_PUBLIC_OPENAI_BASE_URL"];
         if (string.IsNullOrWhiteSpace(openAiBaseUrl))
             openAiBaseUrl = $"{hostUrl}/mg/pool/v1"; // 统一推理网关（全网路由）
+
+        // 绘图能力（用 3s 短超时探测本地 ComfyUI，避免阻塞算力池刷新）
+        var drawOnline = await ProbeDrawOnlineAsync();
 
         return new ComputePoolNodeDto
         {
@@ -463,8 +470,30 @@ public class ComputePoolService : IHostedService, IDisposable
                     }).ToList()
                 })
                 .ToList(),
+            Draw = new DrawCapabilityDto
+            {
+                ComfyOnline = drawOnline,
+                Image = drawOnline,
+                Video = drawOnline,
+                ImageCheckpoint = drawOnline ? ComfyWorkflowBuilder.DefaultImageCheckpoint : null,
+                VideoCheckpoint = drawOnline ? ComfyWorkflowBuilder.DefaultVideoCheckpoint : null
+            },
             ProviderRegistered = true
         };
+    }
+
+    /// <summary>短超时探测本机 ComfyUI 是否在线（用于算力池总览的绘图能力标识）。</summary>
+    private async Task<bool> ProbeDrawOnlineAsync()
+    {
+        try
+        {
+            using var shortCt = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+            return await _draw.IsAvailableAsync(shortCt.Token);
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     /// <summary>排行榜里该模型最近一次实测 token/s（无记录返回 null）。</summary>

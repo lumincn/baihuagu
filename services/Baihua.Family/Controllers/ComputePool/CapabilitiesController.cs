@@ -18,6 +18,7 @@ public class CapabilitiesController : ControllerBase
     private readonly ServerAddressService _serverAddress;
     private readonly AiSettingsService _aiSettings;
     private readonly BenchmarkRepository _benchmarkRepository;
+    private readonly ComfyDrawService _draw;
     private readonly IConfiguration _configuration;
     private readonly ILogger<CapabilitiesController> _logger;
 
@@ -25,19 +26,21 @@ public class CapabilitiesController : ControllerBase
         ServerAddressService serverAddress,
         AiSettingsService aiSettings,
         BenchmarkRepository benchmarkRepository,
+        ComfyDrawService draw,
         IConfiguration configuration,
         ILogger<CapabilitiesController> logger)
     {
         _serverAddress = serverAddress;
         _aiSettings = aiSettings;
         _benchmarkRepository = benchmarkRepository;
+        _draw = draw;
         _configuration = configuration;
         _logger = logger;
     }
 
     /// <summary>本机能力清单（对端服务器用 X-Server-Token 拉取）</summary>
     [HttpGet("/mg/capabilities")]
-    public async Task<ActionResult<ComputeNodeCapabilitiesDto>> GetCapabilities()
+    public async Task<ActionResult<ComputeNodeCapabilitiesDto>> GetCapabilities(CancellationToken ct)
     {
         var localToken = _configuration["BAIHUA_SERVER_MSG_TOKEN"] ?? "";
         var token = Request.Headers["X-Server-Token"].FirstOrDefault();
@@ -89,6 +92,17 @@ public class CapabilitiesController : ControllerBase
             providerGroups.Add(remote);
         }
 
+        // 绘图能力：对端可据以判断是否调用 /mg/pool/v1/draw/*
+        var comfyOnline = await _draw.IsAvailableAsync(ct);
+        var drawCapability = new DrawCapabilityDto
+        {
+            ComfyOnline = comfyOnline,
+            Image = comfyOnline,
+            Video = comfyOnline,
+            ImageCheckpoint = comfyOnline ? ComfyWorkflowBuilder.DefaultImageCheckpoint : null,
+            VideoCheckpoint = comfyOnline ? ComfyWorkflowBuilder.DefaultVideoCheckpoint : null
+        };
+
         return Ok(new ComputeNodeCapabilitiesDto
         {
             ServerId = _serverAddress.GetServerInstanceId(),
@@ -96,6 +110,7 @@ public class CapabilitiesController : ControllerBase
             HostUrl = hostUrl,
             OpenAiBaseUrl = openAiBaseUrl,
             Providers = providerGroups,
+            Draw = drawCapability,
             GpuName = null,
             GpuVramGb = null,
             CpuCores = Environment.ProcessorCount,

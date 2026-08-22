@@ -69,6 +69,12 @@ else
                     {
                         <span class="ms-2 badge bg-info-subtle text-info-emphasis">推理端点 @node.OpenAiBaseUrl</span>
                     }
+                    @if (node.Draw is { ComfyOnline: true } drawCap)
+                    {
+                        <span class="ms-2 badge bg-success-subtle text-success-emphasis" title="该节点可提供文生图/文生视频（ComfyUI）">
+                            🎨 可绘图@(drawCap.Video ? " / 视频" : "")
+                        </span>
+                    }
                 </div>
 
                 @if (node.Providers.Count == 0)
