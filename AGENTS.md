@@ -58,6 +58,7 @@ C:\Users\lumin\src\
 
 ## 助手 / 自动化约定
 
+- **执行任务时先检查当前是 Windows 还是 Linux**，再选用对应平台的命令与路径写法（PowerShell vs bash、反斜杠 vs 正斜杠、bh 的 win 与 linux 版本等），以免用错命令。
 - **服务运行由用户手动按需启停**，助手不自动拉起/保持后台进程：
   - Baihua.Family **8788**、Baihua.AI **8791**、Baihua.Vault **8790**、Baihua.Web **5177**（Windows native 下 OpenVINO 由 OVMS 系统服务承载（服务名 `ovms`，REST :8000，安装见 `scripts/install-openvino-ovms-service.ps1`），`bh status` 展示状态）
   - 启停统一用 `bh start` / `bh stop`；开发调试可单独 `dotnet watch run`

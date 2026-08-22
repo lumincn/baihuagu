@@ -38,8 +38,6 @@ namespace Baihua.Core.Services
             {
                 System.IO.Path.Combine(localAppData, "Programs", "Obsidian", "Obsidian.exe"),
                 System.IO.Path.Combine(localAppData, "Programs", "Obsidian", "obsidian.exe"),
-                @"C:\Users\lumin\AppData\Local\Programs\Obsidian\Obsidian.exe",
-                @"C:\Users\lumin\AppData\Local\Programs\Obsidian\obsidian.exe",
             };
 
             foreach (var c in candidates)
