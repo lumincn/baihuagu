@@ -357,11 +357,11 @@ EOF
 
 # nerdctl 直接构建进 k3s containerd（构建即入库，无 docker）
 # 标准构建：镜像 unpack 进 k3s containerd（-o type=image 导出不可靠——tag 不更新会部署到旧镜像）
+# 非 root 自动提权：k3s containerd socket 仅 root 可读，exec sudo 重跑（无需手动 sudo）。
 build_all() {
     if [ "$(id -u)" != "0" ]; then
-        echo "[build] 需要 root 权限（k3s containerd socket $K3S_CONTAINERD_SOCK 仅 root 可读）" >&2
-        echo "        请用: sudo $0 build   或直接 bh update（自动提权）" >&2
-        exit 1
+        echo "[build] 需要 root 权限（k3s containerd socket $K3S_CONTAINERD_SOCK 仅 root 可读），自动提权..." >&2
+        exec sudo "$(readlink -f "$0")" build "$@"
     fi
     ensure_deps
     ensure_registry
@@ -405,9 +405,13 @@ build_all() {
 
 deploy_all() {
     if [ "$(id -u)" != "0" ]; then
-        echo "[deploy] 需要 root 权限（/etc/rancher/k3s/k3s.yaml 仅 root 可读）" >&2
-        echo "        请用: sudo $0 deploy   或直接 bh update（自动提权）" >&2
-        exit 1
+        echo "[deploy] 需要 root 权限（/etc/rancher/k3s/k3s.yaml 仅 root 可读），自动提权..." >&2
+        exec sudo "$(readlink -f "$0")" deploy
+    fi
+    # 记录本次部署对应的源码 commit（供 bh status --json 判断运行代码是否最新）
+    local git_commit="unknown"
+    if command -v git >/dev/null 2>&1 && [ -d "$ROOT/.git" ]; then
+        git_commit="$(cd "$ROOT" && git rev-parse --short HEAD 2>/dev/null || echo unknown)"
     fi
     # 基础清单（与 GPU 无关，始终部署）
     for m in 00-namespace.yaml 01-configmap.yaml 02-secret.yaml 03-pvc.yaml \
@@ -415,6 +419,11 @@ deploy_all() {
         echo "[deploy] $m"
         k apply -f "$K8S_DIR/$m" >/dev/null || exit 1
     done
+    # 给应用 deployment 打上 git commit 标注（postgres 不属应用镜像，跳过）
+    for svc in bh-vault bh-ai bh-webui bh-family bh-openvino; do
+        k -n "$NAMESPACE" annotate deploy "$svc" "baihua.git-commit=$git_commit" --overwrite >/dev/null 2>&1 || true
+    done
+    echo "[deploy] 记录源码 commit: $git_commit"
     # GPU 按需：有 Intel GPU 才部署 intel-gpu-plugin（kube-system）+ bh-openvino
     if has_intel_gpu; then
         for m in 10-intel-gpu-plugin.yaml 22a-openvino.yaml; do
@@ -486,6 +495,10 @@ changed_images() {
 
 # up：仅构建变更涉及的镜像 + deploy；--all 强制全量重建
 up_all() {
+    if [ "$(id -u)" != "0" ]; then
+        echo "[up] 需要 root 权限（build/deploy），自动提权..." >&2
+        exec sudo "$(readlink -f "$0")" up "$@"
+    fi
     local mode="${1:-}"
     local targets
     if [ "$mode" = "--all" ]; then
@@ -507,9 +520,8 @@ up_all() {
 # 清空 buildkit 构建缓存（含 nuget 包缓存挂载）：释放磁盘、修复缓存损坏导致的构建失败
 prune_cache() {
     if [ "$(id -u)" != "0" ]; then
-        echo "[prune] 需要 root 权限（buildkitd socket 仅 root 可读）" >&2
-        echo "        请用: sudo $0 prune" >&2
-        exit 1
+        echo "[prune] 需要 root 权限（buildkitd socket 仅 root 可读），自动提权..." >&2
+        exec sudo "$(readlink -f "$0")" prune
     fi
     if ! command -v buildctl >/dev/null 2>&1; then
         echo "[prune] 未找到 buildctl（请先运行 bh build 自动安装）" >&2
@@ -574,13 +586,23 @@ status_all() {
 
 # 机器可读状态（供 DSH 桥插件/运维界面消费）：每个应用 deployment 一行
 # 服务名统一不带 bh- 前缀（family/ai/vault/webui/openvino/postgres）
+# 额外输出 git 版本信息：HEAD + 各服务部署时记录的 commit（baihua.git-commit annotation），
+# 用于判断当前运行的代码是否最新（gitHead == imageCommit 即最新；unknown 表示尚未部署标注）。
 status_json() {
+    local git_head="unknown" git_branch="unknown" git_dirty="false"
+    if command -v git >/dev/null 2>&1 && [ -d "$ROOT/.git" ]; then
+        git_head="$(cd "$ROOT" && git rev-parse --short HEAD 2>/dev/null || echo unknown)"
+        git_branch="$(cd "$ROOT" && git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)"
+        if [ -n "$(cd "$ROOT" && git status --porcelain 2>/dev/null)" ]; then
+            git_dirty="true"
+        fi
+    fi
     local services="bh-family bh-ai bh-vault bh-webui bh-openvino bh-postgres"
     local entries=""
     local first=1
     local ready_total=0 total=0
     for svc in $services; do
-        local json phase ready replicas image age restarts
+        local json phase ready replicas image age restarts image_commit up_to_date
         json="$(k -n "$NAMESPACE" get deploy "$svc" -o json 2>/dev/null)" || continue
         phase="$(printf '%s' "$json" | python3 -c 'import json,sys; d=json.load(sys.stdin); print((d.get("status",{}).get("conditions") or [{}])[-1].get("type",""))' 2>/dev/null)"
         ready="$(printf '%s' "$json" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("status",{}).get("readyReplicas",0))' 2>/dev/null)"
@@ -588,6 +610,13 @@ status_json() {
         image="$(printf '%s' "$json" | python3 -c 'import json,sys; d=json.load(sys.stdin); c=(d.get("spec",{}).get("template",{}).get("spec",{}).get("containers") or [{}]); print(c[0].get("image",""))' 2>/dev/null)"
         age="$(printf '%s' "$json" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("metadata",{}).get("creationTimestamp",""))' 2>/dev/null)"
         restarts="$(k -n "$NAMESPACE" get pods -l "app=$svc" -o jsonpath='{.items[*].status.containerStatuses[0].restartCount}' 2>/dev/null | tr ' ' '\n' | awk '{s+=$1} END {print s+0}')"
+        image_commit="$(printf '%s' "$json" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("metadata",{}).get("annotations",{}).get("baihua.git-commit","unknown"))' 2>/dev/null)"
+        [ -z "$image_commit" ] && image_commit="unknown"
+        if [ "$git_head" != "unknown" ] && [ "$image_commit" != "unknown" ] && [ "$image_commit" = "$git_head" ]; then
+            up_to_date="true"
+        else
+            up_to_date="false"
+        fi
         [ -z "$ready" ] && ready=0
         [ -z "$replicas" ] && replicas=0
         [ -z "$restarts" ] && restarts=0
@@ -596,10 +625,10 @@ status_json() {
         local name="${svc#bh-}"
         [ "$first" = 0 ] && entries="$entries,"
         first=0
-        entries="$entries{\"name\":\"$name\",\"ready\":$ready,\"replicas\":$replicas,\"image\":\"$image\",\"age\":\"$age\",\"restarts\":$restarts,\"phase\":\"$phase\"}"
+        entries="$entries{\"name\":\"$name\",\"ready\":$ready,\"replicas\":$replicas,\"image\":\"$image\",\"age\":\"$age\",\"restarts\":$restarts,\"phase\":\"$phase\",\"imageCommit\":\"$image_commit\",\"upToDate\":$up_to_date}"
     done
-    printf '{"cell":"k8s","namespace":"%s","updatedAt":"%s","services":[%s],"summary":{"ready":%s,"total":%s}}\n' \
-        "$NAMESPACE" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$entries" "$ready_total" "$total"
+    printf '{"cell":"k8s","namespace":"%s","updatedAt":"%s","git":{"head":"%s","branch":"%s","dirty":%s},"services":[%s],"summary":{"ready":%s,"total":%s}}\n' \
+        "$NAMESPACE" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$git_head" "$git_branch" "$git_dirty" "$entries" "$ready_total" "$total"
 }
 
 # 单个服务启停/重启（操作 deployment 副本数/滚动重启；服务名可不带 bh- 前缀）

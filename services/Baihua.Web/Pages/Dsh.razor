@@ -75,6 +75,8 @@
                     <button class="btn btn-sm btn-primary" @onclick="BhBuildAllAsync" disabled="@_bhBusy">🛠 编译（全部）</button>
                     <button class="btn btn-sm btn-warning" @onclick="BhUpdateAsync" disabled="@_bhBusy">⬆️ 一键更新</button>
                     <button class="btn btn-sm btn-outline-secondary" @onclick="BhDeployAsync" disabled="@_bhBusy">📦 部署</button>
+                    <button class="btn btn-sm btn-outline-danger" @onclick="RestartDshAsync" disabled="@_bhBusy" title="重启 DSH（DeepSeek Harness）进程，约 10-30 秒后恢复，期间桥接不可用">♻️ 重启 DSH</button>
+                    <button class="btn btn-sm btn-outline-success" @onclick="GitCommitPushAsync" disabled="@_bhBusy" title="提交并推送百花仓库（git add -A + commit + push）">⬆️ 提交推送</button>
                 </div>
 
                 @if (_bhServices.Count > 0)
@@ -131,12 +133,31 @@
                 @if (_bhRunningOps.Count > 0)
                 {
                     <div class="mt-2 small">
-                        <div class="text-muted fw-semibold mb-1">⏳ 运行中/最近操作</div>
+                        <div class="text-muted fw-semibold mb-1">⏳ 进行中</div>
                         @foreach (var op in _bhRunningOps)
                         {
                             <div class="d-flex align-items-center gap-2 mb-1">
-                                <span class="badge @(op.Running ? "bg-warning text-dark" : (op.ExitCode == 0 ? "bg-success" : "bg-danger"))">
-                                    @(op.Running ? "运行中" : op.ExitCode == 0 ? "成功" : "失败")
+                                <span class="badge bg-warning text-dark">运行中</span>
+                                <code>@op.Action @op.Service</code>
+                                <span class="text-muted">@op.Id</span>
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(op.Tail))
+                            {
+                                <pre class="dsh-ops-tail">@op.Tail</pre>
+                            }
+                        }
+                    </div>
+                }
+
+                @if (_bhRecentOps.Count > 0)
+                {
+                    <div class="mt-2 small">
+                        <div class="text-muted fw-semibold mb-1">✅ 最近完成</div>
+                        @foreach (var op in _bhRecentOps)
+                        {
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <span class="badge @(op.ExitCode == 0 ? "bg-success" : "bg-danger")">
+                                    @(op.ExitCode == 0 ? "成功" : "失败")
                                 </span>
                                 <code>@op.Action @op.Service</code>
                                 <span class="text-muted">@op.Id</span>
@@ -310,6 +331,7 @@
     private List<BhServiceDto> _bhServices = new();
     private BhSummaryDto? _bhSummary;
     private List<BhOpDto> _bhRunningOps = new();
+    private List<BhOpDto> _bhRecentOps = new();
     private string? _logsService;
     private string? _logsText;
     private System.Threading.Timer? _opsTimer;
@@ -390,12 +412,14 @@
                 _bhServices = (r.Status.Services ?? new List<BhServiceDto>()).ToList();
                 _bhSummary = r.Status.Summary;
                 _bhRunningOps = (r.RunningOps ?? new List<BhOpDto>()).ToList();
+                _bhRecentOps = (r.RecentOps ?? new List<BhOpDto>()).ToList();
             }
             else
             {
                 _bhServices = new List<BhServiceDto>();
                 _bhSummary = null;
                 _bhRunningOps = new List<BhOpDto>();
+                _bhRecentOps = new List<BhOpDto>();
                 _bhError = r?.Error ?? "获取百花服务状态失败（桥插件未配置 bhCommand？）";
             }
         }
@@ -449,6 +473,74 @@
             else
             {
                 _bhError = r?.Error ?? r?.Stderr ?? "操作失败";
+            }
+            await LoadBhOpsAsync();
+        }
+        finally
+        {
+            _bhBusy = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task RestartDshAsync()
+    {
+        if (_bhBusy) return;
+        var ok = await JSRuntime.InvokeAsync<bool>("confirm", "确认重启 DSH（DeepSeek Harness）？\n\n将终止当前 DSH 进程并重新拉起，约 10-30 秒后恢复；重启期间本页桥接不可用。");
+        if (!ok) return;
+        _bhBusy = true;
+        _bhError = null;
+        _bhMessage = null;
+        StateHasChanged();
+        try
+        {
+            var r = await DshSvc.RestartDshAsync();
+            if (r is { Ok: true })
+            {
+                _bhMessage = r.Stdout ?? r.Message ?? "已受理重启，DSH 正在后台重启（约 10-30 秒），期间桥接不可用";
+            }
+            else
+            {
+                _bhError = r?.Error ?? r?.Stderr ?? "重启请求失败";
+            }
+        }
+        finally
+        {
+            _bhBusy = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task GitCommitPushAsync()
+    {
+        if (_bhBusy) return;
+        var message = await JSRuntime.InvokeAsync<string>("prompt", "提交信息（git commit -m）：");
+        if (message == null) return;
+        message = message.Trim();
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            _bhError = "提交信息不能为空";
+            StateHasChanged();
+            return;
+        }
+        var ok = await JSRuntime.InvokeAsync<bool>("confirm", $"确认提交并推送「{message}」？\n\n将执行 git add -A + commit + push（后台执行，可在下方查看进度）。");
+        if (!ok) return;
+        _bhBusy = true;
+        _bhError = null;
+        _bhMessage = null;
+        StateHasChanged();
+        try
+        {
+            var r = await DshSvc.GitCommitPushAsync(message);
+            if (r is { Ok: true })
+            {
+                _bhMessage = !string.IsNullOrEmpty(r.OpId)
+                    ? $"已开始提交并推送（opId={r.OpId}），可在下方查看进度"
+                    : r.Message ?? r.Stdout ?? "已受理提交推送";
+            }
+            else
+            {
+                _bhError = r?.Error ?? r?.Stderr ?? "提交推送请求失败";
             }
             await LoadBhOpsAsync();
         }

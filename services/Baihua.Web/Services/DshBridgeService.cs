@@ -171,6 +171,37 @@ public sealed class DshBridgeService
         }
     }
 
+    /// <summary>重启 DSH 进程（经桥插件，插件会先响应后异步重启自身）。返回受理结果。</summary>
+    public async Task<BhActionResultDto?> RestartDshAsync(CancellationToken ct = default)
+    {
+        return await RunBhActionAsync("dsh-restart", null, ct);
+    }
+
+    /// <summary>提交并推送百花仓库（git add -A → commit → push，后台执行，返回 opId）。</summary>
+    public async Task<BhActionResultDto?> GitCommitPushAsync(string message, CancellationToken ct = default)
+    {
+        try
+        {
+            var client = Client();
+            var payload = new { action = "git-commit-push", service = "", message };
+            var content = new StringContent(JsonSerializer.Serialize(payload, JsonOptions), Encoding.UTF8, "application/json");
+            var response = await client.PostAsync($"{_baseUrl}/dsh-bridge/bh/action", content, ct);
+            var text = await response.Content.ReadAsStringAsync(ct);
+            try
+            {
+                return JsonSerializer.Deserialize<BhActionResultDto>(text, EventJsonOptions());
+            }
+            catch
+            {
+                return new BhActionResultDto { Ok = response.IsSuccessStatusCode, Error = text };
+            }
+        }
+        catch (Exception ex)
+        {
+            return new BhActionResultDto { Ok = false, Error = ex.Message };
+        }
+    }
+
     /// <summary>列出 bh 长操作（含最近输出）。</summary>
     public async Task<IReadOnlyList<BhOpDto>> GetBhOpsAsync(CancellationToken ct = default)
     {
@@ -336,6 +367,8 @@ public sealed class BhStatusResultDto
     public BhStatusDto? Status { get; set; }
     [JsonPropertyName("runningOps")]
     public IReadOnlyList<BhOpDto>? RunningOps { get; set; }
+    [JsonPropertyName("recentOps")]
+    public IReadOnlyList<BhOpDto>? RecentOps { get; set; }
 }
 
 public sealed class BhStatusDto
@@ -374,6 +407,8 @@ public sealed class BhActionResultDto
     public bool TimedOut { get; set; }
     public string? OpId { get; set; }
     public string? Action { get; set; }
+    /// <summary>操作受理提示（如 dsh-restart 返回的 message）。</summary>
+    public string? Message { get; set; }
     public string? Error { get; set; }
 }
 
