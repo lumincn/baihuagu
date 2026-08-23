@@ -114,6 +114,9 @@ metadata:
 spec:
   selector:
     app: bh-family
+  # 固定 ClusterIP：宿主机 DSH/mcp-server 直接经该 IP 访问；固定后不随 Service 重建而改变，
+  # 避免配置里的 familyUrl / BAIHUA_FAMILY_URL 失效。IP 必须在 k3s service CIDR（默认 10.43.0.0/16）内且空闲。
+  clusterIP: 10.43.159.101
   ports:
     - name: http
       port: 8788

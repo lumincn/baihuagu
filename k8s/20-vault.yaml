@@ -88,6 +88,8 @@ metadata:
 spec:
   selector:
     app: bh-vault
+  # 固定 ClusterIP：宿主机 DSH/mcp-server 直接经该 IP 访问；固定后不随 Service 重建而改变。
+  clusterIP: 10.43.242.109
   ports:
     - name: http
       port: 8790
