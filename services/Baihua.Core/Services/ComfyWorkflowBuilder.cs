@@ -26,7 +26,10 @@ public static class ComfyWorkflowBuilder
         int height,
         int steps,
         long seed,
-        string checkpoint)
+        string checkpoint,
+        double cfg = 7.0,
+        string sampler = "euler",
+        string scheduler = "normal")
     {
         return new Dictionary<string, object>
         {
@@ -37,9 +40,9 @@ public static class ComfyWorkflowBuilder
                 {
                     ["seed"] = seed,
                     ["steps"] = steps,
-                    ["cfg"] = 7.0,
-                    ["sampler_name"] = "euler",
-                    ["scheduler"] = "normal",
+                    ["cfg"] = cfg,
+                    ["sampler_name"] = sampler,
+                    ["scheduler"] = scheduler,
                     ["denoise"] = 1.0,
                     ["model"] = new object[] { "4", 0 },
                     ["positive"] = new object[] { "6", 0 },
@@ -94,7 +97,10 @@ public static class ComfyWorkflowBuilder
         long seed,
         string unetName,
         string clipName,
-        string vaeName)
+        string vaeName,
+        double cfg = 1.0,
+        string sampler = "res_multistep",
+        string scheduler = "simple")
     {
         return new Dictionary<string, object>
         {
@@ -140,9 +146,9 @@ public static class ComfyWorkflowBuilder
                 {
                     ["seed"] = seed,
                     ["steps"] = steps,
-                    ["cfg"] = 1.0,
-                    ["sampler_name"] = "res_multistep",
-                    ["scheduler"] = "simple",
+                    ["cfg"] = cfg,
+                    ["sampler_name"] = sampler,
+                    ["scheduler"] = scheduler,
                     ["denoise"] = 1.0,
                     ["model"] = new object[] { "16", 0 },
                     ["positive"] = new object[] { "13", 0 },
@@ -177,7 +183,10 @@ public static class ComfyWorkflowBuilder
         int fps,
         int steps,
         long seed,
-        string checkpoint)
+        string checkpoint,
+        double cfg = 4.0,
+        string sampler = "euler",
+        string scheduler = "sgm_uniform")
     {
         return new Dictionary<string, object>
         {
@@ -235,9 +244,9 @@ public static class ComfyWorkflowBuilder
                     ["model"] = new object[] { "1", 0 },
                     ["seed"] = seed,
                     ["steps"] = steps,
-                    ["cfg"] = 4.0,
-                    ["sampler_name"] = "euler",
-                    ["scheduler"] = "sgm_uniform",
+                    ["cfg"] = cfg,
+                    ["sampler_name"] = sampler,
+                    ["scheduler"] = scheduler,
                     ["positive"] = new object[] { "5", 0 },
                     ["negative"] = new object[] { "5", 1 },
                     ["latent_image"] = new object[] { "6", 0 },

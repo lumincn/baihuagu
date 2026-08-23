@@ -32,6 +32,18 @@ public class DrawImageRequest
 
     /// <summary>Z-Image-Turbo 的 VAE 模型名，可空（默认 ae.safetensors）。</summary>
     public string? VaeName { get; set; }
+
+    /// <summary>随机种子，可空（默认随机）。</summary>
+    public long? Seed { get; set; }
+
+    /// <summary>CFG 引导强度，可空（SD1.5 默认 7，Z-Image-Turbo 默认 1）。</summary>
+    public double? Cfg { get; set; }
+
+    /// <summary>采样器名，可空（SD1.5 默认 euler，Z-Image-Turbo 默认 res_multistep）。</summary>
+    public string? Sampler { get; set; }
+
+    /// <summary>调度器名，可空（SD1.5 默认 normal，Z-Image-Turbo 默认 simple）。</summary>
+    public string? Scheduler { get; set; }
 }
 
 /// <summary>文生视频请求（本地 ComfyUI + LTX Video）。</summary>
@@ -60,6 +72,18 @@ public class DrawVideoRequest
 
     /// <summary>checkpoint 文件名，可空（默认 LTX Video）。</summary>
     public string? Checkpoint { get; set; }
+
+    /// <summary>随机种子，可空（默认随机）。</summary>
+    public long? Seed { get; set; }
+
+    /// <summary>CFG 引导强度，可空（默认 4）。</summary>
+    public double? Cfg { get; set; }
+
+    /// <summary>采样器名，可空（默认 euler）。</summary>
+    public string? Sampler { get; set; }
+
+    /// <summary>调度器名，可空（默认 sgm_uniform）。</summary>
+    public string? Scheduler { get; set; }
 }
 
 /// <summary>生成结果（同步等待完成）。</summary>
@@ -98,4 +122,13 @@ public class DrawStatusDto
 
     /// <summary>可用 checkpoint（出视频）。</summary>
     public List<string> VideoCheckpoints { get; set; } = new();
+
+    /// <summary>可用 UNet 模型（Z-Image-Turbo 等 diffusion model）。</summary>
+    public List<string> UnetModels { get; set; } = new();
+
+    /// <summary>可用 CLIP 文本编码器模型（Z-Image-Turbo 用 qwen_3_4b 等）。</summary>
+    public List<string> ClipModels { get; set; } = new();
+
+    /// <summary>可用 VAE 模型（Z-Image-Turbo 用 ae 等）。</summary>
+    public List<string> VaeModels { get; set; } = new();
 }

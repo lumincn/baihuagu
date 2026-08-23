@@ -21,7 +21,7 @@ public class DrawController : ControllerBase
         _logger = logger;
     }
 
-    /// <summary>绘图能力状态：ComfyUI 在线与否 + 可用 checkpoint。</summary>
+    /// <summary>绘图能力状态：ComfyUI 在线与否 + 可用 checkpoint/UNet/CLIP/VAE。</summary>
     [HttpGet("status")]
     public async Task<ActionResult<DrawStatusDto>> GetStatus(CancellationToken ct)
     {
@@ -41,6 +41,9 @@ public class DrawController : ControllerBase
                 dto.VideoCheckpoints.Add(ComfyWorkflowBuilder.DefaultVideoCheckpoint);
             if (dto.ImageCheckpoints.Count == 0)
                 dto.ImageCheckpoints.Add(ComfyWorkflowBuilder.DefaultImageCheckpoint);
+            dto.UnetModels = await _draw.GetUnetNamesAsync(ct);
+            dto.ClipModels = await _draw.GetClipNamesAsync(ct);
+            dto.VaeModels = await _draw.GetVaeNamesAsync(ct);
         }
         return Ok(dto);
     }

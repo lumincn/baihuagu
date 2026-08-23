@@ -101,29 +101,45 @@ public class ComfyUiClient
     }
 
     /// <summary>获取 CheckpointLoaderSimple 的可用 checkpoint 列表（供绘图状态接口）。</summary>
-    public async Task<List<string>> GetCheckpointsAsync(CancellationToken ct = default)
+    public Task<List<string>> GetCheckpointsAsync(CancellationToken ct = default)
+        => GetModelNamesAsync("CheckpointLoaderSimple", "ckpt_name", ct);
+
+    /// <summary>获取 UNETLoader 的可用 diffusion 模型（Z-Image-Turbo 等）。</summary>
+    public Task<List<string>> GetUnetNamesAsync(CancellationToken ct = default)
+        => GetModelNamesAsync("UNETLoader", "unet_name", ct);
+
+    /// <summary>获取 CLIPLoader 的可用文本编码器（qwen_3_4b 等）。</summary>
+    public Task<List<string>> GetClipNamesAsync(CancellationToken ct = default)
+        => GetModelNamesAsync("CLIPLoader", "clip_name", ct);
+
+    /// <summary>获取 VAELoader 的可用 VAE（ae 等）。</summary>
+    public Task<List<string>> GetVaeNamesAsync(CancellationToken ct = default)
+        => GetModelNamesAsync("VAELoader", "vae_name", ct);
+
+    /// <summary>通用：查询某个 loader 节点 object_info 的选项列表（如 ckpt_name / unet_name / clip_name / vae_name）。</summary>
+    public async Task<List<string>> GetModelNamesAsync(string loaderClass, string optionKey, CancellationToken ct = default)
     {
         try
         {
-            using var resp = await _http.GetAsync("/object_info/CheckpointLoaderSimple", ct);
+            using var resp = await _http.GetAsync($"/object_info/{loaderClass}", ct);
             if (!resp.IsSuccessStatusCode) return new List<string>();
             var json = await resp.Content.ReadFromJsonAsync<JsonElement>(ct);
-            if (json.TryGetProperty("CheckpointLoaderSimple", out var node) &&
+            if (json.TryGetProperty(loaderClass, out var node) &&
                 node.TryGetProperty("input", out var input) &&
                 input.TryGetProperty("required", out var required) &&
-                required.TryGetProperty("ckpt_name", out var ckpt) &&
-                ckpt.ValueKind == JsonValueKind.Array && ckpt.GetArrayLength() > 0 &&
-                ckpt[0].ValueKind == JsonValueKind.Array)
+                required.TryGetProperty(optionKey, out var option) &&
+                option.ValueKind == JsonValueKind.Array && option.GetArrayLength() > 0 &&
+                option[0].ValueKind == JsonValueKind.Array)
             {
                 var list = new List<string>();
-                foreach (var name in ckpt[0].EnumerateArray())
+                foreach (var name in option[0].EnumerateArray())
                     if (name.ValueKind == JsonValueKind.String) list.Add(name.GetString() ?? "");
                 return list;
             }
         }
         catch (Exception ex)
         {
-            _logger.LogDebug("获取 ComfyUI checkpoint 列表失败: {Message}", ex.Message);
+            _logger.LogDebug("获取 ComfyUI {Loader} 模型列表失败: {Message}", loaderClass, ex.Message);
         }
         return new List<string>();
     }

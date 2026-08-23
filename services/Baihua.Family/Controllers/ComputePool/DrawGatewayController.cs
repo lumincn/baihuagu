@@ -85,21 +85,12 @@ public class DrawGatewayController : ControllerBase
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
 
-    /// <summary>绘图能力（ComfyUI 在线 + 支持图像/视频 + checkpoint）。对端发现用。</summary>
+    /// <summary>绘图能力（ComfyUI 在线 + 支持图像/视频 + checkpoint/UNet/CLIP/VAE 模型清单）。对端发现用。</summary>
     [HttpGet("/mg/pool/v1/draw/capabilities")]
     public async Task<ActionResult<DrawCapabilityDto>> Capabilities(CancellationToken ct)
     {
         if (!Authorize()) return Unauthorized(new { error = "invalid token" });
-        var online = await _draw.IsAvailableAsync(ct);
-        var dto = new DrawCapabilityDto
-        {
-            ComfyOnline = online,
-            Image = online,
-            Video = online,
-            ImageCheckpoint = ComfyWorkflowBuilder.DefaultImageCheckpoint,
-            VideoCheckpoint = ComfyWorkflowBuilder.DefaultVideoCheckpoint
-        };
-        return Ok(dto);
+        return Ok(await _draw.GetCapabilitiesAsync(ct));
     }
 
     /// <summary>文生图（跨机调用）。</summary>

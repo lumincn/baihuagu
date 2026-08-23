@@ -49,6 +49,21 @@ public class DrawCapabilityDto
 
     /// <summary>出视频 checkpoint 名（可为空）。</summary>
     public string? VideoCheckpoint { get; set; }
+
+    /// <summary>出图 checkpoint 全集（CheckpointLoaderSimple）。</summary>
+    public List<string> ImageCheckpoints { get; set; } = new();
+
+    /// <summary>出视频 checkpoint 全集（含 LTX/Wan/Hunyuan 等视频类 checkpoint）。</summary>
+    public List<string> VideoCheckpoints { get; set; } = new();
+
+    /// <summary>Z-Image-Turbo 可用 UNet 模型（UNETLoader）。</summary>
+    public List<string> UnetModels { get; set; } = new();
+
+    /// <summary>Z-Image-Turbo 可用 CLIP 文本编码器（CLIPLoader）。</summary>
+    public List<string> ClipModels { get; set; } = new();
+
+    /// <summary>Z-Image-Turbo 可用 VAE（VAELoader）。</summary>
+    public List<string> VaeModels { get; set; } = new();
 }
 
 public class ComputeProviderDto

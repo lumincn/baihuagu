@@ -1,3 +1,4 @@
+using Baihua.Contracts.ComputePool;
 using Baihua.Contracts.Draw;
 using Microsoft.Extensions.Logging;
 
@@ -28,6 +29,46 @@ public class ComfyDrawService
     /// <summary>可用 checkpoint 列表。</summary>
     public Task<List<string>> GetCheckpointsAsync(CancellationToken ct = default) => _comfy.GetCheckpointsAsync(ct);
 
+    /// <summary>可用 UNet 模型（Z-Image-Turbo 等）。</summary>
+    public Task<List<string>> GetUnetNamesAsync(CancellationToken ct = default) => _comfy.GetUnetNamesAsync(ct);
+
+    /// <summary>可用 CLIP 文本编码器。</summary>
+    public Task<List<string>> GetClipNamesAsync(CancellationToken ct = default) => _comfy.GetClipNamesAsync(ct);
+
+    /// <summary>可用 VAE。</summary>
+    public Task<List<string>> GetVaeNamesAsync(CancellationToken ct = default) => _comfy.GetVaeNamesAsync(ct);
+
+    /// <summary>绘图能力（ComfyUI 在线 + 图像/视频 checkpoint 全集 + Z-Image-Turbo 的 UNet/CLIP/VAE）。供本地状态与对端网关复用。</summary>
+    public async Task<DrawCapabilityDto> GetCapabilitiesAsync(CancellationToken ct = default)
+    {
+        var online = await _comfy.IsAvailableAsync(ct);
+        var dto = new DrawCapabilityDto
+        {
+            ComfyOnline = online,
+            Image = online,
+            Video = online,
+            ImageCheckpoint = ComfyWorkflowBuilder.DefaultImageCheckpoint,
+            VideoCheckpoint = ComfyWorkflowBuilder.DefaultVideoCheckpoint
+        };
+        if (!online) return dto;
+
+        foreach (var ck in await _comfy.GetCheckpointsAsync(ct))
+        {
+            var lower = ck.ToLowerInvariant();
+            if (lower.Contains("ltx") || lower.Contains("wan") || lower.Contains("hunyuan") || lower.Contains("cog") || lower.Contains("mochi"))
+                dto.VideoCheckpoints.Add(ck);
+            else
+                dto.ImageCheckpoints.Add(ck);
+        }
+        if (dto.VideoCheckpoints.Count == 0) dto.VideoCheckpoints.Add(ComfyWorkflowBuilder.DefaultVideoCheckpoint);
+        if (dto.ImageCheckpoints.Count == 0) dto.ImageCheckpoints.Add(ComfyWorkflowBuilder.DefaultImageCheckpoint);
+
+        dto.UnetModels = await _comfy.GetUnetNamesAsync(ct);
+        dto.ClipModels = await _comfy.GetClipNamesAsync(ct);
+        dto.VaeModels = await _comfy.GetVaeNamesAsync(ct);
+        return dto;
+    }
+
     /// <summary>获取生成的文件（图片/视频字节）。</summary>
     public Task<byte[]> GetFileAsync(string filename, string subfolder = "", string type = "output", CancellationToken ct = default)
         => _comfy.GetFileAsync(filename, subfolder, type, ct);
@@ -40,7 +81,7 @@ public class ComfyDrawService
 
         var modelType = NormalizeImageModelType(request.ModelType);
         var isTurbo = modelType == ComfyWorkflowBuilder.ZImageTurboModelType;
-        var seed = Random.Shared.NextInt64(0, long.MaxValue);
+        var seed = request.Seed is > 0 ? request.Seed.Value : Random.Shared.NextInt64(0, long.MaxValue);
         var width = request.Width is > 0 and <= 2048 ? request.Width.Value : (isTurbo ? 1024 : 512);
         var height = request.Height is > 0 and <= 2048 ? request.Height.Value : (isTurbo ? 1024 : 512);
         var steps = request.Steps is > 0 and <= 100 ? request.Steps.Value : (isTurbo ? 8 : 20);
@@ -58,7 +99,10 @@ public class ComfyDrawService
                 ? ComfyWorkflowBuilder.DefaultZImageTurboVae
                 : request.VaeName!;
             workflow = ComfyWorkflowBuilder.BuildTxt2ImageZImageTurbo(
-                request.Prompt, request.NegativePrompt, width, height, steps, seed, unetName, clipName, vaeName);
+                request.Prompt, request.NegativePrompt, width, height, steps, seed, unetName, clipName, vaeName,
+                cfg: request.Cfg is > 0 ? request.Cfg.Value : 1.0,
+                sampler: string.IsNullOrWhiteSpace(request.Sampler) ? "res_multistep" : request.Sampler!,
+                scheduler: string.IsNullOrWhiteSpace(request.Scheduler) ? "simple" : request.Scheduler!);
         }
         else
         {
@@ -66,7 +110,10 @@ public class ComfyDrawService
                 ? ComfyWorkflowBuilder.DefaultImageCheckpoint
                 : request.Checkpoint!;
             workflow = ComfyWorkflowBuilder.BuildTxt2Image(
-                request.Prompt, request.NegativePrompt, width, height, steps, seed, checkpoint);
+                request.Prompt, request.NegativePrompt, width, height, steps, seed, checkpoint,
+                cfg: request.Cfg is > 0 ? request.Cfg.Value : 7.0,
+                sampler: string.IsNullOrWhiteSpace(request.Sampler) ? "euler" : request.Sampler!,
+                scheduler: string.IsNullOrWhiteSpace(request.Scheduler) ? "normal" : request.Scheduler!);
         }
 
         return await GenerateAndWaitAsync(workflow, ImageTimeout, ct);
@@ -86,7 +133,7 @@ public class ComfyDrawService
         if (string.IsNullOrWhiteSpace(request.Prompt))
             return new DrawResultDto { Success = false, Error = "prompt 不能为空" };
 
-        var seed = Random.Shared.NextInt64(0, long.MaxValue);
+        var seed = request.Seed is > 0 ? request.Seed.Value : Random.Shared.NextInt64(0, long.MaxValue);
         var width = request.Width is > 0 and <= 768 ? request.Width.Value : 512;
         var height = request.Height is > 0 and <= 768 ? request.Height.Value : 512;
         var length = request.Length is > 0 and <= 257 ? request.Length.Value : 97;
@@ -96,7 +143,11 @@ public class ComfyDrawService
             ? ComfyWorkflowBuilder.DefaultVideoCheckpoint
             : request.Checkpoint!;
 
-        var workflow = ComfyWorkflowBuilder.BuildTxt2Video(request.Prompt, request.NegativePrompt, width, height, length, fps, steps, seed, checkpoint);
+        var workflow = ComfyWorkflowBuilder.BuildTxt2Video(
+            request.Prompt, request.NegativePrompt, width, height, length, fps, steps, seed, checkpoint,
+            cfg: request.Cfg is > 0 ? request.Cfg.Value : 4.0,
+            sampler: string.IsNullOrWhiteSpace(request.Sampler) ? "euler" : request.Sampler!,
+            scheduler: string.IsNullOrWhiteSpace(request.Scheduler) ? "sgm_uniform" : request.Scheduler!);
         return await GenerateAndWaitAsync(workflow, VideoTimeout, ct);
     }
 
