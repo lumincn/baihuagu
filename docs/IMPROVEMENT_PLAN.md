@@ -61,6 +61,27 @@
 
 ## 背景与当前状态
 
+## 排障记录（2026-08-23 补充：工具层全灭事故）
+
+- **现象**：某次重启后 DSH 所有工具调用（含内置 read/pwsh）报
+  `Cannot read properties of undefined (reading 'kind')`，工具层完全瘫痪。
+- **定位**：插件排除法（逐个卸载/装回 + 重启验证）确认元凶为 `baihua-dsh-plugin`。
+  根因：其 `tools/post-execute` 监听器签名为 `(exec, result)`，**不调用 `next()` 也不返回
+  值**。cordis `waterfall` 语义规定"不调用 `next()` 会 veto 整条链并返回监听器自己的值"
+  （返回 `undefined`），DSH 工具管线（`dsh-tools` postExecute）随后读取 `decision.kind`
+  崩溃，导致每一次工具调用全部失败。
+- **修复**：`baihua-dsh-plugin/src/index.js` 的 post-execute 改为
+  `(exec, result, next) => { ...; return next(); }`，与内置插件（spill-policy / tool-jobs）
+  写法对齐。提交 `bfa2524`，冒烟测试 6 项全过。
+- **教训**：挂 `tools/pre-execute` / `tools/post-execute` 的插件必须遵守 waterfall 链式
+  约定——要么调用 `next()` 透传，要么显式返回合法决策（`{kind:"ask"}` 等）；纯旁路观测
+  型监听器也要 `return next()`。
+- **附带修复**：本地 link 方式安装 hysteria 缺 `@deepseek-ai/schemastery`（插件目录无
+  node_modules）导致 DSH 启动失败；改用 `dsh plugin --profile web add github:luminsw/<repo>`
+  GitHub 方式安装，依赖随包装入 profile，规避该问题。
+
+## 背景与当前状态
+
 - 百花当前有 4 个相关仓库：
   - `baihua`：百花主服务
   - `baihua-dsh-plugin`：DSH 桥接插件（百花 Web → DSH，以及 DSH 侧运维/绘图工具）
