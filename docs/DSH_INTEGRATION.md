@@ -9,7 +9,7 @@
 ```
 ┌─────────────── 宿主机（如 192.168.3.13，Linux/k3s） ───────────────┐
 │  DSH web（手动启动，127.0.0.1:3080）                                │
-│   ├─ baihua-dsh-plugin      桥接（agent 会话/事件流 + bh 运维 + 百花数据工具）│
+│   ├─ baihua-dsh-plugin      桥接（agent 会话/事件流 + bh 运维 + 绘图）│
 │   ├─ baihua-local-ai-dsh-plugin  LLM provider（本机 OVMS + 算力池网关）   │
 │   └─ lanListen 0.0.0.0:3081  仅 /dsh-bridge/* 的局域网桥（token 鉴权）    │
 │                                                                      │
@@ -47,12 +47,11 @@ dsh plugin --profile web add /home/lumin/src/mdyj/baihua-local-ai-dsh-plugin
 - id: dsh-baihua-bridge
   name: baihua-dsh-plugin
   config:
-    token: '<共享密钥>'                                    # 必须（对外暴露时）
+    token: '<共享密钥>'                                    # 必须（对外暴露时；与百花 DshApi__Token 同值）
     lanListen: '0.0.0.0:3081'                             # 局域网桥（仅 /dsh-bridge/*）
     bhCommand: '/home/lumin/src/mdyj/baihua/tools/bh/bh.sh'  # 运维 CLI（本机路径）
-    vaultUrl: 'http://10.43.242.109:8790'                 # k8s Vault ClusterIP
-    familyUrl: 'http://10.43.159.101:8788'                # k8s Family ClusterIP
-    comfyUrl: 'http://127.0.0.1:8188'                     # ComfyUI（本机）
+    drawGatewayUrl: 'http://127.0.0.1:8788'               # 绘图网关（/mg/pool/v1/draw/*，可跨机）
+    drawToken: '<BAIHUA_AI_EXTERNAL_TOKEN>'               # 网关鉴权（本机已启用时必填）
 
 - id: dsh-baihua-local-ai
   name: baihua-local-ai-dsh-plugin
@@ -62,6 +61,10 @@ dsh plugin --profile web add /home/lumin/src/mdyj/baihua-local-ai-dsh-plugin
     # poolToken: '...'                                    # 网关配置了 BAIHUA_AI_EXTERNAL_TOKEN 时填写
 ```
 
+> `baihua-dsh-plugin` 不再消费 `vaultUrl` / `familyUrl` / `comfyUrl`：知识库/家庭数据
+> 由 `baihua-mcp-server` 提供（工具名 `mcp__baihua__*`），绘图统一经 `drawGatewayUrl` 网关。
+> 插件行由各包 `dsh.bundle` 自动插入（`dsh plugin add` 后挂入 profile 组合层），
+> 用户级补丁里**不要重复 `insert` 同名行**，只按 id 覆盖 `config` 即可。
 > k8s ClusterIP 可用 `kubectl get svc -n baihua bh-vault bh-family -o jsonpath='{.items[*].spec.clusterIP}'` 查询；
 > 服务重建后可能变化，需同步更新。
 
@@ -85,7 +88,7 @@ DshApi__Token: <与插件相同的 token>
 | `GET /baihua/open-url` | 「打开百花」入口：申请 cli-token 并返回自动登录首页 URL（仅 127.0.0.1、免鉴权，供 DSH 设置页卡片调用） |
 | `GET /bh/status` · `POST /bh/action` · `GET /bh/ops[/{id}]` · `GET /bh/logs` | 百花服务运维（启停/编译/更新/日志） |
 | `GET /bh/status-ui` | **只读状态**（仅 127.0.0.1、免鉴权，供 DSH 设置页卡片拉取；LAN 不暴露） |
-| DSH 工具 | `bh_*`（运维，含 `bh_build_restart` 编译并重启）、`baihua_vault_*`（知识库）、`baihua_budget_summary`、`baihua_tasks_list`、`baihua_draw`（ComfyUI） |
+| DSH 工具 | `bh_*`（运维，含 `bh_build_restart` 编译并重启）、`baihua_draw` / `baihua_draw_video`（绘图）；**数据工具不再由本插件注册**，统一走 `mcp__baihua__*`（见 6.5） |
 
 ## 6. 运维界面
 
@@ -133,13 +136,26 @@ AI 实验室场景首页改指 `/dsh`。
 
 ## 8. 插件更新后的重启
 
-插件是 `pnpm link` 安装，改完代码**重启 DSH 即生效**：
+三个自研插件经 `dsh plugin --profile web add github:luminsw/<repo>` 安装（bundle 挂层，
+`dsh plugin --profile web list` 可管理）。**改插件源码 → push 到 GitHub → 重装**，
+或对本地 `file:`/`link:` 安装直接重启 DSH 即生效：
 
 ```bash
 pkill -f "dsh web"; npx @deepseek-ai/dsh web
+# Windows 也可用 DSH 工具 bh_dsh_restart（计划任务方式重启，约 10-30 秒恢复）
 ```
 
 > 注意：当前 DSH 由本机手动启动（不常驻）。重启会重新加载插件源码与 profile patch
 > （含 mcp-baihua 等 insert 行）。
+
+## 9. 安全基线
+
+- **桥接共享密钥**：`baihua-dsh-plugin` 的 `token` 必须与百花 `DshApi__Token` 同值；
+  启用后除 `/status` 外所有 `/dsh-bridge/*` 接口要求 Bearer/`?token=`，WebSocket 升级要求 `?token=`。
+- **高危运维工具审批门**：`bh_start/stop/restart`、`bh_build*`、`bh_update`、
+  `bh_git_commit_push`、`bh_dsh_restart`、`bh_bootstrap` 挂 `tools/pre-execute` 审批门；
+  默认权限预设为 `workspace-write`（沙箱限定工作区 + 审批 ask），需要全量权限时按会话
+  临时切换 `danger-full-access`。
+- **token 不落 git**：`~/.dsh/cordis.patch.yml` 与部署配置含真实 token，不进任何公开仓库。
 
 百花侧改动（Web 页面/后端）走 `bh build <svc> && bh restart <svc>`（或 /dsh 页「🧰 运维」）。

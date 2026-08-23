@@ -47,12 +47,15 @@ cd services/Baihua.Web && dotnet run
 
 | 插件 | 方向 | 作用 | 安装位置 |
 |---|---|---|---|
-| [baihua-dsh-plugin](https://github.com/luminsw/baihua-dsh-plugin) | 百花 Web → DSH | 桥接：agent 会话驱动（HTTP+WS `/dsh-bridge/*`）、`bh_*` 运维工具、百花数据工具、DSH 设置页「百花服务状态」卡片 | DSH web profile（127.0.0.1:3080），`lanListen 0.0.0.0:3081` 局域网桥 |
+| [baihua-dsh-plugin](https://github.com/luminsw/baihua-dsh-plugin) | 百花 Web → DSH | 桥接：agent 会话驱动（HTTP+WS `/dsh-bridge/*`）、`bh_*` 运维工具、`baihua_draw*` 绘图、DSH 设置页「百花服务状态」卡片 | DSH web profile（127.0.0.1:3080），`lanListen 0.0.0.0:3081` 局域网桥 |
 | [baihua-local-ai-dsh-plugin](https://github.com/luminsw/baihua-local-ai-dsh-plugin) | DSH → 百花本地 AI | 探测 OVMS/shim/算力池，注册 `baihua-local` LLM provider + `local_ai_small_task` 小任务工具（省线上 token） | DSH web profile |
 | [baihua-mcp-server](https://github.com/luminsw/baihua-mcp-server) | 百花 → 任意 MCP 客户端 | 标准 MCP（stdio）：知识库 / 家庭只读能力 | 任意 MCP 客户端 |
 | [hysteria-dsh-plugin](https://github.com/luminsw/hysteria-dsh-plugin) | 本机代理 | DSH 内管理 Hysteria 2 代理（启停/状态/连通性 + `proxy_retry` 失败兜底） | DSH web profile |
 
 百花 Web 的 `/dsh` 页已改为 iframe 内嵌 DSH 官方 Web UI（AI 消费型交互统一交给 DSH 智能体），右上角「🧰 运维」保留百花服务运维面板。
+
+> 百花**只读数据**（知识库/记账/任务）统一经 [`baihua-mcp-server`](https://github.com/luminsw/baihua-mcp-server)
+> 以标准 MCP 暴露，DSH 内工具名为 `mcp__baihua__*`；`baihua-dsh-plugin` 只负责桥接/运维/绘图，不再注册数据工具。
 
 ## 访问授权
 

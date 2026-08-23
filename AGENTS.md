@@ -74,22 +74,21 @@ C:\Users\lumin\src\
 
 | 插件 | 方向 | 作用 | 安装位置 |
 |---|---|---|---|
-| `baihua-dsh-plugin` | 百花 Web → DSH | 桥接：agent 会话驱动（HTTP+WS `/dsh-bridge/*`）、`bh_*` 运维工具、百花数据工具、DSH 设置页「百花服务状态」卡片 | DSH web profile（127.0.0.1:3080），`lanListen 0.0.0.0:3081` 局域网桥 |
+| `baihua-dsh-plugin` | 百花 Web → DSH | 桥接：agent 会话驱动（HTTP+WS `/dsh-bridge/*`）、`bh_*` 运维工具、`baihua_draw*` 绘图、DSH 设置页「百花服务状态」卡片 | DSH web profile（127.0.0.1:3080），`lanListen 0.0.0.0:3081` 局域网桥 |
 | `baihua-local-ai-dsh-plugin` | DSH → 百花本地 AI | 探测 OVMS/shim/算力池，注册 `baihua-local` LLM provider + `local_ai_small_task` 小任务工具（省线上 token） | DSH web profile |
 | `baihua-mcp-server` | 百花 → 任意 MCP 客户端 | 标准 MCP（stdio）：知识库 / 家庭只读能力，DSH 经 `dsh-mcp-client` 接入（工具名带 `mcp__baihua__` 前缀） | 任意 MCP 客户端 |
 
 **agent 可直接调用的工具**（由上述插件注册）：
 
 - `bh_status` / `bh_logs` / `bh_op_status` — 只读运维，直接用
-- `bh_start` / `bh_stop` / `bh_restart` / `bh_build` / `bh_build_restart` / `bh_update` — 变更类运维，**执行前先询问用户**；编译/更新为长操作，用返回的 `opId` 轮询 `bh_op_status`
-- `baihua_vault_search` / `baihua_vault_list` / `baihua_vault_read_note` — 知识库检索 / 列表 / 读笔记
-- `baihua_budget_summary` / `baihua_tasks_list` — 家庭记账汇总 / 任务列表
-- `baihua_draw` — ComfyUI 出图（txt2img）
+- `bh_start` / `bh_stop` / `bh_restart` / `bh_build` / `bh_build_restart` / `bh_update` / `bh_git_commit_push` / `bh_dsh_restart` / `bh_bootstrap` — 变更类运维/宿主机操作，**执行前先询问用户**（插件侧已挂审批门：ask 策略时在 DSH 界面确认，never 时自动拒绝）；编译/更新为长操作，用返回的 `opId` 轮询 `bh_op_status`
+- `baihua_draw` / `baihua_draw_video` — 经算力池绘图网关出图/出视频（txt2img / txt2video，支持跨机）
 - `local_ai_small_task` — 小而有界的文本任务（短摘要/分类/取词/起标题/简短改写）交给本机 AI，省线上 token；**长文档 / 多步推理 / 写代码用远程模型**
-- `mcp__baihua__*` — 经 MCP server 的同一批只读数据工具（DSH 内前缀形式）
+- `mcp__baihua__*` — 百花只读数据工具（知识库检索/列表/读笔记、记账汇总、任务列表），统一经 `baihua-mcp-server` 暴露（`baihua-dsh-plugin` 不再注册数据工具）
 
-> 插件配置在 `~/.dsh/profiles/web/cordis.patch.yml`（token / bhCommand / vaultUrl / familyUrl / poolUrl 等）；
-> 改插件源码后重启 DSH 生效（`pkill -f "dsh web"; npx @deepseek-ai/dsh web`）。
+> 插件配置在 `~/.dsh/cordis.patch.yml`（token / drawGatewayUrl / drawToken / comfyModelType 等）；
+> 三个自研 DSH 插件已由 `dsh plugin --profile web add github:luminsw/<repo>` 安装（bundle 自动挂层），
+> 改插件源码并 push 后重装、或重启 DSH 生效（`npx @deepseek-ai/dsh web`）。
 
 ## 目录
 
