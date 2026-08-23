@@ -169,6 +169,12 @@ pkill -f "dsh web"; npx @deepseek-ai/dsh web
 | `~/.dsh/cordis.patch.yml` | DSH 侧插件 config（桥接 token / drawToken），用户目录、非 git 仓库 |
 | `services/Baihua.Web/appsettings.json`（本地工作区） | `DshApi__Token` 本地值；该文件带 **skip-worktree** 标记，本地改动不进入 git（git 内版本恒为 `""`） |
 | `out/native/webui/appsettings.json` | 构建产物注入，`out/` 已被 .gitignore 忽略 |
+| `k8s/02-secret.yaml` → `baihua-secret` → `BAIHUA_AI_EXTERNAL_TOKEN` | **跨机**算力池/绘图/AI shim 鉴权；设置后跨机需 token，本机(10.0.0.0/8)仍免鉴权；留空=局域网信任。经 family/ai 的 `envFrom` 自动注入 |
+
+> 本机 DSH 零配置：三个插件 apply/启动时调用 `/api/dsh/config` 自举拓扑（本机免鉴权），`/api/dsh/pool`
+> 返回 peer 能力目录，`baihua_draw(target=节点名)` 即可跨机按名调用。若要启用「跨机需 token」，在
+> `k8s/02-secret.yaml` 填 `BAIHUA_AI_EXTERNAL_TOKEN` 并 `bh deploy`；DSH 侧会自动从 `/api/dsh/config`
+> 拿到该 token（`drawToken`/`poolToken`）使用，本机仍免鉴权。
 
 防泄密机制：
 
