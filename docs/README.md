@@ -8,24 +8,27 @@
 
 | 文档 | 用途 | 状态 |
 |---|---|---|
-| [ARCHITECTURE_HOME_SERVER.md](ARCHITECTURE_HOME_SERVER.md) | Home Server 架构方案（4 服务拓扑 / 端口） | 保留 |
-| [CONFIG_STORAGE_ARCHITECTURE.md](CONFIG_STORAGE_ARCHITECTURE.md) | 配置与存储架构（三库分离 / 密钥加密） | 保留 |
-| [mg-auth-config-implementation.md](mg-auth-config-implementation.md) | `/mg/auth/config` 端点实现记录 | 保留 |
-| [SDK_ARCHITECTURE_PLAN.md](SDK_ARCHITECTURE_PLAN.md) | 百花 SDK 架构设计（6 SDK SRP 拆分，2026-07-31 完成快照） | 保留 |
-| [sync_protocol.md](sync_protocol.md) | 移动端与后端同步协议（需按 /mg/* 路径更新） | 保留 |
-| [mobile_vault_distribution.md](mobile_vault_distribution.md) | 知识库分发/导入方案 | 保留 |
-| [huapu-communication-optimization.md](huapu-communication-optimization.md) | 花圃↔百花三端通信优化方案 | 保留 |
+| [DSH_INTEGRATION.md](DSH_INTEGRATION.md) | DSH（DeepSeek Harness）插件生态集成总文档（桥接/运维/绘图/本地 AI/MCP） | 现行 |
+| [COMPUTE_POOL_DRAW.md](COMPUTE_POOL_DRAW.md) | 算力池文生图/文生视频（ComfyUI 网关）使用指南 | 现行 |
+| [LAN_COMPUTE_POOL.md](LAN_COMPUTE_POOL.md) | 局域网算力池（LAN Compute Pool）整体架构设计 | 现行 |
+| [CONFIG_STORAGE_ARCHITECTURE.md](CONFIG_STORAGE_ARCHITECTURE.md) | 配置与存储架构（三库 PostgreSQL / 密钥加密 / 数据目录） | 现行 |
+| [sync_protocol.md](sync_protocol.md) | 移动端与后端同步协议（manifest → 文件 → 本地写入） | 现行 |
+| [mobile_vault_distribution.md](mobile_vault_distribution.md) | 移动端知识库分发/导入方案（多知识库 vaultId 隔离） | 现行 |
+| [openclaw-openvino-integration.md](openclaw-openvino-integration.md) | OpenClaw 本地 AI（OpenVINO/llama.cpp/Ollama/LM Studio）集成 | 现行 |
+| [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md) | 插件体系优化计划（12 项全部完成）+ 工具层全灭事故排障记录 | 已完成/排障记录 |
 
 ## 相关文档位置
 
-- **项目根目录**：`README.md` - 项目介绍（baihua 仓库）
-- **开发助手**：`AGENTS.md` - 开发操作说明（构建 / 测试命令）
+- **项目根目录**：`README.md` — 项目介绍（baihua 仓库）
+- **开发助手**：`AGENTS.md` — 开发操作说明（架构 / 命名约定 / 测试命令）
 - **移动端文档**：`arkts/docs/`（鸿蒙）/ `kotlin/docs/`（安卓）
 - **上架与合规**：鸿蒙 `arkts/docs/` 下 AGC_SETUP_GUIDE / AGC_SUBMISSION_COPY / CHECKLIST_BEFORE_SUBMIT / APP_ICON_GUIDE
+- **部署**：`k8s/README.md`（Linux k8s）、`docker/`（compose 配置）、`tools/bh/README.md`（bh CLI）
 
-## 补充说明
+## 清理记录
 
-- 历史分析类、故障快照类、临时修复记录类文档已清理（2026-08-06），以 git 历史为准
-- 服务端 OneHop（TCP 配对）已于 2026-08 删除，相关文档表述仅作历史记录（详见 `ONEHOP_SIMPLIFICATION_PLAN.md`）
+- 2026-08-23：删除 22 个过时/一次性文档（架构草案、DB 隔离交接、SQLite→PG 迁移记录、WebUI 优化计划、
+  审计快照、i18n 计划、VMASTER 一次性提示词、测试报告等），历史可查 git。
+- 2026-08-06：清理历史分析类、故障快照类、临时修复记录类文档，以 git 历史为准。
 
-最后更新：2026-08-08
+最后更新：2026-08-23

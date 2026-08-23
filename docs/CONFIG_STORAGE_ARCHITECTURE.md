@@ -6,16 +6,19 @@
 
 ```
 $BAIHUA_HOME/                    # 百花数据根目录
-├── db/                          # 数据库 + 密钥
-│   ├── family.db                # 家庭/设备/任务等
-│   ├── vault.db                 # 知识库管理
-│   ├── ai.db                    # AI Provider 配置
+├── db/                          # 数据（密钥、WebUI 配置等本地文件）
 │   ├── .baihua-key              # AES-256 加密密钥文件（自动生成）
-│   └── *.db-shm / *.db-wal      # SQLite WAL 日志
+│   ├── webui.settings.json      # WebUI 后端 URL 配置
+│   └── user_preferences.json    # 用户偏好（字体、主题）
 ├── vaults/                      # 知识库文件
 │   └── local/{行业}/{知识库名}/
 └── logs/                        # 运行日志
 ```
+
+**数据库**：三个服务各自独立的 **PostgreSQL** 库（`family` / `vault` / `ai`，一服务一库），
+连接经 `Baihua.Data.DbConnections.For(dbName)` 读取 `PG_HOST`/`PG_USER`/`PG_PASSWORD`。
+k8s 部署由 configmap + Secret 注入；本地开发默认 `localhost/baihua`。
+（历史：曾用三个 SQLite 文件，2026-08 已整体迁移 PostgreSQL，见 git 历史 `SQLITE_TO_POSTGRES` 提交。）
 
 **跨盘映射**：通过 OS 级 symlink/junction 实现，代码无感。
 ```powershell
@@ -37,7 +40,8 @@ cmd /c mklink /J "C:\Users\lumin\.baihua" "D:\BaihuaData"
 
 | 变量 | 用途 | 默认值 (appsettings.json) |
 |------|------|--------------------------|
-| `TASK_RUNNER_AI_API_URL` | AI 服务地址（WebUI 用） | `http://127.0.0.1:8791` |
+| `BAIHUA_AI_URL` | AI 服务地址（优先；WebUI/各服务用） | `http://127.0.0.1:8791` |
+| `TASK_RUNNER_AI_API_URL` | AI 服务地址（历史兼容名，BAIHUA_AI_URL 缺失时兜底） | `http://127.0.0.1:8791` |
 | `TASK_RUNNER_AI_REQUEST_TIMEOUT_MINUTES` | AI 请求超时（分钟） | `5` |
 | `TASK_RUNNER_AI_REQUEST_MAX_ATTEMPTS` | AI 请求最大重试次数 | `3` |
 | `TASK_RUNNER_AI_REQUEST_INITIAL_BACKOFF_MS` | 重试初始退避（毫秒） | `1000` |
@@ -100,9 +104,9 @@ API Key 明文
 
 | 存储位置 | 数据内容 | 读写方 |
 |----------|----------|--------|
-| `family.db` | 家庭任务、成就、设备授权、Onboarding 状态等 | Baihua.Family |
-| `vault.db` | 知识库配置、同步状态、搜索索引 | Baihua.Vault |
-| `ai.db` | AI Provider 配置（加密 API Key）、Embedding 配置、模型列表 | Baihua.AI |
+| PostgreSQL `family` 库 | 家庭任务、成就、设备授权、Onboarding 状态等 | Baihua.Family |
+| PostgreSQL `vault` 库 | 知识库配置、同步状态、搜索索引 | Baihua.Vault |
+| PostgreSQL `ai` 库 | AI Provider 配置（加密 API Key）、Embedding 配置、模型列表 | Baihua.AI |
 | `.baihua-key` | AES-256 加密密钥 | AiConfigService |
 | `webui.settings.json` | WebUI 后端 URL 配置 | WebUI |
 | `user_preferences.json` | 用户偏好（字体、主题） | WebUI |
@@ -113,10 +117,11 @@ API Key 明文
 
 | 服务 | 端口 | 说明 |
 |------|------|------|
-| Baihua.Family | 8788 | 家庭/亲子/设备管理 API |
+| Baihua.Family | 8788 | 家庭/亲子/设备管理 API（含算力池绘图网关） |
 | Baihua.AI | 8791 | AI 模型、聊天、配置 API |
 | Baihua.Vault | 8790 | 知识库、同步、搜索 API |
-| WebUI.Family | 5177 | Blazor Server 管理面板 |
+| Baihua.Web | 5177 | Blazor Server 管理面板 |
+| OpenVINO Model Server | 8000 | 本地 OpenVINO 推理（OVMS，OpenAI 兼容） |
 
 ## 备份与恢复
 

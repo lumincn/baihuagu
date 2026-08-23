@@ -54,7 +54,7 @@ C:\Users\lumin\src\
 > - **Baihua.AI** (8791) — AI 模型、聊天、配置管理
 > - **Baihua.Vault** (8790) — 知识库、同步、搜索、索引
 >
-> 3 个服务各自使用独立的 SQLite 数据库文件（family.db / vault.db / ai.db，通过 `Baihua.Data`/`Baihua.Core` 共享数据层与实体）。
+> 3 个服务各自使用独立的 PostgreSQL 数据库（family / vault / ai 三库，一服务一库，通过 `Baihua.Data`/`Baihua.Core` 共享数据层与实体；连接见 `Baihua.Data.DbConnections`，配置 `PG_HOST`/`PG_USER`/`PG_PASSWORD`）。
 
 ## 助手 / 自动化约定
 
@@ -165,7 +165,7 @@ dotnet build services/BaiHua.slnx -c Release
 | 日志 / 指标服务名 | `Baihua.Family` | `Baihua.AI` | `Baihua.Vault` | `Baihua.Web` |
 | Dockerfile | `Dockerfile.family` | `Dockerfile.ai` | `Dockerfile.vault` | `Dockerfile.webui` |
 | 配置目录 | `/opt/baihua/config/family` | `/opt/baihua/config/ai` | `/opt/baihua/config/vault` | `/opt/baihua/config/webui` |
-| 数据库文件 | `family.db` | `ai.db` | `vault.db` | — |
+| 数据库（PostgreSQL） | `family` 库 | `ai` 库 | `vault` 库 | — |
 
 **部署形态**：
 - **Windows**（`tools/bh/win/docker/bh.ps1`）：`ai` 服务 **native 运行**（Windows 进程，直接访问 Arc GPU 做 LlamaSharp/ONNX/OpenVINO 推理），`family`/`vault`/`webui`/`nginx` 走 docker compose；compose 里 `ai` 带 `profiles: ["docker-ai"]`（默认不启动容器），容器通过 `host.docker.internal:8791` 访问 native ai

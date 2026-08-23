@@ -148,4 +148,4 @@
 - 不做上传（移动端只读）
 - 不做附件
 - 不做分块（`.md` 体积通常很小）
-- manifest：task_runner 已用 SQLite `vault_change_log` + `vault_file_snapshot` 实现 **cursor 增量**（每次请求先对账再返回）
+- manifest：服务端已用 `vault_change_log` + `vault_file_snapshot` 表实现 **cursor 增量**（每次请求先对账再返回；存储后端为 PostgreSQL，见 CONFIG_STORAGE_ARCHITECTURE.md）
