@@ -1,12 +1,13 @@
+using System.Net.Http.Json;
 using System.Text.Json;
 using Baihua.Contracts.Ai;
 using Baihua.Core.Models;
 using Baihua.Core.Security;
-using Baihua.Core.Services;
 using Baihua.Data.Entities;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
-namespace Baihua.Family.Services.AI;
+namespace Baihua.Core.Services;
 
 /// <summary>
 /// AI 提供方配置的 HTTP 数据源（一服务一数据库）：Family 进程不再直读 ai.db，

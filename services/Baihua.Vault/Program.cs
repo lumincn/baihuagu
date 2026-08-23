@@ -83,7 +83,7 @@ builder.Services.AddDbContextFactory<Baihua.Data.FamilyDbContext>(options =>
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 }, ServiceLifetime.Singleton);
 
-builder.Services.AddHttpClient();
+builder.Services.AddHttpClient("ComputePool");
 builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
 
@@ -98,6 +98,7 @@ builder.Services.AddSingleton<RequestSignatureService>();
 builder.Services.AddSingleton<WebUINotificationService>();
 builder.Services.AddSingleton<TaskManager>();
 builder.Services.AddSingleton<AiSettingsService>();
+builder.Services.AddSingleton<IAiConfigService, HttpAiConfigService>();
 builder.Services.AddAiClientServices();
 builder.Services.AddHostedService<VaultIndexSchedulerService>();
 
