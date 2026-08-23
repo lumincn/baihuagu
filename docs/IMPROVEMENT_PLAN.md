@@ -1,7 +1,7 @@
 # 百花插件体系优化计划
 
 > 创建时间：2026-08-23  
-> 状态：高优先级（1-5）与中优先级（6-9）已执行完成，低优先级（10-12）按需排期  
+> 状态：高优先级（1-5）、中优先级（6-9）、低优先级（10-12）均已执行完成  
 > 入口说明：本文件供新会话继续执行，任务按优先级排序。已完成项带 ✅ 与执行记录。
 
 ## 执行进度（2026-08-23）
@@ -43,6 +43,21 @@
 - ✅ **9. 清理死配置与输出结构** — 删除 `comfyUrl`（未使用）与 `vaultUrl`（数据工具移除后无用）；
   `callGateway` 输出统一 `files` 字段（图片/视频通用），移除语义错误的 `images`。
   提交 `85d5b5b`。
+- ✅ **10. CI / 冒烟测试** — 四个仓库均新增 `.github/workflows/ci.yml`（`node --check` 语法检查）；
+  `baihua-mcp-server` 新增 `test/`（`node:test`：鉴权逻辑 5 项 + MCP initialize/tools-list/tools-call
+  冒烟 2 项，含 schema 校验）；`baihua-dsh-plugin` 新增 `test/smoke.test.mjs`（仓库定位快速失败、
+  comfy 高级参数透传、files 字段、capabilities camelCase 归一化，6 项）。全部本地通过。
+- ✅ **11. 观测性** — MCP server 每次工具调用输出 JSON Lines 日志到 stderr（tool/ok/ms/error）；
+  `baihua-dsh-plugin` 挂 `tools/pre-execute`+`post-execute` 统计工具调用计数/失败数与耗时，
+  经 `/dsh-bridge/status` 暴露 `toolStats`；百花后端 `ComfyDrawService` 生成完成时记录
+  promptId/file/elapsed 结构化日志。
+- ✅ **12. 密钥管理升级** — 确认真实 token 不进 git：`services/Baihua.Web/appsettings.json` 带
+  **skip-worktree** 标记（本地 token 不进 git，历史从未含真实 token），`out/` 已 gitignore；
+  新增 **pre-commit 防泄密钩子** `scripts/git-hooks/pre-commit`（扫描已知 token 清单
+  `secrets-local`（gitignored）+ 64+ 十六进制长密钥形态，已本机安装并实测拦截）；
+  `docs/DSH_INTEGRATION.md` 增补「密钥管理」节（token 存放位置/防泄密机制/轮换流程）。
+  说明：桥接 token 保留在 `~/.dsh/cordis.patch.yml`（用户目录、非 git），未迁移环境变量
+  （`!!js process.env` 存在 fail-open 风险）。
 
 ## 背景与当前状态
 

@@ -176,6 +176,7 @@ public class ComfyDrawService
                 if (file == null)
                     return new DrawResultDto { Success = false, Error = "生成完成但未找到输出文件", ElapsedSeconds = Elapsed(started) };
 
+                _logger.LogInformation("ComfyUI 生成完成: promptId={PromptId}, file={File}, elapsed={Elapsed}s", promptId, file.Filename, Elapsed(started));
                 return new DrawResultDto
                 {
                     Success = true,

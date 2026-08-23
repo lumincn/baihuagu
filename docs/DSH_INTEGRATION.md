@@ -159,6 +159,29 @@ pkill -f "dsh web"; npx @deepseek-ai/dsh web
   `bh_git_commit_push`、`bh_dsh_restart`、`bh_bootstrap` 挂 `tools/pre-execute` 审批门；
   默认权限预设为 `workspace-write`（沙箱限定工作区 + 审批 ask），需要全量权限时按会话
   临时切换 `danger-full-access`。
-- **token 不落 git**：`~/.dsh/cordis.patch.yml` 与部署配置含真实 token，不进任何公开仓库。
+
+### 密钥管理（token 不落 git）
+
+真实 token（桥接共享密钥、绘图网关 `drawToken`/`BAIHUA_AI_EXTERNAL_TOKEN`）存放位置：
+
+| 位置 | 说明 |
+|---|---|
+| `~/.dsh/cordis.patch.yml` | DSH 侧插件 config（桥接 token / drawToken），用户目录、非 git 仓库 |
+| `services/Baihua.Web/appsettings.json`（本地工作区） | `DshApi__Token` 本地值；该文件带 **skip-worktree** 标记，本地改动不进入 git（git 内版本恒为 `""`） |
+| `out/native/webui/appsettings.json` | 构建产物注入，`out/` 已被 .gitignore 忽略 |
+
+防泄密机制：
+
+1. **skip-worktree**：`git ls-files -v services/Baihua.Web/appsettings.json` 显示小写标记即生效；
+   改本地 token 后 `git status` 不会出现该文件。
+2. **pre-commit 钩子**（`scripts/git-hooks/pre-commit`，本地已安装到 `.git/hooks/`）：
+   扫描已暂存内容，命中 `scripts/git-hooks/secrets-local`（gitignored 本地清单）中的已知 token，
+   或 64+ 位连续十六进制（长密钥形态）时阻止提交。新机器接入后执行
+   `cp scripts/git-hooks/pre-commit .git/hooks/pre-commit` 安装。
+3. **CI 语法/冒烟**：DSH 插件与 MCP 仓库的 GitHub Actions 在 PR 上跑 `node --check` 与
+   `node --test`（见各仓库 `.github/workflows/ci.yml`）。
+
+轮换：改 `BAIHUA_AI_EXTERNAL_TOKEN`（后端）→ 同步 `~/.dsh/cordis.patch.yml` 的
+`drawToken` → 同步 `DshApi__Token`/桥接 `token` → 重启 family 与 DSH。
 
 百花侧改动（Web 页面/后端）走 `bh build <svc> && bh restart <svc>`（或 /dsh 页「🧰 运维」）。
