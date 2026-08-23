@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Baihua.Core.Models;
+using Baihua.Core.Security;
 using Baihua.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
@@ -114,6 +115,16 @@ public class OpenAiCompatController : ControllerBase
     private bool Authorize()
     {
         var expected = _configuration["BAIHUA_AI_EXTERNAL_TOKEN"] ?? "";
+
+        // 回环 + 管理允许网段免鉴权（本机 DSH 等信任面），否则才要求 token（跨机安全）
+        var remoteIp = HttpContext.Connection.RemoteIpAddress;
+        if (remoteIp != null)
+        {
+            var allowed = AdminNetworkPolicy.ParseNets(
+                Environment.GetEnvironmentVariable(AdminNetworkPolicy.AdminAllowedNetsEnv));
+            if (AdminNetworkPolicy.IsAllowed(remoteIp, allowed)) return true;
+        }
+
         if (string.IsNullOrEmpty(expected)) return true; // 未配置则局域网内信任
         var auth = Request.Headers.Authorization.FirstOrDefault();
         if (string.IsNullOrEmpty(auth) || !auth.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
