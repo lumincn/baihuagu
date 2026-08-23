@@ -32,22 +32,52 @@ public class ComfyDrawService
     public Task<byte[]> GetFileAsync(string filename, string subfolder = "", string type = "output", CancellationToken ct = default)
         => _comfy.GetFileAsync(filename, subfolder, type, ct);
 
-    /// <summary>文生图：提交 SD 工作流并等待完成，返回结果 DTO。</summary>
+    /// <summary>文生图：按模型类型提交 SD1.5 或 Z-Image-Turbo 工作流并等待完成，返回结果 DTO。</summary>
     public async Task<DrawResultDto> GenerateImageAsync(DrawImageRequest request, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(request.Prompt))
             return new DrawResultDto { Success = false, Error = "prompt 不能为空" };
 
+        var modelType = NormalizeImageModelType(request.ModelType);
+        var isTurbo = modelType == ComfyWorkflowBuilder.ZImageTurboModelType;
         var seed = Random.Shared.NextInt64(0, long.MaxValue);
-        var width = request.Width is > 0 and <= 2048 ? request.Width.Value : 512;
-        var height = request.Height is > 0 and <= 2048 ? request.Height.Value : 512;
-        var steps = request.Steps is > 0 and <= 100 ? request.Steps.Value : 20;
-        var checkpoint = string.IsNullOrWhiteSpace(request.Checkpoint)
-            ? ComfyWorkflowBuilder.DefaultImageCheckpoint
-            : request.Checkpoint!;
+        var width = request.Width is > 0 and <= 2048 ? request.Width.Value : (isTurbo ? 1024 : 512);
+        var height = request.Height is > 0 and <= 2048 ? request.Height.Value : (isTurbo ? 1024 : 512);
+        var steps = request.Steps is > 0 and <= 100 ? request.Steps.Value : (isTurbo ? 8 : 20);
 
-        var workflow = ComfyWorkflowBuilder.BuildTxt2Image(request.Prompt, request.NegativePrompt, width, height, steps, seed, checkpoint);
+        Dictionary<string, object> workflow;
+        if (isTurbo)
+        {
+            var unetName = string.IsNullOrWhiteSpace(request.UnetName)
+                ? ComfyWorkflowBuilder.DefaultZImageTurboUnet
+                : request.UnetName!;
+            var clipName = string.IsNullOrWhiteSpace(request.ClipName)
+                ? ComfyWorkflowBuilder.DefaultZImageTurboClip
+                : request.ClipName!;
+            var vaeName = string.IsNullOrWhiteSpace(request.VaeName)
+                ? ComfyWorkflowBuilder.DefaultZImageTurboVae
+                : request.VaeName!;
+            workflow = ComfyWorkflowBuilder.BuildTxt2ImageZImageTurbo(
+                request.Prompt, request.NegativePrompt, width, height, steps, seed, unetName, clipName, vaeName);
+        }
+        else
+        {
+            var checkpoint = string.IsNullOrWhiteSpace(request.Checkpoint)
+                ? ComfyWorkflowBuilder.DefaultImageCheckpoint
+                : request.Checkpoint!;
+            workflow = ComfyWorkflowBuilder.BuildTxt2Image(
+                request.Prompt, request.NegativePrompt, width, height, steps, seed, checkpoint);
+        }
+
         return await GenerateAndWaitAsync(workflow, ImageTimeout, ct);
+    }
+
+    private static string NormalizeImageModelType(string? modelType)
+    {
+        var v = modelType?.Trim().ToLowerInvariant();
+        return v is "z-image-turbo" or "zimage-turbo" or "z_image_turbo" or "z-image" or "zimage"
+            ? ComfyWorkflowBuilder.ZImageTurboModelType
+            : ComfyWorkflowBuilder.DefaultImageModelType;
     }
 
     /// <summary>文生视频：提交 LTX 工作流并等待完成，返回结果 DTO。</summary>

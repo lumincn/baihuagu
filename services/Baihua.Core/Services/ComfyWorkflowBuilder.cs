@@ -9,6 +9,11 @@ public static class ComfyWorkflowBuilder
 {
     public const string DefaultImageCheckpoint = "v1-5-pruned-emaonly.safetensors";
     public const string DefaultVideoCheckpoint = "ltx-video-2b-v0.9.safetensors";
+    public const string DefaultImageModelType = "sd15";
+    public const string ZImageTurboModelType = "z-image-turbo";
+    public const string DefaultZImageTurboUnet = "z_image_turbo_bf16.safetensors";
+    public const string DefaultZImageTurboClip = "qwen_3_4b.safetensors";
+    public const string DefaultZImageTurboVae = "ae.safetensors";
 
     /// <summary>LTX 的 T5 文本编码器（models/text_encoders 下，CLIPLoader type=ltxv）。</summary>
     public const string LtxT5Clip = "t5xxl_fp8_e4m3fn.safetensors";
@@ -74,6 +79,90 @@ public static class ComfyWorkflowBuilder
             }
         };
     }
+
+    /// <summary>
+    /// 构建 Z-Image-Turbo txt2img 工作流（UNETLoader + CLIPLoader[Qwen3 4B, lumina2] + VAELoader +
+    /// EmptySD3LatentImage + ModelSamplingAuraFlow + KSampler[cfg 1, res_multistep/simple]）。
+    /// 对应 ComfyUI 默认 Z-Image-Turbo 模板，实测 1024x1024 / 8 步出图。
+    /// </summary>
+    public static Dictionary<string, object> BuildTxt2ImageZImageTurbo(
+        string prompt,
+        string? negativePrompt,
+        int width,
+        int height,
+        int steps,
+        long seed,
+        string unetName,
+        string clipName,
+        string vaeName)
+    {
+        return new Dictionary<string, object>
+        {
+            ["10"] = new Dictionary<string, object>
+            {
+                ["class_type"] = "UNETLoader",
+                ["inputs"] = new Dictionary<string, object> { ["unet_name"] = unetName, ["weight_dtype"] = "default" }
+            },
+            ["11"] = new Dictionary<string, object>
+            {
+                ["class_type"] = "CLIPLoader",
+                ["inputs"] = new Dictionary<string, object> { ["clip_name"] = clipName, ["type"] = "lumina2", ["device"] = "default" }
+            },
+            ["12"] = new Dictionary<string, object>
+            {
+                ["class_type"] = "VAELoader",
+                ["inputs"] = new Dictionary<string, object> { ["vae_name"] = vaeName }
+            },
+            ["13"] = new Dictionary<string, object>
+            {
+                ["class_type"] = "CLIPTextEncode",
+                ["inputs"] = new Dictionary<string, object> { ["text"] = prompt, ["clip"] = new object[] { "11", 0 } }
+            },
+            ["14"] = new Dictionary<string, object>
+            {
+                ["class_type"] = "CLIPTextEncode",
+                ["inputs"] = new Dictionary<string, object> { ["text"] = negativePrompt ?? "", ["clip"] = new object[] { "11", 0 } }
+            },
+            ["15"] = new Dictionary<string, object>
+            {
+                ["class_type"] = "EmptySD3LatentImage",
+                ["inputs"] = new Dictionary<string, object> { ["width"] = width, ["height"] = height, ["batch_size"] = 1 }
+            },
+            ["16"] = new Dictionary<string, object>
+            {
+                ["class_type"] = "ModelSamplingAuraFlow",
+                ["inputs"] = new Dictionary<string, object> { ["model"] = new object[] { "10", 0 }, ["shift"] = 3.0 }
+            },
+            ["17"] = new Dictionary<string, object>
+            {
+                ["class_type"] = "KSampler",
+                ["inputs"] = new Dictionary<string, object>
+                {
+                    ["seed"] = seed,
+                    ["steps"] = steps,
+                    ["cfg"] = 1.0,
+                    ["sampler_name"] = "res_multistep",
+                    ["scheduler"] = "simple",
+                    ["denoise"] = 1.0,
+                    ["model"] = new object[] { "16", 0 },
+                    ["positive"] = new object[] { "13", 0 },
+                    ["negative"] = new object[] { "14", 0 },
+                    ["latent_image"] = new object[] { "15", 0 }
+                }
+            },
+            ["18"] = new Dictionary<string, object>
+            {
+                ["class_type"] = "VAEDecode",
+                ["inputs"] = new Dictionary<string, object> { ["samples"] = new object[] { "17", 0 }, ["vae"] = new object[] { "12", 0 } }
+            },
+            ["19"] = new Dictionary<string, object>
+            {
+                ["class_type"] = "SaveImage",
+                ["inputs"] = new Dictionary<string, object> { ["images"] = new object[] { "18", 0 }, ["filename_prefix"] = "baihua-draw" }
+            }
+        };
+    }
+
 
     /// <summary>
     /// 构建 txt2video 工作流（LTX Video 2B：CheckpointLoaderSimple[unet+vae] + CLIPLoader[ltxv t5xxl] +

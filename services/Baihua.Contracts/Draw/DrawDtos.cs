@@ -15,11 +15,23 @@ public class DrawImageRequest
     /// <summary>高度，默认 512（建议 256-1024）。</summary>
     public int? Height { get; set; }
 
-    /// <summary>采样步数，默认 20。</summary>
+    /// <summary>采样步数，默认 20（Z-Image-Turbo 建议 8）。</summary>
     public int? Steps { get; set; }
 
-    /// <summary>checkpoint 文件名，可空（默认 SD1.5）。</summary>
+    /// <summary>图像模型类型：sd15（默认，SD1.5 checkpoint）或 z-image-turbo（Z-Image Turbo diffusion model）。</summary>
+    public string? ModelType { get; set; }
+
+    /// <summary>checkpoint 文件名，可空（modelType=sd15 时生效，默认 v1-5-pruned-emaonly.safetensors）。</summary>
     public string? Checkpoint { get; set; }
+
+    /// <summary>Z-Image-Turbo 的 UNet 模型名，可空（默认 z_image_turbo_bf16.safetensors）。</summary>
+    public string? UnetName { get; set; }
+
+    /// <summary>Z-Image-Turbo 的 CLIP 模型名，可空（默认 qwen_3_4b.safetensors）。</summary>
+    public string? ClipName { get; set; }
+
+    /// <summary>Z-Image-Turbo 的 VAE 模型名，可空（默认 ae.safetensors）。</summary>
+    public string? VaeName { get; set; }
 }
 
 /// <summary>文生视频请求（本地 ComfyUI + LTX Video）。</summary>
@@ -58,6 +70,9 @@ public class DrawResultDto
 
     /// <summary>生成的文件名（output 目录下），用 GET /api/draw/file 下载。</summary>
     public string? FileName { get; set; }
+
+    /// <summary>可直接在浏览器打开的短时签名下载 URL（配置了鉴权时由网关生成，约 10 分钟有效）。</summary>
+    public string? FileUrl { get; set; }
 
     /// <summary>MIME 类型（image/png、video/mp4 等）。</summary>
     public string? ContentType { get; set; }

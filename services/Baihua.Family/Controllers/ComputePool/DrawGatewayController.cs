@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using Baihua.Contracts.ComputePool;
 using Baihua.Contracts.Draw;
 using Baihua.Core.Services;
@@ -31,11 +33,56 @@ public class DrawGatewayController : ControllerBase
     {
         var expected = _configuration["BAIHUA_AI_EXTERNAL_TOKEN"] ?? "";
         if (string.IsNullOrEmpty(expected)) return true;
+
         var auth = Request.Headers.Authorization.FirstOrDefault();
         if (!string.IsNullOrEmpty(auth) && auth.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
             return string.Equals(auth["Bearer ".Length..].Trim(), expected, StringComparison.Ordinal);
+
         var token = Request.Headers["X-Server-Token"].FirstOrDefault();
-        return string.Equals(token, expected, StringComparison.Ordinal);
+        if (string.Equals(token, expected, StringComparison.Ordinal)) return true;
+
+        // 浏览器直接打开文件 URL 时无法带自定义 Header，允许 ?token= 或 ?x-server-token=
+        var queryToken = Request.Query["token"].FirstOrDefault() ?? Request.Query["x-server-token"].FirstOrDefault();
+        return string.Equals(queryToken, expected, StringComparison.Ordinal);
+    }
+
+    private const int FileLinkTtlSeconds = 600;
+
+    /// <summary>生成短时签名下载 URL（避免把原始 API token 暴露在浏览器链接里）。</summary>
+    private string? BuildFileUrl(string filename, string subfolder, string type)
+    {
+        var expected = _configuration["BAIHUA_AI_EXTERNAL_TOKEN"] ?? "";
+        if (string.IsNullOrEmpty(expected)) return null;
+
+        var expires = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + FileLinkTtlSeconds;
+        var sig = SignFileLink(expected, filename, subfolder, type, expires);
+        return $"{Request.Scheme}://{Request.Host}{Request.PathBase}/mg/pool/v1/draw/file" +
+               $"?filename={Uri.EscapeDataString(filename)}&subfolder={Uri.EscapeDataString(subfolder)}" +
+               $"&type={Uri.EscapeDataString(type)}&expires={expires}&sig={sig}";
+    }
+
+    private bool AuthorizeFileLink(string filename, string subfolder, string type)
+    {
+        var expected = _configuration["BAIHUA_AI_EXTERNAL_TOKEN"] ?? "";
+        if (string.IsNullOrEmpty(expected)) return true;
+
+        var expiresRaw = Request.Query["expires"].FirstOrDefault();
+        var sig = Request.Query["sig"].FirstOrDefault();
+        if (string.IsNullOrEmpty(expiresRaw) || string.IsNullOrEmpty(sig)) return false;
+        if (!long.TryParse(expiresRaw, out var expires)) return false;
+        if (expires < DateTimeOffset.UtcNow.ToUnixTimeSeconds()) return false;
+
+        var expectedSig = SignFileLink(expected, filename, subfolder, type, expires);
+        var expectedBytes = Encoding.UTF8.GetBytes(expectedSig);
+        var actualBytes = Encoding.UTF8.GetBytes(sig.ToLowerInvariant());
+        return CryptographicOperations.FixedTimeEquals(expectedBytes, actualBytes);
+    }
+
+    private static string SignFileLink(string secret, string filename, string subfolder, string type, long expires)
+    {
+        var message = $"{filename}\n{subfolder}\n{type}\n{expires}";
+        var hash = HMACSHA256.HashData(Encoding.UTF8.GetBytes(secret), Encoding.UTF8.GetBytes(message));
+        return Convert.ToHexString(hash).ToLowerInvariant();
     }
 
     /// <summary>绘图能力（ComfyUI 在线 + 支持图像/视频 + checkpoint）。对端发现用。</summary>
@@ -63,7 +110,10 @@ public class DrawGatewayController : ControllerBase
         if (string.IsNullOrWhiteSpace(request.Prompt))
             return BadRequest(new DrawResultDto { Success = false, Error = "prompt 不能为空" });
         _logger.LogInformation("[ComputePool] 对端文生图请求: Prompt={Prompt}", request.Prompt);
-        return Ok(await _draw.GenerateImageAsync(request, ct));
+        var result = await _draw.GenerateImageAsync(request, ct);
+        if (result.Success && !string.IsNullOrEmpty(result.FileName))
+            result.FileUrl = BuildFileUrl(result.FileName!, "", "output");
+        return Ok(result);
     }
 
     /// <summary>文生视频（跨机调用）。</summary>
@@ -74,14 +124,18 @@ public class DrawGatewayController : ControllerBase
         if (string.IsNullOrWhiteSpace(request.Prompt))
             return BadRequest(new DrawResultDto { Success = false, Error = "prompt 不能为空" });
         _logger.LogInformation("[ComputePool] 对端文生视频请求: Prompt={Prompt}", request.Prompt);
-        return Ok(await _draw.GenerateVideoAsync(request, ct));
+        var result = await _draw.GenerateVideoAsync(request, ct);
+        if (result.Success && !string.IsNullOrEmpty(result.FileName))
+            result.FileUrl = BuildFileUrl(result.FileName!, "", "output");
+        return Ok(result);
     }
 
     /// <summary>取生成的文件（图片/视频字节），经本机中转（对端客户端无需直连 ComfyUI）。</summary>
     [HttpGet("/mg/pool/v1/draw/file")]
     public async Task<IActionResult> File(string filename, string subfolder = "", string type = "output", CancellationToken ct = default)
     {
-        if (!Authorize()) return Unauthorized(new { error = "invalid token" });
+        if (!Authorize() && !AuthorizeFileLink(filename, subfolder, type))
+            return Unauthorized(new { error = "invalid token" });
         if (string.IsNullOrWhiteSpace(filename))
             return BadRequest("filename 不能为空");
         try

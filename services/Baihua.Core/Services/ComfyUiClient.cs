@@ -137,7 +137,7 @@ public class ComfyUiClient
 public class ComfyUiOptions
 {
     public string BaseUrl { get; set; } = "http://127.0.0.1:8188";
-    public int RequestTimeoutSeconds { get; set; } = 30;
+    public int RequestTimeoutSeconds { get; set; } = 360;
 }
 
 public record ComfyOutputFile(string Filename, string Subfolder, string Type);
