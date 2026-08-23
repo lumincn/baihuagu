@@ -1,3 +1,4 @@
+using Baihua.Family.Services.ComputePool;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Baihua.Family.Controllers;
@@ -8,11 +9,13 @@ namespace Baihua.Family.Controllers;
 public class DshController : ControllerBase
 {
     private readonly IConfiguration _configuration;
+    private readonly ComputePoolService _poolService;
     private readonly ILogger<DshController> _logger;
 
-    public DshController(IConfiguration configuration, ILogger<DshController> logger)
+    public DshController(IConfiguration configuration, ComputePoolService poolService, ILogger<DshController> logger)
     {
         _configuration = configuration;
+        _poolService = poolService;
         _logger = logger;
     }
 
@@ -50,6 +53,31 @@ public class DshController : ControllerBase
             comfyModelType = _configuration["BAIHUA_COMFY_MODEL_TYPE"] ?? "z-image-turbo",
             comfyCheckpoint = _configuration["BAIHUA_COMFY_CHECKPOINT"] ?? "v1-5-pruned-emaonly.safetensors",
         });
+    }
+
+    /// <summary>
+    /// 算力池目录：peer 名 → 能力/网关地址。供 DSH「按节点名跨机调用」，
+    /// 如 baihua_draw(target="节点名")。本机 + 各对端节点的 Name/HostUrl/Draw/models。
+    /// 鉴权与 config 相同（本机免鉴权，否则要 token）。
+    /// </summary>
+    [HttpGet("pool")]
+    public async Task<ActionResult<object>> GetPool(CancellationToken ct)
+    {
+        if (!Authorize()) return Unauthorized(new { error = "unauthorized" });
+        var view = await _poolService.GetPoolViewAsync(ct);
+        // 简化给 DSH：每节点暴露 名字/入口/绘图网关/在线 状态
+        var nodes = view.Nodes.Select(n => new
+        {
+            id = n.ServerId,
+            name = n.Name,
+            hostUrl = n.HostUrl,
+            isLocal = n.IsLocal,
+            online = n.Online,
+            drawGatewayUrl = string.IsNullOrWhiteSpace(n.HostUrl) ? "" : $"{n.HostUrl.TrimEnd('/')}/mg/pool/v1/draw",
+            draw = n.Draw != null ? new { comfyOnline = n.Draw.ComfyOnline, image = n.Draw.Image, video = n.Draw.Video, imageCheckpoint = n.Draw.ImageCheckpoint, videoCheckpoint = n.Draw.VideoCheckpoint } : null,
+            models = n.Providers.SelectMany(p => p.Models ?? new()).Select(m => m.Name).Distinct().ToList(),
+        });
+        return Ok(new { ok = true, updatedAt = view.UpdatedAt, nodes });
     }
 
     private bool Authorize()
