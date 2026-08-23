@@ -95,6 +95,8 @@ metadata:
 spec:
   selector:
     app: bh-ai
+  # 固定 ClusterIP：宿主机 DSH 直连（配合 BAIHUA_AI_URL 用固定 IP，跨部署不变）。
+  clusterIP: 10.43.139.63
   ports:
     - name: http
       port: 8791

@@ -21,9 +21,10 @@ data:
   BAIHUA_WEBUI_PREFIX: ""
   BAIHUA_NGINX_CLIENT_MAX_BODY_SIZE: "100M"
 
-  # Family → Vault/AI 内部通信（K8s Service DNS）
-  BAIHUA_VAULT_URL: "http://bh-vault:8790"
-  BAIHUA_AI_URL: "http://bh-ai:8791"
+  # Family → Vault/AI 内部通信。用固定的 ClusterIP（集群内与宿主机 DSH 都可达、跨部署不变），
+  # 使 /api/dsh/config 能返回宿主机直连地址，DSH 免配置自举。
+  BAIHUA_VAULT_URL: "http://10.43.242.109:8790"
+  BAIHUA_AI_URL: "http://10.43.139.63:8791"
 
   # PostgreSQL（一服务一数据库：family / vault / ai 三库；密码经 Secret 注入 PG_PASSWORD）
   PG_HOST: "bh-postgres"
