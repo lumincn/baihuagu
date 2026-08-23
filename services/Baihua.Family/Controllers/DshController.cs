@@ -45,8 +45,8 @@ public class DshController : ControllerBase
             vaultUrl = vault.TrimEnd('/'),            // 知识库保存/检索（固定 ClusterIP）
             aiUrl = ai.TrimEnd('/'),                  // AI 服务（固定 ClusterIP）
             webUrl = baseUrl,                         // WebUI（Traefik :80，/ 直达）
-            drawGatewayUrl = baseUrl,                 // 绘图网关（/mg/pool/v1/draw/*）
-            poolUrl = baseUrl,                        // 算力池统一网关（/mg/pool/v1）
+            drawGatewayUrl = baseUrl,                 // 绘图网关（comfy 客户端会拼接 /mg/pool/v1/draw/*）
+            poolUrl = $"{baseUrl}/mg/pool/v1",        // 算力池统一网关（供 local-ai 探测 /models）
             aiShimUrl = $"{baseUrl}/mg/ai/v1",        // OpenAI 兼容 shim（Traefik /mg/ai/ → ai）
             drawToken = externalToken,                // 绘图/池网关 token（本地免鉴权时为空）
             poolToken = externalToken,
