@@ -1,8 +1,30 @@
 # 百花插件体系优化计划
 
 > 创建时间：2026-08-23  
-> 状态：待执行  
-> 入口说明：本文件供新会话继续执行，任务按优先级排序。
+> 状态：高优先级（1-5）已执行完成，中低优先级（6-12）按需排期  
+> 入口说明：本文件供新会话继续执行，任务按优先级排序。已完成项带 ✅ 与执行记录。
+
+## 执行进度（2026-08-23）
+
+- ✅ **1. `bh_git_commit_push` 仓库定位失败** — `ops.js` 改为 `detectRepoRoot()` 推断（常见路径
+  `~/src/baihua`、BAIHUA_HOME、bhCommand 逐级），不再回退 `process.cwd()`；显式 `gitRepo`
+  直接使用并经 `verifyGitRepo()`（`git rev-parse --show-toplevel` 校验仓库根）快速失败。
+  已单测验证（自动定位/显式配置/子目录/不存在目录四种路径）。插件提交 `9027483`。
+- ✅ **2. `bh_dsh_restart` 重启不可靠** — Windows 改为**计划任务方案**：写临时 ps1 →
+  `Register-ScheduledTask` → `Start-ScheduledTask`（固定任务名 `dsh-web-restart`，脚本内自删）。
+  detached 子进程方案（父进程被强杀时子进程不可靠）弃用。已端到端验证：重启后 DSH PID/
+  启动时间确实变化，30 秒内恢复，桥接正常（`/dsh-bridge/status` 200）。
+- ✅ **3. 插件安装规范化** — 三个插件已 `dsh plugin --profile web add github:luminsw/<repo>`
+  安装（`profiles/web/package.json` 出现依赖，bundle 自动挂层）；`~/.dsh/cordis.patch.yml`
+  三个 insert 改为按 id `config` 覆盖；`dsh plugin ls` 可列出/管理；`--dump-config` 正常；
+  旧 `profiles/node_modules` 副本已清理。
+- ✅ **4. 收紧 DSH 权限** — `~/.dsh/settings.yaml` 默认预设 `danger-full-access` →
+  `workspace-write`（沙箱限定工作区 + 审批 ask，需全量权限时按会话临时切换）；插件侧为
+  `bh_start/stop/restart`、`bh_build*`、`bh_update`、`bh_git_commit_push`、
+  `bh_dsh_restart`、`bh_bootstrap` 挂 `tools/pre-execute` 审批门（ask 时 UI 确认，never 时自动拒绝）。
+- ✅ **5. 更新过时文档** — `baihua-dsh-plugin/README.md`、`baihua/README.md`、`baihua/AGENTS.md`、
+  `baihua/docs/DSH_INTEGRATION.md` 均已更新：插件职责=桥接/运维/绘图，数据工具统一指向
+  `baihua-mcp-server`（`mcp__baihua__*`），补充桥接共享密钥与高危工具审批门说明。
 
 ## 背景与当前状态
 
