@@ -105,6 +105,8 @@ DshApi__Token: <与插件相同的 token>
 
 - 工具：`baihua_vault_search` / `baihua_vault_list` / `baihua_vault_read_note` / `baihua_budget_summary` / `baihua_tasks_list`
 - 连接目标经环境变量：`BAIHUA_VAULT_URL`（默认 127.0.0.1:8790）、`BAIHUA_FAMILY_URL`（默认 127.0.0.1:8788）
+- 远端鉴权：`BAIHUA_TOKEN`（共享）或 `BAIHUA_VAULT_TOKEN`/`BAIHUA_FAMILY_TOKEN`（按服务覆盖）；
+  非回环地址未配置 token 时调用直接报错（回环免 token 保持兼容）
 - 本机检出：`/home/lumin/src/mdyj/baihua-mcp-server`（npm install 后可直接跑）
 
 DSH 接入（profile patch，需先 `dsh plugin --profile web add @deepseek-ai/dsh-mcp-client`）：
@@ -121,6 +123,7 @@ DSH 接入（profile patch，需先 `dsh plugin --profile web add @deepseek-ai/d
         env:
           BAIHUA_VAULT_URL: 'http://<vault-clusterip>:8790'
           BAIHUA_FAMILY_URL: 'http://<family-clusterip>:8788'
+          # BAIHUA_TOKEN: '<远端部署时填写，回环可省略>'
 ```
 
 DSH 里工具名带 `mcp__baihua__` 前缀（如 `mcp__baihua__baihua_vault_search`）。

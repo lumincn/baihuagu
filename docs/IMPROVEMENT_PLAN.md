@@ -1,7 +1,7 @@
 # 百花插件体系优化计划
 
 > 创建时间：2026-08-23  
-> 状态：高优先级（1-5）已执行完成，中低优先级（6-12）按需排期  
+> 状态：高优先级（1-5）与中优先级（6-9）已执行完成，低优先级（10-12）按需排期  
 > 入口说明：本文件供新会话继续执行，任务按优先级排序。已完成项带 ✅ 与执行记录。
 
 ## 执行进度（2026-08-23）
@@ -25,6 +25,24 @@
 - ✅ **5. 更新过时文档** — `baihua-dsh-plugin/README.md`、`baihua/README.md`、`baihua/AGENTS.md`、
   `baihua/docs/DSH_INTEGRATION.md` 均已更新：插件职责=桥接/运维/绘图，数据工具统一指向
   `baihua-mcp-server`（`mcp__baihua__*`），补充桥接共享密钥与高危工具审批门说明。
+- ✅ **6. `baihua-mcp-server` 支持远端鉴权** — `baihua.js` 支持 `BAIHUA_TOKEN`（及按服务
+  `BAIHUA_VAULT_TOKEN`/`BAIHUA_FAMILY_TOKEN` 覆盖）；回环免 token 保持兼容，非回环未配置
+  token 直接返回明确错误；请求头同时带 `X-Server-Token` + `Authorization: Bearer`；
+  错误信息透出。已单测（回环/远端强制/头注入）。提交 `8980413`。
+- ✅ **7. ComfyUI 能力接口补全** — `ComfyUiClient` 新增 `GetModelNamesAsync`（通用 loader
+  查询）+ UNET/CLIP/VAE 便捷方法；`ComfyDrawService.GetCapabilitiesAsync` 汇总能力；
+  `/mg/pool/v1/draw/capabilities` 现返回图像/视频 checkpoint 全集与 UNet/CLIP/VAE 模型清单
+  （已验证列出 `z_image_turbo_bf16`、`qwen_3_4b`、`ae` 等）；本机 `/api/draw/status` 同步补全；
+  新增 DSH 工具 `baihua_draw_status` 展示模型清单（capabilities 响应 PascalCase→camelCase 归一化）。
+  提交 `e2eb633`、`166a643`。
+- ✅ **8. `baihua_draw` 高级参数增强** — `DrawImageRequest`/`DrawVideoRequest` 增加
+  `Seed`/`Cfg`/`Sampler`/`Scheduler`（图片另有既有 `UnetName`/`ClipName`/`VaeName`）；
+  `ComfyWorkflowBuilder` 三构建器透传（默认值：sd15=7/euler/normal，turbo=1/res_multistep/simple，
+  视频=4/euler/sgm_uniform）；DSH 工具参数同步扩展。已端到端验证（固定 seed=42 出图成功）。
+  提交 `e2eb633`、`85d5b5b`。
+- ✅ **9. 清理死配置与输出结构** — 删除 `comfyUrl`（未使用）与 `vaultUrl`（数据工具移除后无用）；
+  `callGateway` 输出统一 `files` 字段（图片/视频通用），移除语义错误的 `images`。
+  提交 `85d5b5b`。
 
 ## 背景与当前状态
 
