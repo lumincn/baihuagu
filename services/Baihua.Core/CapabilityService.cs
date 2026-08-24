@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Configuration;
 using Baihua.Contracts.Capability;
 using Baihua.Contracts.LocalModels;
 using Baihua.Core.Localization;
@@ -29,6 +30,7 @@ public class CapabilityService
     private readonly HardwareInfoService _hardwareInfo;
     private readonly ILogger<CapabilityService> _logger;
     private readonly IStringLocalizer<SharedResources> _loc;
+    private readonly IConfiguration _configuration;
     private MachineCapability? _cachedCapability;
     private DateTimeOffset _cachedAt = DateTimeOffset.MinValue;
     // 与硬件信息缓存（5 分钟滑动）保持一致的 TTL：
@@ -40,11 +42,13 @@ public class CapabilityService
     public CapabilityService(
         HardwareInfoService hardwareInfo,
         ILogger<CapabilityService> logger,
-        IStringLocalizer<SharedResources> loc)
+        IStringLocalizer<SharedResources> loc,
+        IConfiguration configuration)
     {
         _hardwareInfo = hardwareInfo;
         _logger = logger;
         _loc = loc;
+        _configuration = configuration;
     }
 
     /// <summary>
@@ -131,6 +135,9 @@ public class CapabilityService
         var cap = GetCapability();
         var hardware = _hardwareInfo.GetHardwareInfo();
 
+        var isIntelGpu = hardware.Gpus.Count > 0 && hardware.Gpus.Any(g =>
+            string.Equals(g.Vendor, "Intel", StringComparison.OrdinalIgnoreCase));
+
         return new CapabilityInfo
         {
             Level = cap,
@@ -143,8 +150,11 @@ public class CapabilityService
                 ?? "无",
             // OpenVINO 本地推理要求 Intel GPU（Arc 独显 / 核显）；检测失败（无 GPU 信息）时视为不可用，
             // 前端据此隐藏或置灰 OpenVINO 相关入口。
-            IsIntelGpu = hardware.Gpus.Count > 0 && hardware.Gpus.Any(g =>
-                string.Equals(g.Vendor, "Intel", StringComparison.OrdinalIgnoreCase)),
+            IsIntelGpu = isIntelGpu,
+            // OpenVINO 已可拆分为独立 OVMS 服务（如 k8s 的 bh-openvino）、或本地让 OVMS 跑在 localhost，
+            // 因此"可用" = 存在 Intel GPU（本地推理） 或 已配置可达的 OVMS 端点。
+            // 否则在"family 容器无 GPU / 无 lspci"的全容器部署里，OpenVINO 虽然可跑却会被误隐藏。
+            OpenVinoAvailable = isIntelGpu || IsOmsConfiguredRemote(),
             AvailableFeatures = Enum.GetValues<LocalComputeFeature>()
                 .Where(f => CanUse(f))
                 .Select(f => f.ToString())
@@ -156,6 +166,47 @@ public class CapabilityService
                     f => GetRestrictionReason(f) ?? ""
                 )
         };
+    }
+
+    /// <summary>
+    /// 是否已配置一个"非本机回环"的 OVMS 端点（远程 OpenVINO 服务）。
+    /// OpenVinoOms:BaseUrl 是默认键；同时兼容 OPENVINO_LLM_URL / OPENVINO_HOST_URL 环境变量。
+    /// 未显式禁用（OpenVinoOms:Enabled=false）且存在非 localhost 端点时视为可用。
+    /// </summary>
+    private bool IsOmsConfiguredRemote()
+    {
+        if (!IsOmsEnabled()) return false;
+
+        foreach (var key in new[] { "OpenVinoOms:BaseUrl", "OPENVINO_LLM_URL", "OPENVINO_HOST_URL" })
+        {
+            var url = _configuration[key];
+            if (string.IsNullOrWhiteSpace(url)) continue;
+            if (!IsLocalhostUrl(url)) return true;
+        }
+        return false;
+    }
+
+    private bool IsOmsEnabled()
+    {
+        var enabled = _configuration["OpenVinoOms:Enabled"];
+        // 未显式配置时默认开启（与 OmsOptions.Enabled 默认 true 一致）
+        return string.IsNullOrWhiteSpace(enabled)
+            || !string.Equals(enabled, "false", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsLocalhostUrl(string url)
+    {
+        try
+        {
+            var uri = new Uri(url);
+            var host = uri.Host;
+            return host is "127.0.0.1" or "localhost" or "::1";
+        }
+        catch
+        {
+            // 解析失败（非完整 URL）时保守处理：不算"远程"，避免误判为可用
+            return true;
+        }
     }
 
     private MachineCapability ComputeCapability()

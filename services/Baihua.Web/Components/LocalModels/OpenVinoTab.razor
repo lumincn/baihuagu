@@ -9,7 +9,7 @@
    父页面负责：Tab 导航、概览区、运行中模型（含卸载）、部署任务轮询；
    本组件负责：OpenVINO 目录/下载任务/已下载模型/LLM 托管服务 + 三个弹窗 + 下载轮询。 *@
 
-@if (_isIntelGpu == false)
+@if (_openVinoAvailable == false)
 {
     <div class="alert alert-warning" role="alert">
         ⚠️ @L["LocalModels_OpenVinoNotSupported"]
@@ -351,7 +351,7 @@ else
     [Parameter] public EventCallback ModelsChanged { get; set; }
 
     // 区域折叠状态
-    private bool? _isIntelGpu; // null=未知/加载中（默认不隐藏）
+    private bool? _openVinoAvailable; // null=未知/加载中（默认不隐藏）
     private bool _showOpenVino = true;
     private bool _showDownloadedModels = true;
 
@@ -395,20 +395,20 @@ else
         if (!firstRender) return;
         // 首次渲染后并行加载（懒加载：切到 OpenVINO Tab 才加载，与父页分块加载策略一致）
         await Task.WhenAll(
-            SafeLoadAsync(LoadIntelGpuAsync),
+            SafeLoadAsync(LoadOpenVinoAvailableAsync),
             SafeLoadAsync(LoadOpenVinoAsync),
             SafeLoadAsync(RefreshDownloadedModels));
     }
 
-    private async Task LoadIntelGpuAsync()
+    private async Task LoadOpenVinoAvailableAsync()
     {
         try
         {
-            _isIntelGpu = (await CapabilityService.GetCapabilityAsync()).IsIntelGpu;
+            _openVinoAvailable = (await CapabilityService.GetCapabilityAsync()).OpenVinoAvailable;
         }
         catch
         {
-            _isIntelGpu = true; // 能力查询失败时默认不隐藏
+            _openVinoAvailable = true; // 能力查询失败时默认不隐藏
         }
         await InvokeAsync(StateHasChanged);
     }

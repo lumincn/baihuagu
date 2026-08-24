@@ -23,7 +23,7 @@
     <li class="nav-item">
         <button class="nav-link @(_activeTab == "overview" ? "active" : "")" @onclick='async () => await OnTabChanged("overview")'>📊 @L["LocalModels_TabOverview"]</button>
     </li>
-    @if (_isIntelGpu != false)
+    @if (_openVinoAvailable != false)
     {
         <li class="nav-item">
             <button class="nav-link @(_activeTab == "openvino" ? "active" : "")" @onclick='async () => await OnTabChanged("openvino")'>🧿 OpenVINO</button>
@@ -1186,7 +1186,7 @@ else
 
     @if (_activeTab == "openvino")
     {
-        @if (_isIntelGpu == false)
+        @if (_openVinoAvailable == false)
         {
             <div class="alert alert-warning" role="alert">⚠️ @L["LocalModels_OpenVinoNotSupported"]</div>
         }
@@ -1222,7 +1222,7 @@ else
     private System.Timers.Timer? _statusTimer;
 
     private string _activeTab = "overview";
-    private bool? _isIntelGpu; // null=未知/加载中（默认不隐藏 OpenVINO）
+    private bool? _openVinoAvailable; // null=未知/加载中（默认不隐藏 OpenVINO）
 
     // 已下载模型（非 OpenVINO）
     private List<DownloadedModelDto> downloadedModels = new();
@@ -1303,8 +1303,12 @@ else
             var toolsTask = ApiService.GetLocalToolsAsync();
             var capTask = SafeLoadAsync(async () =>
             {
-                try { _isIntelGpu = (await CapabilityService.GetCapabilityAsync()).IsIntelGpu; }
-                catch { _isIntelGpu = true; }
+                try
+                {
+                    var cap = await CapabilityService.GetCapabilityAsync();
+                    _openVinoAvailable = cap.OpenVinoAvailable;
+                }
+                catch { _openVinoAvailable = true; }
             });
             await Task.WhenAll(hwTask, toolsTask, capTask);
 

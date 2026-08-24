@@ -37,6 +37,11 @@ public class CapabilityInfo
     /// <summary>是否存在 Intel GPU（OpenVINO 本地推理的前提，用于前端隐藏/置灰相关入口）</summary>
     public bool IsIntelGpu { get; set; }
 
+    /// <summary>当前部署是否具备可用 OpenVINO 推理能力。
+    /// OpenVINO 推理已可拆分为独立 OVMS 服务（远程），因此该项不再等同于 IsIntelGpu：
+    /// = 存在 Intel GPU（本地推理） 或 已配置远程 OVMS（如 k8s 的 bh-openvino:8000）。</summary>
+    public bool OpenVinoAvailable { get; set; }
+
     /// <summary>可用功能名称列表</summary>
     public List<string> AvailableFeatures { get; set; } = new();
 

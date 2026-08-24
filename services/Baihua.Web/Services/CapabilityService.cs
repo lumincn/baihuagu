@@ -52,6 +52,8 @@ public class CapabilityService
         return new CapabilityInfo
         {
             Level = MachineCapability.HighEndGpu,
+            IsIntelGpu = true,
+            OpenVinoAvailable = true,
             AvailableFeatures = new List<string>()
         };
     }

@@ -46,7 +46,7 @@
                         }
 
                         <!-- OpenVINO -->
-                        @if (_isIntelGpu == false)
+                        @if (_openVinoAvailable == false)
                         {
                             <div class="alert alert-warning">⚠️ @L["OpenClaw_OpenVinoNotSupported"]</div>
                         }
@@ -560,7 +560,7 @@
     private OpenClawTaskDto? _selectedTask;
 
     private bool _canShowLocalConfig = true;
-    private bool? _isIntelGpu; // null=未知/加载中（默认不隐藏 OpenVINO）
+    private bool? _openVinoAvailable; // null=未知/加载中（默认不隐藏 OpenVINO）
 
     // 配置面板状态
     private bool _showConfig;
@@ -607,8 +607,8 @@
             try
             {
                 _canShowLocalConfig = await CapabilityService.CanShowAsync("OpenClawLocalConfig");
-                try { _isIntelGpu = (await CapabilityService.GetCapabilityAsync()).IsIntelGpu; }
-                catch { _isIntelGpu = true; }
+                try { var cap = await CapabilityService.GetCapabilityAsync(); _openVinoAvailable = cap.OpenVinoAvailable; }
+                catch { _openVinoAvailable = true; }
                 await Task.WhenAll(
                     RefreshTasksAsync(silent: true),
                     LoadConfigAsync()
