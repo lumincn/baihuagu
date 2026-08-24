@@ -184,6 +184,12 @@ public sealed class DshBridgeService
         return await RunBhActionAsync("dsh-restart", null, ct);
     }
 
+    /// <summary>仅停止 DSH 进程（不重新拉起）。经桥插件，插件会先响应后异步 kill 自身。返回受理结果。</summary>
+    public async Task<BhActionResultDto?> StopDshAsync(CancellationToken ct = default)
+    {
+        return await RunBhActionAsync("dsh-stop", null, ct);
+    }
+
     /// <summary>提交并推送百花仓库（git add -A → commit → push，后台执行，返回 opId）。</summary>
     public async Task<BhActionResultDto?> GitCommitPushAsync(string message, CancellationToken ct = default)
     {

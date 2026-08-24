@@ -71,6 +71,7 @@
                     <button class="btn btn-sm btn-warning" @onclick="BhUpdateAsync" disabled="@_bhBusy">⬆️ 一键更新</button>
                     <button class="btn btn-sm btn-outline-secondary" @onclick="BhDeployAsync" disabled="@_bhBusy">📦 部署</button>
                     <button class="btn btn-sm btn-outline-danger" @onclick="RestartDshAsync" disabled="@_bhBusy" title="重启 DSH（DeepSeek Harness）进程，约 10-30 秒后恢复，期间桥接不可用">♻️ 重启 DSH</button>
+                    <button class="btn btn-sm btn-outline-danger" @onclick="StopDshAsync" disabled="@_bhBusy" title="仅停止 DSH 进程（不重新拉起），停止后桥接不可用，需手动重新启动">⏹ 停止 DSH</button>
                     <button class="btn btn-sm btn-outline-success" @onclick="GitCommitPushAsync" disabled="@_bhBusy" title="提交并推送百花仓库（git add -A + commit + push）">⬆️ 提交推送</button>
                 </div>
 
@@ -376,6 +377,34 @@
             else
             {
                 _bhError = r?.Error ?? r?.Stderr ?? "重启请求失败";
+            }
+        }
+        finally
+        {
+            _bhBusy = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task StopDshAsync()
+    {
+        if (_bhBusy) return;
+        var ok = await JSRuntime.InvokeAsync<bool>("confirm", "确认停止 DSH（DeepSeek Harness）？\n\n将终止当前 DSH 进程且不重新拉起；停止后本页桥接不可用，需手动重新启动 DSH。");
+        if (!ok) return;
+        _bhBusy = true;
+        _bhError = null;
+        _bhMessage = null;
+        StateHasChanged();
+        try
+        {
+            var r = await DshSvc.StopDshAsync();
+            if (r is { Ok: true })
+            {
+                _bhMessage = r.Stdout ?? r.Message ?? "已受理停止，DSH 正在后台终止；桥接已不可用，需手动重新启动";
+            }
+            else
+            {
+                _bhError = r?.Error ?? r?.Stderr ?? "停止请求失败";
             }
         }
         finally
