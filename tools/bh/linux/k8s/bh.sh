@@ -454,16 +454,19 @@ deploy_all() {
 
 
 
-# up：始终全量重建所有应用镜像 + deploy。
+# up：始终全量重建 4 个 .NET 应用镜像 + deploy。
 # 不再做源码变更检测（曾用 changed_images 决定重建哪些，导致"部署镜像与源码脱节、标注撒谎"这类误导），
-# 全量重建 + buildkit 缓存未变更层（开销可控）始终把部署带到当前 HEAD，稳定可靠。
+# 全量重建 + buildkit 缓存未变更层（开销可控）始终把.NET 应用带到当前 HEAD，稳定可靠。
+# 注：openvino 的 FROM 是外部 registry 镜像（openvino/model_server:latest-gpu），构建依赖代理/网络，
+#     纳入自动更新会让一键更新随代理抖动而失败（如 hysteria 未运行→ connection refused），故不在此重建；
+#     需要更新 openvino 时单独 bh build openvino。
 up_all() {
     if [ "$(id -u)" != "0" ]; then
         echo "[up] 需要 root 权限（build/deploy），自动提权..." >&2
         exec sudo "$(readlink -f "$0")" up "$@"
     fi
-    echo "[up] 全量构建所有应用镜像: $ALL_DOTNET openvino"
-    build_all $ALL_DOTNET openvino || return 1
+    echo "[up] 全量构建 .NET 应用镜像: $ALL_DOTNET"
+    build_all $ALL_DOTNET || return 1
     deploy_all
 }
 
