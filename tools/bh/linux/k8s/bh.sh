@@ -820,6 +820,31 @@ update_all() {
     echo "[update] 完成"
 }
 
+# annotate：把应用 deployment 的 baihua.git-commit 标注更新为当前仓库 HEAD。
+# 场景：build-restart 走 bh build + bh restart（不经 deploy_all），deploy_all 只在 deploy/update 时打标注，
+#       导致"镜像已重建为新 commit、但标注仍滞后"，bh status 会误报"落后"。此处单独补一次标注，
+#       仅供"镜像重建并已滚动重启成功"后调用（见 DSH 插件 build-restart 流程）。
+annotate_commit() {
+    local svc="${1:-}"
+    [ -z "$svc" ] && { echo "[annotate] 用法: bh annotate <svc>（family/ai/vault/webui/openvino）" >&2; return 1; }
+    case "$svc" in bh-*) ;; *) svc="bh-$svc" ;; esac
+    if [ "$(id -u)" != "0" ]; then
+        echo "[annotate] 需要 root 权限（k3s.yaml 仅 root 可读），自动提权..." >&2
+        sudo "$0" annotate "${svc#bh-}"
+        return $?
+    fi
+    local git_commit="unknown"
+    if command -v git >/dev/null 2>&1 && [ -d "$ROOT/.git" ]; then
+        git_commit="$(cd "$ROOT" && git rev-parse --short HEAD 2>/dev/null || echo unknown)"
+    fi
+    if k -n "$NAMESPACE" annotate deploy "$svc" "baihua.git-commit=$git_commit" --overwrite >/dev/null 2>&1; then
+        echo "[annotate] $svc -> baihua.git-commit=$git_commit"
+    else
+        echo "[annotate] 更新 $svc 标注失败（可稍后 bh status 复查）" >&2
+        return 1
+    fi
+}
+
 case "${1:-help}" in
     build)     build_all "${@:2}" ;;
     deploy)    deploy_all ;;
@@ -828,6 +853,7 @@ case "${1:-help}" in
     prune)     prune_cache ;;
     status)    if [ "${2:-}" = "--json" ]; then status_json; else status_all; fi ;;
     start|stop|restart) scale_service "${1}" "${2:-}" ;;
+    annotate)  annotate_commit "${2:-}" ;;
     openvino)  openvino_cmd "${2:-status}" ;;
     logs)      show_logs "${2:-bh-family}" "${3:-50}" ;;
     destroy)   k delete namespace "$NAMESPACE"; echo "[destroy] done" ;;
