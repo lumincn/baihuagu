@@ -450,96 +450,20 @@ deploy_all() {
 
 # openvino 按需启停：on 启动（无 GPU 时拒绝，除非 BAIHUA_ENABLE_OPENVINO=1 强制），off 缩容至 0，status 查看
 
-# 依据 git 变更推断需要重建的镜像（无变更 → 空；git 不可用/仓库异常 → 全部，保守）
-# 变更来源两类：
-#   1) 工作区未提交修改 + 未跟踪文件（本地开发流：改了代码直接 bh up）
-#   2) 最近一次 pull/merge 引入的提交（update 流：git pull 后工作区是干净的，
-#      HEAD 已前移，必须对照 ORIG_HEAD（pull 前的 HEAD）才能看到拉下来的变更）
-changed_images() {
-    if ! command -v git >/dev/null 2>&1 || [ ! -d "$ROOT/.git" ]; then
-        echo "$ALL_DOTNET openvino"; return 0
-    fi
-    local files
-    files="$(cd "$ROOT" && {
-        git diff --name-only HEAD 2>/dev/null
-        git ls-files --others --exclude-standard 2>/dev/null
-        if git rev-parse -q --verify ORIG_HEAD >/dev/null 2>&1 && \
-           [ "$(git rev-parse ORIG_HEAD 2>/dev/null)" != "$(git rev-parse HEAD 2>/dev/null)" ]; then
-            git diff --name-only ORIG_HEAD HEAD 2>/dev/null
-        fi
-    } | sort -u)"
+# 变更检测（changed_images）已移除：一键更新/up 改为始终全量重建，避免"部署镜像与源码脱节、标注撒谎"的误导。
 
-    local imgs=""
-    local f
-    for f in $files; do
-        case "$f" in
-            services/Baihua.Family/*)                                  imgs="$imgs family" ;;
-            services/Baihua.Web/*)                                     imgs="$imgs webui" ;;
-            services/Baihua.Vault/*)                                   imgs="$imgs vault" ;;
-            services/Baihua.AI/*|services/Baihua.AI.Provider/*|services/Baihua.AI.Provider.OpenVino/*) imgs="$imgs ai" ;;
-            services/Baihua.Contracts/*|services/Baihua.Data/*|services/Baihua.Core/*|libs/*) imgs="$imgs $ALL_DOTNET" ;;
-            k8s/images/Dockerfile.vault)                               imgs="$imgs vault" ;;
-            k8s/images/Dockerfile.ai)                                  imgs="$imgs ai" ;;
-            k8s/images/Dockerfile.webui)                               imgs="$imgs webui" ;;
-            k8s/images/Dockerfile.family)                              imgs="$imgs family" ;;
-            k8s/images/Dockerfile.openvino-server)                     imgs="$imgs openvino" ;;
-            k8s/images/Dockerfile.base-runtime|k8s/images/Dockerfile.sdk-offline) : ;;
-            k8s/*) : ;;
-            tools/bh/*|docs/*|scripts/*|tests/*|*.md|README*|AGENTS.md|CLAUDE.md|LICENSE|NuGet.config) : ;;
-            *) imgs="$imgs $ALL_DOTNET openvino" ;;
-        esac
-    done
-    # 额外来源：部署标注 commit 落后于当前 HEAD 且该服务源码受影响的服务（见 deployed_stale_services）。
-    local stale
-    stale="$(deployed_stale_services)"
-    [ -n "$stale" ] && imgs="$imgs $stale"
-    echo "$imgs" | tr ' ' '\n' | grep -v '^$' | sort -u | tr '\n' ' '
-}
 
-# 补充来源：检测"部署标注 commit 落后于当前 HEAD 且该服务源码受影响"的服务。
-# 场景：仓库已前进到新 HEAD，但部署镜像仍是旧 commit，且不是靠最近一次 pull 前进的
-#      （此时 ORIG_HEAD==HEAD，changed_images 仅凭 git 本地来源检测不到，导致误跳过构建）。
-# deploy_all() 会把本次部署对应的源码 commit 写入应用 Deployment 的 baihua.git-commit 标注，
-# 这里读回来对照 HEAD：凡"标注非空、是有效 git ref、不等于 HEAD、且该服务在 (标注..HEAD) 受影响"
-# 者，判定需重建。标注缺失/无效/等于 HEAD 时不判，避免误报。
-deployed_stale_services() {
-    local git_head
-    git_head="$(cd "$ROOT" && git rev-parse --short HEAD 2>/dev/null || echo unknown)"
-    [ "$git_head" = "unknown" ] && { echo ""; return 0; }
-    local svc short ann stale=""
-    for svc in bh-vault bh-ai bh-webui bh-family bh-openvino; do
-        short="${svc#bh-}"
-        ann="$(k -n "$NAMESPACE" get deploy "$svc" -o jsonpath='{.metadata.annotations.baihua\.git-commit}' 2>/dev/null)"
-        [ -z "$ann" ] && continue
-        git -C "$ROOT" rev-parse --verify "$ann" >/dev/null 2>&1 || continue
-        if [ "$ann" != "$git_head" ] && [ "$(service_affected "$short" "$ann" "$git_head")" = "true" ]; then
-            stale="$stale $short"
-        fi
-    done
-    echo "$stale" | tr ' ' '\n' | grep -v '^$' | sort -u | tr '\n' ' '
-}
 
-# up：仅构建变更涉及的镜像 + deploy；--all 强制全量重建
+# up：始终全量重建所有应用镜像 + deploy。
+# 不再做源码变更检测（曾用 changed_images 决定重建哪些，导致"部署镜像与源码脱节、标注撒谎"这类误导），
+# 全量重建 + buildkit 缓存未变更层（开销可控）始终把部署带到当前 HEAD，稳定可靠。
 up_all() {
     if [ "$(id -u)" != "0" ]; then
         echo "[up] 需要 root 权限（build/deploy），自动提权..." >&2
         exec sudo "$(readlink -f "$0")" up "$@"
     fi
-    local mode="${1:-}"
-    local targets
-    if [ "$mode" = "--all" ]; then
-        targets="$ALL_DOTNET openvino"
-        echo "[up] 强制全量构建: $targets"
-        build_all $targets || return 1
-    else
-        targets="$(changed_images)"
-        if [ -z "$targets" ]; then
-            echo "[up] 未检测到源码/Dockerfile 变更，跳过构建，仅部署（k8s/ 清单变更 deploy 即生效）"
-        else
-            echo "[up] 检测到变更，构建镜像: $targets"
-            build_all $targets || return 1
-        fi
-    fi
+    echo "[up] 全量构建所有应用镜像: $ALL_DOTNET openvino"
+    build_all $ALL_DOTNET openvino || return 1
     deploy_all
 }
 
