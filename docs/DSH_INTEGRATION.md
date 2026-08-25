@@ -41,6 +41,11 @@ dsh plugin --profile web add /home/lumin/src/mdyj/baihua-local-ai-dsh-plugin
 # 或从 GitHub：dsh plugin --profile web add github:luminsw/baihua-dsh-plugin
 ```
 
+> **本机（Windows）现状**：已全部改用本地 link 方式安装，无需 add 命令——
+> 修改 `~/.dsh/profiles/web/package.json` 依赖为 `link:../../../src/<repo>` 后
+> 在该目录跑 `pnpm install`；依赖解析经各仓库 `node_modules` junction 复用
+> `~/.dsh/profiles/node_modules`。改源码后重启 DSH 即生效。
+
 ## 3. 插件配置（~/.dsh/profiles/web/cordis.patch.yml）
 
 ```yaml

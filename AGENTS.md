@@ -87,8 +87,10 @@ C:\Users\lumin\src\
 - `mcp__baihua__*` — 百花只读数据工具（知识库检索/列表/读笔记、记账汇总、任务列表），统一经 `baihua-mcp-server` 暴露（`baihua-dsh-plugin` 不再注册数据工具）
 
 > 插件配置在 `~/.dsh/cordis.patch.yml`（token / drawGatewayUrl / drawToken / comfyModelType 等）；
-> 三个自研 DSH 插件已由 `dsh plugin --profile web add github:luminsw/<repo>` 安装（bundle 自动挂层），
-> 改插件源码并 push 后重装、或重启 DSH 生效（`npx @deepseek-ai/dsh web`）。
+> 三个自研 DSH 插件已改**本地 link 方式**安装：`~/.dsh/profiles/web/package.json` 依赖为
+> `link:../../../src/<repo>`（bundle 自动挂层），各仓库 `node_modules` 为 junction →
+> `~/.dsh/profiles/node_modules`（复用 DSH 全局依赖层，版本与单例一致）；
+> 改插件源码后**重启 DSH 即生效**（无需 git push/重装，`npx @deepseek-ai/dsh web`）。
 
 ## 目录
 
