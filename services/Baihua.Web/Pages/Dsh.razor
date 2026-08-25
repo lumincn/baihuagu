@@ -54,6 +54,10 @@
                         <span class="badge @(_bhSummary.Ready == _bhSummary.Total ? "bg-success" : "bg-danger")">就绪 @_bhSummary.Ready/@_bhSummary.Total</span>
                     }
                     <button class="btn btn-sm btn-outline-secondary" @onclick="LoadBhOpsAsync" disabled="@_bhBusy">🔄 刷新</button>
+                    @if (_opsLastUpdated != null)
+                    {
+                        <span class="text-muted small" title="数据为最近一次成功刷新的时间，状态不会自动更新">上次刷新 @_opsLastUpdated.Value.ToString("HH:mm:ss")</span>
+                    }
                 </span>
             </div>
             <div class="card-body py-2">
@@ -223,7 +227,7 @@
     private List<BhOpDto> _bhRecentOps = new();
     private string? _logsService;
     private string? _logsText;
-    private System.Threading.Timer? _opsTimer;
+    private DateTime? _opsLastUpdated;
 
     protected override async Task OnInitializedAsync()
     {
@@ -247,25 +251,11 @@
         _showOps = !_showOps;
         if (_showOps)
         {
+            // 打开时刷新一次；不做定时轮询（省性能），由用户点「🔄 刷新」或重新打开手动刷新
             _ = LoadBhOpsAsync();
-            // 打开后每 10s 自动刷新一次（编译/重启进行中状态实时变化）
-            _opsTimer ??= new System.Threading.Timer(async _ =>
-            {
-                try
-                {
-                    await InvokeAsync(async () =>
-                    {
-                        if (_showOps && _statusOk && !_bhBusy)
-                            await LoadBhOpsAsync();
-                    });
-                }
-                catch { /* noop */ }
-            }, null, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
         }
         else
         {
-            _opsTimer?.Dispose();
-            _opsTimer = null;
             StateHasChanged();
         }
     }
@@ -287,6 +277,7 @@
                 _bhSummary = r.Status.Summary;
                 _bhRunningOps = (r.RunningOps ?? new List<BhOpDto>()).ToList();
                 _bhRecentOps = (r.RecentOps ?? new List<BhOpDto>()).ToList();
+                _opsLastUpdated = DateTime.Now;
             }
             else
             {
@@ -475,6 +466,6 @@
 
     public void Dispose()
     {
-        _opsTimer?.Dispose();
+        // 无定时器/资源需释放；保留以维持 @implements IDisposable 契约
     }
 }
