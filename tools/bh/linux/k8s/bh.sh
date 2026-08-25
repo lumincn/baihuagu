@@ -779,9 +779,9 @@ update_all() {
             return 1
         }
         echo "[update] git pull 以 $SUDO_USER 身份执行（agent: $sock）"
-        sudo -u "$SUDO_USER" SSH_AUTH_SOCK="$sock" -H git pull origin main || { echo "[update] git pull 失败"; return 1; }
+        sudo -u "$SUDO_USER" SSH_AUTH_SOCK="$sock" -H git -C "$ROOT" pull origin main || { echo "[update] git pull 失败"; return 1; }
     else
-        git pull origin main || { echo "[update] git pull 失败"; return 1; }
+        git -C "$ROOT" pull origin main || { echo "[update] git pull 失败"; return 1; }
     fi
     local self
     self="$(readlink -f "$0")"
