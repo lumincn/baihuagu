@@ -468,7 +468,6 @@ changed_images() {
             git diff --name-only ORIG_HEAD HEAD 2>/dev/null
         fi
     } | sort -u)"
-    [ -z "$files" ] && { echo ""; return 0; }
 
     local imgs=""
     local f
@@ -490,7 +489,34 @@ changed_images() {
             *) imgs="$imgs $ALL_DOTNET openvino" ;;
         esac
     done
+    # 额外来源：部署标注 commit 落后于当前 HEAD 且该服务源码受影响的服务（见 deployed_stale_services）。
+    local stale
+    stale="$(deployed_stale_services)"
+    [ -n "$stale" ] && imgs="$imgs $stale"
     echo "$imgs" | tr ' ' '\n' | grep -v '^$' | sort -u | tr '\n' ' '
+}
+
+# 补充来源：检测"部署标注 commit 落后于当前 HEAD 且该服务源码受影响"的服务。
+# 场景：仓库已前进到新 HEAD，但部署镜像仍是旧 commit，且不是靠最近一次 pull 前进的
+#      （此时 ORIG_HEAD==HEAD，changed_images 仅凭 git 本地来源检测不到，导致误跳过构建）。
+# deploy_all() 会把本次部署对应的源码 commit 写入应用 Deployment 的 baihua.git-commit 标注，
+# 这里读回来对照 HEAD：凡"标注非空、是有效 git ref、不等于 HEAD、且该服务在 (标注..HEAD) 受影响"
+# 者，判定需重建。标注缺失/无效/等于 HEAD 时不判，避免误报。
+deployed_stale_services() {
+    local git_head
+    git_head="$(cd "$ROOT" && git rev-parse --short HEAD 2>/dev/null || echo unknown)"
+    [ "$git_head" = "unknown" ] && { echo ""; return 0; }
+    local svc short ann stale=""
+    for svc in bh-vault bh-ai bh-webui bh-family bh-openvino; do
+        short="${svc#bh-}"
+        ann="$(k -n "$NAMESPACE" get deploy "$svc" -o jsonpath='{.metadata.annotations.baihua\.git-commit}' 2>/dev/null)"
+        [ -z "$ann" ] && continue
+        git -C "$ROOT" rev-parse --verify "$ann" >/dev/null 2>&1 || continue
+        if [ "$ann" != "$git_head" ] && [ "$(service_affected "$short" "$ann" "$git_head")" = "true" ]; then
+            stale="$stale $short"
+        fi
+    done
+    echo "$stale" | tr ' ' '\n' | grep -v '^$' | sort -u | tr '\n' ' '
 }
 
 # up：仅构建变更涉及的镜像 + deploy；--all 强制全量重建
