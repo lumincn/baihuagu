@@ -36,10 +36,10 @@ $PSDefaultParameterValues['*:Encoding'] = 'utf8'
 
 ```
 C:\Users\lumin\src\
-├── baihua/           # 百花 - 家庭版（本项目）
-├── mdyj-cloud/        # 花阁 - 云端版
-├── kotlin/            # 百花 Android 客户端
-└── arkts/             # 百花鸿蒙客户端
+├── baihua/           # 百花（局域网服务器，本项目）
+├── mdyj-cloud/        # 花阁官网（云端版）
+├── kotlin/            # 花记 Android 客户端
+└── arkts/             # 花记鸿蒙客户端
 ```
 
 ### 命令行工具
