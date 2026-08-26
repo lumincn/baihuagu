@@ -51,12 +51,12 @@
                                 @if (task.TaskType == InitTaskType.AddFamilyMember)
                                 {
                                     <div class="action-box">
-                                        <p>📱 让家庭成员用手机扫描下方二维码，然后在「设备管理」页面批准连接</p>
-                                        <div class="qr-placeholder" @onclick="GoToDevices">
-                                            <span>点击前往设备管理页查看二维码</span>
+                                        <p>📱 让家庭成员用手机扫描首页二维码，然后在首页批准连接</p>
+                                        <div class="qr-placeholder" @onclick="GoToHome">
+                                            <span>点击前往首页查看二维码</span>
                                         </div>
                                         <div class="action-buttons">
-                                            <button class="btn btn-sm btn-primary" @onclick="GoToDevices">前往设备管理</button>
+                                            <button class="btn btn-sm btn-primary" @onclick="GoToHome">前往首页</button>
                                             <button class="btn btn-sm btn-outline" @onclick="() => MarkTaskComplete(task.TaskId)">已完成</button>
                                         </div>
                                     </div>
@@ -497,9 +497,9 @@
         }
     }
 
-    private void GoToDevices()
+    private async Task GoToHome()
     {
-        Navigation.NavigateTo("devices");
+        await JSRuntime.InvokeVoidAsync("eval", "document.querySelector('.qr-card h3')?.scrollIntoView({ behavior: 'smooth', block: 'start' })");
     }
 
     private void DismissTasks()

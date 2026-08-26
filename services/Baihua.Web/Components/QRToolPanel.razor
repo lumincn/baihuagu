@@ -4,23 +4,30 @@
 @inject IHttpClientFactory HttpClientFactory
 
 <div class="qr-tool-container">
-    <!-- 服务器配对二维码 (紧凑横排) -->
-    <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">🏠 服务器配对码</h5>
-            <button class="btn btn-sm btn-outline-primary" @onclick="LoadServerQRCode" disabled="@_isLoadingServerQR">
-                @if (_isLoadingServerQR)
-                {
-                    <span class="spinner-border spinner-border-sm me-1"></span>
-                    <span>加载中...</span>
-                }
-                else
-                {
-                    <span>🔄 刷新</span>
-                }
-            </button>
-        </div>
-        <div class="card-body">
+    <!-- Tab 导航 -->
+    <div class="qr-tabs">
+        <button class="qr-tab @(_activeTab == "server" ? "active" : "")" @onclick='() => SetActiveTab("server")'>🏠 服务器配对</button>
+        <button class="qr-tab @(_activeTab == "aikey" ? "active" : "")" @onclick='() => SetActiveTab("aikey")'>🤖 AI API Key</button>
+        <button class="qr-tab @(_activeTab == "general" ? "active" : "")" @onclick='() => SetActiveTab("general")'>📝 通用二维码</button>
+    </div>
+
+    <!-- 服务器配对二维码 -->
+    @if (_activeTab == "server")
+    {
+        <div class="qr-tab-content">
+            <div class="d-flex justify-content-end mb-2">
+                <button class="btn btn-sm btn-outline-primary" @onclick="LoadServerQRCode" disabled="@_isLoadingServerQR">
+                    @if (_isLoadingServerQR)
+                    {
+                        <span class="spinner-border spinner-border-sm me-1"></span>
+                        <span>加载中...</span>
+                    }
+                    else
+                    {
+                        <span>🔄 刷新</span>
+                    }
+                </button>
+            </div>
             @if (_serverQRCode != null)
             {
                 @if (_isEditingName)
@@ -92,14 +99,14 @@
                 <p class="text-muted mb-0">点击「刷新」加载服务器配对二维码</p>
             }
         </div>
-    </div>
+    }
 
     <!-- 主 AI API Key 二维码 -->
-    <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center" @onclick="ToggleAiKey" role="button" tabindex="0">
-            <h5 class="mb-0">🤖 主 AI API Key</h5>
-            <div class="d-flex align-items-center gap-2">
-                <button class="btn btn-sm btn-outline-primary" @onclick="LoadMainAiApiKey" disabled="@_isLoadingAiKey" @onclick:stopPropagation>
+    @if (_activeTab == "aikey")
+    {
+        <div class="qr-tab-content">
+            <div class="d-flex justify-content-end mb-2">
+                <button class="btn btn-sm btn-outline-primary" @onclick="LoadMainAiApiKey" disabled="@_isLoadingAiKey">
                     @if (_isLoadingAiKey)
                     {
                         <span class="spinner-border spinner-border-sm me-1"></span>
@@ -110,10 +117,7 @@
                         <span>🔄 刷新</span>
                     }
                 </button>
-                <span class="collapse-indicator">@(_showAiKey ? "▲" : "▼")</span>
             </div>
-        </div>
-        <div class="card-body collapse @(_showAiKey ? "show" : "")">
             @if (_aiKeyQRCode != null)
             {
                 <div class="server-qr-compact">
@@ -139,15 +143,12 @@
                 <p class="text-muted mb-0">点击「刷新」加载主 AI API Key 二维码</p>
             }
         </div>
-    </div>
+    }
 
     <!-- 通用二维码生成 -->
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center" @onclick="ToggleGeneralQR" role="button" tabindex="0">
-            <h5 class="mb-0">📝 通用二维码</h5>
-            <span class="collapse-indicator">@(_showGeneralQR ? "▲" : "▼")</span>
-        </div>
-        <div class="card-body collapse @(_showGeneralQR ? "show" : "")">
+    @if (_activeTab == "general")
+    {
+        <div class="qr-tab-content">
             <div class="server-qr-compact">
                 <div class="qr-form-left">
                     <textarea class="form-control" @bind="_inputText" rows="2" placeholder="粘贴要转成二维码的内容..."></textarea>
@@ -165,7 +166,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    }
 </div>
 
 @code {
@@ -188,25 +189,28 @@
     private string _nameSaveMessage = "";
     private bool _nameSaveSuccess = false;
 
-    // 折叠状态
-    private bool _showAiKey = true; // 默认展开：折叠态下容器 display:none，qrcode.js 渲染不可见，且展开后不会重绘
-    private bool _showGeneralQR = true; // 默认展开，便于直接用（审计：折叠态发现率低）
+    // Tab 状态
+    private string _activeTab = "server";
 
     // 自动授权
     private bool _autoAuthorizeEnabled = false;
     private bool _isTogglingAutoAuth = false;
 
-    private async Task ToggleAiKey()
+    private async Task SetActiveTab(string tab)
     {
-        _showAiKey = !_showAiKey;
-        // 展开时若已加载数据则重绘：之前折叠态下容器 display:none，二维码可能未可见
-        if (_showAiKey && _aiKeyQRCode != null && !string.IsNullOrEmpty(_aiKeyQRCode.ApiKey))
+        _activeTab = tab;
+        StateHasChanged();
+        // 切换到 AI Key tab 时重绘二维码（之前 tab 隐藏时容器不存在）
+        if (tab == "aikey" && _aiKeyQRCode != null && !string.IsNullOrEmpty(_aiKeyQRCode.ApiKey))
         {
-            StateHasChanged();
             await JS.InvokeVoidAsync("generateCompactQRCode", "aikey-qr-container", _aiKeyQRCode.ApiKey);
         }
+        // 切换到服务器 tab 时重绘
+        if (tab == "server" && _serverQRCode != null && !string.IsNullOrEmpty(_serverQRCode.QrCodeData))
+        {
+            await JS.InvokeVoidAsync("generateCompactQRCode", "server-qr-container", _serverQRCode.QrCodeData);
+        }
     }
-    private void ToggleGeneralQR() => _showGeneralQR = !_showGeneralQR;
 
     // 通用二维码
     private string _inputText = "";
@@ -442,6 +446,40 @@
     .qr-tool-container {
         max-width: 600px;
         margin-top: 1.5rem;
+    }
+
+    .qr-tabs {
+        display: flex;
+        gap: 4px;
+        border-bottom: 2px solid #e0e6ea;
+        margin-bottom: 0.75rem;
+    }
+
+    .qr-tab {
+        padding: 0.5rem 0.75rem;
+        border: none;
+        background: transparent;
+        color: #5a6a72;
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .qr-tab:hover {
+        color: #2e8baf;
+    }
+
+    .qr-tab.active {
+        color: #2e8baf;
+        border-bottom-color: #2e8baf;
+    }
+
+    .qr-tab-content {
+        padding: 0.5rem 0;
     }
     .form-group {
         margin-bottom: 1rem;

@@ -77,45 +77,16 @@
 
     <!-- 花记设备集成 -->
     <div class="section">
-        <div class="section-header">
-            <h2>@L["Devices_Title"]</h2>
-            <a href="devices" class="section-link">@L["Devices_TabDevices"]</a>
-        </div>
+        <h2 class="section-title">@L["Devices_Title"]</h2>
 
-        <div class="device-grid">
-            <!-- 已授权设备概览 -->
-            <div class="card device-card" @onclick="GoToDevices">
+        <div class="device-stack">
+            <!-- 扫码配对 -->
+            <div class="card qr-card">
                 <div class="card-header">
-                    <h3>@L["Devices_AuthorizedDevicesTitle"]</h3>
-                    <span class="badge bg-success">@authorizedDevices.Count</span>
+                    <h3>@L["Devices_ScanPair"]</h3>
                 </div>
                 <div class="card-body">
-                    @if (isLoadingDevices)
-                    {
-                        <div class="text-muted small">@L["Devices_Loading"]</div>
-                    }
-                    else if (!authorizedDevices.Any())
-                    {
-                        <p class="text-muted mb-0">@L["Devices_NoAuthorizedDevices"]</p>
-                    }
-                    else
-                    {
-                        <div class="device-list">
-                            @foreach (var device in authorizedDevices.Take(4))
-                            {
-                                <div class="device-item">
-                                    <span class="device-name">📱 @device.DeviceName</span>
-                                    <span class="device-meta">@(device.LastSyncTime.HasValue ? device.LastSyncTime.Value.ToLocalTime().ToString("MM-dd HH:mm") : "-")</span>
-                                </div>
-                            }
-                            @if (authorizedDevices.Count > 4)
-                            {
-                                <div class="device-more text-muted small">
-                                    +@(authorizedDevices.Count - 4) @L["Devices_MoreDevices"]
-                                </div>
-                            }
-                        </div>
-                    }
+                    <QRToolPanel />
                 </div>
             </div>
 
@@ -158,13 +129,39 @@
                 </div>
             </div>
 
-            <!-- 扫码配对 -->
-            <div class="card qr-card">
+            <!-- 已授权设备概览 -->
+            <div class="card device-card" @onclick="GoToDevices">
                 <div class="card-header">
-                    <h3>@L["Devices_ScanPair"]</h3>
+                    <h3>@L["Devices_AuthorizedDevicesTitle"]</h3>
+                    <span class="badge bg-success">@authorizedDevices.Count</span>
                 </div>
                 <div class="card-body">
-                    <QRToolPanel />
+                    @if (isLoadingDevices)
+                    {
+                        <div class="text-muted small">@L["Devices_Loading"]</div>
+                    }
+                    else if (!authorizedDevices.Any())
+                    {
+                        <p class="text-muted mb-0">@L["Devices_NoAuthorizedDevices"]</p>
+                    }
+                    else
+                    {
+                        <div class="device-list">
+                            @foreach (var device in authorizedDevices.Take(4))
+                            {
+                                <div class="device-item">
+                                    <span class="device-name">📱 @device.DeviceName</span>
+                                    <span class="device-meta">@(device.LastSyncTime.HasValue ? device.LastSyncTime.Value.ToLocalTime().ToString("MM-dd HH:mm") : "-")</span>
+                                </div>
+                            }
+                            @if (authorizedDevices.Count > 4)
+                            {
+                                <div class="device-more text-muted small">
+                                    +@(authorizedDevices.Count - 4) @L["Devices_MoreDevices"]
+                                </div>
+                            }
+                        </div>
+                    }
                 </div>
             </div>
         </div>
@@ -298,32 +295,17 @@
         margin-bottom: 2rem;
     }
 
-    .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1rem;
-    }
-
-    .section-header h2 {
-        margin: 0;
+    .section-title {
+        margin: 0 0 0.75rem;
+        padding: 0.5rem 0.75rem;
         font-size: 1.25rem;
+        font-weight: 600;
         color: #1e3a4c;
     }
 
-    .section-link {
-        color: #2e8baf;
-        text-decoration: none;
-        font-size: 0.9rem;
-    }
-
-    .section-link:hover {
-        text-decoration: underline;
-    }
-
-    .device-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    .device-stack {
+        display: flex;
+        flex-direction: column;
         gap: 1rem;
     }
 
@@ -425,7 +407,7 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
         }
 
-        .section-header h2 {
+        .section-title {
             color: #d4d8dd;
         }
 
@@ -458,9 +440,6 @@
             color: #708090;
         }
 
-        .section-link {
-            color: #6bafce;
-        }
     }
 </style>
 
