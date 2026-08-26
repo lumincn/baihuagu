@@ -7,15 +7,34 @@
 @inject ILogger<BrowseVault> Logger
 @inject IJSRuntime JSRuntime
 @inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
+@inject Baihua.Web.Services.RecentNotesService RecentNotesService
 @using Markdig
 @using Microsoft.JSInterop
 @using Baihua.Contracts.Vaults
+@using Baihua.Web.Services
 @implements IAsyncDisposable
 
 <PageTitle>@L["BrowseVault_PageTitle"]</PageTitle>
 
 <div class="container mt-4">
     <h2 class="mb-4">@L["BrowseVault_Title"]</h2>
+
+    <!-- 最近浏览 -->
+    @if (!isLoadingRecentNotes && recentNotes?.Any() == true)
+    {
+        <div class="mb-4">
+            <h5 class="mb-2 text-muted">@L["FamilyHome_RecentNotes"]</h5>
+            <div class="recent-notes-inline">
+                @foreach (var note in recentNotes.Take(6))
+                {
+                    <div class="note-chip" @onclick="() => NavigateToNote(note.Path)">
+                        <span class="chip-title">@note.Title</span>
+                        <span class="chip-meta">📁 @note.Path</span>
+                    </div>
+                }
+            </div>
+        </div>
+    }
 
     @if (isLoadingVaults)
     {
@@ -421,6 +440,56 @@
         background: #0d6efd;
         color: white;
     }
+
+    .recent-notes-inline {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .note-chip {
+        background: #e8eef2;
+        padding: 0.5rem 0.75rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        max-width: 220px;
+    }
+
+    .note-chip:hover {
+        background: #2e8baf;
+        color: white;
+    }
+
+    .note-chip .chip-title {
+        font-weight: 500;
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .note-chip .chip-meta {
+        font-size: 0.75rem;
+        color: #5a6a72;
+        display: block;
+        margin-top: 0.15rem;
+    }
+
+    [data-bs-theme="dark"] .note-chip {
+        background: #2d3548;
+        color: #c0c8d0;
+    }
+
+    [data-bs-theme="dark"] .note-chip:hover {
+        background: #2e8baf;
+        color: white;
+    }
+
+    [data-bs-theme="dark"] .note-chip .chip-meta {
+        color: #708090;
+    }
 </style>
 
 @code {
@@ -481,9 +550,13 @@
     private HashSet<int> playedIndices = new();
 
 
+    private bool isLoadingRecentNotes = true;
+    private List<RecentNoteItem>? recentNotes;
+
     protected override async Task OnInitializedAsync()
     {
         isLoadingVaults = true;
+        isLoadingRecentNotes = true;
         try
         {
             var response = await VaultsService.GetVaultsAsync(forceRefresh: true);
@@ -494,6 +567,20 @@
             Logger.LogError(ex, "加载知识库列表失败");
         }
         isLoadingVaults = false;
+
+        try
+        {
+            recentNotes = await RecentNotesService.GetRecentNotes();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "加载最近浏览失败");
+            recentNotes = new List<RecentNoteItem>();
+        }
+        finally
+        {
+            isLoadingRecentNotes = false;
+        }
     }
 
     private void SelectVault(string vaultId)
@@ -587,6 +674,11 @@
     {
         currentPath = path;
         await LoadBrowseItems();
+    }
+
+    private void NavigateToNote(string path)
+    {
+        Navigation.NavigateTo($"note?id={Uri.EscapeDataString(path)}");
     }
 
     private async Task OpenNote(VaultBrowseItem note)

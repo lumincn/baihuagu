@@ -4,6 +4,8 @@
 @inject Baihua.Web.Services.ISearchHistoryService SearchHistoryService
 @inject Baihua.Web.Services.AIStatusService AIStatusService
 @inject Baihua.Web.Services.VaultStatusService VaultStatusService
+@inject Baihua.Web.Services.DevicesService DevicesService
+@inject Baihua.Web.Services.IApiService ApiService
 @inject Microsoft.Extensions.Logging.ILogger<FamilyHome> Logger
 @inject Microsoft.Extensions.Localization.IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
@@ -25,9 +27,6 @@
 
     <!-- 配置提醒区域 -->
     <div class="config-alerts">
-        <!-- API Key 配置提醒（FAM-03：三态 + 代理感知）
-             已配置 → 不显示；代理模式（服务器 AI 可用）→ 不显示；
-             查询失败（null）→ 显示"服务状态获取失败"；真正未配置 → 显示红色提醒 -->
         @if (!isInitialLoading && aiStatus == null)
         {
             <div class="config-alert status-alert">
@@ -56,7 +55,6 @@
             </div>
         }
 
-        <!-- 知识库配置提醒 -->
         @if (!isInitialLoading && (!vaultStatus?.IsConfigured ?? true))
         {
             <div class="config-alert vault-alert">
@@ -77,94 +75,97 @@
         }
     </div>
 
-    <!-- 最近浏览 -->
+    <!-- 花记设备集成 -->
     <div class="section">
         <div class="section-header">
-            <h2>@L["FamilyHome_RecentNotes"]</h2>
-            @if (!isLoadingNotes)
-            {
-                <a href="search" class="section-link">@L["FamilyHome_ViewMore"]</a>
-            }
+            <h2>@L["Devices_Title"]</h2>
+            <a href="devices" class="section-link">@L["Devices_TabDevices"]</a>
         </div>
-        @if (isLoadingNotes)
-        {
-            <div class="section-loading">
-                <div class="skeleton-grid">
-                    @for (int i = 0; i < 3; i++)
+
+        <div class="device-grid">
+            <!-- 已授权设备概览 -->
+            <div class="card device-card" @onclick="GoToDevices">
+                <div class="card-header">
+                    <h3>@L["Devices_AuthorizedDevicesTitle"]</h3>
+                    <span class="badge bg-success">@authorizedDevices.Count</span>
+                </div>
+                <div class="card-body">
+                    @if (isLoadingDevices)
                     {
-                        <div class="skeleton-card"></div>
+                        <div class="text-muted small">@L["Devices_Loading"]</div>
+                    }
+                    else if (!authorizedDevices.Any())
+                    {
+                        <p class="text-muted mb-0">@L["Devices_NoAuthorizedDevices"]</p>
+                    }
+                    else
+                    {
+                        <div class="device-list">
+                            @foreach (var device in authorizedDevices.Take(4))
+                            {
+                                <div class="device-item">
+                                    <span class="device-name">📱 @device.DeviceName</span>
+                                    <span class="device-meta">@(device.LastSyncTime.HasValue ? device.LastSyncTime.Value.ToLocalTime().ToString("MM-dd HH:mm") : "-")</span>
+                                </div>
+                            }
+                            @if (authorizedDevices.Count > 4)
+                            {
+                                <div class="device-more text-muted small">
+                                    +@(authorizedDevices.Count - 4) @L["Devices_MoreDevices"]
+                                </div>
+                            }
+                        </div>
                     }
                 </div>
             </div>
-        }
-        else if (recentNotes != null && recentNotes.Any())
-        {
-            <div class="recent-notes">
-                @foreach (var note in recentNotes.Take(6))
-                {
-                    <div class="note-card" @onclick="() => NavigateToNote(note.Path)">
-                        <div class="note-title">@note.Title</div>
-                        <div class="note-meta">📁 @note.Path</div>
-                    </div>
-                }
-            </div>
-        }
-        else
-        {
-            <div class="section-empty">
-                <p>@L["FamilyHome_NoRecentNotes"]</p>
-            </div>
-        }
-    </div>
 
-    <!-- 最近搜索 -->
-    <div class="section">
-        <div class="section-header">
-            <h2>@L["FamilyHome_RecentSearches"]</h2>
-            @if (recentSearches is { Count: > 0 })
-            {
-                <button class="btn btn-sm btn-link" @onclick="ClearRecentSearches">@L["Search_ClearHistory"]</button>
-            }
-        </div>
-        @if (isLoadingSearches)
-        {
-            <div class="section-loading">
-                <div class="skeleton-chips">
-                    @for (int i = 0; i < 4; i++)
+            <!-- 待授权设备 -->
+            <div class="card pending-card" @onclick="GoToDevices">
+                <div class="card-header">
+                    <h3>@L["Devices_PendingDevices"]</h3>
+                    @if (pendingDevices.Count > 0)
                     {
-                        <div class="skeleton-chip"></div>
+                        <span class="badge bg-warning text-dark">@pendingDevices.Count</span>
+                    }
+                </div>
+                <div class="card-body">
+                    @if (isLoadingDevices)
+                    {
+                        <div class="text-muted small">@L["Devices_Loading"]</div>
+                    }
+                    else if (!pendingDevices.Any())
+                    {
+                        <p class="text-muted mb-0">@L["Devices_NoPendingDevices"]</p>
+                    }
+                    else
+                    {
+                        <div class="device-list">
+                            @foreach (var device in pendingDevices.Take(3))
+                            {
+                                <div class="device-item">
+                                    <span class="device-name">📱 @device.DeviceName</span>
+                                    <span class="device-meta">@device.RequestTime.ToLocalTime().ToString("MM-dd HH:mm")</span>
+                                </div>
+                            }
+                            @if (pendingDevices.Count > 3)
+                            {
+                                <div class="device-more text-muted small">
+                                    +@(pendingDevices.Count - 3) @L["Devices_MorePending"]
+                                </div>
+                            }
+                        </div>
                     }
                 </div>
             </div>
-        }
-        else if (recentSearches != null && recentSearches.Any())
-        {
-            <div class="search-chips">
-                @foreach (var query in recentSearches.Take(8))
-                {
-                    <span class="search-chip" @onclick="() => NavigateToSearch(query)">
-                        @query
-                    </span>
-                }
-            </div>
-        }
-        else
-        {
-            <div class="section-empty">
-                <p>@L["FamilyHome_NoRecentSearches"]</p>
-            </div>
-        }
-    </div>
 
-    <!-- 移动端同步入口 -->
-    <div class="section">
-        <div class="section-header">
-            <h2>@L["FamilyHome_MobileSync"]</h2>
-        </div>
-        <div class="dashboard">
-            <div class="card" @onclick="@(() => Navigation.NavigateTo("devices"))">
-                <h3>@L["FamilyHome_DeviceManagement"]</h3>
-                <p>@L["FamilyHome_DeviceManagementDesc"]</p>
+            <!-- 扫码配对 -->
+            <div class="card qr-card">
+                <div class="card-header">
+                    <h3>@L["Devices_ScanPair"]</h3>
+                </div>
+                <div class="card-body">
+                    <QRToolPanel />
+                </div>
             </div>
         </div>
     </div>
@@ -320,73 +321,19 @@
         text-decoration: underline;
     }
 
-    .recent-notes {
+    .device-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-        gap: 1rem;
-    }
-
-    .note-card {
-        background: white;
-        border-radius: 12px;
-        padding: 1rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .note-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-    }
-
-    .note-title {
-        font-weight: 600;
-        color: #1e3a4c;
-        margin-bottom: 0.5rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .note-meta {
-        font-size: 0.75rem;
-        color: #5a6a72;
-    }
-
-    .search-chips {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
-
-    .search-chip {
-        background: #e8eef2;
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-size: 0.9rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .search-chip:hover {
-        background: #2e8baf;
-        color: white;
-    }
-
-    .dashboard {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         gap: 1rem;
     }
 
     .card {
         background: white;
         border-radius: 12px;
-        padding: 1.5rem;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         cursor: pointer;
         transition: all 0.2s ease;
+        overflow: hidden;
     }
 
     .card:hover {
@@ -394,54 +341,66 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     }
 
-    .card h3 {
-        margin: 0 0 0.5rem;
-        font-size: 1.1rem;
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 1.25rem 0;
+    }
+
+    .card-header h3 {
+        margin: 0;
+        font-size: 1rem;
         color: #1e3a4c;
     }
 
-    .card p {
-        margin: 0;
-        color: #5a6a72;
+    .card-body {
+        padding: 0.75rem 1.25rem 1rem;
+    }
+
+    .device-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .device-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0.75rem;
+        background: #f5f8fa;
+        border-radius: 8px;
         font-size: 0.9rem;
+    }
+
+    .device-name {
+        font-weight: 500;
+        color: #1e3a4c;
+    }
+
+    .device-meta {
+        font-size: 0.75rem;
+        color: #5a6a72;
+    }
+
+    .device-more {
+        text-align: center;
+        padding-top: 0.25rem;
+    }
+
+    .qr-card .card-body {
+        padding: 0.75rem;
+        min-height: 200px;
+    }
+
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.25em 0.6em;
     }
 
     .section-loading {
         padding: 1rem 0;
-    }
-
-    .skeleton-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-        gap: 1rem;
-    }
-
-    .skeleton-card {
-        background: linear-gradient(90deg, #e8eef2 25%, #e0e0e0 50%, #e8eef2 75%);
-        background-size: 200% 100%;
-        animation: skeleton-loading 1.5s infinite;
-        height: 80px;
-        border-radius: 12px;
-    }
-
-    .skeleton-chips {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
-
-    .skeleton-chip {
-        background: linear-gradient(90deg, #e8eef2 25%, #e0e0e0 50%, #e8eef2 75%);
-        background-size: 200% 100%;
-        animation: skeleton-loading 1.5s infinite;
-        width: 80px;
-        height: 32px;
-        border-radius: 16px;
-    }
-
-    @@keyframes skeleton-loading {
-        0% { background-position: 200% 0; }
-        100% { background-position: -200% 0; }
     }
 
     .section-empty {
@@ -456,9 +415,8 @@
         margin: 0;
     }
 
-    /* 暗色模式 — 首页专属覆盖 */
+    /* 暗色模式 */
     [data-bs-theme="dark"] {
-        /* 提醒按钮（原白色底 → 深色半透明底，红色文字提亮） */
         .alert-button {
             background: rgba(255, 255, 255, 0.1);
             color: #ff7a8c;
@@ -467,73 +425,71 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
         }
 
-        /* 区块标题 */
         .section-header h2 {
             color: #d4d8dd;
         }
 
-        /* 最近浏览/最近搜索空状态 */
         .section-empty {
-            background: rgba(255,255,255,0.04);
+            background: rgba(255, 255, 255, 0.04);
             color: #91a0b0;
         }
 
-        /* 笔记卡片（原白色底） */
-        .note-card {
-            background: rgba(255, 255, 255, 0.05);
+        .card {
+            background: #232a3b;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
-        .note-card:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+        .card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
         }
 
-        /* 笔记卡片标题/元信息 */
-        .note-title {
+        .card-header h3 {
             color: #d4d8dd;
         }
-        .note-meta {
+
+        .device-item {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .device-name {
+            color: #d4d8dd;
+        }
+
+        .device-meta {
             color: #708090;
         }
 
-        /* 搜索芯片 */
-        .search-chip {
-            background: #2d3548;
-            color: #c0c8d0;
-        }
-        .search-chip:hover {
-            background: #2e8baf;
-            color: white;
-        }
-
-        /* 设备管理卡片 */
-        .home-container .card {
-            background: #232a3b;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        }
-        .home-container .card:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-        }
-        .home-container .card h3 {
-            color: #d4d8dd;
-        }
-        .home-container .card p {
-            color: #91a0b0;
-        }
-
-        /* 骨架屏（加载中）—— 渐变换成深色调 */
-        .skeleton-card,
-        .skeleton-chip {
-            background: linear-gradient(90deg, #2a3040 25%, #363d52 50%, #2a3040 75%);
-            background-size: 200% 100%;
+        .section-link {
+            color: #6bafce;
         }
     }
 </style>
 
 @code {
-    private List<RecentNoteItem>? recentNotes;
-    private bool isLoadingNotes = true;
-    private List<string>? recentSearches;
-    private bool isLoadingSearches = true;
+    private class AuthorizedDeviceInfo
+    {
+        public string DeviceId { get; set; } = "";
+        public string DeviceName { get; set; } = "";
+        public string? SystemDeviceName { get; set; }
+        public DateTime? AuthorizedTime { get; set; }
+        public DateTime? LastSyncTime { get; set; }
+        public DateTime? FirstSyncTime { get; set; }
+        public string IpAddress { get; set; } = "";
+        public int SyncCount { get; set; }
+        public List<string> SyncedVaultIds { get; set; } = new();
+        public Dictionary<string, string> SyncedVaultNames { get; set; } = new();
+    }
+
+    private class PendingDeviceInfo
+    {
+        public string DeviceName { get; set; } = "";
+        public string? SystemDeviceName { get; set; }
+        public DateTime RequestTime { get; set; }
+        public string IpAddress { get; set; } = "";
+    }
+
+    private List<AuthorizedDeviceInfo> authorizedDevices = new();
+    private List<PendingDeviceInfo> pendingDevices = new();
+    private bool isLoadingDevices = true;
     private InitializationTasks? _initTasks;
     private AIStatusSummary? aiStatus;
     private VaultStatusSummary? vaultStatus;
@@ -554,9 +510,8 @@
             {
                 var statusTask = AIStatusService.GetStatusSummaryAsync();
                 var vaultTask = VaultStatusService.GetStatusSummaryAsync();
-                var notesTask = LoadRecentNotesAsync();
-                var searchesTask = LoadRecentSearchesAsync();
-                await Task.WhenAll(statusTask, vaultTask, notesTask, searchesTask);
+                var devicesTask = LoadDevicesAsync();
+                await Task.WhenAll(statusTask, vaultTask, devicesTask);
 
                 await InvokeAsync(() =>
                 {
@@ -578,54 +533,49 @@
         });
     }
 
-    private async Task LoadRecentNotesAsync()
+    private async Task LoadDevicesAsync()
     {
         try
         {
-            recentNotes = await RecentNotesService.GetRecentNotes();
+            isLoadingDevices = true;
+            var pendingTask = DevicesService.GetPendingDevicesAsync();
+            var authorizedTask = DevicesService.GetAuthorizedDevicesAsync();
+            await Task.WhenAll(pendingTask, authorizedTask);
+
+            var pendingResult = pendingTask.Result ?? new();
+            var authorizedResult = authorizedTask.Result ?? new();
+
+            pendingDevices = pendingResult.Select(d => new PendingDeviceInfo
+            {
+                DeviceName = d.DeviceName ?? L["Devices_UnknownDevice"],
+                SystemDeviceName = d.SystemDeviceName,
+                RequestTime = d.RequestTime != default ? d.RequestTime : DateTime.Now,
+                IpAddress = d.IpAddress ?? ""
+            }).ToList();
+
+            authorizedDevices = authorizedResult.Select(d => new AuthorizedDeviceInfo
+            {
+                DeviceId = d.DeviceId ?? "",
+                DeviceName = d.DeviceName ?? L["Devices_UnknownDevice"],
+                SystemDeviceName = d.SystemDeviceName,
+                AuthorizedTime = d.AuthorizedTime,
+                LastSyncTime = d.LastSyncTime,
+                IpAddress = d.IpAddress,
+                SyncCount = d.SyncCount,
+                FirstSyncTime = d.FirstSyncTime,
+                SyncedVaultIds = d.SyncedVaultIds ?? new List<string>(),
+                SyncedVaultNames = d.SyncedVaultNames ?? new Dictionary<string, string>()
+            }).ToList();
         }
-        catch
+        catch (Exception ex)
         {
-            recentNotes = new List<RecentNoteItem>();
+            Logger.LogError(ex, "加载设备列表失败");
         }
         finally
         {
-            isLoadingNotes = false;
+            isLoadingDevices = false;
             await InvokeAsync(StateHasChanged);
         }
-    }
-
-    private async Task LoadRecentSearchesAsync()
-    {
-        try
-        {
-            recentSearches = await SearchHistoryService.GetRecentSearches();
-        }
-        catch
-        {
-            recentSearches = new List<string>();
-        }
-        finally
-        {
-            isLoadingSearches = false;
-            await InvokeAsync(StateHasChanged);
-        }
-    }
-
-    private async Task ClearRecentSearches()
-    {
-        await SearchHistoryService.ClearSearchHistory();
-        recentSearches = new List<string>();
-    }
-
-    private void NavigateToNote(string path)
-    {
-        Navigation.NavigateTo($"note?id={Uri.EscapeDataString(path)}");
-    }
-
-    private void NavigateToSearch(string query)
-    {
-        Navigation.NavigateTo($"/search?q={Uri.EscapeDataString(query)}");
     }
 
     private void NavigateToSettings()
@@ -641,6 +591,11 @@
     private async Task OnTasksChanged()
     {
         await InvokeAsync(StateHasChanged);
+    }
+
+    private void GoToDevices()
+    {
+        Navigation.NavigateTo("devices");
     }
 
     private string GetConfigurationAdviceHtml()
