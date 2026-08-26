@@ -1,5 +1,5 @@
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
-@implements IDisposable
+@implements IAsyncDisposable
 @inject NavigationManager Navigation
 @inject Baihua.Web.Services.IRecentNotesService RecentNotesService
 @inject Baihua.Web.Services.ISearchHistoryService SearchHistoryService
@@ -7,6 +7,7 @@
 @inject Baihua.Web.Services.VaultStatusService VaultStatusService
 @inject Baihua.Web.Services.DevicesService DevicesService
 @inject Baihua.Web.Services.IApiService ApiService
+@inject Baihua.Web.Services.SettingsService SettingsService
 @inject Microsoft.Extensions.Logging.ILogger<FamilyHome> Logger
 @inject Microsoft.Extensions.Localization.IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 
@@ -15,6 +16,8 @@
 @using System.Net
 @using System.Linq
 @using Microsoft.JSInterop
+@using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.AspNetCore.Http.Connections
 
 <PageTitle>@L["FamilyHome_PageTitle"]</PageTitle>
 
@@ -474,8 +477,11 @@
     private AIStatusSummary? aiStatus;
     private VaultStatusSummary? vaultStatus;
     private bool isInitialLoading = true;
-    // 设备列表自动轮询定时器（5 秒刷新，扫码后实时显示待授权设备）
-    private System.Timers.Timer? _deviceRefreshTimer;
+    // SignalR 设备状态 Hub 连接（替代轮询，扫码后实时推送）
+    private HubConnection? _deviceHub;
+    private CancellationTokenSource _disposeCts = new();
+    // 防抖：短时间内收到多次 DeviceStatusChanged 只刷新一次
+    private CancellationTokenSource? _refreshDebounceCts;
 
     protected override void OnInitialized()
     {
@@ -514,31 +520,92 @@
             }
         });
 
-        // 启动设备列表自动轮询（每 5 秒刷新，让扫码后待授权设备实时显示）
-        _deviceRefreshTimer = new System.Timers.Timer(5000);
-        _deviceRefreshTimer.Elapsed += async (_, _) =>
-        {
-            try
-            {
-                await InvokeAsync(async () =>
-                {
-                    await LoadDevicesAsync();
-                    StateHasChanged();
-                });
-            }
-            catch (Exception ex)
-            {
-                Logger.LogDebug(ex, "[FamilyHome] 设备列表自动刷新失败");
-            }
-        };
-        _deviceRefreshTimer.AutoReset = true;
-        _deviceRefreshTimer.Start();
+        // 连接 DeviceHub，监听设备状态变化（扫码注册/授权/拒绝等实时推送）
+        _ = StartDeviceHubAsync();
     }
 
-    public void Dispose()
+    private static bool IsLoopbackUrl(string baseUrl)
     {
-        _deviceRefreshTimer?.Stop();
-        _deviceRefreshTimer?.Dispose();
+        if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out var uri)) return true;
+        return uri.Host is "127.0.0.1" or "localhost" or "::1";
+    }
+
+    private async Task StartDeviceHubAsync()
+    {
+        try
+        {
+            var backend = BaihuaEndpointHelper.NormalizeOutboundBaseUrl(SettingsService.BackendUrl);
+            var pageBase = Navigation.BaseUri.TrimEnd('/');
+            // k8s/代理场景：BackendUrl 是回环但页面不是 → 用页面同源让代理转发
+            if (IsLoopbackUrl(backend) && !IsLoopbackUrl(pageBase))
+            {
+                backend = pageBase;
+            }
+            var hubUrl = $"{backend}/hubs/devices";
+
+            _deviceHub = new HubConnectionBuilder()
+                .WithUrl(hubUrl, o =>
+                {
+                    o.Transports = HttpTransportType.WebSockets;
+                    o.SkipNegotiation = true;
+                    o.HttpMessageHandlerFactory = _ => new SocketsHttpHandler
+                    {
+                        UseProxy = false,
+                    };
+                })
+                .WithServerTimeout(TimeSpan.FromSeconds(15))
+                .WithKeepAliveInterval(TimeSpan.FromSeconds(10))
+                .WithAutomaticReconnect()
+                .Build();
+
+            _deviceHub.On<object>("DeviceStatusChanged", async _ =>
+            {
+                // 防抖 500ms，合并短时间内多次推送
+                var cts = new CancellationTokenSource();
+                var oldCts = System.Threading.Interlocked.Exchange(ref _refreshDebounceCts, cts);
+                oldCts?.Cancel();
+                try
+                {
+                    await Task.Delay(500, cts.Token);
+                    if (_disposeCts.IsCancellationRequested) return;
+                    await InvokeAsync(async () =>
+                    {
+                        await LoadDevicesAsync();
+                        StateHasChanged();
+                    });
+                }
+                catch (TaskCanceledException) { }
+            });
+
+            _deviceHub.Reconnecting += _ex => InvokeAsync(StateHasChanged);
+            _deviceHub.Reconnected += _connId =>
+            {
+                if (!_disposeCts.IsCancellationRequested)
+                    _ = InvokeAsync(async () => { await LoadDevicesAsync(); StateHasChanged(); });
+                return InvokeAsync(StateHasChanged);
+            };
+            _deviceHub.Closed += _ex => InvokeAsync(StateHasChanged);
+
+            using var budget = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+            await _deviceHub.StartAsync(budget.Token);
+            Logger.LogInformation("[FamilyHome] DeviceHub 已连接 {HubUrl}", hubUrl);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "[FamilyHome] DeviceHub 连接失败");
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _disposeCts.Cancel();
+        _refreshDebounceCts?.Cancel();
+        _refreshDebounceCts?.Dispose();
+        _disposeCts.Dispose();
+        if (_deviceHub != null)
+        {
+            try { await _deviceHub.DisposeAsync(); } catch { }
+        }
     }
 
     private async Task LoadDevicesAsync()

@@ -1,12 +1,17 @@
 @page "/devices"
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 @using Baihua.Web.Components
+@using Baihua.Web.Services
 @using Microsoft.Extensions.Localization
+@using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.AspNetCore.Http.Connections
 @inject HttpClient HttpClient
 @inject IJSRuntime JSRuntime
 @inject ILogger<Devices> Logger
 @inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
-@implements IDisposable
+@inject NavigationManager Navigation
+@inject SettingsService SettingsService
+@implements IAsyncDisposable
 
 <PageTitle>@L["Devices_PageTitle"]</PageTitle>
 
@@ -201,8 +206,10 @@
     private List<PendingDeviceInfo> pendingDevices = new();
     private List<AuthorizedDeviceInfo> authorizedDevices = new();
 
-    // 自动轮询定时器
-    private System.Timers.Timer? _autoRefreshTimer;
+    // SignalR 设备状态 Hub 连接（替代轮询，实时推送）
+    private HubConnection? _deviceHub;
+    private CancellationTokenSource _disposeCts = new();
+    private CancellationTokenSource? _refreshDebounceCts;
 
     protected override void OnInitialized()
     {
@@ -235,31 +242,90 @@
             }
         });
 
-        // 启动自动轮询（每 5 秒刷新设备列表）
-        _autoRefreshTimer = new System.Timers.Timer(5000);
-        _autoRefreshTimer.Elapsed += async (_, _) =>
-        {
-            try
-            {
-                await InvokeAsync(async () =>
-                {
-                    await LoadDevicesAsync();
-                    StateHasChanged();
-                });
-            }
-            catch (Exception ex)
-            {
-                Logger.LogDebug(ex, "[Devices] 自动刷新失败");
-            }
-        };
-        _autoRefreshTimer.AutoReset = true;
-        _autoRefreshTimer.Start();
+        // 连接 DeviceHub，监听设备状态变化
+        _ = StartDeviceHubAsync();
     }
 
-    public void Dispose()
+    private static bool IsLoopbackUrl(string baseUrl)
     {
-        _autoRefreshTimer?.Stop();
-        _autoRefreshTimer?.Dispose();
+        if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out var uri)) return true;
+        return uri.Host is "127.0.0.1" or "localhost" or "::1";
+    }
+
+    private async Task StartDeviceHubAsync()
+    {
+        try
+        {
+            var backend = BaihuaEndpointHelper.NormalizeOutboundBaseUrl(SettingsService.BackendUrl);
+            var pageBase = Navigation.BaseUri.TrimEnd('/');
+            if (IsLoopbackUrl(backend) && !IsLoopbackUrl(pageBase))
+            {
+                backend = pageBase;
+            }
+            var hubUrl = $"{backend}/hubs/devices";
+
+            _deviceHub = new HubConnectionBuilder()
+                .WithUrl(hubUrl, o =>
+                {
+                    o.Transports = HttpTransportType.WebSockets;
+                    o.SkipNegotiation = true;
+                    o.HttpMessageHandlerFactory = _ => new SocketsHttpHandler
+                    {
+                        UseProxy = false,
+                    };
+                })
+                .WithServerTimeout(TimeSpan.FromSeconds(15))
+                .WithKeepAliveInterval(TimeSpan.FromSeconds(10))
+                .WithAutomaticReconnect()
+                .Build();
+
+            _deviceHub.On<object>("DeviceStatusChanged", async _ =>
+            {
+                var cts = new CancellationTokenSource();
+                var oldCts = System.Threading.Interlocked.Exchange(ref _refreshDebounceCts, cts);
+                oldCts?.Cancel();
+                try
+                {
+                    await Task.Delay(500, cts.Token);
+                    if (_disposeCts.IsCancellationRequested) return;
+                    await InvokeAsync(async () =>
+                    {
+                        await LoadDevicesAsync();
+                        StateHasChanged();
+                    });
+                }
+                catch (TaskCanceledException) { }
+            });
+
+            _deviceHub.Reconnecting += _ex => InvokeAsync(StateHasChanged);
+            _deviceHub.Reconnected += _connId =>
+            {
+                if (!_disposeCts.IsCancellationRequested)
+                    _ = InvokeAsync(async () => { await LoadDevicesAsync(); StateHasChanged(); });
+                return InvokeAsync(StateHasChanged);
+            };
+            _deviceHub.Closed += _ex => InvokeAsync(StateHasChanged);
+
+            using var budget = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+            await _deviceHub.StartAsync(budget.Token);
+            Logger.LogInformation("[Devices] DeviceHub 已连接 {HubUrl}", hubUrl);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "[Devices] DeviceHub 连接失败");
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _disposeCts.Cancel();
+        _refreshDebounceCts?.Cancel();
+        _refreshDebounceCts?.Dispose();
+        _disposeCts.Dispose();
+        if (_deviceHub != null)
+        {
+            try { await _deviceHub.DisposeAsync(); } catch { }
+        }
     }
 
     #region 设备管理
