@@ -119,7 +119,7 @@ public class AiProviderRegistryClient
     {
         try
         {
-            var providers = JsonSerializer.Deserialize<List<AiProviderBackupItem>>(providersJson)
+            var providers = JsonSerializer.Deserialize<List<AiProviderBackupItem>>(providersJson, System.Text.Json.JsonSerializerOptions.Web)
                 ?? new List<AiProviderBackupItem>();
             var request = new ImportAiProvidersRequest { Providers = providers, Password = password, ReplaceAll = replaceAll };
 

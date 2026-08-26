@@ -257,7 +257,7 @@ namespace Baihua.Web.Services
                 response.EnsureSuccessStatusCode();
                 var json = await response.Content.ReadFromJsonAsync<JsonElement>(quick.Token);
                 var success = json.GetProperty("success").GetBoolean();
-                var progress = json.TryGetProperty("progress", out var p) ? JsonSerializer.Deserialize<DailyProgressDto>(p.GetRawText()) : null;
+                var progress = json.TryGetProperty("progress", out var p) ? JsonSerializer.Deserialize<DailyProgressDto>(p.GetRawText(), _caseInsensitiveJsonOptions) : null;
                 return (success, progress);
             }
             catch (Exception ex)

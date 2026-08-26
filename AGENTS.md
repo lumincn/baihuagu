@@ -65,6 +65,27 @@ C:\Users\lumin\src\
   - 若某服务未监听，先询问用户是否需要启动，不要擅自拉起
 - **WebUI 与后端之间的共享数据类型和 API 接口定义必须放在 `Baihua.Contracts`**，两边禁止各自重复定义。新增或修改 API 契约时，先更新 Contracts，再让两边引用同一版本。
 - **共享业务服务（如 `VaultSettingsService`、`VaultNoteIndexer`）放在 `Baihua.Core`**，`Baihua.Family`、`Baihua.Vault` 和 `Baihua.AI` 均通过引用 `Baihua.Core` 使用，避免 HTTP 调用开销。
+
+## JSON 序列化与反序列化规范（强制）
+
+> 背景：曾因 `QRToolPanel` 用裸 `JsonSerializer.Deserialize`（默认 PascalCase + 大小写敏感）反序列化后端 camelCase 响应，导致主 AI API Key 二维码不显示；又因 `Baihua.Family` 历史遗留 `PropertyNamingPolicy=null`（PascalCase）与 AI/Vault（camelCase）不一致，导致移动端 `/mg/pair` 字段全部丢失、安卓 `AuthorizationWatcher` 授权判定失效。以下规范防止同类问题。
+
+### 后端（三个服务统一）
+- **JSON 序列化统一 camelCase**（ASP.NET Core 默认）。`AddJsonOptions` 中**禁止**设 `PropertyNamingPolicy = null`；并显式加 `PropertyNameCaseInsensitive = true`（容错入参大小写）。`Baihua.Family`/`Baihua.AI`/`Baihua.Vault` 三服务保持一致。
+- SignalR `PayloadSerializerOptions`：Family 当前保留 PascalCase（内部 WebUI 消费，case-insensitive 容错）；新增 hub 应 camelCase 统一，避免新坑。
+- 具名 DTO 若需对移动端/外部暴露特定 key，用 `[JsonPropertyName("camelCase")]` 显式标注（参考 `DeviceBackupDtos.cs`）。
+
+### C# 消费端（WebUI / 服务间互调）
+- **优先 `GetFromJsonAsync<T>` / `PostAsJsonAsync`**（HttpClient 扩展，自动 web defaults：camelCase + 大小写不敏感）。
+- 必须手动读 body（按状态码分支解析错误体）时，用 `JsonSerializerOptions.Web` 或复用项目已有的 `_caseInsensitiveJsonOptions` / `JsonHelper.CaseInsensitive`，**禁止裸 `JsonSerializer.Deserialize<T>(json)`**（默认 PascalCase + 大小写敏感，遇 camelCase 响应字段全 null）。
+- 本地缓存/DB JSON 字段：写读必须**同一套** options；建议也统一 case-insensitive 以防万一。
+
+### 移动端（鸿蒙 ArkTS / 安卓 Kotlin）
+- DTO 字段统一 **camelCase**，与后端一致。ArkTS `JSON.parse(x) as T` 与 Gson 默认均**大小写敏感**，字段名必须与后端 JSON key 完全一致。
+- 判定接口成功**不要依赖后端可能不返回的 `success` 字段**，改用业务字段非空判断（如 `sharedSecret != null`），与 `DeviceRegistrationService`/`VaultSyncService` 对齐。
+
+### DSH 插件（TypeScript）
+- `JSON.parse` + camelCase 接口访问，与后端一致。`baihua-dsh-plugin` 的 `DshController` 已是 camelCase 特例；绘图网关响应直接读 camelCase（`data.success`/`data.fileUrl`），**不要**再做 PascalCase→camelCase 转换。
 - **`git push` 失败时**，先启动代理再重试：`pwsh -File "C:\Users\lumin\myhysteria\start.ps1"`，等待几秒后设置 `$env:HTTPS_PROXY="socks5://127.0.0.1:1080"` 再 `git push`。若代理服务器的 443/22 端口同时超时，多半是出口 IP 变化被阿里云安全组拦截：用 `C:\Users\lumin\aliyun-cli\aliyun.exe` 放行新 IP（需先 `aliyun configure`），完整流程见 project-manager 仓库 `docs/ALIYUN_SECURITY_GROUP.md`（服务器地址等敏感信息见本机 `~/.hysteria/config.yaml`，勿写入公开文档）。
 
 ## DSH 插件 / 集成（3 个独立仓库）

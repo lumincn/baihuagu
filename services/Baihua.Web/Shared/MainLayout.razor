@@ -485,7 +485,7 @@
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync(cts.Token);
-                var providers = System.Text.Json.JsonSerializer.Deserialize<List<AiProviderCheck>>(json);
+                var providers = System.Text.Json.JsonSerializer.Deserialize<List<AiProviderCheck>>(json, System.Text.Json.JsonSerializerOptions.Web);
                 Logger.LogInformation("[MainLayout] AI providers: {Count}", providers?.Count ?? 0);
             }
         }

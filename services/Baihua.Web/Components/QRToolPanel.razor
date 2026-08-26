@@ -189,14 +189,23 @@
     private bool _nameSaveSuccess = false;
 
     // 折叠状态
-    private bool _showAiKey = false;
+    private bool _showAiKey = true; // 默认展开：折叠态下容器 display:none，qrcode.js 渲染不可见，且展开后不会重绘
     private bool _showGeneralQR = true; // 默认展开，便于直接用（审计：折叠态发现率低）
 
     // 自动授权
     private bool _autoAuthorizeEnabled = false;
     private bool _isTogglingAutoAuth = false;
 
-    private void ToggleAiKey() => _showAiKey = !_showAiKey;
+    private async Task ToggleAiKey()
+    {
+        _showAiKey = !_showAiKey;
+        // 展开时若已加载数据则重绘：之前折叠态下容器 display:none，二维码可能未可见
+        if (_showAiKey && _aiKeyQRCode != null && !string.IsNullOrEmpty(_aiKeyQRCode.ApiKey))
+        {
+            StateHasChanged();
+            await JS.InvokeVoidAsync("generateCompactQRCode", "aikey-qr-container", _aiKeyQRCode.ApiKey);
+        }
+    }
     private void ToggleGeneralQR() => _showGeneralQR = !_showGeneralQR;
 
     // 通用二维码
@@ -281,7 +290,7 @@
             var json = await response.Content.ReadAsStringAsync();
             if (response.IsSuccessStatusCode)
             {
-                _aiKeyQRCode = System.Text.Json.JsonSerializer.Deserialize<AiKeyQRResponse>(json);
+                _aiKeyQRCode = System.Text.Json.JsonSerializer.Deserialize<AiKeyQRResponse>(json, System.Text.Json.JsonSerializerOptions.Web);
                 if (_aiKeyQRCode != null && !string.IsNullOrEmpty(_aiKeyQRCode.ApiKey))
                 {
                     StateHasChanged();
