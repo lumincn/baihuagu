@@ -1,4 +1,5 @@
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
+@implements IDisposable
 @inject NavigationManager Navigation
 @inject Baihua.Web.Services.IRecentNotesService RecentNotesService
 @inject Baihua.Web.Services.ISearchHistoryService SearchHistoryService
@@ -473,6 +474,8 @@
     private AIStatusSummary? aiStatus;
     private VaultStatusSummary? vaultStatus;
     private bool isInitialLoading = true;
+    // 设备列表自动轮询定时器（5 秒刷新，扫码后实时显示待授权设备）
+    private System.Timers.Timer? _deviceRefreshTimer;
 
     protected override void OnInitialized()
     {
@@ -510,6 +513,32 @@
                 });
             }
         });
+
+        // 启动设备列表自动轮询（每 5 秒刷新，让扫码后待授权设备实时显示）
+        _deviceRefreshTimer = new System.Timers.Timer(5000);
+        _deviceRefreshTimer.Elapsed += async (_, _) =>
+        {
+            try
+            {
+                await InvokeAsync(async () =>
+                {
+                    await LoadDevicesAsync();
+                    StateHasChanged();
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogDebug(ex, "[FamilyHome] 设备列表自动刷新失败");
+            }
+        };
+        _deviceRefreshTimer.AutoReset = true;
+        _deviceRefreshTimer.Start();
+    }
+
+    public void Dispose()
+    {
+        _deviceRefreshTimer?.Stop();
+        _deviceRefreshTimer?.Dispose();
     }
 
     private async Task LoadDevicesAsync()
