@@ -114,26 +114,43 @@
                     }
                     else
                     {
-                        <div class="device-list">
-                            @foreach (var device in pendingDevices)
-                            {
-                                <div class="device-item d-flex justify-content-between align-items-center">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span class="device-name">📱 @device.DeviceName</span>
-                                        <span class="device-meta">@device.RequestTime.ToLocalTime().ToString("MM-dd HH:mm")</span>
-                                    </div>
-                                    <div class="d-flex gap-1">
-                                        <button class="btn btn-sm btn-success" @onclick="() => AuthorizeDeviceAsync(device.RequestId)" disabled="@isProcessingDevice">@L["Devices_Authorize"]</button>
-                                        <button class="btn btn-sm btn-outline-danger" @onclick="() => RejectDeviceAsync(device.RequestId)" disabled="@isProcessingDevice">@L["Devices_Reject"]</button>
-                                    </div>
-                                </div>
-                            }
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>@L["Devices_ColDisplayName"]</th>
+                                        <th>@L["Devices_ColDeviceName"]</th>
+                                        <th>@L["Devices_ColIpAddress"]</th>
+                                        <th>@L["Devices_ColRequestTime"]</th>
+                                        <th>@L["Devices_ColActions"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var device in pendingDevices)
+                                    {
+                                        <tr>
+                                            <td><strong>@device.DeviceName</strong></td>
+                                            <td class="text-muted small">
+                                                @(string.IsNullOrEmpty(device.SystemDeviceName) ? "-" : device.SystemDeviceName)
+                                            </td>
+                                            <td class="text-muted small">@device.IpAddress</td>
+                                            <td class="small">@device.RequestTime.ToLocalTime().ToString("MM-dd HH:mm:ss")</td>
+                                            <td>
+                                                <div class="d-flex gap-1">
+                                                    <button class="btn btn-sm btn-success" @onclick="() => AuthorizeDeviceAsync(device.RequestId)" disabled="@isProcessingDevice">@L["Devices_Authorize"]</button>
+                                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => RejectDeviceAsync(device.RequestId)" disabled="@isProcessingDevice">@L["Devices_Reject"]</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
                         </div>
                     }
                 </div>
             </div>
 
-            <!-- 已授权设备概览 -->
+            <!-- 已授权设备 -->
             <div class="card device-card">
                 <div class="card-header">
                     <h3>@L["Devices_AuthorizedDevicesTitle"]</h3>
@@ -150,17 +167,68 @@
                     }
                     else
                     {
-                        <div class="device-list">
-                            @foreach (var device in authorizedDevices)
-                            {
-                                <div class="device-item d-flex justify-content-between align-items-center">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span class="device-name">📱 @device.DeviceName</span>
-                                        <span class="device-meta">@(device.LastSyncTime.HasValue ? device.LastSyncTime.Value.ToLocalTime().ToString("MM-dd HH:mm") : "-")</span>
-                                    </div>
-                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => RevokeDeviceAsync(device.DeviceId)" disabled="@isProcessingDevice">@L["Devices_Revoke"]</button>
-                                </div>
-                            }
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>@L["Devices_ColDisplayName"]</th>
+                                        <th>@L["Devices_ColDeviceName"]</th>
+                                        <th>@L["Devices_ColIpAddress"]</th>
+                                        <th>@L["Devices_ColAuthorizedTime"]</th>
+                                        <th>@L["Devices_ColFirstSync"]</th>
+                                        <th>@L["Devices_ColLastSync"]</th>
+                                        <th>@L["Devices_ColSyncCount"]</th>
+                                        <th>@L["Devices_ColSyncedVaults"]</th>
+                                        <th>@L["Devices_ColActions"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var device in authorizedDevices)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@device.DeviceName</strong>
+                                                <div class="text-muted small">@device.DeviceId</div>
+                                            </td>
+                                            <td class="text-muted small">
+                                                @(string.IsNullOrEmpty(device.SystemDeviceName) ? "-" : device.SystemDeviceName)
+                                            </td>
+                                            <td class="text-muted small">@device.IpAddress</td>
+                                            <td class="small">
+                                                @(device.AuthorizedTime.HasValue ? device.AuthorizedTime.Value.ToLocalTime().ToString("MM-dd HH:mm") : "-")
+                                            </td>
+                                            <td class="small">
+                                                @(device.FirstSyncTime.HasValue ? device.FirstSyncTime.Value.ToLocalTime().ToString("MM-dd HH:mm") : "-")
+                                            </td>
+                                            <td class="small">
+                                                @(device.LastSyncTime.HasValue ? device.LastSyncTime.Value.ToLocalTime().ToString("MM-dd HH:mm") : "-")
+                                            </td>
+                                            <td class="small">
+                                                <span class="badge bg-info">@(device.SyncCount)</span>
+                                            </td>
+                                            <td>
+                                                @if (device.SyncedVaultIds.Any())
+                                                {
+                                                    <div class="d-flex flex-wrap gap-1">
+                                                        @foreach (var sv in device.SyncedVaultIds)
+                                                        {
+                                                            var svName = device.SyncedVaultNames.TryGetValue(sv, out var foundName) ? foundName : sv;
+                                                            <span class="badge bg-success bg-opacity-75" style="font-size: 0.65rem;">@svName</span>
+                                                        }
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted small">-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-danger" @onclick="() => RevokeDeviceAsync(device.DeviceId)" disabled="@isProcessingDevice">@L["Devices_Revoke"]</button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
                         </div>
                     }
                 </div>
