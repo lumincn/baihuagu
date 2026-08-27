@@ -95,7 +95,7 @@
             </div>
 
             <!-- 待授权设备 -->
-            <div class="card pending-card" @onclick="GoToDevices">
+            <div class="card pending-card">
                 <div class="card-header">
                     <h3>@L["Devices_PendingDevices"]</h3>
                     @if (pendingDevices.Count > 0)
@@ -115,17 +115,17 @@
                     else
                     {
                         <div class="device-list">
-                            @foreach (var device in pendingDevices.Take(3))
+                            @foreach (var device in pendingDevices)
                             {
-                                <div class="device-item">
-                                    <span class="device-name">📱 @device.DeviceName</span>
-                                    <span class="device-meta">@device.RequestTime.ToLocalTime().ToString("MM-dd HH:mm")</span>
-                                </div>
-                            }
-                            @if (pendingDevices.Count > 3)
-                            {
-                                <div class="device-more text-muted small">
-                                    +@(pendingDevices.Count - 3) @L["Devices_MorePending"]
+                                <div class="device-item d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="device-name">📱 @device.DeviceName</span>
+                                        <span class="device-meta">@device.RequestTime.ToLocalTime().ToString("MM-dd HH:mm")</span>
+                                    </div>
+                                    <div class="d-flex gap-1">
+                                        <button class="btn btn-sm btn-success" @onclick="() => AuthorizeDeviceAsync(device.RequestId)" disabled="@isProcessingDevice">@L["Devices_Authorize"]</button>
+                                        <button class="btn btn-sm btn-outline-danger" @onclick="() => RejectDeviceAsync(device.RequestId)" disabled="@isProcessingDevice">@L["Devices_Reject"]</button>
+                                    </div>
                                 </div>
                             }
                         </div>
@@ -134,7 +134,7 @@
             </div>
 
             <!-- 已授权设备概览 -->
-            <div class="card device-card" @onclick="GoToDevices">
+            <div class="card device-card">
                 <div class="card-header">
                     <h3>@L["Devices_AuthorizedDevicesTitle"]</h3>
                     <span class="badge bg-success">@authorizedDevices.Count</span>
@@ -464,6 +464,7 @@
 
     private class PendingDeviceInfo
     {
+        public string RequestId { get; set; } = "";
         public string DeviceName { get; set; } = "";
         public string? SystemDeviceName { get; set; }
         public DateTime RequestTime { get; set; }
@@ -473,6 +474,7 @@
     private List<AuthorizedDeviceInfo> authorizedDevices = new();
     private List<PendingDeviceInfo> pendingDevices = new();
     private bool isLoadingDevices = true;
+    private bool isProcessingDevice;
     private InitializationTasks? _initTasks;
     private AIStatusSummary? aiStatus;
     private VaultStatusSummary? vaultStatus;
@@ -622,6 +624,7 @@
 
             pendingDevices = pendingResult.Select(d => new PendingDeviceInfo
             {
+                RequestId = d.RequestId ?? "",
                 DeviceName = d.DeviceName ?? L["Devices_UnknownDevice"],
                 SystemDeviceName = d.SystemDeviceName,
                 RequestTime = d.RequestTime != default ? d.RequestTime : DateTime.Now,
@@ -668,9 +671,46 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    private void GoToDevices()
+    private async Task AuthorizeDeviceAsync(string requestId)
     {
-        Navigation.NavigateTo("devices");
+        try
+        {
+            isProcessingDevice = true;
+            var (success, msg) = await DevicesService.AuthorizeDeviceAsync(requestId);
+            if (success)
+            {
+                await LoadDevicesAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "授权设备失败");
+        }
+        finally
+        {
+            isProcessingDevice = false;
+        }
+    }
+
+    private async Task RejectDeviceAsync(string requestId)
+    {
+        try
+        {
+            isProcessingDevice = true;
+            var (success, msg) = await DevicesService.RejectDeviceAsync(requestId);
+            if (success)
+            {
+                await LoadDevicesAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "拒绝设备失败");
+        }
+        finally
+        {
+            isProcessingDevice = false;
+        }
     }
 
     private string GetConfigurationAdviceHtml()
