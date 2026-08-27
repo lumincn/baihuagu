@@ -6,6 +6,7 @@
 
   Usage: .\tools\bh\win\native\bh.ps1 <command> [args]
     build [svc...]      dotnet publish to out/native/（可指定服务，默认全部 4 个）
+    build-restart [svc...]  build + restart（编译后立即重启，可指定服务，默认全部）
     start [svc...]      start services（可指定服务，默认全部，按依赖顺序 ai→vault→family→webui）
     stop [svc...]       stop services（可指定服务，默认全部，逆依赖顺序）
     restart [svc...]    stop + start 指定服务（默认全部）
@@ -441,6 +442,22 @@ function Open-Dashboard {
 
 switch ($Command.ToLower()) {
     'build'     { Invoke-Build (Get-ServiceArgs) }
+    'build-restart' {
+        $targets = Resolve-ServiceList (Get-ServiceArgs)
+        if ($targets.Count -eq 0) { break }
+        Invoke-Build $targets.Name
+        if ($targets.Count -eq $Services.Count) {
+            Start-Services
+        } else {
+            foreach ($svc in $targets) { Start-One $svc }
+            Write-Host "[build-restart] waiting for health ..."
+            foreach ($svc in $targets) {
+                if (-not (Wait-Port $svc.Port 60)) { Write-Warning "[$($svc.Name)] port $($svc.Port) not ready in 60s" }
+                else { Write-Host "[$($svc.Name)] ready on $($svc.Port)" }
+            }
+            Write-Host "[build-restart] done: $($targets.Name -join ', ')"
+        }
+    }
     'start'     {
         if ($Arg1) {
             $targets = Resolve-ServiceList (Get-ServiceArgs)
