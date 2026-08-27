@@ -536,6 +536,18 @@
         public string IpAddress { get; set; } = "";
     }
 
+    // DeviceHub 推送的 DeviceStatusChanged 事件负载（对应 DeviceService.NotifyDeviceStatusChangedAsync）
+    private class DeviceStatusPayload
+    {
+        public string? Action { get; set; }
+        public string? Type { get; set; }
+        public string? DeviceName { get; set; }
+        public string? RequestId { get; set; }
+        public string? DeviceId { get; set; }
+        public string? VaultId { get; set; }
+        public string? VaultName { get; set; }
+    }
+
     private List<AuthorizedDeviceInfo> authorizedDevices = new();
     private List<PendingDeviceInfo> pendingDevices = new();
     private bool isLoadingDevices = true;
@@ -620,13 +632,19 @@
                         UseProxy = false,
                     };
                 })
-                .WithServerTimeout(TimeSpan.FromSeconds(15))
+                .WithServerTimeout(TimeSpan.FromSeconds(60))
                 .WithKeepAliveInterval(TimeSpan.FromSeconds(10))
                 .WithAutomaticReconnect()
                 .Build();
 
-            _deviceHub.On<object>("DeviceStatusChanged", async _ =>
+            // 仅响应授权状态变化（pair_request/authorized/revoked/rejected）；
+            // 忽略 sync_updated（花记每次同步都会触发，会导致列表频繁刷新）
+            _deviceHub.On<DeviceStatusPayload>("DeviceStatusChanged", async payload =>
             {
+                if (payload?.Type == "SyncRequest" || payload?.Action == "sync_updated")
+                {
+                    return;
+                }
                 // 防抖 500ms，合并短时间内多次推送
                 var cts = new CancellationTokenSource();
                 var oldCts = System.Threading.Interlocked.Exchange(ref _refreshDebounceCts, cts);
@@ -645,12 +663,9 @@
             });
 
             _deviceHub.Reconnecting += _ex => InvokeAsync(StateHasChanged);
-            _deviceHub.Reconnected += _connId =>
-            {
-                if (!_disposeCts.IsCancellationRequested)
-                    _ = InvokeAsync(async () => { await LoadDevicesAsync(); StateHasChanged(); });
-                return InvokeAsync(StateHasChanged);
-            };
+            // 重连后不强制刷新列表：服务端 Clients.All 广播的事件会自动恢复接收，
+            // 强制刷新反而在本次超时重连问题下表现为"每 15 秒自动刷新"
+            _deviceHub.Reconnected += _connId => InvokeAsync(StateHasChanged);
             _deviceHub.Closed += _ex => InvokeAsync(StateHasChanged);
 
             using var budget = new CancellationTokenSource(TimeSpan.FromSeconds(8));
