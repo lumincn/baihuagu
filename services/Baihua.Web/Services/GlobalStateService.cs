@@ -27,9 +27,6 @@ public class GlobalStateService : IDisposable
     // 刷新锁：使用 SemaphoreSlim 排队等待，确保不丢失刷新请求
     private readonly SemaphoreSlim _refreshSemaphore = new SemaphoreSlim(1, 1);
 
-    // 定期轮询 Timer（作为 SignalR 失效时的备用机制）
-    private Timer? _pollingTimer;
-    private readonly TimeSpan _pollingInterval = TimeSpan.FromSeconds(60);
 
     public GlobalStateService(
         AIStatusService aiStatusService,
@@ -64,8 +61,7 @@ public class GlobalStateService : IDisposable
         await RefreshAsync();
         // 再建立 SignalR 连接，连接后推送的变更会触发后续刷新
         await EnsureSignalRAsync(hubUrl);
-        // 启动定期轮询作为备用机制（SignalR 连接失败或消息丢失时仍能更新）
-        StartPollingTimer();
+
     }
 
     /// <summary>
@@ -153,33 +149,8 @@ public class GlobalStateService : IDisposable
         }
     }
 
-    private void StartPollingTimer()
-    {
-        if (_pollingTimer != null) return;
-
-        _pollingTimer = new Timer(
-            async _ =>
-            {
-                try
-                {
-                    _logger.LogDebug("[GlobalStateService] 定期轮询触发刷新");
-                    await RefreshAsync();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "[GlobalStateService] 定期轮询刷新失败");
-                }
-            },
-            null,
-            _pollingInterval,
-            _pollingInterval);
-
-        _logger.LogInformation("[GlobalStateService] 定期轮询已启动，间隔 {Interval}s", _pollingInterval.TotalSeconds);
-    }
-
     public void Dispose()
     {
-        _pollingTimer?.Dispose();
         _aiStatusService.StateChanged -= OnLocalStateChanged;
         _vaultStatusService.StateChanged -= OnLocalStateChanged;
         try

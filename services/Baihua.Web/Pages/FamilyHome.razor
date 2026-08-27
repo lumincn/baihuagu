@@ -151,17 +151,14 @@
                     else
                     {
                         <div class="device-list">
-                            @foreach (var device in authorizedDevices.Take(4))
+                            @foreach (var device in authorizedDevices)
                             {
-                                <div class="device-item">
-                                    <span class="device-name">📱 @device.DeviceName</span>
-                                    <span class="device-meta">@(device.LastSyncTime.HasValue ? device.LastSyncTime.Value.ToLocalTime().ToString("MM-dd HH:mm") : "-")</span>
-                                </div>
-                            }
-                            @if (authorizedDevices.Count > 4)
-                            {
-                                <div class="device-more text-muted small">
-                                    +@(authorizedDevices.Count - 4) @L["Devices_MoreDevices"]
+                                <div class="device-item d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="device-name">📱 @device.DeviceName</span>
+                                        <span class="device-meta">@(device.LastSyncTime.HasValue ? device.LastSyncTime.Value.ToLocalTime().ToString("MM-dd HH:mm") : "-")</span>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => RevokeDeviceAsync(device.DeviceId)" disabled="@isProcessingDevice">@L["Devices_Revoke"]</button>
                                 </div>
                             }
                         </div>
@@ -706,6 +703,27 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, "拒绝设备失败");
+        }
+        finally
+        {
+            isProcessingDevice = false;
+        }
+    }
+
+    private async Task RevokeDeviceAsync(string deviceId)
+    {
+        try
+        {
+            isProcessingDevice = true;
+            var (success, msg) = await DevicesService.RevokeDeviceAsync(deviceId);
+            if (success)
+            {
+                await LoadDevicesAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "撤销设备失败");
         }
         finally
         {
