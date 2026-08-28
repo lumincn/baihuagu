@@ -125,6 +125,7 @@ public class ModelDownloadService
             dto.Logs.Add($"[{DateTime.Now:HH:mm:ss}] 共 {files.Count} 个文件，{FormatSize(total)}");
 
             // 2. 逐文件下载
+            if (Directory.Exists(tmpDir)) Directory.Delete(tmpDir, recursive: true);
             Directory.CreateDirectory(tmpDir);
             var downloaded = 0L;
             var sw = Stopwatch.StartNew();
@@ -304,6 +305,8 @@ public class ModelDownloadService
                     var path = f.TryGetProperty("Path", out var p) ? p.GetString() : null;
                     var size = f.TryGetProperty("Size", out var s) ? s.GetInt64() : 0;
                     if (string.IsNullOrEmpty(path) || IsSkippable(path)) continue;
+                    // 跳过目录条目（size=0 且无扩展名）
+                    if (size == 0 && !Path.HasExtension(path)) continue;
                     list.Add(new RemoteFile(path!, size, "ms"));
                 }
                 if (list.Count > 0)
@@ -332,6 +335,8 @@ public class ModelDownloadService
                     var path = item.TryGetProperty("path", out var p) ? p.GetString() : null;
                     var size = item.TryGetProperty("size", out var s) ? s.GetInt64() : 0;
                     if (string.IsNullOrEmpty(path) || IsSkippable(path)) continue;
+                    // 跳过目录条目（HF API 返回 size=0 的目录节点，如 "assets"）
+                    if (size == 0 && !Path.HasExtension(path)) continue;
                     apiList.Add(new RemoteFile(path!, size, "hf"));
                 }
                 if (apiList.Count > 0)
@@ -377,7 +382,15 @@ public class ModelDownloadService
         path.Equals(".gitattributes", StringComparison.OrdinalIgnoreCase) ||
         path.EndsWith(".onnx", StringComparison.OrdinalIgnoreCase) ||
         path.Contains("/onnx/", StringComparison.OrdinalIgnoreCase) ||
-        path.StartsWith("onnx/", StringComparison.OrdinalIgnoreCase);
+        path.StartsWith("onnx/", StringComparison.OrdinalIgnoreCase) ||
+        // 非模型文件：assets 图片、README、训练状态等
+        path.StartsWith("assets/", StringComparison.OrdinalIgnoreCase) ||
+        path.Equals("assets", StringComparison.OrdinalIgnoreCase) ||
+        path.Equals("README.md", StringComparison.OrdinalIgnoreCase) ||
+        path.EndsWith(".md", StringComparison.OrdinalIgnoreCase) ||
+        path.Equals("training_args.bin", StringComparison.OrdinalIgnoreCase) ||
+        path.Equals("trainer_state.json", StringComparison.OrdinalIgnoreCase) ||
+        path.Equals("sft_args.json", StringComparison.OrdinalIgnoreCase);
 
     private string BuildFileUrl(OpenVinoCatalogEntry entry, RemoteFile file)
     {
