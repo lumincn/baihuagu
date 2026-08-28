@@ -408,7 +408,6 @@ public class ModelDownloadService
         http.Timeout = TimeSpan.FromMinutes(30);
         // 魔搭 WAF：无浏览器 UA 的文件请求会 403
         http.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
-        http.DefaultRequestHeaders.Referrer = new Uri("https://modelscope.cn/");
 
         var urls = new[] { url, url.Replace("modelscope.cn", "www.modelscope.cn") };
         Exception? last = null;
@@ -416,7 +415,13 @@ public class ModelDownloadService
         {
             try
             {
-                using var resp = await http.GetAsync(u, HttpCompletionOption.ResponseHeadersRead, ct);
+                // 根据域名设 Referer：ModelScope WAF 需 ModelScope Referer；hf-mirror 拒绝 ModelScope Referer 返回 HTML 错误页
+                using var req = new HttpRequestMessage(HttpMethod.Get, u);
+                req.Headers.Referrer = u.Contains("modelscope")
+                    ? new Uri("https://modelscope.cn/")
+                    : new Uri("https://hf-mirror.com/");
+
+                using var resp = await http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
                 if (!resp.IsSuccessStatusCode)
                 {
                     // ModelScope 404 → 回退 HuggingFace 镜像
@@ -429,6 +434,11 @@ public class ModelDownloadService
                     }
                     throw new HttpRequestException($"HTTP {(int)resp.StatusCode}");
                 }
+
+                // 检查 Content-Type：hf-mirror 可能返回 HTML 错误页但状态码 200
+                var ct0 = resp.Content.Headers.ContentType?.MediaType ?? "";
+                if (ct0.Contains("text/html", StringComparison.OrdinalIgnoreCase))
+                    throw new HttpRequestException("服务器返回 HTML 错误页（非文件内容）");
 
                 await StreamToFileAsync(resp, localPath, expectedSize, dto, getDownloaded, totalSw, ct, onProgress);
                 return;
@@ -447,8 +457,15 @@ public class ModelDownloadService
         OpenVinoDownloadTaskDto dto, Func<long> getDownloaded, Stopwatch totalSw, CancellationToken ct,
         Action<int, string>? onProgress = null)
     {
-        using var resp = await http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
+        using var req = new HttpRequestMessage(HttpMethod.Get, url);
+        req.Headers.Referrer = new Uri("https://hf-mirror.com/");
+        using var resp = await http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
         resp.EnsureSuccessStatusCode();
+
+        var ct0 = resp.Content.Headers.ContentType?.MediaType ?? "";
+        if (ct0.Contains("text/html", StringComparison.OrdinalIgnoreCase))
+            throw new HttpRequestException("服务器返回 HTML 错误页（非文件内容）");
+
         await StreamToFileAsync(resp, localPath, expectedSize, dto, getDownloaded, totalSw, ct, onProgress);
     }
 
