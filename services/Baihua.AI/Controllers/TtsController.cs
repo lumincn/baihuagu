@@ -1,6 +1,9 @@
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using Baihua.Contracts.Ai;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 
 namespace Baihua.Family.Controllers;
@@ -11,6 +14,7 @@ public class TtsController : ControllerBase
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<TtsController> _logger;
+    private readonly IMemoryCache _cache;
     private readonly string _ttsBaseUrl;
 
     private static readonly JsonSerializerOptions JsonOpts = new()
@@ -40,10 +44,12 @@ public class TtsController : ControllerBase
     public TtsController(
         IHttpClientFactory httpClientFactory,
         ILogger<TtsController> logger,
+        IMemoryCache cache,
         IConfiguration configuration)
     {
         _httpClientFactory = httpClientFactory;
         _logger = logger;
+        _cache = cache;
         _ttsBaseUrl = configuration["KokoroTts:BaseUrl"] ?? "http://localhost:8001";
     }
 
@@ -55,6 +61,14 @@ public class TtsController : ControllerBase
         if (string.IsNullOrWhiteSpace(request.Voice))
             return Ok(new { error = "Voice is required" });
 
+        var speed = request.Speed ?? 1.0f;
+        var cacheKey = $"tts:{request.Voice}:{speed:F1}:{Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(request.Text)))}";
+        if (_cache.TryGetValue<byte[]>(cacheKey, out var cached) && cached != null)
+        {
+            _logger.LogDebug("TTS cache hit: {Key}", cacheKey);
+            return File(cached, "audio/wav");
+        }
+
         var client = _httpClientFactory.CreateClient();
         client.Timeout = TimeSpan.FromSeconds(60);
 
@@ -63,7 +77,7 @@ public class TtsController : ControllerBase
             model = "kokoro",
             input = request.Text,
             voice = request.Voice,
-            speed = request.Speed ?? 1.0f,
+            speed = speed,
         };
         var json = JsonSerializer.Serialize(payload, JsonOpts);
         var content = new StringContent(json, new System.Text.UTF8Encoding(false), "application/json");
@@ -79,6 +93,13 @@ public class TtsController : ControllerBase
             }
 
             var audioBytes = await resp.Content.ReadAsByteArrayAsync();
+            var opts = new MemoryCacheEntryOptions
+            {
+                SlidingExpiration = TimeSpan.FromMinutes(30),
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2),
+                Size = audioBytes.Length,
+            };
+            _cache.Set(cacheKey, audioBytes, opts);
             return File(audioBytes, "audio/wav");
         }
         catch (HttpRequestException ex)

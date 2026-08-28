@@ -68,7 +68,7 @@ builder.Services.AddDbContextFactory<Baihua.Data.AIDbContext>(options =>
 }, ServiceLifetime.Singleton);
 
 builder.Services.AddHttpClient();
-builder.Services.AddMemoryCache();
+builder.Services.AddMemoryCache(o => o.SizeLimit = 200 * 1024 * 1024); // 200MB TTS 音频缓存
 // AI 服务是转发代理：不缓存推理响应（缓存由调用方 Family 承担），避免无限内存缓存 OOM
 builder.Services.AddSingleton<Microsoft.Extensions.Caching.Distributed.IDistributedCache, Baihua.Core.Services.NoOpDistributedCache>();
 
