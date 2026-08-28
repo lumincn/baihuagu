@@ -67,7 +67,7 @@ dsh plugin --profile web add /home/lumin/src/mdyj/baihua-local-ai-dsh-plugin
 ```
 
 > `baihua-dsh-plugin` 不再消费 `vaultUrl` / `familyUrl` / `comfyUrl`：知识库/家庭数据
-> 由 `baihua-mcp-server` 提供（工具名 `mcp__baihua__*`），绘图统一经 `drawGatewayUrl` 网关。
+> 由 `Baihua.Family` 内置 `/mcp` 端点提供（工具名 `mcp__baihua__*`），绘图统一经 `drawGatewayUrl` 网关。
 > 插件行由各包 `dsh.bundle` 自动插入（`dsh plugin add` 后挂入 profile 组合层），
 > 用户级补丁里**不要重复 `insert` 同名行**，只按 id 覆盖 `config` 即可。
 > k8s ClusterIP 可用 `kubectl get svc -n baihua bh-vault bh-family -o jsonpath='{.items[*].spec.clusterIP}'` 查询；
@@ -109,7 +109,7 @@ streamable-http，`/mcp` 端点），把只读能力暴露给**任意** MCP 客�
 Cursor 等）。实现见 `services/Baihua.Family/Services/Mcp/BaihuaMcpTools.cs`，注册见
 `Program.cs` 的 `AddMcpServer().WithHttpTransport(Stateless).WithTools<...>()` 与 `app.MapMcp("/mcp")`。
 
-- 工具（名称与原独立 `baihua-mcp-server` 仓库完全一致，DSH 侧 `mcp__baihua__*` 无缝切换）：
+- 工具（DSH 侧 `mcp__baihua__*` 前缀，与原独立 MCP server 名称一致无缝切换）：
   `baihua_vault_search` / `baihua_vault_list` / `baihua_vault_read_note` / `baihua_budget_summary` / `baihua_tasks_list`
 - 调用路径：`vault_list` / `budget_summary` / `tasks_list` 直接调 `Baihua.Core` 服务层（零 HTTP 跳，强类型契约）；
   `vault_search` / `vault_read_note` 走 HTTP 调 Vault（k8s 下 Family/Vault 不同 pod，文件系统不共享，

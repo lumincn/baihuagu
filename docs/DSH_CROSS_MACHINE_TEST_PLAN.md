@@ -29,7 +29,7 @@ bh status --json | grep -E '"name"|"ready"|"upToDate"'
 ### 1.3 DSH 插件（若望月台也跑 DSH）
 ```bash
 cd ~/.dsh/profiles/web
-pnpm update baihua-dsh-plugin baihua-local-ai-dsh-plugin baihua-mcp-server hysteria-dsh-plugin
+pnpm update baihua-dsh-plugin baihua-local-ai-dsh-plugin hysteria-dsh-plugin
 # 重启 DSH 生效
 bh_dsh_restart 或手动重启
 ```

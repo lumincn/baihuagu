@@ -63,7 +63,7 @@ Windows 下用 `bh.ps1`（推荐 PowerShell 7，UTF-8 中文正常）；完整�
 |---|---|---|
 | [baihua-dsh-plugin](https://github.com/luminsw/baihua-dsh-plugin) | 百花 Web → DSH | 桥接：agent 会话驱动（HTTP+WS `/dsh-bridge/*`）、`bh_*` 运维工具、`baihua_draw*` 绘图、设置页「百花服务状态」卡片 |
 | [baihua-local-ai-dsh-plugin](https://github.com/luminsw/baihua-local-ai-dsh-plugin) | DSH → 百花本地 AI | 探测 OVMS/shim/算力池，注册 `baihua-local` LLM provider + `local_ai_small_task` 小任务工具（省线上 token） |
-| [baihua-mcp-server](https://github.com/luminsw/baihua-mcp-server) | 百花 → 任意 MCP 客户端 | 标准 MCP（stdio）：知识库 / 家庭只读能力（DSH 内工具名 `mcp__baihua__*`） |
+| _（百花内置）_ | 百花 → 任意 MCP 客户端 | 标准 MCP（streamable-http `/mcp` 端点，挂在 `Baihua.Family`）：知识库 / 家庭只读能力（DSH 内工具名 `mcp__baihua__*`） |
 | [hysteria-dsh-plugin](https://github.com/luminsw/hysteria-dsh-plugin) | 本机代理 | DSH 内管理 Hysteria 2 代理（`proxy_*` 工具 + `proxy_retry` 失败兜底） |
 
 百花 Web 的 `/dsh` 页内嵌 DSH 官方 Web UI（AI 消费型交互统一交给 DSH 智能体），
