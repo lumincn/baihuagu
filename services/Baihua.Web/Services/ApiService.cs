@@ -277,6 +277,8 @@ namespace Baihua.Web.Services
         Task<VaultFocusListResponse> GetVaultFocusAsync(string masterId, CancellationToken cancellationToken = default);
         Task<VaultFocusUpdateResponse> UpdateVaultFocusAsync(string masterId, VaultFocusUpdateRequest request, CancellationToken cancellationToken = default);
         Task<VaultFocusUpdateResponse> RemoveVaultFocusAsync(string masterId, string vaultId, CancellationToken cancellationToken = default);
+
+        Task<byte[]?> SynthesizeSpeechAsync(string text, string voice, float speed = 1.0f, CancellationToken cancellationToken = default);
     }
 
     public partial class ApiService : IApiService
@@ -510,6 +512,18 @@ namespace Baihua.Web.Services
         }
 
         #endregion
+
+        public async Task<byte[]?> SynthesizeSpeechAsync(string text, string voice, float speed = 1.0f, CancellationToken cancellationToken = default)
+        {
+            var payload = new { text, voice, speed };
+            var response = await _aiHttpClient.PostAsJsonAsync("/api/ai/tts/speech", payload, cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("TTS API returned {Status}", response.StatusCode);
+                return null;
+            }
+            return await response.Content.ReadAsByteArrayAsync(cancellationToken);
+        }
 
     }
 }

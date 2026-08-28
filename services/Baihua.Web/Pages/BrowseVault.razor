@@ -815,12 +815,22 @@
         try
         {
             var textToSpeak = $"{item.Title}. {StripMarkdown(StripFrontmatter(item.Content ?? ""))}";
-            await JSRuntime.InvokeVoidAsync("speakText", textToSpeak, _dotNetRef, currentSeq);
+
+            var audioBytes = await ApiService.SynthesizeSpeechAsync(textToSpeak, "zf_xiaoxiao");
+            if (audioBytes != null && audioBytes.Length > 44)
+            {
+                var base64 = Convert.ToBase64String(audioBytes);
+                await JSRuntime.InvokeVoidAsync("playAudioFromBase64", base64, _dotNetRef, currentSeq);
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("speakText", textToSpeak, _dotNetRef, currentSeq);
+            }
         }
         catch (Exception ex)
         {
             // 语音异常不允许打崩 Blazor circuit：记录日志、停止播放并提示
-            Logger.LogWarning(ex, "speakText 调用失败");
+            Logger.LogWarning(ex, "TTS/speakText 调用失败");
             _speakSeq++;
             _isPlayingSpeech = false;
             isPlaying = false;

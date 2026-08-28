@@ -2,6 +2,7 @@ let speechSynthesis = window.speechSynthesis;
 let currentUtterance = null;
 let dotNetRef = null;
 let resumeTimer = null;
+let currentAudio = null;
 
 window.speakText = function(text, dotNetObjRef, seq) {
     if (speechSynthesis) {
@@ -106,6 +107,10 @@ function notifyFailed(ref, seq, message) {
 }
 
 window.stopSpeaking = function() {
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+    }
     if (speechSynthesis) {
         speechSynthesis.cancel();
     }
@@ -117,5 +122,79 @@ window.stopSpeaking = function() {
 };
 
 window.isSpeaking = function() {
-    return speechSynthesis && speechSynthesis.speaking;
+    return (speechSynthesis && speechSynthesis.speaking) || (currentAudio && !currentAudio.paused);
+};
+
+window.playAudioFromBase64 = function(base64Data, dotNetObjRef, seq) {
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+    }
+    if (speechSynthesis) {
+        speechSynthesis.cancel();
+    }
+
+    if (!base64Data) {
+        notifyFailed(dotNetObjRef, seq, '音频数据为空');
+        return false;
+    }
+
+    if (dotNetObjRef) {
+        dotNetRef = dotNetObjRef;
+    }
+
+    try {
+        var byteChars = atob(base64Data);
+        var byteNumbers = new Array(byteChars.length);
+        for (var i = 0; i < byteChars.length; i++) {
+            byteNumbers[i] = byteChars.charCodeAt(i);
+        }
+        var byteArray = new Uint8Array(byteNumbers);
+        var blob = new Blob([byteArray], { type: 'audio/wav' });
+        var url = URL.createObjectURL(blob);
+
+        var audio = new Audio(url);
+        var mySeq = seq;
+
+        audio.onended = function() {
+            URL.revokeObjectURL(url);
+            currentAudio = null;
+            if (dotNetRef) {
+                setTimeout(function() {
+                    try {
+                        dotNetRef.invokeMethodAsync('OnSpeechEnded', mySeq);
+                    } catch (e) {
+                        console.warn('通知播放结束失败:', e);
+                    }
+                }, 100);
+            }
+        };
+
+        audio.onerror = function(e) {
+            URL.revokeObjectURL(url);
+            currentAudio = null;
+            if (dotNetRef) {
+                setTimeout(function() {
+                    try {
+                        dotNetRef.invokeMethodAsync('OnSpeechFailed', mySeq, '音频播放错误');
+                    } catch (ex) {
+                        console.warn('通知播放错误失败:', ex);
+                    }
+                }, 100);
+            }
+        };
+
+        currentAudio = audio;
+        audio.play().catch(function(e) {
+            URL.revokeObjectURL(url);
+            currentAudio = null;
+            notifyFailed(dotNetObjRef, seq, '音频播放失败: ' + (e.message || e));
+        });
+
+        return true;
+    } catch (e) {
+        console.warn('playAudioFromBase64 异常:', e);
+        notifyFailed(dotNetObjRef, seq, '音频解码异常: ' + (e.message || e));
+        return false;
+    }
 };
