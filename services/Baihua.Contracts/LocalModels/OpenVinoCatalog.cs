@@ -38,10 +38,11 @@ public static class OpenVinoCatalog
             Name = "扁仓 BianCang Instruct（医疗）",
             ParameterSize = "7B",
             SizeGiB = 4.7,
-            Description = "中文医疗领域指令模型，症状分析/鉴别诊断/用药指导/中医辨证",
+            Description = "中文医疗领域指令模型，症状分析/鉴别诊断/用药指导/中医辨证。源格式 safetensors，下载后本地转 OpenVINO IR",
             IsMedical = true,
-            ModelScopeRepo = "BianCang/BianCang-Instruct",
-            HuggingFaceRepo = "BianCang/BianCang-Instruct",
+            ModelScopeRepo = "QLU-NLP/BianCang-Qwen2.5-7B-Instruct",
+            HuggingFaceRepo = "QLU-NLP/BianCang-Qwen2.5-7B-Instruct",
+            Format = "safetensors",
         },
         new()
         {

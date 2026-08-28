@@ -13,6 +13,8 @@ public class OpenVinoCatalogItemDto
     public bool IsTts { get; set; }
     public bool IsMedical { get; set; }
     public string ModelScopeRepo { get; set; } = "";
+    /// <summary>源模型格式：openvino（直接可用）/ safetensors（需本地转换）</summary>
+    public string Format { get; set; } = "openvino";
     public bool Installed { get; set; }
 
     /// <summary>已下载时的本地目录路径</summary>
@@ -45,6 +47,8 @@ public class OpenVinoCatalogEntry
     public bool IsMedical { get; set; }
     public string ModelScopeRepo { get; set; } = "";
     public string HuggingFaceRepo { get; set; } = "";
+    /// <summary>源模型格式：openvino（直接可用）/ safetensors（需本地转换）</summary>
+    public string Format { get; set; } = "openvino";
     /// <summary>下载到本地模型根目录后的子目录名</summary>
     public string DirectoryName { get; set; } = "";
 }

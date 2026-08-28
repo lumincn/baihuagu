@@ -31,6 +31,7 @@ public partial class LocalModelDeploymentController
                 IsTts = e.IsTts,
                 IsMedical = e.IsMedical,
                 ModelScopeRepo = e.ModelScopeRepo,
+                Format = e.Format,
             };
 
             // 合并已下载信息：路径/实际大小/运行状态/端口

@@ -152,6 +152,14 @@ public class ModelDownloadService
                 Directory.Delete(targetDir, recursive: true);
             Directory.Move(tmpDir, targetDir);
 
+            // 3.5 safetensors → OpenVINO IR 转换（如需要）
+            if (string.Equals(entry.Format, "safetensors", StringComparison.OrdinalIgnoreCase))
+            {
+                dto.Logs.Add($"[{DateTime.Now:HH:mm:ss}] 开始 safetensors → OpenVINO IR 转换...");
+                UpdateTaskManager(taskManagerId, "Running", 95, 100, "转换 OpenVINO IR 中");
+                await ConvertSafetensorsToOpenVinoAsync(targetDir, dto, ct);
+            }
+
             dto.Status = "completed";
             dto.ProgressPercent = 100;
             dto.CompletedAt = DateTime.Now;
@@ -208,11 +216,58 @@ public class ModelDownloadService
         }
     }
 
+    #region safetensors → OpenVINO IR 转换
+
+    /// <summary>调用 Python 脚本将 safetensors 转为 OpenVINO IR（INT4 量化）</summary>
+    private async Task ConvertSafetensorsToOpenVinoAsync(
+        string modelDir, OpenVinoDownloadTaskDto dto, CancellationToken ct)
+    {
+        var scriptPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "scripts", "convert_safetensors_to_ov.py");
+        if (!File.Exists(scriptPath))
+        {
+            var alt = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "src", "baihua", "scripts", "convert_safetensors_to_ov.py");
+            if (File.Exists(alt)) scriptPath = alt;
+            else throw new Exception("找不到转换脚本 convert_safetensors_to_ov.py");
+        }
+
+        var psi = new ProcessStartInfo
+        {
+            FileName = "python",
+            Arguments = $"\"{scriptPath}\" --src \"{modelDir}\" --quant int4",
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true,
+            StandardOutputEncoding = System.Text.Encoding.UTF8,
+            StandardErrorEncoding = System.Text.Encoding.UTF8,
+        };
+
+        using var proc = new Process { StartInfo = psi };
+        proc.Start();
+
+        var stdoutTask = proc.StandardOutput.ReadToEndAsync();
+        var stderrTask = proc.StandardError.ReadToEndAsync();
+
+        await proc.WaitForExitAsync(ct);
+        var stdout = await stdoutTask;
+        var stderr = await stderrTask;
+
+        foreach (var line in (stdout + stderr).Split('\n', StringSplitOptions.RemoveEmptyEntries))
+            dto.Logs.Add($"[{DateTime.Now:HH:mm:ss}] [convert] {line.Trim()}");
+
+        if (proc.ExitCode != 0)
+            throw new Exception($"safetensors 转换失败（exit {proc.ExitCode}）: {stderr.Trim()}");
+
+        dto.Logs.Add($"[{DateTime.Now:HH:mm:ss}] OpenVINO IR 转换完成");
+    }
+
+    #endregion
+
     #region 仓库文件列表与下载
 
     private sealed record RemoteFile(string Path, long Size, string Source);
 
-    /// <summary>固定文件清单（OpenVINO 模型通用结构，覆盖 chat 与 vision 变体）</summary>
+    /// <summary>固定文件清单（OpenVINO 模型通用结构 + safetensors 常见分片）</summary>
     private static readonly string[] KnownFiles =
     [
         "config.json", "configuration.json", "generation_config.json",
@@ -222,6 +277,11 @@ public class ModelDownloadService
         "tokenizer_config.json", "tokenizer.json", "merges.txt", "vocab.json",
         "added_tokens.json", "special_tokens_map.json", "chat_template.json",
         "preprocessor_config.json", "processor_config.json",
+        // safetensors 常见分片（7B 模型通常 4 片）
+        "model.safetensors.index.json",
+        "model-00001-of-00004.safetensors", "model-00002-of-00004.safetensors",
+        "model-00003-of-00004.safetensors", "model-00004-of-00004.safetensors",
+        "model.safetensors",
     ];
 
     private async Task<List<RemoteFile>> ListFilesAsync(OpenVinoCatalogEntry entry, OpenVinoDownloadTaskDto dto, CancellationToken ct)
@@ -256,6 +316,34 @@ public class ModelDownloadService
         catch (Exception ex)
         {
             dto.Logs.Add($"[{DateTime.Now:HH:mm:ss}] ModelScope 列文件失败（回退 HF 镜像）: {ex.Message}");
+        }
+
+        // 1.5) HF API 列文件（hf-mirror，递归列出全部文件，适配 safetensors 分片）
+        try
+        {
+            var apiUrl = $"https://hf-mirror.com/api/models/{entry.HuggingFaceRepo}/tree/main?recursive=true";
+            var apiJson = await http.GetStringAsync(apiUrl, ct);
+            using var apiDoc = JsonDocument.Parse(apiJson);
+            if (apiDoc.RootElement.ValueKind == JsonValueKind.Array)
+            {
+                var apiList = new List<RemoteFile>();
+                foreach (var item in apiDoc.RootElement.EnumerateArray())
+                {
+                    var path = item.TryGetProperty("path", out var p) ? p.GetString() : null;
+                    var size = item.TryGetProperty("size", out var s) ? s.GetInt64() : 0;
+                    if (string.IsNullOrEmpty(path) || IsSkippable(path)) continue;
+                    apiList.Add(new RemoteFile(path!, size, "hf"));
+                }
+                if (apiList.Count > 0)
+                {
+                    dto.Logs.Add($"[{DateTime.Now:HH:mm:ss}] 文件清单来自 HF API: {entry.HuggingFaceRepo}（{apiList.Count} 个文件）");
+                    return apiList;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            dto.Logs.Add($"[{DateTime.Now:HH:mm:ss}] HF API 列文件失败（回退固定清单）: {ex.Message}");
         }
 
         // 2) hf-mirror 固定清单逐个 HEAD 探测（小文件走镜像 cache，大文件走 CDN 较慢）
