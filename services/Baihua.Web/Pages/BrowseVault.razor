@@ -306,13 +306,13 @@
                     }
                     else
                     {
-                        <div class="mb-4" style="border:1px solid #eee;border-radius:6px;padding:16px;">
+                        <div class="mb-4 listen-current-card">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <span class="text-muted small">@(listeningCurrentIndex + 1) / @listeningPlaylist.Count</span>
                                 <span class="badge @(isPlaying ? "bg-primary" : "bg-secondary")">@(isPlaying ? L["BrowseVault_Playing"] : L["BrowseVault_Paused"])</span>
                             </div>
                             <h4 style="margin-top:0;">@listeningPlaylist[listeningCurrentIndex].Title</h4>
-                            <div style="color:#666;font-size:14px;max-height:200px;overflow-y:auto;line-height:1.7;white-space:pre-wrap;">
+                            <div class="listen-current-content">
                                 @StripMarkdown(StripFrontmatter(listeningPlaylist[listeningCurrentIndex].Content ?? ""))
                             </div>
                         </div>
@@ -334,8 +334,8 @@
                             </button>
                         </div>
 
-                        <div style="max-height:300px;overflow-y:auto;border:1px solid #eee;border-radius:6px;">
-                            <div style="padding:8px 16px;color:#666;font-size:14px;border-bottom:1px solid #eee;position:sticky;top:0;background:white;z-index:1;">@L["BrowseVault_Playlist"]</div>
+                        <div class="listen-playlist-container">
+                            <div class="listen-playlist-header">@L["BrowseVault_Playlist"]</div>
                             @{
                                 string? lastCategory = null;
                             }
@@ -344,14 +344,14 @@
                                 @if (!string.IsNullOrEmpty(item.Category) && item.Category != lastCategory)
                                 {
                                     lastCategory = item.Category;
-                                    <div style="padding:6px 16px;background:#f0f2f5;color:#555;font-size:12px;font-weight:600;border-bottom:1px solid #e0e0e0;">📁 @item.Category</div>
+                                    <div class="listen-category-header">📁 @item.Category</div>
                                 }
                                 <button @onclick="() => JumpToNote(index)" 
                                         class="playlist-item @(index == listeningCurrentIndex ? "playlist-active" : "")">
                                     <span style="display:flex;align-items:center;gap:6px;">
                                         @if (playedIndices.Contains(index) && index != listeningCurrentIndex)
                                         {
-                                            <span style="color:#999;font-size:12px;">✓</span>
+                                            <span class="listen-played-check">✓</span>
                                         }
                                         <span>@(index + 1).</span>
                                         <span>@item.Title</span>
@@ -439,6 +439,48 @@
     .playlist-active {
         background: #0d6efd;
         color: white;
+    }
+
+    .listen-current-card {
+        border: 1px solid #eee;
+        border-radius: 6px;
+        padding: 16px;
+    }
+    .listen-current-content {
+        color: #666;
+        font-size: 14px;
+        max-height: 200px;
+        overflow-y: auto;
+        line-height: 1.7;
+        white-space: pre-wrap;
+    }
+    .listen-playlist-container {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #eee;
+        border-radius: 6px;
+    }
+    .listen-playlist-header {
+        padding: 8px 16px;
+        color: #666;
+        font-size: 14px;
+        border-bottom: 1px solid #eee;
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 1;
+    }
+    .listen-category-header {
+        padding: 6px 16px;
+        background: #f0f2f5;
+        color: #555;
+        font-size: 12px;
+        font-weight: 600;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .listen-played-check {
+        color: #999;
+        font-size: 12px;
     }
 
     .recent-notes-inline {

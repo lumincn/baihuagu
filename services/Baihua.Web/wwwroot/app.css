@@ -1893,9 +1893,43 @@ select.form-select-sm + .enhanced-select-wrapper .enhanced-select-trigger {
     .rank-num { color: #d4d8dd; }
 
     /* ---- BrowseVault ---- */
-    .playlist-item, .playlist-active, .vault-note-card {
+    .playlist-item {
+        background: #232a3b;
+        color: #d4d8dd;
+        border-color: #2d3548;
+    }
+    .playlist-item:hover {
+        background: #2d3548;
+    }
+    .playlist-active {
+        background: #2e8baf;
+        color: #ffffff;
+    }
+    .vault-note-card {
         background: #232a3b;
         border-color: #2d3548;
+    }
+    .listen-current-card {
+        border-color: #2d3548;
+    }
+    .listen-current-content {
+        color: #91a0b0;
+    }
+    .listen-playlist-container {
+        border-color: #2d3548;
+    }
+    .listen-playlist-header {
+        color: #91a0b0;
+        border-bottom-color: #2d3548;
+        background: #1e2a3a;
+    }
+    .listen-category-header {
+        background: #2a3040;
+        color: #91a0b0;
+        border-bottom-color: #2d3548;
+    }
+    .listen-played-check {
+        color: #5a6575;
     }
 
     /* ---- KnowledgeGenerate ---- */
