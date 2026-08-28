@@ -23,13 +23,16 @@ namespace Baihua.Family.Filters
             var requestPath = context.HttpContext.Request.Path;
             var requestMethod = context.HttpContext.Request.Method;
 
-            // 记录结构化日志
+            // 记录结构化日志（展开内部异常，便于诊断 DbUpdateException → PostgresException）
+            var inner = exception.InnerException;
             _logger.LogError(
                 exception,
-                "Unhandled exception occurred at {Method} {Path}: {ExceptionMessage}",
+                "Unhandled exception occurred at {Method} {Path}: {ExceptionMessage} | Inner: {InnerType}: {InnerMessage}",
                 requestMethod,
                 requestPath,
-                exception.Message
+                exception.Message,
+                inner?.GetType().Name ?? "none",
+                inner?.Message ?? ""
             );
 
             // 返回统一的错误响应（不泄露内部异常信息）

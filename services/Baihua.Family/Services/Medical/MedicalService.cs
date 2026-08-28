@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Baihua.Data;
 using Baihua.Data.Entities;
 
@@ -13,10 +14,12 @@ namespace Baihua.Family.Services.Medical;
 public class MedicalService
 {
     private readonly IDbContextFactory<FamilyDbContext> _dbFactory;
+    private readonly ILogger<MedicalService> _logger;
 
-    public MedicalService(IDbContextFactory<FamilyDbContext> dbFactory)
+    public MedicalService(IDbContextFactory<FamilyDbContext> dbFactory, ILogger<MedicalService> logger)
     {
         _dbFactory = dbFactory;
+        _logger = logger;
     }
 
     // ============ 成员档案 ============
@@ -57,7 +60,16 @@ public class MedicalService
             Notes = NormalizeNotes(notes)
         };
         db.MedicalMembers.Add(member);
-        await db.SaveChangesAsync(ct);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex)
+        {
+            _logger.LogError(ex, "创建家庭成员保存失败: Name={Name} | Inner: {InnerType}: {InnerMessage}",
+                trimmedName, ex.InnerException?.GetType().Name ?? "none", ex.InnerException?.Message ?? "");
+            throw;
+        }
         return member;
     }
 
