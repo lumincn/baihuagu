@@ -102,17 +102,21 @@ DshApi__Token: <与插件相同的 token>
 
 **DSH 设置页卡片**：DSH Web UI → 设置 → 插件 →「百花服务状态」卡片，只读展示百花各服务状态并自动刷新（`baihua-dsh-plugin` 的浏览器侧客户端模块，数据源 `/dsh-bridge/bh/status-ui`）。
 
-## 6.5 百花能力 MCP server（标准对外通道）
+## 6.5 百花能力 MCP server（标准对外通道，内置 /mcp 端点）
 
-独立仓库 [`luminsw/baihua-mcp-server`](https://github.com/luminsw/baihua-mcp-server)
-（`@modelcontextprotocol/sdk`，stdio），把百花只读能力按标准 MCP 暴露给**任意** MCP
-客户端（不只是 DSH）：
+百花在 `Baihua.Family` 内置了标准 MCP server（`ModelContextProtocol.AspNetCore` 2.2.0，
+streamable-http，`/mcp` 端点），把只读能力暴露给**任意** MCP 客户端（DSH / Claude Desktop /
+Cursor 等）。实现见 `services/Baihua.Family/Services/Mcp/BaihuaMcpTools.cs`，注册见
+`Program.cs` 的 `AddMcpServer().WithHttpTransport(Stateless).WithTools<...>()` 与 `app.MapMcp("/mcp")`。
 
-- 工具：`baihua_vault_search` / `baihua_vault_list` / `baihua_vault_read_note` / `baihua_budget_summary` / `baihua_tasks_list`
-- 连接目标经环境变量：`BAIHUA_VAULT_URL`（默认 127.0.0.1:8790）、`BAIHUA_FAMILY_URL`（默认 127.0.0.1:8788）
-- 远端鉴权：`BAIHUA_TOKEN`（共享）或 `BAIHUA_VAULT_TOKEN`/`BAIHUA_FAMILY_TOKEN`（按服务覆盖）；
-  非回环地址未配置 token 时调用直接报错（回环免 token 保持兼容）
-- 本机检出：`/home/lumin/src/mdyj/baihua-mcp-server`（npm install 后可直接跑）
+- 工具（名称与原独立 `baihua-mcp-server` 仓库完全一致，DSH 侧 `mcp__baihua__*` 无缝切换）：
+  `baihua_vault_search` / `baihua_vault_list` / `baihua_vault_read_note` / `baihua_budget_summary` / `baihua_tasks_list`
+- 调用路径：`vault_list` / `budget_summary` / `tasks_list` 直接调 `Baihua.Core` 服务层（零 HTTP 跳，强类型契约）；
+  `vault_search` / `vault_read_note` 走 HTTP 调 Vault（k8s 下 Family/Vault 不同 pod，文件系统不共享，
+  且搜索逻辑含 obsidian-cli/语义/FTS5/重排，复用 `SearchController` 单一来源）
+- 鉴权：复用 `DshController` 模式——回环 + `BAIHUA_ADMIN_ALLOWED_NETS` 免鉴权；
+  否则要求 `BAIHUA_AI_EXTERNAL_TOKEN`（Bearer / X-Server-Token / ?token=）
+- 会话模式：`Stateless`（工具无状态，无需 session 亲和性，水平扩展友好）
 
 DSH 接入（profile patch，需先 `dsh plugin --profile web add @deepseek-ai/dsh-mcp-client`）：
 
@@ -122,18 +126,15 @@ DSH 接入（profile patch，需先 `dsh plugin --profile web add @deepseek-ai/d
       name: '@deepseek-ai/dsh-mcp-client'
       config:
         serverName: baihua
-        transport: stdio
-        command: node
-        args: ['/home/lumin/src/mdyj/baihua-mcp-server/src/index.js']
-        env:
-          BAIHUA_VAULT_URL: 'http://<vault-clusterip>:8790'
-          BAIHUA_FAMILY_URL: 'http://<family-clusterip>:8788'
-          # BAIHUA_TOKEN: '<远端部署时填写，回环可省略>'
+        transport: streamable-http
+        url: 'http://<family-clusterip>:8788/mcp'
+        # headers:                # 远端部署启用 BAIHUA_AI_EXTERNAL_TOKEN 时填写
+        #   Authorization: 'Bearer <token>'
 ```
 
 DSH 里工具名带 `mcp__baihua__` 前缀（如 `mcp__baihua__baihua_vault_search`）。
-其他 MCP 客户端（Claude Desktop / Cursor 等）直接以 stdio 方式指向
-`baihua-mcp-server/src/index.js` 即可。
+其他 MCP 客户端（Claude Desktop / Cursor 等）以 streamable-http 方式指向
+`http://<baihua-host>/mcp` 即可。
 
 ## 7. 已下线页面
 

@@ -28,6 +28,8 @@ using OpenTelemetry.Exporter;
 using OpenTelemetry;
 using OpenTelemetry.Resources;
 using Baihua.Family.OpenTelemetry;
+using Baihua.Family.Services.Mcp;
+using ModelContextProtocol.AspNetCore;
 using Baihua.Contracts.Metrics;
 using Baihua.Family.Middleware;
 using Microsoft.AspNetCore.Localization;
@@ -256,6 +258,23 @@ builder.Services.AddHttpClient("SystemHealth", c =>
     c.Timeout = TimeSpan.FromSeconds(1);
     c.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "Baihua-Family/1.0");
 });
+
+// Vault HttpClient（MCP 工具的 vault_search / vault_read_note 走 HTTP 调 Vault，
+// k8s 下 Family/Vault 不同 pod，文件系统不共享；搜索逻辑复用 SearchController 单一来源）
+builder.Services.AddHttpClient("Vault", c =>
+{
+    var vaultBase = (Environment.GetEnvironmentVariable("BAIHUA_VAULT_URL") ?? "http://127.0.0.1:8790").TrimEnd('/');
+    c.BaseAddress = new Uri(vaultBase);
+    c.Timeout = TimeSpan.FromSeconds(15);
+});
+
+// 百花 MCP server（streamable-http，挂在 /mcp 端点）：
+// 把知识库检索/读笔记、家庭记账/任务等只读能力以标准 MCP 暴露给 DSH / Claude Desktop / Cursor 等客户端。
+// Stateless 模式：工具无状态，无需 session 亲和性，水平扩展友好。
+builder.Services.AddMcpServer()
+    .WithHttpTransport(o => o.SessionMode = HttpServerSessionMode.Stateless)
+    .WithTools<BaihuaVaultTools>()
+    .WithTools<BaihuaFamilyTools>();
 
 // 添加内存缓存（用于本地模型页等高频查询）
 builder.Services.AddMemoryCache();
@@ -862,7 +881,49 @@ app.Use(async (context, next) =>
     await next();
 });
 
+// MCP /mcp 端点鉴权：复用 DshController.Authorize() 模式——
+// 回环 + BAIHUA_ADMIN_ALLOWED_NETS 免鉴权；否则要求 BAIHUA_AI_EXTERNAL_TOKEN（Bearer / X-Server-Token / ?token=）
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path.StartsWithSegments("/mcp"))
+    {
+        var remoteIp = context.Connection.RemoteIpAddress;
+        var allowed = AdminNetworkPolicy.ParseNets(Environment.GetEnvironmentVariable(AdminNetworkPolicy.AdminAllowedNetsEnv));
+        if (remoteIp is null || !AdminNetworkPolicy.IsAllowed(remoteIp, allowed))
+        {
+            var expected = context.RequestServices.GetRequiredService<IConfiguration>()["BAIHUA_AI_EXTERNAL_TOKEN"] ?? "";
+            if (!string.IsNullOrEmpty(expected))
+            {
+                bool ok = false;
+                var auth = context.Request.Headers.Authorization.FirstOrDefault();
+                if (!string.IsNullOrEmpty(auth) && auth.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                    ok = string.Equals(auth["Bearer ".Length..].Trim(), expected, StringComparison.Ordinal);
+                if (!ok)
+                {
+                    var token = context.Request.Headers["X-Server-Token"].FirstOrDefault();
+                    ok = string.Equals(token, expected, StringComparison.Ordinal);
+                }
+                if (!ok)
+                {
+                    var q = context.Request.Query["token"].FirstOrDefault() ?? context.Request.Query["x-server-token"].FirstOrDefault();
+                    ok = string.Equals(q, expected, StringComparison.Ordinal);
+                }
+                if (!ok)
+                {
+                    context.Response.StatusCode = 401;
+                    await context.Response.WriteAsJsonAsync(new { error = "unauthorized" });
+                    return;
+                }
+            }
+        }
+    }
+    await next();
+});
+
 app.MapControllers();
+
+// 百花 MCP streamable-http 端点（/mcp）。鉴权由上方 Use 中间件处理。
+app.MapMcp("/mcp");
 
 
 
