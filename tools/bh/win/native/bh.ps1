@@ -92,7 +92,7 @@ function Invoke-Build {
         Write-Host "[build] $($svc.Name) ..."
         # Project 是相对仓库根的路径，必须 Join-Path $Root（脚本可能从任意目录执行）
         $proj = Join-Path $Root $svc.Project
-        $out = & dotnet publish $proj -c Release -r win-x64 --self-contained false -o (Join-Path $OutDir $svc.Name) 2>&1
+        $out = & dotnet publish $proj -c Release -r win-x64 --self-contained false -o (Join-Path $OutDir $svc.Name) 2>&1 | ForEach-Object { Write-Host $_; $_ }
         if ($LASTEXITCODE -ne 0) { throw "publish failed: $($svc.Name)`n$($out | Select-Object -Last 6)" }
     }
     Write-Host "[build] done -> $OutDir"
