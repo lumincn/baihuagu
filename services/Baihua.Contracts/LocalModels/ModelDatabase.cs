@@ -108,22 +108,7 @@ public static class ModelDatabase
         // ========== 视觉 / 多模态（图像理解，Ollama 直拉） ==========
         new()
         {
-            Id = "qwen2.5-vl-3b",
-            Name = "Qwen 2.5 VL 3B（视觉）",
-            OllamaModelName = "qwen2.5-vl:3b",
-            LmStudioSearchName = "qwen2.5-vl-3b-instruct",
-            Description = "轻量视觉语言模型，图像理解/OCR，速度快，纯文本/UI 场景够用",
-            ParameterSize = "3B",
-            Quantization = "Q4_K_M",
-            SizeGiB = 2.6,
-            MinVramGiB = 3.0,
-            MinRamGiB = 4.0,
-            Tags = new() { "vision", "multimodal", "chinese" },
-            Company = "阿里云",
-            Modality = "vision",
-        },
-        new()
-        {
+
             Id = "qwen2.5-vl-7b",
             Name = "Qwen 2.5 VL 7B（视觉）",
             OllamaModelName = "qwen2.5-vl:7b",

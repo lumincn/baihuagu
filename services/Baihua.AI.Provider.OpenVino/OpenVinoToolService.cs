@@ -18,7 +18,7 @@ public class OpenVinoToolOptions
     public string ModelRoot { get; set; } = "";
     public List<OpenVinoModelOption> Models { get; set; } = new()
     {
-        new() { Id = "3b", Name = "Qwen2.5-VL-3B-Instruct (INT4)" },
+
         new() { Id = "7b", Name = "Qwen2.5-VL-7B-Instruct (INT4)" },
     };
 }
@@ -87,12 +87,10 @@ public class OpenVinoToolService : ILocalModelTool
     {
         if (!string.IsNullOrWhiteSpace(model.Path))
             return model.Path;
-        var envVar = model.Id == "7b" ? "VISION_MODEL_7B" : "VISION_MODEL_3B";
-        var env = Environment.GetEnvironmentVariable(envVar);
+        var env = Environment.GetEnvironmentVariable("VISION_MODEL_7B");
         if (!string.IsNullOrWhiteSpace(env))
             return env;
-        var suffix = model.Id == "7b" ? "7B" : "3B";
-        return Path.Combine(ModelRoot, $"Qwen2.5-VL-{suffix}-Instruct-int4-ov");
+        return Path.Combine(ModelRoot, "Qwen2.5-VL-7B-Instruct-int4-ov");
     }
 
     /// <summary>探测工具状态：(是否安装, 版本, 是否运行, 模型目录)</summary>
@@ -271,21 +269,20 @@ public class OpenVinoToolService : ILocalModelTool
     }
 
     /// <summary>
-    /// 把前端传入的模型名（可能是显示名 Name 或内部 Id，如 "Qwen2.5-VL-3B-Instruct (INT4)" 或 "3b"）
-    /// 规整为内部 Id（3b/7b）。模型由 OVMS 托管，此处仅用于目录扫描/详情/状态匹配。
+    /// 把前端传入的模型名（可能是显示名 Name 或内部 Id，如 "Qwen2.5-VL-7B-Instruct (INT4)" 或 "7b"）
+    /// 规整为内部 Id（7b）。模型由 OVMS 托管，此处仅用于目录扫描/详情/状态匹配。
     /// </summary>
     private string NormalizeModelId(string modelOrName)
     {
         var key = modelOrName?.Trim();
         if (string.IsNullOrWhiteSpace(key))
-            return "3b";
+            return "7b";
         foreach (var m in DistinctModels())
         {
             if (string.Equals(m.Id, key, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(m.Name, key, StringComparison.OrdinalIgnoreCase))
                 return m.Id;
         }
-        if (key.Equals("3b", StringComparison.OrdinalIgnoreCase)) return "3b";
         if (key.Equals("7b", StringComparison.OrdinalIgnoreCase)) return "7b";
         return key;
     }
@@ -299,8 +296,7 @@ public class OpenVinoToolService : ILocalModelTool
         _ = NormalizeModelId(modelId);
         // OVMS 已注册则视为已加载（懒加载，首次请求自动编译）；探测失败时退回目录存在判定
         var omsIds = await GetOmsModelIdsAsync(ct);
-        var registered = omsIds.Count > 0 &&
-            (omsIds.Contains(OmsModelMap.VisionModelId("3b")) || omsIds.Contains(OmsModelMap.VisionModelId("7b")));
+        var registered = omsIds.Count > 0 && omsIds.Contains(OmsModelMap.VisionModelId("7b"));
         return registered || omsIds.Count == 0;
     }
 

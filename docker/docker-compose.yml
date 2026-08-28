@@ -217,7 +217,7 @@ services:
         # 为已下载模型生成 graph.pbtxt（幂等；缺失跳过）
         for spec in \
           "text_generation GPU /models/Qwen2.5-7B-Instruct-int4-ov" \
-          "text_generation GPU /models/Qwen2.5-VL-3B-Instruct-int4-ov" \
+
           "text_generation GPU /models/Qwen2.5-VL-7B-Instruct-int4-ov" \
           "embeddings CPU /models/bge-small-zh-v1.5"; do
           task="${spec%% *}"; rest="${spec#* }"; dev="${rest%% *}"; path="${rest#* }"
@@ -233,7 +233,7 @@ services:
     volumes:
       # 模型仓库（与 k8s 一致：/opt/baihua/models 下 4 个 OpenVINO IR 模型目录）
       - /opt/baihua/models:/models
-      # OVMS 模型注册配置（model_config_list：qwen2.5 / qwen2.5-vl-3b / qwen2.5-vl-7b / bge-small-zh）
+      # OVMS 模型注册配置（model_config_list：qwen2.5 / qwen2.5-vl-7b / bge-small-zh）
       - ./openvino-config.json:/models/config.json:ro
       # Intel GPU（真机 /dev/dri；WSL2 后端需另加 /dev/dxg 与 /usr/lib/wsl 挂载）
       - /dev/dri:/dev/dri

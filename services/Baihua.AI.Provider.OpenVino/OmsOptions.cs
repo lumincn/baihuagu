@@ -30,7 +30,7 @@ public static class OmsModelMap
         var key = (internalId ?? "").Trim();
         if (key.Equals("7b", StringComparison.OrdinalIgnoreCase))
             return "qwen2.5-vl-7b";
-        return "qwen2.5-vl-3b"; // 兜底 3b
+        return "qwen2.5-vl-7b";
     }
 
     /// <summary>LLM 对话模型 id（百花文本推理后端）——统一指向 OVMS 的对话模型</summary>

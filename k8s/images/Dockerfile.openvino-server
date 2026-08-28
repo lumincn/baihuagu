@@ -4,8 +4,8 @@
 #
 # 部署形态（见 k8s/22a-openvino.yaml）：
 #   - 模型仓库 = baihua-models-pvc（/models，预下载的 OpenVINO IR 模型目录）
-#   - config.json 经 ConfigMap 注入，注册 4 个 servable（mediapipe_config_list）：
-#       qwen2.5（对话）、qwen2.5-vl-3b / qwen2.5-vl-7b（视觉）、bge-small-zh（嵌入）
+#   - config.json 经 ConfigMap 注入，注册 3 个 servable（mediapipe_config_list）：
+#       qwen2.5（对话）、qwen2.5-vl-7b（视觉）、bge-small-zh（嵌入）
 #   - 每个模型目录的 graph.pbtxt 由 initContainer 的 `ovms --configure` 幂等生成
 #   - 对外 OpenAI 兼容 REST：/v3/chat/completions、/v3/embeddings、/v1/models
 #

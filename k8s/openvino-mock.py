@@ -2,7 +2,7 @@
 
 Responds to:
   GET  /health         → {"status":"ok","devices":["CPU","GPU","NPU"]}
-  GET  /v1/models      → {"object":"list","data":[{"id":"qwen2.5-vl-3b","object":"model"}]}
+  GET  /v1/models      → {"object":"list","data":[{"id":"qwen2.5-vl-7b","object":"model"}]}
   POST /v1/chat/completions → {"id":"mock","object":"chat.completion","choices":[{"message":{"role":"assistant","content":"mock response"}}]}
 """
 import json, os
@@ -14,7 +14,7 @@ class MockHandler(BaseHTTPRequestHandler):
             self._json({"status": "ok", "devices": ["CPU", "GPU", "NPU"]})
         elif self.path == "/v1/models":
             self._json({"object": "list", "data": [
-                {"id": "qwen2.5-vl-3b", "object": "model"},
+
                 {"id": "qwen2.5-vl-7b", "object": "model"},
             ]})
         else:

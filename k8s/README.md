@@ -70,7 +70,7 @@
 自 777f860 起，百花本地 OpenVINO 推理由 **Intel OVMS（OpenVINO Model Server，官方 `openvino/model_server` 镜像）** 统一承载，
 不再运行自研 Python 服务（`openvino_llm_server.py` / `vision_server.py` 已弃用）。AI/Family 通过 OpenAI 兼容 REST 调用：
 
-- `http://bh-openvino:8000/v3/chat/completions` — LLM 对话（模型 id：`qwen2.5`）与视觉识别（`qwen2.5-vl-3b` / `qwen2.5-vl-7b`）
+- `http://bh-openvino:8000/v3/chat/completions` — LLM 对话（模型 id：`qwen2.5`）与视觉识别（`qwen2.5-vl-7b`）
 - `http://bh-openvino:8000/v3/embeddings` — RAG 嵌入（`bge-small-zh`，原 22b-embedding 已并入 OVMS）
 - `http://bh-openvino:8000/v1/models` — 状态 / 模型列表探测
 
@@ -341,7 +341,7 @@ sudo mkdir -p /opt/baihua/models
 sudo apt install -y git-lfs && git lfs install
 sudo git clone https://hf-mirror.com/OpenVINO/qwen2-vl-7b-instruct-int4-ov /opt/baihua/models/Qwen2.5-VL-7B-Instruct-int4-ov
 
-# ── 方式 B：venv + optimum-cli 现场转换（模型名可换，如 Qwen2.5-VL-3B 更快）──
+# ── 方式 B：venv + optimum-cli 现场转换（模型名可换，如 Qwen2.5-VL-7B）──
 python3 -m venv ~/.venvs/optimum
 ~/.venvs/optimum/bin/pip install -U pip optimum[openvino]
 export HF_ENDPOINT=https://hf-mirror.com
@@ -350,13 +350,12 @@ export HF_ENDPOINT=https://hf-mirror.com
     /opt/baihua/models/Qwen2.5-VL-7B-Instruct-int4-ov
 ```
 
-OVMS（`config.json`）注册的 4 个模型目录（22a-openvino.yaml 内联 ConfigMap），缺哪个 OVMS 就加载不了哪个：
+OVMS（`config.json`）注册的 3 个模型目录（22a-openvino.yaml 内联 ConfigMap），缺哪个 OVMS 就加载不了哪个：
 
 | OVMS 模型 id | 目录（/opt/baihua/models/） | 任务 / 设备 | 下载 |
 |---|---|---|---|
 | `qwen2.5` | `Qwen2.5-7B-Instruct-int4-ov` | 对话 / GPU | `git clone https://hf-mirror.com/OpenVINO/Qwen2.5-7B-Instruct-int4-ov` |
 | `qwen2.5-vl-7b` | `Qwen2.5-VL-7B-Instruct-int4-ov` | 视觉 / GPU | `git clone https://hf-mirror.com/OpenVINO/Qwen2.5-VL-7B-Instruct-int4-ov`（方式 A） |
-| `qwen2.5-vl-3b` | `Qwen2.5-VL-3B-Instruct-int4-ov` | 视觉 / GPU | gated（需 HF Token 或方式 B 转换 Qwen/Qwen2.5-VL-3B-Instruct） |
 | `bge-small-zh` | `bge-small-zh-v1.5` | 嵌入 / CPU | gated（或方式 B 转换 BAAI/bge-small-zh-v1.5） |
 
 > 下载/转换完成后，`bh-openvino` Pod 会自动恢复（initContainer 会为已存在的模型目录生成 graph.pbtxt；
@@ -439,9 +438,8 @@ Pod (bh-openvino)
 ├── initContainer: ovms --configure
 │   └── 为 /models 下已下载模型生成 graph.pbtxt（幂等，缺失跳过）
 ├── ovms (OpenVINO Model Server) ← OpenAI 兼容推理服务 (:8000 REST / :9000 gRPC)
-│   ├── config.json (ConfigMap) ← model_config_list 注册 4 个 servable
+│   ├── config.json (ConfigMap) ← model_config_list 注册 3 个 servable
 │   │   ├── qwen2.5         → /models/Qwen2.5-7B-Instruct-int4-ov       (GPU)
-│   │   ├── qwen2.5-vl-3b   → /models/Qwen2.5-VL-3B-Instruct-int4-ov    (GPU)
 │   │   ├── qwen2.5-vl-7b   → /models/Qwen2.5-VL-7B-Instruct-int4-ov    (GPU)
 │   │   └── bge-small-zh    → /models/bge-small-zh-v1.5                 (CPU)
 │   └── /v3/chat/completions · /v3/embeddings · /v1/models

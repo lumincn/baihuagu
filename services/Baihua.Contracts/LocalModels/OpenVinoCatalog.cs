@@ -64,17 +64,7 @@ public static class OpenVinoCatalog
         },
         new()
         {
-            Id = "qwen2.5-vl-3b",
-            Name = "Qwen 2.5 VL 3B（视觉）",
-            ParameterSize = "3B",
-            SizeGiB = 2.6,
-            Description = "轻量图像理解/OCR，速度快，纯文本/UI 场景够用",
-            IsVision = true,
-            ModelScopeRepo = "OpenVINO/Qwen2.5-VL-3B-Instruct-INT4-OV",
-            HuggingFaceRepo = "openvino/Qwen2.5-VL-3B-Instruct-INT4-OV",
-        },
-        new()
-        {
+
             Id = "deepseek-r1-7b",
             Name = "DeepSeek R1 Distill Qwen 7B",
             ParameterSize = "7B",

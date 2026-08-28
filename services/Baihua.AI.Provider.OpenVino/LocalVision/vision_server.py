@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""百花本地视觉推理服务（Qwen2.5-VL 3B/7B INT4 + OpenVINO，常驻进程）
+"""百花本地视觉推理服务（Qwen2.5-VL 7B INT4 + OpenVINO，常驻进程）
 
 由 Baihua.AI 启动并调用。模型常驻内存，避免每次识别都重新加载（冷加载 10-30s）。
 
@@ -10,7 +10,6 @@
 
 环境变量:
   VISION_PORT      端口（默认 8801）
-  VISION_MODEL_3B  Qwen2.5-VL-3B OpenVINO 目录
   VISION_MODEL_7B  Qwen2.5-VL-7B OpenVINO 目录
 """
 import base64
@@ -31,10 +30,7 @@ except Exception:
 PORT = int(os.environ.get('VISION_PORT', '8801'))
 HOME = os.path.expanduser('~')
 MODELS = {
-    '3b': {
-        'name': 'Qwen2.5-VL-3B-Instruct (INT4)',
-        'path': os.environ.get('VISION_MODEL_3B', os.path.join(HOME, '.openclaw', 'models', 'Qwen2.5-VL-3B-Instruct-int4-ov')),
-    },
+
     '7b': {
         'name': 'Qwen2.5-VL-7B-Instruct (INT4)',
         'path': os.environ.get('VISION_MODEL_7B', os.path.join(HOME, '.openclaw', 'models', 'Qwen2.5-VL-7B-Instruct-int4-ov')),

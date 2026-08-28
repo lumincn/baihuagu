@@ -4197,7 +4197,7 @@
     <value>Image Recognition</value>
   </data>
   <data name="LocalModels_DownloadedOpenVino" xml:space="preserve">
-    <value>OpenVINO Vision Models</value>
+    <value>Running OpenVINO Models</value>
   </data>
   <data name="LocalModels_LoadOpenVinoTitle" xml:space="preserve">
     <value>Load OpenVINO Model</value>
@@ -5386,17 +5386,12 @@
     <value>: one table for all models. Not downloaded → "Download"; downloaded → "▶ Run" (starts a standalone LLM service process, ports 8000-8030, for chat/coding) / "Stop" / "Delete".</value>
   </data>
   <data name="LocalModels_AreaDownloadedLabel" xml:space="preserve">
-    <value>🧿 Downloaded Models (general table)</value>
+    <value>🧿 Running OpenVINO Models</value>
   </data>
   <data name="LocalModels_AreaDownloadedValue" xml:space="preserve">
-    <value>: downloaded models aggregated across tools. Load = preheat the Qwen2.5-VL vision model into the vision_server (port 8801) VRAM so first image recognition avoids cold loading; Details = view configuration.</value>
+    <value>: OpenVINO models hosted by OVMS (chat/code/vision/embedding), auto-loaded on first inference, no manual start/stop needed; Details = view configuration.</value>
   </data>
-  <data name="LocalModels_AreaLlmLabel" xml:space="preserve">
-    <value>🤖 OpenVINO LLM Service</value>
-  </data>
-  <data name="LocalModels_AreaLlmValue" xml:space="preserve">
-    <value>: resident instances of openvino_llm_server.py hosted on the host machine (one model per port); shows PID/health status and can be started/stopped manually.</value>
-  </data>
+
   <data name="LocalModels_DownloadTasks" xml:space="preserve">
     <value>Download Tasks</value>
   </data>
@@ -5452,7 +5447,7 @@
     <value>Start</value>
   </data>
   <data name="LocalModels_DownloadedHint" xml:space="preserve">
-    <value>(Load = preheat the vision model into VRAM so image recognition avoids cold loading)</value>
+    <value>(Hosted by OVMS, auto-loaded on first inference, no manual start/stop needed)</value>
   </data>
   <data name="LocalModels_LoadingHardware" xml:space="preserve">
     <value>Detecting hardware environment…</value>

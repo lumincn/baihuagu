@@ -4197,7 +4197,7 @@
     <value>图片识别</value>
   </data>
   <data name="LocalModels_DownloadedOpenVino" xml:space="preserve">
-    <value>OpenVINO 视觉模型</value>
+    <value>运行中的 OpenVINO 模型</value>
   </data>
   <data name="LocalModels_LoadOpenVinoTitle" xml:space="preserve">
     <value>加载 OpenVINO 模型</value>
@@ -5386,17 +5386,12 @@
     <value>：一张表看全部模型。未下载→「下载」；已下载→「▶ 运行」（启动独立 LLM 服务进程，端口 8000-8030，供对话/编程）／「停止」／「删除」。</value>
   </data>
   <data name="LocalModels_AreaDownloadedLabel" xml:space="preserve">
-    <value>🧿 已下载模型（通用表）</value>
+    <value>🧿 运行中的 OpenVINO 模型</value>
   </data>
   <data name="LocalModels_AreaDownloadedValue" xml:space="preserve">
-    <value>：跨工具汇总的已下载模型。加载＝把 Qwen2.5-VL 视觉模型预热进 vision_server（8801 端口）显存，首次识别图片免冷加载；详情＝查看配置。</value>
+    <value>：OVMS 常驻托管的 OpenVINO 模型（对话/代码/视觉/嵌入），首次推理自动加载，无需手动启停；详情＝查看配置。</value>
   </data>
-  <data name="LocalModels_AreaLlmLabel" xml:space="preserve">
-    <value>🤖 OpenVINO LLM 服务</value>
-  </data>
-  <data name="LocalModels_AreaLlmValue" xml:space="preserve">
-    <value>：宿主机托管的 openvino_llm_server.py 常驻实例（一模型一端口），显示 PID/健康状态，可手动启停。</value>
-  </data>
+
   <data name="LocalModels_DownloadTasks" xml:space="preserve">
     <value>下载任务</value>
   </data>
@@ -5452,7 +5447,7 @@
     <value>启动</value>
   </data>
   <data name="LocalModels_DownloadedHint" xml:space="preserve">
-    <value>（加载＝预热视觉模型到显存，图片识别免冷加载）</value>
+    <value>（由 OVMS 常驻托管，首次推理自动加载，无需手动启停）</value>
   </data>
   <data name="LocalModels_LoadingHardware" xml:space="preserve">
     <value>正在检测硬件环境…</value>

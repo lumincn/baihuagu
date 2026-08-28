@@ -33,10 +33,9 @@ $RestPort   = 8000
 $OmsTag     = 'v2026.3'
 $OmsUrl     = "https://github.com/openvinotoolkit/model_server/releases/download/$OmsTag/ovms_windows_2026.3.0_python_on.zip"
 
-# OVMS 注册的 4 个 servable（id 与 services/Baihua.AI.Provider.OpenVino/OmsModelMap.cs 一致）
+# OVMS 注册的 3 个 servable（id 与 services/Baihua.AI.Provider.OpenVino/OmsModelMap.cs 一致）
 $Models = @(
     @{ name = 'qwen2.5';       dir = 'Qwen2.5-7B-Instruct-int4-ov' },
-    @{ name = 'qwen2.5-vl-3b'; dir = 'Qwen2.5-VL-3B-Instruct-int4-ov' },
     @{ name = 'qwen2.5-vl-7b'; dir = 'Qwen2.5-VL-7B-Instruct-int4-ov' },
     @{ name = 'bge-small-zh';  dir = 'bge-small-zh-v1.5' }
 )

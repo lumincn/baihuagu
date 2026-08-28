@@ -10,7 +10,7 @@ Tests VL/LLM pipeline performance across devices:
 
 Models (OpenVINO IR, int4 quantized):
   - Qwen2.5-VL-7B-Instruct-int4-ov (primary, ~5GB, multi-modal)
-  - Qwen2.5-VL-3B-Instruct-int4-ov (fallback, ~2.5GB)
+
 
 Usage:
   # Windows (PowerShell)
@@ -330,7 +330,7 @@ def main() -> int:
     ap.add_argument("--devices", nargs="+", default=["CPU"],
                     help="Space-separated device list, e.g. --devices CPU GPU NPU")
     ap.add_argument("--models", nargs="+",
-                    default=["Qwen2.5-VL-7B-Instruct-int4-ov", "Qwen2.5-VL-3B-Instruct-int4-ov"],
+                    default=["Qwen2.5-VL-7B-Instruct-int4-ov"],
                     help="Model directory names under .openclaw/models")
     ap.add_argument("--repeats", type=int, default=1,
                     help="How many times to run the prompt set (>=1). Averages reported.")

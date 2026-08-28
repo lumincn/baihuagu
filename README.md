@@ -91,7 +91,7 @@ Windows 下用 `bh.ps1`（推荐 PowerShell 7，UTF-8 中文正常）；完整�
 ## 本地 OpenVINO 推理（OVMS）
 
 百花本地推理由 **Intel OVMS（OpenVINO Model Server）** 统一承载
-（OpenAI 兼容 `/v3/chat/completions`、`/v3/embeddings`，模型：`qwen2.5` / `qwen2.5-vl-3b` /
+（OpenAI 兼容 `/v3/chat/completions`、`/v3/embeddings`，模型：`qwen2.5` /
 `qwen2.5-vl-7b` / `bge-small-zh`）：
 
 - **Windows**：管理员运行 `scripts/install-openvino-ovms-service.ps1` 一键安装为系统服务（`ovms`，:8000）
