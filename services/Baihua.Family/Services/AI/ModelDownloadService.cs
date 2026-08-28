@@ -124,8 +124,7 @@ public class ModelDownloadService
             dto.TotalBytes = total;
             dto.Logs.Add($"[{DateTime.Now:HH:mm:ss}] 共 {files.Count} 个文件，{FormatSize(total)}");
 
-            // 2. 逐文件下载
-            if (Directory.Exists(tmpDir)) Directory.Delete(tmpDir, recursive: true);
+            // 2. 逐文件下载（支持断点续传：保留已有 .part 文件）
             Directory.CreateDirectory(tmpDir);
             var downloaded = 0L;
             var sw = Stopwatch.StartNew();
@@ -134,6 +133,16 @@ public class ModelDownloadService
                 ct.ThrowIfCancellationRequested();
                 var localPath = Path.Combine(tmpDir, file.Path.Replace('/', Path.DirectorySeparatorChar));
                 Directory.CreateDirectory(Path.GetDirectoryName(localPath)!);
+
+                // 跳过已完整下载的文件（断点续传：之前下载完成但整体未 move 的文件）
+                if (File.Exists(localPath) && file.Size > 0 && new FileInfo(localPath).Length == file.Size)
+                {
+                    downloaded += file.Size;
+                    dto.DownloadedBytes = downloaded;
+                    dto.ProgressPercent = total > 0 ? (int)(downloaded * 100 / total) : 0;
+                    dto.Logs.Add($"[{DateTime.Now:HH:mm:ss}] 跳过已下载: {file.Path}");
+                    continue;
+                }
 
                 dto.CurrentFile = file.Path;
                 var url = BuildFileUrl(entry, file);
@@ -415,11 +424,17 @@ public class ModelDownloadService
         {
             try
             {
+                // 断点续传：检查 .part 文件已下载大小
+                var partFile = localPath + ".part";
+                var existingBytes = File.Exists(partFile) ? new FileInfo(partFile).Length : 0;
+
                 // 根据域名设 Referer：ModelScope WAF 需 ModelScope Referer；hf-mirror 拒绝 ModelScope Referer 返回 HTML 错误页
                 using var req = new HttpRequestMessage(HttpMethod.Get, u);
                 req.Headers.Referrer = u.Contains("modelscope")
                     ? new Uri("https://modelscope.cn/")
                     : new Uri("https://hf-mirror.com/");
+                if (existingBytes > 0)
+                    req.Headers.Range = new RangeHeaderValue(existingBytes, null);
 
                 using var resp = await http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
                 if (!resp.IsSuccessStatusCode)
@@ -440,7 +455,9 @@ public class ModelDownloadService
                 if (ct0.Contains("text/html", StringComparison.OrdinalIgnoreCase))
                     throw new HttpRequestException("服务器返回 HTML 错误页（非文件内容）");
 
-                await StreamToFileAsync(resp, localPath, expectedSize, dto, getDownloaded, totalSw, ct, onProgress);
+                // 206 = 服务器支持断点续传，从断点继续；200 = 不支持，从头开始
+                var offset = resp.StatusCode == System.Net.HttpStatusCode.PartialContent ? existingBytes : 0;
+                await StreamToFileAsync(resp, localPath, expectedSize, dto, getDownloaded, totalSw, ct, onProgress, offset);
                 return;
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
@@ -457,8 +474,14 @@ public class ModelDownloadService
         OpenVinoDownloadTaskDto dto, Func<long> getDownloaded, Stopwatch totalSw, CancellationToken ct,
         Action<int, string>? onProgress = null)
     {
+        var partFile = localPath + ".part";
+        var existingBytes = File.Exists(partFile) ? new FileInfo(partFile).Length : 0;
+
         using var req = new HttpRequestMessage(HttpMethod.Get, url);
         req.Headers.Referrer = new Uri("https://hf-mirror.com/");
+        if (existingBytes > 0)
+            req.Headers.Range = new RangeHeaderValue(existingBytes, null);
+
         using var resp = await http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
         resp.EnsureSuccessStatusCode();
 
@@ -466,19 +489,24 @@ public class ModelDownloadService
         if (ct0.Contains("text/html", StringComparison.OrdinalIgnoreCase))
             throw new HttpRequestException("服务器返回 HTML 错误页（非文件内容）");
 
-        await StreamToFileAsync(resp, localPath, expectedSize, dto, getDownloaded, totalSw, ct, onProgress);
+        var offset = resp.StatusCode == System.Net.HttpStatusCode.PartialContent ? existingBytes : 0;
+        await StreamToFileAsync(resp, localPath, expectedSize, dto, getDownloaded, totalSw, ct, onProgress, offset);
     }
 
     private static async Task StreamToFileAsync(
         HttpResponseMessage resp, string localPath, long expectedSize,
         OpenVinoDownloadTaskDto dto, Func<long> getDownloaded, Stopwatch? totalSw, CancellationToken ct,
-        Action<int, string>? onProgress = null)
+        Action<int, string>? onProgress = null, long initialOffset = 0)
     {
         await using var stream = await resp.Content.ReadAsStreamAsync(ct);
-        await using var fs = new FileStream(localPath + ".part", FileMode.Create, FileAccess.Write, FileShare.None, 81920, useAsync: true);
+        // 断点续传：如果 initialOffset > 0，追加写入已有 .part 文件
+        var fileMode = initialOffset > 0 ? FileMode.Append : FileMode.Create;
+        await using var fs = new FileStream(localPath + ".part", fileMode, FileAccess.Write, FileShare.None, 81920, useAsync: true);
         var buffer = new byte[81920];
-        var fileDone = 0L;
+        var fileDone = initialOffset;
         var lastLog = DateTime.UtcNow;
+        if (initialOffset > 0)
+            dto.Logs.Add($"[{DateTime.Now:HH:mm:ss}] 断点续传: {Path.GetFileName(localPath)} 从 {FormatSize(initialOffset)} 继续");
         while (true)
         {
             var read = await stream.ReadAsync(buffer, ct);
