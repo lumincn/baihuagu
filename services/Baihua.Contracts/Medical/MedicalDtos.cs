@@ -176,6 +176,9 @@ public class AiDiagnosisDto
     /// <summary>AI 生成的分析（Markdown 文本，含免责声明）</summary>
     public string AiResponse { get; set; } = "";
 
+    /// <summary>使用的模型标识（"biancang" 或 "main"）</summary>
+    public string ModelUsed { get; set; } = "main";
+
     public DateTime CreatedAt { get; set; }
 }
 

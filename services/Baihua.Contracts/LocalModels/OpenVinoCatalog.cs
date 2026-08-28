@@ -34,6 +34,17 @@ public static class OpenVinoCatalog
         },
         new()
         {
+            Id = "biancang-instruct",
+            Name = "扁仓 BianCang Instruct（医疗）",
+            ParameterSize = "7B",
+            SizeGiB = 4.7,
+            Description = "中文医疗领域指令模型，症状分析/鉴别诊断/用药指导/中医辨证",
+            IsMedical = true,
+            ModelScopeRepo = "BianCang/BianCang-Instruct",
+            HuggingFaceRepo = "BianCang/BianCang-Instruct",
+        },
+        new()
+        {
             Id = "qwen2.5-14b",
             Name = "Qwen 2.5 14B Instruct",
             ParameterSize = "14B",

@@ -248,14 +248,15 @@ public class MedicalService
     }
 
     /// <summary>保存一条 AI 诊断记录</summary>
-    public async Task<AiDiagnosis> SaveDiagnosisAsync(int memberId, string symptomText, string aiResponse, CancellationToken ct = default)
+    public async Task<AiDiagnosis> SaveDiagnosisAsync(int memberId, string symptomText, string aiResponse, string modelUsed = "main", CancellationToken ct = default)
     {
         using var db = await _dbFactory.CreateDbContextAsync(ct);
         var diagnosis = new AiDiagnosis
         {
             MemberId = memberId,
             SymptomText = symptomText?.Trim() ?? "",
-            AiResponse = aiResponse ?? ""
+            AiResponse = aiResponse ?? "",
+            ModelUsed = modelUsed ?? "main"
         };
         db.AiDiagnoses.Add(diagnosis);
         await db.SaveChangesAsync(ct);

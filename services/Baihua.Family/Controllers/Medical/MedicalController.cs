@@ -210,6 +210,7 @@ public class MedicalController : ControllerBase
         MemberId = diagnosis.MemberId,
         SymptomText = diagnosis.SymptomText,
         AiResponse = diagnosis.AiResponse,
+        ModelUsed = diagnosis.ModelUsed,
         CreatedAt = diagnosis.CreatedAt
     };
 }

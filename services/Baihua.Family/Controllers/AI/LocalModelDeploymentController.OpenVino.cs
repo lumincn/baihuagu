@@ -29,6 +29,7 @@ public partial class LocalModelDeploymentController
                 Description = e.Description,
                 IsVision = e.IsVision,
                 IsTts = e.IsTts,
+                IsMedical = e.IsMedical,
                 ModelScopeRepo = e.ModelScopeRepo,
             };
 

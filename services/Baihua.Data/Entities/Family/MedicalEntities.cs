@@ -103,5 +103,8 @@ public class AiDiagnosis
     [Required]
     public string AiResponse { get; set; } = "";
 
+    /// <summary>使用的模型标识（如 "biancang" 或 "main"）</summary>
+    public string ModelUsed { get; set; } = "main";
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
+using Baihua.AI.Provider;
 using Baihua.Core.Services;
 using Baihua.Data.Entities;
 using Baihua.Contracts.Medical;
@@ -14,23 +15,27 @@ namespace Baihua.Family.Services.Medical;
 ///   2. 识别需要立即就医的警示信号；
 ///   3. 声明"仅作参考，不可代替医生"。
 /// 每次诊断结果落库（AiDiagnosis），供家庭成员日后查阅。
+/// 模型路由：优先使用扁仓 BianCang 医疗模型（若已运行），回退到主模型。
 /// </summary>
 public class MedicalAiService
 {
     private readonly AiClientService _aiClient;
     private readonly AiSettingsService _aiSettings;
     private readonly MedicalService _medicalService;
+    private readonly ILocalRuntimeManager _runtimeManager;
     private readonly ILogger<MedicalAiService> _logger;
 
     public MedicalAiService(
         AiClientService aiClient,
         AiSettingsService aiSettings,
         MedicalService medicalService,
+        ILocalRuntimeManager runtimeManager,
         ILogger<MedicalAiService> logger)
     {
         _aiClient = aiClient;
         _aiSettings = aiSettings;
         _medicalService = medicalService;
+        _runtimeManager = runtimeManager;
         _logger = logger;
     }
 
@@ -54,7 +59,9 @@ public class MedicalAiService
             return Fail("未配置 AI 模型，请先在 AI 设置中配置主模型");
         }
 
-        var model = provider.GetMainModel();
+        // 模型路由：优先扁仓 BianCang 医疗模型（若已运行），回退到主模型
+        var (model, modelUsed) = TryGetMedicalModel() ?? (provider.GetMainModel(), "main");
+
         if (string.IsNullOrWhiteSpace(model))
         {
             _logger.LogWarning("主 AI Provider 未配置模型");
@@ -89,7 +96,7 @@ public class MedicalAiService
                 return Fail("AI 没有生成有效分析，请重试");
             }
 
-            var saved = await _medicalService.SaveDiagnosisAsync(memberId, trimmed, text, ct);
+            var saved = await _medicalService.SaveDiagnosisAsync(memberId, trimmed, text, modelUsed, ct);
             return new AiDiagnoseResultDto
             {
                 Success = true,
@@ -99,6 +106,7 @@ public class MedicalAiService
                     MemberId = saved.MemberId,
                     SymptomText = saved.SymptomText,
                     AiResponse = saved.AiResponse,
+                    ModelUsed = saved.ModelUsed,
                     CreatedAt = saved.CreatedAt
                 }
             };
@@ -117,6 +125,27 @@ public class MedicalAiService
 
     private static AiDiagnoseResultDto Fail(string error)
         => new() { Success = false, Error = error };
+
+    /// <summary>
+    /// 检查扁仓 BianCang 医疗模型是否已运行，返回 (modelName, "biancang") 或 null。
+    /// </summary>
+    private (string Model, string Label)? TryGetMedicalModel()
+    {
+        try
+        {
+            var running = _runtimeManager.GetRunning();
+            var biancang = running.FirstOrDefault(r =>
+                r.Name.Contains("BianCang", StringComparison.OrdinalIgnoreCase) ||
+                r.Name.Contains("biancang", StringComparison.OrdinalIgnoreCase));
+            if (biancang != null)
+                return (biancang.Name, "biancang");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "检查 BianCang 模型运行状态失败");
+        }
+        return null;
+    }
 
     /// <summary>构建成员档案文本（年龄/性别/血型/过敏史/慢性病/备注）</summary>
     private static string BuildProfileText(MedicalMember member)
