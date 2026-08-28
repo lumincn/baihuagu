@@ -13,13 +13,24 @@ public static class OpenVinoCatalog
     [
         new()
         {
-            Id = "qwen2.5-7b",
-            Name = "Qwen 2.5 7B Instruct",
+            Id = "deepseek-r1-7b",
+            Name = "DeepSeek R1 Distill Qwen 7B",
             ParameterSize = "7B",
             SizeGiB = 4.7,
-            Description = "通用聊天主力，中文/多语言均衡，Arc 核显流畅",
-            ModelScopeRepo = "OpenVINO/Qwen2.5-7B-Instruct-INT4-OV",
-            HuggingFaceRepo = "openvino/Qwen2.5-7B-Instruct-INT4-OV",
+            Description = "深度推理/数学/逻辑，思维链强",
+            ModelScopeRepo = "OpenVINO/DeepSeek-R1-Distill-Qwen-7B-INT4-OV",
+            HuggingFaceRepo = "openvino/DeepSeek-R1-Distill-Qwen-7B-INT4-OV",
+        },
+        new()
+        {
+            Id = "kokoro-82m",
+            Name = "Kokoro 82M（TTS 语音合成）",
+            ParameterSize = "82M",
+            SizeGiB = 0.17,
+            Description = "中英文语音合成，独立 Python TTS 服务推理（非 OVMS）",
+            IsTts = true,
+            ModelScopeRepo = "OpenVINO/Kokoro-82M-int8-ov",
+            HuggingFaceRepo = "openvino/Kokoro-82M-int8-ov",
         },
         new()
         {

@@ -13,6 +13,10 @@ public partial class LocalModelDeploymentController
         var installed = _openVinoRuntime.GetInstalledModels()
             .ToDictionary(m => m.Name, StringComparer.OrdinalIgnoreCase);
 
+        var ttsPort = IsPortListening(8001) ? 8001 : (int?)null;
+        var ttsModelDir = Path.Combine(_openVinoRuntime.ModelRoot, "Kokoro-82M-int8-ov", "1");
+        var ttsInstalled = System.IO.File.Exists(Path.Combine(ttsModelDir, "openvino_model.bin"));
+
         var catalog = OpenVinoCatalog.All.Select(e =>
         {
             var dto = new OpenVinoCatalogItemDto
@@ -24,6 +28,7 @@ public partial class LocalModelDeploymentController
                 SizeGiB = e.SizeGiB,
                 Description = e.Description,
                 IsVision = e.IsVision,
+                IsTts = e.IsTts,
                 ModelScopeRepo = e.ModelScopeRepo,
             };
 
@@ -37,10 +42,30 @@ public partial class LocalModelDeploymentController
                 dto.Port = m.Port;
                 dto.LastModified = m.LastModified;
             }
+
+            // TTS 模型由独立 Python 服务承载，模型在 <root>/Kokoro-82M-int8-ov/1/ 下
+            if (e.IsTts && ttsInstalled)
+            {
+                dto.Installed = true;
+                dto.Path = ttsModelDir;
+                dto.IsRunning = ttsPort != null;
+                dto.Port = ttsPort;
+            }
             return dto;
         }).ToList();
 
         return Ok(catalog);
+    }
+
+    private static bool IsPortListening(int port)
+    {
+        try
+        {
+            using var tcp = new System.Net.Sockets.TcpClient();
+            tcp.Connect("127.0.0.1", port);
+            return true;
+        }
+        catch { return false; }
     }
 
     private static string DefaultDirName(OpenVinoCatalogEntry e) =>

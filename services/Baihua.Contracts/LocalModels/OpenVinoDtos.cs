@@ -10,6 +10,7 @@ public class OpenVinoCatalogItemDto
     public double SizeGiB { get; set; }
     public string? Description { get; set; }
     public bool IsVision { get; set; }
+    public bool IsTts { get; set; }
     public string ModelScopeRepo { get; set; } = "";
     public bool Installed { get; set; }
 
@@ -39,6 +40,7 @@ public class OpenVinoCatalogEntry
     public double SizeGiB { get; set; }
     public string? Description { get; set; }
     public bool IsVision { get; set; }
+    public bool IsTts { get; set; }
     public string ModelScopeRepo { get; set; } = "";
     public string HuggingFaceRepo { get; set; } = "";
     /// <summary>下载到本地模型根目录后的子目录名</summary>

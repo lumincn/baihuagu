@@ -100,7 +100,7 @@ else
                     @foreach (var c in openVinoCatalog)
                     {
                         <tr class="@(c.Installed ? "table-active" : "")">
-                            <td>@c.Name @(c.IsVision ? "👁" : "")</td>
+                            <td>@c.Name @(c.IsVision ? "👁" : c.IsTts ? "🔊" : "")</td>
                             <td>@c.ParameterSize @c.Quantization</td>
                             <td class="small text-muted">
                                 @if (c.Installed && c.SizeBytes > 0)
