@@ -2711,6 +2711,9 @@
   <data name="BrowseVault_Playlist" xml:space="preserve">
     <value>Playlist</value>
   </data>
+  <data name="BrowseVault_Voice" xml:space="preserve">
+    <value>Voice</value>
+  </data>
   <data name="Cards_PageTitle" xml:space="preserve">
     <value>Memory Cards</value>
   </data>

@@ -11,6 +11,7 @@
 @using Markdig
 @using Microsoft.JSInterop
 @using Baihua.Contracts.Vaults
+@using Baihua.Contracts.Ai
 @using Baihua.Web.Services
 @implements IAsyncDisposable
 
@@ -320,6 +321,19 @@
                         @if (!string.IsNullOrEmpty(listeningError))
                         {
                             <div class="alert alert-warning py-2 small">⚠️ @listeningError</div>
+                        }
+
+                        @if (ttsVoices.Count > 0)
+                        {
+                            <div class="mb-3 d-flex align-items-center gap-2">
+                                <label class="form-label mb-0 text-muted small">@L["BrowseVault_Voice"]</label>
+                                <select class="form-select form-select-sm" style="width:auto;flex:1;" @bind="selectedVoice">
+                                    @foreach (var v in ttsVoices)
+                                    {
+                                        <option value="@v.Id">@v.Name（@(v.Language == "zh" ? "中文" : "英文")・@(v.Gender == "female" ? "女" : "男")）</option>
+                                    }
+                                </select>
+                            </div>
                         }
 
                         <div class="mb-3 d-flex justify-content-center gap-2">
@@ -770,6 +784,10 @@
 
             if (listeningPlaylist.Count > 0)
             {
+                if (ttsVoices.Count == 0)
+                {
+                    ttsVoices = await ApiService.GetTtsVoicesAsync() ?? new();
+                }
                 showListeningModal = true;
             }
         }
@@ -784,6 +802,8 @@
     private int _speakSeq = 0; // 递增序号，防止过快的 onend 回调导致无限循环
     private bool _isPlayingSpeech = false; // 防止 OnSpeechEnded 重入
     private string listeningError = "";
+    private List<TtsVoice> ttsVoices = new();
+    private string selectedVoice = "zf_xiaoxiao";
 
     /// <summary>剥离 YAML frontmatter（AI 生成的笔记含 ai_provider/ai_model 等元数据，朗读/展示不应出现）</summary>
     private static string StripFrontmatter(string content)
@@ -858,7 +878,7 @@
         {
             var textToSpeak = $"{item.Title}. {StripMarkdown(StripFrontmatter(item.Content ?? ""))}";
 
-            var audioBytes = await ApiService.SynthesizeSpeechAsync(textToSpeak, "zf_xiaoxiao");
+            var audioBytes = await ApiService.SynthesizeSpeechAsync(textToSpeak, selectedVoice);
             if (audioBytes != null && audioBytes.Length > 44)
             {
                 var base64 = Convert.ToBase64String(audioBytes);

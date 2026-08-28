@@ -2711,6 +2711,9 @@
   <data name="BrowseVault_Playlist" xml:space="preserve">
     <value>播放列表</value>
   </data>
+  <data name="BrowseVault_Voice" xml:space="preserve">
+    <value>音色</value>
+  </data>
   <data name="Cards_PageTitle" xml:space="preserve">
     <value>记忆卡片</value>
   </data>
