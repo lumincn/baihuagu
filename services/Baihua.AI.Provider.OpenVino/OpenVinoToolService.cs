@@ -100,7 +100,8 @@ public class OpenVinoToolService : ILocalModelTool
         var env = Environment.GetEnvironmentVariable("VISION_MODEL_7B");
         if (!string.IsNullOrWhiteSpace(env))
             return env;
-        return Path.Combine(ModelRoot, "Qwen2.5-VL-7B-Instruct-int4-ov");
+        // 主视觉/多模态模型：Qwen3.5-9B（VL-7B 已清理）
+        return Path.Combine(ModelRoot, "Qwen3.5-9B-int8-ov");
     }
 
     /// <summary>探测工具状态：(是否安装, 版本, 是否运行, 模型目录)</summary>

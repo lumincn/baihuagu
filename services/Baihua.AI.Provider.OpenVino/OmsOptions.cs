@@ -24,13 +24,17 @@ public class OmsOptions
 /// </summary>
 public static class OmsModelMap
 {
-    /// <summary>百花视觉内部 Id → OVMS 模型 id</summary>
+    /// <summary>
+    /// 百花视觉内部 Id → OVMS 模型 id。
+    /// 视觉模型已由 Qwen2.5-VL-7B 切换为 Qwen3.5-9B（int8，含视觉/文本嵌入，
+    /// 2026-08-29 实测视觉可用）；VL-7B/VL-3B 目录已清理以释放磁盘。
+    /// </summary>
     public static string VisionModelId(string internalId)
     {
         var key = (internalId ?? "").Trim();
         if (key.Equals("7b", StringComparison.OrdinalIgnoreCase))
-            return "qwen2.5-vl-7b";
-        return "qwen2.5-vl-7b";
+            return "qwen3.5-9b";
+        return "qwen3.5-9b";
     }
 
     /// <summary>LLM 对话模型 id（百花文本推理后端）——统一指向 OVMS 的对话模型</summary>
