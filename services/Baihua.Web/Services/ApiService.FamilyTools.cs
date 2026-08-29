@@ -1139,23 +1139,6 @@ namespace Baihua.Web.Services
         }
 
         // 运行中模型管理
-        public async Task<List<RunningModelDto>> GetRunningModelsAsync(bool forceRefresh = false, CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                using var quick = new CancellationTokenSource(QuickCallTimeout);
-                using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
-                var url = "/api/local-models/running" + (forceRefresh ? "?forceRefresh=true" : "");
-                var response = await GetWithMetricsAsync(url, linked.Token);
-                response.EnsureSuccessStatusCode();
-                return await response.Content.ReadFromJsonAsync<List<RunningModelDto>>(linked.Token) ?? new List<RunningModelDto>();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取运行中模型失败");
-                return new List<RunningModelDto>();
-            }
-        }
 
         public async Task<List<string>> GetAvailableModelsAsync(string toolId, CancellationToken cancellationToken = default)
         {
@@ -1228,23 +1211,6 @@ namespace Baihua.Web.Services
             }
         }
 
-        public async Task<bool> UnloadModelAsync(UnloadModelRequest request, CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                using var quick = new CancellationTokenSource(QuickCallTimeout);
-                using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
-                var json = JsonSerializer.Serialize(request);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-                var response = await PostWithMetricsAsync("/api/local-models/running/unload", content, linked.Token);
-                return response.IsSuccessStatusCode;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "卸载模型失败");
-                return false;
-            }
-        }
 
         public async Task<LocalAiServiceStatusDto> StartLlamaCppAsync(CancellationToken cancellationToken = default)
         {

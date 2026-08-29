@@ -99,80 +99,6 @@ else
         }
     </div>
 
-    <!-- Running Models -->
-    <div class="running-section">
-        <div class="section-header" style="cursor:pointer;" @onclick="() => ToggleSection(ref _showRunningModels)">
-            <h2>@(_showRunningModels ? "▼" : "▶") ▶️ @L["LocalModels_RunningModelsTitle"]</h2>
-            <button class="btn btn-secondary btn-sm" @onclick="RefreshRunningModels" @onclick:stopPropagation>🔄 @L["LocalModels_RefreshModels"]</button>
-        </div>
-        @if (_showRunningModels)
-        {
-            @if (runningModels.Count == 0)
-            {
-                <div class="alert alert-info">@L["LocalModels_NoRunningModels"]</div>
-            }
-            else
-            {
-                <div class="running-models-table">
-                    <div class="running-table-header">
-                        <span class="col-model">@L["LocalModels_Col_Model"]</span>
-                        <span class="col-tool">@L["LocalModels_Col_Tool"]</span>
-                        <span class="col-port">@L["LocalModels_Col_Port"]</span>
-                        <span class="col-mem">@L["LocalModels_Col_MemoryUsage"]</span>
-                        <span class="col-expires">@L["LocalModels_Col_Expires"]</span>
-                        <span class="col-actions">@L["LocalModels_Col_Actions"]</span>
-                    </div>
-                    @foreach (var rm in runningModels)
-                    {
-                        <div class="running-table-row">
-                            <span class="col-model">
-                                <span class="model-name-text">@rm.DisplayName</span>
-                                @if (!string.IsNullOrEmpty(rm.Family))
-                                {
-                                    <span class="badge badge-light">@rm.Family</span>
-                                }
-                            </span>
-                            <span class="col-tool">
-                                <span class="tool-badge @GetToolBadgeClass(rm.ToolId)">@rm.ToolName</span>
-                            </span>
-                            <span class="col-port">@(rm.Port?.ToString() ?? "-")</span>
-                            <span class="col-mem">
-                                @if (rm.VramGiB.HasValue && rm.VramGiB.Value > 0)
-                                {
-                                    <span>VRAM @rm.VramGiB.Value.ToString("F1") GB</span>
-                                }
-                                else
-                                {
-                                    <span>~@rm.SizeGiB.ToString("F1") GB</span>
-                                }
-                                <div class="mem-bar">
-                                    <div class="mem-fill" style="width: @(Math.Min(100, (int)((rm.SizeBytes / (double)(hardwareInfo?.Memory.TotalBytes ?? 1)) * 100)))%"></div>
-                                </div>
-                            </span>
-                            <span class="col-expires">
-                                @if (rm.ExpiresAt.HasValue)
-                                {
-                                    <span title="@rm.ExpiresAt.Value.ToString("yyyy-MM-dd HH:mm:ss")">@GetTimeRemaining(rm.ExpiresAt.Value)</span>
-                                }
-                                else
-                                {
-                                    <span>-</span>
-                                }
-                            </span>
-                            <span class="col-actions">
-                                <button class="btn btn-danger btn-sm" @onclick='() => UnloadModel(rm)' disabled="@isLoadingModel">
-                                    ⏹ @L["LocalModels_Unload"]
-                                </button>
-                            </span>
-                        </div>
-                    }
-                </div>
-                <div class="memory-summary">
-                    @L["LocalModels_TotalRunning", runningModels.Count, runningModels.Sum(m => m.SizeGiB).ToString("F1")]
-                </div>
-            }
-        }
-    </div>
 
     }
 
@@ -1159,15 +1085,10 @@ else
         }
         else
         {
-            <OpenVinoTab ModelsChanged="RefreshRunningModels" />
+            <OpenVinoTab />
         }
     }
 
-
-    <ConfirmDialog Message="@string.Format(L["LocalModels_ConfirmUnload"], unloadTarget?.DisplayName ?? "")"
-                   Visible="@(unloadTarget != null)"
-                   OnConfirm="ConfirmUnloadModel"
-                   OnCancel="CancelUnloadModel" />
 @code {
     private bool isLoading = true;
     private string loadingStatus = "";
@@ -1190,7 +1111,7 @@ else
 
     // 区域折叠状态（默认只展开最常用的：模型推荐）
     private bool _showHardware = false;
-    private bool _showRunningModels = false;
+
     private bool _showLocalTools = false;
     private bool _showRecommendations = true;
 
@@ -1284,7 +1205,6 @@ else
             var tasks = new List<Task>
             {
                 SafeLoadAsync(() => LoadRecommendationsAsync()),
-                SafeLoadAsync(RefreshRunningModels),
 
             };
             await Task.WhenAll(tasks);
@@ -1334,7 +1254,7 @@ else
             hardwareInfo = await ApiService.GetHardwareInfoAsync(forceRefresh: true);
             localTools = await ApiService.GetLocalToolsAsync(forceRefresh: true);
             await LoadRecommendationsAsync(forceRefresh: true);
-            await RefreshRunningModels();
+
         }
         catch (Exception ex)
         {
@@ -1498,14 +1418,6 @@ else
         return (bytes.Value / (1024.0 * 1024 * 1024)).ToString("F1");
     }
 
-    private static string GetToolBadgeClass(string toolId)
-    {
-        return toolId switch
-        {
-            "openvino" => "tool-openvino",
-            _ => ""
-        };
-    }
 
     private string GetModalityLabel(string modality) => modality.ToLowerInvariant() switch
     {
@@ -1569,66 +1481,6 @@ else
         };
     }
 
-    #region 运行中模型管理
-
-    private List<RunningModelDto> runningModels = new();
-    private bool isLoadingModel = false;
-
-    private async Task RefreshRunningModels()
-    {
-        runningModels = await ApiService.GetRunningModelsAsync(forceRefresh: true);
-        await InvokeAsync(StateHasChanged);
-    }
-    private RunningModelDto? unloadTarget;
-
-    private void UnloadModel(RunningModelDto model)
-    {
-        unloadTarget = model;
-    }
-
-    private void CancelUnloadModel()
-    {
-        unloadTarget = null;
-    }
-
-
-    private async Task ConfirmUnloadModel()
-    {
-        var model = unloadTarget;
-        unloadTarget = null;
-        if (model == null) return;
-        isLoadingModel = true;
-        try
-        {
-            await ApiService.UnloadModelAsync(new UnloadModelRequest
-            {
-                ToolId = model.ToolId,
-                ModelName = model.ModelName
-            });
-
-            await Task.Delay(500);
-            await RefreshRunningModels();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogWarning(ex, "卸载模型失败: {Model}", model.DisplayName);
-        }
-        finally
-        {
-            isLoadingModel = false;
-            await InvokeAsync(StateHasChanged);
-        }
-    }
-    private string GetTimeRemaining(DateTime expiresAt)
-    {
-        var remaining = expiresAt - DateTime.Now;
-        if (remaining.TotalSeconds <= 0) return L["LocalModels_ExpireSoon"];
-        if (remaining.TotalHours >= 1) return string.Format(L["LocalModels_ExpireHours"], remaining.TotalHours);
-        if (remaining.TotalMinutes >= 1) return string.Format(L["LocalModels_ExpireMinutes"], remaining.TotalMinutes);
-        return L["LocalModels_ExpireSoon"];
-    }
-
-    #endregion
 
     public void Dispose()
     {
