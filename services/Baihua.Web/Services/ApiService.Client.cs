@@ -443,6 +443,23 @@ namespace Baihua.Web.Services
             response.EnsureSuccessStatusCode();
         }
 
+        public async Task<(bool Success, string? OmsId, bool AlreadyRegistered, string? Warning, string? Error)> RegisterOmsModelAsync(string modelPath, CancellationToken cancellationToken = default)
+        {
+            using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
+            var response = await PostWithMetricsAsync("/api/local-models/openvino/register",
+                JsonContent.Create(new OpenVinoRunRequest { ModelPath = modelPath }), linked.Token, _longHttpClient);
+            var body = await response.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>(linked.Token);
+            if (!response.IsSuccessStatusCode)
+                return (false, null, false, null, body.TryGetProperty("error", out var e) ? e.GetString() : $"HTTP {(int)response.StatusCode}");
+            return (
+                body.TryGetProperty("success", out var s) && s.GetBoolean(),
+                body.TryGetProperty("omsId", out var id) ? id.GetString() : null,
+                body.TryGetProperty("alreadyRegistered", out var a) && a.GetBoolean(),
+                body.TryGetProperty("warning", out var w) ? w.GetString() : null,
+                null);
+        }
+
         public async Task<AssistantSettingsDto> GetAssistantSettingsAsync(CancellationToken cancellationToken = default)
         {
             using var quick = new CancellationTokenSource(QuickCallTimeout);

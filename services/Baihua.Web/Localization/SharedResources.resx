@@ -4209,7 +4209,7 @@
     <value>Image Recognition</value>
   </data>
   <data name="LocalModels_DownloadedOpenVino" xml:space="preserve">
-    <value>Running OpenVINO Models</value>
+    <value>Models running on OVMS</value>
   </data>
   <data name="LocalModels_LoadOpenVinoTitle" xml:space="preserve">
     <value>Load OpenVINO Model</value>
@@ -5380,7 +5380,7 @@
     <value>It cannot be restored after deletion</value>
   </data>
   <data name="LocalModels_OpenVinoTitle" xml:space="preserve">
-    <value>OpenVINO Models (Intel Arc GPU)</value>
+    <value>Models for this machine</value>
   </data>
   <data name="LocalModels_AreaHelpTitle" xml:space="preserve">
     <value>Area Guide:</value>
@@ -5451,6 +5451,9 @@
   </data>
   <data name="LocalModels_RunBtn" xml:space="preserve">
     <value>Run</value>
+  </data>
+  <data name="LocalModels_RegisterOmsBtn" xml:space="preserve">
+    <value>Register to OVMS</value>
   </data>
   <data name="LocalModels_DownloadBtn" xml:space="preserve">
     <value>Download</value>

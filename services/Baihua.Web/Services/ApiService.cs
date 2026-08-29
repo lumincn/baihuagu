@@ -96,6 +96,7 @@ namespace Baihua.Web.Services
         Task<OpenVinoRunResult> RunOpenVinoModelAsync(string modelPath, string device = "GPU", CancellationToken cancellationToken = default);
         Task<bool> StopOpenVinoModelAsync(int port, CancellationToken cancellationToken = default);
         Task DeleteOpenVinoModelAsync(string path, CancellationToken cancellationToken = default);
+        Task<(bool Success, string? OmsId, bool AlreadyRegistered, string? Warning, string? Error)> RegisterOmsModelAsync(string modelPath, CancellationToken cancellationToken = default);
         Task<AssistantSettingsDto> GetAssistantSettingsAsync(CancellationToken cancellationToken = default);
         Task SaveAssistantSettingsAsync(AssistantSettingsDto settings, CancellationToken cancellationToken = default);
         Task<AssistantAnalysisDto?> GetAssistantTodayAnalysisAsync(CancellationToken cancellationToken = default);

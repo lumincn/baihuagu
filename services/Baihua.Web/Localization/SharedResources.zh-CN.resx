@@ -4209,7 +4209,7 @@
     <value>图片识别</value>
   </data>
   <data name="LocalModels_DownloadedOpenVino" xml:space="preserve">
-    <value>运行中的 OpenVINO 模型</value>
+    <value>OVMS 运行的模型</value>
   </data>
   <data name="LocalModels_LoadOpenVinoTitle" xml:space="preserve">
     <value>加载 OpenVINO 模型</value>
@@ -5380,7 +5380,7 @@
     <value>删除后将无法恢复</value>
   </data>
   <data name="LocalModels_OpenVinoTitle" xml:space="preserve">
-    <value>OpenVINO 模型（Intel Arc GPU）</value>
+    <value>适合本机的模型</value>
   </data>
   <data name="LocalModels_AreaHelpTitle" xml:space="preserve">
     <value>区域说明：</value>
@@ -5451,6 +5451,9 @@
   </data>
   <data name="LocalModels_RunBtn" xml:space="preserve">
     <value>运行</value>
+  </data>
+  <data name="LocalModels_RegisterOmsBtn" xml:space="preserve">
+    <value>注册到 OVMS</value>
   </data>
   <data name="LocalModels_DownloadBtn" xml:space="preserve">
     <value>下载</value>

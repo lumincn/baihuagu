@@ -1,3 +1,4 @@
+using Baihua.AI.Provider.OpenVino;
 using Baihua.Contracts.LocalModels;
 using Baihua.Family.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -183,5 +184,87 @@ public partial class LocalModelDeploymentController
         {
             return StatusCode(500, new { error = ex.Message });
         }
+    }
+
+    /// <summary>注册已下载模型到 OVMS（写 config.json + 重启 ovms 服务使生效）</summary>
+    [HttpPost("openvino/register")]
+    public async Task<IActionResult> RegisterOmsModel([FromBody] OpenVinoRunRequest request, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.ModelPath))
+            return BadRequest(new { error = "modelPath 不能为空" });
+        try
+        {
+            var full = Path.GetFullPath(request.ModelPath.Trim('"'));
+            var root = Path.GetFullPath(_openVinoRuntime.ModelRoot);
+            if (!full.StartsWith(root, StringComparison.OrdinalIgnoreCase))
+                return BadRequest(new { error = "路径必须在模型目录内" });
+            if (!Directory.Exists(full))
+                return NotFound(new { error = "模型目录不存在" });
+
+            var dirName = Path.GetFileName(full);
+            var omsId = OmsModelMap.OmsIdForDirName(dirName) ?? dirName.ToLowerInvariant();
+            var configPath = Path.Combine(root, "config.json");
+            if (!System.IO.File.Exists(configPath))
+                return NotFound(new { error = "OVMS config.json 不存在" });
+
+            var json = await System.IO.File.ReadAllTextAsync(configPath, ct);
+            var node = System.Text.Json.Nodes.JsonNode.Parse(json) ?? throw new InvalidOperationException("config.json 解析失败");
+            var list = node["model_config_list"]?.AsArray();
+            if (list == null)
+            {
+                list = new System.Text.Json.Nodes.JsonArray();
+                node["model_config_list"] = list;
+            }
+            bool already = list.Any(x => x?["config"]?["name"]?.GetValue<string>() == omsId);
+            if (!already)
+            {
+                list.Add(new System.Text.Json.Nodes.JsonObject
+                {
+                    ["config"] = new System.Text.Json.Nodes.JsonObject
+                    {
+                        ["name"] = omsId,
+                        ["base_path"] = full.Replace('\\', '/'),
+                    }
+                });
+                await System.IO.File.WriteAllTextAsync(configPath,
+                    node.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }), ct);
+            }
+
+            string? restartWarning = null;
+            try
+            {
+                await RunScAsync("stop ovms", ct);
+                await Task.Delay(1500, ct);
+                var (startOk, err) = await RunScAsync("start ovms", ct);
+                if (!startOk) restartWarning = err ?? "ovms 启动失败";
+            }
+            catch (Exception ex) { restartWarning = ex.Message; }
+
+            if (restartWarning != null)
+                return Ok(new { success = true, omsId, alreadyRegistered = already, warning = $"config.json 已更新，但重启 OVMS 失败（{restartWarning}），请手动重启 ovms 服务" });
+
+            return Ok(new { success = true, omsId, alreadyRegistered = already });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
+    private static async Task<(bool Ok, string? Err)> RunScAsync(string args, CancellationToken ct)
+    {
+        var psi = new System.Diagnostics.ProcessStartInfo("sc.exe", args)
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+        using var p = System.Diagnostics.Process.Start(psi);
+        if (p == null) return (false, "无法启动 sc.exe");
+        await p.WaitForExitAsync(ct);
+        if (p.ExitCode == 0) return (true, null);
+        var err = await p.StandardError.ReadToEndAsync(ct);
+        return (false, string.IsNullOrWhiteSpace(err) ? $"sc 退出码 {p.ExitCode}" : err);
     }
 }
