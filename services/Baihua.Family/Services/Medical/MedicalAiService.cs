@@ -23,6 +23,7 @@ public class MedicalAiService
     private readonly AiSettingsService _aiSettings;
     private readonly MedicalService _medicalService;
     private readonly ILocalRuntimeManager _runtimeManager;
+    private readonly IHttpClientFactory _httpFactory;
     private readonly ILogger<MedicalAiService> _logger;
 
     public MedicalAiService(
@@ -30,12 +31,14 @@ public class MedicalAiService
         AiSettingsService aiSettings,
         MedicalService medicalService,
         ILocalRuntimeManager runtimeManager,
+        IHttpClientFactory httpFactory,
         ILogger<MedicalAiService> logger)
     {
         _aiClient = aiClient;
         _aiSettings = aiSettings;
         _medicalService = medicalService;
         _runtimeManager = runtimeManager;
+        _httpFactory = httpFactory;
         _logger = logger;
     }
 
@@ -128,6 +131,7 @@ public class MedicalAiService
 
     /// <summary>
     /// 检查扁仓 BianCang 医疗模型是否已运行，返回 (modelName, "biancang") 或 null。
+    /// 先查 Baihua 启动的模型，再查 OVMS REST API（config.json 加载的模型）。
     /// </summary>
     private (string Model, string Label)? TryGetMedicalModel()
     {
@@ -144,6 +148,25 @@ public class MedicalAiService
         {
             _logger.LogDebug(ex, "检查 BianCang 模型运行状态失败");
         }
+
+        // 回退：查 OVMS REST API（模型可能通过 config.json 加载）
+        try
+        {
+            var http = _httpFactory.CreateClient();
+            http.Timeout = TimeSpan.FromSeconds(5);
+            var resp = http.GetAsync("http://127.0.0.1:8000/v1/models").GetAwaiter().GetResult();
+            if (resp.IsSuccessStatusCode)
+            {
+                var json = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                if (json.Contains("\"biancang\"", StringComparison.OrdinalIgnoreCase))
+                    return ("biancang", "biancang");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "查询 OVMS 模型列表失败");
+        }
+
         return null;
     }
 
