@@ -5431,9 +5431,7 @@
   <data name="LocalModels_Col_Status" xml:space="preserve">
     <value>状态</value>
   </data>
-  <data name="LocalModels_Col_Port" xml:space="preserve">
-    <value>端口</value>
-  </data>
+
   <data name="LocalModels_Col_Name" xml:space="preserve">
     <value>名称</value>
   </data>

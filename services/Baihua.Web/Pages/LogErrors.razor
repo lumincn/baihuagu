@@ -29,7 +29,7 @@
                 <p>@(pendingClear == "local" ? L["LogErrors_ConfirmClearLocal"] : L["LogErrors_ConfirmClearOpenObserve"])</p>
                 <div class="confirm-modal-actions">
                     <button class="btn-secondary" @onclick="CancelClear">@L["LogErrors_Cancel"]</button>
-                    <button class="btn-danger" @onclick='() => { if (pendingClear == "local") ConfirmClearLocalLogs(); else ConfirmClearOpenObserve(); }'>@L["LogErrors_ConfirmClear"]</button>
+                    <button class="btn-danger" @onclick='async () => { if (pendingClear == "local") await ConfirmClearLocalLogs(); else await ConfirmClearOpenObserve(); }'>@L["LogErrors_ConfirmClear"]</button>
                 </div>
             </div>
         </div>

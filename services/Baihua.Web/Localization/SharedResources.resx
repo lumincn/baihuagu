@@ -5431,9 +5431,7 @@
   <data name="LocalModels_Col_Status" xml:space="preserve">
     <value>Status</value>
   </data>
-  <data name="LocalModels_Col_Port" xml:space="preserve">
-    <value>Port</value>
-  </data>
+
   <data name="LocalModels_Col_Name" xml:space="preserve">
     <value>Name</value>
   </data>

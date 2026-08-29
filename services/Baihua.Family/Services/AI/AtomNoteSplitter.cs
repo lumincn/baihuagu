@@ -12,7 +12,6 @@ using System.Collections.Generic;
 using Microsoft.Extensions.AI;
 using Baihua.Family.Models;
 using Baihua.Contracts.Scene;
-using Baihua.AI.Provider;
 
 namespace Baihua.Family.Services;
     public partial class AtomNoteSplitter

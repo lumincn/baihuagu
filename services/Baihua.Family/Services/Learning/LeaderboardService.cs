@@ -94,6 +94,7 @@ public class LeaderboardService
     /// 排序维度：本周完成卡片数（北京周界），并列排名由 FAM-13 在 DTO 层处理。
     /// </summary>
     /// <param name="role">角色过滤：adults/kids（大小写不敏感，含 adult 即大人榜）</param>
+    /// <param name="vaultId">知识库 ID（可空=全部）</param>
     public async Task<List<LeaderboardEntry>> GetRoleLeaderboardAsync(string role, string? vaultId = null)
     {
         var isAdults = role.Contains("adult", StringComparison.OrdinalIgnoreCase);

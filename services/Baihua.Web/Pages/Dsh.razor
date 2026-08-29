@@ -117,7 +117,7 @@
                                             <button class="btn btn-sm btn-outline-secondary" @onclick="() => BhRestartAsync(svc)" disabled="@_bhBusy">🔄 重启</button>
                                             <button class="btn btn-sm btn-primary" @onclick="() => BhBuildRestartAsync(svc)" disabled="@_bhBusy" title="编译成功后自动滚动重启（适合经常改代码的场景）">🛠 编译并重启</button>
                                             <button class="btn btn-sm btn-outline-primary" @onclick="() => BhBuildAsync(svc)" disabled="@_bhBusy">🛠 编译</button>
-                                            <button class="btn btn-sm btn-outline-info" @onclick="() => ShowLogsAsync(svc.Name)" disabled="@_bhBusy">📋 日志</button>
+                                            <button class="btn btn-sm btn-outline-info" @onclick='() => ShowLogsAsync(svc.Name ?? "")' disabled="@_bhBusy">📋 日志</button>
                                         </td>
                                     </tr>
                                 }
@@ -296,11 +296,11 @@
         }
     }
 
-    private Task BhStartAsync(BhServiceDto svc) => RunBhActionAsync("start", svc.Name, false);
-    private Task BhStopAsync(BhServiceDto svc) => RunBhActionAsync("stop", svc.Name, true);
-    private Task BhRestartAsync(BhServiceDto svc) => RunBhActionAsync("restart", svc.Name, true);
-    private Task BhBuildAsync(BhServiceDto svc) => RunBhActionAsync("build", svc.Name, true);
-    private Task BhBuildRestartAsync(BhServiceDto svc) => RunBhActionAsync("build-restart", svc.Name, true);
+    private Task BhStartAsync(BhServiceDto svc) => RunBhActionAsync("start", svc.Name ?? "", false);
+    private Task BhStopAsync(BhServiceDto svc) => RunBhActionAsync("stop", svc.Name ?? "", true);
+    private Task BhRestartAsync(BhServiceDto svc) => RunBhActionAsync("restart", svc.Name ?? "", true);
+    private Task BhBuildAsync(BhServiceDto svc) => RunBhActionAsync("build", svc.Name ?? "", true);
+    private Task BhBuildRestartAsync(BhServiceDto svc) => RunBhActionAsync("build-restart", svc.Name ?? "", true);
     private Task BhBuildAllAsync() => RunBhActionAsync("build", "", true);
     private Task BhUpdateAsync() => RunBhActionAsync("update", "", true);
     private Task BhDeployAsync() => RunBhActionAsync("deploy", "", true);

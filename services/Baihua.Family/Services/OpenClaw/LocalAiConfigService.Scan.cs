@@ -275,7 +275,7 @@ public partial class LocalAiConfigService
                     precision = dt.GetString() ?? "";
             }
         }
-        catch (Exception ex) { /* 元信息读取失败不阻塞扫描 */ }
+        catch (Exception) { /* 元信息读取失败不阻塞扫描 */ }
         try
         {
             var config = Path.Combine(dir, "config.json");
@@ -303,7 +303,7 @@ public partial class LocalAiConfigService
                 }
             }
         }
-        catch (Exception ex) { /* 同上 */ }
+        catch (Exception) { /* 同上 */ }
         return (displayName, isVl, precision);
     }
 

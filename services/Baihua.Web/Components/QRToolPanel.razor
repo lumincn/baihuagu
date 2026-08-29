@@ -399,7 +399,7 @@
     private async Task OnNameKeydown(KeyboardEventArgs e)
     {
         if (e.Key == "Enter") await SaveDisplayNameAsync();
-        else if (e.Key == "Escape") CancelEditName();
+        else if (e.Key == "Escape") await CancelEditName();
     }
 
     private async Task SaveDisplayNameAsync()

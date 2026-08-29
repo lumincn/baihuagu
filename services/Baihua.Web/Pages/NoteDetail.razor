@@ -492,7 +492,7 @@ else
             if (result != null && result.Success)
             {
                 generateSuccess = true;
-                var msg = L["NoteDetail_NoteGenerated", result.NotePath].Value;
+                var msg = L["NoteDetail_NoteGenerated", result.NotePath ?? ""].Value;
                 if (result.FixedLinks > 0)
                     msg += L["NoteDetail_LinksCorrected", result.FixedLinks].Value;
                 generateMessage = msg;

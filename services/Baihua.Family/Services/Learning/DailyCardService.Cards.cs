@@ -5,7 +5,6 @@ using Baihua.AI.Provider;
 using Microsoft.EntityFrameworkCore;
 using Baihua.Data;
 using Baihua.Data.Entities;
-using Baihua.AI.Provider;
 
 namespace Baihua.Family.Services;
 

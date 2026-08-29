@@ -511,7 +511,7 @@ public class StockAdvisorService
             // 按建议度降序
             return list.OrderByDescending(x => x.Score).ToList();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // 解析失败返回空，由调用方展示原始输出
             return new List<StockRecommendation>();

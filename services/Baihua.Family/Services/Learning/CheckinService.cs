@@ -168,12 +168,6 @@ public class CheckinService
     }
 
     /// <summary>
-    /// FAM-33 补签（AC1/AC2/AC3）：3 天窗口内、该日有 StudyActivity、月限 3 次。
-    /// </summary>
-    /// <param name="beijingDate">补签日期（北京时间自然日）</param>
-    /// <param name="vaultId">知识库 ID（可空=全部）</param>
-    /// <returns>补签结果（Success/Message/Remaining）</returns>
-    /// <summary>
     /// FAM-33 补签（pm 拍板语义）：对最近 3 天内**无 StudyActivity** 的 ⬜ 日期打补签标记，
     /// 填补连击缺口。不创建虚假 StudyActivity。月限 3 次（家庭维度）。
     /// </summary>

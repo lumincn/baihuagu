@@ -24,6 +24,8 @@ public class TopicSuggestionsController : ControllerBase
     /// 获取今日推荐主题（按天缓存；refresh=true 强制重新生成"换一批"）
     /// </summary>
     /// <param name="context">用户知识库构成摘要（可选，用于个性化）</param>
+    /// <param name="refresh">true 强制重新生成（换一批）</param>
+    /// <param name="ct">取消令牌</param>
     [HttpGet]
     [ProducesResponseType(typeof(TopicSuggestionResponse), 200)]
     public async Task<IActionResult> Get(

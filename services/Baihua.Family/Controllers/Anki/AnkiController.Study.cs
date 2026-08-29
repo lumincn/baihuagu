@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using Baihua.AI.Provider;
 using Baihua.Contracts.Anki;
-using Baihua.AI.Provider;
 
 namespace Baihua.Family.Controllers;
 

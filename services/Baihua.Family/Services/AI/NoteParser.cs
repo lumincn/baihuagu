@@ -4,7 +4,6 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.Localization;
 using Baihua.Core.Localization;
 using Baihua.AI.Provider;
-using Baihua.AI.Provider;
 
 namespace Baihua.Family.Services;
 

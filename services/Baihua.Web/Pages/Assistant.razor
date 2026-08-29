@@ -179,7 +179,7 @@ else
     private List<UserActivityDto> _activities = new();
     private Dictionary<string, int> _activityCounts = new();
     private bool _analyzing;
-    private bool _loading = true;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -202,7 +202,7 @@ else
         catch { }
         finally
         {
-            _loading = false;
+
             StateHasChanged();
         }
     }

@@ -12,7 +12,6 @@ using Baihua.Family.Models;
 using Baihua.Contracts.Scene;
 using Baihua.Contracts.Tasks;
 using Baihua.Contracts.Vaults;
-using Baihua.AI.Provider;
 
 namespace Baihua.Family.Controllers
 {
@@ -125,7 +124,7 @@ namespace Baihua.Family.Controllers
                             try
                             {
                                 var content = await GenerateNoteContentAsync(
-                                    provider, modelName, item.title, item.category, vaultName, systemPrompt, lengthHint, options, linkedCts.Token);
+                                    provider!, modelName, item.title, item.category, vaultName, systemPrompt, lengthHint, options, linkedCts.Token);
 
                                 var safeTitle = item.title.Replace("\\", "_").Replace("/", "_").Replace(":", "_")
                                     .Replace("*", "_").Replace("?", "_").Replace("\"", "_").Replace("<", "_")
@@ -171,7 +170,7 @@ namespace Baihua.Family.Controllers
                                 ["vaultName"] = vaultName,
                                 ["trigger"] = "vault_generation"
                             });
-                            _taskManager.UpdateProgress(cardTaskId, 0, 100, _loc["Task_Progress_StartCardGen", vaultName]);
+                            await _taskManager.UpdateProgress(cardTaskId, 0, 100, _loc["Task_Progress_StartCardGen", vaultName]);
 
                             var notesPath = Path.Combine(vaultPath, "notes");
                             if (Directory.Exists(notesPath))

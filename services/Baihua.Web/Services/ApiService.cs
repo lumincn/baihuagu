@@ -302,7 +302,7 @@ namespace Baihua.Web.Services
         private readonly IStringLocalizer<Baihua.Web.Localization.SharedResources> _loc;
         private readonly ApiCallMetricsService? _metricsService;
         private readonly EndToEndPerformanceService? _e2eService;
-        private string? _currentTraceId;
+
         private readonly string _fallbackBaseUrl = "http://127.0.0.1:8788";
 
         public ApiService(IHttpClientFactory httpClientFactory, SettingsService settingsService, ILogger<ApiService> logger, IStringLocalizer<Baihua.Web.Localization.SharedResources> loc, IServiceProvider serviceProvider)
@@ -443,11 +443,7 @@ namespace Baihua.Web.Services
         /// </summary>
         private void RecordApiCall(string endpoint, string method, long elapsedMs, bool success, int? statusCode = null, string? error = null)
         {
-            // 记录到端到端追踪（如果有活跃的 trace）
-            if (_e2eService != null && _currentTraceId != null)
-            {
-                _e2eService.RecordApiCallEnd(_currentTraceId, endpoint, elapsedMs, success);
-            }
+
         }
         
         /// <summary>

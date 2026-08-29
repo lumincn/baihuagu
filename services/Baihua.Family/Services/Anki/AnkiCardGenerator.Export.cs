@@ -3,7 +3,6 @@ using System.Text.Json;
 using Baihua.Contracts.Anki;
 using Baihua.AI.Provider;
 using AnkiGen.Core;
-using Baihua.AI.Provider;
 
 namespace Baihua.Family.Services
 {

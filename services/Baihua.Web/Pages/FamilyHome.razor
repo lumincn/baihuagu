@@ -718,7 +718,7 @@
                 SystemDeviceName = d.SystemDeviceName,
                 AuthorizedTime = d.AuthorizedTime,
                 LastSyncTime = d.LastSyncTime,
-                IpAddress = d.IpAddress,
+                IpAddress = d.IpAddress ?? "",
                 SyncCount = d.SyncCount,
                 FirstSyncTime = d.FirstSyncTime,
                 SyncedVaultIds = d.SyncedVaultIds ?? new List<string>(),

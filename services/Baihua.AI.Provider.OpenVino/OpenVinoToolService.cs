@@ -384,7 +384,7 @@ public class OpenVinoToolService : ILocalModelTool
             default:
                 modelId = key;
                 displayName = key;
-                family = null;
+                family = "";
                 break;
         }
 

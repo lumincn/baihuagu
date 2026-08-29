@@ -10,7 +10,6 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Localization;
 using Baihua.Family.Models;
 using Baihua.Core;
-using Baihua.AI.Provider;
 
 namespace Baihua.Family.Services
 {

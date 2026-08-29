@@ -1062,6 +1062,7 @@
     private async Task ConfirmEvict()
     {
         showEvictConfirm = false;
+        if (selectedMaster == null) return;
         try
         {
             var result = await ApiService.EvictMasterAsync(selectedMaster.MasterId);

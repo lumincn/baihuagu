@@ -12,7 +12,6 @@ using Baihua.Family.Models;
 using Baihua.Contracts.Scene;
 using Baihua.Contracts.Tasks;
 using Baihua.Contracts.Vaults;
-using Baihua.AI.Provider;
 
 namespace Baihua.Family.Controllers
 {
