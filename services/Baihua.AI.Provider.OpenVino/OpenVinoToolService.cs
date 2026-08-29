@@ -65,6 +65,16 @@ public class OpenVinoToolService : ILocalModelTool
     /// <summary>OVMS REST 基地址</summary>
     private string BaseUrl => _omsOptions.BaseUrl.TrimEnd('/');
 
+    /// <summary>OVMS 监听端口（从 BaseUrl 解析，默认 8000）</summary>
+    private int OmsPort
+    {
+        get
+        {
+            try { return new Uri(BaseUrl).Port; }
+            catch { return 8000; }
+        }
+    }
+
     /// <summary>去重后的模型配置（options 绑定可能因默认值+配置叠加产生重复）</summary>
     private IEnumerable<OpenVinoModelOption> DistinctModels()
     {
@@ -377,6 +387,7 @@ public class OpenVinoToolService : ILocalModelTool
             ToolName = "OpenVINO",
             ModelName = modelId,
             DisplayName = displayName,
+            Port = OmsPort,
             SizeBytes = size,
             RamBytes = null,
             VramBytes = null,

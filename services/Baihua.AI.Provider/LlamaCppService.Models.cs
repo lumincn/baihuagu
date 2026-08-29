@@ -35,6 +35,9 @@ namespace Baihua.AI.Provider
                 try { modelFileSize = new FileInfo(llamaCpp.ModelPath).Length; }
                 catch (Exception ex) { logger.LogDebug(ex, "文件系统操作失败"); }
 
+                int? port = null;
+                try { port = new Uri(llamaCpp.BaseUrl).Port; } catch { }
+
                 foreach (var item in dataArray.EnumerateArray())
                 {
                     var modelId = JsonHelper.GetString(item, "id");
@@ -47,6 +50,7 @@ namespace Baihua.AI.Provider
                         ModelName = modelId,
                         DisplayName = modelFileName,
                         Status = "running",
+                        Port = port,
                         SizeBytes = modelFileSize,
                     });
                 }

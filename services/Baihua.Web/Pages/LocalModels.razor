@@ -117,6 +117,7 @@ else
                     <div class="running-table-header">
                         <span class="col-model">@L["LocalModels_Col_Model"]</span>
                         <span class="col-tool">@L["LocalModels_Col_Tool"]</span>
+                        <span class="col-port">@L["LocalModels_Col_Port"]</span>
                         <span class="col-mem">@L["LocalModels_Col_MemoryUsage"]</span>
                         <span class="col-expires">@L["LocalModels_Col_Expires"]</span>
                         <span class="col-actions">@L["LocalModels_Col_Actions"]</span>
@@ -134,6 +135,7 @@ else
                             <span class="col-tool">
                                 <span class="tool-badge @GetToolBadgeClass(rm.ToolId)">@rm.ToolName</span>
                             </span>
+                            <span class="col-port">@(rm.Port?.ToString() ?? "-")</span>
                             <span class="col-mem">
                                 @if (rm.VramGiB.HasValue && rm.VramGiB.Value > 0)
                                 {
@@ -807,7 +809,7 @@ else
 
     .running-table-header, .running-table-row {
         display: grid;
-        grid-template-columns: 2fr 1fr 1.5fr 1.2fr 1fr;
+        grid-template-columns: 2fr 1fr 0.7fr 1.5fr 1.2fr 1fr;
         gap: 0.5rem;
         padding: 0.6rem 0.75rem;
         align-items: center;

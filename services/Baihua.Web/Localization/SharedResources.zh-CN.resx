@@ -704,6 +704,9 @@
   <data name="LocalModels_Col_Tool" xml:space="preserve">
     <value>工具</value>
   </data>
+  <data name="LocalModels_Col_Port" xml:space="preserve">
+    <value>端口</value>
+  </data>
   <data name="LocalModels_Col_MemoryUsage" xml:space="preserve">
     <value>内存占用</value>
   </data>

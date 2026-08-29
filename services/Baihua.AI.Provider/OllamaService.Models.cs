@@ -29,6 +29,7 @@ public partial class OllamaService
                     ModelName = JsonHelper.GetString(item, "name"),
                     DisplayName = JsonHelper.GetString(item, "name"),
                     Status = "running",
+                    Port = 11434,
                     SizeBytes = JsonHelper.GetLong(item, "size"),
                 };
 

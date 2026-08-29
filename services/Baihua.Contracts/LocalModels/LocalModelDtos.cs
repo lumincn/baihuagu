@@ -210,6 +210,9 @@ public class RunningModelDto
     public string ModelName { get; set; } = "";
     public string DisplayName { get; set; } = "";
     public string Status { get; set; } = "running";
+
+    /// <summary>承载该模型的服务端口（如 OVMS 8000 / Ollama 11434；未知为 null）</summary>
+    public int? Port { get; set; }
     public long SizeBytes { get; set; }
     public long? VramBytes { get; set; }
     public long? RamBytes { get; set; }
