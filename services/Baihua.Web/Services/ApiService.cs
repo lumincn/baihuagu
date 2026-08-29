@@ -213,7 +213,7 @@ namespace Baihua.Web.Services
         Task<List<string>> GetAvailableModelsAsync(string toolId, CancellationToken cancellationToken = default);
         Task<List<DownloadedModelDto>> GetDownloadedModelsAsync(CancellationToken cancellationToken = default);
         Task<bool> DeleteModelAsync(DeleteModelRequest request, CancellationToken cancellationToken = default);
-        Task<ModelDetailsDto?> GetModelDetailsAsync(ModelDetailsRequest request, CancellationToken cancellationToken = default);
+
         Task<bool> LoadModelAsync(LoadModelRequest request, CancellationToken cancellationToken = default);
         Task<bool> UnloadModelAsync(UnloadModelRequest request, CancellationToken cancellationToken = default);
         Task<LocalAiServiceStatusDto> StartLlamaCppAsync(CancellationToken cancellationToken = default);

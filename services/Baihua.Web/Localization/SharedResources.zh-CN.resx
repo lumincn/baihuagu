@@ -746,6 +746,12 @@
   <data name="LocalModels_DlTool" xml:space="preserve">
     <value>工具</value>
   </data>
+  <data name="LocalModels_DlParams" xml:space="preserve">
+    <value>参数</value>
+  </data>
+  <data name="LocalModels_DlUsage" xml:space="preserve">
+    <value>用途</value>
+  </data>
   <data name="LocalModels_DlSize" xml:space="preserve">
     <value>大小</value>
   </data>

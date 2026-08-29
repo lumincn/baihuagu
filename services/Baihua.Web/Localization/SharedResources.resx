@@ -746,6 +746,12 @@
   <data name="LocalModels_DlTool" xml:space="preserve">
     <value>Tool</value>
   </data>
+  <data name="LocalModels_DlParams" xml:space="preserve">
+    <value>Params</value>
+  </data>
+  <data name="LocalModels_DlUsage" xml:space="preserve">
+    <value>Usage</value>
+  </data>
   <data name="LocalModels_DlSize" xml:space="preserve">
     <value>Size</value>
   </data>

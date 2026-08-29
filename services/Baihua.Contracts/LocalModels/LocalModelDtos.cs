@@ -256,6 +256,9 @@ public class DownloadedModelDto
     public DateTime? ModifiedAt { get; set; }
     public string? Digest { get; set; }
     public bool IsRunning { get; set; }
+    public string? ParameterSize { get; set; }
+    public string? Quantization { get; set; }
+    public string? Usage { get; set; }
 }
 
 /// <summary>

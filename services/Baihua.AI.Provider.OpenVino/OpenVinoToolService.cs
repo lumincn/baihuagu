@@ -463,16 +463,21 @@ public class OpenVinoToolService : ILocalModelTool
                 var id = idEl.GetString();
                 if (string.IsNullOrWhiteSpace(id)) continue;
                 // 已知模型用显示名（与本地扫描/目录列表去重，避免同一模型出现两次）
-                var name = BuildRunningModelDto(id)?.DisplayName ?? id.Split('/').Last();
+                var dto = BuildRunningModelDto(id);
+                var name = dto?.DisplayName ?? id.Split('/').Last();
                 if (result.Any(r => r.Name.Equals(name, StringComparison.OrdinalIgnoreCase))) continue;
+                var (paramSize, quant, usage) = GetModelMeta(id);
                 result.Add(new DownloadedModelDto
                 {
                     Name = name,
                     ToolId = "openvino",
                     ToolName = "OpenVINO",
-                    SizeBytes = 0,
+                    SizeBytes = dto?.SizeBytes ?? 0,
                     ModifiedAt = DateTime.Now,
                     IsRunning = true,
+                    ParameterSize = paramSize,
+                    Quantization = quant,
+                    Usage = usage,
                 });
             }
         }
@@ -480,6 +485,27 @@ public class OpenVinoToolService : ILocalModelTool
         {
             // 服务不可达则忽略
         }
+    }
+
+    /// <summary>根据 OVMS 模型 id 推断参数量 / 量化 / 用途，供已下载模型表格展示。</summary>
+    private static (string ParameterSize, string Quantization, string Usage) GetModelMeta(string omsId)
+    {
+        var dirName = OmsModelMap.DirNameForOmsId(omsId) ?? "";
+        var quant = "";
+        if (dirName.Contains("int4", StringComparison.OrdinalIgnoreCase)) quant = "INT4";
+        else if (dirName.Contains("int8", StringComparison.OrdinalIgnoreCase)) quant = "INT8";
+        return omsId.ToLowerInvariant() switch
+        {
+            "qwen2.5" => ("7B", quant, "对话"),
+            "qwen2.5-14b" => ("14B", quant, "对话"),
+            "qwen2.5-coder-7b" => ("7B", quant, "编码"),
+            "qwen3.5-9b" => ("9B", quant, "视觉"),
+            "qwen2.5-vl-7b" => ("7B", quant, "视觉"),
+            "qwen2.5-vl-3b" => ("3B", quant, "视觉"),
+            "biancang" => ("7B", quant, "医疗"),
+            "bge-small-zh" => ("Small", "", "嵌入"),
+            _ => ("", quant, ""),
+        };
     }
 
     /// <summary>
@@ -490,10 +516,35 @@ public class OpenVinoToolService : ILocalModelTool
     {
         var key = NormalizeModelId(modelName);
         var model = DistinctModels().FirstOrDefault(m => string.Equals(m.Id, key, StringComparison.OrdinalIgnoreCase));
-        if (model == null) return null;
 
-        var path = ResolveModelPath(model);
-        var details = new ModelDetailsDto { Name = model.Name, ToolId = "openvino" };
+        string? path = null;
+        string displayName = modelName ?? "";
+
+        if (model != null)
+        {
+            path = ResolveModelPath(model);
+            displayName = model.Name;
+        }
+        else
+        {
+            // 前端传的是 DisplayName（来自 BuildRunningModelDto），回查 OVMS 已知 id
+            foreach (var omsId in OmsModelMap.KnownOmsIds)
+            {
+                var dto = BuildRunningModelDto(omsId);
+                if (dto != null && string.Equals(dto.DisplayName, modelName, StringComparison.OrdinalIgnoreCase))
+                {
+                    var dirName = OmsModelMap.DirNameForOmsId(omsId);
+                    if (!string.IsNullOrWhiteSpace(dirName))
+                        path = Path.Combine(ModelRoot, dirName);
+                    displayName = dto.DisplayName;
+                    break;
+                }
+            }
+        }
+
+        if (path == null) return null;
+
+        var details = new ModelDetailsDto { Name = displayName, ToolId = "openvino" };
         if (!Directory.Exists(path))
             return details;
 

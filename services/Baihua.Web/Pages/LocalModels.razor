@@ -221,46 +221,6 @@ else
     @if (_activeTab == "overview")
     {
 
-    <!-- Downloaded Models（非 OpenVINO 工具；OpenVINO 模型在 OpenVINO 标签页管理） -->
-    <div class="downloaded-section">
-        <div class="section-header" style="cursor:pointer;" @onclick="() => ToggleSection(ref _showDownloaded)">
-            <h2>@(_showDownloaded ? "▼" : "▶") 💾 @L["LocalModels_DownloadedTitle"]</h2>
-            <button class="btn btn-secondary btn-sm" @onclick="RefreshDownloaded" @onclick:stopPropagation>🔄 @L["LocalModels_RefreshModels"]</button>
-        </div>
-        @if (_showDownloaded)
-        {
-            @if (downloadedModels.Count == 0)
-            {
-                <div class="alert alert-info">@L["LocalModels_NoDownloadedModels"]</div>
-            }
-            else
-            {
-                <div class="downloaded-models-table">
-                    <div class="downloaded-table-header">
-                        <span class="col-model">@L["LocalModels_Col_Model"]</span>
-                        <span class="col-tool">@L["LocalModels_Col_Tool"]</span>
-                        <span class="col-size">@L["LocalModels_Col_Size"]</span>
-                        <span class="col-actions">@L["LocalModels_Col_Actions"]</span>
-                    </div>
-                    @foreach (var m in downloadedModels)
-                    {
-                        <div class="downloaded-table-row">
-                            <span class="col-model">@m.Name</span>
-                            <span class="col-tool">
-                                <span class="tool-badge">@m.ToolName</span>
-                            </span>
-                            <span class="col-size">@m.SizeGiB.ToString("F1") GB</span>
-                            <span class="col-actions">
-                                <button class="btn btn-danger btn-sm" @onclick='() => AskDeleteDownloaded(m)' disabled="@isDeletingModel">
-                                    🗑 @L["LocalModels_DeleteBtn"]
-                                </button>
-                            </span>
-                        </div>
-                    }
-                </div>
-            }
-        }
-    </div>
 
     <!-- Scene Filters -->
     <div class="scenario-section">
@@ -1000,6 +960,11 @@ else
         align-items: center;
     }
 
+    .ovms-downloaded-table .downloaded-table-header,
+    .ovms-downloaded-table .downloaded-table-row {
+        grid-template-columns: 2fr 1fr 1fr 1fr;
+    }
+
     .downloaded-table-header {
         background: #f5f8fa;
         font-weight: 600;
@@ -1198,10 +1163,6 @@ else
         }
     }
 
-    <ConfirmDialog Message="@string.Format(L["LocalModels_DeleteConfirmText"], downloadedToDelete?.Name ?? "")"
-                   Visible="@(downloadedToDelete != null)"
-                   OnConfirm="ConfirmDeleteDownloaded"
-                   OnCancel="CancelDeleteDownloaded" />
 
     <ConfirmDialog Message="@string.Format(L["LocalModels_ConfirmUnload"], unloadTarget?.DisplayName ?? "")"
                    Visible="@(unloadTarget != null)"
@@ -1227,17 +1188,11 @@ else
     private string _activeTab = "overview";
     private bool? _openVinoAvailable; // null=未知/加载中（默认不隐藏 OpenVINO）
 
-    // 已下载模型（非 OpenVINO）
-    private List<DownloadedModelDto> downloadedModels = new();
-    private DownloadedModelDto? downloadedToDelete;
-    private bool isDeletingModel;
-
     // 区域折叠状态（默认只展开最常用的：模型推荐）
     private bool _showHardware = false;
     private bool _showRunningModels = false;
     private bool _showLocalTools = false;
     private bool _showRecommendations = true;
-    private bool _showDownloaded = false;
 
     private void ToggleSection(ref bool flag) => flag = !flag;
 
@@ -1330,7 +1285,7 @@ else
             {
                 SafeLoadAsync(() => LoadRecommendationsAsync()),
                 SafeLoadAsync(RefreshRunningModels),
-                SafeLoadAsync(LoadDownloadedModelsAsync),
+
             };
             await Task.WhenAll(tasks);
         }
@@ -1636,57 +1591,6 @@ else
         unloadTarget = null;
     }
 
-    // ---- 已下载模型（非 OpenVINO）删除 ----
-    private async Task LoadDownloadedModelsAsync()
-    {
-        var list = await ApiService.GetDownloadedModelsAsync();
-        // OpenVINO 模型在 OpenVINO 标签页管理（走目录删除）；这里只展示其余工具
-        downloadedModels = list.Where(m => !string.Equals(m.ToolId, "openvino", StringComparison.OrdinalIgnoreCase))
-                               .OrderBy(m => m.ToolName)
-                               .ThenBy(m => m.Name)
-                               .ToList();
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private async Task RefreshDownloaded()
-    {
-        await LoadDownloadedModelsAsync();
-    }
-
-    private void AskDeleteDownloaded(DownloadedModelDto model)
-    {
-        downloadedToDelete = model;
-    }
-
-    private void CancelDeleteDownloaded()
-    {
-        downloadedToDelete = null;
-    }
-
-    private async Task ConfirmDeleteDownloaded()
-    {
-        var model = downloadedToDelete;
-        downloadedToDelete = null;
-        if (model == null) return;
-        isDeletingModel = true;
-        try
-        {
-            var ok = await ApiService.DeleteModelAsync(new DeleteModelRequest
-            {
-                ToolId = model.ToolId,
-                ModelName = model.Name
-            });
-            if (ok)
-            {
-                await LoadDownloadedModelsAsync();
-                await RefreshRunningModels();
-            }
-        }
-        finally
-        {
-            isDeletingModel = false;
-        }
-    }
 
     private async Task ConfirmUnloadModel()
     {

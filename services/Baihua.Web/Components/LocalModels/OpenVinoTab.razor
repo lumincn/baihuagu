@@ -138,14 +138,12 @@ else
     }
     else
     {
-        <div class="downloaded-models-table">
+        <div class="downloaded-models-table ovms-downloaded-table">
             <div class="downloaded-table-header">
                 <span class="col-dl-name">@L["LocalModels_DlName"]</span>
-                <span class="col-dl-tool">@L["LocalModels_DlTool"]</span>
+                <span class="col-dl-params">@L["LocalModels_DlParams"]</span>
+                <span class="col-dl-usage">@L["LocalModels_DlUsage"]</span>
                 <span class="col-dl-size">@L["LocalModels_DlSize"]</span>
-                <span class="col-dl-time">@L["LocalModels_DlTime"]</span>
-                <span class="col-dl-status">@L["LocalModels_DlStatus"]</span>
-                <span class="col-dl-actions">@L["LocalModels_DlActions"]</span>
             </div>
             @foreach (var dm in downloadedModels.Where(m => m.ToolId == "openvino"))
             {
@@ -157,30 +155,11 @@ else
                             <span class="digest-text" title="@dm.Digest">@dm.Digest[..Math.Min(12, dm.Digest.Length)]...</span>
                         }
                     </span>
-                    <span class="col-dl-tool">
-                        <span class="tool-badge @GetToolBadgeClass(dm.ToolId)">@dm.ToolName</span>
+                    <span class="col-dl-params">
+                        @(string.IsNullOrEmpty(dm.Quantization) ? dm.ParameterSize : $"{dm.ParameterSize} {dm.Quantization}")
                     </span>
+                    <span class="col-dl-usage">@dm.Usage</span>
                     <span class="col-dl-size">@dm.SizeGiB GB</span>
-                    <span class="col-dl-time">
-                        @(dm.ModifiedAt.HasValue ? dm.ModifiedAt.Value.ToString("yyyy-MM-dd HH:mm") : "-")
-                    </span>
-                    <span class="col-dl-status">
-                        @if (dm.IsRunning)
-                        {
-                            <span class="badge badge-info">▶ @L["LocalModels_RunningBadge"]</span>
-                        }
-                        else
-                        {
-                            <span class="badge badge-light">⏹ @L["LocalModels_StoppedBadge"]</span>
-                        }
-                    </span>
-                    <span class="col-dl-actions">
-                        <!-- OpenVINO 模型由 OVMS 常驻托管（config.json 注册，首次推理自动加载），无需手动加载/卸载 -->
-                        <span class="badge" style="background:#2e7d32;color:#fff;">✅ @L["LocalModels_OmsHostedBadge"]</span>
-                        <button class="btn btn-secondary btn-sm" @onclick='() => ShowModelDetails(dm)' disabled="@isLoadingDetails">
-                            @L["LocalModels_DetailsBtn"]
-                        </button>
-                    </span>
                 </div>
             }
         </div>
@@ -248,65 +227,7 @@ else
     </div>
 }
 
-<!-- Model Details Modal -->
-@if (showDetailsModal && modelDetails != null)
-{
-    <div class="modal-overlay" @onclick="CloseDetailsModal">
-        <div class="modal-content modal-large" @onclick:stopPropagation>
-            <div class="modal-header">
-                <h3>📋 @L["LocalModels_DetailsTitle", modelDetails.Name]</h3>
-                <button class="modal-close" @onclick="CloseDetailsModal">×</button>
-            </div>
-            <div class="modal-body">
-                @if (isLoadingDetails)
-                {
-                    <div class="loading-spinner">@L["LocalModels_DetailsLoading"]</div>
-                }
-                else
-                {
-                    <div class="details-sections">
-                        @if (!string.IsNullOrEmpty(modelDetails.Modelfile))
-                        {
-                            <div class="detail-section">
-                                <h4>Modelfile</h4>
-                                <pre class="detail-code">@modelDetails.Modelfile</pre>
-                            </div>
-                        }
-                        @if (!string.IsNullOrEmpty(modelDetails.Parameters))
-                        {
-                            <div class="detail-section">
-                                <h4>Parameters</h4>
-                                <pre class="detail-code">@modelDetails.Parameters</pre>
-                            </div>
-                        }
-                        @if (!string.IsNullOrEmpty(modelDetails.Template))
-                        {
-                            <div class="detail-section">
-                                <h4>Template</h4>
-                                <pre class="detail-code">@modelDetails.Template</pre>
-                            </div>
-                        }
-                        @if (!string.IsNullOrEmpty(modelDetails.License))
-                        {
-                            <div class="detail-section">
-                                <h4>License</h4>
-                                <pre class="detail-code">@modelDetails.License</pre>
-                            </div>
-                        }
-                        @if (string.IsNullOrEmpty(modelDetails.Modelfile) && string.IsNullOrEmpty(modelDetails.Parameters)
-                            && string.IsNullOrEmpty(modelDetails.Template) && string.IsNullOrEmpty(modelDetails.License))
-                        {
-                            <div class="alert alert-info">@L["LocalModels_DetailsNotSupported"]</div>
-                        }
-                    </div>
-                }
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" @onclick="CloseDetailsModal">@L["Common_Close"]</button>
-            </div>
-        </div>
-    </div>
-}
+
 }
 
 @code {
@@ -345,10 +266,6 @@ else
     private bool showDeleteConfirm = false;
     private DownloadedModelDto? modelToDelete = null;
 
-    // 详情弹窗
-    private bool showDetailsModal = false;
-    private ModelDetailsDto? modelDetails = null;
-    private bool isLoadingDetails = false;
 
     private void ToggleSection(ref bool flag) => flag = !flag;
 
@@ -582,41 +499,6 @@ else
         }
     }
 
-    private async Task ShowModelDetails(DownloadedModelDto model)
-    {
-        showDetailsModal = true;
-        isLoadingDetails = true;
-        modelDetails = null;
-        await InvokeAsync(StateHasChanged);
-
-        try
-        {
-            modelDetails = await ApiService.GetModelDetailsAsync(new ModelDetailsRequest
-            {
-                ToolId = model.ToolId,
-                ModelName = model.Name
-            });
-        }
-        catch
-        {
-            modelDetails = new ModelDetailsDto
-            {
-                Name = model.Name,
-                ToolId = model.ToolId,
-            };
-        }
-        finally
-        {
-            isLoadingDetails = false;
-            await InvokeAsync(StateHasChanged);
-        }
-    }
-
-    private void CloseDetailsModal()
-    {
-        showDetailsModal = false;
-        modelDetails = null;
-    }
 
     private async Task LoadSelectedModel()
     {

@@ -1209,24 +1209,6 @@ namespace Baihua.Web.Services
             }
         }
 
-        public async Task<ModelDetailsDto?> GetModelDetailsAsync(ModelDetailsRequest request, CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                using var quick = new CancellationTokenSource(QuickCallTimeout);
-                using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quick.Token);
-                var json = JsonSerializer.Serialize(request);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-                var response = await PostWithMetricsAsync("/api/local-models/details", content, linked.Token);
-                response.EnsureSuccessStatusCode();
-                return await response.Content.ReadFromJsonAsync<ModelDetailsDto>(linked.Token);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "获取模型详情失败");
-                return null;
-            }
-        }
 
         public async Task<bool> LoadModelAsync(LoadModelRequest request, CancellationToken cancellationToken = default)
         {

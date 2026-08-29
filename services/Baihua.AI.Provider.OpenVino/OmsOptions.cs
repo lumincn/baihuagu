@@ -24,6 +24,13 @@ public class OmsOptions
 /// </summary>
 public static class OmsModelMap
 {
+    /// <summary>OVMS config.json 中已知的全部模型 id（供 DisplayName 回查等）</summary>
+    public static readonly string[] KnownOmsIds =
+    {
+        "qwen2.5-vl-7b", "qwen2.5-vl-3b", "qwen2.5", "qwen2.5-14b",
+        "qwen2.5-coder-7b", "qwen3.5-9b", "biancang", "bge-small-zh",
+    };
+
     /// <summary>
     /// 百花视觉内部 Id → OVMS 模型 id。
     /// 视觉模型已由 Qwen2.5-VL-7B 切换为 Qwen3.5-9B（int8，含视觉/文本嵌入，
