@@ -178,7 +178,7 @@ else
         <h2>@(_showDownloadedModels ? "▼" : "▶") 🧿 @L["LocalModels_DownloadedOpenVino"] <span class="text-muted small fw-normal">@L["LocalModels_DownloadedHint"]</span></h2>
         @if (_showDownloadedModels)
         {
-            <button class="btn btn-secondary btn-sm" @onclick="RefreshDownloadedModels" disabled="@isLoadingDownloaded">
+            <button class="btn btn-secondary btn-sm" @onclick="RefreshDownloadedModels" @onclick:stopPropagation disabled="@isLoadingDownloaded">
                 @(isLoadingDownloaded ? "🔄 " + L["LocalModels_Refreshing"] : "🔄 " + L["LocalModels_RefreshModels"])
             </button>
         }
@@ -376,7 +376,7 @@ else
     private List<OpenVinoDownloadTaskDto> openVinoDownloads = new();
     private string? openVinoMessage;
     private System.Timers.Timer? _downloadTimer;
-    private System.Timers.Timer? _statusTimer; // 目录运行状态低频轮询（组件存活 = Tab 可见）
+
 
     // OpenVINO 已下载模型删除确认
     private OpenVinoCatalogItemDto? openVinoToDelete;
@@ -415,28 +415,7 @@ else
             SafeLoadAsync(LoadOpenVinoAvailableAsync),
             SafeLoadAsync(LoadOpenVinoAsync),
             SafeLoadAsync(RefreshDownloadedModels));
-        // Tab 可见期间低频轮询目录/下载状态（OVMS 注册变化无需手动刷新即可反映）
-        EnsureStatusPolling();
-    }
 
-    /// <summary>低频轮询：每 20s 刷新目录 + 下载任务（OVMS 常驻状态变化自动可见）</summary>
-    private void EnsureStatusPolling()
-    {
-        if (_statusTimer != null) return;
-        _statusTimer = new System.Timers.Timer(20000) { AutoReset = true };
-        _statusTimer.Elapsed += async (_, _) =>
-        {
-            try
-            {
-                await InvokeAsync(async () =>
-                {
-                    await LoadOpenVinoAsync();
-                    StateHasChanged();
-                });
-            }
-            catch { }
-        };
-        _statusTimer.Start();
     }
 
     private async Task LoadOpenVinoAvailableAsync()
@@ -779,8 +758,6 @@ else
         _downloadTimer?.Stop();
         _downloadTimer?.Dispose();
         _downloadTimer = null;
-        _statusTimer?.Stop();
-        _statusTimer?.Dispose();
-        _statusTimer = null;
+
     }
 }

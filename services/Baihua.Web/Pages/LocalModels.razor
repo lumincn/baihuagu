@@ -1222,7 +1222,7 @@ else
     private string currentScenario = "";
     private string currentCompany = "";
     private System.Timers.Timer? _statusTimer;
-    private System.Timers.Timer? _runningTimer; // 运行中模型低频轮询（OVMS 注册变化自动反映）
+
 
     private string _activeTab = "overview";
     private bool? _openVinoAvailable; // null=未知/加载中（默认不隐藏 OpenVINO）
@@ -1294,28 +1294,7 @@ else
         });
 
         StartStatusPolling();
-        StartRunningPolling();
-    }
 
-    /// <summary>每 20s 刷新概览页"运行中模型"（覆盖 OVMS 常驻模型注册变化）</summary>
-    private void StartRunningPolling()
-    {
-        _runningTimer = new System.Timers.Timer(20000);
-        _runningTimer.Elapsed += async (_, _) =>
-        {
-            try
-            {
-                if (_activeTab != "overview") return;
-                await InvokeAsync(async () =>
-                {
-                    runningModels = await ApiService.GetRunningModelsAsync(forceRefresh: true);
-                    StateHasChanged();
-                });
-            }
-            catch { }
-        };
-        _runningTimer.AutoReset = true;
-        _runningTimer.Start();
     }
 
     private async Task LoadAllDataAsync()
@@ -1751,8 +1730,7 @@ else
     {
         _statusTimer?.Stop();
         _statusTimer?.Dispose();
-        _runningTimer?.Stop();
-        _runningTimer?.Dispose();
+
     }
 
     private async Task OnTabChanged(string tab)
