@@ -39,6 +39,26 @@ public static class OmsModelMap
     /// <summary>嵌入模型 id（RAG）</summary>
     public static string EmbeddingModelId => "bge-small-zh";
 
+    /// <summary>本地模型目录名 → OVMS 注册模型 id（用于把 OVMS 注册状态合并到目录页）</summary>
+    public static string? OmsIdForDirName(string dirName) => dirName switch
+    {
+        "Qwen2.5-VL-7B-Instruct-int4-ov" => "qwen2.5-vl-7b",
+        "Qwen2.5-7B-Instruct-int4-ov" => "qwen2.5",
+        "BianCang-Qwen2.5-7B-Instruct" => "biancang",
+        "bge-small-zh-v1.5" => "bge-small-zh",
+        _ => null
+    };
+
+    /// <summary>OVMS 注册模型 id → 本地模型目录名（用于按目录估算模型大小/安装状态）</summary>
+    public static string? DirNameForOmsId(string omsId) => omsId switch
+    {
+        "qwen2.5-vl-7b" => "Qwen2.5-VL-7B-Instruct-int4-ov",
+        "qwen2.5" => "Qwen2.5-7B-Instruct-int4-ov",
+        "biancang" => "BianCang-Qwen2.5-7B-Instruct",
+        "bge-small-zh" => "bge-small-zh-v1.5",
+        _ => null
+    };
+
     /// <summary>
     /// 状态探测：查询 OVMS 是否已注册/可用某模型（懒加载，首次推理时才真正编译加载）。
     /// 返回该模型是否在 /v1/models 或 /v1/models/{id} 可见。

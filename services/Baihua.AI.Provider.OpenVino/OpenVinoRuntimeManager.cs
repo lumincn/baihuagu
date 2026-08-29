@@ -18,16 +18,25 @@ public class OpenVinoRuntimeManager : ILocalRuntimeManager
 {
     private readonly ILogger<OpenVinoRuntimeManager> _logger;
     private readonly LocalAiOptions _options;
+    private readonly OmsOptions _omsOptions;
     private readonly ConcurrentDictionary<int, RunningInstance> _running = new();
     private static readonly object PythonLock = new();
     private static string? _pythonCache;
 
+    // OVMS 注册模型 id 探测缓存（避免每次目录刷新都请求 /v1/models）
+    private HashSet<string>? _omsIds;
+    private DateTime _omsProbeAt;
+
     private sealed record RunningInstance(int Port, int ProcessId, string ModelPath, DateTime StartedAt);
 
-    public OpenVinoRuntimeManager(ILogger<OpenVinoRuntimeManager> logger, IOptions<LocalAiOptions> options)
+    public OpenVinoRuntimeManager(
+        ILogger<OpenVinoRuntimeManager> logger,
+        IOptions<LocalAiOptions> options,
+        IOptions<OmsOptions> omsOptions)
     {
         _logger = logger;
         _options = options.Value;
+        _omsOptions = omsOptions.Value;
     }
 
     /// <summary>模型根目录（可通过 LocalAI:DownloadDirectory 配置）</summary>
@@ -69,7 +78,80 @@ public class OpenVinoRuntimeManager : ILocalRuntimeManager
         // 尽力合并 OpenVINO 服务 pod（k8s 部署：模型托管在 bh-openvino，不在本机模型根）
         MergeRemoteServed(result);
 
+        // 本地 OVMS 常驻托管：注册的模型视为运行中（懒加载，首次推理自动编译加载）
+        MergeOmsRegistered(result);
+
         return result.OrderBy(m => m.Name).ToList();
+    }
+
+    /// <summary>
+    /// 合并 OVMS（OpenVINO Model Server）常驻注册的模型状态：本机已下载且
+    /// 在 OVMS config.json 注册（/v1/models 可见）的模型标记为"运行中"，
+    /// 端口取 OVMS 端口（默认 8000）。注册但本地目录不存在的不在此列（目录页
+    /// 只展示已下载条目；目录缺失的 OVMS 模型不判定为已安装）。
+    /// </summary>
+    private void MergeOmsRegistered(List<OpenVinoInstalledModelDto> result)
+    {
+        var omsIds = GetOmsRegisteredIds();
+        if (omsIds.Count == 0) return;
+        var port = OmsPort;
+        foreach (var m in result)
+        {
+            var omsId = OmsModelMap.OmsIdForDirName(m.Name);
+            if (omsId == null || !omsIds.Contains(omsId)) continue;
+            m.IsOmsHosted = true;
+            // 已有自起子进程时保留子进程端口（OVMS 状态作为兜底，不覆盖）
+            if (!m.IsRunning)
+            {
+                m.IsRunning = true;
+                m.Port = port;
+            }
+        }
+    }
+
+    /// <summary>OVMS REST 基地址（去掉尾部斜杠）</summary>
+    private string OmsBaseUrl => _omsOptions.BaseUrl.TrimEnd('/');
+
+    /// <summary>OVMS 监听端口（从 BaseUrl 解析，默认 8000）</summary>
+    private int OmsPort
+    {
+        get
+        {
+            try { return new Uri(OmsBaseUrl).Port; }
+            catch { return 8000; }
+        }
+    }
+
+    /// <summary>探测 OVMS /v1/models 注册的模型 id 集合（10s 缓存，失败返回空）</summary>
+    private HashSet<string> GetOmsRegisteredIds()
+    {
+        if (_omsIds != null && DateTime.UtcNow - _omsProbeAt < TimeSpan.FromSeconds(10))
+            return _omsIds;
+        var ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        try
+        {
+            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
+            var data = client.GetFromJsonAsync<System.Text.Json.JsonElement>(OmsBaseUrl + "/v1/models")
+                .GetAwaiter().GetResult();
+            if (data.TryGetProperty("data", out var list) && list.ValueKind == System.Text.Json.JsonValueKind.Array)
+            {
+                foreach (var e in list.EnumerateArray())
+                {
+                    if (e.ValueKind == System.Text.Json.JsonValueKind.Object
+                        && e.TryGetProperty("id", out var id)
+                        && id.ValueKind == System.Text.Json.JsonValueKind.String)
+                        ids.Add(id.GetString()!);
+                }
+            }
+            _omsIds = ids;
+            _omsProbeAt = DateTime.UtcNow;
+        }
+        catch (Exception ex)
+        {
+            // OVMS 不可达 → 保持空集合（本地扫描结果原样返回）
+            _logger.LogDebug(ex, "探测 OVMS 模型列表失败（{Url}）", OmsBaseUrl);
+        }
+        return _omsIds ?? ids;
     }
 
     /// <summary>
@@ -102,7 +184,8 @@ public class OpenVinoRuntimeManager : ILocalRuntimeManager
                 HasOpenVinoBin = true,
                 IsRunning = true,
                 Port = health.Port ?? 8000,
-                LastModified = DateTime.Now
+                LastModified = DateTime.Now,
+                IsOmsHosted = true
             });
         }
         catch

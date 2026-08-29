@@ -31,6 +31,9 @@ public class OpenVinoCatalogItemDto
 
     /// <summary>已下载时的最后修改时间</summary>
     public DateTime? LastModified { get; set; }
+
+    /// <summary>是否由 OVMS 常驻托管（注册即运行，不可从此页停止/启动子进程）</summary>
+    public bool IsOmsHosted { get; set; }
 }
 
 /// <summary>OpenVINO 可下载模型目录条目（网上仓库：ModelScope / HuggingFace）</summary>
@@ -87,6 +90,9 @@ public class OpenVinoInstalledModelDto
     public bool IsRunning { get; set; }
     public int? Port { get; set; }
     public DateTime? LastModified { get; set; }
+
+    /// <summary>是否由 OVMS 常驻托管（注册即运行，不可从此页停止/启动子进程）</summary>
+    public bool IsOmsHosted { get; set; }
 }
 
 /// <summary>运行 OpenVINO 模型请求</summary>

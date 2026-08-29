@@ -773,6 +773,9 @@
   <data name="LocalModels_OmsHostedBadge" xml:space="preserve">
     <value>Hosted by OVMS</value>
   </data>
+  <data name="LocalModels_OmsHostedHint" xml:space="preserve">
+    <value>Managed by OVMS</value>
+  </data>
   <data name="LocalModels_DeleteBtn" xml:space="preserve">
     <value>Delete</value>
   </data>

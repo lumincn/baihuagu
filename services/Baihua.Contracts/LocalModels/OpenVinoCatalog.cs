@@ -46,6 +46,17 @@ public static class OpenVinoCatalog
         },
         new()
         {
+            Id = "qwen2.5-7b",
+            Name = "Qwen 2.5 7B Instruct",
+            ParameterSize = "7B",
+            SizeGiB = 4.7,
+            Description = "通用对话/文本生成，OVMS 默认对话模型（qwen2.5）",
+            ModelScopeRepo = "OpenVINO/Qwen2.5-7B-Instruct-INT4-OV",
+            HuggingFaceRepo = "openvino/Qwen2.5-7B-Instruct-INT4-OV",
+            DirectoryName = "Qwen2.5-7B-Instruct-int4-ov",
+        },
+        new()
+        {
             Id = "qwen2.5-14b",
             Name = "Qwen 2.5 14B Instruct",
             ParameterSize = "14B",

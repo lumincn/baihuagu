@@ -43,6 +43,7 @@ public partial class LocalModelDeploymentController
                 dto.IsRunning = m.IsRunning;
                 dto.Port = m.Port;
                 dto.LastModified = m.LastModified;
+                dto.IsOmsHosted = m.IsOmsHosted;
             }
 
             // TTS 模型由独立 Python 服务承载，模型在 <root>/Kokoro-82M-int8-ov/1/ 下

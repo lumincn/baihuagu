@@ -309,31 +309,79 @@ public class OpenVinoToolService : ILocalModelTool
         return true;
     }
 
-    /// <summary>已加载（运行中）模型：探测 OVMS 注册的视觉模型</summary>
+    /// <summary>
+    /// 已加载（运行中）模型：枚举 OVMS /v1/models 注册的全部模型
+    /// （视觉 qwen2.5-vl-7b / 对话 qwen2.5、biancang / 嵌入 bge-small-zh），
+    /// 注册即视为运行中（懒加载，首次推理自动编译加载）。
+    /// </summary>
     public async Task<List<RunningModelDto>> GetRunningModelsAsync(CancellationToken ct = default)
     {
         var result = new List<RunningModelDto>();
         var omsIds = await GetOmsModelIdsAsync(ct);
-        foreach (var m in DistinctModels())
+        foreach (var omsId in omsIds)
         {
-            var ovmsId = OmsModelMap.VisionModelId(m.Id);
-            if (omsIds.Contains(ovmsId))
-            {
-                var path = ResolveModelPath(m);
-                result.Add(new RunningModelDto
-                {
-                    ToolId = "openvino",
-                    ToolName = "OpenVINO",
-                    ModelName = m.Id,
-                    DisplayName = m.Name,
-                    SizeBytes = Directory.Exists(path) ? GetDirSizeCached(path) : 0,
-                    RamBytes = null,
-                    VramBytes = null,
-                    Family = "Qwen2.5-VL",
-                });
-            }
+            var dto = BuildRunningModelDto(omsId);
+            if (dto != null) result.Add(dto);
         }
-        return result;
+        return result.OrderBy(r => r.DisplayName).ToList();
+    }
+
+    /// <summary>OVMS 模型 id → 运行中模型 DTO（未知 id 也兜底显示，不丢弃 OVMS 注册模型）</summary>
+    private RunningModelDto? BuildRunningModelDto(string omsId)
+    {
+        var key = omsId?.Trim() ?? "";
+        if (key.Length == 0) return null;
+
+        // OVMS 注册 id → 百花内部标识 / 显示名 / 家族（与目录/下载列表保持一致）
+        string modelId, displayName, family;
+        switch (key.ToLowerInvariant())
+        {
+            case "qwen2.5-vl-7b":
+                modelId = "7b";
+                displayName = "Qwen2.5-VL-7B-Instruct (INT4)";
+                family = "Qwen2.5-VL";
+                break;
+            case "qwen2.5":
+                modelId = "qwen2.5-7b";
+                displayName = "Qwen 2.5 7B Instruct";
+                family = "Qwen2.5";
+                break;
+            case "biancang":
+                modelId = "biancang-instruct";
+                displayName = "扁仓 BianCang Instruct（医疗）";
+                family = "BianCang";
+                break;
+            case "bge-small-zh":
+                modelId = "bge-small-zh";
+                displayName = "BGE Small ZH v1.5（嵌入）";
+                family = "BGE";
+                break;
+            default:
+                modelId = key;
+                displayName = key;
+                family = null;
+                break;
+        }
+
+        long size = 0;
+        var dirName = OmsModelMap.DirNameForOmsId(key);
+        if (!string.IsNullOrWhiteSpace(dirName))
+        {
+            var path = Path.Combine(ModelRoot, dirName);
+            if (Directory.Exists(path)) size = GetDirSizeCached(path);
+        }
+
+        return new RunningModelDto
+        {
+            ToolId = "openvino",
+            ToolName = "OpenVINO",
+            ModelName = modelId,
+            DisplayName = displayName,
+            SizeBytes = size,
+            RamBytes = null,
+            VramBytes = null,
+            Family = family,
+        };
     }
 
     /// <summary>已下载模型（OpenVINO IR 目录）</summary>
@@ -358,44 +406,54 @@ public class OpenVinoToolService : ILocalModelTool
             });
         }
 
+        // 本地 OVMS 常驻托管：注册模型即视为"已下载且运行中"（目录里可能查不到，但 OVMS 已托管）
+        MergeOmsServed(result, BaseUrl, ct);
+
         // k8s：视觉/LLM 模型托管在 bh-openvino pod（OVMS，/models PVC），本机模型根没有——
         // 通过 OPENVINO_LLM_URL/OPENVINO_HOST_URL 的 /v1/models 合并显示为"已下载且运行中"
+        var podUrl = Environment.GetEnvironmentVariable("OPENVINO_LLM_URL")
+            ?? Environment.GetEnvironmentVariable("OPENVINO_HOST_URL");
+        if (!string.IsNullOrWhiteSpace(podUrl))
+            MergeOmsServed(result, podUrl, ct);
+
+        return result;
+    }
+
+    /// <summary>把 OVMS 服务（本地常驻 / k8s pod）注册的模型合并进"已下载且运行中"列表</summary>
+    private void MergeOmsServed(List<DownloadedModelDto> result, string baseUrl, CancellationToken ct)
+    {
         try
         {
-            var podUrl = Environment.GetEnvironmentVariable("OPENVINO_LLM_URL")
-                ?? Environment.GetEnvironmentVariable("OPENVINO_HOST_URL");
-            if (!string.IsNullOrWhiteSpace(podUrl))
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            cts.CancelAfter(TimeSpan.FromSeconds(3));
+            using var client = _httpClientFactory.CreateClient();
+            client.Timeout = TimeSpan.FromSeconds(3);
+            var data = client.GetFromJsonAsync<JsonElement>(baseUrl.TrimEnd('/') + "/v1/models", cts.Token)
+                .GetAwaiter().GetResult();
+            if (!data.TryGetProperty("data", out var list) || list.ValueKind != JsonValueKind.Array) return;
+            foreach (var item in list.EnumerateArray())
             {
-                using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
-                var data = await client.GetFromJsonAsync<JsonElement>(podUrl.TrimEnd('/') + "/v1/models", ct);
-                if (data.TryGetProperty("data", out var list) && list.ValueKind == JsonValueKind.Array)
+                if (!item.TryGetProperty("id", out var idEl) || idEl.ValueKind != JsonValueKind.String) continue;
+                var id = idEl.GetString();
+                if (string.IsNullOrWhiteSpace(id)) continue;
+                // 已知模型用显示名（与本地扫描/目录列表去重，避免同一模型出现两次）
+                var name = BuildRunningModelDto(id)?.DisplayName ?? id.Split('/').Last();
+                if (result.Any(r => r.Name.Equals(name, StringComparison.OrdinalIgnoreCase))) continue;
+                result.Add(new DownloadedModelDto
                 {
-                    foreach (var item in list.EnumerateArray())
-                    {
-                        if (!item.TryGetProperty("id", out var idEl) || idEl.ValueKind != JsonValueKind.String) continue;
-                        var id = idEl.GetString();
-                        if (string.IsNullOrWhiteSpace(id)) continue;
-                        var name = id.Split('/').Last();
-                        if (result.Any(r => r.Name.Equals(name, StringComparison.OrdinalIgnoreCase))) continue;
-                        result.Add(new DownloadedModelDto
-                        {
-                            Name = name,
-                            ToolId = "openvino",
-                            ToolName = "OpenVINO",
-                            SizeBytes = 0,
-                            ModifiedAt = DateTime.Now,
-                            IsRunning = true,
-                        });
-                    }
-                }
+                    Name = name,
+                    ToolId = "openvino",
+                    ToolName = "OpenVINO",
+                    SizeBytes = 0,
+                    ModifiedAt = DateTime.Now,
+                    IsRunning = true,
+                });
             }
         }
         catch
         {
-            // 远端不可达则忽略
+            // 服务不可达则忽略
         }
-
-        return result;
     }
 
     /// <summary>
