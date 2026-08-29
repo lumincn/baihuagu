@@ -16,11 +16,7 @@ public class OpenVinoToolOptions
     public bool AutoStart { get; set; } = true;
     public int StartupTimeoutSeconds { get; set; } = 90;
     public string ModelRoot { get; set; } = "";
-    public List<OpenVinoModelOption> Models { get; set; } = new()
-    {
-
-        new() { Id = "7b", Name = "Qwen2.5-VL-7B-Instruct (INT4)" },
-    };
+    public List<OpenVinoModelOption> Models { get; set; } = new();
 }
 
 public class OpenVinoModelOption
@@ -107,11 +103,9 @@ public class OpenVinoToolService : ILocalModelTool
     /// <summary>探测工具状态：(是否安装, 版本, 是否运行, 模型目录)</summary>
     public async Task<(bool Installed, string? Version, bool Running, string ModelPath)> GetToolInfoAsync(CancellationToken ct = default)
     {
-        var models = DistinctModels();
-        var exists = models.Any(m => Directory.Exists(ResolveModelPath(m)));
         var version = await DetectOpenVinoVersionAsync(ct);
-        var installed = exists && !string.IsNullOrEmpty(version);
         var running = await IsServerRunningAsync(ct);
+        var installed = running || !string.IsNullOrEmpty(version);
 
         // k8s：OpenVINO 由 bh-openvino pod 托管（本容器无 python/openvino-genai），
         // 探测 OPENVINO_LLM_URL/OPENVINO_HOST_URL 的 /health 视为"已安装且运行中"
