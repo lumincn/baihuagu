@@ -1,7 +1,9 @@
 using System.Text;
 using System.Text.Json;
+using System.ClientModel;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
+using OpenAI;
 using Baihua.AI.Provider;
 using Baihua.Core.Services;
 using Baihua.Data.Entities;
@@ -75,7 +77,18 @@ public class MedicalAiService
 
         try
         {
-            var chatClient = _aiClient.CreateChatClient(provider.Id, model);
+            // 模型路由：biancang 是本地 OVMS 模型，需直连 OVMS 而非主 provider
+            IChatClient chatClient;
+            if (modelUsed == "biancang")
+            {
+                var ovmsOptions = new OpenAIClientOptions { Endpoint = new Uri("http://127.0.0.1:8000/v1/") };
+                var ovmsClient = new OpenAIClient(new ApiKeyCredential("ovms"), ovmsOptions);
+                chatClient = ovmsClient.GetChatClient(model).AsIChatClient();
+            }
+            else
+            {
+                chatClient = _aiClient.CreateChatClient(provider.Id, model);
+            }
             var options = new ChatOptions { MaxOutputTokens = 3000 };
 
             var records = await _medicalService.GetRecordsAsync(memberId, ct);
