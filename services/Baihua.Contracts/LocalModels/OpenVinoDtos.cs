@@ -34,6 +34,9 @@ public class OpenVinoCatalogItemDto
 
     /// <summary>是否由 OVMS 常驻托管（注册即运行，不可从此页停止/启动子进程）</summary>
     public bool IsOmsHosted { get; set; }
+
+    /// <summary>所需显存（GiB）。null = 不依赖 GPU 显存（如 TTS/嵌入）</summary>
+    public double? MinVramGiB { get; set; }
 }
 
 /// <summary>OpenVINO 可下载模型目录条目（网上仓库：ModelScope / HuggingFace）</summary>
@@ -54,6 +57,12 @@ public class OpenVinoCatalogEntry
     public string Format { get; set; } = "openvino";
     /// <summary>下载到本地模型根目录后的子目录名</summary>
     public string DirectoryName { get; set; } = "";
+
+    /// <summary>所需显存（GiB）。null = 不依赖 GPU 显存（如 TTS/嵌入）</summary>
+    public double? MinVramGiB { get; set; }
+
+    /// <summary>场景分类（对话 / 视觉 / 代码 / 医疗 / TTS / 嵌入）</summary>
+    public string Category { get; set; } = "";
 }
 
 /// <summary>OpenVINO 模型下载请求</summary>

@@ -6,7 +6,7 @@ namespace Baihua.Family.Controllers;
 
 public partial class LocalModelDeploymentController
 {
-    /// <summary>OpenVINO 可下载模型目录（含已下载状态）</summary>
+    /// <summary>OpenVINO 可下载模型目录（含已下载状态；未下载条目按当前显卡显存过滤）</summary>
     [HttpGet("openvino/catalog")]
     public ActionResult<List<OpenVinoCatalogItemDto>> GetOpenVinoCatalog()
     {
@@ -17,7 +17,27 @@ public partial class LocalModelDeploymentController
         var ttsModelDir = Path.Combine(_openVinoRuntime.ModelRoot, "Kokoro-82M-int8-ov", "1");
         var ttsInstalled = System.IO.File.Exists(Path.Combine(ttsModelDir, "openvino_model.bin"));
 
-        var catalog = OpenVinoCatalog.All.Select(e =>
+        // 当前机器 GPU 可用显存（GiB）；探测失败则不过滤（显示全部）
+        double? availableVramGiB = null;
+        try
+        {
+            var hw = _hardwareInfoService.GetHardwareInfo();
+            if (hw.Gpus is { Count: > 0 })
+                availableVramGiB = hw.Gpus
+                    .Where(g => g.VramGiB.HasValue && g.VramGiB > 0)
+                    .Select(g => g.VramGiB!.Value)
+                    .DefaultIfEmpty(0)
+                    .Max();
+        }
+        catch { /* 硬件探测失败 → 不过滤 */ }
+
+        var catalog = OpenVinoCatalog.All
+            .Where(e => installed.ContainsKey(DefaultDirName(e))        // 已下载/已注册 → 始终显示
+                        || ttsInstalled
+                        || e.MinVramGiB == null                          // 不依赖显存 → 始终显示
+                        || availableVramGiB == null                      // 显存未知 → 不误伤
+                        || e.MinVramGiB <= availableVramGiB)             // 未下载且显存足够 → 显示
+            .Select(e =>
         {
             var dto = new OpenVinoCatalogItemDto
             {
@@ -32,6 +52,7 @@ public partial class LocalModelDeploymentController
                 IsMedical = e.IsMedical,
                 ModelScopeRepo = e.ModelScopeRepo,
                 Format = e.Format,
+                MinVramGiB = e.MinVramGiB,
             };
 
             // 合并已下载信息：路径/实际大小/运行状态/端口
@@ -55,7 +76,11 @@ public partial class LocalModelDeploymentController
                 dto.Port = ttsPort;
             }
             return dto;
-        }).ToList();
+        })
+        // 已下载/运行中的优先，其余按所需显存升序
+        .OrderByDescending(d => d.Installed)
+        .ThenBy(d => d.MinVramGiB ?? 0)
+        .ToList();
 
         return Ok(catalog);
     }

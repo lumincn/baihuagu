@@ -779,6 +779,9 @@
   <data name="LocalModels_OmsHostedHint" xml:space="preserve">
     <value>Managed by OVMS</value>
   </data>
+  <data name="LocalModels_MinVramHint" xml:space="preserve">
+    <value>Estimated VRAM required (weights + KV cache); undownloaded entries are filtered by your current GPU VRAM</value>
+  </data>
   <data name="LocalModels_DeleteBtn" xml:space="preserve">
     <value>Delete</value>
   </data>

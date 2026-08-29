@@ -779,6 +779,9 @@
   <data name="LocalModels_OmsHostedHint" xml:space="preserve">
     <value>由 OVMS 托管，无需手动启停</value>
   </data>
+  <data name="LocalModels_MinVramHint" xml:space="preserve">
+    <value>所需显存估算（权重+KV缓存）；未下载条目已按当前显卡显存过滤</value>
+  </data>
   <data name="LocalModels_DeleteBtn" xml:space="preserve">
     <value>删除</value>
   </data>

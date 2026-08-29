@@ -111,6 +111,10 @@ else
                                 {
                                     @(c.SizeGiB.ToString("F1") + "GB")
                                 }
+                                @if (c.MinVramGiB.HasValue)
+                                {
+                                    <span class="ms-1" title="@L["LocalModels_MinVramHint"]">· 需 @c.MinVramGiB.Value.ToString("F0")GB 显存</span>
+                                }
                             </td>
                             <td class="small text-muted">@c.Description</td>
                             <td>
