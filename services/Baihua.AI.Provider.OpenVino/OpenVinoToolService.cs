@@ -351,10 +351,30 @@ public class OpenVinoToolService : ILocalModelTool
                 displayName = "Qwen2.5-VL-7B-Instruct (INT4)";
                 family = "Qwen2.5-VL";
                 break;
+            case "qwen2.5-vl-3b":
+                modelId = "qwen2.5-vl-3b";
+                displayName = "Qwen 2.5 VL 3B（视觉）";
+                family = "Qwen2.5-VL";
+                break;
             case "qwen2.5":
                 modelId = "qwen2.5-7b";
                 displayName = "Qwen 2.5 7B Instruct";
                 family = "Qwen2.5";
+                break;
+            case "qwen2.5-14b":
+                modelId = "qwen2.5-14b";
+                displayName = "Qwen 2.5 14B Instruct";
+                family = "Qwen2.5";
+                break;
+            case "qwen2.5-coder-7b":
+                modelId = "qwen2.5-coder-7b";
+                displayName = "Qwen 2.5 Coder 7B";
+                family = "Qwen2.5-Coder";
+                break;
+            case "qwen3.5-9b":
+                modelId = "qwen3.5-9b";
+                displayName = "Qwen 3.5 9B（int8）";
+                family = "Qwen3.5";
                 break;
             case "biancang":
                 modelId = "biancang-instruct";

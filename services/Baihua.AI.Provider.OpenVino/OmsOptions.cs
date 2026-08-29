@@ -43,7 +43,11 @@ public static class OmsModelMap
     public static string? OmsIdForDirName(string dirName) => dirName switch
     {
         "Qwen2.5-VL-7B-Instruct-int4-ov" => "qwen2.5-vl-7b",
+        "Qwen2.5-VL-3B-Instruct-int4-ov" => "qwen2.5-vl-3b",
         "Qwen2.5-7B-Instruct-int4-ov" => "qwen2.5",
+        "Qwen2.5-14B-Instruct-INT4-OV" => "qwen2.5-14b",
+        "Qwen2.5-Coder-7B-Instruct-int4-ov" => "qwen2.5-coder-7b",
+        "Qwen3.5-9B-int8-ov" => "qwen3.5-9b",
         "BianCang-Qwen2.5-7B-Instruct" => "biancang",
         "bge-small-zh-v1.5" => "bge-small-zh",
         _ => null
@@ -53,7 +57,11 @@ public static class OmsModelMap
     public static string? DirNameForOmsId(string omsId) => omsId switch
     {
         "qwen2.5-vl-7b" => "Qwen2.5-VL-7B-Instruct-int4-ov",
+        "qwen2.5-vl-3b" => "Qwen2.5-VL-3B-Instruct-int4-ov",
         "qwen2.5" => "Qwen2.5-7B-Instruct-int4-ov",
+        "qwen2.5-14b" => "Qwen2.5-14B-Instruct-INT4-OV",
+        "qwen2.5-coder-7b" => "Qwen2.5-Coder-7B-Instruct-int4-ov",
+        "qwen3.5-9b" => "Qwen3.5-9B-int8-ov",
         "biancang" => "BianCang-Qwen2.5-7B-Instruct",
         "bge-small-zh" => "bge-small-zh-v1.5",
         _ => null

@@ -95,6 +95,31 @@ public static class OpenVinoCatalog
             IsVision = true,
             ModelScopeRepo = "OpenVINO/Qwen2.5-VL-7B-Instruct-INT4-OV",
             HuggingFaceRepo = "openvino/Qwen2.5-VL-7B-Instruct-INT4-OV",
+            DirectoryName = "Qwen2.5-VL-7B-Instruct-int4-ov",
+        },
+        new()
+        {
+            Id = "qwen2.5-vl-3b",
+            Name = "Qwen 2.5 VL 3B（视觉）",
+            ParameterSize = "3B",
+            SizeGiB = 2.6,
+            Description = "轻量图像理解/OCR，显存占用小",
+            IsVision = true,
+            ModelScopeRepo = "OpenVINO/Qwen2.5-VL-3B-Instruct-INT4-OV",
+            HuggingFaceRepo = "openvino/Qwen2.5-VL-3B-Instruct-INT4-OV",
+            DirectoryName = "Qwen2.5-VL-3B-Instruct-int4-ov",
+        },
+        new()
+        {
+            Id = "qwen3.5-9b",
+            Name = "Qwen 3.5 9B（int8）",
+            ParameterSize = "9B",
+            SizeGiB = 8.8,
+            Description = "新一代多模态大模型（int8 量化，含视觉/文本嵌入）",
+            IsVision = true,
+            ModelScopeRepo = "OpenVINO/Qwen3.5-9B-int8-ov",
+            HuggingFaceRepo = "openvino/Qwen3.5-9B-int8-ov",
+            DirectoryName = "Qwen3.5-9B-int8-ov",
         },
 
     ];
