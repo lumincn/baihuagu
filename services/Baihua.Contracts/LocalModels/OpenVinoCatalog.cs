@@ -85,17 +85,7 @@ public static class OpenVinoCatalog
             ModelScopeRepo = "OpenVINO/Qwen2.5-VL-7B-Instruct-INT4-OV",
             HuggingFaceRepo = "openvino/Qwen2.5-VL-7B-Instruct-INT4-OV",
         },
-        new()
-        {
 
-            Id = "deepseek-r1-7b",
-            Name = "DeepSeek R1 Distill Qwen 7B",
-            ParameterSize = "7B",
-            SizeGiB = 4.7,
-            Description = "深度推理/数学/逻辑，思维链强",
-            ModelScopeRepo = "OpenVINO/DeepSeek-R1-Distill-Qwen-7B-INT4-OV",
-            HuggingFaceRepo = "openvino/DeepSeek-R1-Distill-Qwen-7B-INT4-OV",
-        },
     ];
 
     public static OpenVinoCatalogEntry? GetById(string id) =>

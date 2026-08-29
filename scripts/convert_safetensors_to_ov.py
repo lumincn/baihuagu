@@ -65,20 +65,11 @@ def main():
         log(f"错误：缺少依赖 {e}，请安装 optimum-intel openvino")
         sys.exit(1)
 
-    # 导出 OpenVINO IR
+    # 导出 OpenVINO IR（FP 精度；量化在导出后通过 NNCF compress_weights 完成）
     log("开始导出 OpenVINO IR（可能需要数分钟）...")
     t0 = time.time()
 
-    export_kwargs = {"export": True}
-    if args.quant in ("int4", "int8"):
-        export_kwargs["load_in_4bit"] = (args.quant == "int4")
-        export_kwargs["load_in_8bit"] = (args.quant == "int8")
-
-    try:
-        model = OVModelForCausalLM.from_pretrained(str(src), **export_kwargs)
-    except Exception as e:
-        log(f"导出失败（尝试不带量化）: {e}")
-        model = OVModelForCausalLM.from_pretrained(str(src), export=True)
+    model = OVModelForCausalLM.from_pretrained(str(src), export=True)
 
     elapsed = time.time() - t0
     log(f"导出完成，耗时 {elapsed:.0f}s")
@@ -87,6 +78,40 @@ def main():
     dst.mkdir(parents=True, exist_ok=True)
     log(f"保存到 {dst} ...")
     model.save_pretrained(str(dst))
+    del model
+
+    # 可选 INT4/INT8 权重量化（NNCF compress_weights，无需校准数据，适配 Intel Arc 核显）
+    if args.quant in ("int4", "int8"):
+        log(f"开始 {args.quant} 权重量化（NNCF compress_weights）...")
+        import nncf
+        ov_xml = dst / "openvino_model.xml"
+        ov_bin = dst / "openvino_model.bin"
+        core = ov.Core()
+        model_ov = core.read_model(str(ov_xml), str(ov_bin))
+        log(f"模型已加载，参数量: {len(model_ov.get_parameters())}")
+
+        if args.quant == "int4":
+            primary = nncf.CompressWeightsMode.INT4_SYM
+            fallback = nncf.CompressWeightsMode.INT4_ASYM
+        else:
+            primary = nncf.CompressWeightsMode.INT8_SYM
+            fallback = nncf.CompressWeightsMode.INT8_ASYM
+
+        try:
+            quantized = nncf.compress_weights(model_ov, mode=primary)
+        except Exception as e:
+            log(f"{args.quant}_SYM 量化失败 ({e})，回退 {args.quant}_ASYM ...")
+            quantized = nncf.compress_weights(model_ov, mode=fallback)
+
+        tmp_xml = str(dst / "openvino_model_q.xml")
+        tmp_bin = str(dst / "openvino_model_q.bin")
+        ov.serialize(quantized, tmp_xml, tmp_bin)
+        del quantized
+        del model_ov
+
+        os.replace(tmp_bin, str(ov_bin))
+        os.replace(tmp_xml, str(ov_xml))
+        log(f"{args.quant} 量化完成")
 
     # 复制 tokenizer 等辅助文件（save_pretrained 通常已处理，但确保齐全）
     import shutil

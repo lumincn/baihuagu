@@ -543,11 +543,11 @@
             _view = "list";
     }
 
-    private void GoToList()
+    private async Task GoToList()
     {
         _view = "list";
         _detail = null;
-        _ = LoadAsync();
+        await LoadAsync();
     }
 
     // ============ 成员编辑 ============
@@ -655,7 +655,7 @@
         _pendingDeleteMember = false;
         if (_detail == null) return;
         await ApiService.DeleteMedicalMemberAsync(_detail.Member.Id);
-        GoToList();
+        await GoToList();
     }
 
     // ============ 病历记录编辑 ============

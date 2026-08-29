@@ -232,17 +232,12 @@ public class ModelDownloadService
     private async Task ConvertSafetensorsToOpenVinoAsync(
         string modelDir, OpenVinoDownloadTaskDto dto, CancellationToken ct)
     {
-        var scriptPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "scripts", "convert_safetensors_to_ov.py");
-        if (!File.Exists(scriptPath))
-        {
-            var alt = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "src", "baihua", "scripts", "convert_safetensors_to_ov.py");
-            if (File.Exists(alt)) scriptPath = alt;
-            else throw new Exception("找不到转换脚本 convert_safetensors_to_ov.py");
-        }
+        var scriptPath = ResolveConverterScript();
+        var python = ResolvePythonExe();
 
         var psi = new ProcessStartInfo
         {
-            FileName = "python",
+            FileName = python,
             Arguments = $"\"{scriptPath}\" --src \"{modelDir}\" --quant int4",
             UseShellExecute = false,
             RedirectStandardOutput = true,
@@ -269,6 +264,43 @@ public class ModelDownloadService
             throw new Exception($"safetensors 转换失败（exit {proc.ExitCode}）: {stderr.Trim()}");
 
         dto.Logs.Add($"[{DateTime.Now:HH:mm:ss}] OpenVINO IR 转换完成");
+    }
+
+    /// <summary>解析转换脚本路径：环境变量 BAIHUA_SCRIPTS_DIR > 输出目录/仓库根 scripts 目录。</summary>
+    private string ResolveConverterScript()
+    {
+        const string fileName = "convert_safetensors_to_ov.py";
+
+        var candidates = new List<string>();
+        var env = Environment.GetEnvironmentVariable("BAIHUA_SCRIPTS_DIR");
+        if (!string.IsNullOrWhiteSpace(env))
+            candidates.Add(Path.Combine(env, fileName));
+
+        // 输出目录下的 scripts 子目录（发布时随产品拷贝）
+        candidates.Add(Path.Combine(AppContext.BaseDirectory, "scripts", fileName));
+
+        // 开发态：从输出目录向上回溯到仓库根 scripts
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        for (var i = 0; i < 5 && dir != null; i++, dir = dir.Parent!)
+        {
+            candidates.Add(Path.Combine(dir.FullName, "scripts", fileName));
+        }
+
+        foreach (var path in candidates)
+        {
+            if (File.Exists(path))
+                return path;
+        }
+
+        throw new Exception($"找不到转换脚本 {fileName}");
+    }
+
+    /// <summary>解析 Python 可执行文件：配置值优先，否则 Windows 用 python、其它用 python3。</summary>
+    private string ResolvePythonExe()
+    {
+        if (!string.IsNullOrWhiteSpace(_options.PythonExe))
+            return _options.PythonExe;
+        return OperatingSystem.IsWindows() ? "python" : "python3";
     }
 
     #endregion

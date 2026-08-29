@@ -1,10 +1,13 @@
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.ClientModel;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OpenAI;
 using Baihua.AI.Provider;
+using Baihua.AI.Provider.OpenVino;
 using Baihua.Core.Services;
 using Baihua.Data.Entities;
 using Baihua.Contracts.Medical;
@@ -28,6 +31,7 @@ public class MedicalAiService
     private readonly MedicalService _medicalService;
     private readonly ILocalRuntimeManager _runtimeManager;
     private readonly IHttpClientFactory _httpFactory;
+    private readonly OmsOptions _omsOptions;
     private readonly ILogger<MedicalAiService> _logger;
 
     public MedicalAiService(
@@ -36,6 +40,7 @@ public class MedicalAiService
         MedicalService medicalService,
         ILocalRuntimeManager runtimeManager,
         IHttpClientFactory httpFactory,
+        IOptions<OmsOptions> omsOptions,
         ILogger<MedicalAiService> logger)
     {
         _aiClient = aiClient;
@@ -43,6 +48,7 @@ public class MedicalAiService
         _medicalService = medicalService;
         _runtimeManager = runtimeManager;
         _httpFactory = httpFactory;
+        _omsOptions = omsOptions.Value;
         _logger = logger;
     }
 
@@ -67,7 +73,7 @@ public class MedicalAiService
         }
 
         // 模型路由：优先扁仓 BianCang 医疗模型（若已运行），回退到主模型
-        var (model, modelUsed) = TryGetMedicalModel() ?? (provider.GetMainModel(), "main");
+        var (model, modelUsed) = await TryGetMedicalModelAsync(ct) ?? (provider.GetMainModel(), "main");
 
         if (string.IsNullOrWhiteSpace(model))
         {
@@ -81,7 +87,8 @@ public class MedicalAiService
             IChatClient chatClient;
             if (modelUsed == "biancang")
             {
-                var ovmsOptions = new OpenAIClientOptions { Endpoint = new Uri("http://127.0.0.1:8000/v1/") };
+                var ovmsEndpoint = new Uri(_omsOptions.BaseUrl.TrimEnd('/') + "/v1/");
+                var ovmsOptions = new OpenAIClientOptions { Endpoint = ovmsEndpoint };
                 var ovmsClient = new OpenAIClient(new ApiKeyCredential("ovms"), ovmsOptions);
                 chatClient = ovmsClient.GetChatClient(model).AsIChatClient();
             }
@@ -89,7 +96,8 @@ public class MedicalAiService
             {
                 chatClient = _aiClient.CreateChatClient(provider.Id, model);
             }
-            var options = new ChatOptions { MaxOutputTokens = 3000 };
+            // 结构化 JSON 输出需要更高的确定性：低温采样 + 更大的输出长度避免被截断
+            var options = new ChatOptions { MaxOutputTokens = 5000, Temperature = 0.3f };
 
             var records = await _medicalService.GetRecordsAsync(memberId, ct);
             var profileText = BuildProfileText(member);
@@ -98,14 +106,13 @@ public class MedicalAiService
                 ? $"### 症状描述\n{trimmed}"
                 : $"### 症状描述\n{trimmed}\n\n### 补充背景\n{extraContext!.Trim()}";
 
-            var response = await chatClient.GetResponseAsync(
-                new List<ChatMessage>
-                {
-                    new(ChatRole.System, HealthAnalysisSystemPrompt),
-                    new(ChatRole.User, $"### 家庭成员档案\n{profileText}\n\n### 近期病历（如有）\n{historyText}\n\n{userMessage}")
-                },
-                options,
-                cancellationToken: ct);
+            var messages = new List<ChatMessage>
+            {
+                new(ChatRole.System, HealthAnalysisSystemPrompt),
+                new(ChatRole.User, $"### 家庭成员档案\n{profileText}\n\n### 近期病历（如有）\n{historyText}\n\n{userMessage}")
+            };
+
+            var response = await chatClient.GetResponseAsync(messages, options, cancellationToken: ct);
 
             var text = response.Text?.Trim();
             if (string.IsNullOrWhiteSpace(text))
@@ -116,6 +123,36 @@ public class MedicalAiService
 
             // 尝试解析结构化 JSON
             var (structuredJson, markdown) = ParseStructuredResponse(text);
+
+            // 若模型未输出结构化 JSON（扁仓 7B 对 JSON 指令遵循不稳定），追加约束重试一次
+            if (structuredJson == null)
+            {
+                _logger.LogInformation("首次诊断未返回结构化 JSON，追加约束重试一次（ModelUsed={ModelUsed}）", modelUsed);
+                messages.Add(new(ChatRole.Assistant, text));
+                messages.Add(new(ChatRole.User, "请严格按系统提示中的 JSON 结构重新输出，只输出 JSON 对象本身，不要用 Markdown 或代码块，不要添加任何其他说明文字。"));
+                try
+                {
+                    var retry = await chatClient.GetResponseAsync(messages, options, cancellationToken: ct);
+                    var retryText = retry.Text?.Trim();
+                    if (!string.IsNullOrWhiteSpace(retryText))
+                    {
+                        var (retryJson, retryMarkdown) = ParseStructuredResponse(retryText);
+                        if (retryJson != null)
+                        {
+                            structuredJson = retryJson;
+                            markdown = retryMarkdown;
+                        }
+                    }
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "结构化 JSON 重试失败，按首次结果落库");
+                }
+            }
 
             var saved = await _medicalService.SaveDiagnosisAsync(memberId, trimmed, markdown, modelUsed, structuredJson, ct);
             return new AiDiagnoseResultDto
@@ -152,14 +189,13 @@ public class MedicalAiService
     /// 检查扁仓 BianCang 医疗模型是否已运行，返回 (modelName, "biancang") 或 null。
     /// 先查 Baihua 启动的模型，再查 OVMS REST API（config.json 加载的模型）。
     /// </summary>
-    private (string Model, string Label)? TryGetMedicalModel()
+    private async Task<(string Model, string Label)?> TryGetMedicalModelAsync(CancellationToken ct)
     {
         try
         {
             var running = _runtimeManager.GetRunning();
             var biancang = running.FirstOrDefault(r =>
-                r.Name.Contains("BianCang", StringComparison.OrdinalIgnoreCase) ||
-                r.Name.Contains("biancang", StringComparison.OrdinalIgnoreCase));
+                r.Name.Contains("BianCang", StringComparison.OrdinalIgnoreCase));
             if (biancang != null)
                 return (biancang.Name, "biancang");
         }
@@ -173,13 +209,18 @@ public class MedicalAiService
         {
             var http = _httpFactory.CreateClient();
             http.Timeout = TimeSpan.FromSeconds(5);
-            var resp = http.GetAsync("http://127.0.0.1:8000/v1/models").GetAwaiter().GetResult();
+            var modelsUrl = _omsOptions.BaseUrl.TrimEnd('/') + "/v1/models";
+            using var resp = await http.GetAsync(modelsUrl, ct);
             if (resp.IsSuccessStatusCode)
             {
-                var json = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                var json = await resp.Content.ReadAsStringAsync(ct);
                 if (json.Contains("\"biancang\"", StringComparison.OrdinalIgnoreCase))
                     return ("biancang", "biancang");
             }
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -294,21 +335,63 @@ public class MedicalAiService
     {
         var json = ExtractJson(raw);
         if (json == null)
-            return (null, raw);
+            return (null, SanitizeFallbackMarkdown(raw));
 
         try
         {
             var result = JsonSerializer.Deserialize<StructuredDiagnosisResult>(json, CaseInsensitiveJson);
             if (result == null)
-                return (null, raw);
+                return (null, SanitizeFallbackMarkdown(raw));
 
             var markdown = RenderStructuredToMarkdown(result);
             return (json, markdown);
         }
         catch (JsonException)
         {
-            return (null, raw);
+            // JSON 解析失败（典型：输出被截断）——降级为可读要点，避免把原始 JSON 直接展示给用户
+            return (null, JsonToReadableText(json));
         }
+    }
+
+    /// <summary>去掉 Markdown 代码块围栏等包装，返回干净文本。</summary>
+    private static string SanitizeFallbackMarkdown(string raw)
+    {
+        var text = raw.Trim();
+        if (text.StartsWith("```", StringComparison.Ordinal))
+        {
+            var firstNewline = text.IndexOf('\n');
+            if (firstNewline > 0)
+                text = text[(firstNewline + 1)..];
+            if (text.EndsWith("```", StringComparison.Ordinal))
+                text = text[..^3];
+            text = text.Trim();
+        }
+        return text;
+    }
+
+    /// <summary>
+    /// 把（可能被截断的）JSON 转成可读的中文要点列表，作为结构化解析失败时的降级展示。
+    /// 提取所有含中文的字符串片段（可能原因名、可能性、依据、护理建议等），丢弃 JSON 语法噪音。
+    /// </summary>
+    private static string JsonToReadableText(string json)
+    {
+        var items = new List<string>();
+        foreach (Match m in Regex.Matches(json, "\"([^\"]*[\u4e00-\u9fa5][^\"]*)\""))
+        {
+            var v = m.Groups[1].Value.Trim();
+            if (v.Length < 2 || items.Contains(v))
+                continue;
+            items.Add(v);
+        }
+
+        if (items.Count == 0)
+            return json;
+
+        var sb = new StringBuilder();
+        sb.AppendLine("（AI 返回内容未能解析为结构化结果，以下为可读摘要，仅供参考）");
+        foreach (var it in items.Take(30))
+            sb.AppendLine($"- {it}");
+        return sb.ToString().TrimEnd();
     }
 
     /// <summary>
