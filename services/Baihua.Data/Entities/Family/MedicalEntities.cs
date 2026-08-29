@@ -99,9 +99,15 @@ public class AiDiagnosis
     [Required]
     public string SymptomText { get; set; } = "";
 
-    /// <summary>AI 生成的分析（Markdown）</summary>
+    /// <summary>AI 生成的分析（Markdown 文本，向后兼容）</summary>
     [Required]
     public string AiResponse { get; set; } = "";
+
+    /// <summary>
+    /// 结构化诊断结果 JSON（ nullable）。当 AI 返回结构化 JSON 时存储原始 JSON，
+    /// 供前端解析为卡片式展示。格式见 StructuredDiagnosisResult。
+    /// </summary>
+    public string? StructuredResultJson { get; set; }
 
     /// <summary>使用的模型标识（如 "biancang" 或 "main"）</summary>
     public string ModelUsed { get; set; } = "main";

@@ -1,3 +1,5 @@
+using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Baihua.AI.Provider;
@@ -74,7 +76,7 @@ public class MedicalAiService
         try
         {
             var chatClient = _aiClient.CreateChatClient(provider.Id, model);
-            var options = new ChatOptions { MaxOutputTokens = 2000 };
+            var options = new ChatOptions { MaxOutputTokens = 3000 };
 
             var records = await _medicalService.GetRecordsAsync(memberId, ct);
             var profileText = BuildProfileText(member);
@@ -99,7 +101,10 @@ public class MedicalAiService
                 return Fail("AI 没有生成有效分析，请重试");
             }
 
-            var saved = await _medicalService.SaveDiagnosisAsync(memberId, trimmed, text, modelUsed, ct);
+            // 尝试解析结构化 JSON
+            var (structuredJson, markdown) = ParseStructuredResponse(text);
+
+            var saved = await _medicalService.SaveDiagnosisAsync(memberId, trimmed, markdown, modelUsed, structuredJson, ct);
             return new AiDiagnoseResultDto
             {
                 Success = true,
@@ -109,6 +114,7 @@ public class MedicalAiService
                     MemberId = saved.MemberId,
                     SymptomText = saved.SymptomText,
                     AiResponse = saved.AiResponse,
+                    StructuredResultJson = saved.StructuredResultJson,
                     ModelUsed = saved.ModelUsed,
                     CreatedAt = saved.CreatedAt
                 }
@@ -232,18 +238,146 @@ public class MedicalAiService
 你是一位谨慎、负责的家庭健康咨询助手，服务对象是普通家庭成员（可能是非医学专业的家属）。用户会提交某位家庭成员的"症状描述"和该成员的档案（年龄/性别/血型/过敏史/慢性病）以及近期病历。请给出**仅供参考**的健康分析，严格遵循以下规则：
 
 1. **绝不给出确定性诊断**。只做可能性分析，按可能性从高到低列出 2-4 个可能方向，并说明每个方向的依据与局限。不确定时明确说"不能确定"。
-2. **必须识别警示信号**（red flags）：如高热不退、呼吸困难、剧烈胸痛、意识改变、严重出血、持续恶化等，明确提示"这些情况必须立即就医/拨打 120"。
+2. **必须识别警示信号**（red flags）：如高热不退、呼吸困难、剧烈胸痛、意识改变、严重出血、持续恶化等。
 3. **给出居家护理建议**：休息、饮水、观察要点、何时复诊，但用药建议必须保守——只建议已在用且医生开具的药物，不推荐具体新药、不给出剂量（除非是明确标明的非处方药通用建议，也要加"请按说明书/遵医嘱"）。
-4. **考虑个体因素**：结合档案中的年龄、过敏史、慢性病，指出需要特别注意的地方（如"有糖尿病史，需注意……"）。
-5. **结构清晰**：用 Markdown 输出，小节标题依次为：
-   - **可能的原因分析**（分条，注明不确定性）
-   - **居家护理与观察建议**
-   - **需要立即就医的情况**（警示信号，若有）
-   - **温馨提示**
-6. **强制免责声明**：在"温馨提示"中必须包含以下句子：
-   > 本内容由 AI 生成，仅供参考，不能代替执业医师的诊断与治疗。如症状持续、加重或出现上述警示信号，请及时就医。
+4. **考虑个体因素**：结合档案中的年龄、过敏史、慢性病，指出需要特别注意的地方。
+5. **回复语言**：简体中文。
+6. 不要编造化验结果、检查数据或具体机构；不确定的信息明确说"建议就医确认"。
 
-7. 不要编造化验结果、检查数据或具体机构；不确定的信息明确说"建议就医确认"。
-8. 回复语言：简体中文。
+**输出格式：必须输出一个合法的 JSON 对象，不要输出任何其他文本、Markdown 或代码块标记。** JSON 结构如下：
+
+{
+  "possibleCauses": [
+    {"name": "可能原因名称", "likelihood": "较高|中等|较低|不能确定", "reasoning": "依据与局限说明"}
+  ],
+  "homeCare": ["居家护理建议1", "居家护理建议2"],
+  "warningSigns": ["需要立即就医的警示信号1", "警示信号2"],
+  "seeDoctor": true或false,
+  "seeDoctorReason": "建议就医的原因（若 seeDoctor 为 true 必填）",
+  "individualNotes": "结合个体因素的特别注意事项（可空）",
+  "disclaimer": "本内容由 AI 生成，仅供参考，不能代替执业医师的诊断与治疗。如症状持续、加重或出现上述警示信号，请及时就医。"
+}
+
+要求：
+- possibleCauses 数组 2-4 个条目，按可能性从高到低排列。
+- homeCare 数组至少 1 条。
+- warningSigns 数组：若有警示信号必须列出；若无警示信号返回空数组 []。
+- seeDoctor：若有警示信号或症状较重，设为 true 并说明原因。
+- disclaimer 字段必须包含"仅供参考，不能代替执业医师"这句话。
+- 只输出 JSON，不要包裹在 ```json ``` 代码块中，不要输出任何前后缀文字。
 """";
+
+    private static readonly JsonSerializerOptions CaseInsensitiveJson = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
+    /// <summary>
+    /// 从 AI 响应中提取结构化 JSON。成功时返回 (json, markdown)，
+    /// 其中 json 是原始 JSON 字符串，markdown 是从 JSON 渲染的 Markdown 文本。
+    /// 解析失败时返回 (null, rawText)，rawText 即原始响应文本。
+    /// </summary>
+    private (string? Json, string Markdown) ParseStructuredResponse(string raw)
+    {
+        var json = ExtractJson(raw);
+        if (json == null)
+            return (null, raw);
+
+        try
+        {
+            var result = JsonSerializer.Deserialize<StructuredDiagnosisResult>(json, CaseInsensitiveJson);
+            if (result == null)
+                return (null, raw);
+
+            var markdown = RenderStructuredToMarkdown(result);
+            return (json, markdown);
+        }
+        catch (JsonException)
+        {
+            return (null, raw);
+        }
+    }
+
+    /// <summary>
+    /// 从文本中提取 JSON 对象：处理纯 JSON、```json 代码块、以及前后有额外文字的情况。
+    /// </summary>
+    private static string? ExtractJson(string text)
+    {
+        var trimmed = text.Trim();
+
+        // 去除 ```json ... ``` 代码块
+        if (trimmed.StartsWith("```"))
+        {
+            var firstNewline = trimmed.IndexOf('\n');
+            if (firstNewline > 0)
+                trimmed = trimmed[(firstNewline + 1)..];
+            if (trimmed.EndsWith("```"))
+                trimmed = trimmed[..^3].Trim();
+        }
+
+        // 找到第一个 { 和最后一个 }，提取之间的内容
+        var start = trimmed.IndexOf('{');
+        var end = trimmed.LastIndexOf('}');
+        if (start < 0 || end <= start)
+            return null;
+
+        return trimmed.Substring(start, end - start + 1);
+    }
+
+    /// <summary>将结构化诊断结果渲染为 Markdown 文本（向后兼容 WebUI Markdown 展示）</summary>
+    private static string RenderStructuredToMarkdown(StructuredDiagnosisResult r)
+    {
+        var sb = new StringBuilder();
+
+        if (r.PossibleCauses.Count > 0)
+        {
+            sb.AppendLine("### 可能原因分析");
+            foreach (var c in r.PossibleCauses)
+            {
+                var likelihood = string.IsNullOrWhiteSpace(c.Likelihood) ? "" : $"（{c.Likelihood}）";
+                sb.AppendLine($"- **{c.Name}**{likelihood}");
+                if (!string.IsNullOrWhiteSpace(c.Reasoning))
+                    sb.AppendLine($"  {c.Reasoning}");
+            }
+            sb.AppendLine();
+        }
+
+        if (r.HomeCare.Count > 0)
+        {
+            sb.AppendLine("### 居家护理与观察建议");
+            foreach (var h in r.HomeCare)
+                sb.AppendLine($"- {h}");
+            sb.AppendLine();
+        }
+
+        if (r.WarningSigns.Count > 0)
+        {
+            sb.AppendLine("### ⚠️ 需要立即就医的情况");
+            foreach (var w in r.WarningSigns)
+                sb.AppendLine($"- {w}");
+            sb.AppendLine();
+        }
+
+        if (r.SeeDoctor && !string.IsNullOrWhiteSpace(r.SeeDoctorReason))
+        {
+            sb.AppendLine("### 🏥 就医建议");
+            sb.AppendLine(r.SeeDoctorReason);
+            sb.AppendLine();
+        }
+
+        if (!string.IsNullOrWhiteSpace(r.IndividualNotes))
+        {
+            sb.AppendLine("### 个体注意事项");
+            sb.AppendLine(r.IndividualNotes);
+            sb.AppendLine();
+        }
+
+        if (!string.IsNullOrWhiteSpace(r.Disclaimer))
+        {
+            sb.AppendLine("### 温馨提示");
+            sb.AppendLine($"> {r.Disclaimer}");
+        }
+
+        return sb.ToString().TrimEnd();
+    }
 }

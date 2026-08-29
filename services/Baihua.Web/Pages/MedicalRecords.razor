@@ -3,6 +3,7 @@
 @inject IApiService ApiService
 @inject IStringLocalizer<Baihua.Web.Localization.SharedResources> L
 @using Baihua.Contracts.Medical
+@using System.Text.Json
 
 <PageTitle>@L["Medical_PageTitle"]</PageTitle>
 
@@ -272,14 +273,26 @@
 
             @if (_latestDiagnosis != null)
             {
+                var structured = TryParseStructured(_latestDiagnosis.StructuredResultJson);
                 <div class="card medical-ai-result mb-3">
                     <div class="card-header d-flex align-items-center gap-2 py-2">
                         <span class="fw-semibold flex-grow-1">🤖 @L["Medical_DiagnoseTitle"]</span>
+                        @if (_latestDiagnosis.ModelUsed == "biancang")
+                        {
+                            <span class="badge bg-success">扁仓</span>
+                        }
                         <span class="small text-muted">@_latestDiagnosis.CreatedAt.ToLocalTime().ToString("MM-dd HH:mm")</span>
                     </div>
                     <div class="card-body">
                         <div class="small text-muted mb-2">📝 @_latestDiagnosis.SymptomText</div>
-                        <Baihua.Web.Components.MarkdownView Content="@_latestDiagnosis.AiResponse" />
+                        @if (structured != null)
+                        {
+                            <StructuredDiagnosisCard Result="@structured" />
+                        }
+                        else
+                        {
+                            <Baihua.Web.Components.MarkdownView Content="@_latestDiagnosis.AiResponse" />
+                        }
                     </div>
                 </div>
             }
@@ -289,9 +302,14 @@
                 <h6 class="text-muted mt-3 mb-2">🗂️ @L["Medical_History"]</h6>
                 @foreach (var diagnosis in _detail.Diagnoses)
                 {
+                    var structured = TryParseStructured(diagnosis.StructuredResultJson);
                     <div class="card medical-ai-history mb-2">
                         <div class="card-header py-2 d-flex align-items-center gap-2">
                             <span class="small flex-grow-1 text-truncate">🤖 @diagnosis.SymptomText</span>
+                            @if (diagnosis.ModelUsed == "biancang")
+                            {
+                                <span class="badge bg-success">扁仓</span>
+                            }
                             <span class="small text-muted">@diagnosis.CreatedAt.ToLocalTime().ToString("MM-dd HH:mm")</span>
                             <button class="btn btn-sm @(_pendingDeleteDiagnosisId == diagnosis.Id ? "btn-danger" : "btn-outline-danger")"
                                     @onclick="() => OnDeleteDiagnosisClickAsync(diagnosis.Id)">
@@ -299,7 +317,14 @@
                             </button>
                         </div>
                         <div class="card-body py-2">
-                            <Baihua.Web.Components.MarkdownView Content="@diagnosis.AiResponse" />
+                            @if (structured != null)
+                            {
+                                <StructuredDiagnosisCard Result="@structured" />
+                            }
+                            else
+                            {
+                                <Baihua.Web.Components.MarkdownView Content="@diagnosis.AiResponse" />
+                            }
                         </div>
                     </div>
                 }
@@ -811,6 +836,25 @@
     }
 
     // ============ 辅助 ============
+
+    private static readonly JsonSerializerOptions StructuredJsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
+    private static StructuredDiagnosisResult? TryParseStructured(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+            return null;
+        try
+        {
+            return JsonSerializer.Deserialize<StructuredDiagnosisResult>(json, StructuredJsonOptions);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
 
     private async Task RefreshDetailAsync()
     {

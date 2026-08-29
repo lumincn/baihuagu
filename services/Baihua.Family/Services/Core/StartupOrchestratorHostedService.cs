@@ -124,6 +124,7 @@ public class StartupOrchestratorHostedService : IHostedService
             CREATE INDEX IF NOT EXISTS "IX_AiDiagnoses_MemberId" ON "AiDiagnoses" ("MemberId");
             CREATE INDEX IF NOT EXISTS "IX_AiDiagnoses_MemberId_CreatedAt" ON "AiDiagnoses" ("MemberId", "CreatedAt");
             ALTER TABLE "AiDiagnoses" ADD COLUMN IF NOT EXISTS "ModelUsed" text NOT NULL DEFAULT 'main';
+            ALTER TABLE "AiDiagnoses" ADD COLUMN IF NOT EXISTS "StructuredResultJson" text NULL;
             """;
         db.Database.ExecuteSqlRaw(ddl);
     }

@@ -176,10 +176,53 @@ public class AiDiagnosisDto
     /// <summary>AI 生成的分析（Markdown 文本，含免责声明）</summary>
     public string AiResponse { get; set; } = "";
 
+    /// <summary>结构化诊断结果 JSON（nullable，新模型才有）</summary>
+    public string? StructuredResultJson { get; set; }
+
     /// <summary>使用的模型标识（"biancang" 或 "main"）</summary>
     public string ModelUsed { get; set; } = "main";
 
     public DateTime CreatedAt { get; set; }
+}
+
+/// <summary>
+/// 结构化诊断结果：AI 返回的 JSON 解析后的强类型表示，供前端卡片式展示。
+/// </summary>
+public class StructuredDiagnosisResult
+{
+    /// <summary>可能原因列表（按可能性从高到低）</summary>
+    public List<StructuredPossibleCause> PossibleCauses { get; set; } = new();
+
+    /// <summary>居家护理与观察建议</summary>
+    public List<string> HomeCare { get; set; } = new();
+
+    /// <summary>需要立即就医的警示信号（red flags）</summary>
+    public List<string> WarningSigns { get; set; } = new();
+
+    /// <summary>是否建议就医</summary>
+    public bool SeeDoctor { get; set; }
+
+    /// <summary>建议就医的原因</summary>
+    public string? SeeDoctorReason { get; set; }
+
+    /// <summary>结合个体因素的特别注意事项</summary>
+    public string? IndividualNotes { get; set; }
+
+    /// <summary>免责声明</summary>
+    public string Disclaimer { get; set; } = "";
+}
+
+/// <summary>可能原因条目</summary>
+public class StructuredPossibleCause
+{
+    /// <summary>原因名称</summary>
+    public string Name { get; set; } = "";
+
+    /// <summary>可能性等级（较高 / 中等 / 较低 / 不能确定）</summary>
+    public string Likelihood { get; set; } = "";
+
+    /// <summary>依据与局限说明</summary>
+    public string Reasoning { get; set; } = "";
 }
 
 /// <summary>AI 诊断请求</summary>

@@ -2,6 +2,8 @@ using Baihua.Data;
 using Baihua.Family.Services.Medical;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Xunit;
 
 namespace Baihua.Family.Tests.Services;
@@ -33,7 +35,7 @@ public class MedicalServiceTests : IDisposable
         _connection.Dispose();
     }
 
-    private MedicalService CreateService() => new(_factory);
+    private MedicalService CreateService() => new(_factory, Mock.Of<ILogger<MedicalService>>());
 
     [Fact]
     public async Task CreateAndGetMember_JsonListsRoundTrip()
@@ -118,7 +120,7 @@ public class MedicalServiceTests : IDisposable
         Assert.NotNull(member);
 
         await service.CreateRecordAsync(member!.Id, DateTime.Now, "头晕", new[] { "头晕" }, new List<string>(), new List<(string, string?, string?, string?)>(), null, CancellationToken.None);
-        await service.SaveDiagnosisAsync(member.Id, "最近头晕", "**可能原因**：血压波动。", CancellationToken.None);
+        await service.SaveDiagnosisAsync(member.Id, "最近头晕", "**可能原因**：血压波动。", ct: CancellationToken.None);
 
         Assert.True(await service.DeleteMemberAsync(member.Id, CancellationToken.None));
         Assert.Null(await service.GetMemberAsync(member.Id, CancellationToken.None));
@@ -133,7 +135,7 @@ public class MedicalServiceTests : IDisposable
         var member = await service.CreateMemberAsync("妈妈", "女", null, "", new List<string>(), new List<string>(), null, CancellationToken.None);
         Assert.NotNull(member);
 
-        var diagnosis = await service.SaveDiagnosisAsync(member!.Id, "咳嗽三天", "**仅供参考**", CancellationToken.None);
+        var diagnosis = await service.SaveDiagnosisAsync(member!.Id, "咳嗽三天", "**仅供参考**", ct: CancellationToken.None);
         var list = await service.GetDiagnosesAsync(member.Id, CancellationToken.None);
         Assert.Single(list);
         Assert.Equal("咳嗽三天", list[0].SymptomText);
