@@ -6608,4 +6608,10 @@ Shift+Enter 换行，Enter 发送</value>
 <data name="Vision_StopFailed" xml:space="preserve">
     <value>停止失败：{0}</value>
   </data>
+  <data name="Messages_SystemPrompt" xml:space="preserve">
+    <value>系统提示词</value>
+  </data>
+  <data name="Messages_SystemPromptPlaceholder" xml:space="preserve">
+    <value>输入系统提示词引导模型角色，如：你是一位专业中医师，请从中医辨证论治角度回答，使用少阳头痛、太阳头痛等专业术语</value>
+  </data>
 </root>

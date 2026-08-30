@@ -195,6 +195,25 @@
                 </div>
             }
             </div>
+            <div class="system-prompt-row" style="margin-top: 0.75rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
+                    <button type="button" class="btn btn-link btn-sm" @onclick="() => showSystemPrompt = !showSystemPrompt" disabled="@isThinking" style="padding: 0; font-size: 0.85rem; font-weight: 600; text-decoration: none;">
+                        <span>@(showSystemPrompt ? "▼" : "▶")</span> @L["Messages_SystemPrompt"]
+                    </button>
+                    @if (showSystemPrompt && !string.IsNullOrWhiteSpace(systemPrompt))
+                    {
+                        <span class="badge bg-light text-secondary" style="font-size: 0.7rem;">@(systemPrompt.Length) 字</span>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" @onclick="() => systemPrompt = string.Empty" disabled="@isThinking" style="font-size: 0.72rem; padding: 0.1rem 0.5rem;">清空</button>
+                    }
+                </div>
+                @if (showSystemPrompt)
+                {
+                    <textarea class="form-control" @bind="systemPrompt" @bind:event="oninput"
+                              placeholder="@L["Messages_SystemPromptPlaceholder"]"
+                              rows="3" disabled="@isThinking"
+                              style="width: 100%; font-size: 0.9rem; line-height: 1.6; resize: none; border-radius: 8px; border: 1px solid #ced4da; padding: 0.6rem 0.75rem; background: #fafafa;"></textarea>
+                }
+            </div>
         </div>
         @if (localModels.Any())
         {
@@ -654,6 +673,8 @@
         runningLocalModels.FirstOrDefault(m => m.ModelName == selectedRunningModel);
     private bool IsLocalToolMode =>
         chatMode != "remote" && chatMode != "gguf" && chatMode != "onnx";
+    private string systemPrompt = "";
+    private bool showSystemPrompt = false;
 
     private List<AiConfigModel> availableModels => providers
         .FirstOrDefault(p => p.Id == selectedProviderId)?.Models ?? new List<AiConfigModel>();
@@ -762,7 +783,8 @@
                 selectedProviderId,
                 selectedModel,
                 localModelPath,
-                selectedRunningModel
+                selectedRunningModel,
+                systemPrompt
             };
             await JSRuntime.InvokeVoidAsync("localStorage.setItem", "chat_prefs",
                 System.Text.Json.JsonSerializer.Serialize(prefs));
@@ -780,6 +802,8 @@
             {
                 using var prefsDoc = System.Text.Json.JsonDocument.Parse(prefsJson);
                 var prefs = prefsDoc.RootElement;
+                if (prefs.TryGetProperty("systemPrompt", out var spProp))
+                    systemPrompt = spProp.GetString() ?? "";
                 if (prefs.TryGetProperty("chatMode", out var modeProp))
                 {
                     var savedMode = modeProp.GetString() ?? "";
@@ -972,7 +996,7 @@
             }
             else
             {
-                await foreach (var delta in ApiService.StreamLocalChatAsync(content, localModelPath, chatMode, history, _chatCts.Token))
+                await foreach (var delta in ApiService.StreamLocalChatAsync(content, localModelPath, chatMode, history, systemPrompt, _chatCts.Token))
                 {
                     if (_chatCts.IsCancellationRequested) break;
                     aiMessage.Content += delta;

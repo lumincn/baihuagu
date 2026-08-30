@@ -706,6 +706,7 @@ namespace Baihua.Web.Services
             string modelPath,
             string modelType,
             List<(bool IsUser, string Content)>? history = null,
+            string? systemPrompt = null,
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             var payload = new Dictionary<string, object?>
@@ -714,6 +715,8 @@ namespace Baihua.Web.Services
                 ["modelPath"] = modelPath,
                 ["modelType"] = modelType
             };
+            if (!string.IsNullOrWhiteSpace(systemPrompt))
+                payload["systemPrompt"] = systemPrompt;
             if (history != null && history.Count > 0)
                 payload["history"] = history.Select(h => new { role = h.IsUser ? "user" : "assistant", content = h.Content }).ToList();
 

@@ -6609,4 +6609,10 @@ Shift+Enter new line, Enter to send</value>
 <data name="Vision_StopFailed" xml:space="preserve">
     <value>Failed to stop: {0}</value>
   </data>
+  <data name="Messages_SystemPrompt" xml:space="preserve">
+    <value>System Prompt</value>
+  </data>
+  <data name="Messages_SystemPromptPlaceholder" xml:space="preserve">
+    <value>Enter system prompt to guide model role, e.g.: You are a professional TCM doctor, answer from TCM syndrome differentiation perspective</value>
+  </data>
 </root>
