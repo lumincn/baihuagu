@@ -154,6 +154,14 @@ public class MedicalAiService
                 }
             }
 
+            // P4 安全预检：急重症红旗前置 + 过敏史联动（仅作参考，不阻断分析）
+            var redFlag = DetectRedFlags(trimmed);
+            var allergyWarning = DetectAllergyConflict(markdown, member);
+            if (redFlag != null)
+                markdown = redFlag + "\n\n" + markdown;
+            if (allergyWarning != null)
+                markdown += "\n\n" + allergyWarning;
+
             var saved = await _medicalService.SaveDiagnosisAsync(memberId, trimmed, markdown, modelUsed, structuredJson, ct);
             return new AiDiagnoseResultDto
             {
@@ -184,6 +192,45 @@ public class MedicalAiService
 
     private static AiDiagnoseResultDto Fail(string error)
         => new() { Success = false, Error = error };
+
+    /// <summary>急重症红旗关键词（命中即提示立即就医/急诊）</summary>
+    private static readonly string[] RedFlagKeywords =
+    {
+        "持续高热不退", "高热", "剧烈胸痛", "剧烈腹痛", "呼吸困难", "意识障碍",
+        "大出血", "吐血", "便血", "中风", "偏瘫", "失语", "严重外伤", "骨折", "过敏"
+    };
+
+    /// <summary>检测症状描述是否命中急重症红旗，命中返回警示文案（否则 null）</summary>
+    public static string? DetectRedFlags(string symptomText)
+    {
+        if (string.IsNullOrWhiteSpace(symptomText)) return null;
+        foreach (var kw in RedFlagKeywords)
+            if (symptomText.Contains(kw, StringComparison.OrdinalIgnoreCase))
+                return $"⚠️ 症状可能提示急重症（命中关键词：{kw}），请立即就医或急诊，勿仅依赖调理建议。";
+        return null;
+    }
+
+    /// <summary>检测 AI 生成内容是否涉及成员已知过敏原，命中返回警示文案（否则 null）</summary>
+    private static string? DetectAllergyConflict(string content, MedicalMember member)
+    {
+        if (string.IsNullOrWhiteSpace(content)) return null;
+        var allergies = MedicalService.DeserializeStringList(member.AllergiesJson);
+        if (allergies.Count == 0) return null;
+
+        var hits = new List<string>();
+        foreach (var allergy in allergies)
+        {
+            if (string.IsNullOrWhiteSpace(allergy)) continue;
+            // 过敏原基名：去掉"过敏/史"等后缀（如"青霉素过敏"→"青霉素"），便于匹配生成文案中的药名
+            var baseName = allergy.Replace("过敏", "").Replace("史", "").Trim();
+            var matched = content.Contains(allergy, StringComparison.OrdinalIgnoreCase)
+                || (baseName.Length > 0 && content.Contains(baseName, StringComparison.OrdinalIgnoreCase));
+            if (matched && !hits.Contains(allergy))
+                hits.Add(allergy);
+        }
+        if (hits.Count == 0) return null;
+        return $"⚠️ 分析内容涉及该成员的过敏史（{string.Join("、", hits)}），相关药物须经医生确认后方可使用。";
+    }
 
     /// <summary>
     /// 检查扁仓 BianCang 医疗模型是否已运行，返回 (modelName, "biancang") 或 null。

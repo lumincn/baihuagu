@@ -1,5 +1,60 @@
 namespace Baihua.Contracts.Medical;
 
+/// <summary>舌象（望诊）</summary>
+public class TongueDto
+{
+    public string? Color { get; set; }           // 淡红/淡白/红/绛/紫/暗
+    public string? Shape { get; set; }           // 胖大/瘦薄/齿痕/裂纹/点刺/瘀斑
+    public string? CoatingColor { get; set; }    // 白/黄/灰/黑
+    public string? CoatingThickness { get; set; }// 薄/厚
+    public string? CoatingTexture { get; set; }  // 润/燥/腻/腐/剥
+    public string? Sublingual { get; set; }      // 正常/怒张
+    public string? Note { get; set; }
+}
+
+/// <summary>脉象（切诊）</summary>
+public class PulseDto
+{
+    public string? Rate { get; set; }     // 迟/数/缓/疾
+    public string? Rhythm { get; set; }   // 结/代/促
+    public string? Depth { get; set; }    // 浮/沉
+    public string? Strength { get; set; } // 有力/无力
+    public string? Quality { get; set; }  // 弦/滑/细/洪/濡/弱/涩/紧
+    public string? Position { get; set; } // 左右寸关尺
+    public string? Note { get; set; }
+}
+
+/// <summary>四诊结构化</summary>
+public class FourDiagnosticsDto
+{
+    public TongueDto? Tongue { get; set; }
+    public PulseDto? Pulse { get; set; }
+    public string? ColdHeat { get; set; } // 寒热
+    public string? Sweat { get; set; }    // 汗
+    public string? Thirst { get; set; }   // 口渴
+    public string? Urine { get; set; }    // 小便
+    public string? Stool { get; set; }    // 大便
+    public string? Sleep { get; set; }    // 睡眠
+    public string? Appetite { get; set; } // 饮食口味
+    public string? Note { get; set; }
+}
+
+/// <summary>中医体质</summary>
+public class ConstitutionDto
+{
+    public string? Primary { get; set; }   // 平和/气虚/阳虚/阴虚/痰湿/湿热/血瘀/气郁/特禀
+    public string? Secondary { get; set; }
+    public string? Note { get; set; }
+}
+
+/// <summary>方剂单味药</summary>
+public class IngredientDto
+{
+    public string Name { get; set; } = "";
+    public string? Dosage { get; set; }
+    public string? Note { get; set; }     // 如 后下/包煎
+}
+
 /// <summary>
 /// 家庭病历本：家庭成员健康档案（身体状况）。
 /// 每个成员维护一份：基本信息 + 过敏史 + 慢性病/基础疾病。
@@ -29,6 +84,24 @@ public class MedicalMemberDto
     /// <summary>其他备注</summary>
     public string? Notes { get; set; }
 
+    /// <summary>身高（cm）</summary>
+    public double? HeightCm { get; set; }
+
+    /// <summary>体重（kg）</summary>
+    public double? WeightKg { get; set; }
+
+    /// <summary>职业</summary>
+    public string? Occupation { get; set; }
+
+    /// <summary>生活起居习惯（饮食/作息/运动等）</summary>
+    public string? LifeHabits { get; set; }
+
+    /// <summary>运动损伤史条目</summary>
+    public List<string> SportsInjuries { get; set; } = new();
+
+    /// <summary>中医体质画像</summary>
+    public ConstitutionDto? Constitution { get; set; }
+
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }
@@ -53,6 +126,24 @@ public class CreateMedicalMemberRequest
 
     /// <summary>备注（≤2000 字）</summary>
     public string? Notes { get; set; }
+
+    /// <summary>身高（cm）</summary>
+    public double? HeightCm { get; set; }
+
+    /// <summary>体重（kg）</summary>
+    public double? WeightKg { get; set; }
+
+    /// <summary>职业</summary>
+    public string? Occupation { get; set; }
+
+    /// <summary>生活起居习惯</summary>
+    public string? LifeHabits { get; set; }
+
+    /// <summary>运动损伤史条目</summary>
+    public List<string> SportsInjuries { get; set; } = new();
+
+    /// <summary>中医体质画像</summary>
+    public ConstitutionDto? Constitution { get; set; }
 }
 
 /// <summary>更新成员请求（字段均可选，至少传一项有效字段）</summary>
@@ -74,6 +165,24 @@ public class UpdateMedicalMemberRequest
 
     /// <summary>传入 null 表示不修改，传入空字符串表示清空</summary>
     public string? Notes { get; set; }
+
+    /// <summary>传入 null 表示不修改</summary>
+    public double? HeightCm { get; set; }
+
+    /// <summary>传入 null 表示不修改</summary>
+    public double? WeightKg { get; set; }
+
+    /// <summary>传入 null 表示不修改，传入空字符串表示清空</summary>
+    public string? Occupation { get; set; }
+
+    /// <summary>传入 null 表示不修改，传入空字符串表示清空</summary>
+    public string? LifeHabits { get; set; }
+
+    /// <summary>传入 null 表示不修改，传入空列表表示清空</summary>
+    public List<string>? SportsInjuries { get; set; }
+
+    /// <summary>传入 null 表示不修改</summary>
+    public ConstitutionDto? Constitution { get; set; }
 }
 
 /// <summary>用药条目（每次就医/发病记录中的一种药物）</summary>
@@ -90,6 +199,21 @@ public class MedicalMedicationItemDto
 
     /// <summary>备注（如"饭后服用""疗程 5 天"）</summary>
     public string? Note { get; set; }
+
+    /// <summary>方剂组成（单味药列表）</summary>
+    public List<IngredientDto>? Ingredients { get; set; }
+
+    /// <summary>煎服方法（如"水煎分 2 次温服"）</summary>
+    public string? DecoctionMethod { get; set; }
+
+    /// <summary>方义/治法（如"疏风散寒"）</summary>
+    public string? Principle { get; set; }
+
+    /// <summary>疗程（如"5 天"）</summary>
+    public string? Course { get; set; }
+
+    /// <summary>功效（如"发汗解表"）</summary>
+    public string? Effect { get; set; }
 }
 
 /// <summary>
@@ -120,6 +244,9 @@ public class MedicalRecordDto
     /// <summary>备注（就诊医院、科室、医生、注意事项等）</summary>
     public string? Notes { get; set; }
 
+    /// <summary>四诊结构化（舌象/脉象/寒热/二便等）</summary>
+    public FourDiagnosticsDto? FourDiagnostics { get; set; }
+
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }
@@ -141,6 +268,9 @@ public class CreateMedicalRecordRequest
 
     /// <summary>备注（≤2000 字）</summary>
     public string? Notes { get; set; }
+
+    /// <summary>四诊结构化（舌象/脉象/寒热/二便等）</summary>
+    public FourDiagnosticsDto? FourDiagnostics { get; set; }
 }
 
 /// <summary>更新病历记录请求（字段均可选，至少传一项有效字段）</summary>
@@ -161,6 +291,9 @@ public class UpdateMedicalRecordRequest
 
     /// <summary>传入 null 表示不修改，传入空字符串表示清空</summary>
     public string? Notes { get; set; }
+
+    /// <summary>传入 null 表示不修改</summary>
+    public FourDiagnosticsDto? FourDiagnostics { get; set; }
 }
 
 /// <summary>AI 诊断记录（仅作参考，不可代替医生）</summary>

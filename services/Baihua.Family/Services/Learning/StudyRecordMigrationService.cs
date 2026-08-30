@@ -77,6 +77,10 @@ public class StudyRecordMigrationService : BackgroundService
                     continue;
                 }
 
+                // 修复：TryParseExact 产出 Kind=Unspecified，写入 PostgreSQL timestamptz 会抛
+                // "only UTC is supported"；统一转成 UTC 当日零点，查询与写入均用 UTC。
+                var dateUtc = DateTime.SpecifyKind(date.Date, DateTimeKind.Utc);
+
                 try
                 {
                     var json = await File.ReadAllTextAsync(file, cancellationToken);
@@ -90,7 +94,8 @@ public class StudyRecordMigrationService : BackgroundService
                             a => a.LearnerId == defaultLearner.Id
                                  && a.VaultId == vault.Id
                                  && a.CardId == kv.Key
-                                 && a.CreatedAt.Date == date.Date
+                                 && a.CreatedAt >= dateUtc
+                                 && a.CreatedAt < dateUtc.AddDays(1)
                                  && a.ActivityType == "study",
                             cancellationToken);
 
@@ -103,7 +108,7 @@ public class StudyRecordMigrationService : BackgroundService
                             ActivityType = "study",
                             CardId = kv.Key,
                             Result = kv.Value,
-                            CreatedAt = date.Date.AddHours(12) // 默认中午 12 点
+                            CreatedAt = dateUtc.AddHours(12) // 默认中午 12 点（UTC）
                         });
                         totalMigrated++;
                     }

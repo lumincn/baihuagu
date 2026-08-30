@@ -35,6 +35,24 @@ public class MedicalMember
     /// <summary>其他备注</summary>
     public string? Notes { get; set; }
 
+    /// <summary>身高（cm）</summary>
+    public double? HeightCm { get; set; }
+
+    /// <summary>体重（kg）</summary>
+    public double? WeightKg { get; set; }
+
+    /// <summary>职业</summary>
+    public string? Occupation { get; set; }
+
+    /// <summary>生活起居习惯</summary>
+    public string? LifeHabits { get; set; }
+
+    /// <summary>运动损伤史 JSON 数组（如 ["踝关节扭伤"]）</summary>
+    public string SportsInjuriesJson { get; set; } = "[]";
+
+    /// <summary>中医体质画像 JSON（{Primary,Secondary,Note}）</summary>
+    public string? ConstitutionJson { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
@@ -70,8 +88,11 @@ public class MedicalRecord
     /// <summary>医生诊断 JSON 数组</summary>
     public string DiagnosesJson { get; set; } = "[]";
 
-    /// <summary>用药 JSON 数组（{Name,Dosage,Frequency,Note}）</summary>
+    /// <summary>用药 JSON 数组（{Name,Dosage,Frequency,Note,Ingredients,DecoctionMethod,Principle,Course,Effect}）</summary>
     public string MedicationsJson { get; set; } = "[]";
+
+    /// <summary>四诊结构化 JSON（舌象/脉象/寒热/二便等，可空）</summary>
+    public string? FourDiagnosticsJson { get; set; }
 
     /// <summary>备注（医院、科室、医生、注意事项）</summary>
     public string? Notes { get; set; }

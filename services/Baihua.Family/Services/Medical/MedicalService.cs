@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Baihua.Contracts.Medical;
 using Baihua.Data;
 using Baihua.Data.Entities;
 
@@ -42,6 +43,8 @@ public class MedicalService
     public async Task<MedicalMember?> CreateMemberAsync(
         string name, string gender, DateTime? birthDate, string bloodType,
         IEnumerable<string> allergies, IEnumerable<string> chronicDiseases, string? notes,
+        double? heightCm, double? weightKg, string? occupation, string? lifeHabits,
+        IEnumerable<string> sportsInjuries, ConstitutionDto? constitution,
         CancellationToken ct = default)
     {
         var trimmedName = name?.Trim() ?? "";
@@ -53,11 +56,17 @@ public class MedicalService
         {
             Name = trimmedName,
             Gender = NormalizeShort(gender, 10),
-            BirthDate = birthDate,
+            BirthDate = birthDate?.ToUniversalTime(),
             BloodType = NormalizeShort(bloodType, 10),
             AllergiesJson = SerializeList(allergies),
             ChronicDiseasesJson = SerializeList(chronicDiseases),
-            Notes = NormalizeNotes(notes)
+            Notes = NormalizeNotes(notes),
+            HeightCm = heightCm,
+            WeightKg = weightKg,
+            Occupation = NormalizeNullable(occupation),
+            LifeHabits = NormalizeNullable(lifeHabits),
+            SportsInjuriesJson = SerializeList(sportsInjuries),
+            ConstitutionJson = SerializeConstitution(constitution)
         };
         db.MedicalMembers.Add(member);
         try
@@ -81,6 +90,8 @@ public class MedicalService
     public async Task<MedicalMember?> UpdateMemberAsync(
         int id, string? name, string? gender, DateTime? birthDate, string? bloodType,
         List<string>? allergies, List<string>? chronicDiseases, string? notes,
+        double? heightCm, double? weightKg, string? occupation, string? lifeHabits,
+        List<string>? sportsInjuries, ConstitutionDto? constitution,
         CancellationToken ct = default)
     {
         using var db = await _dbFactory.CreateDbContextAsync(ct);
@@ -112,6 +123,18 @@ public class MedicalService
                 return null; // 超长，视为非法
             member.Notes = normalized;
         }
+        if (heightCm.HasValue)
+            member.HeightCm = heightCm.Value;
+        if (weightKg.HasValue)
+            member.WeightKg = weightKg.Value;
+        if (occupation != null)
+            member.Occupation = NormalizeNullable(occupation);
+        if (lifeHabits != null)
+            member.LifeHabits = NormalizeNullable(lifeHabits);
+        if (sportsInjuries != null)
+            member.SportsInjuriesJson = SerializeList(sportsInjuries);
+        if (constitution != null)
+            member.ConstitutionJson = SerializeConstitution(constitution);
 
         await db.SaveChangesAsync(ct);
         return member;
@@ -150,14 +173,39 @@ public class MedicalService
     }
 
     /// <summary>
+    /// 按关键词检索病历记录（标题/症状/诊断/用药/四诊/备注，不区分大小写）。
+    /// 关键词为空返回空列表；limit 截断在 [1, 200]。
+    /// </summary>
+    public async Task<List<MedicalRecord>> SearchRecordsAsync(string query, int limit = 50, CancellationToken ct = default)
+    {
+        var needle = (query ?? "").Trim().ToLower();
+        if (needle.Length == 0)
+            return new List<MedicalRecord>();
+
+        using var db = await _dbFactory.CreateDbContextAsync(ct);
+        return await db.MedicalRecords
+            .Where(r => r.Title.ToLower().Contains(needle) ||
+                        r.SymptomsJson.ToLower().Contains(needle) ||
+                        r.DiagnosesJson.ToLower().Contains(needle) ||
+                        r.MedicationsJson.ToLower().Contains(needle) ||
+                        (r.FourDiagnosticsJson ?? "").ToLower().Contains(needle) ||
+                        (r.Notes ?? "").ToLower().Contains(needle))
+            .OrderByDescending(r => r.OccurredAt)
+            .ThenByDescending(r => r.Id)
+            .Take(Math.Clamp(limit, 1, 200))
+            .ToListAsync(ct);
+    }
+
+    /// <summary>
     /// 创建病历记录（挂到指定成员）。成员不存在或标题非法时返回 null。
-    /// symptoms/diagnoses 为症状与诊断文本列表；medications 为用药条目。
+    /// symptoms/diagnoses 为症状与诊断文本列表；medications 为用药条目；fourDiagnostics 为四诊结构化（可空）。
     /// </summary>
     public async Task<MedicalRecord?> CreateRecordAsync(
         int memberId, DateTime occurredAt, string title,
         IEnumerable<string> symptoms, IEnumerable<string> diagnoses,
-        IEnumerable<(string Name, string? Dosage, string? Frequency, string? Note)> medications,
-        string? notes, CancellationToken ct = default)
+        IEnumerable<MedicalMedicationItemDto> medications,
+        string? notes, FourDiagnosticsDto? fourDiagnostics,
+        CancellationToken ct = default)
     {
         var trimmedTitle = title?.Trim() ?? "";
         if (trimmedTitle.Length == 0 || trimmedTitle.Length > 200)
@@ -176,6 +224,7 @@ public class MedicalService
             SymptomsJson = SerializeStringList(symptoms),
             DiagnosesJson = SerializeStringList(diagnoses),
             MedicationsJson = SerializeMedications(medications),
+            FourDiagnosticsJson = SerializeFourDiagnostics(fourDiagnostics),
             Notes = NormalizeNotes(notes)
         };
         db.MedicalRecords.Add(record);
@@ -183,12 +232,13 @@ public class MedicalService
         return record;
     }
 
-    /// <summary>更新病历记录（字段可选；列表传 null 表示不修改，传空列表表示清空）。不存在或标题非法时返回 null</summary>
+    /// <summary>更新病历记录（字段可选；列表传 null 表示不修改，传空列表表示清空；fourDiagnostics 传 null 表示不修改）。不存在或标题非法时返回 null</summary>
     public async Task<MedicalRecord?> UpdateRecordAsync(
         int id, DateTime? occurredAt, string? title,
         List<string>? symptoms, List<string>? diagnoses,
-        List<(string Name, string? Dosage, string? Frequency, string? Note)>? medications,
-        string? notes, CancellationToken ct = default)
+        List<MedicalMedicationItemDto>? medications,
+        string? notes, FourDiagnosticsDto? fourDiagnostics,
+        CancellationToken ct = default)
     {
         using var db = await _dbFactory.CreateDbContextAsync(ct);
         var record = await db.MedicalRecords.FirstOrDefaultAsync(r => r.Id == id, ct);
@@ -210,6 +260,8 @@ public class MedicalService
             record.DiagnosesJson = SerializeStringList(diagnoses);
         if (medications != null)
             record.MedicationsJson = SerializeMedications(medications);
+        if (fourDiagnostics != null)
+            record.FourDiagnosticsJson = SerializeFourDiagnostics(fourDiagnostics);
         if (notes != null)
         {
             var normalized = NormalizeNotes(notes);
@@ -283,21 +335,54 @@ public class MedicalService
         PropertyNamingPolicy = null
     };
 
+    private static string? SerializeFourDiagnostics(FourDiagnosticsDto? fd)
+        => fd == null ? null : JsonSerializer.Serialize(fd, JsonOptions);
+
+    public static FourDiagnosticsDto? DeserializeFourDiagnostics(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return null;
+        try { return JsonSerializer.Deserialize<FourDiagnosticsDto>(json, JsonOptions); }
+        catch (JsonException) { return null; }
+    }
+
+    private static string? SerializeConstitution(ConstitutionDto? c)
+        => c == null ? null : JsonSerializer.Serialize(c, JsonOptions);
+
+    public static ConstitutionDto? DeserializeConstitution(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return null;
+        try { return JsonSerializer.Deserialize<ConstitutionDto>(json, JsonOptions); }
+        catch (JsonException) { return null; }
+    }
+
     private static string SerializeList(IEnumerable<string> items)
         => JsonSerializer.Serialize(items?.Select(TrimItem).Where(x => x.Length > 0).ToList() ?? new List<string>(), JsonOptions);
 
     private static string SerializeStringList(IEnumerable<string> items)
         => SerializeList(items);
 
-    private static string SerializeMedications(IEnumerable<(string Name, string? Dosage, string? Frequency, string? Note)> items)
+    private static string SerializeMedications(IEnumerable<MedicalMedicationItemDto> items)
     {
-        var list = (items ?? Enumerable.Empty<(string, string?, string?, string?)>())
+        var list = (items ?? Enumerable.Empty<MedicalMedicationItemDto>())
             .Select(m => new
             {
                 Name = m.Name?.Trim() ?? "",
                 Dosage = NormalizeNullable(m.Dosage),
                 Frequency = NormalizeNullable(m.Frequency),
-                Note = NormalizeNullable(m.Note)
+                Note = NormalizeNullable(m.Note),
+                Ingredients = (m.Ingredients ?? new List<IngredientDto>())
+                    .Select(i => new
+                    {
+                        Name = i.Name?.Trim() ?? "",
+                        Dosage = NormalizeNullable(i.Dosage),
+                        Note = NormalizeNullable(i.Note)
+                    })
+                    .Where(i => i.Name.Length > 0)
+                    .ToList(),
+                DecoctionMethod = NormalizeNullable(m.DecoctionMethod),
+                Principle = NormalizeNullable(m.Principle),
+                Course = NormalizeNullable(m.Course),
+                Effect = NormalizeNullable(m.Effect)
             })
             .Where(m => m.Name.Length > 0)
             .ToList();
@@ -320,21 +405,35 @@ public class MedicalService
     }
 
     /// <summary>反序列化用药列表（容错：非法 JSON 返回空列表）</summary>
-    public static List<(string Name, string? Dosage, string? Frequency, string? Note)> DeserializeMedications(string? json)
+    public static List<MedicalMedicationItemDto> DeserializeMedications(string? json)
     {
         if (string.IsNullOrWhiteSpace(json))
-            return new List<(string, string?, string?, string?)>();
+            return new List<MedicalMedicationItemDto>();
         try
         {
             var items = JsonSerializer.Deserialize<List<MedicationJsonItem>>(json, JsonOptions) ?? new List<MedicationJsonItem>();
             return items
-                .Select(m => (m.Name ?? "", m.Dosage, m.Frequency, m.Note))
-                .Where(m => m.Item1.Length > 0)
+                .Where(m => !string.IsNullOrEmpty(m.Name))
+                .Select(m => new MedicalMedicationItemDto
+                {
+                    Name = m.Name ?? "",
+                    Dosage = m.Dosage,
+                    Frequency = m.Frequency,
+                    Note = m.Note,
+                    Ingredients = m.Ingredients?
+                        .Where(i => !string.IsNullOrEmpty(i.Name))
+                        .Select(i => new IngredientDto { Name = i.Name ?? "", Dosage = i.Dosage, Note = i.Note })
+                        .ToList(),
+                    DecoctionMethod = m.DecoctionMethod,
+                    Principle = m.Principle,
+                    Course = m.Course,
+                    Effect = m.Effect
+                })
                 .ToList();
         }
         catch (JsonException)
         {
-            return new List<(string, string?, string?, string?)>();
+            return new List<MedicalMedicationItemDto>();
         }
     }
 
@@ -344,6 +443,11 @@ public class MedicalService
         public string? Dosage { get; set; }
         public string? Frequency { get; set; }
         public string? Note { get; set; }
+        public List<IngredientDto>? Ingredients { get; set; }
+        public string? DecoctionMethod { get; set; }
+        public string? Principle { get; set; }
+        public string? Course { get; set; }
+        public string? Effect { get; set; }
     }
 
     private static string TrimItem(string? s) => s?.Trim() ?? "";

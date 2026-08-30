@@ -58,7 +58,9 @@ public class MedicalController : ControllerBase
         var member = await _medicalService.CreateMemberAsync(
             request?.Name ?? "", request?.Gender ?? "", request?.BirthDate,
             request?.BloodType ?? "", request?.Allergies ?? new List<string>(),
-            request?.ChronicDiseases ?? new List<string>(), request?.Notes, ct);
+            request?.ChronicDiseases ?? new List<string>(), request?.Notes,
+            request?.HeightCm, request?.WeightKg, request?.Occupation, request?.LifeHabits,
+            request?.SportsInjuries ?? new List<string>(), request?.Constitution, ct);
         if (member == null)
             return BadRequest(new { error = "姓名不能为空或过长（最多 50 字）" });
 
@@ -72,12 +74,17 @@ public class MedicalController : ControllerBase
         if (request == null ||
             (request.Name == null && request.Gender == null && request.BirthDate == null &&
              request.BloodType == null && request.Allergies == null &&
-             request.ChronicDiseases == null && request.Notes == null))
+             request.ChronicDiseases == null && request.Notes == null &&
+             request.HeightCm == null && request.WeightKg == null &&
+             request.Occupation == null && request.LifeHabits == null &&
+             request.SportsInjuries == null && request.Constitution == null))
             return BadRequest(new { error = "至少需要提供一项要修改的字段" });
 
         var member = await _medicalService.UpdateMemberAsync(
             id, request.Name, request.Gender, request.BirthDate, request.BloodType,
-            request.Allergies, request.ChronicDiseases, request.Notes, ct);
+            request.Allergies, request.ChronicDiseases, request.Notes,
+            request.HeightCm, request.WeightKg, request.Occupation, request.LifeHabits,
+            request.SportsInjuries, request.Constitution, ct);
         if (member == null)
             return NotFound(new { error = "家庭成员不存在或字段不合法" });
 
@@ -94,19 +101,27 @@ public class MedicalController : ControllerBase
 
     // ============ 病历记录 ============
 
+    /// <summary>按关键词检索病历记录，limit 可选（默认 50，最大 200）</summary>
+    [HttpGet("records/search")]
+    public async Task<ActionResult<List<MedicalRecordDto>>> SearchRecords([FromQuery] string q, [FromQuery] int? limit, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(q))
+            return BadRequest(new { error = "q 不能为空" });
+        var records = await _medicalService.SearchRecordsAsync(q.Trim(), limit ?? 50, ct);
+        return Ok(records.Select(ToRecordDto).ToList());
+    }
+
     /// <summary>创建病历记录（挂到指定成员）</summary>
     [HttpPost("members/{memberId:int}/records")]
     public async Task<ActionResult<MedicalRecordDto>> CreateRecord(int memberId, [FromBody] CreateMedicalRecordRequest request, CancellationToken ct)
     {
         var occurredAt = request?.OccurredAt ?? DateTime.UtcNow;
-        var medications = (request?.Medications ?? new List<MedicalMedicationItemDto>())
-            .Select(m => (m?.Name ?? "", m?.Dosage, m?.Frequency, m?.Note))
-            .ToList();
 
         var record = await _medicalService.CreateRecordAsync(
             memberId, occurredAt, request?.Title ?? "",
             request?.Symptoms ?? new List<string>(), request?.Diagnoses ?? new List<string>(),
-            medications, request?.Notes, ct);
+            request?.Medications ?? new List<MedicalMedicationItemDto>(),
+            request?.Notes, request?.FourDiagnostics, ct);
         if (record == null)
             return BadRequest(new { error = "标题不能为空或过长（最多 200 字），或成员不存在" });
 
@@ -119,20 +134,14 @@ public class MedicalController : ControllerBase
     {
         if (request == null ||
             (request.OccurredAt == null && request.Title == null && request.Symptoms == null &&
-             request.Diagnoses == null && request.Medications == null && request.Notes == null))
+             request.Diagnoses == null && request.Medications == null && request.Notes == null &&
+             request.FourDiagnostics == null))
             return BadRequest(new { error = "至少需要提供一项要修改的字段" });
-
-        List<(string, string?, string?, string?)>? medications = null;
-        if (request.Medications != null)
-        {
-            medications = request.Medications
-                .Select(m => (m?.Name ?? "", m?.Dosage, m?.Frequency, m?.Note))
-                .ToList();
-        }
 
         var record = await _medicalService.UpdateRecordAsync(
             id, request.OccurredAt, request.Title,
-            request.Symptoms, request.Diagnoses, medications, request.Notes, ct);
+            request.Symptoms, request.Diagnoses, request.Medications,
+            request.Notes, request.FourDiagnostics, ct);
         if (record == null)
             return NotFound(new { error = "病历记录不存在或字段不合法" });
 
@@ -184,6 +193,12 @@ public class MedicalController : ControllerBase
         Allergies = MedicalService.DeserializeStringList(member.AllergiesJson),
         ChronicDiseases = MedicalService.DeserializeStringList(member.ChronicDiseasesJson),
         Notes = member.Notes,
+        HeightCm = member.HeightCm,
+        WeightKg = member.WeightKg,
+        Occupation = member.Occupation,
+        LifeHabits = member.LifeHabits,
+        SportsInjuries = MedicalService.DeserializeStringList(member.SportsInjuriesJson),
+        Constitution = MedicalService.DeserializeConstitution(member.ConstitutionJson),
         CreatedAt = member.CreatedAt,
         UpdatedAt = member.UpdatedAt
     };
@@ -196,10 +211,9 @@ public class MedicalController : ControllerBase
         Title = record.Title,
         Symptoms = MedicalService.DeserializeStringList(record.SymptomsJson),
         Diagnoses = MedicalService.DeserializeStringList(record.DiagnosesJson),
-        Medications = MedicalService.DeserializeMedications(record.MedicationsJson)
-            .Select(m => new MedicalMedicationItemDto { Name = m.Name, Dosage = m.Dosage, Frequency = m.Frequency, Note = m.Note })
-            .ToList(),
+        Medications = MedicalService.DeserializeMedications(record.MedicationsJson),
         Notes = record.Notes,
+        FourDiagnostics = MedicalService.DeserializeFourDiagnostics(record.FourDiagnosticsJson),
         CreatedAt = record.CreatedAt,
         UpdatedAt = record.UpdatedAt
     };
