@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Net.Http.Json;
 using System.Text.Json;
 using Baihua.Core.Services;
 using ModelContextProtocol.Server;
@@ -64,6 +65,40 @@ public sealed class BaihuaVaultTools
             var json = await resp.Content.ReadAsStringAsync();
             return resp.IsSuccessStatusCode
                 ? json
+                : JsonSerializer.Serialize(new { ok = false, error = $"HTTP {(int)resp.StatusCode}", detail = json }, JsonOpts);
+        }
+        catch (Exception ex)
+        {
+            return JsonSerializer.Serialize(new { ok = false, error = ex.Message }, JsonOpts);
+        }
+    }
+
+    [McpServerTool(Name = "baihua_vault_create"), Description("创建百花知识库。name 必填（唯一，重名报错）；industry 可选（如 国学/编程/中医）；path 可选（留空自动生成到 data/vaults/{industry}/{name}）。返回新知识库 id/name/path。")]
+    public string VaultCreate(string name, string? industry = null, string? path = null)
+    {
+        try
+        {
+            var vault = _vaultSettings.AddVault(name, path ?? "", industry ?? "");
+            return JsonSerializer.Serialize(new { ok = true, vault }, JsonOpts);
+        }
+        catch (Exception ex)
+        {
+            return JsonSerializer.Serialize(new { ok = false, error = ex.Message }, JsonOpts);
+        }
+    }
+
+    [McpServerTool(Name = "baihua_vault_write_note"), Description("在百花知识库中新建或覆盖一篇笔记。path 为笔记相对路径（如 学习计划/入门.md），vaultId 为知识库 id（先经 baihua_vault_list 或 baihua_vault_create 取得），content 为 markdown 全文。")]
+    public async Task<string> VaultWriteNote(string path, string vaultId, string content)
+    {
+        try
+        {
+            var client = _httpClientFactory.CreateClient("Vault");
+            var escaped = string.Join("/", path.Split('/').Select(Uri.EscapeDataString));
+            var url = $"/vault/write/{escaped}?vaultId={Uri.EscapeDataString(vaultId)}";
+            using var resp = await client.PostAsJsonAsync(url, new { content });
+            var json = await resp.Content.ReadAsStringAsync();
+            return resp.IsSuccessStatusCode
+                ? JsonSerializer.Serialize(new { ok = true, success = true }, JsonOpts)
                 : JsonSerializer.Serialize(new { ok = false, error = $"HTTP {(int)resp.StatusCode}", detail = json }, JsonOpts);
         }
         catch (Exception ex)
