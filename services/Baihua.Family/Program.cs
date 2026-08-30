@@ -160,6 +160,7 @@ builder.Services.AddSingleton<AiSettingsService>();
 // AI 配置数据源：Family 经 AI 服务 HTTP API（不直读 ai.db、不持有 API Key）
 builder.Services.AddSingleton<IAiConfigService, HttpAiConfigService>();
 builder.Services.AddSingleton<AiProviderRegistryClient>();
+builder.Services.AddSingleton<AiComfyArtworksClient>();
 
 builder.Services.AddSingleton<LocalModelSettingsService>();
 

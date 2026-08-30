@@ -6192,4 +6192,421 @@ Do you want to go to the vault management page to create it manually?</value>
   </data>
   <data name="Draw_VideoHint" xml:space="preserve">
     <value>Resolution ≤768, frames 25-121 (~1-5 seconds)</value>
-  </data></root>
+  </data><data name="Messages_PageTitle" xml:space="preserve">
+    <value>AI Chat</value>
+  </data>
+<data name="Messages_Title" xml:space="preserve">
+    <value>💬 AI Chat</value>
+  </data>
+<data name="Messages_AiNotConfigured" xml:space="preserve">
+    <value>⚠️ AI not configured, please set up API Key first</value>
+  </data>
+<data name="Messages_ExportChat" xml:space="preserve">
+    <value>📥 Export Chat</value>
+  </data>
+<data name="Messages_ClearChat" xml:space="preserve">
+    <value>🗑️ Clear Chat</value>
+  </data>
+<data name="Messages_Mode" xml:space="preserve">
+    <value>Mode</value>
+  </data>
+<data name="Messages_ModeRemote" xml:space="preserve">
+    <value>🌐 Remote</value>
+  </data>
+<data name="Messages_Provider" xml:space="preserve">
+    <value>Provider</value>
+  </data>
+<data name="Messages_MainProvider" xml:space="preserve">
+    <value>(Main)</value>
+  </data>
+<data name="Messages_Model" xml:space="preserve">
+    <value>Model</value>
+  </data>
+<data name="Messages_NoModelsAvailable" xml:space="preserve">
+    <value>— No models available —</value>
+  </data>
+<data name="Messages_DefaultModel" xml:space="preserve">
+    <value>(Default)</value>
+  </data>
+<data name="Messages_GoToSettings" xml:space="preserve">
+    <value>Go to settings to get models →</value>
+  </data>
+<data name="Messages_ModelPath" xml:space="preserve">
+    <value>Model Path</value>
+  </data>
+<data name="Messages_Scan" xml:space="preserve">
+    <value>🔍 Scan</value>
+  </data>
+<data name="Messages_KnowledgeBase" xml:space="preserve">
+    <value>Knowledge Base</value>
+  </data>
+<data name="Messages_Searching" xml:space="preserve">
+    <value>🔍 Searching</value>
+  </data>
+<data name="Messages_Closed" xml:space="preserve">
+    <value>Off</value>
+  </data>
+<data name="Messages_InputPlaceholder" xml:space="preserve">
+    <value>Type a message...
+
+Shift+Enter new line, Enter to send</value>
+  </data>
+<data name="Messages_Stop" xml:space="preserve">
+    <value>⏹ Stop</value>
+  </data>
+<data name="Messages_Send" xml:space="preserve">
+    <value>Send</value>
+  </data>
+<data name="Messages_ToolSearchVault" xml:space="preserve">
+    <value>🔍 Search Vault</value>
+  </data>
+<data name="Messages_ToolCreateNote" xml:space="preserve">
+    <value>📝 Create Note</value>
+  </data>
+<data name="Messages_ToolGetSystemStatus" xml:space="preserve">
+    <value>📊 Get System Status</value>
+  </data>
+<data name="Messages_ToolGetCurrentDate" xml:space="preserve">
+    <value>📅 Get Current Date</value>
+  </data>
+<data name="Messages_ToolListVaults" xml:space="preserve">
+    <value>📚 List Vaults</value>
+  </data>
+<data name="Messages_ToolCallUnknown" xml:space="preserve">
+    <value>🔧 {0}</value>
+  </data>
+<data name="Messages_Stopped" xml:space="preserve">
+    <value>(Stopped)</value>
+  </data>
+<data name="Messages_RequestFailed" xml:space="preserve">
+    <value>Request failed: {0}</value>
+  </data>
+<data name="Messages_DefaultModelName" xml:space="preserve">
+    <value>Default Model</value>
+  </data>
+<data name="Messages_ExportTitle" xml:space="preserve">
+    <value># AI Chat Export</value>
+  </data>
+<data name="Messages_ExportTimeFormat" xml:space="preserve">
+    <value>Exported: {0:yyyy-MM-dd HH:mm:ss}</value>
+  </data>
+<data name="Messages_ExportUser" xml:space="preserve">
+    <value>**User**</value>
+  </data>
+<data name="Messages_ExportAI" xml:space="preserve">
+    <value>**AI**</value>
+  </data>
+<data name="Messages_ExportToolCalls" xml:space="preserve">
+    <value>&gt; 🔧 Tools used: {0}</value>
+  </data>
+<data name="Messages_RunningLocalModels" xml:space="preserve">
+    <value>Running local models (started in Local Models)</value>
+  </data>
+<data name="Messages_SelectRunningModel" xml:space="preserve">
+    <value>Select a running model…</value>
+  </data>
+<data name="Messages_RunningLocalModelsHint" xml:space="preserve">
+    <value>Models loaded in the Local Models page appear here.</value>
+  </data>
+<data name="Messages_LocalTools" xml:space="preserve">
+    <value>Local tools</value>
+  </data>
+<data name="Messages_NoRunningTools" xml:space="preserve">
+    <value>No local tools running, </value>
+  </data>
+<data name="Messages_GoToDeployPage" xml:space="preserve">
+    <value>start one in Local Models page →</value>
+  </data>
+<data name="Messages_GgufEngineInfo" xml:space="preserve">
+    <value>Engine: LlamaSharp (llama.cpp C# binding, CPU/GPU) · loads .gguf files</value>
+  </data>
+<data name="Messages_OnnxEngineInfo" xml:space="preserve">
+    <value>Engine: ONNX Runtime GenAI (Microsoft, GPU accel) · loads ONNX model dirs</value>
+  </data>
+<data name="CodeAgent_PageTitle" xml:space="preserve">
+    <value>Code Agent</value>
+  </data>
+<data name="CodeAgent_Title" xml:space="preserve">
+    <value>Code Agent (Microsoft Agent Framework)</value>
+  </data>
+<data name="CodeAgent_Subtitle" xml:space="preserve">
+    <value>Generate and review code with local coding models, orchestrated by Microsoft Agent Framework (MAF).</value>
+  </data>
+<data name="CodeAgent_InputTitle" xml:space="preserve">
+    <value>Describe your requirement</value>
+  </data>
+<data name="CodeAgent_Language" xml:space="preserve">
+    <value>Language / Stack</value>
+  </data>
+<data name="CodeAgent_LanguageAuto" xml:space="preserve">
+    <value>Auto detect</value>
+  </data>
+<data name="CodeAgent_Provider" xml:space="preserve">
+    <value>AI Provider</value>
+  </data>
+<data name="CodeAgent_Model" xml:space="preserve">
+    <value>Model</value>
+  </data>
+<data name="CodeAgent_ModelAuto" xml:space="preserve">
+    <value>Provider default</value>
+  </data>
+<data name="CodeAgent_Prompt" xml:space="preserve">
+    <value>Requirement</value>
+  </data>
+<data name="CodeAgent_PromptPlaceholder" xml:space="preserve">
+    <value>e.g. Write a C# console bookkeeping app with income/expense records, category stats, balance query, JSON file storage…</value>
+  </data>
+<data name="CodeAgent_Generate" xml:space="preserve">
+    <value>Generate</value>
+  </data>
+<data name="CodeAgent_Running" xml:space="preserve">
+    <value>Generating…</value>
+  </data>
+<data name="CodeAgent_Stop" xml:space="preserve">
+    <value>Stop</value>
+  </data>
+<data name="CodeAgent_Copy" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+<data name="CodeAgent_Download" xml:space="preserve">
+    <value>Download</value>
+  </data>
+<data name="CodeAgent_OutputTitle" xml:space="preserve">
+    <value>Output</value>
+  </data>
+<data name="CodeAgent_Streaming" xml:space="preserve">
+    <value>Streaming</value>
+  </data>
+<data name="CodeAgent_File" xml:space="preserve">
+    <value>File</value>
+  </data>
+<data name="CodeAgent_ToolMode" xml:space="preserve">
+    <value>工具集</value>
+  </data>
+<data name="CodeAgent_ToolMode_All" xml:space="preserve">
+    <value>全部（搜索+网页+代码图谱）</value>
+  </data>
+<data name="CodeAgent_ToolMode_Search" xml:space="preserve">
+    <value>仅联网（搜索+网页）</value>
+  </data>
+<data name="CodeAgent_ToolMode_CodeGraph" xml:space="preserve">
+    <value>仅代码图谱</value>
+  </data>
+<data name="CodeAgent_ToolMode_None" xml:space="preserve">
+    <value>无工具（纯代码生成）</value>
+  </data>
+<data name="CodeAgent_PipelineMode" xml:space="preserve">
+    <value>Pipeline mode (research → code → review)</value>
+  </data>
+<data name="CodeAgent_PlanPro" xml:space="preserve">
+    <value>Plan stage uses Pro model</value>
+  </data>
+<data name="CodeAgent_HistoryTitle" xml:space="preserve">
+    <value>History</value>
+  </data>
+<data name="CodeAgent_HistoryChars" xml:space="preserve">
+  <value>chars</value>
+  </data>
+<data name="CodeAgent_PipelineTitle" xml:space="preserve">
+    <value>Agent Pipeline</value>
+  </data>
+<data name="CodeAgent_StageResearch" xml:space="preserve">
+    <value>① Research</value>
+  </data>
+<data name="CodeAgent_StageCode" xml:space="preserve">
+    <value>② Code</value>
+  </data>
+<data name="CodeAgent_StageReview" xml:space="preserve">
+    <value>③ Review</value>
+  </data>
+<data name="CodeAgent_NewConversation" xml:space="preserve"><value>New conversation</value></data>
+<data name="CodeAgent_ProviderLocal" xml:space="preserve">
+    <value> (Local)</value>
+  </data>
+<data name="CodeAgent_ProviderCloud" xml:space="preserve">
+    <value> (Cloud)</value>
+  </data>
+<data name="Vision_PageTitle" xml:space="preserve">
+    <value>Image Recognition</value>
+  </data>
+<data name="Vision_Title" xml:space="preserve">
+    <value>Image Recognition (Local Qwen2.5-VL + OpenVINO)</value>
+  </data>
+<data name="Vision_UploadLabel" xml:space="preserve">
+    <value>Choose Image</value>
+  </data>
+<data name="Vision_UploadHint" xml:space="preserve">
+    <value>png / jpg / jpeg / webp / bmp, max 20MB</value>
+  </data>
+<data name="Vision_PromptLabel" xml:space="preserve">
+    <value>Prompt (optional)</value>
+  </data>
+<data name="Vision_PromptDefault" xml:space="preserve">
+    <value>Please describe this image in detail.</value>
+  </data>
+<data name="Vision_ModelLabel" xml:space="preserve">
+    <value>Model</value>
+  </data>
+<data name="Vision_RecognizeBtn" xml:space="preserve">
+    <value>Recognize</value>
+  </data>
+<data name="Vision_Recognizing" xml:space="preserve">
+    <value>Recognizing… (first load may take 20-60s)</value>
+  </data>
+<data name="Vision_ResultLabel" xml:space="preserve">
+    <value>Result</value>
+  </data>
+<data name="Vision_Elapsed" xml:space="preserve">
+    <value>Elapsed {0}s</value>
+  </data>
+<data name="Vision_ServerDown" xml:space="preserve">
+    <value>Local vision service is not running</value>
+  </data>
+<data name="Vision_StartServer" xml:space="preserve">
+    <value>Start Service</value>
+  </data>
+<data name="Vision_StartingServer" xml:space="preserve">
+    <value>Starting…</value>
+  </data>
+<data name="Vision_ServerStartFail" xml:space="preserve">
+    <value>Failed to start: {0}</value>
+  </data>
+<data name="Vision_NoImage" xml:space="preserve">
+    <value>Please choose an image first</value>
+  </data>
+<data name="Vision_ModelMissing" xml:space="preserve">
+    <value>Model files missing: {0}</value>
+  </data>
+<data name="Vision_CopyBtn" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+<data name="Vision_Copied" xml:space="preserve">
+    <value>Copied</value>
+  </data>
+<data name="Vision_Model3B" xml:space="preserve">
+    <value>3B (fast, default)</value>
+  </data>
+<data name="Vision_Model7B" xml:space="preserve">
+    <value>7B (more accurate, small text)</value>
+  </data>
+<data name="Vision_NotEnabled" xml:space="preserve">
+    <value>Local vision disabled (config LocalVision:Enabled)</value>
+  </data>
+<data name="AiDrawing_PageTitle" xml:space="preserve">
+    <value>AI Drawing</value>
+  </data>
+<data name="AiDrawing_Title" xml:space="preserve">
+    <value>AI Drawing</value>
+  </data>
+<data name="AiDrawing_ComfyUnavailable" xml:space="preserve">
+    <value>ComfyUI service is not running. Please start ComfyUI (127.0.0.1:8188), then</value>
+  </data>
+<data name="AiDrawing_Recheck" xml:space="preserve">
+    <value>Recheck</value>
+  </data>
+<data name="AiDrawing_GenerationParams" xml:space="preserve">
+    <value>Generation Parameters</value>
+  </data>
+<data name="AiDrawing_Mode" xml:space="preserve">
+    <value>Mode</value>
+  </data>
+<data name="AiDrawing_ImageMode" xml:space="preserve">
+    <value>Image</value>
+  </data>
+<data name="AiDrawing_VideoMode" xml:space="preserve">
+    <value>Video</value>
+  </data>
+<data name="AiDrawing_Prompt" xml:space="preserve">
+    <value>Prompt</value>
+  </data>
+<data name="AiDrawing_PromptPlaceholder" xml:space="preserve">
+    <value>Describe the image you want, e.g. an orange cat sitting on the windowsill in warm sunlight</value>
+  </data>
+<data name="AiDrawing_Style" xml:space="preserve">
+    <value>Style</value>
+  </data>
+<data name="AiDrawing_StyleHint" xml:space="preserve">
+    <value>The style is appended to the end of the prompt</value>
+  </data>
+<data name="AiDrawing_Width" xml:space="preserve">
+    <value>Width</value>
+  </data>
+<data name="AiDrawing_Height" xml:space="preserve">
+    <value>Height</value>
+  </data>
+<data name="AiDrawing_Steps" xml:space="preserve">
+    <value>Steps: {0}</value>
+  </data>
+<data name="AiDrawing_Generating" xml:space="preserve">
+    <value>⏳ Generating…</value>
+  </data>
+<data name="AiDrawing_Generate" xml:space="preserve">
+    <value>✨ Generate</value>
+  </data>
+<data name="AiDrawing_GenerateHint" xml:space="preserve">
+    <value>Images take about 30 seconds, videos about 3-5 minutes. Please wait patiently.</value>
+  </data>
+<data name="AiDrawing_Duration" xml:space="preserve">
+    <value>Took {0:F1} seconds</value>
+  </data>
+<data name="AiDrawing_Download" xml:space="preserve">
+    <value>Download</value>
+  </data>
+<data name="AiDrawing_HistoryTitle" xml:space="preserve">
+    <value>History</value>
+  </data>
+<data name="AiDrawing_Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+<data name="AiDrawing_NoHistory" xml:space="preserve">
+    <value>No generation records yet</value>
+  </data>
+<data name="AiDrawing_ImageLoadFailed" xml:space="preserve">
+    <value>Image failed to load</value>
+  </data>
+<data name="AiDrawing_VideoLoadFailed" xml:space="preserve">
+    <value>Video failed to load</value>
+  </data>
+<data name="AiDrawing_Failed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+<data name="AiDrawing_PromptRequired" xml:space="preserve">
+    <value>Please enter a prompt</value>
+  </data>
+<data name="AiDrawing_StyleDefault" xml:space="preserve">
+    <value>Default</value>
+  </data>
+<data name="AiDrawing_StyleRealistic" xml:space="preserve">
+    <value>Realistic Photography</value>
+  </data>
+<data name="AiDrawing_StyleAnime" xml:space="preserve">
+    <value>Anime</value>
+  </data>
+<data name="AiDrawing_StyleCyberpunk" xml:space="preserve">
+    <value>Cyberpunk</value>
+  </data>
+<data name="AiDrawing_StyleInkWash" xml:space="preserve">
+    <value>Ink Wash</value>
+  </data>
+<data name="AiDrawing_StyleOil" xml:space="preserve">
+    <value>Oil Painting</value>
+  </data>
+<data name="AiDrawing_Style3D" xml:space="preserve">
+    <value>3D Render</value>
+  </data>
+<data name="AiDrawing_StylePixel" xml:space="preserve">
+    <value>Pixel Art</value>
+  </data>
+<data name="Vision_Running" xml:space="preserve">
+    <value>Vision service running (127.0.0.1:{0})</value>
+  </data>
+<data name="Vision_Stopping" xml:space="preserve">
+    <value>Stopping…</value>
+  </data>
+<data name="Vision_StopServer" xml:space="preserve">
+    <value>⏹ Stop Service</value>
+  </data>
+<data name="Vision_StopFailed" xml:space="preserve">
+    <value>Failed to stop: {0}</value>
+  </data>
+</root>

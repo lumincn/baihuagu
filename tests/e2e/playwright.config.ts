@@ -65,10 +65,14 @@ export default defineConfig({
     { name: 'achievements', testDir: './tests/achievements', testMatch: /.*\.spec\.ts/ },
     // 赛舟榜：榜单显示、Tab切换、排名（本地）
     { name: 'leaderboard', testDir: './tests/leaderboard', testMatch: /.*\.spec\.ts/ },
+    // AI对话：消息列表、输入框、发送按钮（本地）
+    { name: 'messages', testDir: './tests/messages', testMatch: /.*\.spec\.ts/ },
     // 记忆卡片：知识库选择、搜索、统计（本地）
     { name: 'cards', testDir: './tests/cards', testMatch: /.*\.spec\.ts/ },
     // 迁移验证：OneHop 路径删除、Nginx 端口、设备管理页、OpenClaw 默认模型
     { name: 'migration', testDir: './tests/migration', testMatch: /.*\.spec\.ts/ },
+    // 编程 Agent：页面元素、工具集模式、流水线开关（本地）
+    { name: 'codeagent', testDir: './tests/codeagent', testMatch: /.*\.spec\.ts/ },
     // 旧套件迁移（原 tests/Baihua.Web.E2e，已并入）：冒烟/听书/溢出检查（本地）。
     // 依赖 Docker/nginx 部署的用例（deploy-verify/website）在文件内整体 test.describe.skip。
     { name: 'legacy-e2e', testDir: './tests/legacy-e2e', testMatch: /.*\.spec\.ts/ },

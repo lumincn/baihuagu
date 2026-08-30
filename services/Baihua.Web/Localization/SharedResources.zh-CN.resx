@@ -6192,4 +6192,420 @@
   </data>
   <data name="Draw_VideoHint" xml:space="preserve">
     <value>分辨率建议 ≤768，帧数 25-121（约 1-5 秒）</value>
-  </data></root>
+  </data><data name="Messages_PageTitle" xml:space="preserve">
+    <value>AI 对话</value>
+  </data>
+<data name="Messages_Title" xml:space="preserve">
+    <value>💬 AI 对话</value>
+  </data>
+<data name="Messages_AiNotConfigured" xml:space="preserve">
+    <value>⚠️ AI 未配置，请先设置 API Key</value>
+  </data>
+<data name="Messages_ExportChat" xml:space="preserve">
+    <value>📥 导出对话</value>
+  </data>
+<data name="Messages_ClearChat" xml:space="preserve">
+    <value>🗑️ 清空对话</value>
+  </data>
+<data name="Messages_Mode" xml:space="preserve">
+    <value>模式</value>
+  </data>
+<data name="Messages_ModeRemote" xml:space="preserve">
+    <value>🌐 远程</value>
+  </data>
+<data name="Messages_Provider" xml:space="preserve">
+    <value>提供商</value>
+  </data>
+<data name="Messages_MainProvider" xml:space="preserve">
+    <value>(主)</value>
+  </data>
+<data name="Messages_Model" xml:space="preserve">
+    <value>模型</value>
+  </data>
+<data name="Messages_NoModelsAvailable" xml:space="preserve">
+    <value>— 无可用模型 —</value>
+  </data>
+<data name="Messages_DefaultModel" xml:space="preserve">
+    <value>(默认)</value>
+  </data>
+<data name="Messages_GoToSettings" xml:space="preserve">
+    <value>去设置页获取模型 →</value>
+  </data>
+<data name="Messages_ModelPath" xml:space="preserve">
+    <value>模型路径</value>
+  </data>
+<data name="Messages_Scan" xml:space="preserve">
+    <value>🔍 扫描</value>
+  </data>
+<data name="Messages_KnowledgeBase" xml:space="preserve">
+    <value>知识库</value>
+  </data>
+<data name="Messages_Searching" xml:space="preserve">
+    <value>🔍 检索中</value>
+  </data>
+<data name="Messages_Closed" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+<data name="Messages_InputPlaceholder" xml:space="preserve">
+    <value>输入消息...
+Shift+Enter 换行，Enter 发送</value>
+  </data>
+<data name="Messages_Stop" xml:space="preserve">
+    <value>⏹ 停止</value>
+  </data>
+<data name="Messages_Send" xml:space="preserve">
+    <value>发送</value>
+  </data>
+<data name="Messages_ToolSearchVault" xml:space="preserve">
+    <value>🔍 搜索知识库</value>
+  </data>
+<data name="Messages_ToolCreateNote" xml:space="preserve">
+    <value>📝 创建笔记</value>
+  </data>
+<data name="Messages_ToolGetSystemStatus" xml:space="preserve">
+    <value>📊 获取系统状态</value>
+  </data>
+<data name="Messages_ToolGetCurrentDate" xml:space="preserve">
+    <value>📅 获取时间</value>
+  </data>
+<data name="Messages_ToolListVaults" xml:space="preserve">
+    <value>📚 列出知识库</value>
+  </data>
+<data name="Messages_ToolCallUnknown" xml:space="preserve">
+    <value>🔧 {0}</value>
+  </data>
+<data name="Messages_Stopped" xml:space="preserve">
+    <value>（已停止）</value>
+  </data>
+<data name="Messages_RequestFailed" xml:space="preserve">
+    <value>请求失败：{0}</value>
+  </data>
+<data name="Messages_DefaultModelName" xml:space="preserve">
+    <value>默认模型</value>
+  </data>
+<data name="Messages_ExportTitle" xml:space="preserve">
+    <value># AI 对话记录</value>
+  </data>
+<data name="Messages_ExportTimeFormat" xml:space="preserve">
+    <value>导出时间: {0:yyyy-MM-dd HH:mm:ss}</value>
+  </data>
+<data name="Messages_ExportUser" xml:space="preserve">
+    <value>**用户**</value>
+  </data>
+<data name="Messages_ExportAI" xml:space="preserve">
+    <value>**AI**</value>
+  </data>
+<data name="Messages_ExportToolCalls" xml:space="preserve">
+    <value>&gt; 🔧 调用了工具: {0}</value>
+  </data>
+<data name="Messages_RunningLocalModels" xml:space="preserve">
+    <value>🖥️ 运行中本地模型（本地模型页启动）</value>
+  </data>
+<data name="Messages_SelectRunningModel" xml:space="preserve">
+    <value>选择运行中的模型…</value>
+  </data>
+<data name="Messages_RunningLocalModelsHint" xml:space="preserve">
+    <value>在"本地模型"页加载的模型会出现在这里，选中后可直接对话。</value>
+  </data>
+<data name="Messages_LocalTools" xml:space="preserve">
+    <value>本地工具</value>
+  </data>
+<data name="Messages_NoRunningTools" xml:space="preserve">
+    <value>暂无运行中的本地工具，</value>
+  </data>
+<data name="Messages_GoToDeployPage" xml:space="preserve">
+    <value>去本地模型部署页启动 →</value>
+  </data>
+<data name="Messages_GgufEngineInfo" xml:space="preserve">
+    <value>处理引擎：LlamaSharp（llama.cpp C# 绑定，CPU/GPU 推理）· 加载 .gguf 模型文件</value>
+  </data>
+<data name="Messages_OnnxEngineInfo" xml:space="preserve">
+    <value>处理引擎：ONNX Runtime GenAI（微软 ONNX Runtime，GPU 加速）· 加载 ONNX 模型目录</value>
+  </data>
+<data name="CodeAgent_PageTitle" xml:space="preserve">
+    <value>编程 Agent</value>
+  </data>
+<data name="CodeAgent_Title" xml:space="preserve">
+    <value>编程 Agent（Microsoft Agent Framework）</value>
+  </data>
+<data name="CodeAgent_Subtitle" xml:space="preserve">
+    <value>用本地编程模型生成、审查代码。基于微软 Agent Framework (MAF) 编排。</value>
+  </data>
+<data name="CodeAgent_InputTitle" xml:space="preserve">
+    <value>输入需求</value>
+  </data>
+<data name="CodeAgent_Language" xml:space="preserve">
+    <value>语言 / 技术栈</value>
+  </data>
+<data name="CodeAgent_LanguageAuto" xml:space="preserve">
+    <value>自动识别</value>
+  </data>
+<data name="CodeAgent_Provider" xml:space="preserve">
+    <value>AI 提供方</value>
+  </data>
+<data name="CodeAgent_Model" xml:space="preserve">
+    <value>模型</value>
+  </data>
+<data name="CodeAgent_ModelAuto" xml:space="preserve">
+    <value>提供方默认模型</value>
+  </data>
+<data name="CodeAgent_Prompt" xml:space="preserve">
+    <value>需求描述</value>
+  </data>
+<data name="CodeAgent_PromptPlaceholder" xml:space="preserve">
+    <value>例如：用 C# 写一个命令行记账软件，支持收入/支出记录、分类统计、余额查询，数据存 JSON 文件……</value>
+  </data>
+<data name="CodeAgent_Generate" xml:space="preserve">
+    <value>生成代码</value>
+  </data>
+<data name="CodeAgent_Running" xml:space="preserve">
+    <value>生成中…</value>
+  </data>
+<data name="CodeAgent_Stop" xml:space="preserve">
+    <value>停止</value>
+  </data>
+<data name="CodeAgent_Copy" xml:space="preserve">
+    <value>复制</value>
+  </data>
+<data name="CodeAgent_Download" xml:space="preserve">
+    <value>下载</value>
+  </data>
+<data name="CodeAgent_OutputTitle" xml:space="preserve">
+    <value>生成结果</value>
+  </data>
+<data name="CodeAgent_Streaming" xml:space="preserve">
+    <value>流式生成中</value>
+  </data>
+<data name="CodeAgent_File" xml:space="preserve">
+    <value>识别文件</value>
+  </data>
+<data name="CodeAgent_ToolMode" xml:space="preserve">
+    <value>工具集</value>
+  </data>
+<data name="CodeAgent_ToolMode_All" xml:space="preserve">
+    <value>全部（搜索+网页+代码图谱）</value>
+  </data>
+<data name="CodeAgent_ToolMode_Search" xml:space="preserve">
+    <value>仅联网（搜索+网页）</value>
+  </data>
+<data name="CodeAgent_ToolMode_CodeGraph" xml:space="preserve">
+    <value>仅代码图谱</value>
+  </data>
+<data name="CodeAgent_ToolMode_None" xml:space="preserve">
+    <value>无工具（纯代码生成）</value>
+  </data>
+<data name="CodeAgent_PipelineMode" xml:space="preserve">
+    <value>流水线模式（调研→编码→审查）</value>
+  </data>
+<data name="CodeAgent_PlanPro" xml:space="preserve">
+    <value>规划阶段用 Pro 模型（更强）</value>
+  </data>
+<data name="CodeAgent_HistoryTitle" xml:space="preserve">
+    <value>历史记录</value>
+  </data>
+<data name="CodeAgent_HistoryChars" xml:space="preserve">
+  <value>字</value>
+  </data>
+<data name="CodeAgent_PipelineTitle" xml:space="preserve">
+    <value>多 Agent 流水线</value>
+  </data>
+<data name="CodeAgent_StageResearch" xml:space="preserve">
+    <value>① 调研</value>
+  </data>
+<data name="CodeAgent_StageCode" xml:space="preserve">
+    <value>② 代码</value>
+  </data>
+<data name="CodeAgent_StageReview" xml:space="preserve">
+    <value>③ 审查</value>
+  </data>
+<data name="CodeAgent_NewConversation" xml:space="preserve"><value>新对话</value></data>
+<data name="CodeAgent_ProviderLocal" xml:space="preserve">
+    <value>（本地）</value>
+  </data>
+<data name="CodeAgent_ProviderCloud" xml:space="preserve">
+    <value>（云端）</value>
+  </data>
+<data name="Vision_PageTitle" xml:space="preserve">
+    <value>图片识别</value>
+  </data>
+<data name="Vision_Title" xml:space="preserve">
+    <value>图片识别（本地 Qwen2.5-VL + OpenVINO）</value>
+  </data>
+<data name="Vision_UploadLabel" xml:space="preserve">
+    <value>选择图片</value>
+  </data>
+<data name="Vision_UploadHint" xml:space="preserve">
+    <value>支持 png / jpg / jpeg / webp / bmp，最大 20MB</value>
+  </data>
+<data name="Vision_PromptLabel" xml:space="preserve">
+    <value>提问（可选）</value>
+  </data>
+<data name="Vision_PromptDefault" xml:space="preserve">
+    <value>请详细描述这张图片的内容。</value>
+  </data>
+<data name="Vision_ModelLabel" xml:space="preserve">
+    <value>模型</value>
+  </data>
+<data name="Vision_RecognizeBtn" xml:space="preserve">
+    <value>识别图片</value>
+  </data>
+<data name="Vision_Recognizing" xml:space="preserve">
+    <value>识别中…（首次加载模型约 20-60 秒）</value>
+  </data>
+<data name="Vision_ResultLabel" xml:space="preserve">
+    <value>识别结果</value>
+  </data>
+<data name="Vision_Elapsed" xml:space="preserve">
+    <value>耗时 {0} 秒</value>
+  </data>
+<data name="Vision_ServerDown" xml:space="preserve">
+    <value>本地视觉服务未运行</value>
+  </data>
+<data name="Vision_StartServer" xml:space="preserve">
+    <value>启动服务</value>
+  </data>
+<data name="Vision_StartingServer" xml:space="preserve">
+    <value>启动中…</value>
+  </data>
+<data name="Vision_ServerStartFail" xml:space="preserve">
+    <value>启动失败：{0}</value>
+  </data>
+<data name="Vision_NoImage" xml:space="preserve">
+    <value>请先选择图片</value>
+  </data>
+<data name="Vision_ModelMissing" xml:space="preserve">
+    <value>模型文件不存在：{0}</value>
+  </data>
+<data name="Vision_CopyBtn" xml:space="preserve">
+    <value>复制</value>
+  </data>
+<data name="Vision_Copied" xml:space="preserve">
+    <value>已复制</value>
+  </data>
+<data name="Vision_Model3B" xml:space="preserve">
+    <value>3B（快速，默认）</value>
+  </data>
+<data name="Vision_Model7B" xml:space="preserve">
+    <value>7B（更准，小字/复杂图）</value>
+  </data>
+<data name="Vision_NotEnabled" xml:space="preserve">
+    <value>本地视觉功能未启用（配置 LocalVision:Enabled）</value>
+  </data>
+<data name="AiDrawing_PageTitle" xml:space="preserve">
+    <value>AI 绘图</value>
+  </data>
+<data name="AiDrawing_Title" xml:space="preserve">
+    <value>AI 绘图</value>
+  </data>
+<data name="AiDrawing_ComfyUnavailable" xml:space="preserve">
+    <value>ComfyUI 服务未运行。请先启动 ComfyUI（127.0.0.1:8188），然后点击</value>
+  </data>
+<data name="AiDrawing_Recheck" xml:space="preserve">
+    <value>重新检测</value>
+  </data>
+<data name="AiDrawing_GenerationParams" xml:space="preserve">
+    <value>生成参数</value>
+  </data>
+<data name="AiDrawing_Mode" xml:space="preserve">
+    <value>模式</value>
+  </data>
+<data name="AiDrawing_ImageMode" xml:space="preserve">
+    <value>图片</value>
+  </data>
+<data name="AiDrawing_VideoMode" xml:space="preserve">
+    <value>视频</value>
+  </data>
+<data name="AiDrawing_Prompt" xml:space="preserve">
+    <value>提示词</value>
+  </data>
+<data name="AiDrawing_PromptPlaceholder" xml:space="preserve">
+    <value>描述你想生成的画面，例如：一只橘猫坐在窗台上，温暖阳光</value>
+  </data>
+<data name="AiDrawing_Style" xml:space="preserve">
+    <value>风格</value>
+  </data>
+<data name="AiDrawing_StyleHint" xml:space="preserve">
+    <value>风格会追加到提示词末尾</value>
+  </data>
+<data name="AiDrawing_Width" xml:space="preserve">
+    <value>宽度</value>
+  </data>
+<data name="AiDrawing_Height" xml:space="preserve">
+    <value>高度</value>
+  </data>
+<data name="AiDrawing_Steps" xml:space="preserve">
+    <value>采样步数：{0}</value>
+  </data>
+<data name="AiDrawing_Generating" xml:space="preserve">
+    <value>⏳ 生成中…</value>
+  </data>
+<data name="AiDrawing_Generate" xml:space="preserve">
+    <value>✨ 生成</value>
+  </data>
+<data name="AiDrawing_GenerateHint" xml:space="preserve">
+    <value>图片约 30 秒，视频约 3-5 分钟，请耐心等待</value>
+  </data>
+<data name="AiDrawing_Duration" xml:space="preserve">
+    <value>耗时 {0:F1} 秒</value>
+  </data>
+<data name="AiDrawing_Download" xml:space="preserve">
+    <value>下载</value>
+  </data>
+<data name="AiDrawing_HistoryTitle" xml:space="preserve">
+    <value>历史记录</value>
+  </data>
+<data name="AiDrawing_Refresh" xml:space="preserve">
+    <value>刷新</value>
+  </data>
+<data name="AiDrawing_NoHistory" xml:space="preserve">
+    <value>还没有生成记录</value>
+  </data>
+<data name="AiDrawing_ImageLoadFailed" xml:space="preserve">
+    <value>图片加载失败</value>
+  </data>
+<data name="AiDrawing_VideoLoadFailed" xml:space="preserve">
+    <value>视频加载失败</value>
+  </data>
+<data name="AiDrawing_Failed" xml:space="preserve">
+    <value>失败</value>
+  </data>
+<data name="AiDrawing_PromptRequired" xml:space="preserve">
+    <value>请输入提示词</value>
+  </data>
+<data name="AiDrawing_StyleDefault" xml:space="preserve">
+    <value>默认</value>
+  </data>
+<data name="AiDrawing_StyleRealistic" xml:space="preserve">
+    <value>写实摄影</value>
+  </data>
+<data name="AiDrawing_StyleAnime" xml:space="preserve">
+    <value>动漫</value>
+  </data>
+<data name="AiDrawing_StyleCyberpunk" xml:space="preserve">
+    <value>赛博朋克</value>
+  </data>
+<data name="AiDrawing_StyleInkWash" xml:space="preserve">
+    <value>水墨国风</value>
+  </data>
+<data name="AiDrawing_StyleOil" xml:space="preserve">
+    <value>油画</value>
+  </data>
+<data name="AiDrawing_Style3D" xml:space="preserve">
+    <value>3D 渲染</value>
+  </data>
+<data name="AiDrawing_StylePixel" xml:space="preserve">
+    <value>像素风</value>
+  </data>
+<data name="Vision_Running" xml:space="preserve">
+    <value>视觉服务运行中（127.0.0.1:{0}）</value>
+  </data>
+<data name="Vision_Stopping" xml:space="preserve">
+    <value>停止中…</value>
+  </data>
+<data name="Vision_StopServer" xml:space="preserve">
+    <value>⏹ 停止服务</value>
+  </data>
+<data name="Vision_StopFailed" xml:space="preserve">
+    <value>停止失败：{0}</value>
+  </data>
+</root>

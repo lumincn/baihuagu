@@ -112,6 +112,38 @@ namespace Baihua.Web.Services
         Task<AiNoteResponse> AskAIAsync(string query, bool saveToVault);
         Task<AiTaskResponse> CreateAiTaskAsync(string query, bool saveToVault, string vaultId, string? model = null, bool autoSplit = false, string? systemPrompt = null, string? industry = null);
         Task<ChatResponse> ChatAsync(string message, CancellationToken cancellationToken = default);
+        IAsyncEnumerable<string> StreamChatAsync(string message, string providerId, string model, List<(bool IsUser, string Content)>? history = null, CancellationToken cancellationToken = default);
+        IAsyncEnumerable<ChatStreamEvent> StreamChatWithEventsAsync(string message, string providerId, string model, List<(bool IsUser, string Content)>? history = null, string? sessionId = null, CancellationToken cancellationToken = default);
+
+        // 直接调用 Baihua.AI（纯 AI，无 RAG/记忆/Function Calling）
+        Task<ChatResponse> ChatDirectAsync(string message, string? providerId = null, string? model = null, CancellationToken cancellationToken = default);
+        IAsyncEnumerable<string> StreamChatDirectAsync(string message, string? providerId = null, string? model = null, List<(bool IsUser, string Content)>? history = null, CancellationToken cancellationToken = default);        IAsyncEnumerable<string> StreamLocalChatAsync(string message, string modelPath, string modelType, List<(bool IsUser, string Content)>? history = null, CancellationToken cancellationToken = default);
+        IAsyncEnumerable<string> StreamChatWithVaultAsync(string message, string model, List<(bool IsUser, string Content)>? history = null, CancellationToken cancellationToken = default);
+
+        // 编程 Agent（Microsoft Agent Framework）
+        Task<CodeAgentResponse> RunCodeAgentAsync(CodeAgentRequest request, CancellationToken cancellationToken = default);
+        IAsyncEnumerable<CodeAgentStreamItem> StreamCodeAgentAsync(CodeAgentRequest request, CancellationToken cancellationToken = default);
+        IAsyncEnumerable<CodeAgentStreamItem> StreamCodeAgentPipelineAsync(CodeAgentPipelineRequest request, CancellationToken cancellationToken = default);
+        Task<List<CodeAgentProviderInfo>> GetCodeAgentProvidersAsync(CancellationToken cancellationToken = default);
+  Task<List<CodeAgentSessionSummaryDto>> GetCodeAgentHistoryAsync(int limit = 20, CancellationToken cancellationToken = default);
+  Task<CodeAgentSessionDetailDto?> GetCodeAgentHistoryItemAsync(int id, CancellationToken cancellationToken = default);
+  Task<int> SaveCodeAgentSessionAsync(CodeAgentSessionSaveRequest request, CancellationToken cancellationToken = default);
+  Task DeleteCodeAgentSessionAsync(int id, CancellationToken cancellationToken = default);
+        Task<List<LocalModelInfo>> ScanLocalModelsAsync(string? directory = null);
+
+        // 本地视觉识别（Qwen2.5-VL + OpenVINO）
+        Task<VisionStatusDto> GetVisionStatusAsync(CancellationToken cancellationToken = default);
+        Task<VisionStatusDto> StartVisionServerAsync(CancellationToken cancellationToken = default);
+        Task<VisionStatusDto> StopVisionServerAsync(CancellationToken cancellationToken = default);
+        Task<VisionResultDto> RecognizeImageAsync(byte[] imageBytes, string prompt, string model, CancellationToken cancellationToken = default);
+
+        // AI 绘图（ComfyUI）
+        Task<ComfyStatusDto> GetComfyStatusAsync(CancellationToken cancellationToken = default);
+        Task<ComfyGenerateResultDto> GenerateComfyImageAsync(string prompt, string negativePrompt, int width, int height, int steps, CancellationToken cancellationToken = default);
+        Task<ComfyGenerateResultDto> GenerateComfyVideoAsync(string prompt, string negativePrompt, CancellationToken cancellationToken = default);
+        Task<List<ComfyHistoryItemDto>> GetComfyHistoryAsync(int limit = 50, string? kind = null, CancellationToken cancellationToken = default);
+
+        string GetBackendBaseUrl();
         Task<bool> DeleteTaskAsync(string taskId);
         Task<bool> DeleteAllTasksAsync();
         Task<bool> CancelTaskAsync(string taskId);
@@ -209,6 +241,8 @@ namespace Baihua.Web.Services
         Task<bool> SaveDownloadConfigAsync(DownloadDirectoryConfigDto config, CancellationToken cancellationToken = default);
 
         // 运行中模型管理
+        // 运行中模型管理
+        Task<List<RunningModelDto>> GetRunningModelsAsync(bool forceRefresh = false, CancellationToken cancellationToken = default);
         Task<List<string>> GetAvailableModelsAsync(string toolId, CancellationToken cancellationToken = default);
         Task<List<DownloadedModelDto>> GetDownloadedModelsAsync(CancellationToken cancellationToken = default);
         Task<bool> DeleteModelAsync(DeleteModelRequest request, CancellationToken cancellationToken = default);
@@ -280,6 +314,9 @@ namespace Baihua.Web.Services
         Task<byte[]?> SynthesizeSpeechAsync(string text, string voice, float speed = 1.0f, CancellationToken cancellationToken = default);
         Task<List<TtsVoice>?> GetTtsVoicesAsync(CancellationToken cancellationToken = default);
     }
+
+    /// <summary>流水线流式事件项：Type = stage/delta/tool/error，Data 已格式化。</summary>
+    public sealed record CodeAgentStreamItem(string Type, string Data);
 
     public partial class ApiService : IApiService
 

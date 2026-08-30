@@ -86,6 +86,22 @@ builder.Services.AddSingleton<Baihua.Core.Services.HardwareInfoService>();
 builder.Services.AddSingleton<Baihua.Core.Services.CapabilityService>();
 builder.Services.AddAiClientServices();
 
+// 编程 Agent（Microsoft Agent Framework）
+builder.Services.AddSingleton<Baihua.AI.Services.CodeAgentService>();
+
+// 本地模型推理后端（GGUF / ONNX），实现位于 Baihua.AI.Provider
+builder.Services.AddSingleton<Baihua.AI.Provider.ILocalModelInference, Baihua.AI.Provider.LlamaSharpInference>();
+builder.Services.AddSingleton<Baihua.AI.Provider.ILocalModelInference, Baihua.AI.Provider.OnnxRuntimeGenAIInference>();
+builder.Services.AddSingleton<Baihua.AI.Provider.ILocalModelInference, Baihua.AI.Provider.OpenVino.OpenVinoChatInference>();
+
+// 本地视觉分析（Qwen2.5-VL + OpenVINO）
+builder.Services.Configure<Baihua.AI.Provider.OpenVino.LocalVisionOptions>(
+    builder.Configuration.GetSection("LocalVision"));
+// OVMS（OpenVINO Model Server）端点：统一承载 LLM 文本/视觉/嵌入推理
+builder.Services.Configure<Baihua.AI.Provider.OpenVino.OmsOptions>(
+    builder.Configuration.GetSection("OpenVinoOms"));
+builder.Services.AddSingleton<Baihua.AI.Provider.ILocalVisionInference, Baihua.AI.Provider.OpenVino.OpenVinoVisionService>();
+
 // 健康检查
 builder.Services.AddHealthChecks()
     .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy());
@@ -281,6 +297,46 @@ try
     using var scope = app.Services.CreateScope();
     var aiDb = scope.ServiceProvider.GetRequiredService<Baihua.Data.AIDbContext>();
     aiDb.Database.EnsureCreated();
+    // 恢复的编程 Agent / AI 绘图表可能不存在于已有数据库，幂等建表
+    aiDb.Database.ExecuteSqlRaw("""
+        CREATE TABLE IF NOT EXISTS "CodeAgentSessions" (
+            "Id" SERIAL PRIMARY KEY,
+            "CreatedAt" TIMESTAMP NOT NULL DEFAULT now(),
+            "Prompt" VARCHAR(8000) NOT NULL,
+            "Language" VARCHAR(100),
+            "ProviderId" VARCHAR(50),
+            "Model" VARCHAR(100),
+            "ToolMode" VARCHAR(20) NOT NULL DEFAULT 'All',
+            "IsPipeline" BOOLEAN NOT NULL DEFAULT FALSE,
+            "PlanPro" BOOLEAN NOT NULL DEFAULT FALSE,
+            "Output" TEXT,
+            "Research" TEXT,
+            "Code" TEXT,
+            "Review" TEXT,
+            "FileName" VARCHAR(300),
+            "SessionStateJson" TEXT
+        );
+        CREATE INDEX IF NOT EXISTS "IX_CodeAgentSessions_CreatedAt" ON "CodeAgentSessions" ("CreatedAt");
+        CREATE INDEX IF NOT EXISTS "IX_CodeAgentSessions_IsPipeline" ON "CodeAgentSessions" ("IsPipeline");
+        CREATE TABLE IF NOT EXISTS "ComfyArtworks" (
+            "Id" SERIAL PRIMARY KEY,
+            "CreatedAt" TIMESTAMP NOT NULL DEFAULT now(),
+            "Kind" VARCHAR(10) NOT NULL,
+            "Prompt" VARCHAR(2000) NOT NULL,
+            "Model" VARCHAR(200) NOT NULL,
+            "ParamsJson" TEXT NOT NULL DEFAULT '{}',
+            "FileName" VARCHAR(300) NOT NULL,
+            "Subfolder" VARCHAR(300) DEFAULT '',
+            "FileType" VARCHAR(20) DEFAULT 'output',
+            "PromptId" VARCHAR(64) NOT NULL,
+            "IsSuccess" BOOLEAN NOT NULL DEFAULT TRUE,
+            "ErrorMessage" VARCHAR(2000),
+            "DurationSeconds" DOUBLE PRECISION NOT NULL DEFAULT 0
+        );
+        CREATE INDEX IF NOT EXISTS "IX_ComfyArtworks_CreatedAt" ON "ComfyArtworks" ("CreatedAt");
+        CREATE INDEX IF NOT EXISTS "IX_ComfyArtworks_Kind" ON "ComfyArtworks" ("Kind");
+        CREATE UNIQUE INDEX IF NOT EXISTS "IX_ComfyArtworks_PromptId" ON "ComfyArtworks" ("PromptId");
+        """);
     logger.LogInformation("AI 数据库初始化完成");
 }
 catch (Exception ex)

@@ -109,6 +109,14 @@ public class AiProviderPresetModel
     public string Category { get; set; } = AiTaskCategory.Chat;
 }
 
+public class LocalModelInfo
+{
+    public string Name { get; set; } = "";
+    public string Path { get; set; } = "";
+    public string Type { get; set; } = "";
+    public long Size { get; set; }
+}
+
 public class EnvConfigHelp
 {
     public string Description { get; set; } = "";
@@ -161,4 +169,11 @@ public class ChatRequest
     public bool? EnableTools { get; set; }
 }
 
-
+public class LocalChatRequest
+{
+    public string Message { get; set; } = string.Empty;
+    public string ModelPath { get; set; } = string.Empty;
+    public string ModelType { get; set; } = "gguf";
+    public string? SystemPrompt { get; set; }
+    public List<ChatHistoryItem>? History { get; set; }
+}
